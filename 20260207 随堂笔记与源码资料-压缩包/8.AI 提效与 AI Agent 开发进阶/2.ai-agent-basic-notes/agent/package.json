@@ -1,18 +1,24 @@
 {
   "name": "agent",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/cli-agent.js",
   "scripts": {
-    "compile": "tsc"
+    "compile": "tsc",
+    "demo": "pnpm compile && node dist/demo.js",
+    "demo:mock": "pnpm compile && AGENT_MOCK=1 node dist/demo.js",
+    "start": "pnpm compile && node dist/cli-agent.js",
+    "start:mock": "pnpm compile && AGENT_MOCK=1 node dist/cli-agent.js --mock",
+    "test": "pnpm compile && node dist/self-test.js"
   },
   "keywords": [],
   "author": "Heyi",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@langchain/openai": "1.4.7",
-    "typescript": "6.0.3",
-    "zod": "4.4.3",
-    "langchain": "1.4.4"
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "6.0.3"
   }
 }
