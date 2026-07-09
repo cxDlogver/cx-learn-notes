@@ -1,0 +1,34 @@
+version: "0.2"
+language: en
+caseSensitive: false
+useGitignore: true
+ignorePaths:
+  - node_modules
+  - dist
+  - coverage
+  - tmp-vite-init
+  - pnpm-lock.yaml
+  - "*.svg"
+  - "*.png"
+  - "*.jpg"
+  - "*.jpeg"
+  - "*.ico"
+words:
+  - AGENTS
+  - appname
+  - codex
+  - commitlint
+  - cspell
+  - eslintrc
+  - eslint
+  - husky
+  - jsdom
+  - lintstaged
+  - markdownlint
+  - pnpm
+  - tsbuildinfo
+  - tsconfig
+  - tsx
+  - vitejs
+  - vite
+  - vitest

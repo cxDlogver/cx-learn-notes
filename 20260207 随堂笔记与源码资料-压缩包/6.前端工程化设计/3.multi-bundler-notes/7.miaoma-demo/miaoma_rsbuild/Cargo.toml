@@ -1,0 +1,15 @@
+[package]
+name = "miaoma_rsbuild"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# 这个相当于是 package.json
+# oxc_parser = "0.131.0"
+# oxc_ast_visit = "0.131.0"
+# oxc_span = "0.131.0"
+# oxc_allocator = "0.131.0"
+oxc_parser = "0.96.0"
+oxc_ast_visit = "0.96.0"
+oxc_span = "0.96.0"
+oxc_allocator = "0.96.0"

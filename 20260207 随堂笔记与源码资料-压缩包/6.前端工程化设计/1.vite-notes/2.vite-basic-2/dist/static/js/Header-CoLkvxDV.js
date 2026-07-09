@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-T3o0HuFr.js";import{r as t,t as n}from"./vendor-fvCU8QWb.js";var r=e(t()),i=n();console.log(`🚀 ~ import.meta.env.MIAOMA:`,import.meta.VITE_MIAOMA);var a=()=>{let[e,t]=(0,r.useState)(0);return(0,i.jsxs)(`div`,{onClick:()=>t(e+1),children:[`Header `,e]})};export{a as default};

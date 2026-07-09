@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const box = document.createElement("div");
+      box.style.width = "100px";
+      box.style.height = "100px";
+      box.style.backgroundColor = "red";
+      document.body.appendChild(box);
+
+      // 动画
+      let position = 0;
+      function animate() {
+        box.style.position = "absolute";
+        box.style.left = position + "px";
+        position += 10;
+
+        if (position > 200) {
+          position = 0;
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      // 启动动画
+      animate();
+    </script>
+    <script>
+      function validateForm() {
+        // 验证表单逻辑
+        let i = 0;
+        while (i < 10000) {
+          i++;
+          console.log("validateForm", i);
+        }
+      }
+
+      function showSpinner() {
+        // 显示加载 spinner 逻辑
+        // 验证表单逻辑
+        let i = 0;
+        while (i < 10000) {
+          i++;
+          console.log("showSpinner", i);
+        }
+      }
+
+      function updateUI() {
+        // 更新用户界面逻辑
+        // 验证表单逻辑
+        let i = 0;
+        while (i < 10000) {
+          i++;
+          console.log("updateUI", i);
+        }
+      }
+
+      function saveToDatabase() {
+        // 保存到数据库逻辑
+        // 验证表单逻辑
+        let i = 0;
+        while (i < 10000) {
+          i++;
+          console.log("saveToDatabase", i);
+        }
+      }
+
+      function sendAnalytics() {
+        // 发送分析数据逻辑
+        // 验证表单逻辑
+        let i = 0;
+        while (i < 10000) {
+          i++;
+          console.log("sendAnalytics", i);
+        }
+      }
+
+      function saveSettings() {
+        console.log("saveSettings");
+        validateForm();
+        showSpinner();
+        updateUI();
+        saveToDatabase();
+        sendAnalytics();
+        console.log("saveSettings end");
+      }
+      //   function saveSettings() {
+      //     console.log("saveSettings");
+      //     validateForm();
+      //     setTimeout(() => {
+      //       showSpinner();
+      //     }, 0);
+
+      //     setTimeout(() => {
+      //       updateUI();
+      //     }, 0);
+
+      //     setTimeout(() => {
+      //       saveToDatabase();
+      //     }, 0);
+      //     setTimeout(() => {
+      //       sendAnalytics();
+      //     }, 0);
+      //     console.log("saveSettings end");
+      //   }
+      //   function saveSettings() {
+      //     console.log("saveSettings");
+      //     validateForm();
+      //     requestIdleCallback(() => {
+      //       showSpinner();
+      //     });
+
+      //     requestIdleCallback(() => {
+      //       updateUI();
+      //     });
+
+      //     requestIdleCallback(() => {
+      //       saveToDatabase();
+      //     });
+
+      //     requestIdleCallback(() => {
+      //       sendAnalytics();
+      //     });
+      //     console.log("saveSettings end");
+      //   }
+      function saveSettings() {
+        console.log("saveSettings");
+        validateForm();
+
+        scheduler.postTask(() => {
+          showSpinner();
+        });
+
+        scheduler.postTask(() => {
+          updateUI();
+        });
+
+        scheduler.postTask(() => {
+          saveToDatabase();
+        });
+
+        scheduler.postTask(() => {
+          sendAnalytics();
+        });
+        console.log("saveSettings end");
+      }
+
+      saveSettings();
+    </script>
+  </body>
+</html>

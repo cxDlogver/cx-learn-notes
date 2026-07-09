@@ -1,0 +1,65 @@
+{
+  "name": "react-basic-ai-generate",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "spellcheck": "cspell lint --config \"./cspell.config.yaml\" \"src/**/*\" \"public/**/*\" \"*.{md,json,js,cjs,mjs,ts,tsx,yml,yaml}\" \".github/**/*.{yml,yaml,md}\" --gitignore --no-progress --no-summary --no-must-find-files",
+    "spellcheck:staged": "cspell lint --config \"./cspell.config.yaml\" --no-progress --no-summary --no-must-find-files",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm spellcheck",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^9.39.4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "cspell": "^9.7.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "husky": "^9.1.7",
+    "jsdom": "^29.0.1",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.57.0",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.2"
+  },
+  "lint-staged": {
+    "*.{js,cjs,mjs,ts,tsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write",
+      "cspell lint --config ./cspell.config.yaml --no-progress --no-summary --no-must-find-files"
+    ],
+    "*.{css,md,json,yml,yaml}": [
+      "prettier --write",
+      "cspell lint --config ./cspell.config.yaml --no-progress --no-summary --no-must-find-files"
+    ]
+  }
+}

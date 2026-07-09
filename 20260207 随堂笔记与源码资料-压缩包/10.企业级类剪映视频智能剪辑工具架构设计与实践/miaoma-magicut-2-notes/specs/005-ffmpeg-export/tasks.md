@@ -1,0 +1,22 @@
+# 005 FFmpeg Export Tasks
+
+- [x] 创建 `@miaoma/render-core` package。
+- [x] 用 Vitest 先写导出计划与进度解析 failing tests。
+- [x] 实现默认 MP4 preset、导出计划编译和进度解析。
+- [x] 扩展 shared IPC 类型与 preload API。
+- [x] 在主进程注册 `render:create-preview-plan`。
+- [x] 在 Renderer 导出按钮接入计划生成状态。
+- [x] 实现 FFmpeg 子进程运行器、stderr 进度解析与取消能力。
+- [x] 注册 `render:start-export`、`render:cancel-export` 与 `render:progress` 事件。
+- [x] Renderer 顶部导出按钮接入开始导出、进度状态和取消状态。
+- [x] 实现 `ProjectDocument` 到基础 FFmpeg filtergraph 的纯函数编译。
+- [x] 覆盖视频/图片叠加、音频轨混音、空时间线占位和视频轨静音语义。
+- [x] 将 Renderer 已导入素材转换为临时 `ProjectDocument`，导出时传给 Main 进程。
+- [x] 将桌面导出从纯黑占位计划切换为优先使用真实素材 filtergraph。
+- [x] 支持带音频流的视频素材原声参与导出混音。
+- [x] 导出前将 Vue reactive 素材状态转换为 IPC 可克隆的普通 ProjectDocument。
+- [x] 将导出数据源从素材列表改为 Renderer 时间线 tracks/clips 状态。
+- [x] 让导入素材后的时间线展示与导出使用同一份轻量 timeline state。
+- [x] 建立 Renderer 侧 `ProjectDocumentService`，集中项目摘要、素材、时间线和导出文档构建。
+- [ ] 建立 Main/Renderer 长期共享项目文档持久化服务，替代当前 Renderer 内存态。
+- [x] 执行基础校验、render-core 测试与 desktop typecheck。

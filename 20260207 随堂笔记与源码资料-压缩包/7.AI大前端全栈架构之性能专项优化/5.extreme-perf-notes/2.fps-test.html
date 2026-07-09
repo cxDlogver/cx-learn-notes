@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .app {
+        width: 100px;
+        height: 100px;
+        background-color: aqua;
+        /* 非常复杂的旋转动画 */
+        animation: rotate 2s linear infinite;
+        margin-bottom: 200px;
+      }
+      @keyframes rotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button id="btn">开始阻塞</button>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <div class="app"></div>
+    <script>
+      let lastTime = performance.now();
+      let frame = 0;
+      let lastFameTime = performance.now();
+
+      const loop = () => {
+        const now = performance.now();
+        const fs = now - lastFameTime; // 两帧间隔时间
+        lastFameTime = now;
+
+        // 如果两帧间隔超过 33ms (约 30FPS)，视为一次轻微卡顿
+        // 如果超过 100ms，视为严重冻结
+        if (fs > 33) {
+          console.log("检测到掉帧:", fs);
+        }
+
+        frame++;
+        if (now > lastTime + 1000) {
+          const fps = Math.round((frame * 1000) / (now - lastTime));
+          console.log("当前 FPS:", fps);
+          frame = 0;
+          lastTime = now;
+        }
+        requestAnimationFrame(loop);
+      };
+      loop();
+
+      const btnDom = document.querySelector("#btn");
+      btnDom.addEventListener(
+        "click",
+        () => {
+          setTimeout(() => {
+            console.log("🔥 开始阻塞主线程 2秒...");
+            const start = Date.now();
+            while (Date.now() - start < 2000) {
+              // 死循环，霸占主线程
+            }
+            console.log("✨ 阻塞结束，请看上方是否有 🚨 警报");
+          }, 100);
+        },
+        false
+      );
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+console.log(function(){console.log(123)}),document.body.innerHTML="你好，妙码 😊";

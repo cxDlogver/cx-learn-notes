@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>妙码学院训练营报名表单</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020617;
+      --bg-soft: #07111f;
+      --surface: #0f172a;
+      --surface-strong: #111c32;
+      --surface-field: #08111f;
+      --line: #243247;
+      --line-strong: #36506d;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --primary: #22c55e;
+      --primary-dark: #16a34a;
+      --cyan: #38bdf8;
+      --amber: #f59e0b;
+      --danger: #fb7185;
+      --ring: rgba(34, 197, 94, .24);
+      --shadow: 0 24px 80px rgba(0, 0, 0, .46);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(rgba(148, 163, 184, .06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, .06) 1px, transparent 1px),
+        var(--bg);
+      background-size: 32px 32px;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      background:
+        linear-gradient(135deg, rgba(34, 197, 94, .12), transparent 34%),
+        linear-gradient(315deg, rgba(56, 189, 248, .1), transparent 38%),
+        linear-gradient(180deg, transparent, rgba(2, 6, 23, .86));
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    label,
+    select,
+    input[type="checkbox"],
+    input[type="radio"] {
+      cursor: pointer;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 0 30px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      gap: 12px;
+      font-weight: 800;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(34, 197, 94, .46);
+      border-radius: 8px;
+      color: #06110a;
+      background: var(--primary);
+      box-shadow: 0 0 26px rgba(34, 197, 94, .26);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .brand-text {
+      display: grid;
+      gap: 2px;
+    }
+
+    .brand-text strong {
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand-text span,
+    .topbar-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .topbar-note {
+      text-align: right;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 456px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .hero-copy {
+      padding: 24px 0 0;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .status-pill,
+    .seat-pill {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(15, 23, 42, .78);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, .12);
+    }
+
+    .seat-pill {
+      color: #fde68a;
+      border-color: rgba(245, 158, 11, .34);
+      background: rgba(245, 158, 11, .1);
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: 56px;
+      line-height: 1.04;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 680px;
+      margin: 22px 0 0;
+      color: #cbd5e1;
+      font-size: 18px;
+      line-height: 1.78;
+    }
+
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      max-width: 760px;
+      margin: 34px 0 0;
+    }
+
+    .proof-item {
+      min-height: 96px;
+      padding: 17px 16px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid rgba(36, 50, 71, .46);
+    }
+
+    .proof-item strong {
+      display: block;
+      color: #ffffff;
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .proof-item span {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .program-visual {
+      max-width: 760px;
+      margin-top: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(7, 17, 31, .82);
+      box-shadow: var(--shadow);
+    }
+
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 44px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(15, 23, 42, .9);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 7px;
+      flex: 0 0 auto;
+    }
+
+    .window-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--line-strong);
+    }
+
+    .terminal-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(220px, .9fr);
+      gap: 0;
+    }
+
+    .code-preview {
+      min-height: 260px;
+      padding: 22px;
+      border-right: 1px solid var(--line);
+      color: #dbeafe;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.85;
+      overflow: hidden;
+    }
+
+    .code-preview .muted {
+      color: #64748b;
+    }
+
+    .code-preview .green {
+      color: #86efac;
+    }
+
+    .code-preview .cyan {
+      color: #7dd3fc;
+    }
+
+    .code-preview .amber {
+      color: #fcd34d;
+    }
+
+    .module-list {
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 22px;
+    }
+
+    .module-item {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-height: 58px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(36, 50, 71, .72);
+    }
+
+    .module-item:last-child {
+      border-bottom: 0;
+    }
+
+    .module-index {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(56, 189, 248, .4);
+      border-radius: 8px;
+      color: #bae6fd;
+      background: rgba(56, 189, 248, .1);
+      font-weight: 800;
+    }
+
+    .module-item strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .module-item span {
+      display: block;
+      margin-top: 3px;
+      color: var(--subtle);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .form-panel {
+      position: sticky;
+      top: 24px;
+      border: 1px solid rgba(54, 80, 109, .9);
+      border-radius: 8px;
+      background: rgba(15, 23, 42, .94);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .form-head {
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-head-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .form-head h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.24;
+      letter-spacing: 0;
+    }
+
+    .form-head p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .batch-tag {
+      flex: 0 0 auto;
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border: 1px solid rgba(34, 197, 94, .36);
+      border-radius: 8px;
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, .1);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+      padding: 24px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field,
+    fieldset {
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .field.full,
+    fieldset.full {
+      grid-column: 1 / -1;
+    }
+
+    label,
+    legend {
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .required {
+      color: var(--danger);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: none;
+      color: var(--text);
+      background: var(--surface-field);
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    input,
+    select {
+      height: 46px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 104px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.65;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #64748b;
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+      border-color: var(--line-strong);
+      background: #0a1424;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    input[aria-invalid="true"],
+    select[aria-invalid="true"],
+    textarea[aria-invalid="true"] {
+      border-color: var(--danger);
+    }
+
+    .choice-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .choice {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-field);
+      color: #cbd5e1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.35;
+      transition: border-color .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .choice:hover {
+      border-color: var(--line-strong);
+      background: #0a1424;
+    }
+
+    .choice input {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      padding: 0;
+      accent-color: var(--primary);
+    }
+
+    .choice:has(input:checked) {
+      border-color: rgba(34, 197, 94, .72);
+      color: #dcfce7;
+      background: rgba(34, 197, 94, .1);
+    }
+
+    .agreement {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .agreement input {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin-top: 2px;
+      padding: 0;
+      accent-color: var(--primary);
+    }
+
+    .error {
+      min-height: 18px;
+      margin: 0;
+      color: var(--danger);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+      margin-top: 2px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      min-height: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 8px;
+      color: #04130a;
+      background: var(--primary);
+      box-shadow: 0 14px 34px rgba(34, 197, 94, .24);
+      font-weight: 900;
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .submit-btn::after {
+      width: 18px;
+      height: 18px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      color: var(--primary);
+      background: #04130a;
+      content: ">";
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .submit-btn:hover {
+      background: #4ade80;
+      box-shadow: 0 16px 40px rgba(34, 197, 94, .3);
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:focus-visible {
+      outline: 4px solid var(--ring);
+      outline-offset: 3px;
+    }
+
+    .form-note {
+      color: var(--subtle);
+      font-size: 12px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .toast {
+      display: none;
+      padding: 13px 14px;
+      border: 1px solid rgba(34, 197, 94, .35);
+      border-radius: 8px;
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, .1);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.55;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .bottom-band {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      margin-top: 34px;
+      padding: 18px 0 0;
+      border-top: 1px solid rgba(36, 50, 71, .7);
+      color: var(--muted);
+    }
+
+    .bottom-band strong {
+      display: block;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .bottom-band span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .anchor-link {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      color: #dbeafe;
+      background: rgba(15, 23, 42, .76);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      transition: border-color .18s ease, color .18s ease, background .18s ease;
+    }
+
+    .anchor-link:hover,
+    .anchor-link:focus-visible {
+      border-color: var(--cyan);
+      color: #e0f2fe;
+      background: rgba(56, 189, 248, .1);
+      outline: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .form-panel {
+        position: static;
+        max-width: 720px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100% - 28px, 620px);
+        padding-top: 18px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-bottom: 24px;
+      }
+
+      .topbar-note {
+        text-align: left;
+      }
+
+      .hero-copy {
+        padding-top: 8px;
+      }
+
+      h1 {
+        font-size: 38px;
+        line-height: 1.08;
+      }
+
+      .lead {
+        font-size: 16px;
+      }
+
+      .proof-grid,
+      .terminal-body,
+      .field-grid,
+      .choice-row,
+      .bottom-band {
+        grid-template-columns: 1fr;
+      }
+
+      .code-preview {
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page {
+        width: min(100% - 20px, 420px);
+        padding-bottom: 26px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .form-head,
+      form {
+        padding: 18px;
+      }
+
+      .form-head-top {
+        display: grid;
+      }
+
+      .proof-item {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar" aria-label="页面头部">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+        <div class="brand-text">
+          <strong>妙码学院</strong>
+          <span>AI 工程化与组件库基建</span>
+        </div>
+      </div>
+      <div class="topbar-note">课程咨询会在提交后 1 个工作日内联系你</div>
+    </header>
+
+    <div class="hero">
+      <section class="hero-copy" aria-labelledby="page-title">
+        <div class="status-row">
+          <span class="status-pill"><span class="live-dot" aria-hidden="true"></span>新一期训练营开放报名</span>
+          <span class="seat-pill">小班制名额审核中</span>
+        </div>
+
+        <h1 id="page-title">妙码学院前端 AI 工程化训练营</h1>
+        <p class="lead">围绕 MCP、Skill、Vibecoding、组件库 AI 化与团队知识库落地，帮助前端开发者把 AI 从单点提效推进到可复用的工程体系。</p>
+
+        <div class="proof-grid" aria-label="课程亮点">
+          <div class="proof-item">
+            <strong>8 周</strong>
+            <span>直播训练与项目复盘，围绕真实工程链路推进</span>
+          </div>
+          <div class="proof-item">
+            <strong>12 讲</strong>
+            <span>MCP、Skill、RAG、组件 Schema 与代码生成约束</span>
+          </div>
+          <div class="proof-item">
+            <strong>1v1</strong>
+            <span>报名后评估基础，匹配合适班期与学习路径</span>
+          </div>
+        </div>
+
+        <div class="program-visual" aria-label="课程工程化示意">
+          <div class="terminal-head">
+            <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span>miaoma-ai-engineering.ts</span>
+          </div>
+          <div class="terminal-body">
+            <pre class="code-preview"><span class="muted">// 从提示词到工程化生产链路</span>
+const context = await <span class="cyan">loadTeamKnowledge</span>({
+  docs: <span class="amber">"组件库 / 规范 / 资产"</span>,
+  tools: [<span class="amber">"MCP"</span>, <span class="amber">"Skill"</span>]
+});
+
+const feature = await <span class="cyan">vibecode</span>({
+  goal: <span class="amber">"交付可维护业务页面"</span>,
+  guardrails: context.rules
+});
+
+<span class="green">ship</span>(feature.withTests());</pre>
+            <div class="module-list">
+              <div class="module-item">
+                <span class="module-index">01</span>
+                <div>
+                  <strong>Context Engineering</strong>
+                  <span>团队知识库、规范与资产沉淀</span>
+                </div>
+              </div>
+              <div class="module-item">
+                <span class="module-index">02</span>
+                <div>
+                  <strong>组件库 MCP</strong>
+                  <span>组件 Schema、约束查询与代码生成</span>
+                </div>
+              </div>
+              <div class="module-item">
+                <span class="module-index">03</span>
+                <div>
+                  <strong>AI 落地链路</strong>
+                  <span>需求拆解、还原、验证与持续迭代</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-band">
+          <div>
+            <strong>适合已有前端基础，希望系统掌握 AI 工程化落地的开发者。</strong>
+            <span>提交报名后，妙码学院会根据你的基础、目标与时间安排确认试听和班期。</span>
+          </div>
+          <a class="anchor-link" href="#registrationForm">填写报名表</a>
+        </div>
+      </section>
+
+      <section class="form-panel" aria-labelledby="form-title">
+        <div class="form-head">
+          <div class="form-head-top">
+            <div>
+              <h2 id="form-title">提交报名信息</h2>
+              <p>请填写真实联系方式和学习背景，便于课程顾问完成班期匹配。</p>
+            </div>
+            <span class="batch-tag">试听预约</span>
+          </div>
+        </div>
+
+        <form id="registrationForm" novalidate>
+          <div class="field-grid">
+            <div class="field">
+              <label for="name">姓名 <span class="required">*</span></label>
+              <input id="name" name="name" type="text" autocomplete="name" placeholder="请输入姓名" required aria-describedby="nameError">
+              <p class="error" id="nameError" data-error-for="name"></p>
+            </div>
+
+            <div class="field">
+              <label for="phone">手机号 <span class="required">*</span></label>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="11 位手机号" required aria-describedby="phoneError">
+              <p class="error" id="phoneError" data-error-for="phone"></p>
+            </div>
+
+            <div class="field">
+              <label for="wechat">微信号</label>
+              <input id="wechat" name="wechat" type="text" autocomplete="off" placeholder="用于发送课程资料">
+            </div>
+
+            <div class="field">
+              <label for="email">邮箱</label>
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" aria-describedby="emailError">
+              <p class="error" id="emailError" data-error-for="email"></p>
+            </div>
+
+            <div class="field full">
+              <label for="course">意向方向 <span class="required">*</span></label>
+              <select id="course" name="course" required aria-describedby="courseError">
+                <option value="">请选择课程方向</option>
+                <option value="ai-engineering">前端 AI 工程化训练营</option>
+                <option value="mcp-component">组件库 MCP 实战专题</option>
+                <option value="skill-vibecoding">Skill 与 Vibecoding 提效专题</option>
+                <option value="team-enablement">团队 AI 落地内训咨询</option>
+              </select>
+              <p class="error" id="courseError" data-error-for="course"></p>
+            </div>
+
+            <fieldset class="full" aria-describedby="levelError">
+              <legend>当前基础 <span class="required">*</span></legend>
+              <div class="choice-row">
+                <label class="choice">
+                  <input type="radio" name="level" value="junior" required>
+                  <span>初中级前端</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="level" value="middle">
+                  <span>有项目经验</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="level" value="senior">
+                  <span>架构与基建</span>
+                </label>
+              </div>
+              <p class="error" id="levelError" data-error-for="level"></p>
+            </fieldset>
+
+            <fieldset class="full">
+              <legend>可学习时间</legend>
+              <div class="choice-row">
+                <label class="choice">
+                  <input type="checkbox" name="schedule" value="weekday-night">
+                  <span>工作日晚间</span>
+                </label>
+                <label class="choice">
+                  <input type="checkbox" name="schedule" value="weekend">
+                  <span>周末集中</span>
+                </label>
+                <label class="choice">
+                  <input type="checkbox" name="schedule" value="flexible">
+                  <span>时间灵活</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="field full">
+              <label for="goal">学习目标</label>
+              <textarea id="goal" name="goal" placeholder="例如：搭建团队组件库 MCP、规范 AI 生成代码、提升业务交付效率"></textarea>
+            </div>
+          </div>
+
+          <label class="agreement">
+            <input id="agreement" name="agreement" type="checkbox" required aria-describedby="agreementError">
+            <span>我同意妙码学院基于课程咨询与试听安排联系我，并确认以上信息真实有效。<span class="required">*</span></span>
+          </label>
+          <p class="error" id="agreementError" data-error-for="agreement"></p>
+
+          <div class="actions">
+            <button class="submit-btn" type="submit">提交报名</button>
+            <span class="form-note">当前为静态示例，提交后在页面内展示结果，可按需接入后端接口。</span>
+          </div>
+
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const form = document.querySelector("#registrationForm");
+    const toast = document.querySelector("#toast");
+    const errorNodes = new Map(
+      Array.from(document.querySelectorAll("[data-error-for]")).map((node) => [
+        node.dataset.errorFor,
+        node,
+      ]),
+    );
+
+    const messages = {
+      name: "请填写姓名",
+      phone: "请填写有效的 11 位手机号",
+      email: "请填写有效的邮箱地址",
+      course: "请选择意向课程方向",
+      level: "请选择当前基础",
+      agreement: "请先确认报名授权",
+    };
+
+    function setError(name, message = "") {
+      const node = errorNodes.get(name);
+      const field = form.elements[name];
+
+      if (node) {
+        node.textContent = message;
+      }
+
+      if (!field) {
+        return;
+      }
+
+      if (field instanceof RadioNodeList) {
+        Array.from(field).forEach((item) => {
+          item.setAttribute("aria-invalid", message ? "true" : "false");
+        });
+        return;
+      }
+
+      field.setAttribute("aria-invalid", message ? "true" : "false");
+    }
+
+    function clearErrors() {
+      errorNodes.forEach((node, name) => {
+        node.textContent = "";
+        setError(name, "");
+      });
+    }
+
+    function validateForm() {
+      const data = new FormData(form);
+      const phonePattern = /^1[3-9]\d{9}$/;
+      const email = data.get("email").trim();
+      const invalidFields = [];
+
+      clearErrors();
+
+      if (!data.get("name").trim()) {
+        setError("name", messages.name);
+        invalidFields.push(form.elements.name);
+      }
+
+      if (!phonePattern.test(data.get("phone").trim())) {
+        setError("phone", messages.phone);
+        invalidFields.push(form.elements.phone);
+      }
+
+      if (email && !form.elements.email.checkValidity()) {
+        setError("email", messages.email);
+        invalidFields.push(form.elements.email);
+      }
+
+      if (!data.get("course")) {
+        setError("course", messages.course);
+        invalidFields.push(form.elements.course);
+      }
+
+      if (!data.get("level")) {
+        setError("level", messages.level);
+        invalidFields.push(form.querySelector("input[name='level']"));
+      }
+
+      if (!form.elements.agreement.checked) {
+        setError("agreement", messages.agreement);
+        invalidFields.push(form.elements.agreement);
+      }
+
+      if (invalidFields.length > 0) {
+        invalidFields[0].focus();
+        return false;
+      }
+
+      return true;
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      toast.classList.remove("show");
+
+      if (!validateForm()) {
+        return;
+      }
+
+      const name = new FormData(form).get("name").trim();
+      toast.textContent = `${name}，报名信息已提交。妙码学院课程顾问会尽快联系你确认试听安排。`;
+      toast.classList.add("show");
+      form.reset();
+      clearErrors();
+    });
+  </script>
+</body>
+</html>

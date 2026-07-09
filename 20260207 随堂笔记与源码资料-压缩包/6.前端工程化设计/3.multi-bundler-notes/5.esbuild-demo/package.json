@@ -1,0 +1,19 @@
+{
+  "name": "5.esbuild-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --outfile=es/main.js",
+    "build:types": "tsc --declaration --emitDeclarationOnly --declarationMap --outDir es/types",
+    "build:manual": "node scripts/build.js"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "esbuild": "0.28.0",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,1 @@
+console.log("我是合一，今天给大家讲解 typescript hello");

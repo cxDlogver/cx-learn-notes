@@ -1,0 +1,35 @@
+{
+  "name": "2.webpack-react-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack serve --config webpack.config.dev.mjs",
+    "build": "webpack --config webpack.config.prod.mjs"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "webpack-cli": "7.0.2",
+    "webpack": "5.106.2",
+    "webpack-dev-server": "5.2.4",
+    "html-webpack-plugin": "5.6.7",
+    "babel": "6.23.0",
+    "@babel/preset-env": "7.29.5",
+    "@babel/preset-typescript": "7.28.5",
+    "@babel/preset-react": "7.28.5",
+    "babel-loader": "10.1.1",
+    "typescript": "6.0.3",
+    "style-loader": "4.0.0",
+    "css-loader": "7.1.4",
+    "mini-css-extract-plugin": "2.10.2",
+    "webpack-merge": "6.0.1"
+  }
+}

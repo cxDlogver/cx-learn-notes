@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "esnext",
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "outDir": "dist",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/renderer/*": ["./renderer/*"]
+        },
+        "types": ["./miaoma.env.d.ts"]
+    },
+    "include": [
+        "renderer/**/*",
+        "renderer/**/*.vue",
+        "client/**/*",
+        "tests/**/*",
+        "miaoma.env.d.ts",
+        "forge.env.d.ts"
+    ]
+}

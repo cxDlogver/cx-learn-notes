@@ -1,0 +1,27 @@
+{
+  "name": "2.langraph-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/ollama": "1.2.7",
+    "@langchain/openai": "1.4.7",
+    "@langchain/langgraph": "1.4.2",
+    "langchain": "1.4.5",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "typescript": "5.9.3",
+    "tsup": "8.1.0",
+    "dotenv": "16.6.1"
+  }
+}

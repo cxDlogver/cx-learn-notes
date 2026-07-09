@@ -1,0 +1,24 @@
+{
+  "name": "1.babel-basic",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel src --extensions .ts --out-dir dist"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "7.29.0",
+    "@babel/cli": "7.28.6",
+    "@babel/plugin-transform-arrow-functions": "7.27.1",
+    "@babel/plugin-transform-classes": "7.28.6",
+    "@babel/preset-env": "7.29.2",
+    "@babel/plugin-transform-react-jsx": "7.28.6",
+    "@babel/preset-react": "7.28.5",
+    "@babel/preset-typescript": "7.28.5",
+    "typescript": "5.9.3",
+    "@types/react": "19.2.14"
+  }
+}

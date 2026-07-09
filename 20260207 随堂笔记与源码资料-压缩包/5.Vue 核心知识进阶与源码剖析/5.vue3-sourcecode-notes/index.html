@@ -1,0 +1,65 @@
+<!-- <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vue3 sourcecode</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <button id="btn">+</button>
+
+    <script>
+      // 事件驱动 DOM 更新
+      const appDom = document.querySelector("#app");
+      const btnDom = document.querySelector("#btn");
+
+      let count = 0;
+      btnDom.addEventListener("click", () => {
+        count++;
+        appDom.innerHTML = count;
+      });
+    </script>
+  </body>
+</html> -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vue3 sourcecode</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <button id="btn">+</button>
+
+    <script>
+      // 模拟 reactive 定义状态
+      const state = new Proxy(
+        { value: 0 },
+        {
+          set(target, property, value) {
+            // 状态变化后触发视图更新
+
+            // appDom.innerHTML = target[property];
+            appDom.innerHTML = value;
+            // target[property] = value
+            Reflect.set(target, property, value);
+          },
+          get(target, property) {
+            // 追踪状态更新
+            return Reflect.get(target, property);
+          },
+        },
+      );
+
+      // 事件驱动 DOM 更新
+      const appDom = document.querySelector("#app");
+      const btnDom = document.querySelector("#btn");
+
+      btnDom.addEventListener("click", () => {
+        state.value++;
+      });
+    </script>
+  </body>
+</html>

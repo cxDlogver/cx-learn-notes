@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>miaoma vue3</title>
+  </head>
+  <body>
+    <div id="app">
+      <p id="count-display"></p>
+      <button id="increment-btn">+</button>
+      <button id="decrement-btn">-</button>
+    </div>
+
+    <script>
+      // 元素获取到
+      const incrementBtnDom = document.getElementById("increment-btn");
+      const decrementBtnDom = document.getElementById("decrement-btn");
+      const countDisplayDom = document.getElementById("count-display");
+      const appDom = document.getElementById("app");
+
+      // 简单的依赖追踪系统
+      class Dep {
+        constructor() {
+          this.subscribers = new Set();
+        }
+
+        depend() {
+          if (activeEffect) {
+            this.subscribers.add(activeEffect);
+          }
+        }
+
+        notify() {
+          this.subscribers.forEach((effect) => effect.update());
+        }
+      }
+
+      let activeEffect = null;
+
+      class Watcher {
+        constructor(effect) {
+          this.effect = effect;
+          this.run();
+        }
+
+        run() {
+          activeEffect = this;
+          this.effect();
+          activeEffect = null;
+        }
+
+        update() {
+          this.run();
+        }
+      }
+
+      function effect(eff) {
+        return new Watcher(eff);
+      }
+
+      const targetMap = new WeakMap();
+
+      function getDep(target, key) {
+        let depsMap = targetMap.get(target);
+        if (!depsMap) {
+          depsMap = new Map();
+          targetMap.set(target, depsMap);
+        }
+
+        let dep = depsMap.get(key);
+        if (!dep) {
+          dep = new Dep();
+          depsMap.set(key, dep);
+        }
+
+        return dep;
+      }
+
+      // 响应式系统
+      function reactive(target) {
+        const handler = {
+          get(target, key, receiver) {
+            const dep = getDep(target, key);
+            dep.depend();
+            console.log("get", target, key, receiver);
+
+            // 我在这里是知道你要去依赖数据的，所以我在这里就进行依赖收集
+
+            return Reflect.get(target, key, receiver);
+          },
+          set(target, key, value, receiver) {
+            const result = Reflect.set(target, key, value, receiver);
+            const dep = getDep(target, key);
+            dep.notify();
+            console.log("set", target, key, value, receiver);
+
+            return result;
+          },
+        };
+
+        return new Proxy(target, handler);
+      }
+
+      //   通过响应式系统定义响应式数据
+      const state = reactive({
+        count: 0,
+      });
+
+      //   渲染函数
+      function render() {
+        countDisplayDom.textContent = state.count;
+      }
+
+      //   effect 处理副作用
+      effect(() => {
+        render();
+      });
+      //   render();
+
+      //   绑定事件
+      incrementBtnDom.addEventListener("click", () => {
+        state.count++;
+      });
+
+      decrementBtnDom.addEventListener("click", () => {
+        state.count--;
+      });
+    </script>
+  </body>
+</html>

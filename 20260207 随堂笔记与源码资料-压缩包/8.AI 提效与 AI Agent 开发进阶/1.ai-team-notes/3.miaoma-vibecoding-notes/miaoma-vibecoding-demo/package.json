@@ -1,0 +1,22 @@
+{
+  "name": "miaoma-vibecoding-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "mcp/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "dev:demo": "npm --workspace apps/demo run dev",
+    "dev:mcp": "npm --workspace @demo/component-library-mcp run dev",
+    "build:ui": "npm --workspace @demo/ui run build",
+    "build:mcp": "npm --workspace @demo/component-library-mcp run build"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas id="table-container"></canvas>
+
+    <script>
+      const tableContainerDom = document.querySelector("#table-container");
+      console.log("🚀 ~ tableContainerDom:", tableContainerDom);
+
+      //   1. 获取绘制上下文对象
+      const ctx = tableContainerDom.getContext("2d");
+
+      //   const count = 10000;
+      const raw = 10;
+      const col = 5;
+
+      //   for (let index = 0; index < count; index++) {
+      //     //   2. 绘制
+      //     ctx.moveTo(0 + index + 0.5 * index, 0);
+      //     ctx.lineTo(100 + index / 2+ 0.5 * index, 100);
+      //   }
+      //   插件化机制，控制单元格的绘制逻辑
+      // 我想把某一列绘制为绿色，2 列
+      const render2Cell = (row, col) => {
+        if (row !== 2) {
+          return;
+        }
+        ctx.fillStyle = "green";
+        ctx.fillRect(0 + row * 20, 0 + col * 20, 20, 20);
+      };
+      const render4Cell = (row, col) => {
+        if (col !== 4) {
+          return;
+        }
+        ctx.fillStyle = "red";
+        ctx.fillRect(0 + row * 20, 0 + col * 20, 20, 20);
+      };
+
+    //   落到一个统一的抽象
+    // 优雅地插件化设计体现
+    const renderCells = [render2Cell, render4Cell];
+    const renderCell = (row, col) => {
+      renderCells.forEach((item) => item(row, col));
+    };
+
+      // 画矩形单元格
+      for (let index = 0; index < raw; index++) {
+        for (let j = 0; j < col; j++) {
+          ctx.rect(0 + index * 20, 0 + j * 20, 20, 20);
+          //   ctx.fill();
+          renderCell(index, j);
+        }
+      }
+
+      ctx.stroke();
+
+      function getCellIndex(x, y) {
+        const col = Math.floor(x / 20);
+        const row = Math.floor(y / 20);
+        return { row, col };
+      }
+
+      //   canvas 世界里没有事件绑定，只能够通过 canvas 代理事件，然后通过点阵运算计算当前点到了那里
+      tableContainerDom.addEventListener("click", (e) => {
+        const { x, y } = e;
+        const { row, col } = getCellIndex(x, y);
+        console.log("🚀 ~ x:", x);
+        console.log("🚀 ~ y:", y);
+        console.log("🚀 ~ row:", row);
+        console.log("🚀 ~ col:", col);
+      });
+    </script>
+  </body>
+</html>

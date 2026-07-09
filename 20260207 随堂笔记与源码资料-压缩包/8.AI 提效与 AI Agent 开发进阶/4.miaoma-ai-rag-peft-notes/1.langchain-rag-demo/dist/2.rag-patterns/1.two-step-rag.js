@@ -1,0 +1,142 @@
+// src/shared/model.ts
+import { ChatOpenAI } from "@langchain/openai";
+
+// src/shared/env.ts
+import { config as loadDotEnv } from "dotenv";
+import path from "node:path";
+var DEFAULT_EMBEDDING_MODEL = "doubao-embedding-vision";
+var ENV_FILE_PATH = path.resolve(import.meta.dirname, "../../.env");
+loadDotEnv({ path: ENV_FILE_PATH });
+var REQUIRED_MODEL_ENV_KEYS = [
+  "LLM_MODEL",
+  "BASE_URL",
+  "API_KEY"
+];
+var readModelConfig = (env = process.env) => {
+  const missingKeys = REQUIRED_MODEL_ENV_KEYS.filter((key) => {
+    const value = env[key];
+    return value === void 0 || value.trim() === "";
+  });
+  if (missingKeys.length > 0) {
+    throw new Error(`\u7F3A\u5C11\u73AF\u5883\u53D8\u91CF: ${missingKeys.join(", ")}`);
+  }
+  return {
+    model: env.LLM_MODEL.trim(),
+    baseURL: env.BASE_URL.trim(),
+    apiKey: env.API_KEY.trim()
+  };
+};
+var readEmbeddingConfig = (env = process.env) => {
+  const modelConfig = readModelConfig(env);
+  const embeddingModel = env.EMBEDDING_MODEL?.trim();
+  return {
+    model: embeddingModel === "" || embeddingModel === void 0 ? DEFAULT_EMBEDDING_MODEL : embeddingModel,
+    baseURL: modelConfig.baseURL,
+    apiKey: modelConfig.apiKey
+  };
+};
+
+// src/shared/model.ts
+var createChatModel = ({
+  config = readModelConfig(),
+  temperature = 0
+} = {}) => new ChatOpenAI({
+  model: config.model,
+  apiKey: config.apiKey,
+  temperature,
+  configuration: {
+    apiKey: config.apiKey,
+    baseURL: config.baseURL
+  }
+});
+
+// src/shared/rag-format.ts
+var formatMetadataValue = (value) => {
+  if (typeof value !== "object") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+};
+var formatMetadata = (metadata = {}) => {
+  const entries = Object.entries(metadata).filter(
+    ([, value]) => value !== void 0 && value !== null && value !== ""
+  );
+  if (entries.length === 0) {
+    return "metadata=none";
+  }
+  return entries.map(([key, value]) => `${key}=${formatMetadataValue(value)}`).join(" ");
+};
+var formatDocumentsAsContext = (documents2) => {
+  if (documents2.length === 0) {
+    return "\u672A\u68C0\u7D22\u5230\u76F8\u5173\u4E0A\u4E0B\u6587\u3002";
+  }
+  return documents2.map((document, index) => {
+    const metadata = formatMetadata(document.metadata);
+    return `[${index + 1}] ${metadata}
+${document.pageContent}`;
+  }).join("\n\n");
+};
+
+// src/shared/knowledge-base.ts
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
+import { MemoryVectorStore } from "@langchain/classic/vectorstores/memory";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import path2 from "node:path";
+var DEFAULT_STUDENT_DATA_PATH = path2.resolve(
+  import.meta.dirname,
+  "../../rga-document/student.csv"
+);
+var createEmbeddings = () => {
+  const config = readEmbeddingConfig();
+  return new OpenAIEmbeddings({
+    model: config.model,
+    apiKey: config.apiKey,
+    configuration: {
+      apiKey: config.apiKey,
+      baseURL: config.baseURL
+    }
+  });
+};
+var loadStudentDocuments = async (filePath = DEFAULT_STUDENT_DATA_PATH) => {
+  const loader = new CSVLoader(filePath);
+  return loader.load();
+};
+var splitDocuments = async (documents2, chunkSize = 500, chunkOverlap = 50) => {
+  const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize,
+    chunkOverlap
+  });
+  return splitter.splitDocuments(documents2);
+};
+var createStudentVectorStore = async () => {
+  const documents2 = await loadStudentDocuments();
+  const splitDocs = await splitDocuments(documents2);
+  return MemoryVectorStore.fromDocuments(splitDocs, createEmbeddings());
+};
+var retrieveStudentDocuments = async (query, k = 3) => {
+  const vectorStore = await createStudentVectorStore();
+  return vectorStore.similaritySearch(query, k);
+};
+
+// src/2.rag-patterns/1.two-step-rag.ts
+var question = process.argv.slice(2).join(" ") || "heyi \u7684\u6210\u7EE9\u662F\u591A\u5C11\uFF1F";
+var documents = await retrieveStudentDocuments(question, 3);
+var context = formatDocumentsAsContext(documents);
+var prompt = `\u4F60\u662F\u4E00\u4E2A\u4E25\u8C28\u7684 RAG \u95EE\u7B54\u52A9\u624B\u3002
+\u8BF7\u53EA\u57FA\u4E8E<context>\u4E2D\u7684\u5185\u5BB9\u56DE\u7B54\u95EE\u9898\u3002
+\u5982\u679C\u4E0A\u4E0B\u6587\u6CA1\u6709\u7B54\u6848\uFF0C\u8BF7\u56DE\u7B54\u201C\u4E0A\u4E0B\u6587\u4E2D\u6CA1\u6709\u8DB3\u591F\u4FE1\u606F\u201D\u3002
+
+<context>
+${context}
+</context>
+
+\u95EE\u9898\uFF1A${question}`;
+var model = createChatModel();
+var response = await model.invoke(prompt);
+console.log("\u68C0\u7D22\u4E0A\u4E0B\u6587:\n", context);
+console.log("\n\u6A21\u578B\u56DE\u7B54:\n", response.content);

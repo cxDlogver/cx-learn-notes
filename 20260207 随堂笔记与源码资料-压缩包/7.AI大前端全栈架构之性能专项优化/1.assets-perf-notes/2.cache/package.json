@@ -1,0 +1,19 @@
+{
+  "name": "2.cache",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev:1": "node 1.server.js",
+    "dev:2": "node 2.server.js",
+    "dev:3": "node 3.server.js"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "etag": "1.8.1",
+    "fresh": "0.5.2"
+  }
+}

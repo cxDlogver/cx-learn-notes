@@ -1,0 +1,48 @@
+{
+    "name": "@miaoma-magicut/desktop",
+    "private": true,
+    "productName": "miaoma-magicut",
+    "version": "1.0.0",
+    "description": "妙码智能剪辑平台桌面端",
+    "main": ".vite/build/main.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "pnpm run package:mac && pnpm run package:win",
+        "package:mac": "electron-forge package --platform darwin",
+        "package:win": "electron-forge package --platform win32 --arch x64",
+        "make": "pnpm run make:mac && pnpm run make:win",
+        "make:mac": "electron-forge make --platform darwin",
+        "make:win": "electron-forge make --platform win32 --arch x64",
+        "publish": "electron-forge publish",
+        "lint": "eslint .",
+        "format": "prettier --write . && eslint --fix .",
+        "test": "vitest",
+        "test:run": "vitest run",
+        "test:coverage": "vitest run --coverage"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "7.10.2",
+        "@electron-forge/maker-deb": "7.10.2",
+        "@electron-forge/maker-rpm": "7.10.2",
+        "@electron-forge/maker-squirrel": "7.10.2",
+        "@electron-forge/maker-zip": "7.10.2",
+        "@electron-forge/plugin-auto-unpack-natives": "7.10.2",
+        "@electron-forge/plugin-fuses": "7.10.2",
+        "@electron-forge/plugin-vite": "7.10.2",
+        "@electron/fuses": "1.8.0",
+        "@tailwindcss/vite": "4.1.15",
+        "@types/electron-squirrel-startup": "1.0.2",
+        "@vitejs/plugin-vue": "6.0.7",
+        "electron": "38.4.0",
+        "tailwindcss": "4.1.16",
+        "vite": "7.1.12",
+        "vitest": "^2.1.8",
+        "vue-tsc": "3.3.6"
+    },
+    "dependencies": {
+        "@miaoma-magicut/shared": "workspace:*",
+        "electron-squirrel-startup": "1.0.1",
+        "vue": "3.5.39",
+        "vue-router": "4.6.4"
+    }
+}

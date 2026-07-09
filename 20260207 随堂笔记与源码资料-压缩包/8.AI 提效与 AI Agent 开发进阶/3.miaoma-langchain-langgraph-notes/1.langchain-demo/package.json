@@ -1,0 +1,30 @@
+{
+  "name": "1.langchain-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@langchain/ollama": "1.2.7",
+    "@langchain/openai": "1.4.7",
+    "langchain": "1.4.5",
+    "zod": "3.25.76",
+    "@modelcontextprotocol/sdk": "1.21.0",
+    "@langchain/mcp-adapters": "1.0.0",
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "22.19.21",
+    "typescript": "5.9.3",
+    "tsup": "8.1.0",
+    "dotenv": "16.6.1"
+  }
+}

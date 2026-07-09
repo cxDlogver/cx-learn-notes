@@ -1,0 +1,1 @@
+import{n as e,r as t,t as n}from"./index-GkyFxIBY.js";var r=t(e()),i=n();console.log(`🚀 ~ import.meta.env.MIAOMA:`,void 0);var a=()=>{let[e,t]=(0,r.useState)(0);return(0,i.jsxs)(`div`,{onClick:()=>t(e+1),children:[`:simle: Header `,void 0,` `,e]})};export{a as default};

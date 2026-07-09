@@ -1,0 +1,20 @@
+{
+  "name": "1.basic",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "compile": "babel src --out-dir build --extensions '.ts'"
+  },
+  "keywords": [],
+  "author": "Heyi",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@babel/core": "7.29.0",
+    "@babel/cli": "7.28.6",
+    "@babel/preset-env": "7.29.2",
+    "@babel/preset-typescript": "7.28.5"
+
+  }
+}

@@ -1,0 +1,1 @@
+var e=(e,t)=>(console.log(`miaoma`),e+t);export{e as default};

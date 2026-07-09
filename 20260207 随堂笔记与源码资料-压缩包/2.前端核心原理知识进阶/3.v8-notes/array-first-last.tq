@@ -1,0 +1,310 @@
+// Copyright 2026 the V8 project authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// 示例：为 V8 引擎添加 Array.prototype.first() 和 Array.prototype.last() 方法
+// 此文件演示如何基于 V8 的 TQ 语言扩展数组操作方法
+
+namespace array {
+
+// 常量定义：最大安全数组长度
+const kMaxArrayLength:
+    constexpr uint32 generates 'JSArray::kMaxArrayLength';
+
+// ============================================================================
+// Array.prototype.first() 实现
+// ============================================================================
+
+/**
+ * 获取数组第一个元素
+ * 
+ * 行为说明：
+ * - 返回数组索引为 0 的元素
+ * - 如果数组为空，返回 undefined
+ * - 如果数组在索引 0 处有 hole，返回 undefined
+ * 
+ * @this {ArrayLike} - 类数组对象
+ * @returns {any} 第一个元素或 undefined
+ */
+transitioning javascript builtin ArrayPrototypeFirst(
+    js-implicit context: NativeContext, receiver: JSAny)(...arguments): JSAny {
+  
+  // 1. 将 this 值转换为对象 (ToObject)
+  const o: JSReceiver = ToObject_Inline(context, receiver);
+  
+  // 2. 获取数组 length 属性
+  const len: Number = GetLengthProperty(o);
+  
+  // 3. 如果数组为空，返回 undefined
+  if (len == 0) {
+    return Undefined;
+  }
+  
+  // 4. 快速路径：JSArray 类型特化处理
+  typeswitch (o) {
+    case (array: JSArray): {
+      // 确保数组长度有效
+      if (len > kMaxArrayLength) {
+        ThrowTypeError(MessageTemplate::kInvalidArrayLength);
+      }
+      
+      // 检查元素类型并优化加载
+      const map: Map = array.map;
+      const kind: ElementsKind = map.elements_kind;
+      
+      // Fast Elements 路径 (PACKED_ELEMENTS, HOLEY_ELEMENTS 等)
+      if (IsElementsKindLessThanOrEqual(kind, ElementsKind::HOLEY_ELEMENTS)) {
+        const fixedArray: FixedArray = UnsafeCast<FixedArray>(array.elements);
+        if (fixedArray.length > 0) {
+          const element: Object = fixedArray.objects[0];
+          // 如果是 hole，返回 undefined
+          return element == TheHole ? Undefined : UnsafeCast<JSAny>(element);
+        }
+      }
+      
+      // Double Elements 路径
+      if (IsElementsKindLessThanOrEqual(kind, ElementsKind::HOLEY_DOUBLE_ELEMENTS)) {
+        const fixedDoubleArray: FixedDoubleArray =
+            UnsafeCast<FixedDoubleArray>(array.elements);
+        if (fixedDoubleArray.length > 0) {
+          const value: float64 = fixedDoubleArray.floats[0].Value();
+          return AllocateHeapNumberWithValue(value) otherwise Undefined;
+        }
+      }
+    }
+    // 其他类型回退到通用路径
+  }
+  
+  // 5. 通用路径：使用 GetProperty 获取索引 0 的元素
+  // 适用于所有对象类型（包括 Proxy、arguments 对象等）
+  return GetProperty(o, 0);
+}
+
+// ============================================================================
+// Array.prototype.last() 实现
+// ============================================================================
+
+/**
+ * 获取数组最后一个元素
+ * 
+ * 行为说明：
+ * - 返回数组索引为 length - 1 的元素
+ * - 如果数组为空，返回 undefined
+ * - 如果数组在最后一个索引处有 hole，返回 undefined
+ * 
+ * @this {ArrayLike} - 类数组对象
+ * @returns {any} 最后一个元素或 undefined
+ */
+transitioning javascript builtin ArrayPrototypeLast(
+    js-implicit context: NativeContext, receiver: JSAny)(...arguments): JSAny {
+  
+  // 1. 将 this 值转换为对象
+  const o: JSReceiver = ToObject_Inline(context, receiver);
+  
+  // 2. 获取数组 length 属性
+  const len: Number = GetLengthProperty(o);
+  
+  // 3. 如果数组为空，返回 undefined
+  if (len == 0) {
+    return Undefined;
+  }
+  
+  // 4. 快速路径：JSArray 类型特化处理
+  typeswitch (o) {
+    case (array: JSArray): {
+      // 确保数组长度有效
+      if (len > kMaxArrayLength) {
+        ThrowTypeError(MessageTemplate::kInvalidArrayLength);
+      }
+      
+      // 计算最后一个元素的索引 (length - 1)
+      const lastIndex: Number = len - 1;
+      
+      // 检查元素类型并优化加载
+      const map: Map = array.map;
+      const kind: ElementsKind = map.elements_kind;
+      
+      // Fast Elements 路径
+      if (IsElementsKindLessThanOrEqual(kind, ElementsKind::HOLEY_ELEMENTS)) {
+        const fixedArray: FixedArray = UnsafeCast<FixedArray>(array.elements);
+        const index: uintptr = Convert<uintptr>(lastIndex);
+        if (index < fixedArray.length) {
+          const element: Object = fixedArray.objects[index];
+          return element == TheHole ? Undefined : UnsafeCast<JSAny>(element);
+        }
+      }
+      
+      // Double Elements 路径
+      if (IsElementsKindLessThanOrEqual(kind, ElementsKind::HOLEY_DOUBLE_ELEMENTS)) {
+        const fixedDoubleArray: FixedDoubleArray =
+            UnsafeCast<FixedDoubleArray>(array.elements);
+        const index: uintptr = Convert<uintptr>(lastIndex);
+        if (index < fixedDoubleArray.length) {
+          const value: float64 = fixedDoubleArray.floats[index].Value();
+          return AllocateHeapNumberWithValue(value) otherwise Undefined;
+        }
+      }
+    }
+    // 其他类型回退到通用路径
+  }
+  
+  // 5. 通用路径：使用 GetProperty 获取最后一个元素
+  const lastIndex: Number = len - 1;
+  return GetProperty(o, lastIndex);
+}
+
+// ============================================================================
+// 可选扩展：带回调的 first() 方法
+// Array.prototype.first(callback) - 返回第一个满足条件的元素
+// ============================================================================
+
+/**
+ * 获取数组中第一个满足回调函数条件的元素
+ * 
+ * 行为说明：
+ * - 如果传入 callback，返回第一个使 callback 返回 true 的元素
+ * - 如果没有传入 callback，等同于 Array.prototype.first()
+ * - 如果找不到满足条件的元素，返回 undefined
+ * 
+ * @this {ArrayLike} - 类数组对象
+ * @param {Function} [callback] - 可选的测试函数
+ * @param {any} [thisArg] - 可选的回调函数 this 绑定对象
+ * @returns {any} 第一个匹配元素或 undefined
+ * 
+ * @example
+ * [1, 2, 3, 4].first(x => x > 2)  // 3
+ * [1, 2, 3].first(x => x > 10)    // undefined
+ */
+transitioning javascript builtin ArrayPrototypeFirstWithCallback(
+    js-implicit context: NativeContext, receiver: JSAny)(...arguments): JSAny {
+  
+  // 1. ToObject 转换
+  const o: JSReceiver = ToObject_Inline(context, receiver);
+  
+  // 2. 获取 length
+  const len: Number = GetLengthProperty(o);
+  
+  // 3. 获取回调参数
+  let callback: JSAny = Undefined;
+  let thisArg: JSAny = Undefined;
+  
+  if (arguments.length > 0) {
+    callback = arguments[0];
+    if (arguments.length > 1) {
+      thisArg = arguments[1];
+    }
+  }
+  
+  // 4. 如果没有 callback，直接返回第一个元素
+  if (callback == Undefined) {
+    if (len == 0) return Undefined;
+    return GetProperty(o, 0);
+  }
+  
+  // 5. 验证回调函数是否可调用
+  if (!IsCallable(callback)) {
+    ThrowTypeError(MessageTemplate::kCalledNonCallable, callback);
+  }
+  const callable: Callable = Cast<Callable>(callback);
+  
+  // 6. 遍历数组查找第一个满足条件的元素
+  let k: Number = 0;
+  while (k < len) {
+    // 获取当前索引的元素
+    const element: JSAny = GetProperty(o, k);
+    
+    // 跳过 hole (undefined 但实际是 hole 的情况)
+    // 注意：这里不跳过真正的 undefined 值
+    
+    // 调用回调函数：callback.call(thisArg, element, k, o)
+    const result: JSAny = Call(context, callable, thisArg, element, k, o);
+    
+    // 如果回调返回 truthy 值，返回当前元素
+    if (ToBoolean(result)) {
+      return element;
+    }
+    
+    k = k + 1;
+  }
+  
+  // 7. 没有找到满足条件的元素，返回 undefined
+  return Undefined;
+}
+
+// ============================================================================
+// 可选扩展：带回调的 last() 方法
+// Array.prototype.last(callback) - 从后向前查找第一个满足条件的元素
+// ============================================================================
+
+/**
+ * 获取数组中最后一个满足回调函数条件的元素（从后向前查找）
+ * 
+ * 行为说明：
+ * - 如果传入 callback，从后向前查找第一个使 callback 返回 true 的元素
+ * - 如果没有传入 callback，等同于 Array.prototype.last()
+ * - 如果找不到满足条件的元素，返回 undefined
+ * 
+ * @this {ArrayLike} - 类数组对象
+ * @param {Function} [callback] - 可选的测试函数
+ * @param {any} [thisArg] - 可选的回调函数 this 绑定对象
+ * @returns {any} 最后一个匹配元素或 undefined
+ * 
+ * @example
+ * [1, 2, 3, 4].last(x => x > 2)  // 4
+ * [1, 2, 3].last(x => x > 10)    // undefined
+ */
+transitioning javascript builtin ArrayPrototypeLastWithCallback(
+    js-implicit context: NativeContext, receiver: JSAny)(...arguments): JSAny {
+  
+  // 1. ToObject 转换
+  const o: JSReceiver = ToObject_Inline(context, receiver);
+  
+  // 2. 获取 length
+  const len: Number = GetLengthProperty(o);
+  
+  // 3. 获取回调参数
+  let callback: JSAny = Undefined;
+  let thisArg: JSAny = Undefined;
+  
+  if (arguments.length > 0) {
+    callback = arguments[0];
+    if (arguments.length > 1) {
+      thisArg = arguments[1];
+    }
+  }
+  
+  // 4. 如果没有 callback，直接返回最后一个元素
+  if (callback == Undefined) {
+    if (len == 0) return Undefined;
+    const lastIndex: Number = len - 1;
+    return GetProperty(o, lastIndex);
+  }
+  
+  // 5. 验证回调函数是否可调用
+  if (!IsCallable(callback)) {
+    ThrowTypeError(MessageTemplate::kCalledNonCallable, callback);
+  }
+  const callable: Callable = Cast<Callable>(callback);
+  
+  // 6. 从后向前遍历数组查找满足条件的元素
+  let k: Number = len - 1;
+  while (k >= 0) {
+    // 获取当前索引的元素
+    const element: JSAny = GetProperty(o, k);
+    
+    // 调用回调函数：callback.call(thisArg, element, k, o)
+    const result: JSAny = Call(context, callable, thisArg, element, k, o);
+    
+    // 如果回调返回 truthy 值，返回当前元素
+    if (ToBoolean(result)) {
+      return element;
+    }
+    
+    k = k - 1;
+  }
+  
+  // 7. 没有找到满足条件的元素，返回 undefined
+  return Undefined;
+}
+
+}  // namespace array

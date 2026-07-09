@@ -1,0 +1,13 @@
+{
+    "name": "@miaoma-magicut/demo-tts",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "pnpm --dir ../.. exec tsc -p demos/tts/tsconfig.json",
+        "lint": "pnpm --dir ../.. exec eslint demos/tts/src demos/tts/test",
+        "start": "pnpm run build && node dist/index.js",
+        "test": "pnpm run build && node --test \"test/**/*.test.mjs\"",
+        "test:run": "pnpm run test",
+        "typecheck": "pnpm --dir ../.. exec tsc -p demos/tts/tsconfig.json --noEmit"
+    }
+}

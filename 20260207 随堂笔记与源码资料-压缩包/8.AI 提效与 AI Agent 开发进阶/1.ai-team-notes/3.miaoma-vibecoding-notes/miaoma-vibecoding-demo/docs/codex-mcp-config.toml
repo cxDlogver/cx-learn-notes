@@ -1,0 +1,13 @@
+# This is the project-local Codex MCP config used by this demo.
+#
+# The same block is committed at .codex/config.toml.
+# Keep the absolute project path so the server launch is stable even when
+# Codex starts the MCP process from another working directory.
+
+[mcp_servers.demo-component-library]
+command = "node"
+args = [
+  "/Users/heyi/Downloads/miaoma-vibecoding-demo/mcp/component-library-server/dist/index.js"
+]
+startup_timeout_sec = 10
+enabled = true

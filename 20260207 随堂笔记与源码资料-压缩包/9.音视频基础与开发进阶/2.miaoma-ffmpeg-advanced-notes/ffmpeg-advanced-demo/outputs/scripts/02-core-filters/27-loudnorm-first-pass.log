@@ -1,0 +1,30 @@
+[aist#0:0/pcm_s16le @ 0xa3a83c180] Guessed Channel Layout: mono
+Input #0, wav, from 'materials/audio/volume_steps_1khz_9s.wav':
+  Metadata:
+    encoder         : Lavf62.3.100
+  Duration: 00:00:09.00, bitrate: 768 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, mono, s16, 768 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf62.3.100
+  Stream #0:0: Audio: pcm_s16le, 192000 Hz, mono, s16, 3072 kb/s
+    Metadata:
+      encoder         : Lavc62.11.100 pcm_s16le
+[Parsed_loudnorm_0 @ 0xa3b008f00] 
+{
+	"input_i" : "-20.48",
+	"input_tp" : "-16.13",
+	"input_lra" : "10.00",
+	"input_thresh" : "-31.61",
+	"output_i" : "-13.51",
+	"output_tp" : "-6.38",
+	"output_lra" : "1.80",
+	"output_thresh" : "-23.51",
+	"normalization_type" : "dynamic",
+	"target_offset" : "-2.49"
+}
+[out#0/null @ 0xa3b008780] video:0KiB audio:3375KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+size=N/A time=00:00:09.00 bitrate=N/A speed=70.3x elapsed=0:00:00.12    

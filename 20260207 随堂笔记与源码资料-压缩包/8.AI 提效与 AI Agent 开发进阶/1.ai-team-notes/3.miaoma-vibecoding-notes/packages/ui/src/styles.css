@@ -1,0 +1,233 @@
+:root {
+  --dui-color-primary: #2457d6;
+  --dui-color-primary-hover: #1d46ad;
+  --dui-color-danger: #c92828;
+  --dui-color-success: #16875d;
+  --dui-color-text: #172033;
+  --dui-color-muted: #647087;
+  --dui-color-border: #d8deea;
+  --dui-color-surface: #ffffff;
+  --dui-color-surface-alt: #f6f8fb;
+  --dui-focus-ring: 0 0 0 3px rgba(36, 87, 214, 0.2);
+  --dui-radius: 8px;
+  --dui-shadow: 0 16px 40px rgba(23, 32, 51, 0.12);
+  color: var(--dui-color-text);
+}
+
+.dui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--dui-radius);
+  font: inherit;
+  font-weight: 650;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.dui-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.dui-button:focus-visible,
+.dui-input:focus-visible {
+  outline: none;
+  box-shadow: var(--dui-focus-ring);
+}
+
+.dui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.dui-button--sm {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.dui-button--md {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.dui-button--lg {
+  min-height: 48px;
+  padding: 0 20px;
+  font-size: 16px;
+}
+
+.dui-button--primary {
+  color: #ffffff;
+  background: var(--dui-color-primary);
+}
+
+.dui-button--primary:hover:not(:disabled) {
+  background: var(--dui-color-primary-hover);
+}
+
+.dui-button--secondary {
+  color: var(--dui-color-text);
+  background: #ffffff;
+  border-color: var(--dui-color-border);
+}
+
+.dui-button--secondary:hover:not(:disabled) {
+  background: var(--dui-color-surface-alt);
+}
+
+.dui-button--ghost {
+  color: var(--dui-color-muted);
+  background: transparent;
+}
+
+.dui-button--ghost:hover:not(:disabled) {
+  color: var(--dui-color-text);
+  background: var(--dui-color-surface-alt);
+}
+
+.dui-button--danger {
+  color: #ffffff;
+  background: var(--dui-color-danger);
+}
+
+.dui-button__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: dui-spin 800ms linear infinite;
+}
+
+@keyframes dui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dui-field {
+  display: grid;
+  gap: 7px;
+  color: var(--dui-color-text);
+}
+
+.dui-field__label {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.dui-input {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid var(--dui-color-border);
+  border-radius: var(--dui-radius);
+  padding: 0 12px;
+  color: var(--dui-color-text);
+  background: #ffffff;
+  font: inherit;
+  letter-spacing: 0;
+}
+
+.dui-input::placeholder {
+  color: #98a2b6;
+}
+
+.dui-input--error {
+  border-color: var(--dui-color-danger);
+}
+
+.dui-field__message {
+  color: var(--dui-color-muted);
+  font-size: 13px;
+}
+
+.dui-field__message--error {
+  color: var(--dui-color-danger);
+}
+
+.dui-card {
+  border: 1px solid var(--dui-color-border);
+  border-radius: var(--dui-radius);
+  background: var(--dui-color-surface);
+  box-shadow: 0 10px 26px rgba(23, 32, 51, 0.06);
+}
+
+.dui-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 0;
+}
+
+.dui-card__title {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.dui-card__extra {
+  color: var(--dui-color-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dui-card__body {
+  padding: 18px 20px 20px;
+}
+
+.dui-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.dui-modal__panel {
+  width: min(560px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  overflow: auto;
+  border-radius: var(--dui-radius);
+  background: #ffffff;
+  box-shadow: var(--dui-shadow);
+}
+
+.dui-modal__header,
+.dui-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.dui-modal__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.dui-modal__body {
+  padding: 0 20px 20px;
+  color: var(--dui-color-muted);
+  line-height: 1.7;
+}
+
+.dui-modal__footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--dui-color-border);
+}
