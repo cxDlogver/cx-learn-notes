@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .app {
+        width: 100px;
+        height: 100px;
+        background-color: aqua;
+        /* 非常复杂的旋转动画 */
+        animation: rotate 2s linear infinite;
+        margin-bottom: 200px;
+      }
+      @keyframes rotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button id="btn">开始阻塞</button>
+    <div class="app"></div>
+    <script>
+    //   // 1. 定义并启动监控
+    //   const observer = new PerformanceObserver((list) => {
+    //     list.getEntries().forEach((entry) => {
+    //       console.warn(`🚨 抓到了！检测到长任务！`);
+    //       console.table({
+    //         耗时: Math.round(entry.duration) + "ms",
+    //         开始时间: Math.round(entry.startTime) + "ms",
+    //         来源: entry.name,
+    //       });
+    //     });
+    //   });
+
+    //   observer.observe({ entryTypes: ["longtask"] });
+
+    //   setTimeout(() => {
+    //         console.log("🔥 开始阻塞主线程 2秒...");
+    //         const start = Date.now();
+    //         while (Date.now() - start < 2000) {
+    //           // 死循环，霸占主线程
+    //         }
+    //         console.log("✨ 阻塞结束，请看上方是否有 🚨 警报");
+    //       }, 100);
+
+      class TaskScheduler {
+        // 任务队列
+        constructor() {
+          this.tasks = [];
+          this.isRunning = false;
+        }
+
+        // 添加任务
+        postTask(callback, priority = "low") {
+          this.tasks.push({ callback, priority });
+
+          if (!this.isRunning) {
+            this.isRunning = true;
+            // 关键，通过 requestIdleCallback
+            requestIdleCallback(this.run.bind(this));
+          }
+        }
+
+        // 执行任务
+        // 每个任务可能都有过期时间，一定要在过期之前，将它执行
+        run(deadline) {
+          while (this.tasks.length > 0 /*  && deadline.timeRemaining() > 1 */) {
+            const task = this.tasks.shift(); // 因为 shift 是从前面取
+            task.callback();
+          }
+
+          if (this.tasks.length > 0) {
+            requestIdleCallback(this.run.bind(this));
+          } else {
+            this.isRunning = false;
+          }
+        }
+      }
+
+      const scheduler = new TaskScheduler();
+      const bigArray = new Array(100000).fill(0);
+
+      for (let i = 0; i < bigArray.length; i++) {
+        const element = bigArray[i];
+        scheduler.postTask(() => {
+          console.log(element);
+        });
+      }
+    </script>
+  </body>
+</html>

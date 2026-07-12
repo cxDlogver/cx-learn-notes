@@ -1,0 +1,1 @@
+var e={exports:{}};e.exports={sum(t,_){return t+_}};const o=(e.exports==null?{}:e.exports).default||e.exports,r=Object.freeze(Object.defineProperty({__proto__:null,default:o},Symbol.toStringTag,{value:"Module"}));export{o as _,r as a};

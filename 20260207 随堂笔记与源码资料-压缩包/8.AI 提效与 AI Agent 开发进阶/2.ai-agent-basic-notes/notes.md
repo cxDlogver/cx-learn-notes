@@ -9,14 +9,10 @@
 
 模型 vs Agent
 
-doubao-2-pro、doubao-2-mini /   豆包 App
-gpt-5.5                     /   Codex
-claude 4.7 opus             /   claude code
-
-
 AI Agent 是一种能够自主感知环境状态、基于目标进行推理决策、通过工具执行行动并从结果中持续迭代优化的智能系统。其核心本质是目标导向的自主执行系统，而非被动响应输入的文本生成器。
 
 Agent = LLM + Tools（tools、mcp、skill、cli） + Loop
+Agent = LLM + Harness
 
 ### AI Agent 技术演进史
 
@@ -81,12 +77,17 @@ Agent 的本质：状态驱动的循环执行系统
 
 ## 从零实现纯 TypeScript 原生 Agent
 
-### 模型选择
+### 如何去构建一个基础的 ReAct 范式 Agent？
+构建基础 ReAct Agent 的重点不是先做复杂框架，而是先跑通“模型推理 -> 工具执行 -> 观察反馈 -> 再推理”的最小闭环。可以按以下步骤实现：
+1. 实现模型调用层，把 `messages` 发送给模型 API 并返回 assistant 消息。该层对应 ReAct 中的 Reason，只处理模型输入输出，不混入工具执行、行动解析或循环控制。
+2. 设计工具接口，每个工具至少包含 `name`、`description`、`parameters`、`example`、`execute`。`description` 和 `example` 帮助模型正确选择工具，`parameters` 用 zod 等 schema 做运行时参数校验，`execute` 负责真正执行外部动作并返回字符串化结果。
+3. 编写 ReAct 系统提示词，明确约束模型输出协议：需要工具时输出 `思考：...` 和 `行动：工具名({"参数名":"参数值"})`；可以回答时输出 `Final Answer: ...`。这是模型推理结果与程序调度逻辑之间的通信协议。
+4. 生成工具描述并注入系统提示词，把可用工具的名称、说明和参数示例提供给模型。否则模型容易调用不存在的工具，或生成不符合工具 schema 的参数。
+5. 实现工具调用解析器 `parseToolCall`，从模型回复中提取 `行动：` 行，解析出工具名和 JSON 参数，形成 `{ name, args }` 结构。解析失败时不要直接中断，应把错误作为 `观察：行动解析失败...` 写回上下文，让模型按协议重新输出。
+6. 实现 ReAct 主循环：初始化 `messages`，调用模型获得推理结果；如果包含 `Final Answer:` 则结束；否则解析工具调用，查找工具，校验参数，执行 `tool.execute`，再把 `观察：工具结果` 追加回 `messages`，进入下一轮 Reason。
+7. 加入安全终止条件，包括最大迭代轮数、未知工具处理、参数校验失败处理、模型未输出行动也未输出最终答案时的纠偏提示。这样可以避免 Agent 陷入无限循环或执行不可控动作。
+8. 用固定问题验证闭环，例如普通问答应直接输出最终答案，数学问题应调用 `calculator`，天气问题应调用 `get_weather`。验收标准是能清楚看到 Reason、Act、Observe、Final Answer 的完整执行轨迹。
 
-2. 定义工具
-3. 模型知道工具
-4. 模型根据问题选择工具
-5. 开发 agent loop 执行工具
 
 
 ## 主流 AI Agent 开发框架生态
