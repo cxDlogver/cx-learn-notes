@@ -10,23 +10,30 @@ import path from "node:path";
 const llm = new ChatOpenAI({
   model: process.env.LLM_MODEL,
   apiKey: process.env.API_KEY,
+  maxTokens: 1200,
   configuration: {
     baseURL: process.env.BASE_URL,
   },
 });
 
+const DomNode = z.object({
+  tagName: z.string().describe("HTML 标签名，例如 div、img、h1、p"),
+  attributes: z.record(z.any()).optional().describe("HTML 属性，例如 class、style、src"),
+  text: z.string().optional().describe("文本节点内容"),
+  children: z.array(z.any()).optional().describe("子节点列表"),
+});
+
 const Res = z.object({
-  dom: z.object().describe("dom json 描述信息"),
+  dom: DomNode.describe("DOM JSON 描述信息"),
 });
 
 // 结构输出
-// const modelWithStrcture = llm.withStructuredOutput(Res, {
-//   method: "functionCalling",
-//   includeRaw: true,
-// });
+const modelWithStructure = llm.withStructuredOutput(Res, {
+  method: "functionCalling",
+});
 
 const invoke = async () => {
-  const res = await llm.invoke([
+  const res = await modelWithStructure.invoke([
     new HumanMessage([
       // {
       //   type: "text",
@@ -49,26 +56,12 @@ const invoke = async () => {
       },
       {
         type: "text",
-        text: "帮我看看图片里面有什么，请使用中文描述，我现在想要基于这个图片开发 HTML，你给我一个符合 HTML DOM 格式的 JSON", // 为了后面我们做 Figma AI 设计图转代码
+        text: "请根据图片生成一个简洁的 HTML DOM JSON，只保留 logo 容器、图形占位、中文标题和英文标题。", // 为了后面我们做 Figma AI 设计图转代码
       },
     ]),
   ]);
 
-  const rawContent = res.content as string;
-  // 尝试匹配最后一个 JSON 对象
-  const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    try {
-      const jsonStr = jsonMatch[0];
-      // 因为模型输出的是嵌套在 "arguments" 里的，可能还需要进一步提取
-      const parsed = JSON.parse(jsonStr);
-      console.log("手动解析尝试:", parsed.arguments || parsed);
-    } catch (e) {
-      console.error("手动解析失败", e);
-    }
-  }
-
-  console.log(res);
+  console.log("结构化输出:", res);
 };
 
 invoke();

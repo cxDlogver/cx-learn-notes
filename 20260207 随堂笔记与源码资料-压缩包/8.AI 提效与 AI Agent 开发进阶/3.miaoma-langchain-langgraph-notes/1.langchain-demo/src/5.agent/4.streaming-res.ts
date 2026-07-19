@@ -1,13 +1,7 @@
 import "dotenv/config";
 
 import { ChatOpenAI } from "@langchain/openai";
-import { createAgent, ToolCall } from "langchain";
-import * as z from "zod";
-
-const PersonInfo = z.object({
-  name: z.string().describe("人物姓名"),
-  age: z.number().describe("人物年龄"),
-});
+import { createAgent } from "langchain";
 
 const llm = new ChatOpenAI({
   model: process.env.LLM_MODEL,
@@ -19,7 +13,6 @@ const llm = new ChatOpenAI({
 
 const agent = createAgent({
   model: llm,
-  responseFormat: PersonInfo,
 });
 
 const invoke = async () => {
@@ -33,13 +26,13 @@ const invoke = async () => {
   );
   for await (const chunk of res) {
     // Each chunk contains the full state at that point
-    console.log(chunk)
+    console.log(chunk);
     // const latestMessage = chunk.messages.at(-1);
     // if (latestMessage?.content) {
     //   console.log(`Agent: ${latestMessage.content}`);
     // } else if (latestMessage?.tool_calls) {
     //   const toolCallNames = latestMessage.tool_calls.map(
-    //     (tc: ToolCall) => tc.name,
+    //     (tc) => tc.name,
     //   );
     //   console.log(`Calling tools: ${toolCallNames.join(", ")}`);
     // }

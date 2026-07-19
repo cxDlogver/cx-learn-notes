@@ -33,24 +33,27 @@ const llm = new ChatOpenAI({
 });
 
 const invoke = async () => {
-  await client.initializeConnections();
+  try {
+    await client.initializeConnections();
 
-  const tools = await client.getTools();
-  const agent = createAgent({
-    model: llm,
-    tools,
-  });
+    const tools = await client.getTools();
+    const agent = createAgent({
+      model: llm,
+      tools,
+    });
 
-  const mathResponse = await agent.invoke({
-    messages: [{ role: "user", content: "计算(3 + 5) x 12 等于多少" }],
-  });
-  console.log("🚀 ~ invoke ~ mathResponse:", mathResponse);
+    const mathResponse = await agent.invoke({
+      messages: [{ role: "user", content: "计算(3 + 5) x 12 等于多少" }],
+    });
+    console.log("🚀 ~ invoke ~ mathResponse:", mathResponse);
 
-
-  const weatherResponse = await agent.invoke({
-    messages: [{ role: "user", content: "我的城市是：北京，请获取天气" }],
-  });
-  console.log("🚀 ~ invoke ~ weatherResponse:", weatherResponse);
+    const weatherResponse = await agent.invoke({
+      messages: [{ role: "user", content: "我的城市是：北京，请获取天气" }],
+    });
+    console.log("🚀 ~ invoke ~ weatherResponse:", weatherResponse);
+  } finally {
+    await client.close();
+  }
 };
 
 invoke();

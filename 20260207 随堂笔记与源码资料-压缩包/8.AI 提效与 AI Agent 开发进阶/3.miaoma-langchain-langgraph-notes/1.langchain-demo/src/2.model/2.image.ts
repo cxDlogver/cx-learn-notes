@@ -39,7 +39,7 @@ const invoke = async () => {
     ]),
   ]);
 
-  console.log(res.content);
+  console.log(res);
 };
 
 invoke();

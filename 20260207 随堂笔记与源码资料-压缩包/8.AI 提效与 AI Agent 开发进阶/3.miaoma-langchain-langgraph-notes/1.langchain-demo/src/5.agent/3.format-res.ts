@@ -7,8 +7,15 @@ import * as z from "zod";
 import fs from "node:fs";
 import path from "node:path";
 
+const DomNode = z.object({
+  tagName: z.string().describe("HTML 标签名，例如 div、img、h1、p"),
+  attributes: z.record(z.any()).optional().describe("HTML 属性，例如 class、style、src"),
+  text: z.string().optional().describe("文本节点内容"),
+  children: z.array(z.any()).optional().describe("子节点列表"),
+});
+
 const PersonInfo = z.object({
-  dom: z.object().describe("描述 DOM 的 json"),
+  dom: DomNode.describe("描述 DOM 的 JSON"),
 });
 
 const llm = new ChatOpenAI({

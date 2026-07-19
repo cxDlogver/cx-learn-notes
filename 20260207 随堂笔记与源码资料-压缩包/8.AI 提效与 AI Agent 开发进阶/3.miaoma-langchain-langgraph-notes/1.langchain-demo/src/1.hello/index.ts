@@ -32,9 +32,9 @@ const llm = new ChatOpenAI({
 });
 
 const invoke = async () => {
-  const res = await llm.invoke("豆包，10192039+1235231 等于几？直接输出结果");
+  const res = await llm.invoke("豆包，10192039+1235231 等于几？");
 
-  console.log(res.content);
+  console.log(res);
 };
 
 invoke();

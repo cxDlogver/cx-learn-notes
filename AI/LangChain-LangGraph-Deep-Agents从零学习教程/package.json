@@ -1,0 +1,40 @@
+{
+  "name": "langchain-langgraph-deepagents-zero-to-production",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lesson:model": "tsx src/01-chat-model.ts",
+    "lesson:messages": "tsx src/02-langchain-messages.ts",
+    "lesson:manual-agent": "tsx src/03-manual-agent-loop.ts",
+    "lesson:agent": "tsx src/04-langchain-agent.ts",
+    "lesson:structured-output": "tsx src/05-structured-output.ts",
+    "lesson:langgraph-stategraph": "tsx src/06-langgraph-stategraph.ts",
+    "lesson:langgraph-entrypoint": "tsx src/07-langgraph-entrypoint.ts",
+    "lesson:langgraph-advanced": "tsx src/08-langgraph-advanced.ts",
+    "lesson:state-memory": "tsx src/09-state-memory.ts",
+    "lesson:deepagents-workflow": "tsx src/10-deepagents-workflow.ts",
+    "lesson:deepagents-advanced": "tsx src/11-deepagents-advanced.ts",
+    "lesson:mcp": "tsx src/12-mcp-workflow.ts",
+    "test:offline": "tsx tests/offline-smoke.ts",
+    "test:structured-output": "tsx tests/structured-output-config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@langchain/langgraph": "1.4.8",
+    "@langchain/openai": "1.5.5",
+    "deepagents": "1.11.0",
+    "dotenv": "17.4.2",
+    "langchain": "1.5.3",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "tsx": "4.23.1",
+    "typescript": "6.0.3"
+  }
+}
