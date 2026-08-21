@@ -1,0 +1,219 @@
+{
+  "items": [
+    {
+      "psm": "ecom.buyin.admin_api",
+      "endpoint_id": "3930788",
+      "bam_url": "https://cloud.bytedance.net/bam/rd/ecom.buyin.admin_api/api_doc/show_doc?x-resource-account=public&x-bc-region-id=bytedance&version=1.0.1915&cluster=default&endpoint_id=3930788",
+      "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+      "method": "GET",
+      "change_type": "existing_interface_field_update",
+      "changed_fields": [
+        {
+          "name": "if_not_incentive",
+          "location": "response.delivery_item_info",
+          "change": "新增是否不激励字段，用于人工提报时标识作品是否命中不激励"
+        },
+        {
+          "name": "not_incentive_reason",
+          "location": "response.delivery_item_info",
+          "change": "新增不激励原因列表，评论补充要求返回原因"
+        }
+      ],
+      "evidence": "技术文档 4.1 API「表格上传候选作品」endpoint_id=3930788：delivery_item_info 新增 if_not_incentive、not_incentive_reason。"
+    },
+    {
+      "psm": "ecom.buyin.admin_api",
+      "endpoint_id": "4238483",
+      "bam_url": "https://cloud.bytedance.net/bam/rd/ecom.buyin.admin_api/api_doc/show_doc?x-resource-account=public&x-bc-region-id=bytedance&cluster=default&version=1.0.1914&endpoint_id=4238483",
+      "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+      "method": "POST",
+      "change_type": "new_interface",
+      "changed_fields": [
+        {
+          "name": "records",
+          "location": "request",
+          "change": "新增下载移除明细记录列表"
+        },
+        {
+          "name": "author_id",
+          "location": "request.records",
+          "change": "新增作者 ID"
+        },
+        {
+          "name": "item_id",
+          "location": "request.records",
+          "change": "新增投稿 ID"
+        },
+        {
+          "name": "item_name",
+          "location": "request.records",
+          "change": "新增投稿名称"
+        },
+        {
+          "name": "remove_reason",
+          "location": "request.records",
+          "change": "新增移除原因"
+        },
+        {
+          "name": "penalty_reason",
+          "location": "request.records",
+          "change": "新增处罚原因"
+        },
+        {
+          "name": "lark_url",
+          "location": "response.data",
+          "change": "新增明细飞书链接"
+        }
+      ],
+      "evidence": "技术文档 4.1 API「下载移除明细」endpoint_id=4238483：前端将发奖内容、剔除内容传入下载，响应返回 lark_url。"
+    },
+    {
+      "psm": "ecom.buyin.admin_api",
+      "endpoint_id": "4238485",
+      "bam_url": "https://cloud.bytedance.net/bam/rd/ecom.buyin.admin_api/api_doc/show_doc?x-resource-account=public&x-bc-region-id=bytedance&cluster=default&version=1.0.1914&endpoint_id=4238485",
+      "path": "/api/buyin/admin/content_activity/candidate_remove",
+      "method": "POST",
+      "change_type": "new_interface",
+      "changed_fields": [
+        {
+          "name": "activity_id",
+          "location": "request",
+          "change": "新增活动 ID"
+        },
+        {
+          "name": "config_id",
+          "location": "request",
+          "change": "新增配置 ID"
+        },
+        {
+          "name": "remove_candidates",
+          "location": "request",
+          "change": "新增剔除候选记录列表"
+        },
+        {
+          "name": "candidate_id",
+          "location": "request.remove_candidates",
+          "change": "新增候选 ID"
+        },
+        {
+          "name": "remove_reason",
+          "location": "request.remove_candidates",
+          "change": "新增移除原因"
+        }
+      ],
+      "evidence": "技术文档 4.2 API「发奖候选剔除」endpoint_id=4238485：提交发奖名单时上报剔除接口进行记录。"
+    },
+    {
+      "psm": "ecom.buyin.admin_api",
+      "endpoint_id": "4238486",
+      "bam_url": "https://cloud.bytedance.net/bam/rd/ecom.buyin.admin_api/api_doc/show_doc?x-resource-account=public&x-bc-region-id=bytedance&cluster=default&version=1.0.1914&endpoint_id=4238486",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+      "method": "GET",
+      "change_type": "new_interface",
+      "changed_fields": [
+        {
+          "name": "activity_id",
+          "location": "request",
+          "change": "新增活动 ID"
+        },
+        {
+          "name": "config_id",
+          "location": "request",
+          "change": "新增配置 ID"
+        },
+        {
+          "name": "page",
+          "location": "request",
+          "change": "新增页码"
+        },
+        {
+          "name": "page_num",
+          "location": "request",
+          "change": "新增每页数量，最大 20"
+        },
+        {
+          "name": "candidate_ids",
+          "location": "request",
+          "change": "新增候选 ID 筛选列表"
+        },
+        {
+          "name": "operator_id",
+          "location": "request",
+          "change": "新增移除人工号筛选"
+        },
+        {
+          "name": "records",
+          "location": "response.data",
+          "change": "新增抖加币剔除记录列表"
+        },
+        {
+          "name": "total",
+          "location": "response.data",
+          "change": "新增分页总数"
+        },
+        {
+          "name": "has_more",
+          "location": "response.data",
+          "change": "新增是否还有更多分页数据"
+        }
+      ],
+      "evidence": "技术文档 4.2 API「抖加币剔除记录」endpoint_id=4238486：返回剔除记录、分页 total/has_more，评论补充候选 ID 与操作人筛选。"
+    },
+    {
+      "psm": "ecom.buyin.admin_api",
+      "endpoint_id": "4238484",
+      "bam_url": "https://cloud.bytedance.net/bam/rd/ecom.buyin.admin_api/api_doc/show_doc?x-resource-account=public&x-bc-region-id=bytedance&cluster=default&version=1.0.1914&endpoint_id=4238484",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+      "method": "GET",
+      "change_type": "new_interface",
+      "changed_fields": [
+        {
+          "name": "activity_id",
+          "location": "request",
+          "change": "新增活动 ID"
+        },
+        {
+          "name": "config_id",
+          "location": "request",
+          "change": "新增配置 ID"
+        },
+        {
+          "name": "page",
+          "location": "request",
+          "change": "新增页码"
+        },
+        {
+          "name": "page_num",
+          "location": "request",
+          "change": "新增每页数量，最大 20"
+        },
+        {
+          "name": "candidate_ids",
+          "location": "request",
+          "change": "新增候选 ID 筛选列表"
+        },
+        {
+          "name": "operator_id",
+          "location": "request",
+          "change": "新增移除人工号筛选"
+        },
+        {
+          "name": "records",
+          "location": "response.data",
+          "change": "新增抖加券剔除记录列表"
+        },
+        {
+          "name": "total",
+          "location": "response.data",
+          "change": "新增分页总数"
+        },
+        {
+          "name": "has_more",
+          "location": "response.data",
+          "change": "新增是否还有更多分页数据"
+        }
+      ],
+      "evidence": "技术文档 4.2 API「抖加券剔除记录」endpoint_id=4238484：返回剔除记录、分页 total/has_more，评论补充候选 ID 与操作人筛选。"
+    }
+  ]
+}

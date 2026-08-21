@@ -1,0 +1,966 @@
+{
+  "requestedAt": "2026-07-16T16:22:14.004Z",
+  "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Futils.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+  "method": "GET",
+  "status": 200,
+  "ok": true,
+  "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Futils.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+  "parsed": {
+    "status": 0,
+    "message": "ok",
+    "data": [
+      {
+        "lineNum": 1,
+        "code": "import NP from 'number-precision';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 2,
+        "code": "import { MESSAGES } from './constants';",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 3,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 4,
+        "code": "const kSecondsPerHour = 3600;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 5,
+        "code": "const kHalfHourScale = 2;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 6,
+        "code": "const kHourTolerance = 1e-3;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 7,
+        "code": "const kTimeoutErrorCodes = new Set(['ECONNABORTED', 'ETIMEDOUT']);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 8,
+        "code": "const kTimeoutTextPattern = /timeout|timed\\s*out|time\\s*out|超时/i;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 9,
+        "code": "const kExceptionTextPattern = /exception|异常|系统错误|内部错误|internal\\s+error|server\\s+error/i;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 10,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 11,
+        "code": "type AwardDeliveryResponse = {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 12,
+        "code": "  st: number;",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 13,
+        "code": "  msg?: string;",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 14,
+        "code": "  code?: number;",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 15,
+        "code": "};",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 16,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 17,
+        "code": "function normalizeToHalfHour(value: number): number {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 18,
+        "code": "  const scaled = NP.times(value, kHalfHourScale);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 19,
+        "code": "  const roundedScaled = Math.round(scaled);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 20,
+        "code": "  const rounded = NP.divide(roundedScaled, kHalfHourScale);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 21,
+        "code": "  if (Math.abs(value - rounded) <= kHourTolerance) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 22,
+        "code": "    return rounded;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 23,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 24,
+        "code": "  return rounded;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 25,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 26,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 27,
+        "code": "export function secondToHour(value?: number): number | undefined {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 28,
+        "code": "  if (value === undefined || value === null || Number.isNaN(Number(value))) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 29,
+        "code": "    return undefined;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 30,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 31,
+        "code": "  const hour = NP.divide(Number(value), kSecondsPerHour);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 32,
+        "code": "  return normalizeToHalfHour(hour);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 33,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 34,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 35,
+        "code": "export function hourToSecond(value?: number): number | undefined {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 36,
+        "code": "  if (value === undefined || value === null || Number.isNaN(Number(value))) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 37,
+        "code": "    return undefined;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 38,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 39,
+        "code": "  const normalizedHour = normalizeToHalfHour(Number(value));",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 40,
+        "code": "  return Math.round(NP.times(normalizedHour, kSecondsPerHour));",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 41,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 42,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 43,
+        "code": "function toPlainRecord(value: unknown): Record<string, unknown> | undefined {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 44,
+        "code": "  return value && typeof value === 'object' ? (value as Record<string, unknown>) : undefined;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 45,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 46,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 47,
+        "code": "function stringifyToken(value: unknown): string {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 48,
+        "code": "  if (typeof value === 'string' || typeof value === 'number') {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 49,
+        "code": "    return String(value);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 50,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 51,
+        "code": "  return '';",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 52,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 53,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 54,
+        "code": "function collectErrorText(error: unknown): string {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 55,
+        "code": "  const record = toPlainRecord(error);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 56,
+        "code": "  if (!record) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 57,
+        "code": "    return stringifyToken(error);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 58,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 59,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 60,
+        "code": "  const response = toPlainRecord(record.response);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 61,
+        "code": "  const data = toPlainRecord(response?.data);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 62,
+        "code": "  return [",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 63,
+        "code": "    record.code,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 64,
+        "code": "    record.name,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 65,
+        "code": "    record.message,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 66,
+        "code": "    record.msg,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 67,
+        "code": "    response?.statusText,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 68,
+        "code": "    data?.code,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 69,
+        "code": "    data?.message,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 70,
+        "code": "    data?.msg,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 71,
+        "code": "  ]",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 72,
+        "code": "    .map(stringifyToken)",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 73,
+        "code": "    .filter(Boolean)",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 74,
+        "code": "    .join(' ');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 75,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 76,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 77,
+        "code": "export function isAwardDeliverySuccessResponse(res?: AwardDeliveryResponse): boolean {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 78,
+        "code": "  return res?.st === 0 && res?.code === 0;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 79,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 80,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 81,
+        "code": "export function getAwardDeliveryResultCode(res?: AwardDeliveryResponse): number {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 82,
+        "code": "  if (isAwardDeliverySuccessResponse(res)) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 83,
+        "code": "    return 0;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 84,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 85,
+        "code": "  if (res?.code !== undefined && res.code !== 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 86,
+        "code": "    return res.code;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 87,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 88,
+        "code": "  if (res?.st !== undefined && res.st !== 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 89,
+        "code": "    return res.st;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 90,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 91,
+        "code": "  return -1;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 92,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 93,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 94,
+        "code": "export function isAwardDeliveryTimeoutLike(errorOrMessage: unknown): boolean {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 95,
+        "code": "  const record = toPlainRecord(errorOrMessage);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 96,
+        "code": "  const code = stringifyToken(record?.code);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 97,
+        "code": "  return kTimeoutErrorCodes.has(code) || kTimeoutTextPattern.test(collectErrorText(errorOrMessage));",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 98,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 99,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 100,
+        "code": "export function getAwardDeliveryResponseErrorMessage(",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 101,
+        "code": "  res: AwardDeliveryResponse,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 102,
+        "code": "  fallbackMessage: string,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 103,
+        "code": "): string {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 104,
+        "code": "  if (isAwardDeliveryTimeoutLike(res.msg)) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 105,
+        "code": "    return MESSAGES.SEND_AWARD_GOVERNANCE_TIMEOUT;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 106,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 107,
+        "code": "  if (kExceptionTextPattern.test(res.msg ?? '')) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 108,
+        "code": "    return MESSAGES.SEND_AWARD_GOVERNANCE_EXCEPTION;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 109,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 110,
+        "code": "  const resultCode = getAwardDeliveryResultCode(res);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 111,
+        "code": "  return `${fallbackMessage}: ${resultCode}, ${res.msg}`;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 112,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 113,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 114,
+        "code": "export function getAwardDeliveryExceptionMessage(error: unknown): string {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 115,
+        "code": "  return isAwardDeliveryTimeoutLike(error)",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 116,
+        "code": "    ? MESSAGES.SEND_AWARD_GOVERNANCE_TIMEOUT",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 117,
+        "code": "    : MESSAGES.SEND_AWARD_GOVERNANCE_EXCEPTION;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 118,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 119,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      }
+    ]
+  }
+}

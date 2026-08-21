@@ -1,0 +1,931 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiGetDeliveryItemsFromSheet",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console",
+      "xhr_response_listener"
+    ],
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiGetDeliveryItemsFromSheet",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-BATCH-SHEET-HIT",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/evidence.json"
+      },
+      {
+        "ruleId": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/evidence.json"
+      },
+      {
+        "ruleId": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-HIT",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+        "query": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662"
+        },
+        "requestFieldsForMatching": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变批量上传 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "st/code/msg",
+          "value": "0/0/empty success",
+          "reason": "自然 sheet 样本返回业务校验失败，无法覆盖前端批量上传命中态；MOCK_PREVIEW 按 generated response type 与 store 消费链路补 success shell。",
+          "realVerify": "后端 ready 后用真实可访问 sheet 复验 code/st/msg。"
+        },
+        {
+          "responsePath": "data.item_info",
+          "value": "three batch upload rows: invalid, not-incentive, valid",
+          "reason": "覆盖批量上传复用手动输入命中态 summary、红字行态、submit guard 以及后续一键移除/导出前置状态。",
+          "realVerify": "后端 ready 后用真实 sheet 含 if_not_incentive/not_incentive_reason 的样本复验。"
+        },
+        {
+          "responsePath": "data.total_num",
+          "value": 3,
+          "reason": "覆盖批量上传 Drawer summary 总数。",
+          "realVerify": "后端 ready 后复验真实 total_num。"
+        },
+        {
+          "responsePath": "data.candidate_num",
+          "value": 1,
+          "reason": "覆盖 mixed 样本中可投放作品数量。",
+          "realVerify": "后端 ready 后复验真实 candidate_num。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": false,
+          "reason": "当前批量上传样本一页内返回。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    },
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+        "query": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080",
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662"
+        },
+        "requestFieldsForMatching": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变 timeout 专用批量上传 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "st/code/msg",
+          "value": "0/0/empty success",
+          "reason": "自然 timeout sheet 样本返回业务校验失败，无法覆盖上传名单发奖 timeout 前置状态；MOCK_PREVIEW 在真实失败基线上补 success shell。",
+          "realVerify": "后端 ready 后用真实可访问 sheet 复验 code/st/msg。"
+        },
+        {
+          "responsePath": "data.item_info",
+          "value": "one deliverable row with item_id=700003",
+          "reason": "只服务 TC-INT-AWARD-TIMEOUT 的上传名单 setup，使最终发奖 request 自然携带 delivery_list[0].item_id=700003。",
+          "realVerify": "后端 ready 后用真实 sheet 复验可投放作品字段来源。"
+        },
+        {
+          "responsePath": "data.total_num",
+          "value": 1,
+          "reason": "覆盖 timeout 专用批量上传 Drawer summary 总数。",
+          "realVerify": "后端 ready 后复验真实 total_num。"
+        },
+        {
+          "responsePath": "data.candidate_num",
+          "value": 1,
+          "reason": "覆盖 timeout 专用样本中可投放作品数量。",
+          "realVerify": "后端 ready 后复验真实 candidate_num。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": false,
+          "reason": "当前 timeout setup 样本一页内返回。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    },
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+        "query": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662"
+        },
+        "requestFieldsForMatching": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变 empty-list setup mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "st/code/msg",
+          "value": "0/0/empty success",
+          "reason": "自然 empty-list sheet 样本返回业务校验失败，无法覆盖 BatchSubmitModal 空有效名单前置状态；MOCK_PREVIEW 在真实失败基线上补 success shell。",
+          "realVerify": "后端 ready 后用真实可访问 sheet 复验 code/st/msg。"
+        },
+        {
+          "responsePath": "data.item_info",
+          "value": "one non-hit row with if_delivery=false and item_id=700004",
+          "reason": "只服务 TC-INT-AWARD-EMPTY-LIST 的上传名单 setup，使 Drawer 物理列表非空但 Modal 内有效 delivery_list=[]。",
+          "realVerify": "后端 ready 后用真实 sheet 复验后端是否可自然返回空有效名单。"
+        },
+        {
+          "responsePath": "data.total_num",
+          "value": 1,
+          "reason": "覆盖 empty-list 专用批量上传 Drawer 物理列表非空状态。",
+          "realVerify": "后端 ready 后复验真实 total_num。"
+        },
+        {
+          "responsePath": "data.candidate_num",
+          "value": 0,
+          "reason": "覆盖 empty-list 专用样本中有效候选数为 0。",
+          "realVerify": "后端 ready 后复验真实 candidate_num。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": false,
+          "reason": "当前 empty-list setup 样本一页内返回。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "sheet_url"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "sheet_url",
+      "impactType": "record_identity",
+      "reason": "批量上传 sheet URL 决定后端解析的数据行集合；本 rule 只覆盖当前 case 的稳定 sheet 样本，避免任意 sheet URL 被 mock。",
+      "uiTarget": "人工提报 Drawer / 批量上传 sheet URL 输入框"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-HIT",
+      "requestFields": {
+        "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+      }
+    },
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+      "requestFields": {
+        "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080"
+      }
+    },
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+      "requestFields": {
+        "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-HIT",
+      "caseIds": [
+        "TC-UI-BATCH-HIT-REUSE"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "人工提报 Drawer / 批量上传提交",
+      "requestFields": {
+        "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+      },
+      "mockRule": "命中批量上传 sheet URL 请求时，先调用原接口，再最小设置 success shell 和 data.item_info/data.total_num/data.candidate_num/data.has_more，形成准入失败 / 不激励命中 / 可投放 mixed 样本。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+        "query": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662"
+        },
+        "requestFieldsForMatching": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变批量上传 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "st",
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": "code",
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": "msg",
+          "value": ""
+        },
+        {
+          "op": "set",
+          "path": "data",
+          "value": {
+            "total_num": 3,
+            "candidate_num": 1,
+            "item_info": [
+              {
+                "item_card": {
+                  "item_model": {
+                    "item_id": "200001",
+                    "base_model": {
+                      "item_info": {
+                        "counter_info": {
+                          "repin_count": 0,
+                          "play_count": 0,
+                          "share_count": 0
+                        },
+                        "comment_count_info": {
+                          "comment_count": 0
+                        },
+                        "base_info": {
+                          "title": "批量上传准入失败作品",
+                          "cover": {
+                            "uri": "batch_hit_cover_200001",
+                            "url_list": [
+                              "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20review%20desk%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                            ],
+                            "width": 750,
+                            "height": 1000
+                          }
+                        }
+                      },
+                      "ecom_statistics_info": {},
+                      "tag_info": {
+                        "tags": [],
+                        "top_tags_first_line": [],
+                        "top_tags_second_line": []
+                      }
+                    },
+                    "custom_model": {
+                      "AuthorPlatformModel": {
+                        "statistics_item": []
+                      }
+                    }
+                  },
+                  "item_author_info": {
+                    "author_id": "920001"
+                  }
+                },
+                "if_delivery": false,
+                "delivery_config": {
+                  "delivery_amount": 30000,
+                  "delivery_duration": 7200,
+                  "target_likes": 1,
+                  "target_audience": 1,
+                  "effective_time": 1783612800
+                },
+                "delivery_reason": "批量上传准入失败样本",
+                "if_satisfy_delivery_rules": false,
+                "rank": 1,
+                "if_not_incentive": false,
+                "not_incentive_reason": []
+              },
+              {
+                "item_card": {
+                  "item_model": {
+                    "item_id": "200002",
+                    "base_model": {
+                      "item_info": {
+                        "counter_info": {
+                          "repin_count": 0,
+                          "play_count": 0,
+                          "share_count": 0
+                        },
+                        "comment_count_info": {
+                          "comment_count": 0
+                        },
+                        "base_info": {
+                          "title": "批量上传不激励命中作品",
+                          "cover": {
+                            "uri": "batch_hit_cover_200002",
+                            "url_list": [
+                              "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20display%20on%20neutral%20background%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                            ],
+                            "width": 750,
+                            "height": 1000
+                          }
+                        }
+                      },
+                      "ecom_statistics_info": {},
+                      "tag_info": {
+                        "tags": [],
+                        "top_tags_first_line": [],
+                        "top_tags_second_line": []
+                      }
+                    },
+                    "custom_model": {
+                      "AuthorPlatformModel": {
+                        "statistics_item": []
+                      }
+                    }
+                  },
+                  "item_author_info": {
+                    "author_id": "920002"
+                  }
+                },
+                "if_delivery": false,
+                "delivery_config": {
+                  "delivery_amount": 30000,
+                  "delivery_duration": 7200,
+                  "target_likes": 1,
+                  "target_audience": 1,
+                  "effective_time": 1783612800
+                },
+                "delivery_reason": "批量上传不激励命中样本",
+                "if_satisfy_delivery_rules": true,
+                "rank": 2,
+                "if_not_incentive": true,
+                "not_incentive_reason": [
+                  "历史违规命中不激励规则"
+                ]
+              },
+              {
+                "item_card": {
+                  "item_model": {
+                    "item_id": "200003",
+                    "base_model": {
+                      "item_info": {
+                        "counter_info": {
+                          "repin_count": 0,
+                          "play_count": 0,
+                          "share_count": 0
+                        },
+                        "comment_count_info": {
+                          "comment_count": 0
+                        },
+                        "base_info": {
+                          "title": "批量上传可投放作品",
+                          "cover": {
+                            "uri": "batch_hit_cover_200003",
+                            "url_list": [
+                              "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20lifestyle%20product%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                            ],
+                            "width": 750,
+                            "height": 1000
+                          }
+                        }
+                      },
+                      "ecom_statistics_info": {},
+                      "tag_info": {
+                        "tags": [],
+                        "top_tags_first_line": [],
+                        "top_tags_second_line": []
+                      }
+                    },
+                    "custom_model": {
+                      "AuthorPlatformModel": {
+                        "statistics_item": []
+                      }
+                    }
+                  },
+                  "item_author_info": {
+                    "author_id": "920003"
+                  }
+                },
+                "if_delivery": true,
+                "delivery_config": {
+                  "delivery_amount": 30000,
+                  "delivery_duration": 7200,
+                  "target_likes": 1,
+                  "target_audience": 1,
+                  "effective_time": 1783612800
+                },
+                "delivery_reason": "批量上传可投放样本",
+                "if_satisfy_delivery_rules": true,
+                "rank": 3,
+                "if_not_incentive": false,
+                "not_incentive_reason": []
+              }
+            ],
+            "has_more": false
+          }
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+          "query": {
+            "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662"
+          }
+        }
+      },
+      "verifyAssertion": "自然 UI 批量上传提交必须输出 [BAM_MOCK_HIT] ruleId=R-BAM-BATCH-SHEET-HIT；DOM 出现 3 行批量上传样本、summary 文案、红字命中标签和 submit guard。",
+      "realVerify": "后端 ready 后用真实可访问 sheet 复验 code=0 响应和 if_not_incentive/not_incentive_reason 字段来源。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs -> PASS; natural UI mock-hit rerun remains required by TC-UI-BATCH-HIT-REUSE"
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/evidence.json"
+      }
+    },
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+      "caseIds": [
+        "TC-INT-AWARD-TIMEOUT__batch_sheet_setup"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "人工提报 Drawer / 批量上传提交 / timeout setup",
+      "requestFields": {
+        "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080"
+      },
+      "mockRule": "命中 timeout 专用批量上传 sheet URL 请求时，先调用原接口，再最小设置 success shell 和单条可投放作品 700003，供后续上传名单发奖自然携带 delivery_list[0].item_id=700003。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+        "query": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080",
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662"
+        },
+        "requestFieldsForMatching": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变 timeout 专用批量上传 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "st",
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": "code",
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": "msg",
+          "value": ""
+        },
+        {
+          "op": "set",
+          "path": "data",
+          "value": {
+            "total_num": 1,
+            "candidate_num": 1,
+            "item_info": [
+              {
+                "item_card": {
+                  "item_model": {
+                    "item_id": "700003",
+                    "base_model": {
+                      "item_info": {
+                        "counter_info": {
+                          "repin_count": 0,
+                          "play_count": 0,
+                          "share_count": 0
+                        },
+                        "comment_count_info": {
+                          "comment_count": 0
+                        },
+                        "base_info": {
+                          "title": "批量上传 timeout 可投放作品",
+                          "cover": {
+                            "uri": "award_timeout_cover_700003",
+                            "url_list": [
+                              "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20demo%20desk%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                            ],
+                            "width": 750,
+                            "height": 1000
+                          }
+                        }
+                      },
+                      "ecom_statistics_info": {},
+                      "tag_info": {
+                        "tags": [],
+                        "top_tags_first_line": [],
+                        "top_tags_second_line": []
+                      }
+                    },
+                    "custom_model": {
+                      "AuthorPlatformModel": {
+                        "statistics_item": []
+                      }
+                    }
+                  },
+                  "item_author_info": {
+                    "author_id": "970003"
+                  }
+                },
+                "if_delivery": true,
+                "delivery_config": {
+                  "delivery_amount": 30000,
+                  "delivery_duration": 7200,
+                  "target_likes": 1,
+                  "target_audience": 1,
+                  "effective_time": 1783612800
+                },
+                "delivery_reason": "批量上传 timeout 可投放样本",
+                "if_satisfy_delivery_rules": true,
+                "rank": 1,
+                "if_not_incentive": false,
+                "not_incentive_reason": []
+              }
+            ],
+            "has_more": false
+          }
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+          "query": {
+            "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080",
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662"
+          }
+        }
+      },
+      "verifyAssertion": "自然 UI 批量上传 timeout 专用 sheet URL 必须输出 [BAM_MOCK_HIT] ruleId=R-BAM-BATCH-SHEET-AWARD-TIMEOUT；后续 final award request 必须自然携带 delivery_from=2 和 delivery_list[0].item_id=700003。",
+      "realVerify": "后端 ready 后用真实可访问 sheet 复验可投放作品 700003 或等价样本；真实 timeout 链路由 apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT 和联调复验覆盖。",
+      "verify": {
+        "status": "passed",
+        "method": "browser+api",
+        "evidence": "natural UI XHR captured get_delivery_items_from_sheet for award-timeout-7306602080; node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS",
+        "reason": "Supplemental verification audits matcher, mockOperations and isolated 700003 setup sample before returning to TC-INT-AWARD-TIMEOUT."
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/evidence.json"
+      }
+    },
+    {
+      "ruleId": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+      "caseIds": [
+        "TC-INT-AWARD-EMPTY-LIST__batch_sheet_setup"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "人工提报 Drawer / 批量上传提交 / empty-list setup",
+      "requestFields": {
+        "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080"
+      },
+      "mockRule": "命中 empty-list 专用批量上传 sheet URL 请求时，先调用原接口，再最小设置 success shell 和单条 if_delivery=false 且非命中态作品 700004，供后续上传名单发奖自然进入 Modal 并形成空 delivery_list。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+        "query": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662"
+        },
+        "requestFieldsForMatching": {
+          "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变 empty-list 专用批量上传 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "st",
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": "code",
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": "msg",
+          "value": ""
+        },
+        {
+          "op": "set",
+          "path": "data",
+          "value": {
+            "total_num": 1,
+            "candidate_num": 0,
+            "item_info": [
+              {
+                "item_card": {
+                  "item_model": {
+                    "item_id": "700004",
+                    "base_model": {
+                      "item_info": {
+                        "counter_info": {
+                          "repin_count": 0,
+                          "play_count": 0,
+                          "share_count": 0
+                        },
+                        "comment_count_info": {
+                          "comment_count": 0
+                        },
+                        "base_info": {
+                          "title": "批量上传空名单不发奖作品",
+                          "cover": {
+                            "uri": "award_empty_list_cover_700004",
+                            "url_list": [
+                              "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20demo%20desk%20scene%2C%20soft%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                            ],
+                            "width": 750,
+                            "height": 1000
+                          }
+                        }
+                      },
+                      "ecom_statistics_info": {},
+                      "tag_info": {
+                        "tags": [],
+                        "top_tags_first_line": [],
+                        "top_tags_second_line": []
+                      }
+                    },
+                    "custom_model": {
+                      "AuthorPlatformModel": {
+                        "statistics_item": []
+                      }
+                    }
+                  },
+                  "item_author_info": {
+                    "author_id": "970004"
+                  }
+                },
+                "if_delivery": false,
+                "delivery_config": {
+                  "delivery_amount": 30000,
+                  "delivery_duration": 7200,
+                  "target_likes": 1,
+                  "target_audience": 1,
+                  "effective_time": 1783612800
+                },
+                "delivery_reason": "批量上传空名单不发奖样本",
+                "if_satisfy_delivery_rules": true,
+                "rank": 1,
+                "if_not_incentive": false,
+                "not_incentive_reason": []
+              }
+            ],
+            "has_more": false
+          }
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+          "query": {
+            "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662"
+          }
+        }
+      },
+      "verifyAssertion": "自然 UI 批量上传 empty-list 专用 sheet URL 必须输出 [BAM_MOCK_HIT] ruleId=R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST；Drawer 物理列表非空且无命中提示；投放 Modal 显示本次共投放 0 个作品；点击 Modal 确定后不得出现 apiDeliveryDouPlusCoin marker、真实 XHR/fetch 或提交成功 toast。",
+      "realVerify": "后端 ready 后用真实 sheet / 真实治理剔除样本复验后端是否能自然返回空有效名单；真实发奖事务状态仍需 real verify。",
+      "verify": {
+        "status": "passed",
+        "method": "browser+api",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/script.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs -> PASS; natural UI no-call evidence remains required by TC-INT-AWARD-EMPTY-LIST.",
+        "reason": "Supplemental verification audits matcher, mockOperations and isolated 700004 setup sample before returning to TC-INT-AWARD-EMPTY-LIST."
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/evidence.json"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "uiTarget": "apiGetDeliveryItemsFromSheet no-hit fallback",
+      "requestFields": {},
+      "mockRule": "未命中 R-BAM-BATCH-SHEET-HIT、R-BAM-BATCH-SHEET-AWARD-TIMEOUT 或 R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST 的 sheet_url 请求保持原接口响应，不改写。",
+      "verifyAssertion": "非目标 sheet_url 请求必须落入 DEFAULT_NOOP，不输出具体 sheet mock 数据。",
+      "verify": {
+        "status": "passed",
+        "method": "api",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs -> PASS; wrong sheet_url falls back to DEFAULT_NOOP",
+        "reason": "DEFAULT_NOOP 是 matcher fallback，不对应当前 active case 的自然 UI 命中路径；用接口级脚本验证 wrong sheet_url fallback，业务 UI 只对 R-BAM-BATCH-SHEET-HIT 取证。"
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/request.json",
+        "rawResponse": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.raw.txt",
+        "response": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.json",
+        "evidence": "../../real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/evidence.json"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "markers": [
+      "BAM_MOCK_PATCH_START apiGetDeliveryItemsFromSheet",
+      "BAM_MOCK_PATCH_END apiGetDeliveryItemsFromSheet"
+    ],
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; inline patch includes R-BAM-BATCH-SHEET-HIT, R-BAM-BATCH-SHEET-AWARD-TIMEOUT and R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST."
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiGetDeliveryItemsFromSheet in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-09T10:00:53.091Z"
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "mixed",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/script.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS; natural UI no-call rerun remains active verify evidence.",
+    "verifiedAt": "2026-07-09T17:57:00+08:00"
+  }
+}

@@ -1,0 +1,443 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiSearchDeliveryAuthor",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/search_delivery_author",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console",
+      "xhr_response_listener"
+    ],
+    "snapshotSummary": "integrated_browser snapshot viewId=f56171fb-9ae8-4e99-8749-ecc9e4f68a5a; DOU+券配置二 author SearchCandidate empty baseline captured before candidate restore detour.",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiSearchDeliveryAuthor",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.json",
+        "mockedResponse": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.mocked.json",
+        "evidence": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.json",
+        "evidence": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/search_delivery_author",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "publish_start_time": 1783440000,
+          "publish_end_time": 1783526399,
+          "page_no": 1,
+          "page_size": 50,
+          "session_unix_time": 1783573124,
+          "candidate_pool_type": 1,
+          "award_period": 1
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "candidate_pool_type": 1,
+          "award_period": 1,
+          "page_no": 1,
+          "page_size": 50
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "publish_start_time",
+            "value": 1783440000,
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二页面日期筛选自然携带；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "publish_end_time",
+            "value": 1783526399,
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二页面日期筛选自然携带；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783573124,
+            "source": "network_request",
+            "reason": "发奖会话时间戳随页面会话变化；只用于 payload 审计，不参与 matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "st/code/msg",
+          "value": "0/0/empty success",
+          "reason": "自然 DOU+券作者候选查询成功但为空，当前 case 需要可选作者以继续自然 UI 发奖点击。",
+          "realVerify": "后端 ready 后复验真实 DOU+券作者候选成功响应。"
+        },
+        {
+          "responsePath": "data.delivery_author_info",
+          "value": "two DOU+ coupon deliverable author candidates: author_id=800001 and author_id=800002",
+          "reason": "最终发奖写接口 rule 需要自然 UI 分别生成 penalty author `800001` 与 relieved author `800002` 的 delivery_authors.0.candidate_id；该字段由作者候选卡片选择自然映射。",
+          "realVerify": "后端 ready 后复验真实作者候选、rank 和 if_delivery 来源。"
+        },
+        {
+          "responsePath": "data.total_num/data.candidate_num/data.has_more",
+          "value": "2/2/false",
+          "reason": "只恢复当前 penalty / relieved case 必需的两条候选，不扩大候选池或分页。",
+          "realVerify": "后端 ready 后复验真实分页、数量和排序。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "activity_id",
+    "config_id",
+    "candidate_pool_type",
+    "award_period",
+    "page_no",
+    "page_size"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "activity_id",
+      "impactType": "record_identity",
+      "reason": "候选恢复 rule 只服务当前活动 activity_id=7655304206886322458，避免命中其它奖励投放活动的作者候选查询。",
+      "uiTarget": "DOU+券奖励投放 / 作者候选列表"
+    },
+    {
+      "fieldPath": "config_id",
+      "impactType": "record_identity",
+      "reason": "候选恢复 rule 只服务当前 DOU+券配置二 config_id=7655304206886355226，避免命中其它配置页候选查询。",
+      "uiTarget": "DOU+券奖励投放 / 作者候选列表"
+    },
+    {
+      "fieldPath": "candidate_pool_type",
+      "impactType": "rule_branch",
+      "reason": "CandidatePoolType.InRank=1 表示当前排名池首屏候选，补位池或人工导入分支不能命中本 rule。",
+      "uiTarget": "sendAwardToAuthorStore.fetchData"
+    },
+    {
+      "fieldPath": "award_period",
+      "impactType": "rule_branch",
+      "reason": "当前配置二发奖周期为 Day=1；不同周期的作者候选时间窗口不应复用本 case 样本。",
+      "uiTarget": "sendAwardToAuthorStore.fetchData"
+    },
+    {
+      "fieldPath": "page_no",
+      "impactType": "pagination",
+      "reason": "只恢复第一页候选；其它页走 no-op 或后续规则。",
+      "uiTarget": "apiSearchDeliveryAuthor pagination"
+    },
+    {
+      "fieldPath": "page_size",
+      "impactType": "pagination",
+      "reason": "当前列表默认 page_size=50；其它 page_size 走 no-op 或后续规则。",
+      "uiTarget": "apiSearchDeliveryAuthor pagination"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "candidate_pool_type": 1,
+        "award_period": 1,
+        "page_no": 1,
+        "page_size": 50
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+      "caseIds": [
+        "TC-INT-AWARD-COUPON-PENALTY__search_candidate_restore",
+        "TC-INT-AWARD-COUPON-RELIEVED__search_candidate_restore"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "DOU+券奖励投放 / 配置二 / 作者候选列表",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "candidate_pool_type": 1,
+        "award_period": 1,
+        "page_no": 1,
+        "page_size": 50
+      },
+      "mockRule": "命中当前 DOU+券配置二作者候选首屏请求时，先调用原接口保留真实空响应基线，再最小恢复两位可投放作者候选 author_id=800001 和 author_id=800002。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/search_delivery_author",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "publish_start_time": 1783440000,
+          "publish_end_time": 1783526399,
+          "page_no": 1,
+          "page_size": 50,
+          "session_unix_time": 1783573124,
+          "candidate_pool_type": 1,
+          "award_period": 1
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "candidate_pool_type": 1,
+          "award_period": 1,
+          "page_no": 1,
+          "page_size": 50
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "publish_start_time",
+            "value": 1783440000,
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二页面日期筛选自然携带；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "publish_end_time",
+            "value": 1783526399,
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二页面日期筛选自然携带；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783573124,
+            "source": "network_request",
+            "reason": "发奖会话时间戳随页面会话变化；只用于 payload 审计，不参与 matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.json",
+      "mockedResponsePath": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "st",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "保持可渲染的成功响应分支。"
+        },
+        {
+          "op": "set",
+          "path": "code",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "保持可渲染的成功响应分支。"
+        },
+        {
+          "op": "set",
+          "path": "msg",
+          "value": "",
+          "source": "mock_rule",
+          "reason": "真实空响应 msg 为空，mock 后保持一致。"
+        },
+        {
+          "op": "set",
+          "path": "data.total_num",
+          "value": 2,
+          "source": "mock_rule",
+          "reason": "恢复当前 penalty / relieved case 必需的两条作者候选总数。"
+        },
+        {
+          "op": "set",
+          "path": "data.candidate_num",
+          "value": 2,
+          "source": "mock_rule",
+          "reason": "恢复当前 penalty / relieved case 必需的可投放作者数量。"
+        },
+        {
+          "op": "set",
+          "path": "data.delivery_author_info",
+          "value": [
+            {
+              "author_info": {
+                "author_id": "800001",
+                "author_name": "券候选作者800001",
+                "avatar": "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20professional%20creator%20profile%20portrait%2C%20neutral%20studio%20background%2C%20clean%20lighting%2C%20no%20text%2C%20high%20quality&image_size=square",
+                "fans_num": 128000
+              },
+              "if_delivered": false,
+              "if_delivery": true,
+              "delivery_config": {
+                "coupon_type": 1,
+                "coupon_config": {
+                  "threshold": 0,
+                  "freeAmount": 5000
+                },
+                "num": 1,
+                "reiceve_start_time": 1783440000,
+                "reiceve_end_time": 1783526399,
+                "use_time_type": 1,
+                "use_start_time": 1783440000,
+                "use_end_time": 1784131199
+              },
+              "deliveried_task_ids": [],
+              "rank": 1,
+              "history_delivery_info": []
+            },
+            {
+              "author_info": {
+                "author_id": "800002",
+                "author_name": "券解除作者800002",
+                "avatar": "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20professional%20creator%20profile%20portrait%2C%20soft%20studio%20lighting%2C%20neutral%20background%2C%20no%20text%2C%20high%20quality&image_size=square",
+                "fans_num": 96000
+              },
+              "if_delivered": false,
+              "if_delivery": true,
+              "delivery_config": {
+                "coupon_type": 1,
+                "coupon_config": {
+                  "threshold": 0,
+                  "freeAmount": 5000
+                },
+                "num": 1,
+                "reiceve_start_time": 1783440000,
+                "reiceve_end_time": 1783526399,
+                "use_time_type": 1,
+                "use_start_time": 1783440000,
+                "use_end_time": 1784131199
+              },
+              "deliveried_task_ids": [],
+              "rank": 2,
+              "history_delivery_info": []
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "恢复可选作者 `800001` 与 `800002`，让自然 UI 选中后分别生成 delivery_authors.0.candidate_id=800001 / 800002。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": false,
+          "source": "mock_rule",
+          "reason": "当前只恢复单页单条候选，不扩展分页。"
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/search_delivery_author",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "page_no": 1,
+            "page_size": 50,
+            "candidate_pool_type": 1,
+            "award_period": 1
+          }
+        }
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.json",
+        "mockedResponse": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.mocked.json",
+        "evidence": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/evidence.json"
+      },
+      "verifyAssertion": "Patched BAM runtime must emit [BAM_MOCK_HIT] for R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY; DOU+券配置二 must render selectable authors 800001 and 800002; final award must still be triggered by apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-PENALTY for 800001 and apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-RELIEVED for 800002.",
+      "realVerify": "后端 ready 后用真实非空 DOU+券作者候选列表复验 total/candidate_num、if_delivery、delivery_config、rank 和最终发奖 request 字段来源。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/verify.mjs -> PASS; reapply-bam-mocks.mjs --apply -> PASS; standard verify-bam-mock.mjs -> PASS; BAM inline matcher activity_id/config_id/candidate_pool_type/award_period/page_no/page_size and mocked authors 800001/800002 are present.",
+        "reason": "Supplemental verification audits matcher, two-row mocked response, real empty baseline, mocked selectable authors, fallback behavior and BAM marker before returning to verify.",
+        "verifiedAt": "2026-07-09T13:58:00+08:00"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "isDefault": true,
+      "enabled": true,
+      "requestFields": {},
+      "mockRule": "未命中 R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY 时保持原 BAM 请求与响应。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.json",
+        "evidence": "../../real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/evidence.json"
+      },
+      "verifyAssertion": "No-hit apiSearchDeliveryAuthor requests must keep original BAM behavior and must not output R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY mock hit.",
+      "realVerify": "后端 ready 后复验其它 DOU+券作者候选请求不被当前 case matcher 捕获。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/verify.mjs -> PASS; non-matching config_id / award_period / page_no fall back to DEFAULT_NOOP.",
+        "reason": "Default no-op remains unique fallback and is not used to close TC-INT-AWARD-COUPON-PENALTY."
+      }
+    }
+  ],
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiSearchDeliveryAuthor in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts with mocked authors 800001 and 800002.",
+    "verifiedAt": "2026-07-09T13:58:00+08:00"
+  },
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiSearchDeliveryAuthor",
+    "lastPatchedAt": "2026-07-09T13:58:00+0800",
+    "notes": "Read-only candidate restore for TC-INT-AWARD-COUPON-PENALTY and TC-INT-AWARD-COUPON-RELIEVED; calls original GET and applies mockOperations only on concrete matcher."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/verify.mjs -> PASS; reapply-bam-mocks.mjs --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+    "reason": "Interface manifest, rule-map index, real empty baseline, two mocked selectable authors, runtime operations and BAM inline marker are consistent.",
+    "verifiedAt": "2026-07-09T13:58:00+0800"
+  }
+}

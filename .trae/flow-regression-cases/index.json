@@ -1,0 +1,119 @@
+{
+  "cases": [
+    {
+      "id": "code-review-performance-packet",
+      "path": "flow-regression-cases/code/code-review-performance-packet.md",
+      "stage": "code",
+      "tags": [
+        "task-context-index",
+        "task-review-packet",
+        "independent-review",
+        "verification-freshness"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P1",
+      "include_in_daily": true
+    },
+    {
+      "id": "emo-scm-noninteractive-build",
+      "path": "flow-regression-cases/verify/emo-scm-noninteractive-build.md",
+      "stage": "verify",
+      "tags": [
+        "build-baseline",
+        "non-interactive-build",
+        "emo",
+        "scm"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P1",
+      "include_in_daily": true
+    },
+    {
+      "id": "sample-coverage-temporary-mock-cleanup",
+      "path": "flow-regression-cases/verify/sample-coverage-temporary-mock-cleanup.md",
+      "stage": "verify",
+      "tags": [
+        "SAMPLE_COVERAGE_GAP",
+        "sample-coverage-mock",
+        "temporary-mock",
+        "cleanup"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P1",
+      "include_in_daily": true
+    },
+    {
+      "id": "design-white-screen-console-first",
+      "path": "flow-regression-cases/design/design-white-screen-console-first.md",
+      "stage": "design",
+      "tags": [
+        "design",
+        "white_screen",
+        "console_first",
+        "runtime_triage"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P1",
+      "include_in_daily": true
+    },
+    {
+      "id": "coco-cli-headless-browser-branch",
+      "path": "flow-regression-cases/verify/coco-cli-headless-browser-branch.md",
+      "stage": "verify",
+      "tags": [
+        "browser-runtime-mode",
+        "headless-browser",
+        "runtime-evidence",
+        "coco-cli"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P1",
+      "include_in_daily": true
+    },
+    {
+      "id": "design-tc-prd-01-screenshot-first-l1",
+      "path": "flow-regression-cases/design/design-tc-prd-01-screenshot-first-l1.md",
+      "stage": "design",
+      "tags": [
+        "design",
+        "tc_prd_01",
+        "screenshot_first",
+        "structure_first",
+        "static_rule"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P0",
+      "include_in_daily": true
+    },
+    {
+      "id": "design-tc-prd-01-screenshot-first-l2",
+      "path": "flow-regression-cases/design/design-tc-prd-01-screenshot-first-l2.md",
+      "stage": "design",
+      "tags": [
+        "design",
+        "tc_prd_01",
+        "screenshot_first",
+        "fixed_image_pair",
+        "artifact_only"
+      ],
+      "replay_mode": "ARTIFACT_ASSERTION_ONLY",
+      "priority": "P0",
+      "include_in_daily": true
+    },
+    {
+      "id": "design-large-figma-semantic-grid-first",
+      "path": "flow-regression-cases/design/design-large-figma-semantic-grid-first.md",
+      "stage": "design",
+      "tags": [
+        "design",
+        "large_figma_baseline",
+        "semantic_grid_first",
+        "screenshot_first",
+        "region_level"
+      ],
+      "replay_mode": "STATIC_ASSERTION",
+      "priority": "P0",
+      "include_in_daily": true
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "case_id": "TC-TRACK-REMOVE-DETAIL-TAB-COUPON",
+  "captured_at": "2026-07-09T11:02:28.602Z",
+  "browser_tool": "integrated_browser",
+  "business_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=track_remove_coupon_payload_202607092030b",
+  "devserver_resume": {
+    "health": "PASS",
+    "lsof_evidence": "verify-logs/baseline/devserver-8083-resume-lsof.log",
+    "health_evidence": "verify-logs/baseline/devserver-8083-resume-health.log"
+  },
+  "runtime_setup": {
+    "selected_config": "配置二",
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "config_index": "2",
+    "config_name": "配置二",
+    "reward_type": "DOU+券",
+    "probe_installed_at": "2026-07-09T11:01:40.495Z",
+    "probe_restored": true,
+    "probe_restored_at": "2026-07-09T11:02:28.602Z",
+    "storage_or_cookie_access": "not_accessed"
+  },
+  "natural_actions": [
+    {
+      "step": "open award page",
+      "result": "business page loaded after 8083 dev server resume"
+    },
+    {
+      "step": "click config tab",
+      "target": "配置二",
+      "result": "selected DOU+券 config"
+    },
+    {
+      "step": "click sub tab",
+      "target": "剔除明细",
+      "result": "remove detail tab checked and coupon remove-record request fired"
+    }
+  ],
+  "before_click_dom": {
+    "active_tabs": [
+      {
+        "text": "配置二",
+        "aria_selected": "true"
+      },
+      {
+        "text": "奖励下发",
+        "checked": true
+      },
+      {
+        "text": "剔除明细",
+        "checked": false
+      }
+    ],
+    "visible_config_module": {
+      "module_id": "allocation_two",
+      "module_name": "配置二",
+      "module_type": "tab_module",
+      "parent_block_id": "activity_reward_distribution",
+      "extra": {
+        "activity_id": "7655304206886322458",
+        "reward_type": "DOU+券"
+      }
+    }
+  },
+  "after_click_dom": {
+    "active_tabs": [
+      {
+        "text": "配置二",
+        "aria_selected": "true"
+      },
+      {
+        "text": "剔除明细",
+        "checked": true
+      }
+    ],
+    "headers": [
+      "作者信息",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ],
+    "visible_remove_detail_module": {
+      "module_id": "remove_detail_data",
+      "module_name": "内容活动剔除明细",
+      "module_type": "tab_module",
+      "parent_block_type": "page",
+      "parent_block_id": "activity_reward_distribution",
+      "extra": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "config_index": "2",
+        "config_name": "配置二",
+        "reward_type": "DOU+券"
+      },
+      "rect": {
+        "x": 215,
+        "y": 492,
+        "width": 1267,
+        "height": 805
+      },
+      "visible": true,
+      "text_evidence": [
+        "券作者示例",
+        "ID: 900001",
+        "命中【不激励】规则",
+        "2026/07/08 20:40:40",
+        "陈相"
+      ]
+    }
+  },
+  "network_trigger": {
+    "coupon_remove_record_requests": [
+      {
+        "method": "GET",
+        "url": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record?activity_id=7655304206886322458&config_id=7655304206886355226&page=1&page_num=20&__token=[REDACTED]",
+        "status": 200,
+        "response_preview": {
+          "code": 0,
+          "st": 0,
+          "data": {
+            "total": 0,
+            "has_more": false
+          },
+          "log_id": "202607091902009D287D609F7416D256FA"
+        }
+      }
+    ],
+    "coin_remove_record_requests": [],
+    "browser_network_panel_relevant_request": {
+      "index": 91,
+      "method": "GET",
+      "url": "https://ecop.bytedance.net/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record?activity_id=7655304206886322458&config_id=7655304206886355226&page=1&page_num=20&__token=[REDACTED]",
+      "type": "XHR"
+    }
+  },
+  "bam_mock_marker": {
+    "event": "BAM_MOCK_HIT",
+    "apiName": "apiGetDouPlusCouponRemoveRecord",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+    "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+    "requestBody": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page_num": 20,
+      "page": 1
+    },
+    "mockedResponseSummary": {
+      "code": 0,
+      "type": "success",
+      "data_total": 40,
+      "data_has_more": true,
+      "first_record": {
+        "record_id": "coupon_remove_record_20260708001",
+        "author_id": "900001",
+        "author_name": "券作者示例",
+        "remove_reason": "命中【不激励】规则",
+        "operator_id": "6068830",
+        "remove_time": 1783514440
+      }
+    }
+  },
+  "logger_probe": {
+    "collectEvent_type_at_install": "undefined",
+    "collectEvent_calls": [],
+    "collectEvent_call_count": 0,
+    "analytics_transports_observed": [
+      {
+        "method": "POST",
+        "url": "https://mcs.zijieapi.com/list",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "https://mcs.snssdk.com/v1/list",
+        "status": "observed_in_browser_network_panel"
+      },
+      {
+        "method": "POST",
+        "url": "https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=alliance_operation_content",
+        "status": "observed_in_browser_network_panel"
+      }
+    ],
+    "limitation": "Direct business collectEvent payload was not observable in integrated_browser; runtime React binding, source transport chain, active DOM module payload and Network/BAM evidence were recorded instead."
+  },
+  "runtime_react_binding": {
+    "target": "active 剔除明细 Radio.Button",
+    "wrapper_class": "auxo-radio-button-wrapper auxo-radio-button-wrapper-checked",
+    "fiber_onChange_depths": [
+      5,
+      6
+    ],
+    "onChange_source_facts": [
+      "var nextSubTab = e.target.value",
+      "setActiveSubTab(nextSubTab)",
+      "if (nextSubTab === SubTab.REMOVE_DETAIL)",
+      "sendElementClickLog(...)",
+      "element_id: 'remove_detail_tab'",
+      "object spread of currentConfigLogContext"
+    ]
+  },
+  "negative_assertions": {
+    "no_coin_remove_record_request": true,
+    "active_reward_type": "DOU+券",
+    "active_config_id": "7655304206886355226",
+    "active_config_index": "2",
+    "coupon_table_headers": [
+      "作者信息",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ],
+    "coin_table_header_absent": "作品内容"
+  },
+  "result": "PASS_WITH_NOTES"
+}

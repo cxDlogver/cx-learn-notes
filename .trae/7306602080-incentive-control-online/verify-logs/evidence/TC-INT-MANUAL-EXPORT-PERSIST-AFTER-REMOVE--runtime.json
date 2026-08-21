@@ -1,0 +1,142 @@
+{
+  "case_id": "TC-INT-MANUAL-EXPORT-PERSIST-AFTER-REMOVE",
+  "repair_issue_id": "REPAIR-005",
+  "repair_run_id": "20260710-162521-docx-NQxTdRPP",
+  "observed_at": "2026-07-11T05:03:25+08:00",
+  "verification_method": "TRAE_DESKTOP_INTEGRATED_BROWSER_NATURAL_UI_WITH_MOCK_PREVIEW_BOUNDARY",
+  "entry": {
+    "business_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "activity_id": "7629288371705643310",
+    "sub_app": "alliance-operation-content",
+    "local_dev_server": "http://localhost:8083/alliance-operation-content",
+    "sample_input": "100001,100002,100003"
+  },
+  "pre_remove_state": {
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "one_click_remove": {
+      "text": "一键移除",
+      "visible": true,
+      "disabled": false
+    },
+    "export_remove_detail": {
+      "text": "导出剔除明细",
+      "visible": true,
+      "disabled": false
+    },
+    "rows": [
+      {
+        "item_id": "100001",
+        "state": "hit",
+        "hit_label": "不满足准入门槛"
+      },
+      {
+        "item_id": "100002",
+        "state": "hit",
+        "hit_label": "命中【不激励】规则"
+      },
+      {
+        "item_id": "100003",
+        "state": "valid",
+        "hit_label": ""
+      }
+    ]
+  },
+  "action": {
+    "clicked": "一键移除",
+    "expected_store_effect": {
+      "removedSubmitHitItems": ["100001", "100002"],
+      "videoItems": ["100003"]
+    }
+  },
+  "post_remove_state": {
+    "toolbar_visible": true,
+    "toolbar_text": "i\n共1个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：0个\n一键移除\n导出剔除明细",
+    "summary_text": "共1个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：0个",
+    "one_click_remove": {
+      "text": "一键移除",
+      "visible": true,
+      "disabled": true
+    },
+    "export_remove_detail": {
+      "text": "导出剔除明细",
+      "visible": true,
+      "disabled": false
+    },
+    "item_presence": {
+      "100001": false,
+      "100002": false,
+      "100003": true
+    },
+    "screenshot_path": "screenshots/TC-INT-MANUAL-EXPORT-PERSIST-AFTER-REMOVE--after-remove-toolbar--drawer.png",
+    "screenshot_file_check": "PNG image data, 2022 x 1222, 8-bit/color RGB, non-interlaced"
+  },
+  "repeat_export_observation": {
+    "minimum_required_clicks": 2,
+    "observed_clicks": 4,
+    "open_events": [
+      {
+        "click_index": 1,
+        "opened_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+      },
+      {
+        "click_index": 2,
+        "opened_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+      },
+      {
+        "click_index": 3,
+        "opened_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+      },
+      {
+        "click_index": 4,
+        "opened_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+      }
+    ],
+    "opened_tab_title": "Docs - Page not found",
+    "interpretation": "The repeated clicks reached the synthetic MOCK_PREVIEW lark_url. Real Feishu sheet permission/content is not verified by this case."
+  },
+  "mock_preview_network_boundary": {
+    "api_name": "apiDownloadContentRemoveRecord",
+    "rule_id": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+    "real_xhr_observed": false,
+    "reason_real_xhr_absent": "The generated BAM wrapper can return a BAM_MOCK_SYNTHETIC_CONTRACT response before issuing a real fetch/XHR in MOCK_PREVIEW.",
+    "synthetic_request_ref": "mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/request.json",
+    "synthetic_response_ref": "mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json",
+    "generated_wrapper_ref": "meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "request_contract_summary": {
+      "records.0": {
+        "author_id": "900001",
+        "item_id": "100001",
+        "item_name": "人工提报准入失败作品",
+        "remove_reason": "手动移除"
+      },
+      "records.1": {
+        "author_id": "900002",
+        "item_id": "100002",
+        "item_name": "人工提报不激励命中作品",
+        "remove_reason": "命中【不激励】规则",
+        "penalty_reason": "历史违规命中不激励规则"
+      },
+      "excluded_valid_record": {
+        "author_id": "900003",
+        "item_id": "100003",
+        "reason": "valid current row remains in videoItems and must not be exported"
+      }
+    },
+    "response_contract_summary": {
+      "code": 0,
+      "data.lark_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+    }
+  },
+  "negative_assertions": {
+    "candidate_remove_called": false,
+    "candidate_remove_evidence": "Manual remove/export source paths do not import or call apiCandidateRemove; browser runtime did not surface candidate_remove during this case. See repair-verify-source-audit-20260711.md.",
+    "valid_row_exported": false,
+    "valid_row_evidence": "Runtime state retained item 100003 while synthetic request contract only contains removed hit records 100001 and 100002."
+  },
+  "result": "PASS_WITH_NOTES",
+  "notes": [
+    "Runtime UI evidence closes REPAIR-005 visibility requirement for the post-removal toolbar, summary, disabled 一键移除, and enabled 导出剔除明细.",
+    "Repeated export is verified through repeated synthetic lark_url opens plus BAM synthetic request/response artifacts; no real Feishu sheet permission/content is claimed.",
+    "Network panel real XHR absence is expected for this MOCK_PREVIEW synthetic wrapper and remains documented as a boundary, not as a functional failure."
+  ]
+}

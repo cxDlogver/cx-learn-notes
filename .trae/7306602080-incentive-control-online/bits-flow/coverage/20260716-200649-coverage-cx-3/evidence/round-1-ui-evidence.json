@@ -1,0 +1,163 @@
+{
+  "captured_at": "2026-07-16T12:44:33.047Z",
+  "browser_runtime": "integrated_browser",
+  "environment": "REAL_ONLINE",
+  "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "page_title": "内容生态运营｜橙蕉",
+  "active_config": "配置五",
+  "reward_type": "DOU+币",
+  "screenshot_ref": "evidence/coverage-round1-dou-coin-success.png",
+  "real_ui_path": [
+    "真实线上奖励下发页",
+    "配置五 / DOU+币",
+    "单条作品批量修改为不发奖",
+    "剩余 9 条作品批量补投放生效时间",
+    "批量提交打开投放奖励弹窗",
+    "真实读取充值记录并选择 cc抖+币-程可歆-15000",
+    "真实 charge_amount_check 返回余额充足",
+    "点击确定触发 delivery_dou_plus_coin，并在成功后自动 candidate_remove"
+  ],
+  "read_or_no_side_effect_requests": [
+    {
+      "at": "2026-07-16T12:19:43.347Z",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/search_delivery_items",
+      "backend": "real"
+    },
+    {
+      "at": "2026-07-16T12:30:20.112Z",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_charge_record",
+      "backend": "real"
+    },
+    {
+      "at": "2026-07-16T12:33:12.737Z",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/charge_amount_check",
+      "backend": "real",
+      "result_summary": "cc抖+币-程可歆-3000 余额不足，确认按钮保持禁用"
+    },
+    {
+      "at": "2026-07-16T12:37:54.248Z",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/charge_amount_check",
+      "backend": "real",
+      "result_summary": "cc抖+币-程可歆-15000 余额充足，剩余可用 9750 元，预计消耗 2700 元"
+    }
+  ],
+  "write_request_intercepts": [
+    {
+      "at": "2026-07-16T12:22:16.826Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "candidate_ids_count": 1,
+        "if_delivery": false,
+        "has_item_modify_config": true
+      },
+      "mock_response": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      },
+      "backend_write": "not_sent"
+    },
+    {
+      "at": "2026-07-16T12:29:41.001Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "candidate_ids_count": 9,
+        "if_delivery": true,
+        "has_item_modify_config": true
+      },
+      "mock_response": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      },
+      "backend_write": "not_sent"
+    },
+    {
+      "at": "2026-07-16T12:38:54.201Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "charge_code": "LST12604140006412",
+        "delivery_items_count": 9
+      },
+      "mock_response": {
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "data": {
+          "st": 0,
+          "code": 0,
+          "delivery_task_id": "coverage_mock_coin_task_1784205534201"
+        }
+      },
+      "backend_write": "not_sent",
+      "result_summary": "首次 mock 被通用请求层包装，前端展示失败提示；未触发 candidate_remove"
+    },
+    {
+      "at": "2026-07-16T12:43:41.533Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "charge_code": "LST12604140006412",
+        "delivery_items_count": 9
+      },
+      "mock_response": {
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "data": {
+          "st": 0,
+          "code": 0,
+          "delivery_task_id": "coverage_mock_coin_task_1784205821533"
+        }
+      },
+      "backend_write": "not_sent",
+      "result_summary": "安装窄域 FetchResponse st getter shim 后命中成功分支"
+    },
+    {
+      "at": "2026-07-16T12:43:41.555Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/candidate_remove",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "remove_candidates_count": 1
+      },
+      "mock_response": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      },
+      "backend_write": "not_sent"
+    }
+  ],
+  "browser_runtime_notes": [
+    "write intercepts installed in integrated browser XHR/fetch before triggering write actions",
+    "installed narrow FetchResponse st getter shim for delivery success branch after first intercepted delivery_dou_plus_coin returned through request wrapper as code/msg/data",
+    "browser_evaluate restrictions observed: no cookie/localStorage/sessionStorage access"
+  ]
+}

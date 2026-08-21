@@ -1,0 +1,697 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiDeliveryDouPlusCoin",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console"
+    ],
+    "snapshotSummary": "integrated_browser snapshot viewId=f56171fb-9ae8-4e99-8749-ecc9e4f68a5a; title=内容生态运营｜橙蕉; business URL is alliance-operation-content award vmok; natural DOU+ coin SearchCandidate sample activity_id=7655304206886322458 config_id=7655304206886338842 candidate_id=7655364163166869874 rank=1.",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "synthetic_contract",
+    "artifactDir": "../../real-connect/apiDeliveryDouPlusCoin",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-AWARD-COIN-PENALTY",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coin must not send a real award request during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY must verify frontend handling of a natural-penalty non-success award response.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "R-BAM-AWARD-COIN-RELIEVED",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coin must not send a real award request during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-COIN-RELIEVED must verify frontend handling of a governance-relieved success award response.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "R-BAM-AWARD-COIN-TIMEOUT",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coin must not send a real award request during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-TIMEOUT must verify frontend handling of a timeout-like upload-list award response.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-AWARD-COIN-PENALTY",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "charge_code": "charge_code_award_coin_7306602080",
+          "delivery_items": [
+            {
+              "candidate_id": "7655364163166869874",
+              "rank": 1
+            }
+          ],
+          "session_unix_time": 1783490000,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_items.0.candidate_id": "7655364163166869874"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "route context from the active DOU+ coin SearchCandidate vmok page, not a matcher"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "route_context",
+            "reason": "current DOU+ coin SearchCandidate config context from React props, not a matcher"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coin_7306602080",
+            "source": "synthetic_contract",
+            "reason": "verify natural UI must capture actual selected charge record; not a matcher"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783490000,
+            "source": "synthetic_contract",
+            "reason": "stable schema value for synthetic contract; not a matcher"
+          }
+        ]
+      },
+      "syntheticContractReason": "The award API is a backend write interface. MOCK_PREVIEW must return a marked non-success response without sending a real award transaction.",
+      "interfaceNecessity": "Frontend success is strict `st === 0 && code === 0`; this rule supplies a non-success natural-penalty branch for TC-INT-AWARD-COIN-PENALTY.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/response.json",
+      "browserPrecheckStatus": "passed"
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COIN-RELIEVED",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "charge_code": "charge_code_award_coin_relieved_7306602080",
+          "delivery_items": [
+            {
+              "candidate_id": "700002",
+              "rank": 2
+            }
+          ],
+          "session_unix_time": 1783568265,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_items.0.candidate_id": "700002"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate vmok 奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate 奖励配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coin_relieved_7306602080",
+            "source": "synthetic_contract",
+            "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "delivery_items.0.rank",
+            "value": 2,
+            "source": "synthetic_contract",
+            "reason": "relieved candidate 是 SearchCandidate mock 的第二行；rank 只用于保持 DeliveryCandidate 请求形态，不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783568265,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "syntheticContractReason": "The award API is a backend write interface. MOCK_PREVIEW must return a marked success response without sending a real award transaction.",
+      "interfaceNecessity": "Frontend success is strict `st === 0 && code === 0`; this rule supplies a success branch for TC-INT-AWARD-COIN-RELIEVED.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/response.json",
+      "browserPrecheckStatus": "passed"
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COIN-TIMEOUT",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+        "body": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "charge_code": "charge_code_award_coin_timeout_7306602080",
+          "delivery_list": [
+            {
+              "item_id": "700003",
+              "delivery_config": {
+                "delivery_amount": 30000,
+                "delivery_duration": 7200,
+                "target_likes": 1,
+                "target_audience": 1,
+                "effective_time": 1783612800
+              },
+              "delivery_reason": "批量上传 timeout 可投放样本"
+            }
+          ],
+          "session_unix_time": 1783578953,
+          "delivery_from": 2
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 2,
+          "delivery_list.0.item_id": "700003"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "route_context",
+            "reason": "当前人工提报 vmok 奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "route_context",
+            "reason": "当前配置一人工提报配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coin_timeout_7306602080",
+            "source": "synthetic_contract",
+            "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783578953,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "syntheticContractReason": "The award API is a backend write interface. MOCK_PREVIEW must return a marked timeout-like response without sending a real award transaction.",
+      "interfaceNecessity": "Frontend timeout handling maps timeout-like `msg` to fixed PRD copy `治理校验失败，请稍后重试`; this rule supplies that response for TC-INT-AWARD-TIMEOUT.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/response.json",
+      "browserPrecheckStatus": "passed"
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "delivery_from",
+    "delivery_items.0.candidate_id",
+    "delivery_list.0.item_id"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "delivery_from",
+      "impactType": "rule_branch",
+      "reason": "`DeliveryFrom.SearchCandidate` distinguishes the DOU+ coin page-selected candidate submit path from upload-list submit branches.",
+      "uiTarget": "DOU+币奖励投放 / 投放奖励 Modal"
+    },
+    {
+      "fieldPath": "delivery_items.0.candidate_id",
+      "impactType": "submit_assertion",
+      "reason": "Natural UI SearchCandidate samples distinguish governance branches by selected candidate: penalty candidate `7655364163166869874` hits non-success rule, relieved candidate `700002` hits success rule. Other request fields such as activity_id/config_id/charge_code/session_unix_time/rank remain collection-only.",
+      "uiTarget": "DOU+币奖励投放 / 投放奖励 Modal"
+    },
+    {
+      "fieldPath": "delivery_list.0.item_id",
+      "impactType": "submit_assertion",
+      "reason": "Natural UI UploadCandidate samples distinguish timeout branch by uploaded deliverable item: item_id `700003` hits the timeout-like synthetic response rule. Other request fields such as activity_id/config_id/charge_code/session_unix_time/delivery_config/delivery_reason remain collection-only.",
+      "uiTarget": "人工提报批量上传 / DOU+币投放奖励 Modal"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-AWARD-COIN-PENALTY",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_items.0.candidate_id": "7655364163166869874"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COIN-RELIEVED",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_items.0.candidate_id": "700002"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COIN-TIMEOUT",
+      "requestFields": {
+        "delivery_from": 2,
+        "delivery_list.0.item_id": "700003"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-AWARD-COIN-PENALTY",
+      "caseIds": [
+        "TC-INT-AWARD-COIN-PENALTY"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "DOU+币奖励投放 / 发奖按钮 / 投放奖励 Modal",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_items.0.candidate_id": "7655364163166869874"
+      },
+      "mockRule": "命中 DOU+币页面筛选候选发奖 penalty request 时，不发送真实后端发奖写请求，返回 marked synthetic non-success response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "charge_code": "charge_code_award_coin_7306602080",
+          "delivery_items": [
+            {
+              "candidate_id": "7655364163166869874",
+              "rank": 1
+            }
+          ],
+          "session_unix_time": 1783490000,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_items.0.candidate_id": "7655364163166869874"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate 奖励投放页 route 上下文；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate 配置 ID；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coin_7306602080",
+            "source": "synthetic_contract",
+            "reason": "充值记录必须在 verify 自然 UI 中选择并记录实际值；本字段只保持 synthetic request schema。"
+          },
+          {
+            "fieldPath": "delivery_items.0.rank",
+            "value": 1,
+            "source": "synthetic_contract",
+            "reason": "保持 `DeliveryCandidate` request shape；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783490000,
+            "source": "synthetic_contract",
+            "reason": "保持发奖会话 request shape；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+          "requestFieldsForMatching": {
+            "delivery_from": 1,
+            "delivery_items.0.candidate_id": "7655364163166869874"
+          }
+        },
+        "mockedResponse": {
+          "st": 1,
+          "code": 10017001,
+          "msg": "命中自然处罚，无法发奖"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY requires a non-success DOU+ coin award response to verify frontend no-success/no-close handling.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real DOU+ coin award request.",
+        "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY requires the frontend non-success branch for natural penalty.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit `[BAM_MOCK_SYNTHETIC_CONTRACT]` and `[BAM_MOCK_HIT]` for `R-BAM-AWARD-COIN-PENALTY`; frontend must show error/no-success and keep success close/reset from firing.",
+      "realVerify": "真实治理处罚状态、解除状态和最终发奖事务一致性必须在真实环境复验；mock 只关闭 frontend response branch。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs -> PASS after scope update; standard verify-bam-mock.mjs -> PASS after reapply; BAM inline matcher candidate_id=7655364163166869874. Business UI evidence remains owned by TC-INT-AWARD-COIN-PENALTY.",
+        "reason": "UI natural click is a write operation and must wait for patched BAM; supplemental verification audits matcher, synthetic response and marker shape before returning to verify.",
+        "verifiedAt": "2026-07-09T03:24:00+08:00"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COIN-RELIEVED",
+      "caseIds": [
+        "TC-INT-AWARD-COIN-RELIEVED"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "DOU+币奖励投放 / 发奖按钮 / 投放奖励 Modal",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_items.0.candidate_id": "700002"
+      },
+      "mockRule": "命中 DOU+币 SearchCandidate relieved candidate 发奖请求时，不发送真实后端发奖写请求，返回 marked synthetic success response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "charge_code": "charge_code_award_coin_relieved_7306602080",
+          "delivery_items": [
+            {
+              "candidate_id": "700002",
+              "rank": 2
+            }
+          ],
+          "session_unix_time": 1783568265,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_items.0.candidate_id": "700002"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate vmok 奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate 奖励配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coin_relieved_7306602080",
+            "source": "synthetic_contract",
+            "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "delivery_items.0.rank",
+            "value": 2,
+            "source": "synthetic_contract",
+            "reason": "relieved candidate 是 SearchCandidate mock 的第二行；rank 只用于保持 DeliveryCandidate 请求形态，不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783568265,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+          "requestFieldsForMatching": {
+            "delivery_from": 1,
+            "delivery_items.0.candidate_id": "700002"
+          }
+        },
+        "mockedResponse": {
+          "st": 0,
+          "code": 0,
+          "msg": "success"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-COIN-RELIEVED requires a success DOU+ coin award response to verify frontend success branch and no governance-block handling.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real DOU+ coin award request.",
+        "interfaceNecessity": "TC-INT-AWARD-COIN-RELIEVED requires the frontend success branch for governance-relieved state.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit `[BAM_MOCK_SYNTHETIC_CONTRACT]` and `[BAM_MOCK_HIT]` for `R-BAM-AWARD-COIN-RELIEVED`; frontend must not show governance failure copy and must enter success flow for `st=0/code=0`.",
+      "realVerify": "真实治理解除状态和最终发奖事务一致性必须在真实环境复验；mock 只关闭 frontend response branch。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs -> PASS after adding R-BAM-AWARD-COIN-RELIEVED; reapply-bam-mocks.mjs --apply -> PASS; BAM inline matcher candidate_id=700002 and synthetic success response are present.",
+        "reason": "Supplemental verification audits matcher, synthetic success response, marker shape and no-real-write safety before returning to verify.",
+        "verifiedAt": "2026-07-09T04:16:11.068Z"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COIN-TIMEOUT",
+      "caseIds": [
+        "TC-INT-AWARD-TIMEOUT"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "人工提报批量上传 / DOU+币奖励投放 / 发奖按钮 / 投放奖励 Modal",
+      "requestFields": {
+        "delivery_from": 2,
+        "delivery_list.0.item_id": "700003"
+      },
+      "mockRule": "命中 DOU+币上传名单发奖 timeout request 时，不发送真实后端发奖写请求，返回 marked synthetic timeout-like response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+        "body": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "charge_code": "charge_code_award_coin_timeout_7306602080",
+          "delivery_list": [
+            {
+              "item_id": "700003",
+              "delivery_config": {
+                "delivery_amount": 30000,
+                "delivery_duration": 7200,
+                "target_likes": 1,
+                "target_audience": 1,
+                "effective_time": 1783612800
+              },
+              "delivery_reason": "批量上传 timeout 可投放样本"
+            }
+          ],
+          "session_unix_time": 1783578953,
+          "delivery_from": 2
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 2,
+          "delivery_list.0.item_id": "700003"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "route_context",
+            "reason": "当前人工提报 vmok 奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "route_context",
+            "reason": "当前配置一人工提报配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coin_timeout_7306602080",
+            "source": "synthetic_contract",
+            "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "delivery_list.0.delivery_config",
+            "value": "see body.delivery_list[0].delivery_config",
+            "source": "synthetic_contract",
+            "reason": "上传名单样本由独立 sheet setup rule 自然渲染并传入 final award request；不参与 matcher。"
+          },
+          {
+            "fieldPath": "delivery_list.0.delivery_reason",
+            "value": "批量上传 timeout 可投放样本",
+            "source": "synthetic_contract",
+            "reason": "上传名单样本携带的投放原因；不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783578953,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+          "requestFieldsForMatching": {
+            "delivery_from": 2,
+            "delivery_list.0.item_id": "700003"
+          }
+        },
+        "mockedResponse": {
+          "st": 1,
+          "code": 504,
+          "msg": "timeout"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-TIMEOUT requires a timeout-like DOU+ coin award response to verify fixed frontend timeout copy and paused flow.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real DOU+ coin award request.",
+        "interfaceNecessity": "TC-INT-AWARD-TIMEOUT requires the frontend timeout branch for upload-list award submit.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit `[BAM_MOCK_SYNTHETIC_CONTRACT]` and `[BAM_MOCK_HIT]` for `R-BAM-AWARD-COIN-TIMEOUT`; frontend must show `治理校验失败，请稍后重试`, must not show success toast, and must not continue successful award flow.",
+      "realVerify": "真实 timeout / network timeout 链路和最终发奖事务暂停行为必须在真实环境复验；mock 只关闭 frontend response branch。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+        "reason": "Supplemental verification audits matcher, synthetic timeout response, marker shape and no-real-write safety before returning to verify."
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "requestFields": {},
+      "mockRule": "未命中具体 DOU+币发奖 rule 时保持原 BAM 请求逻辑；不得用 default no-op 关闭写接口 case。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoin/DEFAULT_NOOP/evidence.json"
+      },
+      "verifyAssertion": "DEFAULT_NOOP exists only as manifest fallback and is not used for TC-INT-AWARD-COIN-PENALTY closure.",
+      "realVerify": "No-hit award write requests are outside current verify case and must not be used as success evidence.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs checks wrong candidate falls back to DEFAULT_NOOP.",
+        "reason": "DEFAULT_NOOP is a structural fallback only; it is not a UI success rule.",
+        "verifiedAt": "2026-07-09T02:55:00+08:00"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiDeliveryDouPlusCoin",
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; REPLACE inline patch apiDeliveryDouPlusCoin in apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts; inline matcher includes delivery_from=2 and delivery_list.0.item_id=700003."
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiDeliveryDouPlusCoin in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts; 10 manifests reapplied.",
+    "verifiedAt": "2026-07-09T14:44:58+08:00"
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+    "verifiedAt": "2026-07-09T14:44:58+08:00"
+  }
+}

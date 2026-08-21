@@ -1,0 +1,5440 @@
+{
+  "index": 0,
+  "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+  "coverageFile": {
+    "label": "index.tsx",
+    "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+    "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+    "labels": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+      "index.tsx"
+    ],
+    "addLines": 135,
+    "insertLines": 105,
+    "coverLines": 95,
+    "uncoveredLines": 10,
+    "coverRatio": "90.48%",
+    "ignoreLines": [],
+    "ignoreReason": "",
+    "effectFiles": [
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+        "ratio": "--"
+      }
+    ]
+  },
+  "response": {
+    "requestedAt": "2026-07-16T16:22:11.788Z",
+    "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fsend-award%2Fbatch-submit-modal%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "method": "GET",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fsend-award%2Fbatch-submit-modal%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "parsed": {
+      "status": 0,
+      "message": "ok",
+      "data": [
+        {
+          "lineNum": 1,
+          "code": "import { InfoIcon, LoadingIcon } from '@ecom/auxo/es/components/icon';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 2,
+          "code": "import styles from './index.module.scss';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 3,
+          "code": "import { message, Modal, Select } from '@ecom/auxo';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 4,
+          "code": "import { useContext, useEffect, useRef, useState } from 'react';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 5,
+          "code": "import { observer } from 'mobx-react-lite';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 6,
+          "code": "import { StoreContext } from '../../../stores';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 7,
+          "code": "import {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 8,
+          "code": "  charge_amount_check_data,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 9,
+          "code": "  delivery_author_info,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 10,
+          "code": "  delivery_item_info,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 11,
+          "code": "  DeliveryAmountInfo,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 12,
+          "code": "  DeliveryCandidate,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 13,
+          "code": "  DeliveryFrom,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 14,
+          "code": "  AuthorDeliveryConfig,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 15,
+          "code": "  DouPlusCoinDeliveryInfo,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 16,
+          "code": "  DouPlusCouponDeliveryInfo,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 17,
+          "code": "  RemoveCandidateInfo,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 18,
+          "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 19,
+          "code": "import {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 20,
+          "code": "  AwardPeriod,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 21,
+          "code": "  LaunchResourceManageType,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 22,
+          "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/common';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 23,
+          "code": "import {",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 24,
+          "code": "  apiCandidateRemove,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 25,
+          "code": "  apiDeliveryDouPlusCoin,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 26,
+          "code": "  apiDeliveryDouPlusCoupon,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 27,
+          "code": "} from '@/bam/ecom.buyin.admin_api';",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 28,
+          "code": "import { MANUAL_SUBMIT_REMOVE_REASONS, MESSAGES } from '../../../constants';",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 29,
+          "code": "import { ChargeRecordBalanceInfo } from './charge-record-balance-info';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 30,
+          "code": "import { formatCouponAmount } from '../award-authors/award-author-config-editor-form';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 31,
+          "code": "import { fenToYuan } from '@/routes/content-activity/utils/utils';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 32,
+          "code": "import {",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 33,
+          "code": "  getAwardDeliveryExceptionMessage,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 34,
+          "code": "  getAwardDeliveryResponseErrorMessage,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 35,
+          "code": "  getAwardDeliveryResultCode,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 36,
+          "code": "  isAwardDeliverySuccessResponse,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 37,
+          "code": "} from '../../../utils';",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 38,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 39,
+          "code": "type SubmitAwardResult = {",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 40,
+          "code": "  resultCode: number;",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 41,
+          "code": "  errorMessage?: string;",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 42,
+          "code": "};",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 43,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 44,
+          "code": "const getCandidateRemoveResponseCode = (response?: { st?: number; code?: number }): number | undefined => {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 45,
+          "code": "  if (response?.st === 0 && response?.code === 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 46,
+          "code": "    return 0;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 47,
+          "code": "  }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 48,
+          "code": "  return response?.code ?? response?.st;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 49,
+          "code": "};",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 50,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 51,
+          "code": "const buildVideoNoAwardRemoveCandidates = (",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 52,
+          "code": "  selectedAwardVideos: delivery_item_info[] = [],",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 53,
+          "code": "): RemoveCandidateInfo[] =>",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 54,
+          "code": "  selectedAwardVideos",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 55,
+          "code": "    .filter((item) => item.if_delivery === false)",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 56,
+          "code": "    .map((item) => ({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 57,
+          "code": "      candidate_id: item.item_card?.item_model?.item_id,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 58,
+          "code": "      remove_reason:",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 59,
+          "code": "        item.if_not_incentive === true",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 60,
+          "code": "          ? MANUAL_SUBMIT_REMOVE_REASONS.notIncentive",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 61,
+          "code": "          : MANUAL_SUBMIT_REMOVE_REASONS.manual,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 62,
+          "code": "    }))",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 63,
+          "code": "    .filter((item): item is RemoveCandidateInfo & { candidate_id: string } => Boolean(item.candidate_id));",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 64,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 65,
+          "code": "const buildAuthorNoAwardRemoveCandidates = (",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 66,
+          "code": "  selectedAwardAuthors: delivery_author_info[] = [],",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 67,
+          "code": "): RemoveCandidateInfo[] =>",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 68,
+          "code": "  selectedAwardAuthors",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 69,
+          "code": "    .filter((item) => item.if_delivery === false)",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 70,
+          "code": "    .map((item) => ({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 71,
+          "code": "      candidate_id: item.author_info?.author_id,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 72,
+          "code": "      remove_reason: MANUAL_SUBMIT_REMOVE_REASONS.manual,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 73,
+          "code": "    }))",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 74,
+          "code": "    .filter((item): item is RemoveCandidateInfo & { candidate_id: string } => Boolean(item.candidate_id));",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 75,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 76,
+          "code": "const uploadNoAwardRemoveCandidates = async ({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 77,
+          "code": "  activityId,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 78,
+          "code": "  configId,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 79,
+          "code": "  removeCandidates,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 80,
+          "code": "}: {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 81,
+          "code": "  activityId?: string;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 82,
+          "code": "  configId?: string;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 83,
+          "code": "  removeCandidates: RemoveCandidateInfo[];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 84,
+          "code": "}) => {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 85,
+          "code": "  if (removeCandidates.length === 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 86,
+          "code": "    return;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 87,
+          "code": "  }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 88,
+          "code": "  if (!activityId || !configId) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 89,
+          "code": "    message.warning('不发奖名单上传失败');",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 90,
+          "code": "    return;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 91,
+          "code": "  }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 92,
+          "code": "  try {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 93,
+          "code": "    const response = await apiCandidateRemove({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 94,
+          "code": "      activity_id: activityId,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 95,
+          "code": "      config_id: configId,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 96,
+          "code": "      remove_candidates: removeCandidates,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 97,
+          "code": "    });",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 98,
+          "code": "    if (getCandidateRemoveResponseCode(response) !== 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 99,
+          "code": "      message.warning(response?.msg || '不发奖名单上传失败');",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 100,
+          "code": "    }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 101,
+          "code": "  } catch {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 102,
+          "code": "    message.warning('不发奖名单上传失败');",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 103,
+          "code": "  }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 104,
+          "code": "};",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 105,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 106,
+          "code": "async function submitSendAwardVideos({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 107,
+          "code": "  activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 108,
+          "code": "  config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 109,
+          "code": "  charge_code,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 110,
+          "code": "  delivery_items,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 111,
+          "code": "  delivery_list,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 112,
+          "code": "  session_unix_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 113,
+          "code": "  delivery_from,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 114,
+          "code": "}: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 115,
+          "code": "  activity_id: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 116,
+          "code": "  config_id: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 117,
+          "code": "  charge_code: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 118,
+          "code": "  delivery_items: Array<DeliveryCandidate>;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 119,
+          "code": "  delivery_list?: Array<DouPlusCoinDeliveryInfo>;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 120,
+          "code": "  session_unix_time: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 121,
+          "code": "  delivery_from: DeliveryFrom;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 122,
+          "code": "}): Promise<SubmitAwardResult> {",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 123,
+          "code": "  const submitList =",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 124,
+          "code": "    delivery_from === DeliveryFrom.UploadCandidate ? delivery_list ?? [] : delivery_items ?? [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 125,
+          "code": "  if (submitList.length === 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 126,
+          "code": "    return { resultCode: 0 };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 127,
+          "code": "  }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 128,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 129,
+          "code": "  let resultCode = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 130,
+          "code": "  let errorMessage: string | undefined;",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 131,
+          "code": "  try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 132,
+          "code": "    const res = await apiDeliveryDouPlusCoin({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 133,
+          "code": "      activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 134,
+          "code": "      config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 135,
+          "code": "      charge_code,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 136,
+          "code": "      delivery_list: delivery_from === DeliveryFrom.UploadCandidate ? delivery_list : undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 137,
+          "code": "      delivery_items: delivery_from === DeliveryFrom.UploadCandidate ? undefined : delivery_items,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 138,
+          "code": "      session_unix_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 139,
+          "code": "      delivery_from,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 140,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 141,
+          "code": "    resultCode = getAwardDeliveryResultCode(res);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 142,
+          "code": "    if (isAwardDeliverySuccessResponse(res)) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 143,
+          "code": "      message.success(MESSAGES.SEND_AWARD_VIDEOS_SUCCESS);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 144,
+          "code": "    } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 145,
+          "code": "      errorMessage = getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_VIDEOS_FAILED);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 146,
+          "code": "      message.error(errorMessage);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 147,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 148,
+          "code": "  } catch (error) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 149,
+          "code": "    resultCode = -1;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 150,
+          "code": "    errorMessage = getAwardDeliveryExceptionMessage(error);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 151,
+          "code": "    message.error(errorMessage);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 152,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 153,
+          "code": "  return { resultCode, errorMessage };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 154,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 155,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 156,
+          "code": "async function submitSendAwardAuthors({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 157,
+          "code": "  activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 158,
+          "code": "  config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 159,
+          "code": "  charge_code,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 160,
+          "code": "  delivery_authors,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 161,
+          "code": "  delivery_list,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 162,
+          "code": "  session_unix_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 163,
+          "code": "  publish_start_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 164,
+          "code": "  publish_end_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 165,
+          "code": "  award_period,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 166,
+          "code": "  delivery_from,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 167,
+          "code": "}: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 168,
+          "code": "  activity_id: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 169,
+          "code": "  config_id: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 170,
+          "code": "  charge_code: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 171,
+          "code": "  delivery_authors: Array<DeliveryCandidate>;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 172,
+          "code": "  delivery_list?: Array<DouPlusCouponDeliveryInfo>;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 173,
+          "code": "  session_unix_time: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 174,
+          "code": "  publish_start_time?: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 175,
+          "code": "  publish_end_time?: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 176,
+          "code": "  award_period?: AwardPeriod;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 177,
+          "code": "  delivery_from: DeliveryFrom;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 178,
+          "code": "}): Promise<SubmitAwardResult> {",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 179,
+          "code": "  const submitList =",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 180,
+          "code": "    delivery_from === DeliveryFrom.UploadCandidate ? delivery_list ?? [] : delivery_authors ?? [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 181,
+          "code": "  if (submitList.length === 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 182,
+          "code": "    return { resultCode: 0 };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 183,
+          "code": "  }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 184,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 185,
+          "code": "  let resultCode = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 186,
+          "code": "  let errorMessage: string | undefined;",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 187,
+          "code": "  try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 188,
+          "code": "    const res = await apiDeliveryDouPlusCoupon({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 189,
+          "code": "      activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 190,
+          "code": "      config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 191,
+          "code": "      charge_code,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 192,
+          "code": "      delivery_list: delivery_from === DeliveryFrom.UploadCandidate ? delivery_list : undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 193,
+          "code": "      delivery_authors: delivery_from === DeliveryFrom.UploadCandidate ? undefined : delivery_authors,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 194,
+          "code": "      session_unix_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 195,
+          "code": "      publish_start_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 196,
+          "code": "      publish_end_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 197,
+          "code": "      award_period,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 198,
+          "code": "      delivery_from,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 199,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 200,
+          "code": "    resultCode = getAwardDeliveryResultCode(res);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 201,
+          "code": "    if (isAwardDeliverySuccessResponse(res)) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 202,
+          "code": "      message.success(MESSAGES.SEND_AWARD_AUTHORS_SUCCESS);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 203,
+          "code": "    } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 204,
+          "code": "      errorMessage = getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_AUTHORS_FAILED);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 205,
+          "code": "      message.error(errorMessage);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 206,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 207,
+          "code": "  } catch (error) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 208,
+          "code": "    resultCode = -1;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 209,
+          "code": "    errorMessage = getAwardDeliveryExceptionMessage(error);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 210,
+          "code": "    message.error(errorMessage);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 211,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 212,
+          "code": "  return { resultCode, errorMessage };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 213,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 214,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 215,
+          "code": "function BatchSubmitInfoVideo({ selectedAwardVideos }: { selectedAwardVideos?: delivery_item_info[] }) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 216,
+          "code": "  let totalSubmitNum = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 217,
+          "code": "  let totalAwardAmountFen = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 218,
+          "code": "  if (selectedAwardVideos) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 219,
+          "code": "    const awardVideos = selectedAwardVideos.filter((item) => item.if_delivery === true);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 220,
+          "code": "    totalSubmitNum = awardVideos?.length ?? 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 221,
+          "code": "    totalAwardAmountFen = awardVideos?.reduce(",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 222,
+          "code": "      (acc, cur) => acc + (cur.delivery_config?.delivery_amount ?? 0),",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 223,
+          "code": "      0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 224,
+          "code": "    );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 225,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 226,
+          "code": "  const totalAwardAmount = fenToYuan(totalAwardAmountFen) ?? 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 227,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 228,
+          "code": "  const infoText = `本次共投放 ${totalSubmitNum} 个作品，预计占用 ${totalAwardAmount} 元DOU+币`;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 229,
+          "code": "  return (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 230,
+          "code": "    <div className={styles.batchSubmitInfo}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 231,
+          "code": "      <InfoIcon className={styles.infoIcon} />",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 232,
+          "code": "      <span className={styles.infoText}>{infoText}</span>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 233,
+          "code": "    </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 234,
+          "code": "  );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 235,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 236,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 237,
+          "code": "function BatchSubmitInfoAuthor({ selectedAwardAuthors }: { selectedAwardAuthors?: delivery_author_info[] }) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 238,
+          "code": "  const {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 239,
+          "code": "    store: { sendAwardToAuthorStore },",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 240,
+          "code": "  } = useContext(StoreContext);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 241,
+          "code": "  let totalSubmitNum = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 242,
+          "code": "  let couponText = '-';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 243,
+          "code": "  if (selectedAwardAuthors) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 244,
+          "code": "    const awardAuthors = selectedAwardAuthors.filter((item) => item.if_delivery === true);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 245,
+          "code": "    totalSubmitNum = awardAuthors?.length ?? 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 246,
+          "code": "    const sampleConfig = awardAuthors.find(",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 247,
+          "code": "      (item) => item.delivery_config?.coupon_config || item.delivery_config?.coupon_type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 248,
+          "code": "    )?.delivery_config;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 249,
+          "code": "    const fallbackCouponType = sendAwardToAuthorStore.award_config?.douPlusCouponAwardSetInfo?.couponType;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 250,
+          "code": "    const fallbackCouponConfig = sendAwardToAuthorStore.award_config?.douPlusCouponAwardSetInfo?.config;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 251,
+          "code": "    const fallbackConfig: AuthorDeliveryConfig | undefined =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 252,
+          "code": "      fallbackCouponType && fallbackCouponConfig",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 253,
+          "code": "        ? {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 254,
+          "code": "            coupon_type: fallbackCouponType,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 255,
+          "code": "            coupon_config: fallbackCouponConfig,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 256,
+          "code": "          }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 257,
+          "code": "        : undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 258,
+          "code": "    couponText = formatCouponAmount(sampleConfig ?? fallbackConfig);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 259,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 260,
+          "code": "  const couponContent = couponText !== '-' ? `${couponText}的DOU+券` : 'DOU+券';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 261,
+          "code": "  const infoText = `本次共投放 ${totalSubmitNum} 位作者，预计占用 ${totalSubmitNum} 张${couponContent}。`;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 262,
+          "code": "  return (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 263,
+          "code": "    <div className={styles.batchSubmitInfo}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 264,
+          "code": "      <InfoIcon className={styles.infoIcon} />",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 265,
+          "code": "      <div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 266,
+          "code": "        <div className={styles.infoText}>{infoText}</div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 267,
+          "code": "        <div className={styles.infoText}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 268,
+          "code": "          【温馨提示】DOU+券可能制券失败，发券后请关注飞书消息，若制券失败将飞书通知。",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 269,
+          "code": "        </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 270,
+          "code": "      </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 271,
+          "code": "    </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 272,
+          "code": "  );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 273,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 274,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 275,
+          "code": "const RecordValidationState = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 276,
+          "code": "  Empty: 0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 277,
+          "code": "  Loading: 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 278,
+          "code": "  Valid: 2,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 279,
+          "code": "  Invalid: 3,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 280,
+          "code": "};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 281,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 282,
+          "code": "function BatchSubmitModal({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 283,
+          "code": "  type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 284,
+          "code": "  submitFrom = DeliveryFrom.SearchCandidate,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 285,
+          "code": "  activityId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 286,
+          "code": "  configId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 287,
+          "code": "  sessionUnixTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 288,
+          "code": "  publishStartTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 289,
+          "code": "  publishEndTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 290,
+          "code": "  awardPeriod,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 291,
+          "code": "  visible,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 292,
+          "code": "  selectedAwardVideos,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 293,
+          "code": "  selectedAwardAuthors,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 294,
+          "code": "  onCancel,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 295,
+          "code": "  onOk,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 296,
+          "code": "}: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 297,
+          "code": "  type: 'video' | 'author';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 298,
+          "code": "  submitFrom?: DeliveryFrom;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 299,
+          "code": "  activityId?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 300,
+          "code": "  configId?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 301,
+          "code": "  sessionUnixTime?: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 302,
+          "code": "  publishStartTime?: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 303,
+          "code": "  publishEndTime?: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 304,
+          "code": "  awardPeriod?: AwardPeriod;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 305,
+          "code": "  visible: boolean;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 306,
+          "code": "  selectedAwardVideos?: delivery_item_info[];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 307,
+          "code": "  selectedAwardAuthors?: delivery_author_info[];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 308,
+          "code": "  onCancel?: () => void;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 309,
+          "code": "  onOk?: () => void;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 310,
+          "code": "}) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 311,
+          "code": "  const {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 312,
+          "code": "    store: { chargeRecordStore, dataStore },",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 313,
+          "code": "  } = useContext(StoreContext);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 314,
+          "code": "  const {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 315,
+          "code": "    chargeRecords,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 316,
+          "code": "    initData,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 317,
+          "code": "    loadMore,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 318,
+          "code": "    checkRecordValid,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 319,
+          "code": "    sessionId: chargeStoreSessionId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 320,
+          "code": "    increaseSessionId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 321,
+          "code": "    getChargeRecordByCode,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 322,
+          "code": "  } = chargeRecordStore;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 323,
+          "code": "  const [isLoadingChargeRecord, setIsLoadingChargeRecord] = useState(false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 324,
+          "code": "  const [isSubmitting, setIsSubmitting] = useState(false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 325,
+          "code": "  const [recordValidationState, setRecordValidationState] = useState(RecordValidationState.Empty);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 326,
+          "code": "  const [recordCheckResult, setRecordCheckResult] = useState<charge_amount_check_data | undefined>(undefined);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 327,
+          "code": "  const [submitErrorMessage, setSubmitErrorMessage] = useState<string | undefined>(undefined);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 328,
+          "code": "  const selectedChargeRecordCodeRef = useRef<string | undefined>(undefined);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 329,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 330,
+          "code": "  const chargeRecordCheckRequestSeqRef = useRef(0);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 331,
+          "code": "  const visibleRef = useRef(visible);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 332,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 333,
+          "code": "  useEffect(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 334,
+          "code": "    visibleRef.current = visible;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 335,
+          "code": "    if (!visible) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 336,
+          "code": "      chargeRecordCheckRequestSeqRef.current += 1;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 337,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 338,
+          "code": "  }, [visible]);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 339,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 340,
+          "code": "  useEffect(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 341,
+          "code": "    return () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 342,
+          "code": "      chargeRecordCheckRequestSeqRef.current += 1;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 343,
+          "code": "    };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 344,
+          "code": "  }, []);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 345,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 346,
+          "code": "  const resetAllState = () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 347,
+          "code": "    setIsLoadingChargeRecord(false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 348,
+          "code": "    setIsSubmitting(false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 349,
+          "code": "    setRecordValidationState(RecordValidationState.Empty);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 350,
+          "code": "    setRecordCheckResult(undefined);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 351,
+          "code": "    setSubmitErrorMessage(undefined);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 352,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 353,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 354,
+          "code": "  const loadMoreChargeRecord = async () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 355,
+          "code": "    let result = false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 356,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 357,
+          "code": "      result = await loadMore();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 358,
+          "code": "    } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 359,
+          "code": "      message.error('加载更多充值记录失败');",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 360,
+          "code": "      result = false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 361,
+          "code": "    } finally {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 362,
+          "code": "      setIsLoadingChargeRecord(false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 363,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 364,
+          "code": "    return result;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 365,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 366,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 367,
+          "code": "  useEffect(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 368,
+          "code": "    if (!visible) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 369,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 370,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 371,
+          "code": "    chargeRecordStore.setProjectId(dataStore.activityDetail?.project_info?.project_id);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 372,
+          "code": "    chargeRecordStore.setResourceType(",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 373,
+          "code": "      type === 'video' ? LaunchResourceManageType.DOUPlUS_COIN : LaunchResourceManageType.DOUPlUS_COUPON,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 374,
+          "code": "    );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 375,
+          "code": "    initData();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 376,
+          "code": "  }, [",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 377,
+          "code": "    visible,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 378,
+          "code": "    type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 379,
+          "code": "    chargeStoreSessionId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 380,
+          "code": "    dataStore.activityDetail?.project_info?.project_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 381,
+          "code": "    chargeRecordStore,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 382,
+          "code": "    initData,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 383,
+          "code": "  ]);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 384,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 385,
+          "code": "  const handleChargeRecordChange = async (value: string) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 386,
+          "code": "    chargeRecordCheckRequestSeqRef.current += 1;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 387,
+          "code": "    const requestSeq = chargeRecordCheckRequestSeqRef.current;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 388,
+          "code": "    selectedChargeRecordCodeRef.current = value;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 389,
+          "code": "    setSubmitErrorMessage(undefined);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 390,
+          "code": "    setRecordValidationState(RecordValidationState.Loading);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 391,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 392,
+          "code": "    const shouldApplyResult = () =>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 393,
+          "code": "      chargeRecordCheckRequestSeqRef.current === requestSeq &&",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 394,
+          "code": "      selectedChargeRecordCodeRef.current === value &&",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 395,
+          "code": "      visibleRef.current;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 396,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 397,
+          "code": "    let checkResult: charge_amount_check_data | undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 398,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 399,
+          "code": "      switch (type) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 400,
+          "code": "        case 'author': {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 401,
+          "code": "          const deliveryList: DeliveryAmountInfo[] =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 402,
+          "code": "            submitFrom === DeliveryFrom.UploadCandidate",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 403,
+          "code": "              ? selectedAwardAuthors",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 404,
+          "code": "                  ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 405,
+          "code": "                  .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 406,
+          "code": "                    num: item.delivery_config?.num ?? 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 407,
+          "code": "                  })) ?? []",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 408,
+          "code": "              : [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 409,
+          "code": "          const deliveryAuthors =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 410,
+          "code": "            selectedAwardAuthors",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 411,
+          "code": "              ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 412,
+          "code": "              .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 413,
+          "code": "                candidate_id: item.author_info?.author_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 414,
+          "code": "                rank: item.rank,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 415,
+          "code": "              }))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 416,
+          "code": "              .filter((item) => item.candidate_id) ?? [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 417,
+          "code": "          checkResult = await checkRecordValid({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 418,
+          "code": "            activity_id: activityId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 419,
+          "code": "            config_id: configId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 420,
+          "code": "            charge_code: value,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 421,
+          "code": "            delivery_list: deliveryList,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 422,
+          "code": "            delivery_candidates: submitFrom === DeliveryFrom.UploadCandidate ? undefined : deliveryAuthors,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 423,
+          "code": "            session_unix_time: sessionUnixTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 424,
+          "code": "            delivery_from: submitFrom,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 425,
+          "code": "          });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 426,
+          "code": "          break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 427,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 428,
+          "code": "        case 'video': {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 429,
+          "code": "          const deliveryList: DeliveryAmountInfo[] =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 430,
+          "code": "            submitFrom === DeliveryFrom.UploadCandidate",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 431,
+          "code": "              ? selectedAwardVideos",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 432,
+          "code": "                  ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 433,
+          "code": "                  .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 434,
+          "code": "                    amount: item.delivery_config?.delivery_amount,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 435,
+          "code": "                  })) ?? []",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 436,
+          "code": "              : [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 437,
+          "code": "          const deliveryItems =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 438,
+          "code": "            selectedAwardVideos",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 439,
+          "code": "              ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 440,
+          "code": "              .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 441,
+          "code": "                candidate_id: item.item_card?.item_model?.item_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 442,
+          "code": "                rank: item.rank,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 443,
+          "code": "              }))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 444,
+          "code": "              .filter((item) => item.candidate_id) ?? [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 445,
+          "code": "          checkResult = await checkRecordValid({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 446,
+          "code": "            activity_id: activityId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 447,
+          "code": "            config_id: configId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 448,
+          "code": "            charge_code: value,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 449,
+          "code": "            delivery_list: deliveryList,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 450,
+          "code": "            delivery_candidates: submitFrom === DeliveryFrom.UploadCandidate ? undefined : deliveryItems,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 451,
+          "code": "            session_unix_time: sessionUnixTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 452,
+          "code": "            delivery_from: submitFrom,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 453,
+          "code": "          });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 454,
+          "code": "          break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 455,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 456,
+          "code": "        default:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 457,
+          "code": "          if (!shouldApplyResult()) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 458,
+          "code": "            return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 459,
+          "code": "          }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 460,
+          "code": "          setRecordValidationState(RecordValidationState.Invalid);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 461,
+          "code": "          setRecordCheckResult(undefined);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 462,
+          "code": "          return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 463,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 464,
+          "code": "    } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 465,
+          "code": "      if (!shouldApplyResult()) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 466,
+          "code": "        return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 467,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 468,
+          "code": "      setRecordValidationState(RecordValidationState.Invalid);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 469,
+          "code": "      setRecordCheckResult(undefined);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 470,
+          "code": "      message.error('校验充值记录失败');",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 471,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 472,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 473,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 474,
+          "code": "    if (!shouldApplyResult()) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 475,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 476,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 477,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 478,
+          "code": "    const { can_delivery = false } = checkResult ?? {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 479,
+          "code": "    setRecordValidationState(can_delivery ? RecordValidationState.Valid : RecordValidationState.Invalid);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 480,
+          "code": "    setRecordCheckResult(checkResult);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 481,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 482,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 483,
+          "code": "  const handleOkClick = async () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 484,
+          "code": "    if (isSubmitting) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 485,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 486,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 487,
+          "code": "    if (recordValidationState !== RecordValidationState.Valid) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 488,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 489,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 490,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 491,
+          "code": "    setIsSubmitting(true);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 492,
+          "code": "    setSubmitErrorMessage(undefined);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 493,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 494,
+          "code": "      void getChargeRecordByCode(selectedChargeRecordCodeRef.current ?? '');",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 495,
+          "code": "      let submitResult: SubmitAwardResult = { resultCode: -1 };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 496,
+          "code": "      let noAwardRemoveCandidates: RemoveCandidateInfo[] = [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 497,
+          "code": "      switch (type) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 498,
+          "code": "        case 'author': {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 499,
+          "code": "          const deliveryList: DouPlusCouponDeliveryInfo[] =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 500,
+          "code": "            submitFrom === DeliveryFrom.UploadCandidate",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 501,
+          "code": "              ? selectedAwardAuthors",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 502,
+          "code": "                  ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 503,
+          "code": "                  .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 504,
+          "code": "                    item_id: item.author_info?.author_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 505,
+          "code": "                    delivery_config: item.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 506,
+          "code": "                  }))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 507,
+          "code": "                  .filter((item) => item.item_id) ?? []",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 508,
+          "code": "              : [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 509,
+          "code": "          const deliveryAuthors =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 510,
+          "code": "            selectedAwardAuthors",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 511,
+          "code": "              ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 512,
+          "code": "              .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 513,
+          "code": "                candidate_id: item.author_info?.author_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 514,
+          "code": "                rank: item.rank,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 515,
+          "code": "              }))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 516,
+          "code": "              .filter((item) => item.candidate_id) ?? [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 517,
+          "code": "          noAwardRemoveCandidates = buildAuthorNoAwardRemoveCandidates(selectedAwardAuthors);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 518,
+          "code": "          submitResult = await submitSendAwardAuthors({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 519,
+          "code": "            activity_id: activityId ?? '',",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 520,
+          "code": "            config_id: configId ?? '',",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 521,
+          "code": "            charge_code: selectedChargeRecordCodeRef.current ?? '',",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 522,
+          "code": "            delivery_authors: deliveryAuthors,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 523,
+          "code": "            delivery_list: deliveryList,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 524,
+          "code": "            session_unix_time: sessionUnixTime ?? 0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 525,
+          "code": "            publish_start_time: publishStartTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 526,
+          "code": "            publish_end_time: publishEndTime,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 527,
+          "code": "            award_period: awardPeriod,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 528,
+          "code": "            delivery_from: submitFrom,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 529,
+          "code": "          });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 530,
+          "code": "          break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 531,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 532,
+          "code": "        case 'video': {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 533,
+          "code": "          const deliveryList: DouPlusCoinDeliveryInfo[] =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 534,
+          "code": "            submitFrom === DeliveryFrom.UploadCandidate",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 535,
+          "code": "              ? selectedAwardVideos",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 536,
+          "code": "                  ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 537,
+          "code": "                  .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 538,
+          "code": "                    item_id: item.item_card?.item_model?.item_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 539,
+          "code": "                    delivery_config: item.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 540,
+          "code": "                    delivery_reason: item.delivery_reason,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 541,
+          "code": "                  }))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 542,
+          "code": "                  .filter((item) => item.item_id) ?? []",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 543,
+          "code": "              : [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 544,
+          "code": "          const deliveryItems =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 545,
+          "code": "            selectedAwardVideos",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 546,
+          "code": "              ?.filter((item) => item.if_delivery === true)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 547,
+          "code": "              .map((item) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 548,
+          "code": "                candidate_id: item.item_card?.item_model?.item_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 549,
+          "code": "                rank: item.rank,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 550,
+          "code": "              }))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 551,
+          "code": "              .filter((item) => item.candidate_id) ?? [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 552,
+          "code": "          noAwardRemoveCandidates = buildVideoNoAwardRemoveCandidates(selectedAwardVideos);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 553,
+          "code": "          submitResult = await submitSendAwardVideos({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 554,
+          "code": "            activity_id: activityId ?? '',",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 555,
+          "code": "            config_id: configId ?? '',",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 556,
+          "code": "            charge_code: selectedChargeRecordCodeRef.current ?? '',",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 557,
+          "code": "            delivery_items: deliveryItems,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 558,
+          "code": "            delivery_list: deliveryList,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 559,
+          "code": "            session_unix_time: sessionUnixTime ?? 0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 560,
+          "code": "            delivery_from: submitFrom,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 561,
+          "code": "          });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 562,
+          "code": "          break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 563,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 564,
+          "code": "        default:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 565,
+          "code": "          return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 566,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 567,
+          "code": "      if (submitResult.resultCode === 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 568,
+          "code": "        await uploadNoAwardRemoveCandidates({",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 569,
+          "code": "          activityId,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 570,
+          "code": "          configId,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 571,
+          "code": "          removeCandidates: noAwardRemoveCandidates,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 572,
+          "code": "        });",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 573,
+          "code": "        onOk?.();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 574,
+          "code": "        resetAllState();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 575,
+          "code": "        increaseSessionId();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 576,
+          "code": "      } else if (submitResult.errorMessage) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 577,
+          "code": "        setSubmitErrorMessage(submitResult.errorMessage);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 578,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 579,
+          "code": "    } finally {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 580,
+          "code": "      setIsSubmitting(false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 581,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 582,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 583,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 584,
+          "code": "  const handleCancelClick = () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 585,
+          "code": "    chargeRecordCheckRequestSeqRef.current += 1;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 586,
+          "code": "    onCancel?.();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 587,
+          "code": "    resetAllState();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 588,
+          "code": "    increaseSessionId();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 589,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 590,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 591,
+          "code": "  return (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 592,
+          "code": "    <Modal",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 593,
+          "code": "      visible={visible}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 594,
+          "code": "      title=\"投放奖励\"",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 595,
+          "code": "      okText=\"确定\"",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 596,
+          "code": "      cancelText=\"取消\"",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 597,
+          "code": "      onCancel={handleCancelClick}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 598,
+          "code": "      onOk={handleOkClick}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 599,
+          "code": "      confirmLoading={isSubmitting}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 600,
+          "code": "      okButtonProps={{",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 601,
+          "code": "        disabled: recordValidationState !== RecordValidationState.Valid || isSubmitting,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 602,
+          "code": "      }}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 603,
+          "code": "      destroyOnClose={true}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 604,
+          "code": "      size=\"small\"",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 605,
+          "code": "    >",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 606,
+          "code": "      <div className={styles.batchSubmitModal}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 607,
+          "code": "        {(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 608,
+          "code": "          switch (type) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 609,
+          "code": "            case 'author':",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 610,
+          "code": "              return <BatchSubmitInfoAuthor selectedAwardAuthors={selectedAwardAuthors} />;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 611,
+          "code": "            case 'video':",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 612,
+          "code": "              return <BatchSubmitInfoVideo selectedAwardVideos={selectedAwardVideos} />;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 613,
+          "code": "            default:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 614,
+          "code": "              return null;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 615,
+          "code": "          }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 616,
+          "code": "        })()}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 617,
+          "code": "        <div className={styles.chargeRecord}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 618,
+          "code": "          <span className={styles.chargeRecordLabel}>关联充值记录</span>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 619,
+          "code": "          <div className={styles.chargeRecordSelection}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 620,
+          "code": "            <Select",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 621,
+          "code": "              style={{ width: '100%' }}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 622,
+          "code": "              loading={isLoadingChargeRecord}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 623,
+          "code": "              onChange={handleChargeRecordChange}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 624,
+          "code": "              loadMore={loadMoreChargeRecord}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 625,
+          "code": "              showSearch={true}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 626,
+          "code": "              filterOption={(input, option) =>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 627,
+          "code": "                option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 628,
+          "code": "              }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 629,
+          "code": "              filterSort={(optionA, optionB) =>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 630,
+          "code": "                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 631,
+          "code": "              }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 632,
+          "code": "            >",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 633,
+          "code": "              {chargeRecords.map((item) => (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 634,
+          "code": "                <Select.Option key={item.charge_code} value={item.charge_code ?? ''}>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 635,
+          "code": "                  {item.charge_name}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 636,
+          "code": "                </Select.Option>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 637,
+          "code": "              ))}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 638,
+          "code": "            </Select>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 639,
+          "code": "            <>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 640,
+          "code": "              {recordValidationState === RecordValidationState.Empty && (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 641,
+          "code": "                <ChargeRecordBalanceInfo variant=\"empty\" />",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 642,
+          "code": "              )}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 643,
+          "code": "              {recordValidationState === RecordValidationState.Loading && (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 644,
+          "code": "                <LoadingIcon className={styles.chargeRecordLoading} />",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 645,
+          "code": "              )}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 646,
+          "code": "              {recordValidationState === RecordValidationState.Valid && (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 647,
+          "code": "                <ChargeRecordBalanceInfo",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 648,
+          "code": "                  variant=\"valid\"",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 649,
+          "code": "                  leftAmount={recordCheckResult?.left_amount}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 650,
+          "code": "                  useAmount={recordCheckResult?.current_use_amount}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 651,
+          "code": "                />",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 652,
+          "code": "              )}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 653,
+          "code": "              {recordValidationState === RecordValidationState.Invalid && (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 654,
+          "code": "                <ChargeRecordBalanceInfo",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 655,
+          "code": "                  variant=\"invalid\"",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 656,
+          "code": "                  leftAmount={recordCheckResult?.left_amount}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 657,
+          "code": "                  useAmount={recordCheckResult?.current_use_amount}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 658,
+          "code": "                />",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 659,
+          "code": "              )}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 660,
+          "code": "            </>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 661,
+          "code": "          </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 662,
+          "code": "        </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 663,
+          "code": "        {submitErrorMessage && (",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 664,
+          "code": "          <div className={styles.submitErrorMessage} role=\"alert\">",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 665,
+          "code": "            {submitErrorMessage}",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 666,
+          "code": "          </div>",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 667,
+          "code": "        )}",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 668,
+          "code": "      </div>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 669,
+          "code": "    </Modal>",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 670,
+          "code": "  );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 671,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 672,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 673,
+          "code": "export default observer(BatchSubmitModal);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 674,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        }
+      ]
+    }
+  }
+}

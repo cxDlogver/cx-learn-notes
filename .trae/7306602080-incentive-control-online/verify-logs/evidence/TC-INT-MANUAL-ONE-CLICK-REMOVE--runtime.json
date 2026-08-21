@@ -1,0 +1,197 @@
+{
+  "case_id": "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+  "captured_at": "2026-07-08T15:37:28.007Z",
+  "browser": {
+    "tool": "integrated_browser",
+    "view_id": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "headless": false,
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "page_title": "内容生态运营｜橙蕉"
+  },
+  "precondition_rebuild": {
+    "reason": "Page was re-navigated after BAM reapply so the active bundle loaded the latest apiCandidateRemove patch before the write-interface click.",
+    "natural_ui_steps": [
+      "click 新增提报",
+      "type 100001,100002,100003 into 输入视频ID，支持批量，用逗号分隔",
+      "click 提交",
+      "wait until 一键移除 appears"
+    ],
+    "manual_search_rule": "R-BAM-MANUAL-SEARCH-HIT"
+  },
+  "before": {
+    "captured_at": "2026-07-08T15:36:33.298Z",
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "one_click_remove_button": {
+      "text": "一键移除",
+      "disabled": false,
+      "rect": {
+        "x": 1285,
+        "y": 258,
+        "width": 91,
+        "height": 32
+      },
+      "class_name": "auxo-btn auxo-btn-primary"
+    },
+    "export_button": {
+      "text": "导出剔除明细",
+      "disabled": false,
+      "rect": {
+        "x": 1384,
+        "y": 258,
+        "width": 119,
+        "height": 32
+      },
+      "class_name": "auxo-btn"
+    },
+    "rows": [
+      {
+        "index": 1,
+        "item_id": "100001",
+        "text": "1 视频标题：人工提报准入失败作品 视频ID：100001 不满足准入门槛 请选择 请选择 请选择 - - 移除"
+      },
+      {
+        "index": 2,
+        "item_id": "100002",
+        "text": "2 视频标题：人工提报不激励命中作品 视频ID：100002 命中【不激励】规则 请选择 请选择 请选择 - - 移除"
+      },
+      {
+        "index": 3,
+        "item_id": "100003",
+        "text": "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 - - 移除"
+      }
+    ],
+    "item_presence": {
+      "100001": true,
+      "100002": true,
+      "100003": true,
+      "invalid_label": true,
+      "not_incentive_label": true
+    },
+    "forbidden_text": {
+      "appeal": false,
+      "fake_award_success": false
+    },
+    "screenshot": "screenshots/TC-INT-MANUAL-ONE-CLICK-REMOVE--manual-hit--summary-action-before.png"
+  },
+  "action": {
+    "type": "natural_browser_click",
+    "target": "一键移除",
+    "snapshot_ref": "e28",
+    "result_snapshot": "after click snapshot showed only row 100003 and transient check-circle icon"
+  },
+  "bam_mock_markers": {
+    "synthetic_contract": {
+      "event": "BAM_MOCK_SYNTHETIC_CONTRACT",
+      "api": {
+        "apiName": "apiCandidateRemove",
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/candidate_remove"
+      },
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-SUCCESS",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "100001",
+            "remove_reason": "手动移除"
+          },
+          {
+            "candidate_id": "100002",
+            "remove_reason": "命中【不激励】规则"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      },
+      "reason": "MOCK_PREVIEW write-interface safety: candidate_remove must not be sent to real backend; runtime returns marked synthetic success."
+    },
+    "hit": {
+      "event": "BAM_MOCK_HIT",
+      "api": {
+        "apiName": "apiCandidateRemove",
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/candidate_remove"
+      },
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-SUCCESS",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "100001",
+            "remove_reason": "手动移除"
+          },
+          {
+            "candidate_id": "100002",
+            "remove_reason": "命中【不激励】规则"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      }
+    }
+  },
+  "network_summary": {
+    "browser_network_tool_log": "tool output summarized; raw temp log not persisted because it includes request URLs with auth token query parameters",
+    "observed_search_delivery_items": [
+      {
+        "method": "GET",
+        "url_sanitized": "https://ecop.bytedance.net/api/buyin/admin/content_activity/search_delivery_items?activity_id=7653282555822653742&config_id=7653282555822735662&page_no=1&page_size=50&item_ids=100001%2C100002%2C100003&session_unix_time=1783524932&candidate_pool_type=2&__token=<redacted>",
+        "resource_type": "XHR"
+      }
+    ],
+    "observed_real_candidate_remove_requests": [],
+    "interpretation": "No real candidate_remove XHR/fetch request was sent; request body evidence is supplied by the BAM synthetic contract marker and BAM_MOCK_HIT marker."
+  },
+  "after": {
+    "captured_at": "2026-07-08T15:37:28.007Z",
+    "rows": [
+      {
+        "index": 1,
+        "item_id": "100003",
+        "text": "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 - - 移除"
+      }
+    ],
+    "item_presence": {
+      "100001": false,
+      "100002": false,
+      "100003": true,
+      "invalid_label": false,
+      "not_incentive_label": false
+    },
+    "summary_still_visible": false,
+    "one_click_remove_visible": false,
+    "export_remove_visible": false,
+    "submit_and_deliver_visible": true,
+    "negative_side_effects": {
+      "batch_upload_modal_opened": false,
+      "appeal_visible": false,
+      "fake_award_success": false,
+      "remove_error_text": false
+    },
+    "screenshot": "screenshots/TC-INT-MANUAL-ONE-CLICK-REMOVE--manual-hit-removed--drawer-after-remove.png"
+  },
+  "assertion_mapping": {
+    "positive_assertion": "PASS: remove_candidates includes candidate_id 100001/remove_reason 手动移除 and candidate_id 100002/remove_reason 命中【不激励】规则; synthetic success response st=0/code=0; rows 100001 and 100002 disappeared after click.",
+    "negative_assertion": "PASS_WITH_NOTES: default/error path was not triggered in this positive success run; valid row 100003 remained and no remove error text appeared.",
+    "visual_assertion": "PASS: before screenshot and button rect show 一键移除 immediately after summary and as auxo-btn-primary with 91x32 click target.",
+    "negative_visual_assertion": "PASS: no appeal entry, no batch upload modal, and no fake award success state appeared.",
+    "evidence_required": "PASS: before/action/after DOM, BAM marker request body, no-real-network summary, and two local screenshots recorded."
+  },
+  "limits": {
+    "mock_preview": true,
+    "real_backend_not_verified": [
+      "candidate_remove persistence",
+      "failure msg behavior",
+      "candidate pool refresh from backend",
+      "remove record linkage"
+    ]
+  }
+}

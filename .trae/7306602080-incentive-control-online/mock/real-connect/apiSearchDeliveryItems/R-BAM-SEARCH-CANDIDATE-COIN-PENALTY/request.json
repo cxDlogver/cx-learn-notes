@@ -1,0 +1,42 @@
+{
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/search_delivery_items",
+  "url": "/api/buyin/admin/content_activity/search_delivery_items?activity_id=7655304206886322458&config_id=7655304206886338842&publish_start_time=1782403200&publish_end_time=1783526399&page_no=1&page_size=50&session_unix_time=1783565669&candidate_pool_type=1&__token=[REDACTED]",
+  "query": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "publish_start_time": 1782403200,
+    "publish_end_time": 1783526399,
+    "page_no": 1,
+    "page_size": 50,
+    "session_unix_time": 1783565669,
+    "candidate_pool_type": 1
+  },
+  "requestFieldsForMatching": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "candidate_pool_type": 1,
+    "page_no": 1,
+    "page_size": 50
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "publish_start_time",
+      "value": 1782403200,
+      "source": "network_request",
+      "reason": "当前配置一页面日期筛选自然携带；不参与 rule matcher。"
+    },
+    {
+      "fieldPath": "publish_end_time",
+      "value": 1783526399,
+      "source": "network_request",
+      "reason": "当前配置一页面日期筛选自然携带；不参与 rule matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783565669,
+      "source": "network_request",
+      "reason": "发奖会话时间戳随页面会话变化；只用于 payload 审计，不参与 matcher。"
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+<!-- D2C Generated XML - Figma URL: https://www.figma.com/design/fNJJ7mEmEMYU5y0tcAZm3X/Untitled?node-id=87-6973&p=f&m=dev -->
+<!-- Generated at: 2026-07-08T09:12:24.620Z -->
+<!-- 🗑️ This is a temporary file, please delete after code generation -->
+
+<MainUI pv="v260603-v4.3.web.en" xml-id="62ae4817e1a6aa2b" type="xml">
+  <Screen id="87:6973" codegen-summary="Video submission modal drawer with dynamic configuration forms, reward tables, and bulk input selectors." position="absolute" width="1015px" height="1443px" left="0px" top="0px" background-color="rgb(255,255,255)">
+    <!-- Header Title -->
+    <Text id="87:6974" position="absolute" width="160px" height="24px" left="36px" top="32px" white-space="nowrap" text-align="left" font-size="16px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="23px" color="rgb(31,35,41)">提报视频</Text>
+    <!-- Submission Method Form Section -->
+    <Container id="87:6975" position="absolute" width="600px" height="92px" left="36px" top="74px">
+      <Text id="87:6976" position="absolute" width="8px" height="18px" left="0px" top="6px" color="rgb(245,63,63)" font-size="12px" line-height="18px">*</Text>
+      <Text id="87:6977" position="absolute" width="64px" height="20px" left="10px" top="4px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="17px" color="rgb(31,35,41)" white-space="nowrap">提报方式</Text>
+      <!-- Radio Selection Group -->
+      <Container id="87:6978" position="absolute" width="180px" height="20px" left="88px" top="4px" display="flex" flex-direction="row" gap="16px">
+        <!-- Radio Option: 手动输入 (selected) -->
+        <Container id="87:6979" position="absolute" width="72px" height="18px" left="0px" top="1px" impl-web="radio" impl-behavior="radio checked(true)" impl-role="control">
+          <!-- Radio Outer Circle -->
+          <Icon id="87:6980" position="absolute" width="12px" height="12px" left="0px" top="3px" background-color="rgb(255,255,255)" border-radius="50%" box-shadow="inset 0 0 0 1px rgb(22,100,255)" name="radio-selected" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/287a4c2a-a3b1-4e3d-887a-75e30641d70e" image-format="png"/>
+          <!-- Inner blue selected dot -->
+          <Box id="87:6981" position="absolute" width="6px" height="6px" left="3px" top="6px" background-color="rgb(22,100,255)" border-radius="50%"/>
+          <Text id="87:6982" position="absolute" width="52px" height="18px" left="18px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)" white-space="nowrap">手动输入</Text>
+        </Container>
+        <!-- Radio Option: 批量上传 (unselected) -->
+        <Container id="87:6983" position="absolute" width="72px" height="18px" left="88px" top="1px" impl-web="radio" impl-behavior="radio checked(false)" impl-role="control">
+          <!-- Radio Outer Circle -->
+          <Icon id="87:6984" position="absolute" width="12px" height="12px" left="0px" top="3px" background-color="rgb(255,255,255)" border-radius="50%" box-shadow="inset 0 0 0 1px rgb(201,205,212)" name="radio-unselected" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/142baa28-73c9-4784-b936-9cc26216fa39" image-format="png"/>
+          <Text id="87:6985" position="absolute" width="52px" height="18px" left="18px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)" white-space="nowrap">批量上传</Text>
+        </Container>
+      </Container>
+      <!-- Video ID Search/Bulk Input Area -->
+      <Container id="87:6986" position="absolute" width="328px" height="28px" left="88px" top="36px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="input" impl-behavior="input maxLength(1000) placeholder(&apos;输入视频ID、支持批量，最多支持1000条，用逗号分隔&apos;)" impl-role="input">
+        <Text id="87:6987" position="absolute" width="308px" height="28px" left="10px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(168,171,178)">输入视频ID、支持批量，最多支持1000条，用逗号分隔</Text>
+      </Container>
+      <!-- Form Submission Trigger Button -->
+      <Button id="87:6988" position="absolute" width="56px" height="28px" left="426px" top="36px" background-color="rgb(22,100,255)" border-radius="3px" impl-role="button">
+        <Text id="87:6989" position="absolute" width="56px" height="28px" left="0px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(255,255,255)" text-align="center" white-space="nowrap">提交</Text>
+      </Button>
+    </Container>
+    <!-- Section: Reward Configurations -->
+    <Section id="87:6990" position="absolute" width="910px" height="760px" left="36px" top="236px">
+      <!-- Title & Required Indicator -->
+      <Text id="87:6992" position="absolute" width="8px" height="22px" left="-10px" top="0px" color="rgb(245,63,63)" font-size="12px" line-height="17px">*</Text>
+      <Text id="87:6991" position="absolute" width="100px" height="22px" left="0px" top="0px" font-size="14px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="20px" color="rgb(31,35,41)" white-space="nowrap">奖励配置</Text>
+      <!-- Toolbar Header Row with Status Alert & Actions -->
+      <Container id="87:6993" position="absolute" width="920px" height="38px" left="0px" top="42px">
+        <!-- Blue Alert Panel Box -->
+        <Container id="87:6994" position="absolute" width="410px" height="38px" left="0px" top="0px" background-color="rgb(232,243,255)" border-radius="3px">
+          <Icon id="87:6995" position="absolute" width="16px" height="16px" left="12px" top="11px" name="info-circle" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e965415d-71bb-4956-89a2-6041af2b702e" image-format="png"/>
+          <Text id="87:6998" position="absolute" width="365px" height="38px" left="34px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="17px" color="rgb(31,35,41)">共100个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：5个</Text>
+        </Container>
+        <!-- Action Control Group -->
+        <Container id="87:6999" position="absolute" width="236px" height="28px" left="432px" top="5px" display="flex" flex-direction="row" gap="14px">
+          <Button id="87:7000" position="absolute" width="88px" height="28px" left="0px" top="0px" background-color="rgb(22,100,255)" border-radius="3px" impl-role="button">
+            <Text id="87:7001" position="absolute" width="88px" height="28px" left="0px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(255,255,255)" text-align="center" white-space="nowrap">一键移除</Text>
+          </Button>
+          <Button id="87:7002" position="absolute" width="124px" height="28px" left="102px" top="0px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(22,100,255)" impl-role="button">
+            <Text id="87:7003" position="absolute" width="124px" height="28px" left="0px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(22,100,255)" text-align="center" white-space="nowrap">导出剔除明细</Text>
+          </Button>
+        </Container>
+      </Container>
+      <!-- Table Structure Container -->
+      <Table id="87:7004" position="absolute" width="920px" height="604px" left="0px" top="104px" background-color="rgb(255,255,255)">
+        <!-- Table Column Headers Row -->
+        <Header id="87:7005" position="absolute" width="920px" height="42px" left="0px" top="0px" background-color="rgb(247,248,250)" impl-role="header">
+          <Text id="87:7006" position="absolute" width="28px" height="42px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">序号</Text>
+          <Text id="87:7007" position="absolute" width="178px" height="42px" left="48px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">视频/图文内容</Text>
+          <Text id="87:7008" position="absolute" width="92px" height="42px" left="238px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">投放金额(元)</Text>
+          <Text id="87:7009" position="absolute" width="76px" height="42px" left="342px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">投放时长</Text>
+          <Text id="87:7010" position="absolute" width="100px" height="42px" left="430px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">转化目标偏好</Text>
+          <Text id="87:7011" position="absolute" width="130px" height="42px" left="542px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">投放生效时间</Text>
+          <Text id="87:7012" position="absolute" width="84px" height="42px" left="684px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">目标受众</Text>
+          <Text id="87:7013" position="absolute" width="94px" height="42px" left="780px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">提报理由</Text>
+          <Text id="87:7014" position="absolute" width="30px" height="42px" left="886px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="500" line-height="42px" color="rgb(31,35,41)" white-space="nowrap">操作</Text>
+        </Header>
+        <Divider id="87:7015" position="absolute" width="920px" height="1px" left="0px" top="41px" background-color="rgb(229,230,235)"/>
+        <!-- Table Row Body List [CR-1] [CR-4] -->
+        <List id="87:7016" position="absolute" width="920px" height="560px" left="0px" top="42px" impl-web="VirtualList(itemHeight: 136)" impl-behavior="scrollIndicators" impl-role="list">
+          <!-- Row 1: Index 1 -->
+          <Row id="87:7017" position="absolute" width="920px" height="136px" left="0px" top="0px" background-color="rgb(255,255,255)">
+            <Text id="87:7018" position="absolute" width="28px" height="20px" left="8px" top="14px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="17px" color="rgb(31,35,41)" text-align="center">1</Text>
+            <!-- Metadata Area: Thumbnail Cover, Video Title, ID & Warn Msg -->
+            <Container id="87:7019" position="absolute" width="190px" height="136px" left="40px" top="0px">
+              <Container id="87:7020" position="absolute" width="58px" height="86px" left="8px" top="22px" background-color="rgb(47,51,56)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(217,220,226)">
+                <Box id="87:7021" position="absolute" width="58px" height="42px" left="0px" top="0px" background-color="rgb(61,70,82)" border-radius="4px"/>
+                <Box id="87:7022" position="absolute" width="58px" height="44px" left="0px" top="42px" background-color="rgb(32,36,42)"/>
+                <Icon id="87:7023" position="absolute" width="20px" height="26px" left="19px" top="22px" name="video-poster-subject" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/4a0e0ad1-878a-41eb-b687-00c96ddba48f" image-format="png"/>
+                <Text id="87:7024" position="absolute" width="16px" height="16px" left="22px" top="34px" font-size="10px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(255,255,255)" text-align="center">▶</Text>
+                <Text id="87:7025" position="absolute" width="28px" height="12px" left="26px" top="70px" font-size="8px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="12px" color="rgb(255,255,255)" text-align="right">00:12</Text>
+              </Container>
+              <Text id="87:7026" position="absolute" width="105px" height="18px" left="74px" top="22px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">视频标题：这是一个视频标题</Text>
+              <Text id="87:7027" position="absolute" width="105px" height="16px" left="74px" top="44px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(31,35,41)">视频ID：123456789</Text>
+              <Text id="87:7028" position="absolute" width="208px" height="14px" left="8px" top="110px" font-size="9px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="14px" color="rgb(245,63,63)">不满足准入门槛  命中【不激励】规则</Text>
+            </Container>
+            <!-- Inputs, Dropdowns & Config Cell Outputs -->
+            <Container id="87:7029" position="absolute" width="72px" height="28px" left="242px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="input" impl-behavior="input type(number)" impl-role="input">
+              <Text id="87:7030" position="absolute" width="52px" height="28px" left="10px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(31,35,41)">500</Text>
+            </Container>
+            <Select id="87:7031" position="absolute" width="64px" height="28px" left="344px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7032" position="absolute" width="46px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">2小时</Text>
+              <Text id="87:7033" position="absolute" width="12px" height="28px" left="48px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Select id="87:7034" position="absolute" width="92px" height="28px" left="432px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7035" position="absolute" width="74px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">点击评论量</Text>
+              <Text id="87:7036" position="absolute" width="12px" height="28px" left="76px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Text id="87:7037" position="absolute" width="122px" height="18px" left="542px" top="54px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">2026/03/09 15:10</Text>
+            <Select id="87:7038" position="absolute" width="72px" height="28px" left="690px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7039" position="absolute" width="54px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">智能投放</Text>
+              <Text id="87:7040" position="absolute" width="12px" height="28px" left="56px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Container id="87:7041" position="absolute" width="84px" height="72px" left="784px" top="34px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="textarea" impl-behavior="input placeholder(&apos;填写提报理由&apos;)" impl-role="input">
+              <Text id="87:7042" position="absolute" width="68px" height="18px" left="8px" top="8px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(168,171,178)">填写提报理由</Text>
+            </Container>
+            <Button id="87:7043" position="absolute" width="34px" height="18px" left="882px" top="54px" impl-role="button">
+              <Text font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(22,100,255)" text-align="center" white-space="nowrap">移除</Text>
+            </Button>
+            <Divider id="87:7044" position="absolute" width="920px" height="1px" left="0px" top="135px" background-color="rgb(240,241,243)"/>
+          </Row>
+          <!-- Row 2: Index 2 -->
+          <Row id="87:7045" position="absolute" width="920px" height="136px" left="0px" top="136px" background-color="rgb(255,255,255)">
+            <Text id="87:7046" position="absolute" width="28px" height="20px" left="8px" top="14px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="17px" color="rgb(31,35,41)" text-align="center">2</Text>
+            <Container id="87:7047" position="absolute" width="190px" height="136px" left="40px" top="0px">
+              <Container id="87:7048" position="absolute" width="58px" height="86px" left="8px" top="22px" background-color="rgb(47,51,56)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(217,220,226)">
+                <Box id="87:7049" position="absolute" width="58px" height="42px" left="0px" top="0px" background-color="rgb(61,70,82)" border-radius="4px"/>
+                <Box id="87:7050" position="absolute" width="58px" height="44px" left="0px" top="42px" background-color="rgb(32,36,42)"/>
+                <Icon id="87:7051" position="absolute" width="20px" height="26px" left="19px" top="22px" name="video-poster-subject" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/a9a499f3-ef6b-4719-9c0f-e0013dd778e5" image-format="png"/>
+                <Text id="87:7052" position="absolute" width="16px" height="16px" left="22px" top="34px" font-size="10px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(255,255,255)" text-align="center">▶</Text>
+                <Text id="87:7053" position="absolute" width="28px" height="12px" left="26px" top="70px" font-size="8px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="12px" color="rgb(255,255,255)" text-align="right">00:12</Text>
+              </Container>
+              <Text id="87:7054" position="absolute" width="105px" height="18px" left="74px" top="22px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">视频标题：这是一个视频标题</Text>
+              <Text id="87:7055" position="absolute" width="105px" height="16px" left="74px" top="44px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(31,35,41)">视频ID：123456789</Text>
+              <Text id="87:7056" position="absolute" width="208px" height="14px" left="8px" top="110px" font-size="9px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="14px" color="rgb(245,63,63)">不满足准入门槛  命中【不激励】规则</Text>
+              <Text id="87:7057" position="absolute" width="170px" height="14px" left="8px" top="124px" font-size="9px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="14px" color="rgb(255,125,0)">存在投放设置 点击查看</Text>
+            </Container>
+            <Container id="87:7058" position="absolute" width="72px" height="28px" left="242px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="input" impl-behavior="input type(number)" impl-role="input">
+              <Text id="87:7059" position="absolute" width="52px" height="28px" left="10px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(31,35,41)">500</Text>
+            </Container>
+            <Select id="87:7060" position="absolute" width="64px" height="28px" left="344px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7061" position="absolute" width="46px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">2小时</Text>
+              <Text id="87:7062" position="absolute" width="12px" height="28px" left="48px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Select id="87:7063" position="absolute" width="92px" height="28px" left="432px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7064" position="absolute" width="74px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">点击评论量</Text>
+              <Text id="87:7065" position="absolute" width="12px" height="28px" left="76px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Text id="87:7066" position="absolute" width="122px" height="18px" left="542px" top="54px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">2026/03/09 15:10</Text>
+            <Select id="87:7067" position="absolute" width="72px" height="28px" left="690px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7068" position="absolute" width="54px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">智能投放</Text>
+              <Text id="87:7069" position="absolute" width="12px" height="28px" left="56px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Container id="87:7070" position="absolute" width="84px" height="72px" left="784px" top="34px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="textarea" impl-behavior="input placeholder(&apos;填写提报理由&apos;)" impl-role="input">
+              <Text id="87:7071" position="absolute" width="68px" height="18px" left="8px" top="8px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(168,171,178)">填写提报理由</Text>
+            </Container>
+            <Button id="87:7072" position="absolute" width="34px" height="18px" left="882px" top="54px" impl-role="button">
+              <Text font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(22,100,255)" text-align="center" white-space="nowrap">移除</Text>
+            </Button>
+            <Divider id="87:7073" position="absolute" width="920px" height="1px" left="0px" top="135px" background-color="rgb(240,241,243)"/>
+          </Row>
+          <!-- Row 3: Index 3 -->
+          <Row id="87:7074" position="absolute" width="920px" height="136px" left="0px" top="272px" background-color="rgb(255,255,255)">
+            <Text id="87:7075" position="absolute" width="28px" height="20px" left="8px" top="14px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="17px" color="rgb(31,35,41)" text-align="center">3</Text>
+            <Container id="87:7076" position="absolute" width="190px" height="136px" left="40px" top="0px">
+              <Container id="87:7077" position="absolute" width="58px" height="86px" left="8px" top="22px" background-color="rgb(47,51,56)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(217,220,226)">
+                <Box id="87:7078" position="absolute" width="58px" height="42px" left="0px" top="0px" background-color="rgb(61,70,82)" border-radius="4px"/>
+                <Box id="87:7079" position="absolute" width="58px" height="44px" left="0px" top="42px" background-color="rgb(32,36,42)"/>
+                <Icon id="87:7080" position="absolute" width="20px" height="26px" left="19px" top="22px" name="video-poster-subject" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/b52924eb-2672-4941-b03e-812c6768a88c" image-format="png"/>
+                <Text id="87:7081" position="absolute" width="16px" height="16px" left="22px" top="34px" font-size="10px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(255,255,255)" text-align="center">▶</Text>
+                <Text id="87:7082" position="absolute" width="28px" height="12px" left="26px" top="70px" font-size="8px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="12px" color="rgb(255,255,255)" text-align="right">00:12</Text>
+              </Container>
+              <Text id="87:7083" position="absolute" width="105px" height="18px" left="74px" top="22px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">视频标题：这是一个视频标题</Text>
+              <Text id="87:7084" position="absolute" width="105px" height="16px" left="74px" top="44px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(31,35,41)">视频ID：123456789</Text>
+              <Text id="87:7085" position="absolute" width="170px" height="14px" left="8px" top="110px" font-size="9px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="14px" color="rgb(255,125,0)">存在投放设置 点击查看</Text>
+            </Container>
+            <Container id="87:7086" position="absolute" width="72px" height="28px" left="242px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="input" impl-behavior="input type(number)" impl-role="input">
+              <Text id="87:7087" position="absolute" width="52px" height="28px" left="10px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(31,35,41)">500</Text>
+            </Container>
+            <Select id="87:7088" position="absolute" width="64px" height="28px" left="344px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7089" position="absolute" width="46px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">2小时</Text>
+              <Text id="87:7090" position="absolute" width="12px" height="28px" left="48px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Select id="87:7091" position="absolute" width="92px" height="28px" left="432px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7092" position="absolute" width="74px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">点击评论量</Text>
+              <Text id="87:7093" position="absolute" width="12px" height="28px" left="76px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Text id="87:7094" position="absolute" width="122px" height="18px" left="542px" top="54px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">2026/03/09 15:10</Text>
+            <Select id="87:7095" position="absolute" width="72px" height="28px" left="690px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7096" position="absolute" width="54px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">智能投放</Text>
+              <Text id="87:7097" position="absolute" width="12px" height="28px" left="56px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Container id="87:7098" position="absolute" width="84px" height="72px" left="784px" top="34px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="textarea" impl-behavior="input placeholder(&apos;填写提报理由&apos;)" impl-role="input">
+              <Text id="87:7099" position="absolute" width="68px" height="18px" left="8px" top="8px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(168,171,178)">填写提报理由</Text>
+            </Container>
+            <Button id="87:7100" position="absolute" width="34px" height="18px" left="882px" top="54px" impl-role="button">
+              <Text font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(22,100,255)" text-align="center" white-space="nowrap">移除</Text>
+            </Button>
+            <Divider id="87:7101" position="absolute" width="920px" height="1px" left="0px" top="135px" background-color="rgb(240,241,243)"/>
+          </Row>
+          <!-- Row 4: Index 4 -->
+          <Row id="87:7102" position="absolute" width="920px" height="136px" left="0px" top="408px" background-color="rgb(255,255,255)">
+            <Text id="87:7103" position="absolute" width="28px" height="20px" left="8px" top="14px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="17px" color="rgb(31,35,41)" text-align="center">4</Text>
+            <Container id="87:7104" position="absolute" width="190px" height="136px" left="40px" top="0px">
+              <Container id="87:7105" position="absolute" width="58px" height="86px" left="8px" top="22px" background-color="rgb(47,51,56)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(217,220,226)">
+                <Box id="87:7106" position="absolute" width="58px" height="42px" left="0px" top="0px" background-color="rgb(61,70,82)" border-radius="4px"/>
+                <Box id="87:7107" position="absolute" width="58px" height="44px" left="0px" top="42px" background-color="rgb(32,36,42)"/>
+                <Icon id="87:7108" position="absolute" width="20px" height="26px" left="19px" top="22px" name="video-poster-subject" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/6cea59de-3f2c-49a9-b0f2-8b1e52640b4e" image-format="png"/>
+                <Text id="87:7109" position="absolute" width="16px" height="16px" left="22px" top="34px" font-size="10px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(255,255,255)" text-align="center">▶</Text>
+                <Text id="87:7110" position="absolute" width="28px" height="12px" left="26px" top="70px" font-size="8px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="12px" color="rgb(255,255,255)" text-align="right">00:12</Text>
+              </Container>
+              <Text id="87:7111" position="absolute" width="105px" height="18px" left="74px" top="22px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">视频标题：这是一个视频标题</Text>
+              <Text id="87:7112" position="absolute" width="105px" height="16px" left="74px" top="44px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="16px" color="rgb(31,35,41)">视频ID：123456789</Text>
+              <Text id="87:7113" position="absolute" width="208px" height="14px" left="8px" top="110px" font-size="9px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="14px" color="rgb(245,63,63)">命中【不激励】规则</Text>
+            </Container>
+            <Container id="87:7114" position="absolute" width="72px" height="28px" left="242px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="input" impl-behavior="input type(number)" impl-role="input">
+              <Text id="87:7115" position="absolute" width="52px" height="28px" left="10px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(31,35,41)">500</Text>
+            </Container>
+            <Select id="87:7116" position="absolute" width="64px" height="28px" left="344px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7117" position="absolute" width="46px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">2小时</Text>
+              <Text id="87:7118" position="absolute" width="12px" height="28px" left="48px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Select id="87:7119" position="absolute" width="92px" height="28px" left="432px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7120" position="absolute" width="74px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">点击评论量</Text>
+              <Text id="87:7121" position="absolute" width="12px" height="28px" left="76px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Text id="87:7122" position="absolute" width="122px" height="18px" left="542px" top="54px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(31,35,41)">2026/03/09 15:10</Text>
+            <Select id="87:7123" position="absolute" width="72px" height="28px" left="690px" top="50px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="select" impl-behavior="select" impl-role="control">
+              <Text id="87:7124" position="absolute" width="54px" height="28px" left="8px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(100,106,115)">智能投放</Text>
+              <Text id="87:7125" position="absolute" width="12px" height="28px" left="56px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(143,149,158)" text-align="center">⌄</Text>
+            </Select>
+            <Container id="87:7126" position="absolute" width="84px" height="72px" left="784px" top="34px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(222,224,227)" impl-web="textarea" impl-behavior="input placeholder(&apos;填写提报理由&apos;)" impl-role="input">
+              <Text id="87:7127" position="absolute" width="68px" height="18px" left="8px" top="8px" font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(168,171,178)">填写提报理由</Text>
+            </Container>
+            <Button id="87:7128" position="absolute" width="34px" height="18px" left="882px" top="54px" impl-role="button">
+              <Text font-size="11px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="18px" color="rgb(22,100,255)" text-align="center" white-space="nowrap">移除</Text>
+            </Button>
+            <Divider id="87:7129" position="absolute" width="920px" height="1px" left="0px" top="135px" background-color="rgb(240,241,243)"/>
+          </Row>
+        </List>
+      </Table>
+    </Section>
+    <!-- Footer Action Toolbar Section -->
+    <Footer id="87:7130" position="absolute" width="1015px" height="56px" left="0px" top="1231px" background-color="rgb(255,255,255)" impl-role="footer">
+      <Button id="87:7131" position="absolute" width="72px" height="28px" left="350px" top="14px" background-color="rgb(255,255,255)" border-radius="3px" box-shadow="inset 0 0 0 1px rgb(22,100,255)" impl-role="button">
+        <Text id="87:7132" position="absolute" width="72px" height="28px" left="0px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(22,100,255)" text-align="center" white-space="nowrap">取消</Text>
+      </Button>
+      <Button id="87:7133" position="absolute" width="92px" height="28px" left="460px" top="14px" background-color="rgb(22,100,255)" border-radius="3px" impl-role="button">
+        <Text id="87:7134" position="absolute" width="92px" height="28px" left="0px" top="0px" font-size="12px" font-family="&apos;Noto Sans SC&apos;, sans-serif" font-weight="400" line-height="28px" color="rgb(255,255,255)" text-align="center" white-space="nowrap">提交并投放</Text>
+      </Button>
+    </Footer>
+  </Screen>
+</MainUI>

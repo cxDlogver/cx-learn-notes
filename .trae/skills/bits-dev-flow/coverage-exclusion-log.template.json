@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "kind": "coverage_exclusion_log",
+  "scope": "workspace",
+  "workspace": "",
+  "updated_at": "",
+  "policy": {
+    "entry_scope": "target_file_version_registry",
+    "active_selection_effects": ["SKIP_SAME_VERSION"],
+    "target_file_entry_required": true,
+    "reason_policy": "DO_NOT_RECORD_SELECTION_REASON",
+    "zero_insert_lines_policy": "SCRIPT_FILTER_ONLY",
+    "supersede_requires_code_change_ref": false,
+    "active_skip_requires_same_file_coverage_version": true,
+    "version_changed_action": "SUPERSEDE_ACTIVE_AND_ALLOW_RETARGET",
+    "version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion"
+  },
+  "entries": [
+    {
+      "entry_id": "",
+      "file_path": "",
+      "status": "ACTIVE|SUPERSEDED|CLEARED",
+      "selection_effect": "SKIP_SAME_VERSION",
+      "source_cov_run_id": "",
+      "source_round": null,
+      "source_state_ref": "",
+      "source_report_ref": "",
+      "source_file_coverage_version": "",
+      "latest_seen_file_coverage_version": "",
+      "code_changed": false,
+      "code_change_ref": "",
+      "superseded_by_cov_run_id": "",
+      "superseded_by_report_ref": "",
+      "evidence": "",
+      "created_at": "",
+      "updated_at": "",
+      "notes": ""
+    }
+  ]
+}

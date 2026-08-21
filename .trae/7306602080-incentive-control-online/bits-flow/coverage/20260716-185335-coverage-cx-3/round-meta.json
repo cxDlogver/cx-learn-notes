@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "status": "PASS_WITH_NOTES",
+  "created_at": "2026-07-16T18:53:35+08:00",
+  "completed_at": "2026-07-16T19:40:34+08:00",
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_repo": "ecom/alliance-operation-mono",
+  "fromBranch": "master",
+  "toBranch": "cx-3",
+  "threshold": 90,
+  "rounds": 3,
+  "final_overall_cover_ratio": 85.15,
+  "coverage_script": "/Users/bytedance/cx/spec-2/meego-11/.trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js",
+  "user_args": {
+    "command": "/delivery:bits --coverage",
+    "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+    "dry_run": false,
+    "submit": false
+  },
+  "git": {
+    "head_short_sha": "3f3ab482d",
+    "base_commit": "fb7a7793e82c8b5e442f1751c52148db73316851",
+    "branch_status": "## cx-3...origin/cx-3"
+  },
+  "paths": {
+    "coverage": "coverage/",
+    "optimization_log": "coverage-optimization-log.md",
+    "optimization_state": "coverage-optimization-state.json",
+    "coverage_review_expression": "coverage-review-expression.md",
+    "plan_round_template": "coverage-optimization-plan-round-<n>.md",
+    "global_exclusion_log": "../coverage-exclusion-log.json"
+  },
+  "input_artifacts": {
+    "prd_analysis": "03-prd-analysis.md",
+    "delivery_task": "delivery-task.md",
+    "test_case_matrix": "09-test-case-matrix.md",
+    "implementation_log": "05-implementation-log.md",
+    "user_test_report": "MISSING:10-user-test-report.md",
+    "debug_verification_fallback": "06-debug-verification.md",
+    "design_alignment_fallback": "07-design-alignment.md"
+  },
+  "notes": [
+    "DELIVERY_STATE.md workspace points to an inaccessible stale path; artifacts/7306602080-incentive-control-online is the only accessible artifacts directory matching task_id 7306602080.",
+    "No --submit flag was provided, so this run may perform local coverage optimization and UI evidence capture but must not commit, push, or publish remote review expression."
+  ]
+}

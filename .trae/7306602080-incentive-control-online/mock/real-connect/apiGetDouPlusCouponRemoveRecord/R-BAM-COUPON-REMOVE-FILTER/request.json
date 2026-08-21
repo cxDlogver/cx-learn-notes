@@ -1,0 +1,36 @@
+{
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+  "query": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "page": 1,
+    "page_num": 20,
+    "candidate_ids": "900001,900002",
+    "operator_id": "6068830"
+  },
+  "requestFieldsForMatching": {
+    "candidate_ids": "900001,900002",
+    "operator_id": "6068830",
+    "page": 1,
+    "page_num": 20
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7655304206886322458",
+      "source": "network_request",
+      "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7655304206886355226",
+      "source": "network_request",
+      "reason": "当前 DOU+券配置二的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+    }
+  ],
+  "redaction": {
+    "__token": "__REDACTED__",
+    "raw_token_url_persisted": false
+  }
+}

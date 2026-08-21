@@ -1,0 +1,117 @@
+{
+  "case_id": "TC-UI-MANUAL-HIT-PAGE",
+  "rerun_for": "DESIGN-REWORK-007",
+  "collected_at": "2026-07-10T01:23:40+08:00",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "view_id": "3ac8d48f-26d8-4d09-ace5-80728b7ff041",
+  "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_design_rerun=TC-UI-MANUAL-HIT-PAGE--DESIGN-REWORK-007",
+  "screenshot": {
+    "path": "screenshots/TC-UI-MANUAL-HIT-PAGE--design-rerun--manual-drawer-hit-rework-007.png",
+    "materialization_type": "local_file",
+    "file_type": "PNG image data, 1733 x 1523, 8-bit/color RGB, non-interlaced",
+    "sha256": "a75463d52f3f3d86a4b2d964c33db4d5650a9b73e80a0b3896078c53ec6b14a3"
+  },
+  "dom_summary": {
+    "drawer_visible": true,
+    "manual_input_value": "100001,100002,100003",
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "action_order": [
+      "一键移除",
+      "导出剔除明细"
+    ],
+    "footer_order": [
+      "取消",
+      "提交并投放"
+    ],
+    "footer_buttons": [
+      {
+        "text": "取消",
+        "rect": {
+          "x": 122,
+          "y": 1269,
+          "width": 74,
+          "height": 32
+        },
+        "color": "rgb(37, 41, 49)",
+        "backgroundColor": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "提交并投放",
+        "rect": {
+          "x": 204,
+          "y": 1269,
+          "width": 105,
+          "height": 32
+        },
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(25, 102, 255)"
+      }
+    ],
+    "header_texts": [
+      "序号",
+      "视频/图文内容",
+      "投放金额（元）",
+      "投放时长",
+      "转化目标偏好",
+      "投放生效时间",
+      "目标受众",
+      "提报理由",
+      "操作"
+    ],
+    "row_count": 3,
+    "row_texts": [
+      "1 视频标题：人工提报准入失败作品 视频ID：100001 不满足准入门槛 请选择 请选择 请选择 移除",
+      "2 视频标题：人工提报不激励命中作品 视频ID：100002 命中【不激励】规则 请选择 请选择 请选择 移除",
+      "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 移除"
+    ],
+    "hit_labels": [
+      {
+        "text": "不满足准入门槛",
+        "color": "rgb(245, 63, 63)",
+        "fontSize": "12px",
+        "lineHeight": "18px"
+      },
+      {
+        "text": "命中【不激励】规则",
+        "color": "rgb(245, 63, 63)",
+        "fontSize": "12px",
+        "lineHeight": "18px"
+      }
+    ],
+    "forbidden_scan": {
+      "申诉": false,
+      "低质": false,
+      "编辑": false,
+      "性别": false,
+      "年龄": false,
+      "自动剔除": false,
+      "剔除成功": false,
+      "已自动移除": false
+    }
+  },
+  "mock_evidence": {
+    "apiName": "apiSearchDeliveryItems",
+    "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+    "source": "console [BAM_MOCK_HIT] during rerun; browser network history also contains the reloaded business page requests",
+    "request_body": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "item_ids": "100001,100002,100003",
+      "candidate_pool_type": 2,
+      "page_no": 1,
+      "page_size": 50
+    }
+  },
+  "console_summary": {
+    "hmr": "connected",
+    "runtime_crash": false,
+    "blocking_error": false,
+    "non_blocking_noise": [
+      "telemetry POST aborts",
+      "React defaultProps/findDOMNode/originTitle/key warnings from existing stack",
+      "one text_to_image fetch failure for a cover image; table text and hit labels remained visible"
+    ]
+  },
+  "result": "FIXED_PASS"
+}

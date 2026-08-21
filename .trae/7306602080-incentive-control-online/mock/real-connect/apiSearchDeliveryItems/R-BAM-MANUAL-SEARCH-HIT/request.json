@@ -1,0 +1,45 @@
+{
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/search_delivery_items",
+  "url": "/api/buyin/admin/content_activity/search_delivery_items?activity_id=7653282555822653742&config_id=7653282555822735662&page_no=1&page_size=50&item_ids=100001%2C100002%2C100003&session_unix_time=1783520153&candidate_pool_type=2&__token=[REDACTED]",
+  "query": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "page_no": 1,
+    "page_size": 50,
+    "item_ids": "100001,100002,100003",
+    "session_unix_time": 1783520153,
+    "candidate_pool_type": 2
+  },
+  "requestFieldsForMatching": {
+    "item_ids": "100001,100002,100003",
+    "candidate_pool_type": 2,
+    "page_no": 1,
+    "page_size": 50
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7653282555822653742",
+      "source": "network_request",
+      "reason": "当前人工提报活动真实 route 与目标 XHR query 自然携带；不改变手动输入命中态 rule 命中。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7653282555822735662",
+      "source": "network_request",
+      "reason": "当前 `配置一（人工提报）` 的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783520153,
+      "source": "network_request",
+      "reason": "发奖会话时间戳由页面 store 自然生成；同一场景中会随会话变化，不作为 mock matcher。"
+    }
+  ],
+  "redaction": {
+    "__token": "[REDACTED]",
+    "cookie": "not_read",
+    "authorization": "not_read"
+  }
+}

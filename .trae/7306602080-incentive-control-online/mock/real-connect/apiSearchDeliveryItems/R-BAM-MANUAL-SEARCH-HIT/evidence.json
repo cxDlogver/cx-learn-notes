@@ -1,0 +1,80 @@
+{
+  "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+  "apiName": "apiSearchDeliveryItems",
+  "status": "passed",
+  "originStage": "verify",
+  "resumeCase": "TC-UI-MANUAL-HIT-PAGE",
+  "capturedAt": "2026-07-08T22:23:05+08:00",
+  "browserRuntimeMode": "TRAE_DESKTOP",
+  "browserTool": "integrated_browser",
+  "page": {
+    "title": "内容生态运营｜橙蕉",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "ssoResult": "business_page"
+  },
+  "naturalUiPath": [
+    "进入活动 `7653282555822653742` 奖励投放页",
+    "确认 `配置一（人工提报）` selected",
+    "点击 `新增提报` 打开 `提报视频` Drawer",
+    "保持 `手动输入` 方式",
+    "输入 `100001,100002,100003`",
+    "点击 Drawer 内 `提交`"
+  ],
+  "request": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/search_delivery_items",
+    "query": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "page_no": 1,
+      "page_size": 50,
+      "item_ids": "100001,100002,100003",
+      "session_unix_time": 1783520153,
+      "candidate_pool_type": 2
+    },
+    "redactedUrl": "/api/buyin/admin/content_activity/search_delivery_items?activity_id=7653282555822653742&config_id=7653282555822735662&page_no=1&page_size=50&item_ids=100001%2C100002%2C100003&session_unix_time=1783520153&candidate_pool_type=2&__token=[REDACTED]"
+  },
+  "responseSummary": {
+    "status": 200,
+    "code": 0,
+    "st": 0,
+    "msg": "",
+    "itemInfoLength": 3,
+    "realItemIds": [
+      "100001",
+      "100002",
+      "100003"
+    ],
+    "realHitFields": {
+      "if_satisfy_delivery_rules_false_count": 3,
+      "if_not_incentive_true_count": 0,
+      "not_incentive_reason_present_count": 0
+    }
+  },
+  "mockNeed": {
+    "classification": "MOCK_ISSUE / MOCK_PREVIEW_RULE_MISSING",
+    "reason": "自然 UI 请求可达且真实响应成功，但当前 BAM runtime 未命中 R-BAM-MANUAL-SEARCH-HIT；真实样本只有准入失败字段，不能覆盖人工提报不激励命中行态与 mixed summary 断言。",
+    "targetOperations": [
+      "set data.item_info[0] to invalid hit",
+      "set data.item_info[1] to not-incentive hit",
+      "set data.item_info[2] to valid retained item",
+      "set data.total_num=3",
+      "set data.candidate_num=1",
+      "set data.has_more=false"
+    ]
+  },
+  "security": {
+    "cookie": "not_read",
+    "localStorage": "not_read",
+    "sessionStorage": "not_read",
+    "authorization": "not_read",
+    "token": "redacted_from_url"
+  },
+  "artifacts": {
+    "request": "request.json",
+    "rawResponse": "response.raw.txt",
+    "response": "response.json",
+    "mockedResponse": "response.mocked.json"
+  },
+  "realVerify": "后端 ready 后复验真实 search_delivery_items 是否返回 if_not_incentive/not_incentive_reason 及 mixed hit state。"
+}

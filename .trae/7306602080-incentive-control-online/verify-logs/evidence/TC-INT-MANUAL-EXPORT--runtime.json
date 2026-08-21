@@ -1,0 +1,273 @@
+{
+  "case_id": "TC-INT-MANUAL-EXPORT",
+  "captured_at": "2026-07-08T16:50:29Z",
+  "browser": {
+    "tool": "integrated_browser",
+    "view_id": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "headless": false,
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "page_title": "内容生态运营｜橙蕉"
+  },
+  "precondition_rebuild": {
+    "reason": "After the controlled /delivery:mock detour for apiDownloadContentRemoveRecord, the page was reloaded to ensure the runtime bundle contained R-BAM-DOWNLOAD-REMOVE-RECORD before executing the natural export click.",
+    "natural_ui_steps": [
+      "reload award page for activity_id=7653282555822653742 with externalLeadsDomainMock=1",
+      "click 新增提报",
+      "type 100001,100002,100003 into 输入视频ID，支持批量，用逗号分隔",
+      "click 提交",
+      "wait until summary and 导出剔除明细 are visible"
+    ],
+    "manual_search_rule": "R-BAM-MANUAL-SEARCH-HIT",
+    "observed_state": {
+      "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+      "item_presence": {
+        "100001": true,
+        "100002": true,
+        "100003": true
+      },
+      "labels": {
+        "invalid": true,
+        "not_incentive": true
+      }
+    }
+  },
+  "before": {
+    "captured_at": "2026-07-08T16:45:21.553Z",
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "export_button": {
+      "text": "导出剔除明细",
+      "disabled": false,
+      "class_name": "auxo-btn",
+      "rect": {
+        "x": 1384,
+        "y": 258,
+        "width": 119,
+        "height": 32
+      }
+    },
+    "one_click_remove_button": {
+      "text": "一键移除",
+      "disabled": false,
+      "class_name": "auxo-btn auxo-btn-primary",
+      "rect": {
+        "x": 1285,
+        "y": 258,
+        "width": 91,
+        "height": 32
+      }
+    },
+    "rows": [
+      {
+        "index": 1,
+        "item_id": "100001",
+        "text": "1视频标题：人工提报准入失败作品视频ID：100001不满足准入门槛请选择请选择请选择--移除"
+      },
+      {
+        "index": 2,
+        "item_id": "100002",
+        "text": "2视频标题：人工提报不激励命中作品视频ID：100002命中【不激励】规则请选择请选择请选择--移除"
+      },
+      {
+        "index": 3,
+        "item_id": "100003",
+        "text": "3视频标题：人工提报可投放作品视频ID：100003请选择请选择请选择--移除"
+      }
+    ],
+    "forbidden_text": {
+      "old_download_copy": false,
+      "appeal": false
+    },
+    "screenshot": "screenshots/TC-INT-MANUAL-EXPORT--manual-hit--summary-action-before.png"
+  },
+  "action": {
+    "type": "natural_browser_click",
+    "target": "导出剔除明细",
+    "result": "A new browser tab was opened for the returned Lark URL."
+  },
+  "bam_mock_markers": {
+    "synthetic_contract": {
+      "event": "BAM_MOCK_SYNTHETIC_CONTRACT",
+      "apiName": "apiDownloadContentRemoveRecord",
+      "api": {
+        "apiName": "apiDownloadContentRemoveRecord",
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/download_content_remove_record"
+      },
+      "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+      "requestBody": {
+        "records": [
+          {
+            "author_id": "900001",
+            "item_id": "100001",
+            "item_name": "人工提报准入失败作品",
+            "remove_reason": "手动移除"
+          },
+          {
+            "author_id": "900002",
+            "item_id": "100002",
+            "item_name": "人工提报不激励命中作品",
+            "remove_reason": "命中【不激励】规则",
+            "penalty_reason": "历史违规命中不激励规则"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "data": {
+          "lark_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+        }
+      },
+      "reason": "MOCK_PREVIEW external-resource safety: download_content_remove_record must not rely on real Feishu sheet generation during verify; runtime returns marked synthetic success.",
+      "reminder": "This BAM mock response is synthetic because two UI natural-click attempts could not locate the required interface. Real integration verification is still required."
+    },
+    "hit": {
+      "event": "BAM_MOCK_HIT",
+      "api": {
+        "apiName": "apiDownloadContentRemoveRecord",
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/download_content_remove_record"
+      },
+      "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+      "requestBody": {
+        "records": [
+          {
+            "author_id": "900001",
+            "item_id": "100001",
+            "item_name": "人工提报准入失败作品",
+            "remove_reason": "手动移除"
+          },
+          {
+            "author_id": "900002",
+            "item_id": "100002",
+            "item_name": "人工提报不激励命中作品",
+            "remove_reason": "命中【不激励】规则",
+            "penalty_reason": "历史违规命中不激励规则"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "data": {
+          "lark_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+        }
+      }
+    }
+  },
+  "request_assertions": {
+    "record_count": 2,
+    "exported_item_ids": [
+      "100001",
+      "100002"
+    ],
+    "excluded_item_ids": [
+      "100003"
+    ],
+    "all_required_record_fields_present": true,
+    "contains_author_id": true,
+    "contains_item_id": true,
+    "contains_item_name": true,
+    "contains_remove_reason": true,
+    "contains_penalty_reason_for_not_incentive_row": true,
+    "valid_row_not_exported": true,
+    "operator_source_current_contract": {
+      "request_field_present": false,
+      "contract_evidence": [
+        "tech-doc-raw.md ContentRemoveRecord fields: author_id/item_id/item_name/remove_reason/penalty_reason",
+        "generated IDL ContentRemoveRecord has no operator_id",
+        "bam-sync-report.md lists records, author_id, item_id, item_name, remove_reason, penalty_reason, lark_url for apiDownloadContentRemoveRecord"
+      ],
+      "verify_interpretation": "Current frontend request contract cannot prove Feishu sheet operator column/source. This is retained as a real verify recheck instead of being marked fully closed."
+    }
+  },
+  "open_behavior": {
+    "returned_lark_url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080",
+    "browser_tabs_after_click": [
+      {
+        "index": 0,
+        "viewId": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+        "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+      },
+      {
+        "index": 1,
+        "viewId": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+        "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+      },
+      {
+        "index": 2,
+        "viewId": "2c77af8b-9dd1-4fc6-a18d-b894a59abf41",
+        "url": "https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"
+      }
+    ],
+    "opened_returned_lark_url_in_new_tab": true,
+    "window_open_probe_note": "The page-level window.open probe did not record an entry, but the integrated browser click result and subsequent browser_tabs evidence show the returned lark_url opened in tab index 2."
+  },
+  "download_side_effects": {
+    "fetches": [],
+    "xhrs": [],
+    "blocked_real_download_requests": [],
+    "business_tab_network_requests_after_event": [
+      "POST https://mcs.snssdk.com/v1/list type=XHR",
+      "POST https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=ecop_platform type=XHR",
+      "POST https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=alliance_operation_content type=XHR",
+      "POST https://mcs.zijieapi.com/list type=XHR"
+    ],
+    "downloads_directory_check": {
+      "local_time_at_check": "2026-07-09 00:50:29 +0800",
+      "utc_time_at_check": "2026-07-08T16:50:29Z",
+      "checked_paths": [
+        "$HOME/Downloads"
+      ],
+      "criteria": [
+        "find $HOME/Downloads -maxdepth 1 -type f -newermt '2026-07-09 00:45:00'",
+        "find $HOME/Downloads -maxdepth 1 -type f -mmin -120"
+      ],
+      "new_files_found": []
+    },
+    "local_file_creation_observed": false
+  },
+  "after_dom": {
+    "captured_at": "2026-07-08T16:50:29Z",
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "item_presence": {
+      "100001": true,
+      "100002": true,
+      "100003": true
+    },
+    "export_button_visible": true,
+    "one_click_remove_visible": true,
+    "success_text_visible": false,
+    "export_failure_text_visible": false,
+    "old_download_copy_visible": false,
+    "appeal_visible": false,
+    "fake_award_success_visible": false,
+    "invalid_label_visible": true,
+    "not_incentive_label_visible": true
+  },
+  "screenshot_materialization": {
+    "workspace_path": "screenshots/TC-INT-MANUAL-EXPORT--manual-hit--summary-action-before.png",
+    "source_temp_path": "$(getconf DARWIN_USER_TEMP_DIR)/trae/screenshots/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/screenshots/TC-INT-MANUAL-EXPORT--manual-hit--summary-action-before.png",
+    "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced",
+    "size_bytes": 1138867,
+    "materialization_type": "local_file"
+  },
+  "assertion_mapping": {
+    "positive_assertion": "PASS_WITH_NOTES: natural UI export click hit apiDownloadContentRemoveRecord / R-BAM-DOWNLOAD-REMOVE-RECORD and records contain the two removable/hit rows with author_id, item_id, item_name, remove_reason and not-incentive penalty_reason.",
+    "negative_assertion": "PASS_WITH_NOTES: valid row 100003 is absent from the records array; probe fetches/xhrs and Downloads checks show no local file creation; real Feishu file generation is not verified under MOCK_PREVIEW.",
+    "visual_assertion": "PASS: the summary action area shows the exact button text 导出剔除明细 and the local runtime screenshot is materialized.",
+    "negative_visual_assertion": "PASS: no 下载移除明细 old copy, no 申诉 entry and no fake award success text are present in the after DOM scan.",
+    "evidence_required": "PASS_WITH_NOTES: runtime JSON, Markdown summary, BAM synthetic/hit markers, browser tabs evidence, screenshot and download-directory check are persisted; real external Feishu resource permission remains a recheck."
+  },
+  "limits": {
+    "mock_preview": true,
+    "real_backend_not_verified": [
+      "real Feishu sheet creation",
+      "real lark_url permission and content",
+      "real backend persistence/audit trail for download_content_remove_record",
+      "operator source and final Feishu sheet field completeness"
+    ]
+  }
+}

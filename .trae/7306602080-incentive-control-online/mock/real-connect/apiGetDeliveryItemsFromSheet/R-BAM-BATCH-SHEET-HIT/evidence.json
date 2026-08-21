@@ -1,0 +1,77 @@
+{
+  "apiName": "apiGetDeliveryItemsFromSheet",
+  "ruleId": "R-BAM-BATCH-SHEET-HIT",
+  "caseIds": [
+    "TC-UI-BATCH-HIT-REUSE"
+  ],
+  "status": "passed",
+  "capturedAt": "2026-07-09T01:46:26+08:00",
+  "agent": "main-agent",
+  "originStage": "/delivery:verify",
+  "resumeCase": "TC-UI-BATCH-HIT-REUSE",
+  "browser": {
+    "runtimeMode": "TRAE_DESKTOP",
+    "tool": "integrated_browser",
+    "viewId": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "headless": false,
+    "ssoResult": "business_page"
+  },
+  "uiTrigger": {
+    "page": "奖励投放 / 人工提报 Drawer / 批量上传",
+    "operationPath": [
+      "打开 activity_id=7653282555822653742 的奖励投放页",
+      "点击新增提报",
+      "选择提报方式=批量上传",
+      "输入 sheet URL: https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+      "点击提交"
+    ],
+    "requestReached": true,
+    "targetPath": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet"
+  },
+  "realRequestEvidence": {
+    "source": "natural_ui_xhr_probe",
+    "method": "GET",
+    "urlRedacted": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet?sheet_url=https%3A%2F%2Fbytedance.larkoffice.com%2Fsheets%2Fbatch-hit-7306602080&activity_id=7653282555822653742&config_id=7653282555822735662&__token=[REDACTED]",
+    "requestRef": "request.json"
+  },
+  "realResponseEvidence": {
+    "source": "natural_ui_xhr_probe",
+    "rawResponseRef": "response.raw.txt",
+    "responseRef": "response.json",
+    "status": 200,
+    "businessCode": 10001604,
+    "businessMessage": "表格数据不符合要求，请检查数据格式是否正确",
+    "responseRole": "real failure baseline, not claimed as successful backend contract"
+  },
+  "mockContractEvidence": {
+    "mockedResponseRef": "response.mocked.json",
+    "generatedTypeRef": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts#get_delivery_items_from_sheet_response",
+    "storeConsumptionRef": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#fetchVideosBySheetUrl",
+    "renderConsumptionRef": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+    "fieldContract": [
+      "response.code === 0",
+      "response.data.item_info[]",
+      "item.if_satisfy_delivery_rules",
+      "item.if_not_incentive",
+      "item.not_incentive_reason",
+      "item.item_card.item_model.item_id",
+      "item.item_card.item_author_info.author_id"
+    ],
+    "reason": "MOCK_PREVIEW 下真实 sheet 权限和模板数据不作为当前前端 hit-state 验证阻塞项；本 rule 用可达自然请求和代码消费链路构造批量上传 mixed hit 样本，验证前端复用命中态。"
+  },
+  "nonCompressionBoundary": {
+    "keptAssertions": [
+      "批量上传必须触发 apiGetDeliveryItemsFromSheet",
+      "sheet response fields if_not_incentive/not_incentive_reason 被消费",
+      "批量上传 baseline 保持",
+      "命中项使用同款 summary、红字行态和 submit guard",
+      "不新增独立 unsupported hit UI"
+    ],
+    "forbiddenShortcut": "不得把自然失败空表状态判为 PASS；不得只验证 GET 被调用后关闭 case。"
+  },
+  "realVerifyRecovery": [
+    "后端 ready 后使用真实可访问 sheet 复验 code=0 的 get_delivery_items_from_sheet 响应。",
+    "复验真实 sheet response 中 if_not_incentive/not_incentive_reason 字段来源和字段值。",
+    "复验真实 sheet 权限、模板格式与 config_id 绑定关系。"
+  ]
+}

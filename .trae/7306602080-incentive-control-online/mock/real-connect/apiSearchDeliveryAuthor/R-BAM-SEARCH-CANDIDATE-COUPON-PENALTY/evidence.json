@@ -1,0 +1,88 @@
+{
+  "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+  "apiName": "apiSearchDeliveryAuthor",
+  "caseIds": [
+    "TC-INT-AWARD-COUPON-PENALTY__search_candidate_restore",
+    "TC-INT-AWARD-COUPON-RELIEVED__search_candidate_restore"
+  ],
+  "capturedAt": "2026-07-09T13:08:10+08:00",
+  "updatedAt": "2026-07-09T13:50:00+08:00",
+  "originStage": "verify",
+  "resumeCase": "TC-INT-AWARD-COUPON-PENALTY",
+  "browserRuntimeMode": "TRAE_DESKTOP",
+  "browserTool": "integrated_browser",
+  "viewId": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+  "localServiceOwnerCheck": {
+    "status": "matched_current_execution_repo",
+    "port": 8083,
+    "pid": 95994,
+    "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+    "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+    "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+  },
+  "uiTrigger": {
+    "page": "DOU+券奖励投放页",
+    "activeConfigTab": "配置二",
+    "action": "切换配置二后自然触发作者候选首屏查询",
+    "domObservation": {
+      "authorFilterVisible": true,
+      "authorFilterPlaceholder": "输入作者ID，逗号隔开，最多50个",
+      "actionButtonsVisible": [
+        "一键全选",
+        "批量修改",
+        "批量提交"
+      ],
+      "emptyTextVisible": true,
+      "emptyText": "暂无符合门槛的数据",
+      "countText": "共0位满足准入门槛的作者，当前合计0位作者",
+      "candidateCardCount": 0
+    }
+  },
+  "networkEvidence": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/search_delivery_author",
+    "status": 200,
+    "request": "request.json",
+    "rawResponse": "response.raw.txt",
+    "response": "response.json",
+    "baselineEvidenceRef": "../../../verify-logs/evidence/TC-INT-AWARD-COUPON-PENALTY--author-search-empty-baseline.json"
+  },
+  "realResponseSummary": {
+    "st": 0,
+    "code": 0,
+    "msg": "",
+    "data": {
+      "total_num": 0,
+      "candidate_num": 0,
+      "has_more": false
+    }
+  },
+  "mockedResponseSummary": {
+    "st": 0,
+    "code": 0,
+    "msg": "",
+    "data": {
+      "total_num": 2,
+      "candidate_num": 2,
+      "has_more": false,
+      "delivery_author_info.0.author_info.author_id": "800001",
+      "delivery_author_info.0.if_delivery": true,
+      "delivery_author_info.0.rank": 1,
+      "delivery_author_info.1.author_info.author_id": "800002",
+      "delivery_author_info.1.if_delivery": true,
+      "delivery_author_info.1.rank": 2
+    }
+  },
+  "contractBasis": {
+    "source": [
+      "generated IDL search_delivery_author_response",
+      "sendAwardToAuthorStore.fetchData consumption",
+      "award-author card selectability check",
+      "batch-submit-modal delivery_authors mapping"
+    ],
+    "readOnlySafety": true,
+    "finalAwardBoundary": "最终发奖仍必须由自然 UI 触发 apiDeliveryDouPlusCoupon；author 800001 命中 R-BAM-AWARD-COUPON-PENALTY，author 800002 命中 R-BAM-AWARD-COUPON-RELIEVED。本 rule 只恢复可选作者候选。"
+  },
+  "realVerify": "后端 ready 后用真实非空 DOU+券作者候选列表复验 total/candidate_num、if_delivery、delivery_config、rank 和最终发奖 request 字段来源。"
+}

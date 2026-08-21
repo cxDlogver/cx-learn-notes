@@ -1,0 +1,19 @@
+TC-TRACK-REMOVE-DETAIL-TAB-COUPON browser Network final summary
+Captured at: 2026-07-09T11:02:20.572Z
+Browser view: integrated_browser
+Business URL: https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=track_remove_coupon_payload_202607092030b
+
+Relevant business request:
+[91] GET https://ecop.bytedance.net/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record?activity_id=7655304206886322458&config_id=7655304206886355226&page=1&page_num=20&__token=[REDACTED] type=XHR
+
+Probe-captured response summary:
+status=200
+response={"msg":"","extra":{"now":1783594921000,"log_id":"202607091902009D287D609F7416D256FA"},"data":{"total":0,"has_more":false},"st":0,"code":0}
+
+Console BAM marker:
+[BAM_MOCK_HIT] apiName=apiGetDouPlusCouponRemoveRecord method=GET path=/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record ruleId=R-BAM-COUPON-REMOVE-DEFAULT requestBody={"activity_id":"7655304206886322458","config_id":"7655304206886355226","page_num":20,"page":1}
+
+Negative scan:
+get_dou_plus_coin_remove_record request count in probe window: 0
+active reward_type: DOU+券
+active config_id: 7655304206886355226

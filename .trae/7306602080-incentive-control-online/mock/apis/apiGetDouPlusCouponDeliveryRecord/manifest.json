@@ -1,0 +1,278 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiGetDouPlusCouponDeliveryRecord",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "network",
+      "console",
+      "xhr_response_listener"
+    ],
+    "snapshotSummary": "配置二已选中；`点此查看并重新提交` 自然打开 ResubmitAwardAuthorDrawer；GET get_dou_plus_coupon_delivery_record 被自然触发，真实响应因 mocked delivery_task_id 返回参数错误。",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "synthetic_contract",
+    "artifactDir": "../../real-connect/apiGetDouPlusCouponDeliveryRecord",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/request.json",
+        "response": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/evidence.json",
+        "syntheticContractReason": "Natural UI request is reachable, but the mocked make-fail task id has no real backend delivery record and returns 参数错误. The setup list row must be a marked synthetic contract.",
+        "interfaceNecessity": "TC-INT-AWARD-EXCEPTION needs records[0].author_info.author_id=800003 so couponDeliveryRecordStore.deliveryList naturally creates delivery_list[0].item_id=800003.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "delivery_task_id": "fail_coupon_exception_800003",
+          "page": 1,
+          "page_num": 20
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "delivery_task_id": "fail_coupon_exception_800003",
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": []
+      },
+      "syntheticContractReason": "The upstream delivery_task_id is a mock setup task; the real backend returns 参数错误 for this otherwise-natural GET request.",
+      "interfaceNecessity": "The failed coupon resubmit drawer needs a failed author record for TC-INT-AWARD-EXCEPTION and final request construction.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/response.json",
+      "browserPrecheckStatus": "passed"
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "activity_id",
+    "config_id",
+    "delivery_task_id",
+    "page",
+    "page_num"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "activity_id",
+      "impactType": "record_identity",
+      "reason": "The failed coupon delivery record setup must only affect the current exception activity.",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 重新提交制券抽屉"
+    },
+    {
+      "fieldPath": "config_id",
+      "impactType": "record_identity",
+      "reason": "The failed coupon delivery record setup must only affect configuration two for DOU+ coupon.",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 重新提交制券抽屉"
+    },
+    {
+      "fieldPath": "delivery_task_id",
+      "impactType": "record_identity",
+      "reason": "The mocked make-fail task id identifies the failed coupon task opened by the warning action.",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 重新提交制券抽屉"
+    },
+    {
+      "fieldPath": "page",
+      "impactType": "pagination",
+      "reason": "The drawer first page request must receive the single failed author setup record.",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 重新提交制券抽屉"
+    },
+    {
+      "fieldPath": "page_num",
+      "impactType": "pagination",
+      "reason": "The drawer default page size request must receive the single failed author setup record.",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 重新提交制券抽屉"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "delivery_task_id": "fail_coupon_exception_800003",
+        "page": 1,
+        "page_num": 20
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+      "caseIds": [
+        "TC-INT-AWARD-EXCEPTION__delivery_record_setup"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "奖励投放 / DOU+券配置二 / 重新提交制券抽屉 / 发奖名单",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "delivery_task_id": "fail_coupon_exception_800003",
+        "page": 1,
+        "page_num": 20
+      },
+      "mockRule": "命中失败制券任务明细查询时，不发送真实后端请求，返回 marked synthetic failed author record，author_info.author_id=800003。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "delivery_task_id": "fail_coupon_exception_800003",
+          "page": 1,
+          "page_num": 20
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "delivery_task_id": "fail_coupon_exception_800003",
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": []
+      },
+      "mockedResponsePath": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "delivery_task_id": "fail_coupon_exception_800003",
+            "page": 1,
+            "page_num": 20
+          },
+          "requestFieldsForMatching": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "delivery_task_id": "fail_coupon_exception_800003",
+            "page": 1,
+            "page_num": 20
+          },
+          "collectionOnlyFields": []
+        },
+        "syntheticContractReason": "Natural UI request returns 参数错误 because delivery_task_id is produced by the setup mock and has no real backend row.",
+        "interfaceNecessity": "The resubmit drawer needs records[0].author_info.author_id=800003 to naturally generate the final UploadCandidate coupon request.",
+        "uiNaturalAttemptCount": 2,
+        "responsePath": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/response.json",
+        "browserPrecheckStatus": "passed"
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/request.json",
+        "response": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/evidence.json",
+        "syntheticContractReason": "Natural UI request returns 参数错误 because delivery_task_id is produced by setup mock.",
+        "interfaceNecessity": "TC-INT-AWARD-EXCEPTION needs author_id=800003 in the drawer list.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT] for R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION; the resubmit drawer must show author 800003 and enable final request construction without clicking final submit during setup verification.",
+      "realVerify": "后端 ready 后用真实制券失败任务复验 get_dou_plus_coupon_delivery_record 成功响应和作者记录。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+        "reason": "Synthetic setup rule added after natural UI request returned 参数错误 for mocked delivery_task_id; supplemental verification audits matcher, author_id=800003, synthetic marker, no-hit fallback and BAM wrapper.",
+        "verifiedAt": "2026-07-09T16:58:00+08:00"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "isDefault": true,
+      "enabled": true,
+      "uiTarget": "apiGetDouPlusCouponDeliveryRecord no-hit fallback",
+      "requestFields": {},
+      "mockRule": "未命中当前失败任务明细 matcher 时保持原 BAM 响应。",
+      "realConnectArtifact": {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/evidence.json"
+      },
+      "verifyAssertion": "No-hit requests must fall through to the original apiGetDouPlusCouponDeliveryRecord response and must not emit a mock hit for exception setup rule.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "mock/apis/apiGetDouPlusCouponDeliveryRecord/verify.mjs",
+        "reason": "DEFAULT_NOOP 是结构性 no-hit fallback；补充脚本通过 other task id 请求验证 no-hit fallback。"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiGetDouPlusCouponDeliveryRecord",
+    "notes": "Runtime generated from manifest; synthetic rule returns full response without calling original GET for mocked task id.",
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; ADD inline patch apiGetDouPlusCouponDeliveryRecord."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+    "verifiedAt": "2026-07-09T16:58:00+08:00"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "ADD inline patch apiGetDouPlusCouponDeliveryRecord in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-09T09:05:13.114Z"
+  }
+}

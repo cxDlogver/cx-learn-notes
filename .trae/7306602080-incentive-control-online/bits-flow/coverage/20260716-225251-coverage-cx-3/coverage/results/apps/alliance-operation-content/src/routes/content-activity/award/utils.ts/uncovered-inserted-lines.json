@@ -1,0 +1,162 @@
+[
+  {
+    "lineNum": 60,
+    "code": "  const response = toPlainRecord(record.response);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 61,
+    "code": "  const data = toPlainRecord(response?.data);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 62,
+    "code": "  return [",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 63,
+    "code": "    record.code,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 64,
+    "code": "    record.name,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 65,
+    "code": "    record.message,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 66,
+    "code": "    record.msg,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 67,
+    "code": "    response?.statusText,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 68,
+    "code": "    data?.code,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 69,
+    "code": "    data?.message,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 70,
+    "code": "    data?.msg,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 71,
+    "code": "  ]",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 72,
+    "code": "    .map(stringifyToken)",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 73,
+    "code": "    .filter(Boolean)",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 74,
+    "code": "    .join(' ');",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 86,
+    "code": "    return res.code;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 89,
+    "code": "    return res.st;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 115,
+    "code": "  return isAwardDeliveryTimeoutLike(error)",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 116,
+    "code": "    ? MESSAGES.SEND_AWARD_GOVERNANCE_TIMEOUT",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 117,
+    "code": "    : MESSAGES.SEND_AWARD_GOVERNANCE_EXCEPTION;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  }
+]

@@ -1,0 +1,68 @@
+{
+  "ruleId": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+  "apiName": "apiSearchDeliveryItems",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-COIN-PENALTY",
+  "captured_at": "2026-07-09T11:15:54+08:00",
+  "status": "real_browser_request_failure_baseline_with_mock_operations",
+  "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY must rerun the real UI `修改配置/保存` setup path after a full reload. The reload pulled the patched BAM chunk but the natural SearchCandidate list became unavailable, so the current case has no candidate card or `修改配置` entry to exercise `apiDeliveryModifySave`.",
+  "naturalRequest": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/search_delivery_items",
+    "redactedUrl": "/api/buyin/admin/content_activity/search_delivery_items?activity_id=7655304206886322458&config_id=7655304206886338842&publish_start_time=1782403200&publish_end_time=1783526399&page_no=1&page_size=50&session_unix_time=1783565669&candidate_pool_type=1&__token=[REDACTED]",
+    "status": 200,
+    "response": {
+      "st": 10001602,
+      "code": 10001602,
+      "msg": "查询发放奖励失败",
+      "data": {}
+    }
+  },
+  "mockPurpose": "Restore only the current DOU+ coin SearchCandidate candidate sample so the active verify case can run the real UI setup save. This rule does not close setup save evidence, final award evidence, backend governance status, or persistence.",
+  "sampleBasis": {
+    "candidate_id": "7655364163166869874",
+    "rank": 1,
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "sourceRefs": [
+      "mock/real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/evidence.json",
+      "mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/evidence.json",
+      "verify-logs/evidence/TC-INT-AWARD-COIN-PENALTY--runtime.json",
+      "screenshots/TC-INT-AWARD-COIN-PENALTY--setup-effective-time-echo.png",
+      "screenshots/TC-INT-AWARD-COIN-PENALTY--final-award-non-success.png"
+    ],
+    "missingFieldsIntentionallyPreserved": [
+      "delivery_config.effective_time"
+    ]
+  },
+  "runtimePlan": {
+    "matchFields": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "candidate_pool_type": 1,
+      "page_no": 1,
+      "page_size": 50
+    },
+    "operations": [
+      "set st=0",
+      "set code=0",
+      "set msg=\"\"",
+      "set data.total_num=1",
+      "set data.candidate_num=1",
+      "set data.item_info[0].item_card.item_model.item_id=7655364163166869874",
+      "set data.item_info[0].delivery_config without effective_time",
+      "set data.has_more=false"
+    ]
+  },
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "requiredChecks": [
+      "reload or naturally refetch configuration one SearchCandidate list and observe [BAM_MOCK_HIT] for R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+      "use real UI `修改配置/保存` on candidate 7655364163166869874",
+      "capture apiDeliveryModifySave [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT]",
+      "confirm row echo has a non-empty 投放生效时间 after save",
+      "only then reuse or rerun final apiDeliveryDouPlusCoin non-success evidence"
+    ]
+  },
+  "realVerify": "后端 ready 后复验真实 SearchCandidate 列表、真实 delivery_modify_save 持久化、真实治理处罚状态和最终发奖事务一致性。"
+}

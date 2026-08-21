@@ -1,0 +1,281 @@
+{
+  "case_id": "TC-INT-BATCH-ONE-CLICK-REMOVE",
+  "captured_at": "2026-07-09T02:21:29+08:00",
+  "browser": {
+    "tool": "integrated_browser",
+    "viewId": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+  },
+  "mock_runtime": {
+    "apiName": "apiCandidateRemove",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/candidate_remove",
+    "manifest_ref": "../../mock/apis/apiCandidateRemove/manifest.json",
+    "rule_map_ref": "../../mock/rule-map.json",
+    "real_backend_write_request_sent": false,
+    "network_log_ref": "../network/TC-INT-BATCH-ONE-CLICK-REMOVE--network.log",
+    "network_log_summary": {
+      "candidate_remove_fetch_or_xhr_records": [],
+      "sheet_get_records_present": true,
+      "note": "MOCK_PREVIEW synthetic runtime returned before real fetch/xhr; request evidence comes from BAM console marker."
+    }
+  },
+  "success_path": {
+    "precondition": {
+      "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+      "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+      "rows": [
+        {
+          "item_id": "200001",
+          "present": true,
+          "hit_label": "不满足准入门槛"
+        },
+        {
+          "item_id": "200002",
+          "present": true,
+          "hit_label": "命中【不激励】规则"
+        },
+        {
+          "item_id": "200003",
+          "present": true,
+          "hit_label": null
+        }
+      ],
+      "actions": {
+        "one_click_remove": true,
+        "export_remove_detail": true,
+        "submit_and_deliver": true,
+        "cancel": true
+      },
+      "negative_dom_flags": {
+        "manual_input_only_error_layout": false,
+        "appeal_text": false,
+        "batch_success_fake": false,
+        "batch_submit_modal": false,
+        "real_sheet_failure_message": false
+      },
+      "screenshot": {
+        "path": "screenshots/TC-INT-BATCH-ONE-CLICK-REMOVE--batch-hit--summary-action-before.png",
+        "sha256": "140d5119f060be4e477ff7131ce97e9db32b3dd0596291472810488182a139b2",
+        "dimensions": "2549x1875"
+      }
+    },
+    "action": {
+      "method": "browser_click",
+      "target": "一键移除",
+      "snapshot_ref": "e29",
+      "result": "synthetic success branch matched"
+    },
+    "synthetic_contract_marker": {
+      "event": "BAM_MOCK_SYNTHETIC_CONTRACT",
+      "apiName": "apiCandidateRemove",
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-SUCCESS",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "200001",
+            "remove_reason": "手动移除"
+          },
+          {
+            "candidate_id": "200002",
+            "remove_reason": "命中【不激励】规则"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      },
+      "reason": "MOCK_PREVIEW write-interface safety: candidate_remove must not be sent to real backend; runtime returns marked synthetic success."
+    },
+    "hit_marker": {
+      "event": "BAM_MOCK_HIT",
+      "api": {
+        "apiName": "apiCandidateRemove",
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/candidate_remove"
+      },
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-SUCCESS",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "200001",
+            "remove_reason": "手动移除"
+          },
+          {
+            "candidate_id": "200002",
+            "remove_reason": "命中【不激励】规则"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 0,
+        "code": 0,
+        "msg": "success"
+      }
+    },
+    "after_click": {
+      "summary_text": null,
+      "item_presence": {
+        "200001": false,
+        "200002": false,
+        "200003": true
+      },
+      "actions": {
+        "one_click_remove": false,
+        "export_remove_detail": false,
+        "submit_and_deliver": true,
+        "cancel": true
+      },
+      "negative_dom_flags": {
+        "manual_input_only_error_layout": false,
+        "appeal_text": false,
+        "batch_success_fake": false,
+        "batch_submit_modal": false,
+        "real_sheet_failure_message": false
+      },
+      "screenshot": {
+        "path": "screenshots/TC-INT-BATCH-ONE-CLICK-REMOVE--batch-hit-removed--drawer-after-remove.png",
+        "sha256": "aa8c7b0ca4f9343fecae046053681456abad9d32a68de17847c1ff8aa857832e",
+        "dimensions": "2549x1875"
+      }
+    }
+  },
+  "failure_path": {
+    "setup_actions": [
+      {
+        "step": "resubmit_batch_sheet_url",
+        "method": "browser_click",
+        "target": "提交",
+        "result": "R-BAM-BATCH-SHEET-HIT restored 3-row batch hit state"
+      },
+      {
+        "step": "remove_second_hit_row",
+        "method": "browser_click on row-level Popconfirm trigger and confirm",
+        "instrumentation_note": "The row-level <a> links had no stable accessibility refs. Temporary role/aria-label attributes were added to visible row remove links only for browser automation targeting; no business state, React state, store, request, or visual content was modified.",
+        "result": "row 200002 removed by UI Popconfirm, leaving 200001 and 200003"
+      }
+    ],
+    "before_click": {
+      "summary_text": "共2个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：1个",
+      "item_presence": {
+        "200001": true,
+        "200002": false,
+        "200003": true
+      },
+      "rows": [
+        "1 视频标题：批量上传准入失败作品 视频ID：200001 不满足准入门槛 2小时 1 智能投放 - - 移除",
+        "3 视频标题：批量上传可投放作品 视频ID：200003 2小时 1 智能投放 - - 移除"
+      ],
+      "actions": {
+        "one_click_remove": true,
+        "export_remove_detail": true,
+        "submit_and_deliver": true,
+        "cancel": true
+      },
+      "negative_dom_flags": {
+        "manual_input_only_error_layout": false,
+        "appeal_text": false,
+        "batch_success_fake": false,
+        "batch_submit_modal": false
+      },
+      "screenshot": {
+        "path": "screenshots/TC-INT-BATCH-ONE-CLICK-REMOVE--single-hit-before-failure.png",
+        "sha256": "d533755a6fd5cc649c091fc108aab3391a958fda551e3390b04a679d891b0e60",
+        "dimensions": "2549x1875"
+      }
+    },
+    "action": {
+      "method": "browser_click",
+      "target": "一键移除",
+      "snapshot_ref": "e67",
+      "result": "synthetic failure branch matched"
+    },
+    "synthetic_contract_marker": {
+      "event": "BAM_MOCK_SYNTHETIC_CONTRACT",
+      "apiName": "apiCandidateRemove",
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "200001",
+            "remove_reason": "手动移除"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 1,
+        "code": 1,
+        "msg": "一键移除失败"
+      },
+      "reason": "MOCK_PREVIEW write-interface safety: candidate_remove failure-path probe must not be sent to real backend; runtime returns marked synthetic failure."
+    },
+    "hit_marker": {
+      "event": "BAM_MOCK_HIT",
+      "api": {
+        "apiName": "apiCandidateRemove",
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/candidate_remove"
+      },
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "200001",
+            "remove_reason": "手动移除"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 1,
+        "code": 1,
+        "msg": "一键移除失败"
+      }
+    },
+    "after_click": {
+      "summary_text": "共2个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：1个",
+      "item_presence": {
+        "200001": true,
+        "200002": false,
+        "200003": true
+      },
+      "rows": [
+        "1 视频标题：批量上传准入失败作品 视频ID：200001 不满足准入门槛 2小时 1 智能投放 - - 移除",
+        "3 视频标题：批量上传可投放作品 视频ID：200003 2小时 1 智能投放 - - 移除"
+      ],
+      "negative_side_effects": {
+        "batch_upload_modal_opened": false,
+        "batch_submit_modal_opened": false,
+        "manual_input_only_error_layout": false,
+        "appeal_ui_opened": false,
+        "fake_batch_success": false,
+        "fake_award_success": false
+      },
+      "screenshot": {
+        "path": "screenshots/TC-INT-BATCH-ONE-CLICK-REMOVE--single-hit-after-failure.png",
+        "sha256": "12d5dedb5fe1f806169b3e87b9c362e13f5e4513c56c648c529856911377e46b",
+        "dimensions": "2549x1875"
+      }
+    }
+  },
+  "assertion_result": {
+    "positive_assertion": "PASS_WITH_NOTES",
+    "negative_assertion": "PASS_WITH_NOTES",
+    "visual_assertion": "PASS_WITH_NOTES",
+    "negative_visual_assertion": "PASS",
+    "evidence_required": "PASS"
+  },
+  "limitations": [
+    "MOCK_PREVIEW synthetic response proves frontend request shape and UI update/failure handling for the BAM runtime rule; it does not prove real backend candidate_remove persistence or real failure-code behavior.",
+    "Verify screenshots are runtime source only and do not close Figma-vs-runtime design alignment."
+  ]
+}

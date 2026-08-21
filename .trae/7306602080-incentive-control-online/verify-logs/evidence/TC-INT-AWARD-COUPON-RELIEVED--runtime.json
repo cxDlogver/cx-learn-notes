@@ -1,0 +1,166 @@
+{
+  "case_id": "TC-INT-AWARD-COUPON-RELIEVED",
+  "recorded_at": "2026-07-09T06:15:57Z",
+  "result": "PASS_WITH_NOTES",
+  "runtime": {
+    "browser_tool": "integrated_browser",
+    "view_id": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=coupon_relieved_202607091358",
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "selected_tab": "配置二",
+    "reward_type": "DOU+券"
+  },
+  "precondition": {
+    "search_author_rule_id": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+    "api_name": "apiSearchDeliveryAuthor",
+    "request_summary": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "candidate_pool_type": 1,
+      "award_period": 1
+    },
+    "mocked_response_summary": {
+      "total_num": 2,
+      "candidate_num": 2,
+      "candidate_ids": [
+        "800001",
+        "800002"
+      ],
+      "relieved_candidate": {
+        "candidate_id": "800002",
+        "author_name": "券解除作者800002",
+        "rank": 2,
+        "if_delivery": true
+      }
+    },
+    "runtime_dom": {
+      "has_800001": true,
+      "has_800002": true,
+      "has_relieved_name": true,
+      "candidate_count_copy": "共2位满足准入门槛的作者，当前合计2位作者"
+    }
+  },
+  "selection_evidence": {
+    "method": "component DOM label click fallback after integrated_browser coordinate click did not toggle checkbox",
+    "state_mutation_policy": "Did not write React/MobX state or set input.checked directly; used label.click() to trigger the component DOM click/change event path.",
+    "failed_coordinate_clicks": [
+      {
+        "target": "second row checkbox top-left",
+        "point": {
+          "x": 868,
+          "y": 692
+        },
+        "post_state": "unchecked"
+      },
+      {
+        "target": "second row checkbox center via root",
+        "point": {
+          "x": 876,
+          "y": 700
+        },
+        "post_state": "unchecked"
+      },
+      {
+        "target": "second row checkbox label lower area",
+        "point": {
+          "x": 876,
+          "y": 708
+        },
+        "post_state": "unchecked"
+      }
+    ],
+    "before_final_confirm": {
+      "modal_text": "投放奖励；本次共投放 1 位作者，预计占用 1 张满0减50的DOU+券；关联充值记录 cc抖+券-程可歆-5000；余额充足。剩余可用：4188元，本期预计消耗500元",
+      "confirm_disabled": false,
+      "checked_authors": [
+        {
+          "candidate_id": "800001",
+          "checked": false,
+          "name": "券候选作者800001"
+        },
+        {
+          "candidate_id": "800002",
+          "checked": true,
+          "name": "券解除作者800002"
+        }
+      ]
+    }
+  },
+  "final_award": {
+    "api_name": "apiDeliveryDouPlusCoupon",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+    "rule_id": "R-BAM-AWARD-COUPON-RELIEVED",
+    "console_markers": [
+      "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+      "[BAM_MOCK_HIT]"
+    ],
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "charge_code": "LST12607070007003",
+      "delivery_authors": [
+        {
+          "candidate_id": "800002",
+          "rank": 2
+        }
+      ],
+      "session_unix_time": 1783577074,
+      "publish_start_time": 1783440000,
+      "publish_end_time": 1783526399,
+      "award_period": 1,
+      "delivery_from": 1
+    },
+    "mocked_response": {
+      "st": 0,
+      "code": 0,
+      "msg": "success"
+    },
+    "write_safety": {
+      "synthetic_contract": true,
+      "reason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction.",
+      "no_real_write_network_log": "verify-logs/network/TC-INT-AWARD-COUPON-RELIEVED-network-2026-07-09T06-13-24-174Z.log",
+      "network_grep_summary": [
+        "GET /api/buyin/admin/content_activity/search_delivery_author observed",
+        "GET /api/buyin/admin/content_activity/get_charge_record observed",
+        "POST /api/buyin/admin/content_activity/charge_amount_check observed",
+        "No XHR/fetch entry for /api/buyin/admin/content_activity/delivery_dou_plus_coupon in copied network log"
+      ]
+    }
+  },
+  "post_submit_dom": {
+    "modal_closed": true,
+    "has_800001": true,
+    "has_800002": true,
+    "has_relieved_name": true,
+    "candidate_cards": [
+      {
+        "candidate_id": "800001",
+        "checked": false,
+        "visible": true
+      },
+      {
+        "candidate_id": "800002",
+        "checked": true,
+        "visible": true
+      }
+    ],
+    "negative_notes": [
+      "No active award modal remained after success response.",
+      "No case-specific visible error `提交作者奖励投放失败` was observed after the final wait.",
+      "Generic page title contains `测测不激励`; it is a static activity title and is not treated as governance failure copy for this case."
+    ]
+  },
+  "screenshot": {
+    "attempted_filename": "verify-logs/screenshots/TC-INT-AWARD-COUPON-RELIEVED-final-page.png",
+    "materialization_type": "inline_only",
+    "local_file_created": false,
+    "reason": "integrated_browser returned inline screenshot preview but did not materialize the requested workspace file path."
+  },
+  "residual_risks": [
+    "MOCK_PREVIEW synthetic response verifies frontend success branch and write-interface safety only; it does not prove real backend governance status 1/2 or real award transaction behavior.",
+    "Author selection required DOM label.click() fallback because integrated_browser coordinate clicks did not toggle the custom checkbox; no React/MobX state or checked property was assigned directly.",
+    "Real coupon charge account consistency remains a real-integration recheck item."
+  ]
+}

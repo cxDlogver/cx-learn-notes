@@ -1,0 +1,67 @@
+{
+  "captured_at": "2026-07-16T12:53:00Z",
+  "browser_runtime": "integrated_browser",
+  "environment": "REAL_ONLINE",
+  "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+  "target_file_coverage_version": "huatuo:a8063018ce0bb551",
+  "checked_author_configs": [
+    {
+      "tab": "配置二",
+      "reward_type": "DOU+券",
+      "ui_summary": "共0位满足准入门槛的作者，当前合计0位作者；暂无符合门槛的数据",
+      "backend": "real",
+      "write_request": "none"
+    },
+    {
+      "tab": "配置三",
+      "reward_type": "DOU+券",
+      "ui_summary": "存在制券失败警告；奖励下发列表共0位满足准入门槛的作者，当前合计0位作者；暂无符合门槛的数据",
+      "backend": "real",
+      "write_request": "none"
+    },
+    {
+      "tab": "配置四",
+      "reward_type": "DOU+券",
+      "ui_summary": "共0位满足准入门槛的作者，当前合计0位作者；暂无符合门槛的数据",
+      "backend": "real",
+      "write_request": "none"
+    },
+    {
+      "tab": "配置六",
+      "reward_type": "DOU+券",
+      "ui_summary": "共0位满足准入门槛的作者，当前合计0位作者；暂无符合门槛的数据",
+      "backend": "real",
+      "write_request": "none"
+    }
+  ],
+  "read_or_no_side_effect_requests": [
+    {
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/search_delivery_author",
+      "backend": "real",
+      "observed_configs": [
+        "配置二",
+        "配置三",
+        "配置四",
+        "配置六"
+      ],
+      "url_token": "redacted"
+    },
+    {
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+      "backend": "real",
+      "observed_configs": [
+        "配置三"
+      ],
+      "url_token": "redacted"
+    }
+  ],
+  "blocker": {
+    "type": "NO_REAL_AUTHOR_CANDIDATES",
+    "reason": "sendAwardToAuthorStore.ts 的 pending no-award author 分支需要真实作者候选、批量修改或单卡修改后才能触发；当前线上 DOU+券配置均返回 0 位作者，无法由真实 UI 安全触发 updateAwardConfigForAuthor/updateAwardConfigForAuthors/syncPendingNoAwardAuthorItems/clearPendingNoAwardAuthorItems。",
+    "write_intercept_needed": false,
+    "next_action": "按 same-run 去重跳过已处理的 batch-submit-modal，选择下一有效候选 utils.ts。"
+  }
+}

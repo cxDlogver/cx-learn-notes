@@ -1,0 +1,42 @@
+[
+  {
+    "lineNum": 440,
+    "code": "        .map((item) => [this.getCandidateId(item), item] as const)",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 441,
+    "code": "        .filter((entry): entry is readonly [string, delivery_item_info] => Boolean(entry[0])),",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 447,
+    "code": "        return;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 450,
+    "code": "        pendingById.set(candidateId, { ...item, if_delivery: false });",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 451,
+    "code": "        return;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  }
+]

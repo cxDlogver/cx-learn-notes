@@ -1,0 +1,19 @@
+# TC-INT-AWARD-COUPON-PENALTY final Network summary
+
+- captured_at: 2026-07-09T13:38:37+0800
+- browser_tool: integrated_browser
+- raw_browser_log: /var/folders/g3/gkh9674s19x35p641jykwjbw0000gn/T/trae/browser-logs/network-2026-07-09T05-38-37-932Z.log
+- redaction: `__token` and unrelated telemetry payloads are not copied into this workspace artifact.
+
+## Target API Presence Check
+
+```text
+[74] POST https://ecop.bytedance.net/api/buyin/admin/content_activity/charge_amount_check?__token=<redacted> type=XHR
+```
+
+## Assertions
+
+- `delivery_dou_plus_coupon` real XHR/fetch present in browser Network log: false
+- `/api/buyin/admin/content_activity/delivery_dou_plus_coupon` real XHR/fetch present in browser Network log: false
+- `charge_amount_check` present before final award submission: true
+- Interpretation: final award response came from BAM synthetic marker, not a real backend write request.

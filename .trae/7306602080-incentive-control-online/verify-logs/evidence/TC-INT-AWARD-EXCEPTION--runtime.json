@@ -1,0 +1,149 @@
+{
+  "case_id": "TC-INT-AWARD-EXCEPTION",
+  "captured_at": "2026-07-09T17:20:20+08:00",
+  "result": "PASS_WITH_NOTES",
+  "browser_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=award_exception_final_202607091710",
+  "runtime_mode": "MOCK_PREVIEW",
+  "natural_ui_steps": [
+    "Reloaded DOU+ coupon award page with cache-bust _verify_reload=award_exception_final_202607091710.",
+    "Clicked configuration tab `配置二`.",
+    "Clicked visible make-fail warning action `点此查看并重新提交`.",
+    "Selected charge record `cc抖+券-程可歆-5000` through the drawer combobox search path.",
+    "Clicked drawer `确认提交` and observed final synthetic exception response."
+  ],
+  "ui_observations": {
+    "retry_entry_visible": true,
+    "retry_task_id_visible": "fail_coupon_exception_800003",
+    "drawer_visible_after_submit": true,
+    "selected_charge_record_visible": "cc抖+券-程可歆-5000",
+    "selected_charge_balance_copy": "余额充足。剩余可用：3628元",
+    "author_visible": true,
+    "author_id": "800003",
+    "author_name": "制券失败作者800003",
+    "coupon_amount_copy": "满1减50",
+    "success_copy_visible_after_submit": false
+  },
+  "mock_chain": {
+    "make_fail_setup": {
+      "marker": "[BAM_MOCK_HIT]",
+      "apiName": "apiGetDouPlusCouponMakeFailRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+      "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+      "requestBody": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226"
+      },
+      "mockedResponseSummary": {
+        "delivery_task_id": "fail_coupon_exception_800003",
+        "num": 1,
+        "coupon_type": 1,
+        "coupon_config": {
+          "threshold": 100,
+          "freeAmount": 5000
+        }
+      }
+    },
+    "delivery_record_setup": {
+      "synthetic_marker": "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+      "hit_marker": "[BAM_MOCK_HIT]",
+      "apiName": "apiGetDouPlusCouponDeliveryRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+      "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+      "requestBody": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "delivery_task_id": "fail_coupon_exception_800003",
+        "page": 1,
+        "page_num": 20
+      },
+      "mockedResponseSummary": {
+        "st": 0,
+        "code": 0,
+        "record_id": "fail_coupon_exception_record_800003",
+        "author_id": "800003",
+        "author_name": "制券失败作者800003",
+        "charge_code": "charge_code_award_coupon_exception_7306602080",
+        "coupon_config": {
+          "threshold": 100,
+          "freeAmount": 5000
+        }
+      },
+      "synthetic_reason": "Natural UI request returns 参数错误 because delivery_task_id is produced by the setup mock and has no real backend row."
+    },
+    "final_award_submit": {
+      "synthetic_marker": "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+      "hit_marker": "[BAM_MOCK_HIT]",
+      "apiName": "apiDeliveryDouPlusCoupon",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+      "requestBody": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226",
+        "fail_delivery_task_id": "fail_coupon_exception_800003",
+        "charge_code": "LST12607070007003",
+        "delivery_from": 2,
+        "delivery_list": [
+          {
+            "item_id": "800003",
+            "delivery_config": {
+              "coupon_type": 1,
+              "coupon_config": {
+                "threshold": 100,
+                "freeAmount": 5000
+              },
+              "num": 1,
+              "reiceve_start_time": 1783440000,
+              "reiceve_end_time": 1783526399,
+              "use_time_type": 1,
+              "use_start_time": 1783440000,
+              "use_end_time": 1784131199
+            }
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 1,
+        "code": 500,
+        "msg": "exception"
+      },
+      "synthetic_reason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+    }
+  },
+  "message_evidence": {
+    "observer_type": "MutationObserver on document.body.innerText",
+    "exception_text_observed": true,
+    "exception_text": "治理校验异常，请联系管理员",
+    "exception_text_observed_count": 2,
+    "success_text_observed": false,
+    "forbidden_success_texts": [
+      "提交成功",
+      "发奖成功"
+    ],
+    "toast_is_transient": true,
+    "representative_tail": "重新提交制券\\n关联充值记录\\n充值记录\\ncc抖+券-程可歆-5000\\n余额充足。剩余可用：3628元\\n发奖名单\\n序号\\t作者信息\\t券类型\\t奖励金额\\t奖励数量\\t领取有效期\\t使用有效期类型\\t使用有效期\\n1\\t\\n制券失败作者800003\\nUID：800003\\n\\t满减券\\t满1减50\\t1张\\t\\n\\t\\n固定时间起止\\n\\t\\n确认提交取消\\n治理校验异常，请联系管理员"
+  },
+  "network_safety": {
+    "final_write_send_real_backend_request": false,
+    "final_target_xhr_or_fetch_records_captured": [],
+    "evidence_basis": "Final apiDeliveryDouPlusCoupon produced [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT]; the page-level XHR/fetch capture recorded no final delivery_dou_plus_coupon transport."
+  },
+  "screenshot_evidence": {
+    "before_submit_attempt": {
+      "requested_path": "verify-logs/screenshots/TC-INT-AWARD-EXCEPTION/before-submit-drawer.png",
+      "materialization_type": "inline_only",
+      "note": "integrated_browser returned an inline screenshot preview but did not create a local PNG under the requested directory."
+    },
+    "exception_toast_attempt": {
+      "requested_path": "verify-logs/screenshots/TC-INT-AWARD-EXCEPTION/exception-toast-after-submit.png",
+      "materialization_type": "inline_only",
+      "note": "integrated_browser returned an inline screenshot preview; the transient toast evidence is persisted through MutationObserver text events instead."
+    }
+  },
+  "notes": [
+    "The page-level XHR capture saw the underlying real make-fail GET return task_list=null before BAM mock substitution; runtime proof for this case uses BAM mock markers and UI state.",
+    "No cookie, storage, or auth token values were read or persisted."
+  ]
+}

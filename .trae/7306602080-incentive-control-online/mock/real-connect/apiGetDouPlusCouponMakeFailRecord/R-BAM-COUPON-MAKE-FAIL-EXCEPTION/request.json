@@ -1,0 +1,18 @@
+{
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+  "query": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226"
+  },
+  "requestFieldsForMatching": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226"
+  },
+  "collectionOnlyFields": [],
+  "safety": {
+    "side_effect": "read_only_get",
+    "triggered_by": "natural_ui",
+    "notes": "配置二 DOU+券奖励投放页加载 MakeCouponFailedWarnings 时自然触发；未点击重新提交制券抽屉确认提交，未触发发奖写接口。"
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "case_id": "TC-UI-COUPON-REMOVE-PAGE",
+  "captured_at": "2026-07-08T12:50:54Z",
+  "verification_method": "natural_ui_with_bam_runtime_mock",
+  "browser": {
+    "browser_runtime_mode": "TRAE_DESKTOP",
+    "browser_tool": "integrated_browser",
+    "headless": false,
+    "view_id": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "sso_result": "business_page"
+  },
+  "natural_ui_path": [
+    "配置二",
+    "奖励下发",
+    "剔除明细"
+  ],
+  "sample": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "reward_type": "DOU+券",
+    "selected_config_tab": "配置二",
+    "active_sub_tab": "剔除明细"
+  },
+  "network_request": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+    "query": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page": 1,
+      "page_num": 20
+    },
+    "redacted_query_keys": [
+      "__token"
+    ],
+    "status": 200
+  },
+  "real_response_baseline": {
+    "source": "in-page XHR listener after natural UI tab click",
+    "response_shape": {
+      "st": 0,
+      "code": 0,
+      "msg": "",
+      "data": {
+        "total": 0,
+        "has_more": false
+      }
+    },
+    "artifact_refs": {
+      "request": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/request.json",
+      "raw_response": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.raw.txt",
+      "response": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+      "mocked_response": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.mocked.json"
+    }
+  },
+  "bam_mock_hit": {
+    "event": "BAM_MOCK_HIT",
+    "api": {
+      "apiName": "apiGetDouPlusCouponRemoveRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record"
+    },
+    "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+    "requestBody": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page_num": 20,
+      "page": 1
+    },
+    "mockedResponseSummary": {
+      "recordsLength": 1,
+      "total": 40,
+      "has_more": true,
+      "firstRecord": {
+        "record_id": "coupon_remove_record_20260708001",
+        "author_id": "900001",
+        "author_name": "券作者示例",
+        "remove_reason": "命中【不激励】规则",
+        "operator_id": "6068830",
+        "remove_time": 1783514440
+      }
+    }
+  },
+  "dom_summary": {
+    "required_text_present": [
+      "奖励下发",
+      "投放明细",
+      "剔除明细",
+      "作者ID",
+      "操作人",
+      "作者信息",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "券作者示例",
+      "ID: 900001",
+      "命中【不激励】规则",
+      "陈相"
+    ],
+    "forbidden_text_absent": [
+      "作品内容",
+      "券数量",
+      "投放状态"
+    ],
+    "table_headers": [
+      "作者信息",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ],
+    "table_first_row_text": "券作者示例 / ID: 900001 / 命中【不激励】规则 / 2026/07/08 20:40:40 / 陈相",
+    "pagination_visible": true
+  },
+  "screenshot": {
+    "path": "screenshots/TC-UI-COUPON-REMOVE-PAGE--remove-detail-coupon-default--mock-hit.png",
+    "materialization_type": "workspace_file",
+    "file_check": "PNG image data, 1751 x 1376, 8-bit/color RGB, non-interlaced"
+  },
+  "privacy": {
+    "cookies_read": false,
+    "storage_read": false,
+    "authorization_persisted": false,
+    "token_persisted": false,
+    "raw_token_url_persisted": false
+  },
+  "result_limit": {
+    "verify_runtime_result": "PASS_WITH_NOTES",
+    "notes": [
+      "verify 阶段只关闭运行态结构、DOM、Network 和 BAM mock 命中；Figma-vs-runtime 对齐留给 /delivery:design。",
+      "MOCK_PREVIEW 使用真实空响应基础上的最小 response operations；后端 ready 后仍需真实非空 DOU+券剔除记录复验分页、排序和 has_more。"
+    ]
+  }
+}

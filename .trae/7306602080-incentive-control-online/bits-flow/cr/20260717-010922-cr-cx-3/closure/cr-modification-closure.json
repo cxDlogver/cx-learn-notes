@@ -1,0 +1,2036 @@
+{
+  "version": 1,
+  "mode": "cr",
+  "mr": {
+    "repo": "ecom/alliance-operation-mono",
+    "number": "736",
+    "url": "https://code.byted.org/ecom/alliance-operation-mono/merge_requests/736",
+    "version": "4",
+    "source_commit": "16300a1a2efa1b6bd8f3baf5046b3a671151fbdf",
+    "branch": "cx-3"
+  },
+  "sources": [
+    {
+      "source_id": "codebase-mr-comments-open",
+      "type": "CODEBASE_ASSISTANT|AIME|BITS_CODE_GUARD",
+      "artifact_ref": "raw/codebase-mr-comments-open.json",
+      "fetched_at": "2026-07-17T01:09:22+08:00",
+      "status": "OPEN_THREADS_ANALYZED",
+      "notes": "17 open Codebase threads were normalized and accepted."
+    },
+    {
+      "source_id": "codebase-checks-mr",
+      "type": "BITS_CODE_GUARD",
+      "artifact_ref": "raw/codebase-checks-mr.json",
+      "fetched_at": "2026-07-17T01:09:22+08:00",
+      "status": "CHECKS_ANALYZED",
+      "notes": "MR check snapshot showed failed_count=0 at fetch time."
+    }
+  ],
+  "review_execution_policy": {
+    "default_decision": "BLOCKED",
+    "requires_scope_audit_before_edit": true,
+    "requires_change_audit_before_edit": true,
+    "accepted_decisions": [
+      "ACCEPT",
+      "PARTIAL"
+    ],
+    "accepted_decisions_require_verification": true,
+    "unreachable_current_flow_decision": "REJECT|ALREADY_FIXED",
+    "minimum_change_required": true,
+    "submit_requires_user_authorization": true,
+    "submit_requires_individual_thread_reply": true,
+    "submit_requires_reply_before_resolve": true,
+    "submit_requires_resolve_after_reply": true,
+    "submit_disallows_aggregate_reply_only": true
+  },
+  "issues": [
+    {
+      "issue_id": "CR-001",
+      "source_refs": [
+        {
+          "thread_id": "785687603334999",
+          "source": "Codebase Assistant"
+        }
+      ],
+      "review_claim": "updateVideoAwardItems cleared pendingNoAwardVideoItems during list refresh.",
+      "normalized_claim": "Video pending no-award remove candidates must survive ordinary list replacement until submit success.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "The no-award upload path is part of AR-003/AR-009/AR-010 and is reachable after operators save no-award video rows.",
+      "requirement_refs": [
+        "AR-003",
+        "AR-009",
+        "AR-010"
+      ],
+      "atomic_requirement_refs": [
+        "发奖前剔除",
+        "人工提报导出剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "sendAwardToVideoStore pendingNoAwardVideoItems is merged by batch submit and uploaded through candidate_remove after reward success.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Preserves pending no-award video candidates across refresh."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts"
+        ],
+        "solution_summary": "Removed pendingNoAwardVideoItems clearing from updateVideoAwardItems.",
+        "result_summary": "List replacement no longer loses pending no-award video state."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785687603334999"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785687603334999",
+            "reply_comment_id": "785790552509329",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785687603334999",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790552509329",
+            "reply_artifact_ref": "writeback/replies/785687603334999.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain pending video state is preserved until submit success."
+      }
+    },
+    {
+      "issue_id": "CR-002",
+      "source_refs": [
+        {
+          "thread_id": "785687605443661",
+          "source": "Codebase Assistant"
+        }
+      ],
+      "review_claim": "fetchData cleared pendingNoAwardAuthorItems during author list refresh.",
+      "normalized_claim": "Author pending no-award remove candidates must survive fetch/filter/page refresh.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Author remove-candidate upload is part of AR-004/AR-013/AR-014 reward traceability.",
+      "requirement_refs": [
+        "AR-004",
+        "AR-013",
+        "AR-014"
+      ],
+      "atomic_requirement_refs": [
+        "DOU+券发奖前剔除",
+        "作者维度剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "sendAwardToAuthorStore pendingNoAwardAuthorItems is merged into batch submit payload before candidate_remove.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Preserves pending no-award author candidates across fetch."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts"
+        ],
+        "solution_summary": "Removed pendingNoAwardAuthorItems clearing from fetch success/failure paths.",
+        "result_summary": "Author pending state survives ordinary fetch refresh."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785687605443661"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785687605443661",
+            "reply_comment_id": "785790560912367",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785687605443661",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790560912367",
+            "reply_artifact_ref": "writeback/replies/785687605443661.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain pending author state is preserved across fetch."
+      }
+    },
+    {
+      "issue_id": "CR-003",
+      "source_refs": [
+        {
+          "thread_id": "785687605438298",
+          "source": "Codebase Assistant"
+        }
+      ],
+      "review_claim": "setAwardAuthorItems cleared pendingNoAwardAuthorItems on list replacement.",
+      "normalized_claim": "Author pending no-award state must not be cleared by display-list replacement or empty supplement pages.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Paging to supplement-only ranges is a reachable author reward flow and should not lose remove candidates.",
+      "requirement_refs": [
+        "AR-004",
+        "AR-013",
+        "AR-014"
+      ],
+      "atomic_requirement_refs": [
+        "作者维度剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "handlePaginationChange can call setAwardAuthorItems during author reward list paging.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Preserves pending author no-award candidates across page replacement."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts"
+        ],
+        "solution_summary": "Removed pendingNoAwardAuthorItems clearing from setAwardAuthorItems.",
+        "result_summary": "Display-list replacement no longer clears pending author remove candidates."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785687605438298"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785687605438298",
+            "reply_comment_id": "785790569319727",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785687605438298",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790569319727",
+            "reply_artifact_ref": "writeback/replies/785687605438298.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain setAwardAuthorItems no longer clears pending remove candidates."
+      }
+    },
+    {
+      "issue_id": "CR-004",
+      "source_refs": [
+        {
+          "thread_id": "785687607548318",
+          "source": "Codebase Assistant"
+        }
+      ],
+      "review_claim": "Manual submit DIY target audience lost required gender and age columns.",
+      "normalized_claim": "DIY manual submit rows must expose and validate gender and age fields.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Manual submit edit form is central to AR-006/AR-010 and uses required validation for these fields.",
+      "requirement_refs": [
+        "AR-006",
+        "AR-010"
+      ],
+      "atomic_requirement_refs": [
+        "人工提报",
+        "提交保护"
+      ],
+      "test_case_refs": [
+        "TC-UI-MANUAL-HIT-PAGE"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "Manual submit drawer renders the editable form columns for UploadCandidate flows.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Restores required DIY target-audience input surface."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx"
+        ],
+        "solution_summary": "Restored gender and age columns after target_audience.",
+        "result_summary": "DIY rows can edit and validate gender/age again."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785687607548318"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785687607548318",
+            "reply_comment_id": "785790577735166",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785687607548318",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790577735166",
+            "reply_artifact_ref": "writeback/replies/785687607548318.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain gender and age columns were restored."
+      }
+    },
+    {
+      "issue_id": "CR-005",
+      "source_refs": [
+        {
+          "thread_id": "785688180064045",
+          "source": "CodeGuard"
+        }
+      ],
+      "review_claim": "BAM dependency pointed at temporary branch feat_bujili.",
+      "normalized_claim": "BAM dependency must use a stable branch for mergeable MR builds.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "BAM config is public build input for the current generated API wrappers.",
+      "requirement_refs": [
+        "BAM dependency gate"
+      ],
+      "atomic_requirement_refs": [
+        "BAM API integration"
+      ],
+      "test_case_refs": [
+        "build"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/bam.config.js"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "bam.config.js is consumed by app BAM update/build tooling.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "NO",
+        "test_case_impact": "Stabilizes generated API dependency source."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/bam.config.js"
+        ],
+        "solution_summary": "Changed psm back to ecom.buyin.admin_api@master.",
+        "result_summary": "Temporary BAM branch is removed from MR diff."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "edenx build"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785688180064045"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785688180064045",
+            "reply_comment_id": "785790586094636",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785688180064045",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790586094636",
+            "reply_artifact_ref": "writeback/replies/785688180064045.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain BAM psm is restored to master."
+      }
+    },
+    {
+      "issue_id": "CR-006",
+      "source_refs": [
+        {
+          "thread_id": "785688186333773",
+          "source": "CodeGuard"
+        }
+      ],
+      "review_claim": "Export remove-detail response code could misclassify outer st failure as success.",
+      "normalized_claim": "Remove-detail export must treat mixed st/code outer failures as failures.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Manual submit export is AR-009 and directly affects remove-detail traceability.",
+      "requirement_refs": [
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "导出剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-MANUAL-EXPORT-PERSIST-AFTER-REMOVE"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "exportSubmitHitRecords calls apiDownloadContentRemoveRecord in manual submit drawer.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Export failure is surfaced correctly."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts"
+        ],
+        "solution_summary": "Updated export response-code helper to require st=0 and code=0 for success.",
+        "result_summary": "Outer st failures no longer pass export success check."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785688186333773"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785688186333773",
+            "reply_comment_id": "785790594476239",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785688186333773",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790594476239",
+            "reply_artifact_ref": "writeback/replies/785688186333773.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain export st/code normalization."
+      }
+    },
+    {
+      "issue_id": "CR-007",
+      "source_refs": [
+        {
+          "thread_id": "785711242456351",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Batch submit entrance blocked pending no-award-only payloads.",
+      "normalized_claim": "Batch submit entrance must check merged submit collections, not only selected rows.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Pending no-award-only upload is valid after saving no-award rows and changing selection/page.",
+      "requirement_refs": [
+        "AR-003",
+        "AR-004"
+      ],
+      "atomic_requirement_refs": [
+        "发奖前剔除"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "BatchOperationBar owns the batch submit button for video and author reward lists.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Allows pending no-award-only submit."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx"
+        ],
+        "solution_summary": "Changed entrance count to use submitAwardVideoInfos or submitAwardAuthorInfos.",
+        "result_summary": "Pending no-award-only payloads can open the modal."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785711242456351"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785711242456351",
+            "reply_comment_id": "785790602848150",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785711242456351",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790602848150",
+            "reply_artifact_ref": "writeback/replies/785711242456351.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain merged submit count is used."
+      }
+    },
+    {
+      "issue_id": "CR-008",
+      "source_refs": [
+        {
+          "thread_id": "785711244537794",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Removed manual-submit hit items were not uploaded to candidate_remove.",
+      "normalized_claim": "Removed manual-submit hit rows must be included in submit-time remove candidates.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "One-click removed rows are the source for PRD remove-detail traceability.",
+      "requirement_refs": [
+        "AR-008",
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "人工提报一键移除",
+        "导出剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+        "TC-INT-MANUAL-EXPORT-PERSIST-AFTER-REMOVE"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx",
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "Manual submit drawer passes selected rows into BatchSubmitModal for UploadCandidate submit.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Removed hit rows are persisted as remove candidates on submit success."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx",
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "solution_summary": "Passed removedAwardVideos and merged/deduped them with selected no-award remove candidates.",
+        "result_summary": "Removed manual-submit hit rows are included in candidate_remove payload after reward success."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785711244537794"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785711244537794",
+            "reply_comment_id": "785790611240485",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785711244537794",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790611240485",
+            "reply_artifact_ref": "writeback/replies/785711244537794.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain removed hit items are passed and uploaded."
+      }
+    },
+    {
+      "issue_id": "CR-009",
+      "source_refs": [
+        {
+          "thread_id": "785711244532839",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "apiCandidateRemove failure response could be misread as success.",
+      "normalized_claim": "candidate_remove success requires both st and code to be zero.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "candidate_remove is the persistence path for no-award remove details.",
+      "requirement_refs": [
+        "AR-003",
+        "AR-004",
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "发奖前剔除",
+        "剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "BatchSubmitModal calls apiCandidateRemove after successful video/author submit.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "candidate_remove failure is no longer silent."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "solution_summary": "Normalized getCandidateRemoveResponseCode to fail mixed outer-error responses.",
+        "result_summary": "candidate_remove response failures now return non-zero."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785711244532839"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785711244532839",
+            "reply_comment_id": "785790619629093",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785711244532839",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790619629093",
+            "reply_artifact_ref": "writeback/replies/785711244532839.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain candidate_remove response normalization."
+      }
+    },
+    {
+      "issue_id": "CR-010",
+      "source_refs": [
+        {
+          "thread_id": "785711645117443",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Remove-detail export popup may be blocked because window.open runs after await.",
+      "normalized_claim": "Export should reserve a popup synchronously and navigate it after API success.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Export link access is part of AR-009 operator workflow.",
+      "requirement_refs": [
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "导出剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-MANUAL-EXPORT-PERSIST-AFTER-REMOVE"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "exportSubmitHitRecords is called from the manual submit toolbar export button.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Export URL remains accessible under popup policies."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts"
+        ],
+        "solution_summary": "Opened blank popup before awaiting download API and navigated/fell back after success.",
+        "result_summary": "Popup blocker risk is reduced and fallback warning exposes the link."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785711645117443"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785711645117443",
+            "reply_comment_id": "785790628059974",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785711645117443",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790628059974",
+            "reply_artifact_ref": "writeback/replies/785711645117443.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain synchronous popup and fallback."
+      }
+    },
+    {
+      "issue_id": "CR-011",
+      "source_refs": [
+        {
+          "thread_id": "785711647195074",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Duplicate mixed st/code failure handling issue for candidate_remove.",
+      "normalized_claim": "Same root cause as CR-009; candidate_remove success requires both st and code zero.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Duplicate valid thread must receive an individual reply and resolve evidence.",
+      "requirement_refs": [
+        "AR-003",
+        "AR-004",
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "发奖前剔除",
+        "剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "Same reachable candidate_remove call site as CR-009.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Closed by the same normalized helper as CR-009."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "solution_summary": "Same implementation as CR-009.",
+        "result_summary": "Duplicate mixed-code failure is closed."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785711647195074"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785711647195074",
+            "reply_comment_id": "785790636426621",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785711647195074",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790636426621",
+            "reply_artifact_ref": "writeback/replies/785711647195074.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain duplicate candidate_remove normalization fix."
+      }
+    },
+    {
+      "issue_id": "CR-012",
+      "source_refs": [
+        {
+          "thread_id": "785711649263322",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "No-incentive rule URL was hard-coded in the component.",
+      "normalized_claim": "No-incentive rule URL should be centralized with content-activity constants.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "The rule link is part of AR-001/AR-002 and centralizing the URL is low-risk.",
+      "requirement_refs": [
+        "AR-001",
+        "AR-002"
+      ],
+      "atomic_requirement_refs": [
+        "配置页规则入口"
+      ],
+      "test_case_refs": [
+        "TC-INT-CFG-RULE-LINK"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/edit/constants.ts",
+          "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "step-reward-config renders the no-incentive rule prompt and link.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "NO",
+        "test_case_impact": "No behavior change; centralizes URL."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/edit/constants.ts",
+          "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx"
+        ],
+        "solution_summary": "Exported NO_INCENTIVE_RULE_URL from constants and imported it in the component.",
+        "result_summary": "Component no longer owns the hard-coded URL."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785711649263322"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785711649263322",
+            "reply_comment_id": "785790774852743",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785711649263322",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790774852743",
+            "reply_artifact_ref": "writeback/replies/785711649263322.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain URL was moved to constants."
+      }
+    },
+    {
+      "issue_id": "CR-013",
+      "source_refs": [
+        {
+          "thread_id": "785719664626748",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Batch submit success did not refresh the award list after clearing pending state.",
+      "normalized_claim": "Successful batch submit should refresh active video/author list before closing modal.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Submit success changes displayed state and is reachable in normal reward operation.",
+      "requirement_refs": [
+        "AR-003",
+        "AR-004",
+        "AR-011",
+        "AR-013"
+      ],
+      "atomic_requirement_refs": [
+        "奖励投放列表状态"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "onBatchSubmitOk is called only after BatchSubmitModal submit success.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "UI state refreshes after submit success."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "solution_summary": "Made modal onOk awaitable and refreshed active store via initData before closing.",
+        "result_summary": "Video or author award list refreshes after successful submit."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785719664626748"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785719664626748",
+            "reply_comment_id": "785790779012645",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785719664626748",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790779012645",
+            "reply_artifact_ref": "writeback/replies/785719664626748.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain submit success now refreshes active list."
+      }
+    },
+    {
+      "issue_id": "CR-014",
+      "source_refs": [
+        {
+          "thread_id": "785719666731804",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "One invalid remove record missing item_id blocked the whole export batch.",
+      "normalized_claim": "Export should keep valid remove records and fail only when none are valid.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "AR-009 requires traceability of removed records; partial valid export is better than dropping all.",
+      "requirement_refs": [
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "导出剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-MANUAL-EXPORT-PERSIST-AFTER-REMOVE"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "buildContentRemoveRecords is used by exportSubmitHitRecords for preserved removed manual-submit rows.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Valid removed records are exportable even with malformed siblings."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts"
+        ],
+        "solution_summary": "Filtered invalid records by item_id and returned undefined only when all are invalid.",
+        "result_summary": "Valid records are retained for export."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785719666731804"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785719666731804",
+            "reply_comment_id": "785790783206617",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785719666731804",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790783206617",
+            "reply_artifact_ref": "writeback/replies/785719666731804.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain invalid records are filtered without dropping valid records."
+      }
+    },
+    {
+      "issue_id": "CR-015",
+      "source_refs": [
+        {
+          "thread_id": "785719668783143",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "candidate_remove upload failure was swallowed and submit state was cleared.",
+      "normalized_claim": "Remove-candidate upload failure must block reset/onOk and preserve retry state.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Remove-candidate persistence is required for PRD traceability; losing retry state is unacceptable.",
+      "requirement_refs": [
+        "AR-003",
+        "AR-004",
+        "AR-009"
+      ],
+      "atomic_requirement_refs": [
+        "发奖前剔除",
+        "剔除明细"
+      ],
+      "test_case_refs": [
+        "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "uploadNoAwardRemoveCandidates runs in submitResult.resultCode === 0 branch before onOk/reset.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Failed candidate_remove preserves state and exposes retry error."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx"
+        ],
+        "solution_summary": "Changed upload helper to return boolean; failure sets persistent submitErrorMessage and returns before onOk/reset/session rotation.",
+        "result_summary": "Failed remove upload no longer clears pending state."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785719668783143"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785719668783143",
+            "reply_comment_id": "785790787394550",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785719668783143",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790787394550",
+            "reply_artifact_ref": "writeback/replies/785719668783143.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain candidate_remove failure now preserves retry state."
+      }
+    },
+    {
+      "issue_id": "CR-016",
+      "source_refs": [
+        {
+          "thread_id": "785720669139378",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Crowd-name fetching was serial and slowed page initialization.",
+      "normalized_claim": "Crowd-name fetching should be parallelized with partial-failure tolerance.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Reward config display is part of the current reward page and the change is tightly scoped.",
+      "requirement_refs": [
+        "AR-011",
+        "AR-013"
+      ],
+      "atomic_requirement_refs": [
+        "奖励投放页初始化"
+      ],
+      "test_case_refs": [
+        "build"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "send-award page loads activityDetail.reward_configs and displays crowd names.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "NO",
+        "test_case_impact": "Improves load latency without changing successful display semantics."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/index.tsx"
+        ],
+        "solution_summary": "Deduped crowd ids and used Promise.allSettled for concurrent getPkgV3Detail calls.",
+        "result_summary": "Crowd names fetch in parallel and fulfilled names are retained."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785720669139378"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785720669139378",
+            "reply_comment_id": "785790791600924",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785720669139378",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790791600924",
+            "reply_artifact_ref": "writeback/replies/785720669139378.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain crowd names now fetch in parallel."
+      }
+    },
+    {
+      "issue_id": "CR-017",
+      "source_refs": [
+        {
+          "thread_id": "785720671268959",
+          "source": "Aime"
+        }
+      ],
+      "review_claim": "Manual submit row save matched optional item_id and could update the wrong row.",
+      "normalized_claim": "Manual submit row save should use the same stable key as the table rowKey.",
+      "classification": "REQUIREMENT_RELEVANT",
+      "decision": "ACCEPT",
+      "decision_reason": "Manual submit rows are editable in the current flow and item_id is optional in the IDL.",
+      "requirement_refs": [
+        "AR-006",
+        "AR-010"
+      ],
+      "atomic_requirement_refs": [
+        "人工提报编辑"
+      ],
+      "test_case_refs": [
+        "TC-UI-MANUAL-HIT-PAGE"
+      ],
+      "scope_audit": {
+        "in_current_requirement_repo": true,
+        "repo_path": "apps/alliance-operation-content",
+        "allowed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx"
+        ],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": true,
+          "blocked_by_outer_component": false,
+          "evidence": "Editable manual submit table calls handleSave when cells save row edits.",
+          "decision": "PROCESS"
+        }
+      },
+      "change_audit": {
+        "meaningful": true,
+        "coverable": true,
+        "over_defensive": false,
+        "security_guard_minimal": true,
+        "minimal_change": true,
+        "code_style_compliant": true,
+        "affects_requirement_behavior": "YES",
+        "test_case_impact": "Avoids wrong-row updates when optional item_id is missing."
+      },
+      "implementation": {
+        "status": "DONE",
+        "commits": [
+          "3d558e46f817e466364b65f2e25361dbbad67742"
+        ],
+        "changed_files": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx"
+        ],
+        "solution_summary": "Changed handleSave lookup to compare getItemKey(row) with getItemKey(item).",
+        "result_summary": "Row save now follows table rowKey semantics."
+      },
+      "verification": {
+        "commands": [
+          "git diff --check -- <CR fix files>",
+          "rg \"console\\.log|debugger|TODO|FIXME\" <CR fix files>",
+          "edenx build",
+          "tsc --noEmit --pretty false"
+        ],
+        "passed": [
+          "Scoped CR whitespace check passed.",
+          "Debug marker scan passed.",
+          "Production build passed with exit code 0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Full git diff --check only reports .vmok generated trailing whitespace not staged for this CR.",
+          "tsc --noEmit has existing repo-wide diagnostics; see verify/final-verification.md."
+        ]
+      },
+      "review_writeback": {
+        "thread_ids": [
+          "785720671268959"
+        ],
+        "status": "REPLIED_AND_RESOLVED",
+        "reply_required": true,
+        "resolve_required": true,
+        "comment_refs": [
+          {
+            "thread_id": "785720671268959",
+            "reply_comment_id": "785790797878203",
+            "thread_status": "resolved"
+          }
+        ],
+        "thread_writebacks": [
+          {
+            "thread_id": "785720671268959",
+            "reply_status": "SUCCESS",
+            "reply_comment_id": "785790797878203",
+            "reply_artifact_ref": "writeback/replies/785720671268959.md",
+            "resolve_status": "SUCCESS",
+            "resolve_artifact_ref": "after-submit comments snapshot: all 17 threads resolved",
+            "notes": "Reply added individually and thread final status is resolved."
+          }
+        ],
+        "message_summary": "Explain row save now uses getItemKey."
+      }
+    }
+  ],
+  "followup_summary": {
+    "status": "COMPLETE",
+    "latest_commit": "f0cc9f9cdf7c793ec672dcca9ae2a4f0318b11b7",
+    "rounds": [
+      {
+        "commit": "c66c66d27931161360e2427ac8196e057b945a0a",
+        "commit_message": "fix: handle optional code response success",
+        "thread_ids": [
+          "785791271893194",
+          "785791271888386"
+        ],
+        "summary": "Shared optional-code response helper fixes successful `{ st: 0 }` responses when `code` is omitted."
+      },
+      {
+        "commit": "5e4548279f65f0a5042c269eca21d227cd877f5a",
+        "commit_message": "fix: address follow-up incentive cr feedback",
+        "thread_ids": [
+          "785791699701605",
+          "785791957600134",
+          "785791959729196",
+          "785791959699773",
+          "785791961834927",
+          "785791961857244"
+        ],
+        "summary": "Follow-up fixes for merged-submit validation, reward optional-code success, remove reason accuracy, remove-record ID filter normalization, and repeat-submit prevention messaging."
+      },
+      {
+        "commit": "af803503fe6143768e32297c577e3ed03b99de2e",
+        "commit_message": "fix: block award submit until remove candidates sync",
+        "thread_ids": [
+          "785792924431058",
+          "785792926531807",
+          "785792926495961"
+        ],
+        "summary": "Moved no-award candidate upload before author/video reward delivery APIs and preserved the optional-code helper boundary."
+      },
+      {
+        "commit": "94e1a020520434bcaeded950aa4f99984e061599",
+        "commit_message": "fix: refine no-award validation and filter params",
+        "thread_ids": [
+          "785793582927151",
+          "785793585028356",
+          "785794161754303"
+        ],
+        "summary": "Validated only merged actual delivery rows (`if_delivery === true`) while keeping pending no-award-only modal entry, and restored remove-record candidate ID filters to comma-separated strings per generated IDL."
+      },
+      {
+        "commit": "16300a1a24f6ed212354027e6c7933af20db7118",
+        "commit_message": "fix: trace manual remove record export failures",
+        "thread_ids": [
+          "785794159644296",
+          "785794161740056"
+        ],
+        "summary": "Added non-sensitive AOT custom logging for manual remove-record export failure branches; the repeat-reward thread was closed as already fixed by the pre-submit remove-candidate sync order."
+      },
+      {
+        "commit": "f0cc9f9cdf7c793ec672dcca9ae2a4f0318b11b7",
+        "commit_message": "fix: tighten manual submit validation and paging docs",
+        "thread_ids": [
+          "785795732477635",
+          "785795732543171",
+          "785795734634398"
+        ],
+        "summary": "Unified manual submit blocking through `isHitVideoItem` and documented the generated remove-record paging contract at both call sites."
+      }
+    ],
+    "verification": {
+      "local": [
+        "optional-code-response-check.js PASS",
+        "scoped git diff --check PASS",
+        "pre-commit prettier/eslint PASS",
+        "apps/alliance-operation-content ./node_modules/.bin/edenx build PASS"
+      ],
+      "remote": {
+        "check_runs_summary": "all_passed",
+        "total_count": 9,
+        "passed_count": 9,
+        "failed_count": 0,
+        "running_count": 0
+      }
+    },
+    "writeback": {
+      "total_thread_count": 38,
+      "total_comment_count": 76,
+      "resolved_thread_count": 38,
+      "open_thread_count": 0,
+      "snapshot_refs": [
+        "snapshots/codebase-mr-comments-final-f0cc9f9cd.json",
+        "snapshots/codebase-mr-status-final-f0cc9f9cd.json"
+      ]
+    },
+    "remaining_blocker": {
+      "type": "MERGE_CONFLICT",
+      "reason": "the merge request has code conflict"
+    }
+  },
+  "overall_status": "SUBMITTED_WRITEBACK_COMPLETE_WITH_MERGE_CONFLICT",
+  "submit": {
+    "authorized_by_user_args": true,
+    "commit": "3d558e46f817e466364b65f2e25361dbbad67742",
+    "commit_message": "fix: address incentive control cr feedback",
+    "push": {
+      "remote": "origin",
+      "branch": "cx-3",
+      "result": "3f3ab482dcd18c5533a2ecdec6cd310dcd447c53..3d558e46f817e466364b65f2e25361dbbad67742 cx-3 -> cx-3"
+    },
+    "submitted_at": "2026-07-17T01:39:00+08:00"
+  },
+  "after_submit_snapshot": {
+    "fetched_at": "2026-07-17T01:44:12+08:00",
+    "mr": {
+      "status": "open",
+      "source_branch": "cx-3",
+      "target_branch": "master",
+      "source_commit_id": "3d558e46f817e466364b65f2e25361dbbad67742",
+      "url": "https://code.byted.org/ecom/alliance-operation-mono/merge_requests/736"
+    },
+    "mergeability": {
+      "mergeable": false,
+      "reason": "conflict",
+      "reason_detail": "the merge request has code conflict"
+    },
+    "review": {
+      "status": "pending",
+      "approvals_required": 0
+    },
+    "check_runs": {
+      "summary": "all_passed",
+      "total_count": 10,
+      "passed_count": 10,
+      "failed_count": 0,
+      "running_count": 0
+    },
+    "comments": {
+      "thread_count": 17,
+      "total_thread_count": 17,
+      "comment_count": 34,
+      "total_comment_count": 34,
+      "resolved_thread_count": 17,
+      "open_thread_count": 0
+    }
+  },
+  "final_snapshot": {
+    "fetched_at": "2026-07-17T02:29:00+08:00",
+    "mr": {
+      "status": "open",
+      "source_branch": "cx-3",
+      "target_branch": "master",
+      "source_commit_id": "f0cc9f9cdf7c793ec672dcca9ae2a4f0318b11b7",
+      "url": "https://code.byted.org/ecom/alliance-operation-mono/merge_requests/736"
+    },
+    "mergeability": {
+      "mergeable": false,
+      "reason": "conflict",
+      "reason_detail": "the merge request has code conflict"
+    },
+    "check_runs": {
+      "summary": "all_passed",
+      "total_count": 9,
+      "passed_count": 9,
+      "failed_count": 0,
+      "running_count": 0
+    },
+    "comments": {
+      "thread_count": 38,
+      "total_thread_count": 38,
+      "comment_count": 76,
+      "total_comment_count": 76,
+      "resolved_thread_count": 38,
+      "open_thread_count": 0
+    }
+  },
+  "writeback_summary": {
+    "status": "COMPLETE",
+    "all_threads_replied": true,
+    "all_threads_resolved": true,
+    "thread_count": 38,
+    "reply_count": 38,
+    "resolved_count": 38,
+    "method": "npx @bytedance-dev/bytedcli codebase mr comment reply/resolve",
+    "notes": [
+      "Global bytedcli was unavailable; npx @bytedance-dev/bytedcli was used.",
+      "Six threads were already resolved by the time writeback reached them; replies were still added individually and final status remained resolved.",
+      "Six follow-up rounds added 21 additional threads; all were replied or confirmed already fixed and final status is resolved.",
+      "MR checks are all passed; mergeability is currently blocked by target-branch conflict."
+    ]
+  }
+}

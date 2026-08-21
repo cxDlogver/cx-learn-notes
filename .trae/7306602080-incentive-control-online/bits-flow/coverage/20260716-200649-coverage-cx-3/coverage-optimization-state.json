@@ -1,0 +1,557 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "threshold": 90,
+  "rounds": 3,
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_repo": "ecom/alliance-operation-mono",
+  "fromBranch": "master",
+  "toBranch": "cx-3",
+  "coverage_script": "/Users/bytedance/cx/spec-2/meego-11/.trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js",
+  "coverage_report_ref": {
+    "latest_json": "coverage/latest.json",
+    "report_md": "coverage/report.md",
+    "uncovered_list_json": "coverage/uncovered-list.json",
+    "uncovered_list_md": "coverage/uncovered-list.md",
+    "generated_at": "2026-07-16T13:03:26.641Z",
+    "huatuo_update_ref": "coverage/update-response.json"
+  },
+  "state_initialization": {
+    "initialized_from_template": true,
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_log_loaded": true,
+    "previous_state_ref": "../20260716-185335-coverage-cx-3/coverage-optimization-state.json",
+    "previous_state_loaded": true,
+    "previous_state_notes": "Previous run completed three rounds and ended at 85.15%. Current run started from 85.15%, retargeted batch-submit-modal because its fileCoverageVersion changed, and ended at 89.56% after three rounds."
+  },
+  "execution_policy": {
+    "candidate_source_ref": "coverage/uncovered-list.json",
+    "script_default_filters": [
+      "coverRatio < 100",
+      "insertLines > 0",
+      "exclude path segment named bam"
+    ],
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_active_effects": [
+      "SKIP_SAME_VERSION"
+    ],
+    "single_target_per_round": true,
+    "same_run_dedup_ref": "rounds_log[].target_file",
+    "all_target_files_enter_global_exclusion_log": true,
+    "code_changed_targets_remain_retriable": false,
+    "side_effect_write_policy": "ALLOW_UI_TRIGGER_WITH_BROWSER_INTERCEPT_ONLY",
+    "write_intercept_required_for": [
+      "create",
+      "update",
+      "delete",
+      "submit",
+      "send_award",
+      "modify_config",
+      "send_notification",
+      "any_side_effect_write"
+    ],
+    "write_intercept_evidence_required": true,
+    "exclusion_reason_recording": "DO_NOT_RECORD_SELECTION_REASON",
+    "file_coverage_version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion",
+    "active_exclusion_only_when_file_coverage_version_matches": true
+  },
+  "overall_cover_ratio_before": 85.15,
+  "overall_cover_ratio_after": 89.56,
+  "rounds_log": [
+    {
+      "round": 1,
+      "status": "PASS",
+      "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+      "target_report_ref": "coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx/report.md",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 47,
+        "cover_ratio": "55.24%",
+        "insert_lines": 105,
+        "current_file_coverage_version": "huatuo:470be66717914175",
+        "excluded_candidates": [
+          {
+            "file": "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx",
+            "status": "ACTIVE_SKIP",
+            "entry_id": "cov-20260716-171133-r1-step-reward-config-index-tsx",
+            "source_file_coverage_version": "huatuo:4ad77f572ef36501",
+            "current_file_coverage_version": "huatuo:4ad77f572ef36501"
+          },
+          {
+            "file": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+            "status": "VERSION_CHANGED_ALLOW_NOT_SELECTED",
+            "entry_id": "cov-20260716-185335-r1-manually-submit-videos-form-index-tsx",
+            "source_file_coverage_version": "huatuo:c699f0478ea58c88",
+            "current_file_coverage_version": "huatuo:0990ffb244f2627f"
+          },
+          {
+            "file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+            "status": "VERSION_CHANGED_ALLOW",
+            "entry_id": "cov-20260716-185335-r2-batch-submit-modal-index-tsx",
+            "source_file_coverage_version": "huatuo:be381542a5504dab",
+            "current_file_coverage_version": "huatuo:470be66717914175"
+          }
+        ],
+        "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+        "global_exclusion_status": "VERSION_CHANGED_ALLOW",
+        "matched_global_exclusion_entry_id": "cov-20260716-185335-r2-batch-submit-modal-index-tsx",
+        "matched_global_exclusion_file_coverage_version": "huatuo:be381542a5504dab",
+        "same_run_target_status": "NO_MATCH",
+        "selection_after_refresh": false
+      },
+      "plan_ref": "coverage-optimization-plan-round-1.md",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "UI_COVERAGE_WITH_WRITE_INTERCEPT",
+        "global_exclusion_entry_id": "cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+        "notes": "真实线上配置五 / DOU+币作品路径：1 条作品改为不发奖，9 条作品补齐投放生效时间，选择真实充值记录并提交；delivery_modify_save、delivery_dou_plus_coin、candidate_remove 均由浏览器拦截，读接口真实命中后端。"
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY",
+        "entry_id": "cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+        "source_file_coverage_version": "huatuo:91cb2311c8682c4e",
+        "latest_seen_file_coverage_version": "huatuo:91cb2311c8682c4e",
+        "version_comparison": "VERSION_CHANGED_SUPERSEDE",
+        "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+        "audited_at": "2026-07-16T13:05:00Z",
+        "notes": "Old ACTIVE entry was superseded; current refreshed fileCoverageVersion registered for same-version future skip."
+      },
+      "code_optimization": {
+        "status": "SKIPPED",
+        "changed_files": [],
+        "summary": "未修改业务代码；目标文件剩余逻辑均属于当前奖励投放、失败处理或发奖后 no-award 上传链路。",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "DONE",
+        "environment": "REAL_ONLINE",
+        "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "TASK-007",
+            "test_case_ref": "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST",
+            "evidence_ref": "evidence/round-1-ui-evidence.json",
+            "notes": "DOU+币成功提交后自动上传 1 条 no-award candidate_remove。"
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+            "method": "POST",
+            "fields": [
+              "activity_id",
+              "config_id",
+              "charge_code",
+              "delivery_items",
+              "session_unix_time",
+              "delivery_from"
+            ],
+            "source_type": "REAL_UI_AND_REAL_RESPONSE",
+            "evidence_ref": "evidence/round-1-ui-evidence.json",
+            "notes": "字段来自真实 URL、真实作品列表、真实充值记录和真实余额校验。"
+          }
+        ],
+        "write_request_intercepts": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+            "method": "POST",
+            "uncovered_lines": [
+              "batch submit preconditions"
+            ],
+            "trigger_ui": "配置五作品列表批量修改",
+            "match_rule": "POST path + activity/config",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json",
+            "ui_after_mock_evidence_ref": "evidence/coverage-round1-dou-coin-success.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json",
+            "status": "INTERCEPTED",
+            "notes": "共 2 次：1 条 no-award，9 条补投放生效时间。"
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+            "method": "POST",
+            "uncovered_lines": [
+              "submit success branch"
+            ],
+            "trigger_ui": "投放奖励弹窗确认",
+            "match_rule": "POST path + delivery_items_count > 0",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json",
+            "ui_after_mock_evidence_ref": "evidence/coverage-round1-dou-coin-success.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json",
+            "status": "INTERCEPTED",
+            "notes": "第二次提交通过浏览器 st getter shim 命中成功分支。"
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/candidate_remove",
+            "method": "POST",
+            "uncovered_lines": [
+              "post-success no-award upload"
+            ],
+            "trigger_ui": "DOU+币提交成功后自动调用",
+            "match_rule": "POST path + remove_candidates.length > 0",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json",
+            "ui_after_mock_evidence_ref": "evidence/coverage-round1-dou-coin-success.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json",
+            "status": "INTERCEPTED",
+            "notes": "上传 1 条 no-award candidate。"
+          }
+        ]
+      },
+      "coverage_refresh": {
+        "command": "/Users/bytedance/.nvm/versions/node/v18.20.8/bin/node .trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js --browserCaptureServer --repoRoot /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono --gitRepo ecom/alliance-operation-mono --fromBranch master --toBranch cx-3 --outDir /Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-200649-coverage-cx-3/coverage",
+        "before_ratio": 85.15,
+        "after_ratio": 88.6,
+        "latest_json": "coverage/latest.json",
+        "report_md": "coverage/report.md",
+        "refreshed_at": "2026-07-16T12:45:55.895Z"
+      },
+      "verification": {
+        "commands": [],
+        "passed": [
+          "业务仓库未修改；无需执行代码 lint/typecheck。"
+        ],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "blockers": []
+    },
+    {
+      "round": 2,
+      "status": "BLOCKED",
+      "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+      "target_report_ref": "coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts/report.md",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 26,
+        "cover_ratio": "21.21%",
+        "insert_lines": 33,
+        "current_file_coverage_version": "huatuo:a8063018ce0bb551",
+        "excluded_candidates": [
+          {
+            "file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+            "status": "ALREADY_TARGETED_SKIP",
+            "entry_id": "cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+            "source_file_coverage_version": "huatuo:91cb2311c8682c4e",
+            "current_file_coverage_version": "huatuo:91cb2311c8682c4e"
+          }
+        ],
+        "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+        "global_exclusion_status": "NO_MATCH",
+        "matched_global_exclusion_entry_id": "",
+        "matched_global_exclusion_file_coverage_version": "",
+        "same_run_target_status": "NO_MATCH",
+        "selection_after_refresh": true
+      },
+      "plan_ref": "coverage-optimization-plan-round-2.md",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "BLOCKED",
+        "global_exclusion_entry_id": "cov-20260716-200649-r2-send-award-to-author-store-ts",
+        "notes": "真实线上所有 DOU+券作者配置均为 0 位作者，无法通过真实 UI 触发 pending no-award author 同步和清空。"
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY",
+        "entry_id": "cov-20260716-200649-r2-send-award-to-author-store-ts",
+        "source_file_coverage_version": "huatuo:a8063018ce0bb551",
+        "latest_seen_file_coverage_version": "huatuo:a8063018ce0bb551",
+        "version_comparison": "NOT_APPLICABLE",
+        "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r2-send-award-to-author-store-ts",
+        "audited_at": "2026-07-16T13:05:00Z",
+        "notes": "Blocked targets also enter global exclusion registry per policy."
+      },
+      "code_optimization": {
+        "status": "SKIPPED",
+        "changed_files": [],
+        "summary": "未修改业务代码；未覆盖逻辑属于当前需求作者 no-award pending 链路，不能删除。",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "BLOCKED",
+        "environment": "REAL_ONLINE",
+        "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "TASK-007",
+            "test_case_ref": "TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST",
+            "evidence_ref": "evidence/round-2-author-empty-evidence.json",
+            "notes": "配置二、三、四、六 DOU+券作者奖励下发列表均为 0 位。"
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/search_delivery_author",
+            "method": "GET",
+            "fields": [
+              "activity_id",
+              "config_id",
+              "publish_start_time",
+              "publish_end_time",
+              "candidate_pool_type",
+              "award_period"
+            ],
+            "source_type": "REAL_RESPONSE",
+            "evidence_ref": "evidence/round-2-author-empty-evidence.json",
+            "notes": "真实后端返回 0 位作者。"
+          }
+        ],
+        "write_request_intercepts": []
+      },
+      "coverage_refresh": {
+        "command": "",
+        "before_ratio": 88.6,
+        "after_ratio": 88.6,
+        "latest_json": "coverage/latest.json",
+        "report_md": "coverage/report.md",
+        "refreshed_at": ""
+      },
+      "verification": {
+        "commands": [],
+        "passed": [
+          "只读真实 UI 检查；未触发写接口。"
+        ],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "blockers": [
+        {
+          "type": "NO_REAL_AUTHOR_CANDIDATES",
+          "evidence_ref": "evidence/round-2-author-empty-evidence.json",
+          "notes": "当前线上数据无法覆盖作者侧 pending no-award 分支。"
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "status": "PASS_WITH_NOTES",
+      "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "target_report_ref": "coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts/report.md",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 22,
+        "cover_ratio": "57.69%",
+        "insert_lines": 52,
+        "current_file_coverage_version": "huatuo:8f372a792f0f4739",
+        "excluded_candidates": [
+          {
+            "file": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+            "status": "ALREADY_TARGETED_SKIP",
+            "entry_id": "cov-20260716-200649-r2-send-award-to-author-store-ts",
+            "source_file_coverage_version": "huatuo:a8063018ce0bb551",
+            "current_file_coverage_version": "huatuo:a8063018ce0bb551"
+          },
+          {
+            "file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+            "status": "ALREADY_TARGETED_SKIP",
+            "entry_id": "cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+            "source_file_coverage_version": "huatuo:91cb2311c8682c4e",
+            "current_file_coverage_version": "huatuo:91cb2311c8682c4e"
+          }
+        ],
+        "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+        "global_exclusion_status": "NO_MATCH",
+        "matched_global_exclusion_entry_id": "",
+        "matched_global_exclusion_file_coverage_version": "",
+        "same_run_target_status": "NO_MATCH",
+        "selection_after_refresh": true
+      },
+      "plan_ref": "coverage-optimization-plan-round-3.md",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "UI_COVERAGE_WITH_WRITE_INTERCEPT",
+        "global_exclusion_entry_id": "cov-20260716-200649-r3-award-utils-ts",
+        "notes": "真实线上配置三 DOU+券制券失败重提交入口；delivery_dou_plus_coupon 两次写接口均由浏览器拦截，覆盖部分失败治理文案分支。最终 utils.ts 从 57.69% 提升到 61.54%，仍剩 collectErrorText、getAwardDeliveryResultCode return code/st 和 catch 异常文案分支未覆盖。"
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY",
+        "entry_id": "cov-20260716-200649-r3-award-utils-ts",
+        "source_file_coverage_version": "huatuo:fd505ef218d83512",
+        "latest_seen_file_coverage_version": "huatuo:fd505ef218d83512",
+        "version_comparison": "VERSION_CHANGED_SUPERSEDE",
+        "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r3-award-utils-ts",
+        "audited_at": "2026-07-16T13:05:00Z",
+        "notes": "Selected at huatuo:8f372a792f0f4739; refreshed report shows huatuo:fd505ef218d83512 and is registered for future same-version skip."
+      },
+      "code_optimization": {
+        "status": "SKIPPED",
+        "changed_files": [],
+        "summary": "未修改业务代码；目标文件未覆盖行为发奖失败 / 异常治理文案逻辑。",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "DONE",
+        "environment": "REAL_ONLINE",
+        "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "AR-005",
+            "test_case_ref": "TC-INT-AWARD-COUPON-RETRY-FAILURE",
+            "evidence_ref": "evidence/round-3-ui-evidence.json",
+            "notes": "制券失败重提交入口覆盖部分发券失败错误文案分支；最终报告仍列出 result-code return 与 catch exception helper 的剩余未覆盖行。"
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+            "method": "POST",
+            "fields": [
+              "activity_id",
+              "config_id",
+              "fail_delivery_task_id",
+              "charge_code",
+              "delivery_list",
+              "delivery_from"
+            ],
+            "source_type": "REAL_UI_AND_REAL_RESPONSE",
+            "evidence_ref": "evidence/round-3-ui-evidence.json",
+            "notes": "字段来自真实活动 URL、真实失败任务、真实失败名单和真实充值记录。"
+          }
+        ],
+        "write_request_intercepts": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+            "method": "POST",
+            "uncovered_lines": [
+              "getAwardDeliveryResponseErrorMessage timeout governance branch"
+            ],
+            "trigger_ui": "重提制券抽屉确认提交",
+            "match_rule": "POST path + delivery_list_count=1 + fail_delivery_task_id",
+            "mock_response_ref": "evidence/round-3-ui-evidence.json",
+            "ui_after_mock_evidence_ref": "evidence/coverage-round3-resubmit-coupon-failure.png",
+            "backend_not_hit_evidence_ref": "evidence/round-3-ui-evidence.json",
+            "status": "INTERCEPTED",
+            "notes": "第一次返回 code=504 且 msg 包含 timeout；最终报告仍保留 getAwardDeliveryResultCode return res.code 未覆盖。"
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+            "method": "POST",
+            "uncovered_lines": [
+              "getAwardDeliveryResponseErrorMessage system exception branch"
+            ],
+            "trigger_ui": "重提制券抽屉再次确认提交",
+            "match_rule": "POST path + delivery_list_count=1 + fail_delivery_task_id",
+            "mock_response_ref": "evidence/round-3-ui-evidence.json",
+            "ui_after_mock_evidence_ref": "evidence/coverage-round3-resubmit-coupon-failure.png",
+            "backend_not_hit_evidence_ref": "evidence/round-3-ui-evidence.json",
+            "status": "INTERCEPTED",
+            "notes": "第二次返回 data.st=500 且 msg 包含系统错误；最终报告仍保留 getAwardDeliveryResultCode return res.st 未覆盖。"
+          }
+        ]
+      },
+      "coverage_refresh": {
+        "command": "/Users/bytedance/.nvm/versions/node/v18.20.8/bin/node .trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js --browserCaptureServer --repoRoot /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono --gitRepo ecom/alliance-operation-mono --fromBranch master --toBranch cx-3 --outDir /Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-200649-coverage-cx-3/coverage",
+        "before_ratio": 88.6,
+        "after_ratio": 89.56,
+        "latest_json": "coverage/latest.json",
+        "report_md": "coverage/report.md",
+        "refreshed_at": "2026-07-16T13:03:26.641Z"
+      },
+      "verification": {
+        "commands": [
+          {
+            "command": "/Users/bytedance/.nvm/versions/node/v18.20.8/bin/node .trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js --browserCaptureServer --repoRoot /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono --gitRepo ecom/alliance-operation-mono --fromBranch master --toBranch cx-3 --outDir /Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-200649-coverage-cx-3/coverage",
+            "result": "PASS",
+            "evidence": "coverage/report.md overallCoverRatio 89.56%; utils.ts 61.54%, effectiveUncoveredInsertedRows 20"
+          }
+        ],
+        "passed": [
+          "Huatuo capture server 刷新成功。",
+          "业务仓库未修改；无需执行代码 lint/typecheck。"
+        ],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "blockers": []
+    }
+  ],
+  "request_field_sources": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "method": "POST",
+      "source_type": "REAL_UI_AND_REAL_RESPONSE",
+      "evidence_ref": "evidence/round-1-ui-evidence.json"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/search_delivery_author",
+      "method": "GET",
+      "source_type": "REAL_RESPONSE",
+      "evidence_ref": "evidence/round-2-author-empty-evidence.json"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "method": "POST",
+      "source_type": "REAL_UI_AND_REAL_RESPONSE",
+      "evidence_ref": "evidence/round-3-ui-evidence.json"
+    }
+  ],
+  "write_request_intercepts": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+      "method": "POST",
+      "count": 2,
+      "backend_write": "not_sent",
+      "evidence_ref": "evidence/round-1-ui-evidence.json"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "method": "POST",
+      "count": 2,
+      "backend_write": "not_sent",
+      "evidence_ref": "evidence/round-1-ui-evidence.json"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/candidate_remove",
+      "method": "POST",
+      "count": 1,
+      "backend_write": "not_sent",
+      "evidence_ref": "evidence/round-1-ui-evidence.json"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "method": "POST",
+      "count": 2,
+      "backend_write": "not_sent",
+      "evidence_ref": "evidence/round-3-ui-evidence.json"
+    }
+  ],
+  "verification": {
+    "commands": [
+      {
+        "command": "git status --short",
+        "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+        "result": "PASS",
+        "evidence": "clean output"
+      },
+      {
+        "command": "/Users/bytedance/.nvm/versions/node/v18.20.8/bin/node .trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js --browserCaptureServer ...",
+        "result": "PASS",
+        "evidence": "coverage/report.md generatedAt 2026-07-16T13:03:26.641Z"
+      }
+    ],
+    "passed": [
+      "业务仓库无代码改动。",
+      "覆盖率报告刷新成功。"
+    ],
+    "failed": [],
+    "known_unrelated_failures": []
+  },
+  "blockers": [
+    {
+      "type": "THRESHOLD_NOT_REACHED_AFTER_MAX_ROUNDS",
+      "threshold": 90,
+      "actual": 89.56,
+      "notes": "默认三轮已完成，整体覆盖率仍低于阈值。"
+    },
+    {
+      "type": "NO_REAL_AUTHOR_CANDIDATES",
+      "evidence_ref": "evidence/round-2-author-empty-evidence.json",
+      "notes": "sendAwardToAuthorStore.ts 当前线上 DOU+券作者配置无候选，无法用真实 UI 安全覆盖。"
+    }
+  ],
+  "overall_status": "PASS_WITH_NOTES"
+}

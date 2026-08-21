@@ -1,0 +1,180 @@
+{
+  "case_id": "TC-INT-AWARD-COIN-PENALTY",
+  "captured_at": "2026-07-09T12:00:26+0800",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "view_id": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=search_candidate_rule_202607091129",
+  "sample": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "candidate_id": "7655364163166869874",
+    "delivery_from": 1,
+    "award_type": "DOU+币",
+    "candidate_source": "SearchCandidate",
+    "candidate_title": "DOU+币 SearchCandidate 可投放作品"
+  },
+  "search_candidate_restore": {
+    "api_name": "apiSearchDeliveryItems",
+    "rule_id": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+    "method_path": "GET /api/buyin/admin/content_activity/search_delivery_items",
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "page_no": 1,
+      "page_size": 50,
+      "session_unix_time": 1783568265,
+      "candidate_pool_type": 1
+    },
+    "mocked_response_summary": {
+      "total_num": 1,
+      "candidate_num": 1,
+      "item_id": "7655364163166869874",
+      "if_delivery": true,
+      "rank": 1,
+      "has_delivery_config_effective_time": false
+    },
+    "network_log": "verify-logs/evidence/TC-INT-AWARD-COIN-PENALTY--browser-network-setup.log",
+    "result": "PASS"
+  },
+  "setup_save": {
+    "api_name": "apiDeliveryModifySave",
+    "rule_id": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+    "method_path": "POST /api/buyin/admin/content_activity/delivery_modify_save",
+    "natural_ui_action": "第 1 个 DOU+币候选通过真实 UI `修改配置` -> 填写未来时间 `2026-07-09 12:05:00` -> 点击 `保存`",
+    "synthetic_contract_marker_captured": true,
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "session_unix_time": 1783568265,
+      "candidate_ids": [
+        "7655364163166869874"
+      ],
+      "item_modify_config": {
+        "delivery_amount": 5000,
+        "delivery_duration": 7200,
+        "target_likes": 44,
+        "target_audience": 1,
+        "effective_time": 1783569900
+      },
+      "if_delivery": true
+    },
+    "mocked_response": {
+      "st": 0,
+      "code": 0,
+      "msg": "success"
+    },
+    "synthetic_reason": "Write-interface safety under MOCK_PREVIEW; do not send real delivery_modify_save request.",
+    "network_panel_observation": {
+      "workspace_network_log": "verify-logs/evidence/TC-INT-AWARD-COIN-PENALTY--browser-network-setup.log",
+      "delivery_modify_save_xhr_present": false,
+      "delivery_dou_plus_coin_xhr_present": false,
+      "interpretation": "No real setup write XHR was observed in the persisted browser network evidence; setup save was handled by BAM synthetic markers."
+    },
+    "post_save_ui_observation": {
+      "row_echo_display_time": "2026-07-09 12:05:00",
+      "candidate_selected": true,
+      "candidate_title_visible": true,
+      "workspace_screenshot": "screenshots/TC-INT-AWARD-COIN-PENALTY--setup-effective-time-echo.png"
+    },
+    "result": "PASS"
+  },
+  "final_award": {
+    "api_name": "apiDeliveryDouPlusCoin",
+    "rule_id": "R-BAM-AWARD-COIN-PENALTY",
+    "method_path": "POST /api/buyin/admin/content_activity/delivery_dou_plus_coin",
+    "natural_ui_action": "DOU+币奖励发放 modal selected charge record `cc抖+币-程可歆-3000`, then clicked `确定`",
+    "selected_charge_record": {
+      "display_name": "cc抖+币-程可歆-3000",
+      "charge_code": "LST12604160004204",
+      "selection_method": "visible custom combobox option click; no store/state mutation"
+    },
+    "synthetic_contract_marker_captured": true,
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "charge_code": "LST12604160004204",
+      "delivery_items": [
+        {
+          "candidate_id": "7655364163166869874",
+          "rank": 1
+        }
+      ],
+      "session_unix_time": 1783568265,
+      "delivery_from": 1
+    },
+    "mocked_response": {
+      "st": 1,
+      "code": 10017001,
+      "msg": "命中自然处罚，无法发奖"
+    },
+    "synthetic_reason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction.",
+    "network_panel_observation": {
+      "workspace_network_log": "verify-logs/evidence/TC-INT-AWARD-COIN-PENALTY--browser-network-final.log",
+      "delivery_dou_plus_coin_xhr_present": false,
+      "delivery_modify_save_xhr_present": false,
+      "get_charge_record_xhr_present": true,
+      "charge_amount_check_xhr_present": true,
+      "interpretation": "No real delivery_dou_plus_coin XHR is present in the materialized Network log, consistent with synthetic write-interface safety for final award."
+    },
+    "post_click_ui_observation": {
+      "modal_stayed_open": true,
+      "modal_text": "投放奖励 本次共投放 1 个作品，预计占用 50 元DOU+币 关联充值记录 cc抖+币-程可歆-3000 余额充足。剩余可用：150元，本期预计消耗50元 确定取消",
+      "candidate_row_still_visible": true,
+      "candidate_title_visible": true,
+      "first_candidate_time_echo": "2026-07-09 12:05:00",
+      "select_all_button_text": "取消全选",
+      "success_toast_seen": false,
+      "success_close_or_reset_seen": false,
+      "candidate_reorder_seen": false,
+      "visible_penalty_error_toast_seen": false,
+      "response_message_available_in_mocked_response": true,
+      "inline_screenshot_attempt": {
+        "filename_requested": "screenshots/TC-INT-AWARD-COIN-PENALTY--final-award-non-success-current.png",
+        "materialized_local_file": false,
+        "materialization_type": "inline_only",
+        "reason": "integrated_browser returned an inline screenshot but did not create the requested file"
+      },
+      "workspace_screenshot": "screenshots/TC-INT-AWARD-COIN-PENALTY--final-award-non-success.png"
+    },
+    "result": "PASS_WITH_NOTES"
+  },
+  "materialized_files": {
+    "setup_screenshot": {
+      "path": "screenshots/TC-INT-AWARD-COIN-PENALTY--setup-effective-time-echo.png",
+      "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced"
+    },
+    "final_screenshot": {
+      "path": "screenshots/TC-INT-AWARD-COIN-PENALTY--final-award-non-success.png",
+      "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced"
+    },
+    "setup_network_log": {
+      "path": "verify-logs/evidence/TC-INT-AWARD-COIN-PENALTY--browser-network-setup.log",
+      "contains_search_delivery_items": true,
+      "contains_delivery_modify_save": false,
+      "contains_delivery_dou_plus_coin": false
+    },
+    "final_network_log": {
+      "path": "verify-logs/evidence/TC-INT-AWARD-COIN-PENALTY--browser-network-final.log",
+      "contains_get_charge_record": true,
+      "contains_charge_amount_check": true,
+      "contains_delivery_modify_save": false,
+      "contains_delivery_dou_plus_coin": false
+    }
+  },
+  "case_closure_decision": {
+    "search_candidate_restore_closed": true,
+    "setup_write_gate_marker_closed": true,
+    "final_award_runtime_branch_exercised": true,
+    "message_evidence_source": "mocked_response.msg; AR-003 does not require visible error toast for natural-penalty branch",
+    "case_final_result": "PASS_WITH_NOTES",
+    "notes": [
+      "MOCK_PREVIEW verifies frontend response branch and write-interface safety only.",
+      "Real config persistence, real governance status, appeal/self-unban state, governance API consistency and award transaction consistency remain real verify."
+    ],
+    "gate_effect": "Current case no longer blocks verify queue, but /delivery:design remains blocked until all remaining verify cases are executed and audits close."
+  }
+}

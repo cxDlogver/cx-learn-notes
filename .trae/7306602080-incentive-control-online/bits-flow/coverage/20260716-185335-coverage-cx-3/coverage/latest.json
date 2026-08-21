@@ -1,0 +1,1576 @@
+{
+  "generatedAt": "2026-07-16T11:40:34.520Z",
+  "repoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "gitRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "currentBranch": "cx-3",
+  "query": {
+    "gitRepo": "ecom/alliance-operation-mono",
+    "fromBranch": "master",
+    "toBranch": "cx-3"
+  },
+  "updateApi": {
+    "url": "https://huatuo.bytedance.net/api/jsCoverage/branch",
+    "method": "POST",
+    "responseStatus": 200,
+    "responseOk": true,
+    "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch",
+    "coverRatio": "85.15%"
+  },
+  "filesApi": {
+    "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/files?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "responseStatus": 200,
+    "responseOk": true,
+    "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/files?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "totalFiles": 24,
+    "nonFullCoverageFiles": 8,
+    "scriptFilteredFiles": 10,
+    "codeRequestFiles": 8
+  },
+  "filters": {
+    "paths": [],
+    "limit": 0,
+    "scriptDefaultExclusions": [
+      "ZERO_INSERT_LINES",
+      "BAM_FILE"
+    ]
+  },
+  "coverageFiles": [
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+        "index.tsx"
+      ],
+      "addLines": 135,
+      "insertLines": 105,
+      "coverLines": 58,
+      "uncoveredLines": 47,
+      "coverRatio": "55.24%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "sendAwardToAuthorStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "sendAwardToAuthorStore.ts"
+      ],
+      "addLines": 38,
+      "insertLines": 33,
+      "coverLines": 7,
+      "uncoveredLines": 26,
+      "coverRatio": "21.21%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "utils.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award",
+        "utils.ts"
+      ],
+      "addLines": 87,
+      "insertLines": 52,
+      "coverLines": 30,
+      "uncoveredLines": 22,
+      "coverRatio": "57.69%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video-config-editor-form/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "manuallySubmitVideoStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "manuallySubmitVideoStore.ts"
+      ],
+      "addLines": 201,
+      "insertLines": 150,
+      "coverLines": 133,
+      "uncoveredLines": 17,
+      "coverRatio": "88.67%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/contentRemoveRecord.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api",
+        "index.ts"
+      ],
+      "addLines": 209,
+      "insertLines": 49,
+      "coverLines": 36,
+      "uncoveredLines": 13,
+      "coverRatio": "73.47%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "couponDeliveryRecordStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "couponDeliveryRecordStore.ts"
+      ],
+      "addLines": 17,
+      "insertLines": 11,
+      "coverLines": 0,
+      "uncoveredLines": 11,
+      "coverRatio": "0.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+        "index.tsx"
+      ],
+      "addLines": 147,
+      "insertLines": 123,
+      "coverLines": 114,
+      "uncoveredLines": 9,
+      "coverRatio": "92.68%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "sendAwardToVideoStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "sendAwardToVideoStore.ts"
+      ],
+      "addLines": 36,
+      "insertLines": 31,
+      "coverLines": 26,
+      "uncoveredLines": 5,
+      "coverRatio": "83.87%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+        "index.tsx"
+      ],
+      "addLines": 45,
+      "insertLines": 29,
+      "coverLines": 24,
+      "uncoveredLines": 5,
+      "coverRatio": "82.76%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/dou-coupon-remove-record-table/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/dou-coupon-remove-record-table",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/dou-coupon-remove-record-table",
+        "index.tsx"
+      ],
+      "addLines": 171,
+      "insertLines": 141,
+      "coverLines": 141,
+      "uncoveredLines": 0,
+      "coverRatio": "100.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/dou-coin-remove-record-table/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/dou-coin-remove-record-table",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/dou-coin-remove-record-table",
+        "index.tsx"
+      ],
+      "addLines": 168,
+      "insertLines": 139,
+      "coverLines": 139,
+      "uncoveredLines": 0,
+      "coverRatio": "100.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config",
+        "index.tsx"
+      ],
+      "addLines": 103,
+      "insertLines": 96,
+      "coverLines": 96,
+      "uncoveredLines": 0,
+      "coverRatio": "100.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award",
+        "index.tsx"
+      ],
+      "addLines": 67,
+      "insertLines": 62,
+      "coverLines": 62,
+      "uncoveredLines": 0,
+      "coverRatio": "100.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer",
+        "index.tsx"
+      ],
+      "addLines": 15,
+      "insertLines": 13,
+      "coverLines": 13,
+      "uncoveredLines": 0,
+      "coverRatio": "100.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "constants.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/constants.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award",
+        "constants.ts"
+      ],
+      "addLines": 12,
+      "insertLines": 10,
+      "coverLines": 10,
+      "uncoveredLines": 0,
+      "coverRatio": "100.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author-config-editor-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-edit-modal/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video-config-editor-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "bam.config.js",
+      "path": "apps/alliance-operation-content/bam.config.js",
+      "packageLabel": "apps/alliance-operation-content",
+      "labels": [
+        "apps/alliance-operation-content",
+        "bam.config.js"
+      ],
+      "addLines": 5,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "content_activity.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity",
+        "content_activity.ts"
+      ],
+      "addLines": 152,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "rankings.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/multistar/rankings.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/multistar",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/multistar",
+        "rankings.ts"
+      ],
+      "addLines": 2,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "item_author_platform.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/item_custom/author_platform/item_author_platform.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/item_custom/author_platform",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/item_custom/author_platform",
+        "item_author_platform.ts"
+      ],
+      "addLines": 1,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "promotion_info.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_base/promotion_info.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_base",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_base",
+        "promotion_info.ts"
+      ],
+      "addLines": 2,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "live_manage.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/live_manage/live_manage.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/live_manage",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/live_manage",
+        "live_manage.ts"
+      ],
+      "addLines": 2,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "selection_square.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/selection_square/selection_square.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/selection_square",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/selection_square",
+        "selection_square.ts"
+      ],
+      "addLines": 11,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "shop_window.ts",
+      "path": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/shop_window/shop_window.ts",
+      "packageLabel": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/shop_window",
+      "labels": [
+        "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/shop_window",
+        "shop_window.ts"
+      ],
+      "addLines": 4,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "index.ts",
+      "path": "packages/operation-logger/src/index.ts",
+      "packageLabel": "packages/operation-logger/src",
+      "labels": [
+        "packages/operation-logger/src",
+        "index.ts"
+      ],
+      "addLines": 1,
+      "insertLines": 0,
+      "coverLines": 0,
+      "uncoveredLines": 0,
+      "coverRatio": "0%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    }
+  ],
+  "scriptFilteredFiles": [
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+      "coverRatio": "73.47%",
+      "insertLines": 49,
+      "reason": "BAM_FILE",
+      "selectionEffect": "EXCLUDE",
+      "notes": "BAM files are excluded by script default before branch/code detail requests."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/bam.config.js",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/multistar/rankings.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/item_custom/author_platform/item_author_platform.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_base/promotion_info.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/live_manage/live_manage.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/selection_square/selection_square.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/product_custom/shop_window/shop_window.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    },
+    {
+      "filePath": "packages/operation-logger/src/index.ts",
+      "coverRatio": "0%",
+      "insertLines": 0,
+      "reason": "ZERO_INSERT_LINES",
+      "selectionEffect": "SCRIPT_FILTER_ONLY",
+      "notes": "Filtered before branch/code detail requests and not written to coverage-exclusion-log.json."
+    }
+  ],
+  "nonFullCoverageFiles": [
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+        "index.tsx"
+      ],
+      "addLines": 135,
+      "insertLines": 105,
+      "coverLines": 58,
+      "uncoveredLines": 47,
+      "coverRatio": "55.24%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "sendAwardToAuthorStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "sendAwardToAuthorStore.ts"
+      ],
+      "addLines": 38,
+      "insertLines": 33,
+      "coverLines": 7,
+      "uncoveredLines": 26,
+      "coverRatio": "21.21%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "utils.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award",
+        "utils.ts"
+      ],
+      "addLines": 87,
+      "insertLines": 52,
+      "coverLines": 30,
+      "uncoveredLines": 22,
+      "coverRatio": "57.69%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video-config-editor-form/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "manuallySubmitVideoStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "manuallySubmitVideoStore.ts"
+      ],
+      "addLines": 201,
+      "insertLines": 150,
+      "coverLines": 133,
+      "uncoveredLines": 17,
+      "coverRatio": "88.67%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/contentRemoveRecord.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "couponDeliveryRecordStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "couponDeliveryRecordStore.ts"
+      ],
+      "addLines": 17,
+      "insertLines": 11,
+      "coverLines": 0,
+      "uncoveredLines": 11,
+      "coverRatio": "0.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+        "index.tsx"
+      ],
+      "addLines": 147,
+      "insertLines": 123,
+      "coverLines": 114,
+      "uncoveredLines": 9,
+      "coverRatio": "92.68%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "sendAwardToVideoStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "sendAwardToVideoStore.ts"
+      ],
+      "addLines": 36,
+      "insertLines": 31,
+      "coverLines": 26,
+      "uncoveredLines": 5,
+      "coverRatio": "83.87%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+        "index.tsx"
+      ],
+      "addLines": 45,
+      "insertLines": 29,
+      "coverLines": 24,
+      "uncoveredLines": 5,
+      "coverRatio": "82.76%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    }
+  ],
+  "requestFiles": [
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+        "index.tsx"
+      ],
+      "addLines": 135,
+      "insertLines": 105,
+      "coverLines": 58,
+      "uncoveredLines": 47,
+      "coverRatio": "55.24%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "sendAwardToAuthorStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "sendAwardToAuthorStore.ts"
+      ],
+      "addLines": 38,
+      "insertLines": 33,
+      "coverLines": 7,
+      "uncoveredLines": 26,
+      "coverRatio": "21.21%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "utils.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award",
+        "utils.ts"
+      ],
+      "addLines": 87,
+      "insertLines": 52,
+      "coverLines": 30,
+      "uncoveredLines": 22,
+      "coverRatio": "57.69%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video-config-editor-form/index.tsx",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "manuallySubmitVideoStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "manuallySubmitVideoStore.ts"
+      ],
+      "addLines": 201,
+      "insertLines": 150,
+      "coverLines": 133,
+      "uncoveredLines": 17,
+      "coverRatio": "88.67%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/contentRemoveRecord.ts",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "couponDeliveryRecordStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "couponDeliveryRecordStore.ts"
+      ],
+      "addLines": 17,
+      "insertLines": 11,
+      "coverLines": 0,
+      "uncoveredLines": 11,
+      "coverRatio": "0.00%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+          "ratio": "--"
+        },
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+        "index.tsx"
+      ],
+      "addLines": 147,
+      "insertLines": 123,
+      "coverLines": 114,
+      "uncoveredLines": 9,
+      "coverRatio": "92.68%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    },
+    {
+      "label": "sendAwardToVideoStore.ts",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "sendAwardToVideoStore.ts"
+      ],
+      "addLines": 36,
+      "insertLines": 31,
+      "coverLines": 26,
+      "uncoveredLines": 5,
+      "coverRatio": "83.87%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": [
+        {
+          "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+          "ratio": "--"
+        }
+      ]
+    },
+    {
+      "label": "index.tsx",
+      "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+      "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+      "labels": [
+        "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+        "index.tsx"
+      ],
+      "addLines": 45,
+      "insertLines": 29,
+      "coverLines": 24,
+      "uncoveredLines": 5,
+      "coverRatio": "82.76%",
+      "ignoreLines": [],
+      "ignoreReason": "",
+      "effectFiles": []
+    }
+  ],
+  "results": [
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+      "fileCoverageVersion": "huatuo:470be66717914175",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fsend-award%2Fbatch-submit-modal%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "index.tsx",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal",
+          "index.tsx"
+        ],
+        "addLines": 135,
+        "insertLines": 105,
+        "coverLines": 58,
+        "uncoveredLines": 47,
+        "coverRatio": "55.24%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": [
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+            "ratio": "--"
+          }
+        ]
+      },
+      "summary": {
+        "totalRows": 674,
+        "insertedRows": 105,
+        "coveredInsertedRows": 58,
+        "uncoveredInsertedRows": 47,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 47
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+      "fileCoverageVersion": "huatuo:a8063018ce0bb551",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FsendAwardToAuthorStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "sendAwardToAuthorStore.ts",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+          "sendAwardToAuthorStore.ts"
+        ],
+        "addLines": 38,
+        "insertLines": 33,
+        "coverLines": 7,
+        "uncoveredLines": 26,
+        "coverRatio": "21.21%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": [
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+            "ratio": "--"
+          }
+        ]
+      },
+      "summary": {
+        "totalRows": 639,
+        "insertedRows": 33,
+        "coveredInsertedRows": 7,
+        "uncoveredInsertedRows": 26,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 26
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "fileCoverageVersion": "huatuo:8f372a792f0f4739",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Futils.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "utils.ts",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award",
+          "utils.ts"
+        ],
+        "addLines": 87,
+        "insertLines": 52,
+        "coverLines": 30,
+        "uncoveredLines": 22,
+        "coverRatio": "57.69%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": [
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video-config-editor-form/index.tsx",
+            "ratio": "--"
+          }
+        ]
+      },
+      "summary": {
+        "totalRows": 119,
+        "insertedRows": 52,
+        "coveredInsertedRows": 30,
+        "uncoveredInsertedRows": 22,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 22
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+      "fileCoverageVersion": "huatuo:1863460942dab643",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FmanuallySubmitVideoStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "manuallySubmitVideoStore.ts",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+          "manuallySubmitVideoStore.ts"
+        ],
+        "addLines": 201,
+        "insertLines": 150,
+        "coverLines": 133,
+        "uncoveredLines": 17,
+        "coverRatio": "88.67%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": [
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/contentRemoveRecord.ts",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+            "ratio": "--"
+          }
+        ]
+      },
+      "summary": {
+        "totalRows": 368,
+        "insertedRows": 150,
+        "coveredInsertedRows": 133,
+        "uncoveredInsertedRows": 17,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 17
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "fileCoverageVersion": "huatuo:cfc02a49f01cbfeb",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FcouponDeliveryRecordStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "couponDeliveryRecordStore.ts",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+          "couponDeliveryRecordStore.ts"
+        ],
+        "addLines": 17,
+        "insertLines": 11,
+        "coverLines": 0,
+        "uncoveredLines": 11,
+        "coverRatio": "0.00%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": [
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+            "ratio": "--"
+          },
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+            "ratio": "--"
+          }
+        ]
+      },
+      "summary": {
+        "totalRows": 215,
+        "insertedRows": 11,
+        "coveredInsertedRows": 0,
+        "uncoveredInsertedRows": 11,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 11
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+      "fileCoverageVersion": "huatuo:0990ffb244f2627f",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fmanually-submit-videos%2Fmanually-submit-videos-drawer%2Fmanually-submit-videos-form%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "index.tsx",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form",
+          "index.tsx"
+        ],
+        "addLines": 147,
+        "insertLines": 123,
+        "coverLines": 114,
+        "uncoveredLines": 9,
+        "coverRatio": "92.68%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": []
+      },
+      "summary": {
+        "totalRows": 810,
+        "insertedRows": 123,
+        "coveredInsertedRows": 114,
+        "uncoveredInsertedRows": 9,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 9
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+      "fileCoverageVersion": "huatuo:f0083d66d467dd00",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FsendAwardToVideoStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "sendAwardToVideoStore.ts",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+          "sendAwardToVideoStore.ts"
+        ],
+        "addLines": 36,
+        "insertLines": 31,
+        "coverLines": 26,
+        "uncoveredLines": 5,
+        "coverRatio": "83.87%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": [
+          {
+            "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+            "ratio": "--"
+          }
+        ]
+      },
+      "summary": {
+        "totalRows": 538,
+        "insertedRows": 31,
+        "coveredInsertedRows": 26,
+        "uncoveredInsertedRows": 5,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 5
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts/report.md"
+      }
+    },
+    {
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+      "fileCoverageVersion": "huatuo:53e1a455f6bbc38e",
+      "coverageUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fsend-award%2Fbatch-operation-bar%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+      "coverageFile": {
+        "label": "index.tsx",
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+        "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+        "labels": [
+          "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar",
+          "index.tsx"
+        ],
+        "addLines": 45,
+        "insertLines": 29,
+        "coverLines": 24,
+        "uncoveredLines": 5,
+        "coverRatio": "82.76%",
+        "ignoreLines": [],
+        "ignoreReason": "",
+        "effectFiles": []
+      },
+      "summary": {
+        "totalRows": 563,
+        "insertedRows": 29,
+        "coveredInsertedRows": 24,
+        "uncoveredInsertedRows": 5,
+        "ignoredUncoveredInsertedRows": 0,
+        "effectiveUncoveredInsertedRows": 5
+      },
+      "output": {
+        "resultDir": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+        "rawResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx/raw-response.json",
+        "uncovered": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx/uncovered-inserted-lines.json",
+        "summary": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx/summary.json",
+        "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx/report.md"
+      }
+    }
+  ],
+  "uncoveredFiles": [
+    {
+      "rank": 1,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+      "fileCoverageVersion": "huatuo:470be66717914175",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx/report.md",
+      "coverRatio": "55.24%",
+      "insertLines": 105,
+      "estimatedUncoveredLines": 47,
+      "effectiveUncoveredInsertedRows": 47
+    },
+    {
+      "rank": 2,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+      "fileCoverageVersion": "huatuo:a8063018ce0bb551",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts/report.md",
+      "coverRatio": "21.21%",
+      "insertLines": 33,
+      "estimatedUncoveredLines": 26,
+      "effectiveUncoveredInsertedRows": 26
+    },
+    {
+      "rank": 3,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "fileCoverageVersion": "huatuo:8f372a792f0f4739",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts/report.md",
+      "coverRatio": "57.69%",
+      "insertLines": 52,
+      "estimatedUncoveredLines": 22,
+      "effectiveUncoveredInsertedRows": 22
+    },
+    {
+      "rank": 4,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+      "fileCoverageVersion": "huatuo:1863460942dab643",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/report.md",
+      "coverRatio": "88.67%",
+      "insertLines": 150,
+      "estimatedUncoveredLines": 17,
+      "effectiveUncoveredInsertedRows": 17
+    },
+    {
+      "rank": 5,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "fileCoverageVersion": "huatuo:cfc02a49f01cbfeb",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts/report.md",
+      "coverRatio": "0.00%",
+      "insertLines": 11,
+      "estimatedUncoveredLines": 11,
+      "effectiveUncoveredInsertedRows": 11
+    },
+    {
+      "rank": 6,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx",
+      "fileCoverageVersion": "huatuo:0990ffb244f2627f",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx/report.md",
+      "coverRatio": "92.68%",
+      "insertLines": 123,
+      "estimatedUncoveredLines": 9,
+      "effectiveUncoveredInsertedRows": 9
+    },
+    {
+      "rank": 7,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts",
+      "fileCoverageVersion": "huatuo:f0083d66d467dd00",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts/report.md",
+      "coverRatio": "83.87%",
+      "insertLines": 31,
+      "estimatedUncoveredLines": 5,
+      "effectiveUncoveredInsertedRows": 5
+    },
+    {
+      "rank": 8,
+      "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+      "fileCoverageVersion": "huatuo:53e1a455f6bbc38e",
+      "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx/report.md",
+      "coverRatio": "82.76%",
+      "insertLines": 29,
+      "estimatedUncoveredLines": 5,
+      "effectiveUncoveredInsertedRows": 5
+    }
+  ],
+  "skipped": [],
+  "totals": {
+    "effectiveUncoveredInsertedRows": 142,
+    "uncoveredInsertedRows": 142,
+    "ignoredUncoveredInsertedRows": 0
+  },
+  "outputFiles": {
+    "latestJson": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/latest.json",
+    "report": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/report.md",
+    "updateResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/update-response.json",
+    "filesResponse": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/files-response.json",
+    "uncoveredListJson": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/uncovered-list.json",
+    "uncoveredListMarkdown": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-185335-coverage-cx-3/coverage/uncovered-list.md"
+  }
+}

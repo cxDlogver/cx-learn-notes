@@ -1,0 +1,55 @@
+{
+  "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+  "assertion_ref": "negative_assertion",
+  "apiName": "apiCandidateRemove",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/candidate_remove",
+  "captured_at": "2026-07-08T15:46:00Z",
+  "interfaceNecessity": "TC-INT-MANUAL-ONE-CLICK-REMOVE requires API failure evidence proving the frontend does not remove rows when candidate_remove returns a non-zero code.",
+  "syntheticContractReason": "The UI request point is known and reachable through the `一键移除` button, but `candidate_remove` is a write interface. Under MOCK_PREVIEW the request must not be sent to the real backend, including failure-path probes; the BAM runtime returns a marked synthetic failure instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "Source path `manuallySubmitVideoStore.ts#L251-L294` calls `apiCandidateRemove` and mutates `videoItems` only when `getResponseCode(response) === 0`.",
+      "reason": "A real failure-path click without BAM patch would still send a backend write request."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "The natural UI setup can produce a single hit candidate by using the existing mixed hit mock state and then clicking row-level `移除` for one hit row before `一键移除`.",
+      "reason": "The remaining single-hit request shape is deterministic, but still targets the write interface and must be intercepted."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiCandidateRemove/R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT/request.json",
+    "response": "mock/real-connect/apiCandidateRemove/R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT/response.json",
+    "sourceRefs": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L63-L88",
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L251-L294",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx#L655-L665",
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#L34"
+    ]
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+    "requiredChecks": [
+      "natural UI setup reaches manual mixed hit state",
+      "row-level remove leaves one hit row and one valid row",
+      "click `一键移除`",
+      "runtime marker includes `R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT`",
+      "remaining hit row and valid row stay visible after failure response",
+      "error message appears and no batch submit modal or fake award success appears"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实 `candidate_remove` 失败响应复验列表不变、错误提示和剔除明细无新增记录。"
+}

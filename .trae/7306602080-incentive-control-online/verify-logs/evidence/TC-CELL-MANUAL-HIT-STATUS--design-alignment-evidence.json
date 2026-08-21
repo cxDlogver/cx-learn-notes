@@ -1,0 +1,93 @@
+{
+  "case_id": "TC-CELL-MANUAL-HIT-STATUS",
+  "collected_at": "2026-07-10T01:36:29+08:00",
+  "stage": "/delivery:design",
+  "agent_gate_summary": {
+    "agent": "design_check_tc_cell_manual_hit_status",
+    "result": "PASS",
+    "readiness": "archive_current_case_only",
+    "browser_runtime_mode": "TRAE_DESKTOP",
+    "browser_tab": "3ac8d48f-26d8-4d09-ace5-80728b7ff041",
+    "later_case_scanned": false
+  },
+  "case_contract": {
+    "case_layer": "cell-level",
+    "runtime_state": "manual-hit-row",
+    "capture_scope": "table first hit row",
+    "verify_screenshot_key": "manual-hit-status-cell",
+    "contract_ref": "Cell:人工提报命中态/视频图文内容",
+    "positive_assertion": "封面/标题/ID下方展示红字 `命中【不激励】规则`，可同时展示 `不满足准入门槛`；`if_not_incentive` 和 `if_satisfy_delivery_rules` 驱动标签。",
+    "negative_assertion": "不自动删除命中行，不隐藏投放记录提示；不出现错误颜色、badge 覆盖编辑列或空标签。",
+    "evidence_required": "DOM+截图+computed style"
+  },
+  "figma_and_f2c": {
+    "ui_evidence_mode": "F2C_REQUIRED",
+    "figma_source_type": "FIGMA_NODE_DATA + FIGMA_SCREENSHOT",
+    "figma_sources": [
+      "figma-cache/nodes/F7-get_figma_data-87_7016-d6.md",
+      "figma-cache/screenshots/25_13842-manual-submit-hit-state.png"
+    ],
+    "f2c_sources": [
+      "code-review/d2c-evidence/task-TASK-005/manifest.md",
+      "code-review/d2c-evidence/task-TASK-005/87_7016/figma_87_7016_1783502075850.xml",
+      "code-review/d2c-evidence/task-TASK-005/87_7016/figma_87_7016_1783502075850.jpg"
+    ],
+    "f2c_jpg_sha256": "fcb8c0a89d0648610e1b8910fa289e3d37eb2144b9cf271ba05da1ce065de478",
+    "consumed_contract": [
+      "row node 87:7016 contains video cover, title, video ID, red hit labels, editable delivery cells, and row remove action",
+      "text node 87:7028 is `不满足准入门槛  命中【不激励】规则` in rgb(245,63,63)",
+      "text node 87:7113 is `命中【不激励】规则` in rgb(245,63,63)"
+    ]
+  },
+  "runtime_sources": {
+    "primary_screenshot": "screenshots/TC-UI-MANUAL-HIT-PAGE--design-rerun--manual-drawer-hit-rework-007.png",
+    "primary_screenshot_sha256": "a75463d52f3f3d86a4b2d964c33db4d5650a9b73e80a0b3896078c53ec6b14a3",
+    "baseline_screenshot": "screenshots/TC-UI-MANUAL-HIT-PAGE--manual-drawer-hit--mock-hit.png",
+    "computed_style_json": "verify-logs/evidence/TC-CELL-MANUAL-HIT-STATUS--runtime-computed-style.json",
+    "mock_source": "R-BAM-MANUAL-SEARCH-HIT / apiSearchDeliveryItems"
+  },
+  "runtime_observed_facts": {
+    "rows": [
+      {
+        "item_id": "100001",
+        "visible_label": "不满足准入门槛",
+        "has_remove_action": true,
+        "has_editable_placeholders": true
+      },
+      {
+        "item_id": "100002",
+        "visible_label": "命中【不激励】规则",
+        "has_remove_action": true,
+        "has_editable_placeholders": true
+      },
+      {
+        "item_id": "100003",
+        "visible_label": null,
+        "has_remove_action": true,
+        "has_editable_placeholders": true
+      }
+    ],
+    "computed_style": {
+      "color": "rgb(245, 63, 63)",
+      "font_size": "12px",
+      "font_weight": "400",
+      "line_height": "18px",
+      "display": "block"
+    },
+    "position_relation": "red hit labels are below title/video ID in the same 视频/图文内容 cell and do not enter edit or operation columns"
+  },
+  "negative_scan": {
+    "wrong_color": false,
+    "badge_over_edit_columns": false,
+    "empty_hit_label": false,
+    "auto_deleted_hit_rows": false,
+    "forbidden_text": {
+      "申诉": false,
+      "低质": false,
+      "编辑": false,
+      "自动剔除": false,
+      "已自动移除": false
+    }
+  },
+  "result": "PASS"
+}

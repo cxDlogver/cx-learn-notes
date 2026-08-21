@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "workspace": "<artifact-workspace>",
+    "browser_runtime_mode": "TRAE_DESKTOP | COCO_CLI_HEADLESS",
+    "browser_tool": "integrated_browser | playwright_chromium_headless | chrome_devtools_headless",
+    "headless": false,
+    "profile_strategy": "builtin_or_persistent_profile_fallback | headless_user_data_dir_or_storage_state",
+    "browser_profile_or_state": "<local-path-without-secret-values>",
+    "updated_at": "YYYY-MM-DDTHH:mm:ssZ"
+  },
+  "cases": [
+    {
+      "case_id": "TC-UI-XXX",
+      "case_layer": "region-level",
+      "contract_ref": "Region/Interaction/Cell contract ref",
+      "figma_source": "FG-CXX or nodeId",
+      "runtime_state": "page-first-screen / hover-open / expanded / empty / disabled",
+      "capture_scope": "page-first-screen / target-region / tooltip / first-row",
+      "verify_screenshot_key": "TC-UI-XXX__runtime_state__capture_scope",
+      "preferred_reuse_for_design": true,
+      "entry": {
+        "kind": "vmok",
+        "url_template": "https://ecop.bytedance.net/alliance-operation-daren/authorManage/potentialDarenPool/authorDetails?author_id={author_id}&author_app_id=1128&cjDebugSubApp=alliance-operation-daren:http://localhost:8079/alliance-operation-daren&externalLeadsDomainMock={mock_flag}&cjSiteCode=St12502250000001&rating_tab={rating_tab}"
+      },
+      "sample_params": {
+        "author_id": "3250600708947223",
+        "mock_flag": "1",
+        "rating_tab": "businessRating"
+      },
+      "preconditions": [
+        "dev_server_ready",
+        "vmok_accessible",
+        "sso_logged_in_or_profile_reused"
+      ],
+      "sample_ref": "author_id=3250600708947223",
+      "dom_anchor": "目标区域标题 / tag 文案 / drawer title",
+      "steps": [
+        {
+          "action": "navigate",
+          "target": "作者详情页",
+          "locator_hint": "url_template + sample_params",
+          "expected": "页面打开且作者档案 tab 可见"
+        },
+        {
+          "action": "wait_for_text",
+          "target": "等级详情",
+          "locator_hint": "button text",
+          "expected": "经营评级模块渲染完成"
+        },
+        {
+          "action": "click",
+          "target": "等级详情",
+          "locator_hint": "button text",
+          "expected": "经营评级详情 Drawer 打开"
+        },
+        {
+          "action": "wait_for_text",
+          "target": "本月变更内容",
+          "locator_hint": "drawer title / region title",
+          "expected": "目标区域可见"
+        },
+        {
+          "action": "screenshot",
+          "target": "本月变更内容卡片",
+          "locator_hint": "region title + nearest container",
+          "expected": "截图文件已保存"
+        },
+        {
+          "action": "evaluate",
+          "target": "高亮 token computed style",
+          "locator_hint": "highlight tokens within target region",
+          "expected": "高/中/上升/下降颜色可读"
+        }
+      ],
+      "assertions": [
+        "关键文案可见",
+        "目标按钮可点击或状态符合预期",
+        "截图、DOM、computed style 证据齐全"
+      ],
+      "negative_assertions": [
+        "旧结构不存在",
+        "错误按钮不存在",
+        "禁显文案不存在",
+        "无额外副作用请求"
+      ],
+      "visual_assertions": [
+        "目标区域结构、层级、顺序符合 test case 的 visual_assertion",
+        "关键 badge/tag/button/cell 的颜色、圆角、间距、icon / asset 可由运行态截图或 computed style 支持"
+      ],
+      "negative_visual_assertions": [
+        "多余容器、旧结构残留、错误颜色、错误 icon、空 tooltip 或覆盖错位不存在",
+        "运行态截图或 DOM 中没有 test case negative_visual_assertion 声明的禁显视觉残留"
+      ],
+      "evidence_targets": [
+        {
+          "evidence_requirement_id": "TC-UI-XXX::visual_assertion",
+          "evidence_type": "screenshot",
+          "expected_evidence_ref": "screenshots/TC-UI-XXX__runtime_state__capture_scope.png",
+          "assertion_ref": "visual_assertion"
+        },
+        {
+          "evidence_requirement_id": "TC-UI-XXX::negative_visual_assertion",
+          "evidence_type": "DOM+screenshot",
+          "expected": "禁显视觉残留不存在；必要时补 computed style / bbox 摘要",
+          "assertion_ref": "negative_visual_assertion"
+        },
+        {
+          "evidence_requirement_id": "TC-UI-XXX::evidence_required:screenshot",
+          "evidence_type": "screenshot",
+          "expected_evidence_ref": "screenshots/TC-UI-XXX__runtime_state__capture_scope.png",
+          "assertion_ref": "evidence_required:screenshot"
+        },
+        {
+          "evidence_requirement_id": "TC-UI-XXX::evidence_required:dom",
+          "evidence_type": "DOM",
+          "expected": "目标区域 innerText / snapshot",
+          "assertion_ref": "evidence_required:dom"
+        },
+        {
+          "evidence_requirement_id": "TC-UI-XXX::evidence_required:computed_style",
+          "evidence_type": "computed style",
+          "expected": "关键 token / 按钮 / 容器样式",
+          "assertion_ref": "evidence_required:computed_style"
+        },
+        {
+          "evidence_requirement_id": "TC-UI-XXX::evidence_required:network",
+          "evidence_type": "Network",
+          "expected": "如适用则记录请求摘要，否则写 not_required",
+          "assertion_ref": "evidence_required:network"
+        }
+      ],
+      "state_match_hints": [
+        "design 必须先按 verify_screenshot_key 匹配截图",
+        "若 runtime_state 与 design case 目标状态不一致，则标记 state_mismatch 并补抓新图"
+      ],
+      "last_verified_at": "YYYY-MM-DDTHH:mm:ssZ",
+      "last_outcome": "PASS",
+      "notes": "只记录稳定路径与语义定位，不保存临时 ref"
+    }
+  ]
+}

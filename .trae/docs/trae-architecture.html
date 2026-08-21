@@ -1,0 +1,2721 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>.trae Delivery Harness Architecture</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --ink: #18202a;
+      --muted: #5c6675;
+      --panel: #ffffff;
+      --line: #d6dde5;
+      --control: #245f73;
+      --rules: #7b5f1d;
+      --exec: #7b3f45;
+      --artifact: #2f6b4f;
+      --external: #4b5579;
+      --state: #5f4b7a;
+      --shadow: 0 18px 45px rgba(24, 32, 42, 0.12);
+      --soft-shadow: 0 8px 24px rgba(24, 32, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        linear-gradient(rgba(36, 95, 115, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(36, 95, 115, 0.045) 1px, transparent 1px),
+        var(--bg);
+      background-size: 28px 28px;
+    }
+
+    .page {
+      width: min(1440px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 42px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--control);
+      font-size: 13px;
+      font-weight: 780;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.04;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 940px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 10px;
+      margin: 22px 0 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid #d8dee6;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: var(--soft-shadow);
+      font-size: 13px;
+      font-weight: 740;
+    }
+
+    .overview-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin: 18px 0;
+    }
+
+    .answer-line {
+      margin: 0 0 16px;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.55;
+      font-weight: 760;
+    }
+
+    .answer-line strong {
+      color: var(--control);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .overview-card {
+      min-width: 0;
+      min-height: 150px;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .overview-card .label {
+      display: inline-flex;
+      margin-bottom: 8px;
+      color: #fff;
+      background: var(--control);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 780;
+      line-height: 1;
+    }
+
+    .overview-card h2 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.3;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .overview-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .reading-path {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #e1e7ed;
+    }
+
+    .path-step {
+      min-width: 0;
+      border: 1px solid #dfe6ec;
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 11px;
+    }
+
+    .path-step strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .path-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .flowchart-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin: 18px 0;
+    }
+
+    .flowchart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    .flowchart-head h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .flowchart-head p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .flowchart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .flowchart-card {
+      min-width: 0;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .flowchart-card h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      line-height: 1.3;
+      font-weight: 840;
+    }
+
+    .flow-line {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 9px;
+      align-items: stretch;
+    }
+
+    .flow-line.six {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .flow-node {
+      position: relative;
+      min-height: 76px;
+      border: 1px solid #dfe6ec;
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 10px;
+    }
+
+    .flow-node::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -11px;
+      transform: translateY(-50%);
+      color: #7b8793;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .flow-node:last-child::after {
+      content: "";
+    }
+
+    .flow-node strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .flow-node span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .section-intro {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 18px;
+      margin: 20px 0 12px;
+    }
+
+    .section-intro h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .section-intro p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    .architecture-shell {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .architecture-map {
+      display: grid;
+      gap: 16px;
+    }
+
+    .band {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .band.entry {
+      background: #f2f8fa;
+      border-color: #cfe1e7;
+    }
+
+    .band.control {
+      background: #eef6f8;
+      border-color: #cfe1e7;
+    }
+
+    .band.rules {
+      background: #fbf6e8;
+      border-color: #ead9ab;
+    }
+
+    .band.exec {
+      background: #fbf0f1;
+      border-color: #e7c9cd;
+    }
+
+    .band.artifact {
+      background: #eef8f2;
+      border-color: #cce4d5;
+    }
+
+    .band.external {
+      background: #f1f3fa;
+      border-color: #d6dbed;
+    }
+
+    .band-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .band-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 820;
+      letter-spacing: 0;
+    }
+
+    .band-caption {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .entry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .core-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.92fr) minmax(300px, 1.18fr) minmax(300px, 1.08fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .artifact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .external-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .card {
+      min-width: 0;
+      height: auto;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 10px 24px rgba(24, 32, 42, 0.08);
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+    }
+
+    .card h3 {
+      margin: 0 0 7px;
+      font-size: 15px;
+      line-height: 1.25;
+      font-weight: 820;
+      letter-spacing: 0;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .card ul {
+      margin: 9px 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .card li {
+      margin: 4px 0;
+    }
+
+    .card li::before {
+      content: "";
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      margin: 0 7px 2px 0;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.55;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 8px;
+      color: #fff;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 780;
+      line-height: 1;
+    }
+
+    .compact {
+      padding: 11px 12px;
+    }
+
+    .compact h3 {
+      font-size: 14px;
+    }
+
+    .compact p,
+    .compact ul {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+      grid-auto-rows: minmax(0, auto);
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .flow-rail {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 16px;
+      color: #71808f;
+      font-size: 12px;
+      font-weight: 780;
+      text-transform: uppercase;
+    }
+
+    .flow-rail::before,
+    .flow-rail::after,
+    .flow-mid {
+      content: "";
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, #9aa6b2, transparent);
+    }
+
+    .arrow {
+      color: #71808f;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .callout-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .callout {
+      border: 1px dashed rgba(95, 75, 122, 0.42);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .callout strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .sequence-panel {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .sequence-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .sequence-head h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .sequence-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .lane {
+      border: 1px solid #dfe6ec;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfd;
+    }
+
+    .lane + .lane {
+      margin-top: 14px;
+    }
+
+    .lane-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .lane-head h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 820;
+    }
+
+    .lane-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .sequence-row {
+      display: grid;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .sequence-row.readonly {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .sequence-row.execution {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .step-card {
+      position: relative;
+      min-width: 0;
+      min-height: 172px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      height: 100%;
+      padding: 13px;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(24, 32, 42, 0.07);
+    }
+
+    .step-card::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -13px;
+      transform: translateY(-50%);
+      width: 14px;
+      color: #7b8793;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .sequence-row .step-card:last-child::after {
+      content: "";
+    }
+
+    .step-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--control);
+      font-size: 12px;
+      font-weight: 820;
+      flex: 0 0 auto;
+    }
+
+    .step-type {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 760;
+      text-transform: uppercase;
+    }
+
+    .step-card h4 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.25;
+      font-weight: 840;
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .artifact-line {
+      margin-top: auto;
+      padding-top: 9px;
+      border-top: 1px solid #e7ecf1;
+      color: #4f5d6b;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .step-card.plan .step-no,
+    .step-card.prd .step-no,
+    .step-card.task .step-no {
+      background: var(--rules);
+    }
+
+    .step-card.exec .step-no {
+      background: var(--exec);
+    }
+
+    .step-card.verify .step-no,
+    .step-card.design .step-no,
+    .step-card.accept .step-no {
+      background: var(--artifact);
+    }
+
+    .detour-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 14px;
+    }
+
+    .detour-card {
+      min-width: 0;
+      height: 100%;
+      border: 1px dashed rgba(95, 75, 122, 0.45);
+      border-radius: 8px;
+      padding: 13px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .detour-card h4 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 840;
+    }
+
+    .detour-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .principle-panel {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .principle-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .principle-head h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .principle-head p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .principle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .principle-card {
+      min-width: 0;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .principle-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      line-height: 1.3;
+      font-weight: 830;
+    }
+
+    .principle-card p,
+    .principle-card li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .principle-card p {
+      margin: 0;
+    }
+
+    .principle-card ul {
+      margin: 9px 0 0;
+      padding-left: 18px;
+    }
+
+    .review-chain {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .review-step {
+      position: relative;
+      min-height: 118px;
+      border: 1px solid #dde5ec;
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 12px;
+    }
+
+    .review-step::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -11px;
+      transform: translateY(-50%);
+      color: #7b8793;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .review-step:last-child::after {
+      content: "";
+    }
+
+    .review-step strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .review-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .iteration-block {
+      margin-top: 16px;
+      border: 1px solid #dde5ec;
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 14px;
+    }
+
+    .iteration-block h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 840;
+    }
+
+    .iteration-block > p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .iteration-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .iteration-item {
+      border: 1px solid rgba(24, 32, 42, 0.1);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      min-height: 132px;
+    }
+
+    .iteration-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .iteration-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .auxiliary-panel {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .auxiliary-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .auxiliary-head h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .auxiliary-head p {
+      max-width: 780px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .auxiliary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .auxiliary-card {
+      min-width: 0;
+      min-height: 154px;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .auxiliary-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      line-height: 1.3;
+      font-weight: 840;
+    }
+
+    .auxiliary-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .mode-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #e1e7ed;
+    }
+
+    .mode-item {
+      border: 1px dashed rgba(36, 95, 115, 0.35);
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .mode-item strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .usage-panel {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .usage-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .usage-head h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 840;
+      letter-spacing: 0;
+    }
+
+    .usage-head p {
+      max-width: 820px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .usage-flow {
+      border: 1px solid #dde5ec;
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .usage-flow h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      line-height: 1.3;
+      font-weight: 840;
+    }
+
+    .actor-chain {
+      display: grid;
+      grid-template-columns:
+        minmax(120px, 1fr) minmax(58px, 0.48fr)
+        minmax(120px, 1fr) minmax(58px, 0.48fr)
+        minmax(120px, 1fr) minmax(58px, 0.48fr)
+        minmax(120px, 1fr) minmax(58px, 0.48fr)
+        minmax(120px, 1fr) minmax(58px, 0.48fr)
+        minmax(120px, 1fr);
+      gap: 8px;
+      align-items: center;
+    }
+
+    .actor-node {
+      min-width: 0;
+      min-height: 118px;
+      border: 1px solid rgba(24, 32, 42, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .actor-node strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 840;
+    }
+
+    .actor-node span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .comm-arrow {
+      min-width: 0;
+      color: #536272;
+      text-align: center;
+    }
+
+    .comm-line {
+      position: relative;
+      height: 2px;
+      margin: 0 8px 8px;
+      border-radius: 999px;
+      background: #93a2af;
+    }
+
+    .comm-line::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -3px;
+      transform: translateY(-50%) rotate(45deg);
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #93a2af;
+      border-right: 2px solid #93a2af;
+      background: transparent;
+    }
+
+    .comm-arrow strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: 840;
+    }
+
+    .comm-arrow span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .comm-rules {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e1e7ed;
+    }
+
+    .comm-rule {
+      border: 1px dashed rgba(95, 75, 122, 0.34);
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .comm-rule strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .scenario-console {
+      border: 1px solid #dde5ec;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--soft-shadow);
+      overflow: hidden;
+    }
+
+    .scenario-tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0;
+      border-bottom: 1px solid #e1e7ed;
+      background: #f8fafb;
+    }
+
+    .scenario-tab {
+      min-height: 48px;
+      border: 0;
+      border-right: 1px solid #e1e7ed;
+      color: #43515f;
+      background: transparent;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .scenario-tab:last-child {
+      border-right: 0;
+    }
+
+    .scenario-tab.is-active,
+    .scenario-tab:focus-visible {
+      color: #fff;
+      background: var(--control);
+      outline: none;
+    }
+
+    .scenario-stage {
+      display: none;
+      padding: 15px;
+    }
+
+    .scenario-stage.is-active {
+      display: block;
+    }
+
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .stage-head h3 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.3;
+      font-weight: 840;
+    }
+
+    .stage-head p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .message-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .message-step {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) minmax(220px, 0.78fr);
+      gap: 12px;
+      align-items: stretch;
+      border: 1px solid #e0e6ec;
+      border-radius: 8px;
+      background: #fbfcfd;
+      padding: 12px;
+    }
+
+    .message-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--state);
+      font-size: 12px;
+      font-weight: 840;
+    }
+
+    .message-main strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .message-main span,
+    .message-result {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .message-route {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      align-items: center;
+      gap: 6px;
+      color: #536272;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .route-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border: 1px solid #d9e1e8;
+      border-radius: 999px;
+      background: #fff;
+      padding: 3px 8px;
+      font-weight: 760;
+    }
+
+    .route-arrow {
+      color: #8a96a3;
+      font-weight: 840;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #eef2f5;
+      color: #24313d;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .matrices {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .matrix {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--soft-shadow);
+      overflow: hidden;
+    }
+
+    .matrix h2 {
+      margin: 0;
+      padding: 15px 17px 12px;
+      font-size: 18px;
+      border-bottom: 1px solid #e0e5eb;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid #e6ebf0;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      color: #384554;
+      background: #f8fafb;
+      font-weight: 780;
+    }
+
+    td {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    tr:last-child td,
+    tr:last-child th {
+      border-bottom: 0;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1180px) {
+      .page {
+        width: min(100vw - 24px, 1440px);
+        padding-top: 22px;
+      }
+
+      header,
+      .core-grid,
+      .matrices {
+        grid-template-columns: 1fr;
+      }
+
+      .entry-grid,
+      .artifact-grid,
+      .external-grid,
+      .legend,
+      .callout-row,
+      .detour-grid,
+      .overview-grid,
+      .flowchart-grid,
+      .principle-grid,
+      .auxiliary-grid,
+      .comm-rules,
+      .mode-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .actor-chain {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .comm-arrow {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+      }
+
+      .comm-line {
+        width: 2px;
+        height: 34px;
+        margin: 0 auto;
+      }
+
+      .comm-line::after {
+        top: auto;
+        right: 50%;
+        bottom: -3px;
+        transform: translateX(50%) rotate(135deg);
+      }
+
+      .sequence-row.readonly,
+      .sequence-row.execution,
+      .review-chain,
+      .iteration-grid,
+      .reading-path,
+      .flow-line,
+      .flow-line.six {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .step-card::after,
+      .review-step::after,
+      .flow-node::after {
+        content: "";
+      }
+
+      .message-step {
+        grid-template-columns: 42px minmax(0, 1fr);
+      }
+
+      .message-route {
+        grid-column: 2 / -1;
+      }
+
+      .flow-rail {
+        display: none;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .entry-grid,
+      .artifact-grid,
+      .external-grid,
+      .legend,
+      .callout-row,
+      .detour-grid,
+      .module-grid,
+      .overview-grid,
+      .flowchart-grid,
+      .principle-grid,
+      .auxiliary-grid,
+      .actor-chain,
+      .comm-rules,
+      .mode-strip,
+      .review-chain,
+      .iteration-grid,
+      .reading-path,
+      .flow-line,
+      .flow-line.six {
+        grid-template-columns: 1fr;
+      }
+
+      .scenario-tabs {
+        grid-template-columns: 1fr;
+      }
+
+      .scenario-tab {
+        border-right: 0;
+        border-bottom: 1px solid #e1e7ed;
+      }
+
+      .scenario-tab:last-child {
+        border-bottom: 0;
+      }
+
+      .sequence-row.readonly,
+      .sequence-row.execution {
+        grid-template-columns: 1fr;
+      }
+
+      .message-step {
+        grid-template-columns: 1fr;
+      }
+
+      .message-route {
+        grid-column: auto;
+      }
+
+      .band-head {
+        display: block;
+      }
+
+      .band-caption {
+        margin-top: 4px;
+      }
+
+      .sequence-head,
+      .principle-head,
+      .flowchart-head,
+      .section-intro,
+      .lane-head,
+      .auxiliary-head,
+      .usage-head,
+      .stage-head {
+        display: block;
+      }
+
+      .sequence-head p,
+      .principle-head p,
+      .flowchart-head p,
+      .section-intro p,
+      .lane-head p,
+      .auxiliary-head p,
+      .usage-head p,
+      .stage-head p {
+        margin-top: 4px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: 1440px;
+      }
+
+      .architecture-shell,
+      .card,
+      .step-card,
+      .matrix,
+      .legend-item {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <section>
+        <p class="eyebrow">.trae Delivery Harness</p>
+        <h1>Trae AI 工作流架构</h1>
+        <p class="subtitle">
+          一套面向真实需求交付的 AI 协作流水线：自动收集 Meego、PRD、Figma、BAM、业务仓库和浏览器运行态证据，再通过主 Agent 编排多个 Subagent 完成规划、实现、功能验证、视觉验证、设计对齐和交付验收；后续可由开发机 WebServer 和飞书机器人包装成产研测协作入口。
+        </p>
+      </section>
+    </header>
+
+    <section class="overview-panel" aria-label="阅读概览">
+      <p class="answer-line">
+        <strong>一句话理解：</strong>它把“AI 写代码”升级成“AI 交付需求”，用状态机管理阶段，用产物记录事实，用 Subagent 分工处理复杂上下文，再用 Gate 和互审机制防止跑偏。
+      </p>
+      <div class="overview-grid">
+        <article class="overview-card">
+          <span class="label">Why</span>
+          <h2>解决什么问题</h2>
+          <p>避免一个大 Agent 靠聊天记忆硬推完整需求，导致需求事实丢失、实现越界、验证缺口和设计返工无法追踪。</p>
+        </article>
+        <article class="overview-card">
+          <span class="label">How</span>
+          <h2>怎么完成交付</h2>
+          <p>从需求入口开始，按 PRD、BAM、Plan、Task、Code、Verify、Design、Accept 串行推进；也可由飞书机器人触发 init、走查修复、CR 修复和 PPE 部署。</p>
+        </article>
+        <article class="overview-card">
+          <span class="label">Guardrail</span>
+          <h2>如何防止偏移</h2>
+          <p>写代码、跑命令、做设计检查和最终放行分属不同角色；主 Agent 汇总证据，独立审查 diff 与合同。</p>
+        </article>
+      </div>
+      <div class="reading-path" aria-label="阅读路线">
+        <div class="path-step">
+          <strong>先看使用场景</strong>
+          <span>理解飞书机器人、WebServer 和 CoCo CLI 如何协同触发交付。</span>
+        </div>
+        <div class="path-step">
+          <strong>再看 CoCo 主线</strong>
+          <span>展开一条需求在 CoCo 工作流中如何从输入跑到验收。</span>
+        </div>
+        <div class="path-step">
+          <strong>然后看分层</strong>
+          <span>知道 command、skill、agent、script 各管什么。</span>
+        </div>
+        <div class="path-step">
+          <strong>重点看机制</strong>
+          <span>理解状态、证据、分工、互审和防偏。</span>
+        </div>
+        <div class="path-step">
+          <strong>最后看辅助</strong>
+          <span>了解 BITS、飞书机器人、hook 日志、执行记录、回退和回归用例如何反哺流程。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="usage-panel" aria-label="使用场景">
+      <div class="usage-head">
+        <h2>使用场景：飞书机器人驱动交付</h2>
+        <p>
+          这套流程会部署在开发机上，由常驻 WebServer 统一调用 CoCo CLI；ByteClow 上的飞书机器人作为产研测入口，与 WebServer 通讯，把群聊里的需求、走查问题、CR 问题和流程问题调试转成可审计的 `.trae` 阶段动作。
+        </p>
+      </div>
+
+      <div class="usage-flow">
+        <h3>参与方主链路</h3>
+        <div class="actor-chain">
+          <div class="actor-node">
+            <strong>飞书需求群</strong>
+            <span>产研测发起需求、走查问题、CR 修复和回归请求。</span>
+          </div>
+          <div class="comm-arrow" aria-label="飞书群到 ByteClow Bot 的通讯">
+            <div class="comm-line"></div>
+            <div><strong>消息事件</strong><span>@机器人 / 指令 / 附件</span></div>
+          </div>
+          <div class="actor-node">
+            <strong>ByteClow Bot</strong>
+            <span>接收消息、鉴权、解析意图，并把上下文转发给 WebServer。</span>
+          </div>
+          <div class="comm-arrow" aria-label="ByteClow Bot 到 WebServer 的通讯">
+            <div class="comm-line"></div>
+            <div><strong>HTTP 回调</strong><span>user + group + command</span></div>
+          </div>
+          <div class="actor-node">
+            <strong>开发机 WebServer</strong>
+            <span>维护任务队列、workspace 锁、执行状态和回调通道。</span>
+          </div>
+          <div class="comm-arrow" aria-label="WebServer 到 CoCo CLI 的通讯">
+            <div class="comm-line"></div>
+            <div><strong>本机调度</strong><span>queue + lock + env</span></div>
+          </div>
+          <div class="actor-node">
+            <strong>CoCo CLI</strong>
+            <span>在开发机执行 `.trae` command，并把过程写入 artifacts。</span>
+          </div>
+          <div class="comm-arrow" aria-label="CoCo CLI 到交付产物的通讯">
+            <div class="comm-line"></div>
+            <div><strong>阶段写入</strong><span>artifacts + code + PPE</span></div>
+          </div>
+          <div class="actor-node">
+            <strong>交付产物</strong>
+            <span>代码、验证报告、PPE 部署、MR、CR 回复和风险登记。</span>
+          </div>
+          <div class="comm-arrow" aria-label="交付产物到飞书回写的通讯">
+            <div class="comm-line"></div>
+            <div><strong>状态回调</strong><span>summary + links + blockers</span></div>
+          </div>
+          <div class="actor-node">
+            <strong>飞书回写</strong>
+            <span>阶段摘要、阻塞问题、PPE 链接、MR 状态和下一步确认。</span>
+          </div>
+        </div>
+        <div class="comm-rules" aria-label="通讯顺序规则">
+          <div class="comm-rule">
+            <strong>顺序规则</strong>
+            同一需求按 workspace 串行执行；新的飞书指令先进入队列，不能抢占未关闭的阶段 Gate。
+          </div>
+          <div class="comm-rule">
+            <strong>锁定规则</strong>
+            WebServer 对 repo、branch、workspace 加锁，避免两个群消息同时改同一套代码或产物。
+          </div>
+          <div class="comm-rule">
+            <strong>回调规则</strong>
+            长任务先回 ACK，再按 phase_start、gate_result、blocked、done 回写阶段摘要和链接。
+          </div>
+          <div class="comm-rule">
+            <strong>安全规则</strong>
+            飞书只传指令和摘要；token、cookie、storage state、原始请求响应不进入群消息。
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-console" aria-label="场景通讯顺序图">
+        <div class="scenario-tabs" role="tablist" aria-label="使用场景">
+          <button class="scenario-tab is-active" type="button" role="tab" aria-selected="true" data-scenario="init">需求启动</button>
+          <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="product">产品走查修正</button>
+          <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="cr">CR 修复闭环</button>
+          <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="test">测试回归协作</button>
+          <button class="scenario-tab" type="button" role="tab" aria-selected="false" data-scenario="debug">流程问题调试</button>
+        </div>
+
+        <div class="scenario-stage is-active" role="tabpanel" data-scenario-panel="init">
+          <div class="stage-head">
+            <h3>需求启动：从群聊拉起 `/delivery:init`</h3>
+            <p>目标是把 PRD、Meego、设计资料和目标仓库上下文落成可恢复的 `.trae` workspace。</p>
+          </div>
+          <ol class="message-list">
+            <li class="message-step">
+              <span class="message-no">01</span>
+              <div class="message-main">
+                <strong>用户把机器人拉入需求群，并发送 PRD / Meego / 需求描述</strong>
+                <span>机器人只收集启动所需上下文，不直接进入实现。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">飞书群</span><span class="route-arrow">→</span><span class="route-chip">ByteClow Bot</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">02</span>
+              <div class="message-main">
+                <strong>Bot 解析意图为 init 请求，并携带用户、群、文档、仓库候选</strong>
+                <span>权限、任务唯一性和参数完整性在 WebServer 侧统一校验。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">ByteClow Bot</span><span class="route-arrow">→</span><span class="route-chip">WebServer</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">03</span>
+              <div class="message-main">
+                <strong>WebServer 加锁 workspace，调用 CoCo CLI 执行 `/delivery:init`</strong>
+                <span>CoCo CLI 按 `.trae` 规则创建 artifacts workspace，并写入 `00-inputs.md`、`01-intake.md` 和状态指针。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">.trae workspace</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">04</span>
+              <div class="message-main">
+                <strong>执行摘要回写飞书，提示下一阶段和阻塞问题</strong>
+                <span class="message-result">输出 workspace、当前阶段、已拉取资料、缺失输入和建议下一步。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">飞书群</span></div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="scenario-stage" role="tabpanel" data-scenario-panel="product">
+          <div class="stage-head">
+            <h3>产品走查修正：从 PPE 问题到自动修复部署</h3>
+            <p>目标是让产品在飞书里描述走查差异后，系统完成受限修复、验证和 PPE 回写。</p>
+          </div>
+          <ol class="message-list">
+            <li class="message-step">
+              <span class="message-no">01</span>
+              <div class="message-main">
+                <strong>产品在飞书发起走查问题</strong>
+                <span>输入可以是 PPE 链接、截图、文案差异、交互问题或期望行为。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">产品</span><span class="route-arrow">→</span><span class="route-chip">ByteClow Bot</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">02</span>
+              <div class="message-main">
+                <strong>WebServer 绑定 active workspace 和问题上下文</strong>
+                <span>问题被转成 design / verify / code fix 的受限请求，保留用户原话和证据链接。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">Bot</span><span class="route-arrow">→</span><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">CoCo CLI</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">03</span>
+              <div class="message-main">
+                <strong>CoCo CLI 执行受限修复和验证</strong>
+                <span>按当前阶段 Gate 选择 `/delivery:design` auto-fix、code handoff 或 verify 复验，不允许绕过 artifacts 与证据闭环。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">代码修改</span><span class="route-arrow">→</span><span class="route-chip">浏览器验证</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">04</span>
+              <div class="message-main">
+                <strong>验证通过后触发 PPE 部署并回写复查入口</strong>
+                <span class="message-result">飞书消息包含修复摘要、验证证据、PPE 地址和仍需产品确认的点。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">PPE</span><span class="route-arrow">→</span><span class="route-chip">飞书群</span></div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="scenario-stage" role="tabpanel" data-scenario-panel="cr">
+          <div class="stage-head">
+            <h3>CR 修复闭环：从评审评论到 MR 回写</h3>
+            <p>目标是研发把 CR 评论交给机器人后，系统判断范围、修复、验证，并可按权限回写评审状态。</p>
+          </div>
+          <ol class="message-list">
+            <li class="message-step">
+              <span class="message-no">01</span>
+              <div class="message-main">
+                <strong>研发发送 MR 链接、评论线程或 CodeGuard 报告</strong>
+                <span>机器人解析为 `/delivery:bits --cr` 或受限 code fix 请求。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">研发</span><span class="route-arrow">→</span><span class="route-chip">ByteClow Bot</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">02</span>
+              <div class="message-main">
+                <strong>WebServer 拉取评审来源并建立问题池</strong>
+                <span>合并 Codebase Assistant、Aime、CodeGuard 等来源，区分采纳、拒绝、待确认。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">Codebase / BITS</span><span class="route-arrow">→</span><span class="route-chip">CoCo CLI</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">03</span>
+              <div class="message-main">
+                <strong>CoCo CLI 修复当前需求范围内的问题</strong>
+                <span>每个 accepted issue 都要有需求映射、修改范围、验证命令和 closure 记录。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">代码 / 测试</span><span class="route-arrow">→</span><span class="route-chip">bits-flow</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">04</span>
+              <div class="message-main">
+                <strong>通过后提交、推送并逐条回写评论</strong>
+                <span class="message-result">未传 submit 时只生成本地修复和回写草稿；传 submit 后才执行远端回写。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">Git / MR</span><span class="route-arrow">→</span><span class="route-chip">飞书群</span></div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="scenario-stage" role="tabpanel" data-scenario-panel="test">
+          <div class="stage-head">
+            <h3>测试回归协作：从 case 复验到风险回写</h3>
+            <p>目标是测试通过机器人指定 case 或问题，系统复跑证据链并把结果沉淀回交付 workspace。</p>
+          </div>
+          <ol class="message-list">
+            <li class="message-step">
+              <span class="message-no">01</span>
+              <div class="message-main">
+                <strong>测试在飞书指定 case、页面状态或回归问题</strong>
+                <span>输入会映射到 `09-test-case-matrix.md` 的 case queue 或新增问题记录。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">测试</span><span class="route-arrow">→</span><span class="route-chip">ByteClow Bot</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">02</span>
+              <div class="message-main">
+                <strong>WebServer 恢复对应 workspace、PPE / vmok 入口和浏览器状态</strong>
+                <span>必要时要求用户补登录态或 P0 决策，不伪造验证通过。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">Execution State</span><span class="route-arrow">→</span><span class="route-chip">Browser Runtime</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">03</span>
+              <div class="message-main">
+                <strong>CoCo CLI 复跑 verify / design 或生成受限修复</strong>
+                <span>复验只关闭当前 case；代码问题必须走 handoff，设计问题走 design auto-fix。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">Verify / Design</span><span class="route-arrow">→</span><span class="route-chip">Artifacts</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">04</span>
+              <div class="message-main">
+                <strong>结果回写飞书并更新风险/执行记录</strong>
+                <span class="message-result">回写 PASS / BLOCKED / NEEDS_TARGETED_REVIEW、证据路径、截图摘要和下一步责任人。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">Artifacts</span><span class="route-arrow">→</span><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">飞书群</span></div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="scenario-stage" role="tabpanel" data-scenario-panel="debug">
+          <div class="stage-head">
+            <h3>流程问题调试：人工介入后修改流程完成修复</h3>
+            <p>目标是在工作流遇到无法自动判断的问题时，先暂停请求人工确认，再把确认结果沉淀成流程规则、回归用例和验证报告。</p>
+          </div>
+          <ol class="message-list">
+            <li class="message-step">
+              <span class="message-no">01</span>
+              <div class="message-main">
+                <strong>CoCo CLI 在阶段 Gate 中遇到 P0 / 低置信 / 规则冲突</strong>
+                <span>例如接口边界不清、设计证据缺失、自动修复越界、mock 策略不明确或子 Agent 输出自相矛盾。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">飞书群</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">02</span>
+              <div class="message-main">
+                <strong>机器人按 Pause and Ask 格式请求人工介入</strong>
+                <span>产研测在飞书里确认业务规则、授权边界、默认处理或是否修改流程；回答会写回 decision-log / uncertainty-register。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">飞书群</span><span class="route-arrow">→</span><span class="route-chip">ByteClow Bot</span><span class="route-arrow">→</span><span class="route-chip">WebServer</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">03</span>
+              <div class="message-main">
+                <strong>若确认是流程问题，进入流程维护路径</strong>
+                <span>主 Agent 使用 <code>trae-flow-maintainer</code> 判断应修改 command、skill、agent、Gate 还是 handoff 合同，并只改权威落点。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">WebServer</span><span class="route-arrow">→</span><span class="route-chip">CoCo CLI</span><span class="route-arrow">→</span><span class="route-chip">流程文件</span></div>
+            </li>
+            <li class="message-step">
+              <span class="message-no">04</span>
+              <div class="message-main">
+                <strong>捕获回归并用最新流程重跑目标阶段</strong>
+                <span class="message-result">执行 <code>/delivery:capture-regression</code> 记录问题，再按需执行 <code>/delivery:regress</code>；通过后从原 resume point 继续业务需求。</span>
+              </div>
+              <div class="message-route"><span class="route-chip">流程修复</span><span class="route-arrow">→</span><span class="route-chip">Regression</span><span class="route-arrow">→</span><span class="route-chip">飞书回写</span></div>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="mode-strip">
+        <div class="mode-item">
+          <strong>WebServer 职责</strong>
+          <span>统一处理飞书事件、用户权限、任务排队、workspace 锁、CoCo CLI 调用、PPE 部署触发和执行状态查询。</span>
+        </div>
+        <div class="mode-item">
+          <strong>机器人职责</strong>
+          <span>把自然语言对话转成明确动作，回写阶段摘要、阻塞问题、验证链接、PPE 地址和需要人工确认的 P0。</span>
+        </div>
+        <div class="mode-item">
+          <strong>安全边界</strong>
+          <span>飞书消息只承载指令与摘要；token、cookie、storage state、原始请求响应和敏感日志仍留在开发机或受控产物中。</span>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="sequence-panel" aria-label="执行流程顺序图">
+      <div class="sequence-head">
+        <h2>CoCo 工作流展开：一条需求如何被交付</h2>
+        <p>这里展开机器人触发之后，CoCo 内部如何从需求入口跑到交付验收：每一步都有产物、Gate 和可恢复的 detour；进入执行型阶段前，还要先通过 execution workspace bootstrap。</p>
+      </div>
+
+      <div class="lane">
+        <div class="lane-head">
+          <h3>只读 / 规划泳道</h3>
+          <p>需求导入、证据收集、接口准备、方案和任务物化</p>
+        </div>
+        <div class="sequence-row readonly">
+          <article class="step-card">
+            <div class="step-top"><span class="step-no">01</span><span class="step-type">Intake</span></div>
+            <h4><code>/delivery:init</code></h4>
+            <p>导入需求来源、Meego 上下文和任务空间，建立 artifacts workspace。</p>
+            <p class="artifact-line"><code>prd-source.md</code> · <code>00/01/02</code> · state workspace</p>
+          </article>
+          <article class="step-card prd">
+            <div class="step-top"><span class="step-no">02</span><span class="step-type">Analysis</span></div>
+            <h4><code>/delivery:prd</code></h4>
+            <p>拆解原子需求，补齐 Figma / 白板证据，登记不确定性。</p>
+            <p class="artifact-line"><code>03-prd-analysis.md</code> · <code>ui-source-map.md</code></p>
+          </article>
+          <article class="step-card plan">
+            <div class="step-top"><span class="step-no">03</span><span class="step-type">BAM</span></div>
+            <h4><code>/delivery:bam</code></h4>
+            <p>技术文档包含 BAM 链接时先执行；落盘接口证据，更新 BAM 配置并生成接口代码。</p>
+            <p class="artifact-line"><code>bam/*</code> · <code>bam-sync-report.md</code></p>
+          </article>
+          <article class="step-card plan">
+            <div class="step-top"><span class="step-no">04</span><span class="step-type">Plan</span></div>
+            <h4><code>/delivery:plan</code></h4>
+            <p>形成技术方案、页面区域合同、接口策略和实现模式。</p>
+            <p class="artifact-line"><code>04-tech-plan.md</code> · Readiness Gate</p>
+          </article>
+          <article class="step-card task">
+            <div class="step-top"><span class="step-no">05</span><span class="step-type">Task</span></div>
+            <h4><code>/delivery:task</code></h4>
+            <p>把方案物化为可执行任务、测试矩阵和 Mock / Real 边界。</p>
+            <p class="artifact-line"><code>delivery-task.md</code> · <code>09-test-case-matrix.md</code></p>
+          </article>
+        </div>
+      </div>
+
+      <div class="lane">
+        <div class="lane-head">
+          <h3>执行 / 验证泳道</h3>
+          <p>先创建或复用 execution workspace，再做代码实现、验证闭环、设计对齐和最终验收</p>
+        </div>
+        <div class="sequence-row execution">
+          <article class="step-card exec">
+            <div class="step-top"><span class="step-no">06</span><span class="step-type">Code</span></div>
+            <h4><code>/delivery:code</code></h4>
+            <p>按 Task 顺序串行实现，每个 Task 做主 Agent Gate Review 和 checkpoint。</p>
+            <p class="artifact-line"><code>05-implementation-log.md</code> · checkpoint commit</p>
+          </article>
+          <article class="step-card verify">
+            <div class="step-top"><span class="step-no">07</span><span class="step-type">Verify</span></div>
+            <h4><code>/delivery:verify</code></h4>
+            <p>按测试矩阵逐 case 验证 lint、typecheck、点击、DOM、Network、截图和负向断言。</p>
+            <p class="artifact-line"><code>06-debug-verification.md</code> · browser evidence</p>
+          </article>
+          <article class="step-card design">
+            <div class="step-top"><span class="step-no">08</span><span class="step-type">Design</span></div>
+            <h4><code>/delivery:design</code></h4>
+            <p>用浏览器截图、DOM、computed style 和 Figma 节点 / 截图做视觉与交互对齐。</p>
+            <p class="artifact-line"><code>07-design-alignment.md</code> · visual gate</p>
+          </article>
+          <article class="step-card accept">
+            <div class="step-top"><span class="step-no">09</span><span class="step-type">Accept</span></div>
+            <h4><code>/delivery:accept</code></h4>
+            <p>汇总 PRD 覆盖、代码改动、验证证据、设计结论、风险和 MR 描述。</p>
+            <p class="artifact-line"><code>08-acceptance-report.md</code> · MR draft</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="detour-grid">
+        <article class="detour-card">
+          <h4>Execution Bootstrap</h4>
+          <p><code>/delivery:bam</code>、code、verify、design、accept 进入前先复用执行工作区和项目命令协议，禁止在 main/master 写仓库。</p>
+        </article>
+        <article class="detour-card">
+          <h4>Pause and Ask</h4>
+          <p>任一阶段遇到 P0_BLOCKER 时暂停，更新 Pause State，用户确认后从 <code>resume_command</code> 恢复。</p>
+        </article>
+        <article class="detour-card">
+          <h4>Mock Detour</h4>
+          <p><code>MOCK_PREVIEW</code> 下 Code 只更新 BAM 矩阵的“补充说明”；<code>delivery-mock.md</code> 仅由 <code>/delivery:mock</code> 写入。</p>
+        </article>
+        <article class="detour-card">
+          <h4>Sample Coverage</h4>
+          <p>非 Mock Preview 仅在 verify / design 的 <code>SAMPLE_COVERAGE_GAP</code> 内允许临时补 mock；case 关闭后必须立即清理。</p>
+        </article>
+        <article class="detour-card">
+          <h4>Auto-fix / Rewind</h4>
+          <p>验证阶段定位为代码问题时生成 handoff 并回到受限 code；阶段产物需回退时使用 <code>/delivery:rewind</code> 保留快照。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="flowchart-panel" aria-label="关键流程图">
+      <div class="flowchart-head">
+        <h2>六条关键闭环</h2>
+        <p>主流程回答“从哪到哪”，这些闭环回答“如何保证不跑偏”：代码如何被互审、浏览器如何验证功能与视觉、执行环境如何隔离，流程自身如何持续进化。</p>
+      </div>
+
+      <div class="flowchart-grid">
+        <article class="flowchart-card">
+          <h3>端到端交付流</h3>
+          <div class="flow-line six">
+            <div class="flow-node">
+              <strong>需求入口</strong>
+              <span>用户 / Meego / PRD</span>
+            </div>
+            <div class="flow-node">
+              <strong>多源取证</strong>
+              <span>Figma / BAM / repo</span>
+            </div>
+            <div class="flow-node">
+              <strong>技术方案</strong>
+              <span>合同与边界</span>
+            </div>
+            <div class="flow-node">
+              <strong>任务用例</strong>
+              <span>Task + Matrix</span>
+            </div>
+            <div class="flow-node">
+              <strong>实现验证</strong>
+              <span>Code + Verify</span>
+            </div>
+            <div class="flow-node">
+              <strong>验收交付</strong>
+              <span>Design + Accept</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="flowchart-card">
+          <h3>Subagent 互审流</h3>
+          <div class="flow-line">
+            <div class="flow-node">
+              <strong>Main Agent</strong>
+              <span>整理 Task 包</span>
+            </div>
+            <div class="flow-node">
+              <strong>code-writer</strong>
+              <span>受限实现</span>
+            </div>
+            <div class="flow-node">
+              <strong>Review Packet</strong>
+              <span>证据压缩</span>
+            </div>
+            <div class="flow-node">
+              <strong>独立审查</strong>
+              <span>diff / contract</span>
+            </div>
+            <div class="flow-node">
+              <strong>Gate</strong>
+              <span>放行或返工</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="flowchart-card">
+          <h3>浏览器验证流</h3>
+          <div class="flow-line">
+            <div class="flow-node">
+              <strong>Dev Server</strong>
+              <span>HMR / health</span>
+            </div>
+            <div class="flow-node">
+              <strong>真实操作</strong>
+              <span>点击 / 输入</span>
+            </div>
+            <div class="flow-node">
+              <strong>运行证据</strong>
+              <span>DOM / Network</span>
+            </div>
+            <div class="flow-node">
+              <strong>视觉证据</strong>
+              <span>screenshot / style</span>
+            </div>
+            <div class="flow-node">
+              <strong>Figma 对齐</strong>
+              <span>差异闭合</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="flowchart-card">
+          <h3>执行工作区启动流</h3>
+          <div class="flow-line">
+            <div class="flow-node">
+              <strong>读项目协议</strong>
+              <span>PROJECT_CONTEXT</span>
+            </div>
+            <div class="flow-node">
+              <strong>工作区隔离</strong>
+              <span>branch / worktree</span>
+            </div>
+            <div class="flow-node">
+              <strong>安装恢复</strong>
+              <span>install_command</span>
+            </div>
+            <div class="flow-node">
+              <strong>执行阶段</strong>
+              <span>BAM / code / verify</span>
+            </div>
+            <div class="flow-node">
+              <strong>环境复用</strong>
+              <span>Execution State</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="flowchart-card">
+          <h3>BITS 辅助流</h3>
+          <div class="flow-line">
+            <div class="flow-node">
+              <strong>Init</strong>
+              <span>开发任务</span>
+            </div>
+            <div class="flow-node">
+              <strong>CR</strong>
+              <span>评审问题池</span>
+            </div>
+            <div class="flow-node">
+              <strong>Coverage</strong>
+              <span>覆盖率优化</span>
+            </div>
+            <div class="flow-node">
+              <strong>闭环记录</strong>
+              <span>bits-flow/*</span>
+            </div>
+            <div class="flow-node">
+              <strong>回到主线</strong>
+              <span>不替代 Gate</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="flowchart-card">
+          <h3>流程自迭代流</h3>
+          <div class="flow-line six">
+            <div class="flow-node">
+              <strong>Hook 日志</strong>
+              <span>阶段事件</span>
+            </div>
+            <div class="flow-node">
+              <strong>执行记录</strong>
+              <span>问题复盘</span>
+            </div>
+            <div class="flow-node">
+              <strong>定位规则</strong>
+              <span>maintainer</span>
+            </div>
+            <div class="flow-node">
+              <strong>修改流程</strong>
+              <span>skill / agent</span>
+            </div>
+            <div class="flow-node">
+              <strong>捕获用例</strong>
+              <span>regression case</span>
+            </div>
+            <div class="flow-node">
+              <strong>定期回归</strong>
+              <span>daily suite</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="auxiliary-panel" aria-label="辅助入口与治理流程">
+      <div class="auxiliary-head">
+        <h2>新增辅助入口：不替代主线 Gate</h2>
+        <p>
+          这些命令围绕主流程提供任务平台、执行履历、流程回归、阶段回退和日志分析能力。它们可以插入当前 workspace，但不会跳过 PRD、Plan、Task、Verify、Design、Accept 的门禁判断。
+        </p>
+      </div>
+
+      <div class="auxiliary-grid">
+        <article class="auxiliary-card">
+          <h3><code>/delivery:bits</code></h3>
+          <p>需求级 BITS 辅助入口，支持 <code>--init</code> 创建或复用开发任务、<code>--cr</code> 处理评审闭环、<code>--coverage</code> 做覆盖率优化；产物统一写入 <code>bits-flow/</code>。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3><code>/delivery:record</code></h3>
+          <p>只读汇总当前需求执行履历，生成 <code>delivery-execution-record.md</code>，串联阶段时间线、关键产物、问题、解决记录和遗留风险。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3><code>/delivery:analyze-flow</code></h3>
+          <p>读取 <code>flow-logs/*.ndjson</code> 做阶段、agent、Gate 和阻塞分布统计，只给出观察和下一步建议，不修改状态或阶段产物。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3><code>/delivery:rewind</code></h3>
+          <p>把当前 workspace 回退到指定阶段前，保留允许继续消费的上游产物，把旧阶段输出移入 <code>_rewind-snapshots</code>，再建议重跑目标阶段。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3><code>/delivery:capture-regression</code></h3>
+          <p>当流程规则被修复时，把原问题、预期行为、影响文件和 replay 成本写入 <code>flow-regression-cases/</code>，默认只捕获不立即重跑。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3><code>/delivery:regress</code></h3>
+          <p>在 shadow replay workspace 中重跑指定阶段或 daily suite，验证流程修复是否真正生效；禁止只检查旧产物后宣称通过。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3><code>/delivery:mock</code></h3>
+          <p>BAM runtime mock 唯一入口。Mock Preview 服务正式预览，Sample Coverage 只服务 verify / design 单 case 补样本，且必须 cleanup。</p>
+        </article>
+        <article class="auxiliary-card">
+          <h3>Flow Log Hook</h3>
+          <p><code>phase_start</code>、<code>gate_result</code>、<code>detour_start</code>、<code>runtime_event</code> 等事件只观察不决策，敏感信息必须脱敏。</p>
+        </article>
+      </div>
+
+      <div class="mode-strip">
+        <div class="mode-item">
+          <strong>Mock Preview Mode</strong>
+          <span>允许用 BAM runtime mock 推进前端效果预览，但不得写业务代码 mock，也不得标记为真实联调完成。</span>
+        </div>
+        <div class="mode-item">
+          <strong>Sample Coverage Gap</strong>
+          <span>真实 contract 已闭合但样本不足时，verify / design 可临时补充 mock 取证；case 关闭后立即清理。</span>
+        </div>
+        <div class="mode-item">
+          <strong>Browser Runtime Mode</strong>
+          <span>桌面优先 Trae 内置浏览器；CLI / 无桌面使用无头浏览器和 storage state，报告必须记录工具、登录态和 Network 能力。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-intro" aria-label="系统分层说明">
+      <h2>系统分层：谁负责什么</h2>
+      <p>先从架构层次看清职责边界：入口负责接入，控制层负责路由和 Gate，规则层定义阶段契约，执行层处理具体任务，产物层沉淀事实。</p>
+    </section>
+
+    <section class="legend" aria-label="图例">
+      <div class="legend-item"><span class="dot" style="background: var(--control)"></span>控制层</div>
+      <div class="legend-item"><span class="dot" style="background: var(--rules)"></span>规则层</div>
+      <div class="legend-item"><span class="dot" style="background: var(--exec)"></span>执行层</div>
+      <div class="legend-item"><span class="dot" style="background: var(--artifact)"></span>产物层</div>
+      <div class="legend-item"><span class="dot" style="background: var(--state)"></span>状态与门禁</div>
+      <div class="legend-item"><span class="dot" style="background: var(--external)"></span>外部依赖</div>
+    </section>
+
+    <section class="architecture-shell">
+      <div class="architecture-map">
+        <section class="band entry">
+          <div class="band-head">
+            <h2 class="band-title">入口层</h2>
+            <p class="band-caption">需求、文档、用户命令进入统一 Router</p>
+          </div>
+          <div class="entry-grid">
+            <article class="card compact">
+              <h3>用户命令</h3>
+              <p><code>/delivery:*</code> 是统一入口，主线阶段与 BITS、record、regress、rewind 等辅助入口共享状态约束。</p>
+            </article>
+            <article class="card compact">
+              <h3>PRD / Meego</h3>
+              <p>承载需求正文、任务空间、业务上下文和已有资料。</p>
+            </article>
+            <article class="card compact">
+              <h3>飞书 / 技术文档</h3>
+              <p>提供 PRD 正文、后端方案、接口变更和补充说明。</p>
+            </article>
+            <article class="card compact">
+              <h3>Figma / 白板</h3>
+              <p>提供视觉结构、交互状态、截图和设计对齐证据。</p>
+            </article>
+          </div>
+        </section>
+
+        <div class="flow-rail" aria-hidden="true">
+          <span></span>
+          <span class="arrow">↓</span>
+          <span class="flow-mid"></span>
+          <span class="arrow">↓</span>
+          <span></span>
+        </div>
+
+        <section class="core-grid" aria-label="核心架构层">
+          <div class="band control">
+            <div class="band-head">
+              <h2 class="band-title">控制层</h2>
+              <p class="band-caption">阶段入口、状态机、门禁与暂停恢复</p>
+            </div>
+            <div class="module-grid">
+              <article class="card">
+                <span class="tag" style="background: var(--control)">Commands</span>
+                <h3>阶段入口</h3>
+                <p>接收 <code>/delivery:*</code>，完成前置检查，并把请求路由到对应阶段规则。</p>
+              </article>
+              <article class="card">
+                <span class="tag" style="background: var(--state)">State</span>
+                <h3>状态指针</h3>
+                <p><code>DELIVERY_STATE.md</code> 记录 current phase、workspace、执行分支与恢复点。</p>
+              </article>
+              <article class="card wide">
+                <span class="tag" style="background: var(--state)">Gate</span>
+                <h3>阶段门禁</h3>
+                <p>每阶段收敛为 <code>PASS</code>、<code>AUTO_FIX_REQUIRED</code>、<code>BLOCKED</code> 或 <code>NEEDS_TARGETED_REVIEW</code>；P0 必须暂停提问。</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="band rules">
+            <div class="band-head">
+              <h2 class="band-title">规则层</h2>
+              <p class="band-caption">每个阶段的唯一规则权威</p>
+            </div>
+            <div class="module-grid">
+              <article class="card">
+                <span class="tag" style="background: var(--rules)">Skills</span>
+                <h3>阶段规则</h3>
+                <p>定义输入、步骤、产物模板、Gate、阻塞策略和回退协议。</p>
+              </article>
+              <article class="card">
+                <span class="tag" style="background: var(--rules)">Contracts</span>
+                <h3>业务合同</h3>
+                <p>沉淀 PRD 原子需求、Figma 合同、接口字段和 Mock / Real 边界。</p>
+              </article>
+              <article class="card wide">
+                <h3>阶段规则集合</h3>
+                <p>Init · PRD · BAM · Plan · Task/Test Case · Mock · Code · Verify · Design · Accept · Rewind · Regression · BITS</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="band exec">
+            <div class="band-head">
+              <h2 class="band-title">执行层</h2>
+              <p class="band-caption">专业 Agent 与确定性脚本协作</p>
+            </div>
+            <div class="module-grid">
+              <article class="card">
+                <span class="tag" style="background: var(--exec)">Agents</span>
+                <h3>专业执行者</h3>
+                <p>处理长上下文，输出 <code>Agent Gate Summary</code>，但不擅自推进阶段。</p>
+              </article>
+              <article class="card">
+                <span class="tag" style="background: var(--exec)">Scripts</span>
+                <h3>确定性工具</h3>
+                <p>执行导入、检查、BAM 同步、回退、变更扫描和工作区准备。</p>
+              </article>
+              <article class="card wide">
+                <h3>Main Agent 编排</h3>
+                <p>主 Agent 审摘要、固定 Browser Runtime Mode、收敛风险、更新状态，并做最终放行判断。</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="band artifact">
+          <div class="band-head">
+            <h2 class="band-title">产物层</h2>
+            <p class="band-caption">跨阶段事实来源，所有结论必须落盘</p>
+          </div>
+          <div class="artifact-grid">
+            <article class="card compact">
+              <h3>输入产物</h3>
+              <p><code>00-inputs.md</code><br><code>01-intake.md</code><br><code>02-task-space.md</code></p>
+            </article>
+            <article class="card compact">
+              <h3>需求证据</h3>
+              <p><code>03-prd-analysis.md</code><br><code>ui-source-map.md</code><br><code>figma-evidence-pack.md</code></p>
+            </article>
+            <article class="card compact">
+              <h3>技术方案</h3>
+              <p><code>bam/*</code><br><code>04-tech-plan.md</code><br>接口与字段策略</p>
+            </article>
+            <article class="card compact">
+              <h3>Mock 产物</h3>
+              <p><code>delivery-mock.md</code><br><code>mock/rule-map.json</code><br><code>manifest.json</code></p>
+            </article>
+            <article class="card compact">
+              <h3>任务与用例</h3>
+              <p><code>delivery-task.md</code><br><code>09-test-case-matrix.md</code><br>Mock / Real Boundary</p>
+            </article>
+            <article class="card compact">
+              <h3>实现记录</h3>
+              <p><code>05-implementation-log.md</code><br><code>changed-files.md</code><br>checkpoint commit</p>
+            </article>
+            <article class="card compact">
+              <h3>验证证据</h3>
+              <p><code>06-debug-verification.md</code><br><code>screenshots/*</code><br>Browser evidence</p>
+            </article>
+            <article class="card compact">
+              <h3>交付结论</h3>
+              <p><code>07-design-alignment.md</code><br><code>08-acceptance-report.md</code><br>MR 描述草稿</p>
+            </article>
+            <article class="card compact">
+              <h3>流程治理</h3>
+              <p><code>flow-logs/*</code><br><code>flow-regression-cases/*</code><br><code>delivery-execution-record.md</code></p>
+            </article>
+            <article class="card compact">
+              <h3>BITS 辅助</h3>
+              <p><code>bits-flow/*</code><br>CR 闭环<br>Coverage 轮次</p>
+            </article>
+          </div>
+
+          <div class="callout-row">
+            <div class="callout">
+              <strong>决策与风险</strong>
+              <code>decision-log.md</code>、<code>uncertainty-register.md</code> 和 <code>omission-risk-scan.md</code> 贯穿全流程。
+            </div>
+            <div class="callout">
+              <strong>暂停恢复</strong>
+              P0 阻塞写入 Pause State，用户回答后从 <code>resume_command</code> 恢复。
+            </div>
+            <div class="callout">
+              <strong>Mock Preview</strong>
+              运行时 mock 只允许通过 <code>/delivery:mock</code> 与 BAM runtime 闭合。
+            </div>
+          </div>
+        </section>
+
+        <section class="band external">
+          <div class="band-head">
+            <h2 class="band-title">外部依赖层</h2>
+            <p class="band-caption">业务仓库、设计源、接口平台、浏览器、机器人和部署环境</p>
+          </div>
+          <div class="external-grid">
+            <article class="card compact"><h3>业务仓库</h3><p><code>alliance-operation-mono</code>，承载真实业务代码。</p></article>
+            <article class="card compact"><h3>BAM / Mock Runtime</h3><p>接口生成、字段透传、mock rule 和 runtime patch。</p></article>
+            <article class="card compact"><h3>Figma / 白板</h3><p>视觉合同、截图、节点结构和设计比对来源。</p></article>
+            <article class="card compact"><h3>vmok / Browser</h3><p>功能点击、截图、DOM、computed style、Network 和视觉对齐证据。</p></article>
+            <article class="card compact"><h3>Git / Branch</h3><p>执行分支、checkpoint commit 和最终 MR 材料。</p></article>
+            <article class="card compact"><h3>BITS / Codebase</h3><p>开发任务、评审评论、覆盖率报告和远端回写状态。</p></article>
+            <article class="card compact"><h3>WebServer / CoCo CLI</h3><p>开发机常驻服务负责排队、锁定 workspace，并调用 CoCo CLI 执行流程。</p></article>
+            <article class="card compact"><h3>飞书机器人 / PPE</h3><p>机器人承接产研测对话入口，PPE 承接自动部署和走查复验。</p></article>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="principle-panel" aria-label="AI 工作流核心机制">
+      <div class="principle-head">
+        <h2>AI 工作流核心机制</h2>
+        <p>
+          读完主流程、关键闭环和系统分层后，可以把整套系统收敛成下面五个机制：状态恢复、证据落盘、角色边界、互相审核，以及流程自身迭代。
+        </p>
+      </div>
+
+      <div class="principle-grid">
+        <article class="principle-card">
+          <h3>状态机驱动</h3>
+          <p>每个阶段从 <code>DELIVERY_STATE.md</code> 和 workspace 产物恢复上下文，阶段推进由 command / Gate 控制，不依赖聊天上下文里的临时记忆。</p>
+        </article>
+        <article class="principle-card">
+          <h3>证据落盘</h3>
+          <p>PRD、Plan、Task、Code、Verify、Design 和 Accept 的结论都写入 artifacts。后续阶段消费上游产物，而不是重新猜测需求事实。</p>
+        </article>
+        <article class="principle-card">
+          <h3>角色分层</h3>
+          <p>Command 管入口，Skill 管阶段规则，Agent 做受限执行，Script 做确定性检查，主 Agent 做编排和最终 Gate 判断。</p>
+        </article>
+      </div>
+
+      <div class="review-chain" aria-label="Subagent 分工与审核链">
+        <article class="review-step">
+          <strong>Plan / Task 物化</strong>
+          <span><code>tech-planner</code> 和 <code>task-planner</code> 把需求转成技术合同、Task 和测试矩阵；发现事实漂移时回到上游，不自行改写真相。</span>
+        </article>
+        <article class="review-step">
+          <strong>Code 受限实现</strong>
+          <span><code>code-writer</code> 只写当前 Task 或 hotfix 切片，不接管阶段，不处理后续 Task，不自己宣布通过。</span>
+        </article>
+        <article class="review-step">
+          <strong>运行时辅助</strong>
+          <span><code>runtime-runner</code> 只做 dev server、health check、HMR、命令和日志摘要；视觉、DOM、截图和 case 判断由主 Agent / design-checker 闭合。</span>
+        </article>
+        <article class="review-step">
+          <strong>独立审查</strong>
+          <span>普通 code Task 完成后必须只读审查 diff、scope、contract、UI evidence、mock boundary 和 verification freshness。</span>
+        </article>
+        <article class="review-step">
+          <strong>Main Agent Gate</strong>
+          <span>主 Agent 汇总子 Agent 证据、独立审查、浏览器复核和风险，收敛为 PASS / BLOCKED / NEEDS_TARGETED_REVIEW。</span>
+        </article>
+      </div>
+
+      <div class="callout-row">
+        <div class="callout">
+          <strong>防需求偏移</strong>
+          Task / test 发现 plan 偏移时返回 <code>/delivery:plan</code>，不得把未确认事实直接写成执行任务。
+        </div>
+        <div class="callout">
+          <strong>防执行偏移</strong>
+          写代码的人不最终验收；跑命令的人不判业务通过；看设计的人不随手扩大实现范围。
+        </div>
+        <div class="callout">
+          <strong>效率来源</strong>
+          通过 <code>Agent Gate Summary</code>、<code>Task Review Packet</code> 和 targeted diff 压缩证据，标准不降级。
+        </div>
+      </div>
+
+      <div class="callout-row">
+        <div class="callout">
+          <strong>浏览器功能验证</strong>
+          通过真实页面点击、输入、Network、DOM 和错误日志确认功能路径闭合。
+        </div>
+        <div class="callout">
+          <strong>浏览器视觉验证</strong>
+          通过截图、computed style、区域顺序、直接子元素和关键控件状态验证运行态视觉。
+        </div>
+        <div class="callout">
+          <strong>Figma 对齐</strong>
+          Design 阶段用 Figma screenshot / node data 对比浏览器运行态，视觉差异不能只靠 build 或 typecheck 放行。
+        </div>
+      </div>
+
+      <div class="callout-row">
+        <div class="callout">
+          <strong>Execution Bootstrap</strong>
+          执行型阶段统一读取 <code>PROJECT_CONTEXT.md</code>，创建或复用 execution workspace 后再安装、启动、BAM 或写代码。
+        </div>
+        <div class="callout">
+          <strong>Browser Runtime Mode</strong>
+          <code>TRAE_DESKTOP</code> 和 <code>COCO_CLI_HEADLESS</code> 都必须记录浏览器工具、登录态边界、Network 能力和 vmok URL。
+        </div>
+        <div class="callout">
+          <strong>BITS 不抢 Gate</strong>
+          <code>/delivery:bits</code> 只维护 <code>bits-flow/</code> 和评审/覆盖率闭环，不能替代 code、verify、design 或 accept 的放行。
+        </div>
+      </div>
+
+      <div class="iteration-block">
+        <h3>流程自身迭代机制</h3>
+        <p>
+          这套工作流本身也按“观察问题 → 定位规则 → 修改流程 → 捕获回归 → 定期复盘”的方式持续演进。业务需求执行过程中暴露出的偏移、慢点、误判或过严规则，会被沉淀为可追踪的流程改进，而不是只靠一次性的人工记忆修补。
+        </p>
+        <div class="iteration-grid">
+          <article class="iteration-item">
+            <strong>Hook 日志观察</strong>
+            <span><code>flow-logs/*.ndjson</code> 记录 phase、agent、gate、detour、runtime_event 和 workflow_version，用低成本日志发现耗时、阻塞和反复返工点。</span>
+          </article>
+          <article class="iteration-item">
+            <strong>执行记录复盘</strong>
+            <span><code>/delivery:record</code> 汇总阶段产物、截图、发现的问题、解决动作和遗留风险，形成单个需求的执行档案。</span>
+          </article>
+          <article class="iteration-item">
+            <strong>日志分析入口</strong>
+            <span><code>/delivery:analyze-flow</code> 统计 flow logs 的阶段、agent、Gate 和阻塞分布，只观察流程瓶颈，不改变阶段结论。</span>
+          </article>
+          <article class="iteration-item">
+            <strong>规则维护入口</strong>
+            <span>发现流程错误时，用 <code>trae-flow-maintainer</code> 判断应改 command、skill、agent 还是全局 contract，并记录影响范围。</span>
+          </article>
+          <article class="iteration-item">
+            <strong>回归用例沉淀</strong>
+            <span><code>/delivery:capture-regression</code> 把已修流程问题写入 <code>flow-regression-cases/</code>，daily 或 targeted suite 再集中验证。</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="matrices">
+      <div class="matrix">
+        <h2>附录：组件职责</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>组件</th>
+              <th>职责</th>
+              <th>核心输入 / 输出</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>commands/</code></td>
+              <td>作为用户命令入口，执行前置检查并路由到对应阶段规则。</td>
+              <td>读取 <code>DELIVERY_STATE.md</code>，输出阶段执行请求。</td>
+            </tr>
+            <tr>
+              <td><code>skills/</code></td>
+              <td>定义每个阶段的输入、步骤、产物、Gate 和回退策略。</td>
+              <td>消费上游产物，约束 agents / scripts 的执行边界。</td>
+            </tr>
+            <tr>
+              <td><code>agents/</code></td>
+              <td>承担高上下文专业任务，但最终阶段放行由主 Agent 决定。</td>
+              <td>输出 <code>Agent Gate Summary</code> 与阶段报告。</td>
+            </tr>
+            <tr>
+              <td><code>scripts/</code></td>
+              <td>承接确定性操作：导入、检查、BAM 同步、回退、变更扫描。</td>
+              <td>输出校验报告、同步结果、workspace 状态。</td>
+            </tr>
+            <tr>
+              <td><code>artifacts/&lt;task&gt;/</code></td>
+              <td>作为跨会话事实中心，所有阶段结论必须落盘。</td>
+              <td>沉淀 PRD、Plan、Task、Verify、Design、Accept 全链路证据。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="matrix">
+        <h2>附录：架构要点</h2>
+        <table>
+          <tbody>
+            <tr>
+              <th>状态机</th>
+              <td><code>DELIVERY_STATE.md</code> 记录当前阶段、workspace、执行分支和暂停恢复点。</td>
+            </tr>
+            <tr>
+              <th>门禁</th>
+              <td>每阶段必须收敛为 <code>PASS</code>、<code>AUTO_FIX_REQUIRED</code>、<code>BLOCKED</code> 或 <code>NEEDS_TARGETED_REVIEW</code>。</td>
+            </tr>
+            <tr>
+              <th>浏览器验证</th>
+              <td>既验证功能路径，也验证运行态视觉；截图、DOM、computed style、Network 和 Figma 对齐证据都属于 Gate 输入。</td>
+            </tr>
+            <tr>
+              <th>Mock Preview</th>
+              <td>运行时 mock 只能由 <code>/delivery:mock</code> 与 BAM runtime 管理，禁止业务代码造数。</td>
+            </tr>
+            <tr>
+              <th>执行隔离</th>
+              <td>写代码、BAM 生成、自动修复等执行型阶段必须复用 Execution State 指定仓库和分支。</td>
+            </tr>
+            <tr>
+              <th>辅助流程</th>
+              <td><code>/delivery:bits</code>、<code>/delivery:record</code>、<code>/delivery:analyze-flow</code>、<code>/delivery:rewind</code>、<code>/delivery:capture-regression</code> 和 <code>/delivery:regress</code> 只补充治理能力，不替代主线阶段。</td>
+            </tr>
+            <tr>
+              <th>可追溯</th>
+              <td>需求、方案、任务、用例、验证、设计、验收全部通过 artifacts 串联。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Source: <code>/Users/bytedance/alliance-operation-agent</code>. This HTML is self-contained and can be opened directly in a browser.
+    </p>
+  </main>
+  <script>
+    const scenarioTabs = document.querySelectorAll(".scenario-tab");
+    const scenarioPanels = document.querySelectorAll("[data-scenario-panel]");
+
+    scenarioTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.scenario;
+
+        scenarioTabs.forEach((item) => {
+          const isActive = item === tab;
+          item.classList.toggle("is-active", isActive);
+          item.setAttribute("aria-selected", String(isActive));
+        });
+
+        scenarioPanels.forEach((panel) => {
+          panel.classList.toggle("is-active", panel.dataset.scenarioPanel === target);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

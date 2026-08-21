@@ -1,0 +1,41 @@
+TC-INT-AWARD-EXCEPTION final write network safety summary
+captured_at=2026-07-09T17:20:20+08:00
+runtime_mode=MOCK_PREVIEW
+browser_url=https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=award_exception_final_202607091710
+
+Target final API:
+- apiName=apiDeliveryDouPlusCoupon
+- method=POST
+- path=/api/buyin/admin/content_activity/delivery_dou_plus_coupon
+- ruleId=R-BAM-AWARD-COUPON-EXCEPTION
+- synthetic_marker=[BAM_MOCK_SYNTHETIC_CONTRACT]
+- hit_marker=[BAM_MOCK_HIT]
+- sendRealBackendRequest=false
+
+Final request body summary from BAM marker:
+- activity_id=7655304206886322458
+- config_id=7655304206886355226
+- fail_delivery_task_id=fail_coupon_exception_800003
+- charge_code=LST12607070007003
+- delivery_from=2
+- delivery_list[0].item_id=800003
+- delivery_list[0].delivery_config.coupon_type=1
+- delivery_list[0].delivery_config.coupon_config.threshold=100
+- delivery_list[0].delivery_config.coupon_config.freeAmount=5000
+- delivery_list[0].delivery_config.num=1
+
+Final mocked response:
+- st=1
+- code=500
+- msg=exception
+
+Page-level XHR/fetch target capture:
+- final delivery_dou_plus_coupon XHR/fetch records captured: []
+- interpretation: final write was intercepted by patched BAM synthetic contract before a real backend award write request was sent.
+
+Message branch:
+- MutationObserver captured: 治理校验异常，请联系管理员
+- forbidden success text captured: none for 提交成功 / 发奖成功
+
+Sensitive data handling:
+- No cookie, localStorage, sessionStorage, or auth token values were read or persisted.

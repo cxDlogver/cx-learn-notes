@@ -1,0 +1,476 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_RULE_MAP",
+  "interfaces": [
+    {
+      "apiName": "apiGetDouPlusCoinRemoveRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+      "manifest": "apis/apiGetDouPlusCoinRemoveRecord/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+          "caseIds": [
+            "TC-UI-COIN-REMOVE-PAGE",
+            "TC-DATA-COIN-COLUMNS",
+            "TC-CELL-COIN-FIRST-ROW",
+            "TC-INT-REMOVE-TAB-SWITCH-COIN",
+            "TC-TRACK-REMOVE-DETAIL-TAB-COIN"
+          ],
+          "changeType": "修改",
+          "requestFields": {
+            "page": 1,
+            "page_num": 20,
+            "candidate_ids": "__BAM_MOCK_ABSENT__",
+            "operator_id": "__BAM_MOCK_ABSENT__"
+          }
+        },
+        {
+          "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+          "caseIds": [
+            "TC-DATA-COIN-FILTER-SCHEMA"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "candidate_ids": "100001,100002",
+            "operator_id": "6068830",
+            "page": 1,
+            "page_num": 20
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiGetDouPlusCouponRemoveRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+      "manifest": "apis/apiGetDouPlusCouponRemoveRecord/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+          "caseIds": [
+            "TC-UI-COUPON-REMOVE-PAGE",
+            "TC-DATA-COUPON-COLUMNS",
+            "TC-CELL-COUPON-FIRST-ROW",
+            "TC-INT-REMOVE-TAB-SWITCH-COUPON",
+            "TC-TRACK-REMOVE-DETAIL-TAB-COUPON"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "page": 1,
+            "page_num": 20,
+            "candidate_ids": "__BAM_MOCK_ABSENT__",
+            "operator_id": "__BAM_MOCK_ABSENT__"
+          }
+        },
+        {
+          "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+          "caseIds": [
+            "TC-DATA-COUPON-FILTER-SCHEMA"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "candidate_ids": "900001,900002",
+            "operator_id": "6068830",
+            "page": 1,
+            "page_num": 20
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiSearchDeliveryItems",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/search_delivery_items",
+      "manifest": "apis/apiSearchDeliveryItems/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+          "caseIds": [
+            "TC-UI-MANUAL-HIT-PAGE",
+            "TC-CELL-MANUAL-HIT-STATUS",
+            "TC-INT-MANUAL-SUBMIT-GUARD",
+            "TC-TRACK-MANUAL-HIT-EXPOSE"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "item_ids": "100001,100002,100003",
+            "candidate_pool_type": 2,
+            "page_no": 1,
+            "page_size": 50
+          }
+        },
+        {
+          "ruleId": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+          "caseIds": [
+            "TC-INT-AWARD-COIN-PENALTY__search_candidate_restore",
+            "TC-INT-AWARD-COIN-RELIEVED__search_candidate_restore"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886338842",
+            "candidate_pool_type": 1,
+            "page_no": 1,
+            "page_size": 50
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiGetDeliveryItemsFromSheet",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+      "manifest": "apis/apiGetDeliveryItemsFromSheet/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-BATCH-SHEET-HIT",
+          "caseIds": [
+            "TC-UI-BATCH-HIT-REUSE"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+          }
+        },
+        {
+          "ruleId": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+          "caseIds": [
+            "TC-INT-AWARD-TIMEOUT__batch_sheet_setup"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080"
+          }
+        },
+        {
+          "ruleId": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+          "caseIds": [
+            "TC-INT-AWARD-EMPTY-LIST__batch_sheet_setup"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080"
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiCandidateRemove",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/candidate_remove",
+      "manifest": "apis/apiCandidateRemove/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-CANDIDATE-REMOVE-SUCCESS",
+          "caseIds": [
+            "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+            "TC-INT-BATCH-ONE-CLICK-REMOVE"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "remove_candidates.0.remove_reason": "手动移除",
+            "remove_candidates.1.remove_reason": "命中【不激励】规则"
+          }
+        },
+        {
+          "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+          "caseIds": [
+            "TC-INT-MANUAL-ONE-CLICK-REMOVE__negative_assertion"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "remove_candidates.0.remove_reason": "手动移除",
+            "remove_candidates.1.remove_reason": "__BAM_MOCK_ABSENT__"
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiDownloadContentRemoveRecord",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+      "manifest": "apis/apiDownloadContentRemoveRecord/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+          "caseIds": [
+            "TC-INT-MANUAL-EXPORT",
+            "TC-INT-BATCH-EXPORT"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "records.0.remove_reason": "手动移除",
+            "records.1.remove_reason": "命中【不激励】规则"
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiDeliveryModifySave",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+      "manifest": "apis/apiDeliveryModifySave/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+          "caseIds": [
+            "TC-INT-AWARD-COIN-PENALTY__setup_effective_time"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "candidate_ids.0": "7655364163166869874",
+            "if_delivery": true
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiDeliveryDouPlusCoin",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "manifest": "apis/apiDeliveryDouPlusCoin/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-AWARD-COIN-PENALTY",
+          "caseIds": [
+            "TC-INT-AWARD-COIN-PENALTY"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "delivery_from": 1,
+            "delivery_items.0.candidate_id": "7655364163166869874"
+          }
+        },
+        {
+          "ruleId": "R-BAM-AWARD-COIN-RELIEVED",
+          "caseIds": [
+            "TC-INT-AWARD-COIN-RELIEVED"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "delivery_from": 1,
+            "delivery_items.0.candidate_id": "700002"
+          }
+        },
+        {
+          "ruleId": "R-BAM-AWARD-COIN-TIMEOUT",
+          "caseIds": [
+            "TC-INT-AWARD-TIMEOUT"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "delivery_from": 2,
+            "delivery_list.0.item_id": "700003"
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiChargeAmountCheck",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/charge_amount_check",
+      "manifest": "apis/apiChargeAmountCheck/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+          "caseIds": [
+            "TC-INT-AWARD-TIMEOUT__charge_amount_check"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662",
+            "delivery_from": 2,
+            "resource_type": 5,
+            "delivery_list.0.amount": 30000
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiGetDouPlusCouponMakeFailRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+      "manifest": "apis/apiGetDouPlusCouponMakeFailRecord/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+          "caseIds": [
+            "TC-INT-AWARD-EXCEPTION__make_fail_setup"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226"
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiGetDouPlusCouponDeliveryRecord",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+      "manifest": "apis/apiGetDouPlusCouponDeliveryRecord/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+          "caseIds": [
+            "TC-INT-AWARD-EXCEPTION__delivery_record_setup"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "delivery_task_id": "fail_coupon_exception_800003",
+            "page": 1,
+            "page_num": 20
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiDeliveryDouPlusCoupon",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "manifest": "apis/apiDeliveryDouPlusCoupon/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-AWARD-COUPON-PENALTY",
+          "caseIds": [
+            "TC-INT-AWARD-COUPON-PENALTY"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "delivery_from": 1,
+            "delivery_authors.0.candidate_id": "800001"
+          }
+        },
+        {
+          "ruleId": "R-BAM-AWARD-COUPON-RELIEVED",
+          "caseIds": [
+            "TC-INT-AWARD-COUPON-RELIEVED"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "delivery_from": 1,
+            "delivery_authors.0.candidate_id": "800002"
+          }
+        },
+        {
+          "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+          "caseIds": [
+            "TC-INT-AWARD-EXCEPTION"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "delivery_from": 2,
+            "delivery_list.0.item_id": "800003"
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    },
+    {
+      "apiName": "apiSearchDeliveryAuthor",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/search_delivery_author",
+      "manifest": "apis/apiSearchDeliveryAuthor/manifest.json",
+      "rules": [
+        {
+          "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+          "caseIds": [
+            "TC-INT-AWARD-COUPON-PENALTY__search_candidate_restore",
+            "TC-INT-AWARD-COUPON-RELIEVED__search_candidate_restore"
+          ],
+          "changeType": "新增",
+          "requestFields": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "candidate_pool_type": 1,
+            "award_period": 1,
+            "page_no": 1,
+            "page_size": 50
+          }
+        },
+        {
+          "ruleId": "DEFAULT_NOOP",
+          "changeType": "新增",
+          "isDefault": true,
+          "requestFields": {}
+        }
+      ]
+    }
+  ]
+}

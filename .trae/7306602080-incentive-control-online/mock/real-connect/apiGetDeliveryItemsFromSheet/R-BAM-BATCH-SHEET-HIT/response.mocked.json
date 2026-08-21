@@ -1,0 +1,189 @@
+{
+  "st": 0,
+  "code": 0,
+  "msg": "",
+  "extra": {
+    "now": 1783532786000,
+    "log_id": "2026070901462600A9AB5EAA169E428912"
+  },
+  "data": {
+    "total_num": 3,
+    "candidate_num": 1,
+    "item_info": [
+      {
+        "item_card": {
+          "item_model": {
+            "item_id": "200001",
+            "base_model": {
+              "item_info": {
+                "counter_info": {
+                  "repin_count": 0,
+                  "play_count": 0,
+                  "share_count": 0
+                },
+                "comment_count_info": {
+                  "comment_count": 0
+                },
+                "base_info": {
+                  "title": "批量上传准入失败作品",
+                  "cover": {
+                    "uri": "batch_hit_cover_200001",
+                    "url_list": [
+                      "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20review%20desk%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                    ],
+                    "width": 750,
+                    "height": 1000
+                  }
+                }
+              },
+              "ecom_statistics_info": {},
+              "tag_info": {
+                "tags": [],
+                "top_tags_first_line": [],
+                "top_tags_second_line": []
+              }
+            },
+            "custom_model": {
+              "AuthorPlatformModel": {
+                "statistics_item": []
+              }
+            }
+          },
+          "item_author_info": {
+            "author_id": "920001"
+          }
+        },
+        "if_delivery": false,
+        "delivery_config": {
+          "delivery_amount": 30000,
+          "delivery_duration": 7200,
+          "target_likes": 1,
+          "target_audience": 1,
+          "effective_time": 1783612800
+        },
+        "delivery_reason": "批量上传准入失败样本",
+        "if_satisfy_delivery_rules": false,
+        "rank": 1,
+        "if_not_incentive": false,
+        "not_incentive_reason": []
+      },
+      {
+        "item_card": {
+          "item_model": {
+            "item_id": "200002",
+            "base_model": {
+              "item_info": {
+                "counter_info": {
+                  "repin_count": 0,
+                  "play_count": 0,
+                  "share_count": 0
+                },
+                "comment_count_info": {
+                  "comment_count": 0
+                },
+                "base_info": {
+                  "title": "批量上传不激励命中作品",
+                  "cover": {
+                    "uri": "batch_hit_cover_200002",
+                    "url_list": [
+                      "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20display%20on%20neutral%20background%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                    ],
+                    "width": 750,
+                    "height": 1000
+                  }
+                }
+              },
+              "ecom_statistics_info": {},
+              "tag_info": {
+                "tags": [],
+                "top_tags_first_line": [],
+                "top_tags_second_line": []
+              }
+            },
+            "custom_model": {
+              "AuthorPlatformModel": {
+                "statistics_item": []
+              }
+            }
+          },
+          "item_author_info": {
+            "author_id": "920002"
+          }
+        },
+        "if_delivery": false,
+        "delivery_config": {
+          "delivery_amount": 30000,
+          "delivery_duration": 7200,
+          "target_likes": 1,
+          "target_audience": 1,
+          "effective_time": 1783612800
+        },
+        "delivery_reason": "批量上传不激励命中样本",
+        "if_satisfy_delivery_rules": true,
+        "rank": 2,
+        "if_not_incentive": true,
+        "not_incentive_reason": [
+          "历史违规命中不激励规则"
+        ]
+      },
+      {
+        "item_card": {
+          "item_model": {
+            "item_id": "200003",
+            "base_model": {
+              "item_info": {
+                "counter_info": {
+                  "repin_count": 0,
+                  "play_count": 0,
+                  "share_count": 0
+                },
+                "comment_count_info": {
+                  "comment_count": 0
+                },
+                "base_info": {
+                  "title": "批量上传可投放作品",
+                  "cover": {
+                    "uri": "batch_hit_cover_200003",
+                    "url_list": [
+                      "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20lifestyle%20product%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                    ],
+                    "width": 750,
+                    "height": 1000
+                  }
+                }
+              },
+              "ecom_statistics_info": {},
+              "tag_info": {
+                "tags": [],
+                "top_tags_first_line": [],
+                "top_tags_second_line": []
+              }
+            },
+            "custom_model": {
+              "AuthorPlatformModel": {
+                "statistics_item": []
+              }
+            }
+          },
+          "item_author_info": {
+            "author_id": "920003"
+          }
+        },
+        "if_delivery": true,
+        "delivery_config": {
+          "delivery_amount": 30000,
+          "delivery_duration": 7200,
+          "target_likes": 1,
+          "target_audience": 1,
+          "effective_time": 1783612800
+        },
+        "delivery_reason": "批量上传可投放样本",
+        "if_satisfy_delivery_rules": true,
+        "rank": 3,
+        "if_not_incentive": false,
+        "not_incentive_reason": []
+      }
+    ],
+    "has_more": false
+  }
+}

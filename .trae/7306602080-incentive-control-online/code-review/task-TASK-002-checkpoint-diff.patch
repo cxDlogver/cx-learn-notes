@@ -1,0 +1,31 @@
+commit 8e2143f500e50550088d4e98f01d84272a63997a
+Author:     cx <chenxiang.2003@bytedance.com>
+AuthorDate: Wed Jul 8 13:07:17 2026 +0800
+Commit:     cx <chenxiang.2003@bytedance.com>
+CommitDate: Wed Jul 8 13:07:17 2026 +0800
+
+    feat(content-activity): add prefilled incentive rule prompt
+---
+ .../edit/components/step-reward-config/index.tsx                 | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx b/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx
+index 8aa9fbc89..66d225c2c 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx
++++ b/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx
+@@ -675,6 +675,15 @@ const StepRewardConfig: React.FC = () => {
+                   required: false,
+                   rules: [{ required: true, message: '请选择预埋用户名单' }],
+                 },
++                dynamicItemProps: ({ rootValue, index }) => {
++                  const rewardConfig = rootValue.reward_configs?.[index];
++
++                  return rewardConfig?.has_select_crowd
++                    ? {
++                        extra: <NoIncentiveRulePrompt />,
++                      }
++                    : {};
++                },
+                 children: <ParticipantSelector />,
+                 props: {
+                   disabled: isFormFullyDisabled,

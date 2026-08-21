@@ -1,0 +1,80 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+  "body": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "session_unix_time": 1783490000,
+    "candidate_ids": [
+      "7655364163166869874"
+    ],
+    "item_modify_config": {
+      "delivery_amount": 5000,
+      "delivery_duration": 7200,
+      "target_likes": 44,
+      "target_audience": 1,
+      "effective_time": 1783648800
+    },
+    "if_delivery": true
+  },
+  "requestFieldsForMatching": {
+    "candidate_ids.0": "7655364163166869874",
+    "if_delivery": true
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7655304206886322458",
+      "source": "route_context",
+      "reason": "当前 DOU+币 SearchCandidate 奖励投放页 route 上下文；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7655304206886338842",
+      "source": "route_context",
+      "reason": "当前 DOU+币 SearchCandidate 配置 ID；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783490000,
+      "source": "synthetic_contract",
+      "reason": "保持 delivery_modify_save request shape；verify 自然 UI 需记录运行态实际值。"
+    },
+    {
+      "fieldPath": "item_modify_config.delivery_amount",
+      "value": 5000,
+      "source": "selected_record",
+      "reason": "当前第 1 个 DOU+币候选已有投放金额 50 元，保存时自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "item_modify_config.delivery_duration",
+      "value": 7200,
+      "source": "selected_record",
+      "reason": "当前第 1 个 DOU+币候选已有投放时长 2 小时，保存时自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "item_modify_config.target_likes",
+      "value": 44,
+      "source": "selected_record",
+      "reason": "当前第 1 个 DOU+币候选已有转化目标偏好，保存时自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "item_modify_config.target_audience",
+      "value": 1,
+      "source": "selected_record",
+      "reason": "当前第 1 个 DOU+币候选已有目标受众，保存时自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "item_modify_config.effective_time",
+      "value": 1783648800,
+      "source": "user_provided",
+      "reason": "verify 将通过真实 UI DatePicker 填写未来投放生效时间；该值只服务必填条件补齐和 payload 审计，不参与 runtime matcher。"
+    }
+  ],
+  "writeInterfaceSafety": {
+    "sendRealBackendRequest": false,
+    "reason": "MOCK_PREVIEW 下 `delivery_modify_save` 为写接口；发送真实请求可能持久化修改候选投放配置，必须由 BAM mock runtime 返回标记的 synthetic success。",
+    "realVerify": "真实环境需复验 delivery_modify_save 持久化、权限、失败 msg 和候选列表刷新一致性。"
+  }
+}

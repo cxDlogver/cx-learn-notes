@@ -1,0 +1,2958 @@
+{
+  "requestedAt": "2026-07-16T15:02:38.016Z",
+  "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FmanuallySubmitVideoStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+  "method": "GET",
+  "status": 200,
+  "ok": true,
+  "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FmanuallySubmitVideoStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+  "parsed": {
+    "status": 0,
+    "message": "ok",
+    "data": [
+      {
+        "lineNum": 1,
+        "code": "import { makeAutoObservable, runInAction } from 'mobx';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 2,
+        "code": "import type { Store } from './store';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 3,
+        "code": "import { LoadingState } from '../types';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 4,
+        "code": "import { MANUAL_SUBMIT_REMOVE_REASONS, MESSAGES } from '../constants';",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 5,
+        "code": "import {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 6,
+        "code": "  apiDownloadContentRemoveRecord,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 7,
+        "code": "  apiGetDeliveryItemsFromSheet,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 8,
+        "code": "  apiSearchDeliveryItems,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 9,
+        "code": "} from '@/bam/ecom.buyin.admin_api';",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 10,
+        "code": "import { message } from '@ecom/auxo';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 11,
+        "code": "import {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 12,
+        "code": "  CandidatePoolType,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 13,
+        "code": "  ContentRemoveRecord,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 14,
+        "code": "  delivery_item_info,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 15,
+        "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 16,
+        "code": "import { kSubmitMethod } from '../components/manually-submit-videos/manually-submit-videos-drawer/submit-selector';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 17,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 18,
+        "code": "const kMaxManualSubmitCount = 50;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 19,
+        "code": "const kReusableHitSubmitMethods = new Set<string>([kSubmitMethod.videoIds, kSubmitMethod.url]);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 20,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 21,
+        "code": "const getResponseCode = (response?: { st?: number; code?: number }): number | undefined => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 22,
+        "code": "  if (response?.st === 0 && response?.code === 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 23,
+        "code": "    return 0;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 24,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 25,
+        "code": "  return response?.code ?? response?.st;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 26,
+        "code": "};",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 27,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 28,
+        "code": "export class ManuallySubmitVideoStore {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 29,
+        "code": "  // 视频列表",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 30,
+        "code": "  videoItems: delivery_item_info[] = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 31,
+        "code": "  removedSubmitHitItems: delivery_item_info[] = [];",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 32,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 33,
+        "code": "  // 状态数据",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 34,
+        "code": "  activity_id?: string;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 35,
+        "code": "  config_id?: string;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 36,
+        "code": "  session_unix_time?: number;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 37,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 38,
+        "code": "  // 加载状态",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 39,
+        "code": "  loadingState = LoadingState.Idle;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 40,
+        "code": "  removingHitItems = false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 41,
+        "code": "  exportingRemoveRecords = false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 42,
+        "code": "  submitMethod?: string;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 43,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 44,
+        "code": "  private _root: Store;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 45,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 46,
+        "code": "  constructor(r: Store) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 47,
+        "code": "    makeAutoObservable(this);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 48,
+        "code": "    this._root = r;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 49,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 50,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 51,
+        "code": "  private fillIfDeliveryTrue = (items: delivery_item_info[] = []): delivery_item_info[] =>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 52,
+        "code": "    items.map((item) => ({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 53,
+        "code": "      ...item,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 54,
+        "code": "      if_delivery: item?.if_delivery ?? true,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 55,
+        "code": "    }));",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 56,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 57,
+        "code": "  get isReusableHitSubmitMode() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 58,
+        "code": "    return Boolean(this.submitMethod && kReusableHitSubmitMethods.has(this.submitMethod));",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 59,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 60,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 61,
+        "code": "  isHitVideoItem = (item?: delivery_item_info) =>",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 62,
+        "code": "    item?.if_satisfy_delivery_rules === false || item?.if_not_incentive === true;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 63,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 64,
+        "code": "  private getCandidateId = (item?: delivery_item_info) => item?.item_card?.item_model?.item_id;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 65,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 66,
+        "code": "  private getHitItems = (items: delivery_item_info[] = []) =>",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 67,
+        "code": "    items.filter((item) => this.isHitVideoItem(item));",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 68,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 69,
+        "code": "  private getRemoveReason = (item: delivery_item_info) =>",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 70,
+        "code": "    item?.if_not_incentive === true",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 71,
+        "code": "      ? MANUAL_SUBMIT_REMOVE_REASONS.notIncentive",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 72,
+        "code": "      : MANUAL_SUBMIT_REMOVE_REASONS.manual;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 73,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 74,
+        "code": "  private getLatestPenaltyReason = (item: delivery_item_info) =>",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 75,
+        "code": "    item?.not_incentive_reason?.filter((reason) => Boolean(reason?.trim()))?.slice(-1)?.[0];",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 76,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 77,
+        "code": "  private buildContentRemoveRecords = (items: delivery_item_info[]): ContentRemoveRecord[] | undefined => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 78,
+        "code": "    const records = items.map((item) => ({",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 79,
+        "code": "      author_id: item?.item_card?.item_author_info?.author_id,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 80,
+        "code": "      item_id: this.getCandidateId(item),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 81,
+        "code": "      item_name: item?.item_card?.item_model?.base_model?.item_info?.base_info?.title,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 82,
+        "code": "      remove_reason: this.getRemoveReason(item),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 83,
+        "code": "      penalty_reason: this.getLatestPenaltyReason(item),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 84,
+        "code": "    }));",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 85,
+        "code": "    if (records.some((record) => !record.item_id)) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 86,
+        "code": "      return undefined;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 87,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 88,
+        "code": "    return records;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 89,
+        "code": "  };",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 90,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 91,
+        "code": "  private mergeRemovedSubmitHitItems = (",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 92,
+        "code": "    currentRemovedItems: delivery_item_info[],",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 93,
+        "code": "    newRemovedItems: delivery_item_info[],",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 94,
+        "code": "  ) => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 95,
+        "code": "    const nextRemovedItems = this.fillIfDeliveryTrue(currentRemovedItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 96,
+        "code": "    const existingCandidateIds = new Set(",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 97,
+        "code": "      nextRemovedItems.map((item) => this.getCandidateId(item)).filter(Boolean),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 98,
+        "code": "    );",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 99,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 100,
+        "code": "    this.fillIfDeliveryTrue(newRemovedItems).forEach((item) => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 101,
+        "code": "      const candidateId = this.getCandidateId(item);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 102,
+        "code": "      if (candidateId && existingCandidateIds.has(candidateId)) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 103,
+        "code": "        return;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 104,
+        "code": "      }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 105,
+        "code": "      nextRemovedItems.push(item);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 106,
+        "code": "      if (candidateId) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 107,
+        "code": "        existingCandidateIds.add(candidateId);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 108,
+        "code": "      }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 109,
+        "code": "    });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 110,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 111,
+        "code": "    return nextRemovedItems;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 112,
+        "code": "  };",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 113,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 114,
+        "code": "  get submitHitItems() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 115,
+        "code": "    if (!this.isReusableHitSubmitMode) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 116,
+        "code": "      return [];",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 117,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 118,
+        "code": "    return this.getHitItems(this.videoItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 119,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 120,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 121,
+        "code": "  get submitHitCount() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 122,
+        "code": "    return this.submitHitItems.length;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 123,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 124,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 125,
+        "code": "  get submitHitTotalCount() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 126,
+        "code": "    return this.isReusableHitSubmitMode ? this.videoItems.length : 0;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 127,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 128,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 129,
+        "code": "  get hasSubmitHitItems() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 130,
+        "code": "    return this.submitHitCount > 0;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 131,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 132,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 133,
+        "code": "  get hasRemovedSubmitHitRecords() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 134,
+        "code": "    return this.isReusableHitSubmitMode && this.removedSubmitHitItems.length > 0;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 135,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 136,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 137,
+        "code": "  get shouldShowSubmitHitToolbar() {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 138,
+        "code": "    return this.hasSubmitHitItems || this.hasRemovedSubmitHitRecords;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 139,
+        "code": "  }",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 140,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 141,
+        "code": "  preserveRemovedSubmitHitItems = (items: delivery_item_info[] = []) => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 142,
+        "code": "    if (!this.isReusableHitSubmitMode) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 143,
+        "code": "      return;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 144,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 145,
+        "code": "    const hitItems = this.getHitItems(this.fillIfDeliveryTrue(items));",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 146,
+        "code": "    if (hitItems.length === 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 147,
+        "code": "      return;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 148,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 149,
+        "code": "    runInAction(() => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 150,
+        "code": "      this.removedSubmitHitItems = this.mergeRemovedSubmitHitItems(this.removedSubmitHitItems, hitItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 151,
+        "code": "    });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 152,
+        "code": "  };",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 153,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 154,
+        "code": "  private resetRemovedSubmitHitItems = () => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 155,
+        "code": "    this.removedSubmitHitItems = [];",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 156,
+        "code": "  };",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 157,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 158,
+        "code": "  // 初始化数据",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 159,
+        "code": "  initData = (activityId: string, configId: string) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 160,
+        "code": "    runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 161,
+        "code": "      this.activity_id = activityId;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 162,
+        "code": "      this.config_id = configId;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 163,
+        "code": "      this.session_unix_time = this.session_unix_time ?? Math.floor(Date.now() / 1000);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 164,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 165,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 166,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 167,
+        "code": "  recreateSessionId = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 168,
+        "code": "    const sessionId = Math.floor(Date.now() / 1000);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 169,
+        "code": "    runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 170,
+        "code": "      this.session_unix_time = sessionId;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 171,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 172,
+        "code": "    return sessionId;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 173,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 174,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 175,
+        "code": "  // 根据视频ID查询视频列表",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 176,
+        "code": "  fetchVideosByItemIds = async (itemIds: string) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 177,
+        "code": "    try {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 178,
+        "code": "      runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 179,
+        "code": "        this.loadingState = LoadingState.Loading;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 180,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 181,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 182,
+        "code": "      const response = await apiSearchDeliveryItems({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 183,
+        "code": "        /** 活动id */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 184,
+        "code": "        activity_id: this.activity_id,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 185,
+        "code": "        /** 配置id */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 186,
+        "code": "        config_id: this.config_id,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 187,
+        "code": "        /** 稿件ids（多个用“,”分割，max：50） */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 188,
+        "code": "        item_ids: itemIds,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 189,
+        "code": "        /** 发奖会话unix时间戳（秒） */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 190,
+        "code": "        session_unix_time: this.session_unix_time,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 191,
+        "code": "        /** 查询哪个数据池的作品 */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 192,
+        "code": "        candidate_pool_type: CandidatePoolType.PassFilterRule,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 193,
+        "code": "        /** 页数（从1开始） */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 194,
+        "code": "        page_no: 1,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 195,
+        "code": "        /** 分页个数（max：50） */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 196,
+        "code": "        page_size: 50,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 197,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 198,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 199,
+        "code": "      runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 200,
+        "code": "        if (response?.code === 0 && response?.data) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 201,
+        "code": "          this.videoItems = this.fillIfDeliveryTrue(response.data.item_info || []);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 202,
+        "code": "        } else {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 203,
+        "code": "          message.error(response?.msg || MESSAGES.FETCH_VIDEO_LIST_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 204,
+        "code": "          this.videoItems = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 205,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 206,
+        "code": "        this.resetRemovedSubmitHitItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 207,
+        "code": "        this.loadingState = LoadingState.Idle;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 208,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 209,
+        "code": "    } catch (error) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 210,
+        "code": "      message.error(MESSAGES.FETCH_VIDEO_LIST_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 211,
+        "code": "      runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 212,
+        "code": "        this.videoItems = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 213,
+        "code": "        this.resetRemovedSubmitHitItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 214,
+        "code": "        this.loadingState = LoadingState.Error;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 215,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 216,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 217,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 218,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 219,
+        "code": "  // 根据飞书表格链接查询视频列表",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 220,
+        "code": "  fetchVideosBySheetUrl = async (sheetUrl: string) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 221,
+        "code": "    try {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 222,
+        "code": "      runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 223,
+        "code": "        this.loadingState = LoadingState.Loading;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 224,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 225,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 226,
+        "code": "      const response = await apiGetDeliveryItemsFromSheet({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 227,
+        "code": "        /** 飞书表格链接 */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 228,
+        "code": "        sheet_url: sheetUrl,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 229,
+        "code": "        /** 活动id */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 230,
+        "code": "        activity_id: this.activity_id,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 231,
+        "code": "        /** 配置id */",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 232,
+        "code": "        config_id: this.config_id,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 233,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 234,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 235,
+        "code": "      runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 236,
+        "code": "        if (response?.code === 0 && response?.data) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 237,
+        "code": "          this.videoItems = this.fillIfDeliveryTrue(response.data.item_info || []);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 238,
+        "code": "        } else {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 239,
+        "code": "          message.error(response?.msg || MESSAGES.FETCH_VIDEO_LIST_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 240,
+        "code": "          this.videoItems = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 241,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 242,
+        "code": "        this.resetRemovedSubmitHitItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 243,
+        "code": "        this.loadingState = LoadingState.Idle;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 244,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 245,
+        "code": "    } catch (error) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 246,
+        "code": "      message.error(MESSAGES.FETCH_VIDEO_LIST_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 247,
+        "code": "      runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 248,
+        "code": "        this.videoItems = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 249,
+        "code": "        this.resetRemovedSubmitHitItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 250,
+        "code": "        this.loadingState = LoadingState.Error;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 251,
+        "code": "      });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 252,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 253,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 254,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 255,
+        "code": "  // 处理提报方式提交",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 256,
+        "code": "  handleSubmit = async ({ videoIds, url }: { videoIds?: string; url?: string }) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 257,
+        "code": "    runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 258,
+        "code": "      this.submitMethod = url ? kSubmitMethod.url : kSubmitMethod.videoIds;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 259,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 260,
+        "code": "    if (videoIds) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 261,
+        "code": "      const parsedVideoIds = videoIds",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 262,
+        "code": "        .split(/[,，\\s]+/)",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 263,
+        "code": "        .map((id) => id.trim())",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 264,
+        "code": "        .filter(Boolean);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 265,
+        "code": "      if (parsedVideoIds.length > kMaxManualSubmitCount) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 266,
+        "code": "        message.warning(`视频ID最多支持${kMaxManualSubmitCount}条`);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 267,
+        "code": "        return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 268,
+        "code": "      }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 269,
+        "code": "      await this.fetchVideosByItemIds(parsedVideoIds.join(','));",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 270,
+        "code": "    } else if (url) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 271,
+        "code": "      await this.fetchVideosBySheetUrl(url);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 272,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 273,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 274,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 275,
+        "code": "  // 清空视频列表",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 276,
+        "code": "  clearVideoItems = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 277,
+        "code": "    this.setVideoItems([]);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 278,
+        "code": "    runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 279,
+        "code": "      this.submitMethod = undefined;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 280,
+        "code": "      this.resetRemovedSubmitHitItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 281,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 282,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 283,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 284,
+        "code": "  // 更新视频列表",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 285,
+        "code": "  setVideoItems = (items: delivery_item_info[]) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 286,
+        "code": "    runInAction(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 287,
+        "code": "      this.videoItems = this.fillIfDeliveryTrue(items);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 288,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 289,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 290,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 291,
+        "code": "  // 一键移除当前提报命中的作品",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 292,
+        "code": "  removeSubmitHitItems = async (currentItems: delivery_item_info[] = this.videoItems) => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 293,
+        "code": "    if (!this.isReusableHitSubmitMode) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 294,
+        "code": "      return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 295,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 296,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 297,
+        "code": "    const latestItems = this.fillIfDeliveryTrue(currentItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 298,
+        "code": "    const hitItems = this.getHitItems(latestItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 299,
+        "code": "    if (hitItems.length === 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 300,
+        "code": "      message.warning('暂无需要移除的作品');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 301,
+        "code": "      return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 302,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 303,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 304,
+        "code": "    runInAction(() => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 305,
+        "code": "      this.removingHitItems = true;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 306,
+        "code": "    });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 307,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 308,
+        "code": "    try {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 309,
+        "code": "      runInAction(() => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 310,
+        "code": "        this.removedSubmitHitItems = this.mergeRemovedSubmitHitItems(this.removedSubmitHitItems, hitItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 311,
+        "code": "        this.videoItems = this.fillIfDeliveryTrue(latestItems.filter((item) => !this.isHitVideoItem(item)));",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 312,
+        "code": "      });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 313,
+        "code": "      message.success('已移除命中作品');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 314,
+        "code": "      return true;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 315,
+        "code": "    } finally {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 316,
+        "code": "      runInAction(() => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 317,
+        "code": "        this.removingHitItems = false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 318,
+        "code": "      });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 319,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 320,
+        "code": "  };",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 321,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 322,
+        "code": "  // 导出当前提报已移除的剔除明细",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 323,
+        "code": "  exportSubmitHitRecords = async () => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 324,
+        "code": "    if (!this.isReusableHitSubmitMode) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 325,
+        "code": "      return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 326,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 327,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 328,
+        "code": "    const removedItems = this.fillIfDeliveryTrue(this.removedSubmitHitItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 329,
+        "code": "    if (removedItems.length === 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 330,
+        "code": "      message.warning('暂无可导出的剔除明细');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 331,
+        "code": "      return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 332,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 333,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 334,
+        "code": "    const records = this.buildContentRemoveRecords(removedItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 335,
+        "code": "    if (!records) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 336,
+        "code": "      message.error('剔除明细缺少作品ID，无法导出');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 337,
+        "code": "      return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 338,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 339,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 340,
+        "code": "    runInAction(() => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 341,
+        "code": "      this.exportingRemoveRecords = true;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 342,
+        "code": "    });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 343,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 344,
+        "code": "    try {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 345,
+        "code": "      const response = await apiDownloadContentRemoveRecord({ records });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 346,
+        "code": "      if (getResponseCode(response) !== 0) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 347,
+        "code": "        message.error(response?.msg || '导出剔除明细失败');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 348,
+        "code": "        return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 349,
+        "code": "      }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 350,
+        "code": "      const larkUrl = response?.data?.lark_url;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 351,
+        "code": "      if (!larkUrl) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 352,
+        "code": "        message.error('导出剔除明细失败，未获取到明细链接');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 353,
+        "code": "        return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 354,
+        "code": "      }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 355,
+        "code": "      window.open(larkUrl, '_blank', 'noopener,noreferrer');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 356,
+        "code": "      message.success('剔除明细已生成');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 357,
+        "code": "      return true;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 358,
+        "code": "    } catch {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 359,
+        "code": "      message.error('导出剔除明细失败');",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 360,
+        "code": "      return false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 361,
+        "code": "    } finally {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 362,
+        "code": "      runInAction(() => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 363,
+        "code": "        this.exportingRemoveRecords = false;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 364,
+        "code": "      });",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 365,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 366,
+        "code": "  };",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 367,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 368,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      }
+    ]
+  }
+}

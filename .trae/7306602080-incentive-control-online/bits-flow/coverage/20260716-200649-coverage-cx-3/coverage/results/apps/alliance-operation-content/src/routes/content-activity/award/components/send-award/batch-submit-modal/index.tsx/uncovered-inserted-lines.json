@@ -1,0 +1,202 @@
+[
+  {
+    "lineNum": 46,
+    "code": "    return 0;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 69,
+    "code": "    .filter((item) => item.if_delivery === false)",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 70,
+    "code": "    .map((item) => ({",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 71,
+    "code": "      candidate_id: item.author_info?.author_id,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 72,
+    "code": "      remove_reason: MANUAL_SUBMIT_REMOVE_REASONS.manual,",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 73,
+    "code": "    }))",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 89,
+    "code": "    message.warning('不发奖名单上传失败');",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 90,
+    "code": "    return;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 99,
+    "code": "      message.warning(response?.msg || '不发奖名单上传失败');",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 102,
+    "code": "    message.warning('不发奖名单上传失败');",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 126,
+    "code": "    return { resultCode: 0 };",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 150,
+    "code": "    errorMessage = getAwardDeliveryExceptionMessage(error);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 151,
+    "code": "    message.error(errorMessage);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 180,
+    "code": "    delivery_from === DeliveryFrom.UploadCandidate ? delivery_list ?? [] : delivery_authors ?? [];",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 181,
+    "code": "  if (submitList.length === 0) {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 182,
+    "code": "    return { resultCode: 0 };",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 183,
+    "code": "  }",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 204,
+    "code": "      errorMessage = getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_AUTHORS_FAILED);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 205,
+    "code": "      message.error(errorMessage);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 207,
+    "code": "  } catch (error) {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 209,
+    "code": "    errorMessage = getAwardDeliveryExceptionMessage(error);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 210,
+    "code": "    message.error(errorMessage);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 212,
+    "code": "  return { resultCode, errorMessage };",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 517,
+    "code": "          noAwardRemoveCandidates = buildAuthorNoAwardRemoveCandidates(selectedAwardAuthors);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 518,
+    "code": "          submitResult = await submitSendAwardAuthors({",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  }
+]

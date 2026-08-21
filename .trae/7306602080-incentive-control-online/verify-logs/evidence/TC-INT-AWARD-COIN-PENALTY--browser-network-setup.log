@@ -1,0 +1,16 @@
+TC-INT-AWARD-COIN-PENALTY setup save network evidence
+captured_at: 2026-07-09T12:00:26+0800
+browser_tool: integrated_browser
+view_id: f56171fb-9ae8-4e99-8749-ecc9e4f68a5a
+source_network_log: /var/folders/g3/gkh9674s19x35p641jykwjbw0000gn/T/trae/browser-logs/network-2026-07-09T03-47-15-147Z.log
+sanitization: __token query values redacted from persisted evidence
+
+Relevant scan:
+- [14] GET /api/buyin/admin/content_activity/search_delivery_items?activity_id=7655304206886322458&config_id=7655304206886338842&publish_start_time=1782403200&publish_end_time=1783526399&page_no=1&page_size=50&session_unix_time=1783568265&candidate_pool_type=1&__token=<redacted>
+- No POST /api/buyin/admin/content_activity/delivery_modify_save line was present in this setup-save observation window.
+- No POST /api/buyin/admin/content_activity/delivery_dou_plus_coin line was present in this setup-save observation window.
+
+Conclusion:
+- The restored SearchCandidate sample was served through apiSearchDeliveryItems / R-BAM-SEARCH-CANDIDATE-COIN-PENALTY.
+- The setup save action is proven by console markers persisted in TC-INT-AWARD-COIN-PENALTY--runtime.json: [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT] for apiDeliveryModifySave / R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE.
+- No real setup write XHR was observed in the persisted browser network evidence for this successful setup-save retry.

@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "mode": "cr",
+  "run_id": "20260717-010922-cr-cx-3",
+  "created_at": "2026-07-17T01:09:22+08:00",
+  "user_arguments": "/delivery:bits --cr --submit",
+  "status": "SUBMITTED_WRITEBACK_COMPLETE_WITH_MERGE_CONFLICT",
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "repo": "ecom/alliance-operation-mono",
+  "branch": "cx-3",
+  "remote": "git@code.byted.org:ecom/alliance-operation-mono.git",
+  "mr": {
+    "iid": "736",
+    "id": "785686449920439",
+    "url": "https://code.byted.org/ecom/alliance-operation-mono/merge_requests/736",
+    "source_branch": "cx-3",
+    "target_branch": "master",
+    "version": "4",
+    "source_commit": "f0cc9f9cdf7c793ec672dcca9ae2a4f0318b11b7",
+    "base_commit": "fb7a7793e82c8b5e442f1751c52148db73316851",
+    "target_commit": "adeac31c1f10b94af329d55e81cbfd7ec8338650",
+    "source_ref": "refs/merge-requests/36/736/3"
+  },
+  "paths": {
+    "raw": "raw/",
+    "sources": "raw/",
+    "analysis": "analysis/",
+    "closure": "closure/",
+    "writeback": "writeback/",
+    "snapshots": "snapshots/",
+    "verify": "verify/"
+  },
+  "source_artifacts": [
+    "raw/codebase-mr-get.json",
+    "raw/codebase-mr-files.json",
+    "raw/codebase-mr-comments-all.json",
+    "raw/codebase-mr-comments-open.json",
+    "raw/codebase-checks-mr.json"
+  ],
+  "notes": [
+    ".trae/DELIVERY_STATE.md points to missing artifacts/7306602080-content-activity-incentive-control/; this run uses the accessible artifacts/7306602080-incentive-control-online workspace.",
+    "User passed --submit, so commit, push, individual thread replies, and resolve actions are authorized after verification."
+  ],
+  "submit": {
+    "authorized_by_user_args": true,
+    "commit": "3d558e46f817e466364b65f2e25361dbbad67742",
+    "commit_message": "fix: address incentive control cr feedback",
+    "push": {
+      "remote": "origin",
+      "branch": "cx-3",
+      "result": "3f3ab482dcd18c5533a2ecdec6cd310dcd447c53..3d558e46f817e466364b65f2e25361dbbad67742 cx-3 -> cx-3"
+    },
+    "submitted_at": "2026-07-17T01:39:00+08:00"
+  },
+  "followup_submits": [
+    {
+      "commit": "c66c66d27931161360e2427ac8196e057b945a0a",
+      "commit_message": "fix: handle optional code response success",
+      "push": "3d558e46f..c66c66d27 cx-3 -> cx-3",
+      "threads": [
+        "785791271893194",
+        "785791271888386"
+      ]
+    },
+    {
+      "commit": "5e4548279f65f0a5042c269eca21d227cd877f5a",
+      "commit_message": "fix: address follow-up incentive cr feedback",
+      "push": "c66c66d27..5e4548279 cx-3 -> cx-3",
+      "threads": [
+        "785791699701605",
+        "785791957600134",
+        "785791959729196",
+        "785791959699773",
+        "785791961834927",
+        "785791961857244"
+      ]
+    },
+    {
+      "commit": "af803503fe6143768e32297c577e3ed03b99de2e",
+      "commit_message": "fix: block award submit until remove candidates sync",
+      "push": "5e4548279..af803503f cx-3 -> cx-3",
+      "threads": [
+        "785792924431058",
+        "785792926531807",
+        "785792926495961"
+      ]
+    },
+    {
+      "commit": "94e1a020520434bcaeded950aa4f99984e061599",
+      "commit_message": "fix: refine no-award validation and filter params",
+      "push": "af803503f..94e1a0205 cx-3 -> cx-3",
+      "threads": [
+        "785793582927151",
+        "785793585028356",
+        "785794161754303"
+      ]
+    },
+    {
+      "commit": "16300a1a24f6ed212354027e6c7933af20db7118",
+      "commit_message": "fix: trace manual remove record export failures",
+      "push": "94e1a0205..16300a1a2 cx-3 -> cx-3",
+      "threads": [
+        "785794159644296",
+        "785794161740056"
+      ]
+    },
+    {
+      "commit": "f0cc9f9cdf7c793ec672dcca9ae2a4f0318b11b7",
+      "commit_message": "fix: tighten manual submit validation and paging docs",
+      "push": "16300a1a2..f0cc9f9cd cx-3 -> cx-3",
+      "threads": [
+        "785795732477635",
+        "785795732543171",
+        "785795734634398"
+      ]
+    }
+  ],
+  "after_submit_snapshot": {
+    "fetched_at": "2026-07-17T01:44:12+08:00",
+    "mr": {
+      "status": "open",
+      "source_branch": "cx-3",
+      "target_branch": "master",
+      "source_commit_id": "3d558e46f817e466364b65f2e25361dbbad67742",
+      "url": "https://code.byted.org/ecom/alliance-operation-mono/merge_requests/736"
+    },
+    "mergeability": {
+      "mergeable": false,
+      "reason": "conflict",
+      "reason_detail": "the merge request has code conflict"
+    },
+    "review": {
+      "status": "pending",
+      "approvals_required": 0
+    },
+    "check_runs": {
+      "summary": "all_passed",
+      "total_count": 10,
+      "passed_count": 10,
+      "failed_count": 0,
+      "running_count": 0
+    },
+    "comments": {
+      "thread_count": 17,
+      "total_thread_count": 17,
+      "comment_count": 34,
+      "total_comment_count": 34,
+      "resolved_thread_count": 17,
+      "open_thread_count": 0
+    }
+  },
+  "writeback_summary": {
+    "status": "COMPLETE",
+    "all_threads_replied": true,
+    "all_threads_resolved": true,
+    "thread_count": 27,
+    "reply_count": 25,
+    "resolved_count": 27,
+    "method": "npx @bytedance-dev/bytedcli codebase mr comment reply/resolve",
+    "notes": [
+      "Global bytedcli was unavailable; npx @bytedance-dev/bytedcli was used.",
+      "Six threads were already resolved by the time writeback reached them; replies were still added individually and final status remained resolved.",
+      "Two follow-up rounds added 8 additional threads; all were replied and resolved.",
+      "MR checks are all passed; mergeability is currently blocked by target-branch conflict."
+    ]
+  },
+  "final_snapshot": {
+    "fetched_at": "2026-07-17T02:29:00+08:00",
+    "mr": {
+      "status": "open",
+      "source_branch": "cx-3",
+      "target_branch": "master",
+      "source_commit_id": "f0cc9f9cdf7c793ec672dcca9ae2a4f0318b11b7",
+      "url": "https://code.byted.org/ecom/alliance-operation-mono/merge_requests/736"
+    },
+    "mergeability": {
+      "mergeable": false,
+      "reason": "conflict",
+      "reason_detail": "the merge request has code conflict"
+    },
+    "check_runs": {
+      "summary": "all_passed",
+      "total_count": 9,
+      "passed_count": 9,
+      "failed_count": 0,
+      "running_count": 0
+    },
+    "comments": {
+      "thread_count": 38,
+      "total_thread_count": 38,
+      "comment_count": 76,
+      "total_comment_count": 76,
+      "resolved_thread_count": 38,
+      "open_thread_count": 0
+    }
+  }
+}

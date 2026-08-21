@@ -1,0 +1,343 @@
+{
+  "case_id": "TC-UI-BATCH-HIT-REUSE",
+  "stage": "/delivery:design",
+  "captured_at": "2026-07-10T01:51:31+08:00",
+  "case_scope": {
+    "case_layer": "page-level",
+    "runtime_state": "batch-upload-hit",
+    "capture_scope": "drawer-first-screen",
+    "verify_screenshot_key": "batch-hit-reuse",
+    "contract_ref": "Region:批量上传 baseline; Interaction:人工提报批量上传",
+    "verification_stage": "verify+design",
+    "evidence_required": "DOM+截图+Network"
+  },
+  "ui_evidence_mode": {
+    "mode": "RUNTIME_BASELINE_ALLOWED",
+    "f2c_required": false,
+    "f2c_source": "N/A: TASK-006 is an existing UI local patch/runtime baseline case; no new Drawer/table implementation and no F2C gate.",
+    "evidence_refs": [
+      "artifacts/7306602080-incentive-control-online/delivery-task.md#Task 6",
+      "artifacts/7306602080-incentive-control-online/05-implementation-log.md#TASK-006 UI Evidence Usage",
+      "artifacts/7306602080-incentive-control-online/decision-log.md#AF-003"
+    ]
+  },
+  "figma_sources": {
+    "source_type": "FIGMA_NODE_DATA + FIGMA_SCREENSHOT",
+    "nodes": [
+      "25:13971",
+      "101:6308",
+      "101:6332"
+    ],
+    "node_data_files": [
+      "figma-cache/nodes/F6-get_figma_data-25_13971-d5.md",
+      "figma-cache/nodes/F8-get_figma_data-101_6332-d6.md"
+    ],
+    "screenshot": {
+      "path": "figma-cache/screenshots/25_13971-manual-submit-batch-upload-state.png",
+      "materialization_type": "local_file",
+      "format": "PNG",
+      "width": 3180,
+      "height": 2768,
+      "sha256": "690c580fb30cca6c14a57423c6eee850111d28c652f7292d316e49b4edaaf392"
+    },
+    "consumed_contract": [
+      "Drawer title `提报视频`.",
+      "Radio group contains `手动输入` and `批量上传`; batch upload is selected for this case.",
+      "Batch upload row contains upload/input area, `查看上传模板`, and `提交`.",
+      "Table baseline columns: `序号`, `视频/图文内容`, `投放金额(元)`, `投放时长`, `转化目标偏好`, `投放生效时间`, `目标受众`, `提报理由`, `操作`.",
+      "Footer contains `取消` and `提交并投放`.",
+      "No independent batch hit-state Figma variant exists; AF-003 requires reusing manual hit summary/action/row status/submit guard."
+    ]
+  },
+  "runtime_sources": {
+    "verify_runtime_source": {
+      "path": "screenshots/TC-UI-BATCH-HIT-REUSE--batch-hit-runtime.png",
+      "materialization_type": "local_file",
+      "format": "PNG",
+      "width": 2549,
+      "height": 1875,
+      "sha256": "98ff6ac78e1cf7a0da9b5e066f0c211a2d80fe9bf55516f6fd33de448d020d98",
+      "use": "baseline only; predates DESIGN-REWORK-007 and is not final closure evidence"
+    },
+    "fresh_design_check_screenshot": {
+      "path": "screenshots/TC-UI-BATCH-HIT-REUSE--design-check-current.png",
+      "materialization_type": "local_file",
+      "format": "PNG",
+      "width": 1733,
+      "height": 1523,
+      "sha256": "270ba0d7bbae97cbb88e59fe0e3a98f2dd13cedb8e8ae6b7a17c8846c8d85d51"
+    },
+    "fresh_main_session_screenshot": {
+      "path": "screenshots/TC-UI-BATCH-HIT-REUSE--design-current-batch-hit.png",
+      "materialization_type": "local_file",
+      "format": "PNG",
+      "width": 1733,
+      "height": 1523,
+      "sha256": "4550d4e595d497e76eb545525288a66299262c6135764ff452f92f613d4c003e"
+    },
+    "network_sources": [
+      "verify-logs/evidence/TC-UI-BATCH-HIT-REUSE--natural-failure-runtime.json",
+      "verify-logs/evidence/TC-UI-BATCH-HIT-REUSE--runtime-mock-hit.json",
+      "mock/apis/apiGetDeliveryItemsFromSheet/manifest.json"
+    ]
+  },
+  "runtime_dom_facts": {
+    "browser_view_id": "3ac8d48f-26d8-4d09-ace5-80728b7ff041",
+    "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_design_rerun=TC-UI-MANUAL-HIT-PAGE--DESIGN-REWORK-007",
+    "drawer": {
+      "exists": true,
+      "title": "提报视频",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1498,
+        "height": 1317
+      }
+    },
+    "input": {
+      "submit_method": "url",
+      "placeholder": "请填写或粘贴飞书表格链接",
+      "value": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+    },
+    "radio_state": [
+      {
+        "text": "手动输入",
+        "checked": false
+      },
+      {
+        "text": "批量上传",
+        "checked": true
+      }
+    ],
+    "summary": {
+      "text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+      "icon_style": {
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(22, 100, 255)",
+        "fontSize": "12px",
+        "lineHeight": "16px"
+      },
+      "text_style": {
+        "color": "rgb(31, 35, 41)",
+        "fontSize": "12px",
+        "lineHeight": "18px"
+      }
+    },
+    "actions": [
+      "一键移除",
+      "导出剔除明细"
+    ],
+    "footer_button_order": [
+      "取消",
+      "提交并投放"
+    ],
+    "table": {
+      "header_order": [
+        "序号",
+        "视频/图文内容",
+        "投放金额（元）",
+        "投放时长",
+        "转化目标偏好",
+        "投放生效时间",
+        "目标受众",
+        "提报理由",
+        "操作"
+      ],
+      "row_count": 3,
+      "rows": [
+        {
+          "index": 1,
+          "item_id": "200001",
+          "title": "批量上传准入失败作品",
+          "labels": [
+            "不满足准入门槛"
+          ]
+        },
+        {
+          "index": 2,
+          "item_id": "200002",
+          "title": "批量上传不激励命中作品",
+          "labels": [
+            "命中【不激励】规则"
+          ]
+        },
+        {
+          "index": 3,
+          "item_id": "200003",
+          "title": "批量上传可投放作品",
+          "labels": []
+        }
+      ]
+    },
+    "hit_label_styles": [
+      {
+        "label": "不满足准入门槛",
+        "color": "rgb(245, 63, 63)",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "display": "block"
+      },
+      {
+        "label": "命中【不激励】规则",
+        "color": "rgb(245, 63, 63)",
+        "fontSize": "12px",
+        "lineHeight": "18px",
+        "display": "block"
+      }
+    ]
+  },
+  "network_evidence": {
+    "target_api": "apiGetDeliveryItemsFromSheet",
+    "target_path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+    "ruleId": "R-BAM-BATCH-SHEET-HIT",
+    "source": "verify-logs/evidence/TC-UI-BATCH-HIT-REUSE--runtime-mock-hit.json",
+    "observed": {
+      "method": "GET",
+      "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+      "raw_xhr_response_code": 10001604,
+      "bam_mock_hit": true,
+      "mocked_response_code": 0,
+      "mocked_rows": [
+        {
+          "item_id": "200001",
+          "if_satisfy_delivery_rules": false,
+          "if_not_incentive": false
+        },
+        {
+          "item_id": "200002",
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": true,
+          "not_incentive_reason": [
+            "历史违规命中不激励规则"
+          ]
+        },
+        {
+          "item_id": "200003",
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": false
+        }
+      ]
+    },
+    "scope_note": "Design closes visible/runtime frontend contract only; real backend sheet success remains open."
+  },
+  "contract_consumption": {
+    "positive_assertion": {
+      "assertion": "sheet response fields `if_not_incentive`/`not_incentive_reason` are consumed",
+      "status": "CLOSED_FOR_DESIGN",
+      "evidence": "Rows 200001/200002/200003 render; 200002 shows `命中【不激励】规则`; summary count is 2/3."
+    },
+    "negative_assertion": {
+      "assertion": "不新增独立 unsupported hit UI，不跳过 `apiGetDeliveryItemsFromSheet`",
+      "status": "CLOSED_FOR_DESIGN",
+      "evidence": "Network evidence records target GET and BAM marker; DOM negative scan is clean."
+    },
+    "visual_assertion": {
+      "assertion": "批量上传 radio/upload/table/footer 与 IMG8 baseline 一致",
+      "status": "NON_BLOCKER_WITH_EXPLICIT_WAIVER",
+      "evidence": "Runtime preserves Drawer/radio/table/footer and AF-003 hit-state reuse. Reference-only differences are documented below."
+    },
+    "negative_visual_assertion": {
+      "assertion": "不出现手动输入专属错误布局或新骨架",
+      "status": "CLOSED_FOR_DESIGN",
+      "evidence": "No manual-only error layout, new skeleton, stale failure copy, appeal, low-quality, edit, auto-remove, gender, or age residual."
+    },
+    "evidence_required": {
+      "assertion": "DOM+截图+Network",
+      "status": "CLOSED_FOR_DESIGN",
+      "evidence": "Fresh screenshots, DOM/computed style, verify Network JSON and BAM marker are materialized."
+    }
+  },
+  "figma_vs_runtime_comparison": {
+    "semantic_grid_comparison": {
+      "result": "match_with_non_blocker_notes",
+      "figma_grid": [
+        "Drawer header",
+        "batch radio/upload row",
+        "table",
+        "footer"
+      ],
+      "runtime_grid": [
+        "Drawer header",
+        "batch radio/sheet URL row",
+        "summary/actions",
+        "table with hit rows",
+        "footer"
+      ],
+      "waiver_basis": "AF-003 explicitly authorizes batch hit state to reuse manual hit summary/action/row status instead of waiting for an independent batch hit Figma variant."
+    },
+    "structure_comparison": {
+      "result": "match_with_non_blocker_notes",
+      "matches": [
+        "Right Drawer and title `提报视频` are present.",
+        "`批量上传` is selected.",
+        "`查看上传模板` and `提交` are present.",
+        "Table header order is stable and has no extra legacy gender/age columns.",
+        "Summary/action area appears above table after batch hit response as required by AF-003.",
+        "Footer order is `取消` then `提交并投放`."
+      ],
+      "non_blocker_differences": [
+        {
+          "difference": "Figma reference screenshot shows an uploaded/template-value row and max `100条`; runtime required flow uses sheet URL input and helper `最多支持50条`.",
+          "classification": "NON_BLOCKER",
+          "basis": "Matrix steps require `输入 sheet URL`; TASK-006 code contract keeps `apiGetDeliveryItemsFromSheet(sheet_url)` and `SubmitSelector` existing runtime baseline."
+        },
+        {
+          "difference": "Figma reference example rows and runtime mock rows use different sample data/count.",
+          "classification": "NON_BLOCKER",
+          "basis": "Current case validates runtime mock hit rows and AF-003 reuse behavior, not the literal Figma demo data."
+        },
+        {
+          "difference": "Figma node text records `投放金额(元)` while runtime renders `投放金额（元）`.",
+          "classification": "NON_BLOCKER",
+          "basis": "Existing table baseline punctuation; no semantic change, no column order/key change, and not introduced by TASK-006."
+        }
+      ]
+    },
+    "style_comparison": {
+      "result": "match",
+      "facts": [
+        "Hit labels use `rgb(245, 63, 63)`, `12px`, `line-height:18px`, `display:block`.",
+        "Summary icon uses blue circular icon with white `i`.",
+        "Primary action button order is `一键移除` then secondary `导出剔除明细`."
+      ]
+    },
+    "negative_scan": {
+      "result": "pass",
+      "forbidden_presence": {
+        "表格数据不符合要求": false,
+        "不支持命中态": false,
+        "unsupported": false,
+        "手动输入专属": false,
+        "申诉": false,
+        "低质": false,
+        "编辑": false,
+        "自动剔除": false,
+        "已自动移除": false,
+        "性别": false,
+        "年龄": false
+      },
+      "note": "A prior evaluate saw stale real-failure text. Fresh main-session DOM, text-node scan, aux message scan and screenshot all show it absent."
+    }
+  },
+  "subagent_gate_summary": {
+    "agent": "design_check_tc_ui_batch_hit_reuse",
+    "agent_result": "PASS",
+    "agent_screenshot": "screenshots/TC-UI-BATCH-HIT-REUSE--design-check-current.png",
+    "main_agent_review": "accepted evidence; final result tightened to NON_BLOCKER to explicitly record visible Figma reference/runtime-baseline differences instead of silently treating them as exact match"
+  },
+  "main_agent_gate_summary": {
+    "result": "NON_BLOCKER",
+    "archive_status": "ARCHIVED",
+    "auto_fix_status": "N/A",
+    "blockers": [],
+    "mock_issues": [],
+    "closed_rechecks": [
+      "TC-UI-BATCH-HIT-REUSE__recheck__design_alignment"
+    ],
+    "remaining_open_rechecks": [
+      "TC-UI-BATCH-HIT-REUSE__recheck__real_backend_sheet_success",
+      "TC-UI-BATCH-HIT-REUSE__recheck__batch_interaction_cases"
+    ],
+    "decision": "Archive current active design case as NON_BLOCKER_ARCHIVED; do not enter /delivery:accept; do not close real backend or batch interaction rechecks."
+  }
+}

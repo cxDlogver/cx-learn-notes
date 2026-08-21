@@ -1,0 +1,570 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiGetDouPlusCouponRemoveRecord",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console"
+    ],
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiGetDouPlusCouponRemoveRecord",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/evidence.json"
+      },
+      {
+        "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "page": 1,
+          "page_num": 20
+        },
+        "requestFieldsForMatching": {
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "__BAM_MOCK_ABSENT__",
+          "operator_id": "__BAM_MOCK_ABSENT__"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变当前默认列表 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.records",
+          "value": "one DOU+ coupon remove record",
+          "reason": "真实响应成功但为空，无法覆盖首行作者信息、剔除原因、剔除时间和操作人渲染断言；MOCK_PREVIEW 按矩阵要求补充至少一条作者维度剔除记录。",
+          "realVerify": "后端 ready 后用真实非空 DOU+券剔除记录复验字段来源。"
+        },
+        {
+          "responsePath": "data.total",
+          "value": 40,
+          "reason": "覆盖分页显示和 has_more 语义。",
+          "realVerify": "后端 ready 后复验真实 total 与分页。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": true,
+          "reason": "覆盖默认列表存在下一页的运行态。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    },
+    {
+      "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "900001,900002",
+          "operator_id": "6068830"
+        },
+        "requestFieldsForMatching": {
+          "candidate_ids": "900001,900002",
+          "operator_id": "6068830",
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ],
+        "forbiddenQueryKeysAbsent": [
+          "author_ids"
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.records",
+          "value": "one filtered DOU+ coupon remove record",
+          "reason": "真实筛选响应成功但为空，无法覆盖筛选后列表刷新和作者记录渲染断言；MOCK_PREVIEW 按矩阵要求补充筛选结果。",
+          "realVerify": "后端 ready 后用真实 DOU+券筛选结果复验 candidate_ids/operator_id 权限范围。"
+        },
+        {
+          "responsePath": "data.total",
+          "value": 1,
+          "reason": "覆盖筛选后 total 刷新。",
+          "realVerify": "后端 ready 后复验真实 total。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": false,
+          "reason": "覆盖筛选后一页内返回。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "page",
+    "page_num",
+    "candidate_ids",
+    "operator_id"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "page",
+      "impactType": "pagination",
+      "reason": "默认首屏 rule 只覆盖第一页；其他页必须走默认 no-op 或后续规则。",
+      "uiTarget": "DOU+券剔除明细 EcopTable pagination"
+    },
+    {
+      "fieldPath": "page_num",
+      "impactType": "pagination",
+      "reason": "默认首屏 rule 只覆盖每页 20 条的表格请求。",
+      "uiTarget": "DOU+券剔除明细 EcopTable pageSize"
+    },
+    {
+      "fieldPath": "candidate_ids",
+      "impactType": "filter_result",
+      "reason": "作者 ID 批量输入会改变筛选请求和列表刷新结果；默认 rule 必须要求该字段缺省，筛选 case 后续拆独立 rule。",
+      "uiTarget": "DOU+券剔除明细筛选区 / 作者ID输入框"
+    },
+    {
+      "fieldPath": "operator_id",
+      "impactType": "filter_result",
+      "reason": "操作人 PeopleSelect 选择会改变筛选请求和权限范围；默认 rule 必须要求该字段缺省，筛选 case 后续拆独立 rule。",
+      "uiTarget": "DOU+券剔除明细筛选区 / 操作人 PeopleSelect"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+      "requestFields": {
+        "page": 1,
+        "page_num": 20,
+        "candidate_ids": "__BAM_MOCK_ABSENT__",
+        "operator_id": "__BAM_MOCK_ABSENT__"
+      }
+    },
+    {
+      "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+      "requestFields": {
+        "candidate_ids": "900001,900002",
+        "operator_id": "6068830",
+        "page": 1,
+        "page_num": 20
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+      "caseIds": [
+        "TC-UI-COUPON-REMOVE-PAGE",
+        "TC-DATA-COUPON-COLUMNS",
+        "TC-CELL-COUPON-FIRST-ROW",
+        "TC-INT-REMOVE-TAB-SWITCH-COUPON",
+        "TC-TRACK-REMOVE-DETAIL-TAB-COUPON"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "DOU+券奖励投放 / 剔除明细 Tab",
+      "requestFields": {
+        "page": 1,
+        "page_num": 20,
+        "candidate_ids": "__BAM_MOCK_ABSENT__",
+        "operator_id": "__BAM_MOCK_ABSENT__"
+      },
+      "mockRule": "命中默认第一页且无作者ID/操作人筛选的 DOU+券剔除明细请求时，先调用原接口，再最小设置 data.records、data.total、data.has_more。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "page": 1,
+          "page_num": 20
+        },
+        "requestFieldsForMatching": {
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "__BAM_MOCK_ABSENT__",
+          "operator_id": "__BAM_MOCK_ABSENT__"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变当前默认列表 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.records",
+          "value": [
+            {
+              "record_id": "coupon_remove_record_20260708001",
+              "author_info": {
+                "author_id": "900001",
+                "author_name": "券作者示例",
+                "avatar": "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20profile%20avatar%20of%20a%20young%20ecommerce%20content%20creator%2C%20clean%20studio%20lighting%2C%20neutral%20background%2C%20no%20text%2C%20high%20quality&image_size=square",
+                "fans_num": 128900
+              },
+              "remove_reason": "命中【不激励】规则",
+              "operator_id": "6068830",
+              "remove_time": 1783514440
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "覆盖 DOU+券剔除明细首行作者信息、剔除原因、剔除时间、操作人渲染。"
+        },
+        {
+          "op": "set",
+          "path": "data.total",
+          "value": 40,
+          "source": "mock_rule",
+          "reason": "覆盖分页 total。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": true,
+          "source": "mock_rule",
+          "reason": "覆盖分页 has_more。"
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "page": 1,
+            "page_num": 20
+          }
+        }
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+        "mockedResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.mocked.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/evidence.json"
+      },
+      "verifyAssertion": "patched BAM 命中后输出单字符串 `[BAM_MOCK_HIT]` 且 ruleId=`R-BAM-COUPON-REMOVE-DEFAULT`，表格展示作者信息 / 剔除发奖原因 / 剔除发奖时间 / 操作人，并且不出现作品内容、券数量或投放状态列。",
+      "realVerify": "后端 ready 后复验真实 DOU+券非空剔除记录、分页、排序、has_more、作者信息和操作人展示。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "../../../verify-logs/evidence/TC-UI-COUPON-REMOVE-PAGE--mock-hit-runtime.json; ../../../screenshots/TC-UI-COUPON-REMOVE-PAGE--remove-detail-coupon-default--mock-hit.png",
+        "reason": "自然 UI 路径 `配置二 -> 奖励下发 -> 剔除明细` 命中 [BAM_MOCK_HIT]，ruleId=R-BAM-COUPON-REMOVE-DEFAULT，表格渲染 DOU+券作者维度 mock 首行且旧列缺失。"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "uiTarget": "no-hit 默认规则",
+      "requestFields": {},
+      "mockRule": "未命中具体 DOU+券剔除明细 rule 时返回原响应，不做 response 改写。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-DEFAULT/evidence.json"
+      },
+      "verifyAssertion": "未命中 `page=1,page_num=20,candidate_ids/operator_id 缺省` 的请求返回原响应且不输出成功 mock hit。",
+      "realVerify": "后端 ready 后复验真实分页 no-hit 行为。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "script.mjs; verify.mjs",
+        "reason": "接口级派生脚本确认 page=2,page_num=20、带 candidate_ids、仅带 operator_id 的请求均落入 DEFAULT_NOOP，当前默认规则无 mockOperations，不输出成功 mock hit。"
+      }
+    },
+    {
+      "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+      "caseIds": [
+        "TC-DATA-COUPON-FILTER-SCHEMA"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "DOU+券剔除明细 / 筛选区",
+      "requestFields": {
+        "candidate_ids": "900001,900002",
+        "operator_id": "6068830",
+        "page": 1,
+        "page_num": 20
+      },
+      "mockRule": "命中 DOU+券剔除明细作者ID+操作人筛选请求时，先调用原接口，再最小设置 data.records、data.total、data.has_more。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "900001,900002",
+          "operator_id": "6068830"
+        },
+        "requestFieldsForMatching": {
+          "candidate_ids": "900001,900002",
+          "operator_id": "6068830",
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "network_request",
+            "reason": "当前 DOU+券配置二的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ],
+        "forbiddenQueryKeysAbsent": [
+          "author_ids"
+        ]
+      },
+      "responseContract": {
+        "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "page": 1,
+            "page_num": 20,
+            "candidate_ids": "900001,900002",
+            "operator_id": "6068830"
+          },
+          "requestFieldsForMatching": {
+            "candidate_ids": "900001,900002",
+            "operator_id": "6068830",
+            "page": 1,
+            "page_num": 20
+          },
+          "collectionOnlyFields": [
+            {
+              "fieldPath": "activity_id",
+              "value": "7655304206886322458",
+              "source": "network_request",
+              "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+            },
+            {
+              "fieldPath": "config_id",
+              "value": "7655304206886355226",
+              "source": "network_request",
+              "reason": "当前 DOU+券配置二的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+            }
+          ],
+          "forbiddenQueryKeysAbsent": [
+            "author_ids"
+          ]
+        },
+        "responsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.json",
+        "browserPrecheckStatus": "passed"
+      },
+      "realResponsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.records",
+          "value": [
+            {
+              "record_id": "coupon_remove_filter_record_20260708001",
+              "author_info": {
+                "author_id": "900001",
+                "author_name": "筛选券作者示例",
+                "avatar": "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20profile%20avatar%20of%20an%20ecommerce%20coupon%20creator%2C%20clean%20studio%20lighting%2C%20neutral%20background%2C%20no%20text%2C%20high%20quality&image_size=square",
+                "fans_num": 88200
+              },
+              "remove_reason": "筛选命中【不激励】规则",
+              "operator_id": "6068830",
+              "remove_time": 1783516414
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "覆盖筛选后列表刷新，返回与 candidate_ids=900001 关联的一条作者剔除记录。"
+        },
+        {
+          "op": "set",
+          "path": "data.total",
+          "value": 1,
+          "source": "mock_rule",
+          "reason": "覆盖筛选后 total 刷新。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": false,
+          "source": "mock_rule",
+          "reason": "覆盖筛选后一页内返回。"
+        }
+      ],
+      "responseIntegrity": {
+        "source": "realConnectArtifact.response",
+        "mode": "path_reference",
+        "listAssertions": [
+          {
+            "responsePath": "data.records",
+            "requestPageSizeField": "page_num",
+            "requestPageNumberField": "page",
+            "totalField": "data.total",
+            "actualLength": 0,
+            "expectedMinLength": 0
+          }
+        ]
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.json",
+        "mockedResponse": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.mocked.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/evidence.json"
+      },
+      "verifyAssertion": "patched BAM 命中后输出 [BAM_MOCK_HIT] 且 ruleId=R-BAM-COUPON-REMOVE-FILTER；requestBody 包含 candidate_ids=900001,900002 与 operator_id=6068830；requestBody 不包含 author_ids；筛选区保留作者ID/操作人且列表刷新。",
+      "realVerify": "后端 ready 后用真实筛选条件复验 operator_id 权限范围、candidate_ids 过滤结果、分页和排序。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponRemoveRecord/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponRemoveRecord/manifest.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json -> PASS",
+        "reason": "patched BAM runtime 审核已确认 R-BAM-COUPON-REMOVE-FILTER matcher、mockOperations 和 inline marker；浏览器自然 UI 复验仍回到 TC-DATA-COUPON-FILTER-SCHEMA 单 case 闭环。"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiGetDouPlusCouponRemoveRecord",
+    "lastPatchedAt": "2026-07-08T12:48:20.378Z",
+    "notes": "No wrapper request field patch required because generated wrapper already passes activity_id, config_id, page, page_num, candidate_ids, operator_id."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "mixed",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponRemoveRecord/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> REPLACE inline patch apiGetDouPlusCouponRemoveRecord; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponRemoveRecord/manifest.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json -> PASS",
+    "reason": "Supplemental verify, standard reapply, and BAM mock final verification audit passed for R-BAM-COUPON-REMOVE-DEFAULT, R-BAM-COUPON-REMOVE-FILTER, and DEFAULT_NOOP fallback. UI 验收继续回到 TC-DATA-COUPON-FILTER-SCHEMA。",
+    "verifiedAt": "2026-07-08T13:28:05Z"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiGetDouPlusCouponRemoveRecord in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-08T19:46:19.308Z"
+  }
+}

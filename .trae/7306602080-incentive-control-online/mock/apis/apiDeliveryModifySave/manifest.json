@@ -1,0 +1,323 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiDeliveryModifySave",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console"
+    ],
+    "snapshotSummary": "integrated_browser viewId=f56171fb-9ae8-4e99-8749-ecc9e4f68a5a; DOU+ coin SearchCandidate page activity_id=7655304206886322458; first selectable candidate_id=7655364163166869874; all 50 visible candidates miss delivery_config.effective_time before submit.",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "synthetic_contract",
+    "artifactDir": "../../real-connect/apiDeliveryModifySave",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/request.json",
+        "response": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/response.json",
+        "evidence": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_modify_save must not be sent to the real backend during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY must complete the first DOU+ coin candidate effective_time through the real UI before final award submit can be verified.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "session_unix_time": 1783490000,
+          "candidate_ids": [
+            "7655364163166869874"
+          ],
+          "item_modify_config": {
+            "delivery_amount": 5000,
+            "delivery_duration": 7200,
+            "target_likes": 44,
+            "target_audience": 1,
+            "effective_time": 1783648800
+          },
+          "if_delivery": true
+        },
+        "requestFieldsForMatching": {
+          "candidate_ids.0": "7655364163166869874",
+          "if_delivery": true
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate route 上下文；不参与 matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate 配置 ID；不参与 matcher。"
+          },
+          {
+            "fieldPath": "item_modify_config.effective_time",
+            "value": 1783648800,
+            "source": "user_provided",
+            "reason": "verify 通过真实 UI DatePicker 填写的未来投放生效时间；不参与 matcher。"
+          }
+        ]
+      },
+      "syntheticContractReason": "delivery_modify_save is a backend write interface. MOCK_PREVIEW must return a marked synthetic success without sending a real configuration save.",
+      "interfaceNecessity": "The DOU+ coin final award submit is blocked until selected candidate effective_time is filled.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/response.json",
+      "browserPrecheckStatus": "passed"
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "candidate_ids.0",
+    "if_delivery"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "candidate_ids.0",
+      "impactType": "record_identity",
+      "reason": "Only the current first natural UI DOU+ coin SearchCandidate candidate is allowed to hit the synthetic save rule.",
+      "uiTarget": "DOU+币奖励投放 / 第 1 个候选 / 修改配置 Drawer"
+    },
+    {
+      "fieldPath": "if_delivery",
+      "impactType": "rule_branch",
+      "reason": "`if_delivery=true` distinguishes the award-config save path from not-award-reason updates; the current setup must keep the candidate as awardable.",
+      "uiTarget": "DOU+币奖励投放 / 修改配置 Drawer / 是否发奖"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+      "requestFields": {
+        "candidate_ids.0": "7655364163166869874",
+        "if_delivery": true
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+      "caseIds": [
+        "TC-INT-AWARD-COIN-PENALTY__setup_effective_time"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "DOU+币奖励投放 / 第 1 个候选 / 修改配置 Drawer",
+      "requestFields": {
+        "candidate_ids.0": "7655364163166869874",
+        "if_delivery": true
+      },
+      "mockRule": "命中第 1 个自然 UI DOU+币候选的发奖配置保存请求时，不发送真实后端写接口，返回 marked synthetic success response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "session_unix_time": 1783490000,
+          "candidate_ids": [
+            "7655364163166869874"
+          ],
+          "item_modify_config": {
+            "delivery_amount": 5000,
+            "delivery_duration": 7200,
+            "target_likes": 44,
+            "target_audience": 1,
+            "effective_time": 1783648800
+          },
+          "if_delivery": true
+        },
+        "requestFieldsForMatching": {
+          "candidate_ids.0": "7655364163166869874",
+          "if_delivery": true
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate route 上下文；真实 UI 请求自然携带，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "route_context",
+            "reason": "当前 DOU+币 SearchCandidate 配置 ID；真实 UI 请求自然携带，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783490000,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间戳会随页面会话变化；只保留 request shape，不参与 matcher。"
+          },
+          {
+            "fieldPath": "item_modify_config.delivery_amount",
+            "value": 5000,
+            "source": "selected_record",
+            "reason": "当前第 1 个候选已有投放金额 50 元，保存时自然携带，不参与 matcher。"
+          },
+          {
+            "fieldPath": "item_modify_config.delivery_duration",
+            "value": 7200,
+            "source": "selected_record",
+            "reason": "当前第 1 个候选已有投放时长 2 小时，保存时自然携带，不参与 matcher。"
+          },
+          {
+            "fieldPath": "item_modify_config.target_likes",
+            "value": 44,
+            "source": "selected_record",
+            "reason": "当前第 1 个候选已有转化目标偏好，保存时自然携带，不参与 matcher。"
+          },
+          {
+            "fieldPath": "item_modify_config.target_audience",
+            "value": 1,
+            "source": "selected_record",
+            "reason": "当前第 1 个候选已有目标受众，保存时自然携带，不参与 matcher。"
+          },
+          {
+            "fieldPath": "item_modify_config.effective_time",
+            "value": 1783648800,
+            "source": "user_provided",
+            "reason": "verify 通过真实 UI DatePicker 填写的未来投放生效时间；只作为前置条件补齐和 payload 审计，不参与 matcher。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+          "requestFieldsForMatching": {
+            "candidate_ids.0": "7655364163166869874",
+            "if_delivery": true
+          }
+        },
+        "mockedResponse": {
+          "st": 0,
+          "code": 0,
+          "msg": "success"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY requires effective_time setup through the real UI before final award submit.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real delivery_modify_save request."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/request.json",
+        "response": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/response.json",
+        "evidence": "../../real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real delivery_modify_save request.",
+        "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY requires first candidate effective_time setup before final award submit.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit `[BAM_MOCK_SYNTHETIC_CONTRACT]` and `[BAM_MOCK_HIT]` for `R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE`; UI must show a non-empty 投放生效时间 after the synthetic success save.",
+      "realVerify": "后端 ready 后复验真实 delivery_modify_save 持久化、权限、失败 msg 和候选池刷新一致性。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS and ADD inline patch apiDeliveryModifySave; node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryModifySave/verify.mjs -> PASS.",
+        "reason": "Mock runtime audit passed; browser natural UI `修改配置/保存` remains owned by TC-INT-AWARD-COIN-PENALTY and is not closed by this manifest verification.",
+        "verifiedAt": "2026-07-09T03:48:00+08:00"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "requestFields": {},
+      "mockRule": "未命中具体规则时保持原 BAM 请求逻辑；不得用 default no-op 关闭写接口 case。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDeliveryModifySave/DEFAULT_NOOP/evidence.json"
+      },
+      "verifyAssertion": "DEFAULT_NOOP exists only as manifest default fallback and is not used for TC-INT-AWARD-COIN-PENALTY closure.",
+      "realVerify": "No-hit write requests are outside current verify case and must not be used as success evidence.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryModifySave/verify.mjs passed; wrong candidate and if_delivery=false requests fall back to DEFAULT_NOOP.",
+        "reason": "DEFAULT_NOOP is a structural fallback only; it is not a UI success rule and must not close the active write-interface case.",
+        "verifiedAt": "2026-07-09T03:48:00+08:00"
+      }
+    }
+  ],
+  "patch": {
+    "targetBamFile": "index.ts",
+    "status": "passed",
+    "marker": "BAM_MOCK_PATCH_START apiDeliveryModifySave",
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> ADD inline patch apiDeliveryModifySave",
+    "verifiedAt": "2026-07-09T03:48:00+08:00"
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "reapply-bam-mocks.mjs added inline patch for apiDeliveryModifySave; apiDeliveryModifySave/verify.mjs passed for synthetic success and default fallback. Standard verify-bam-mock.mjs must remain the final audit command for this manifest.",
+    "reason": "Manifest, rule-map, synthetic success response, default fallback, and patched BAM marker are ready for the active verify setup step; this does not close business UI assertions.",
+    "verifiedAt": "2026-07-09T03:48:00+08:00"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "ADD inline patch apiDeliveryModifySave in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-08T19:46:19.308Z"
+  }
+}

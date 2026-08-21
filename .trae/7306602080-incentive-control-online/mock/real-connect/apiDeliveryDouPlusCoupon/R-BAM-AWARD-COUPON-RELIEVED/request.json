@@ -1,0 +1,56 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+  "sendRealBackendRequest": false,
+  "sendRealBackendRequestReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coupon is an award write API and must not send a real backend request during verify.",
+  "body": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "charge_code": "charge_code_award_coupon_relieved_7306602080",
+    "delivery_authors": [
+      {
+        "candidate_id": "800002",
+        "rank": 2
+      }
+    ],
+    "session_unix_time": 1783575400,
+    "delivery_from": 1
+  },
+  "requestFieldsForMatching": {
+    "delivery_from": 1,
+    "delivery_authors.0.candidate_id": "800002"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7655304206886322458",
+      "source": "route_context",
+      "reason": "当前内容活动奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7655304206886355226",
+      "source": "route_context",
+      "reason": "DOU+券配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "charge_code",
+      "value": "charge_code_award_coupon_relieved_7306602080",
+      "source": "synthetic_contract",
+      "reason": "券充值 / 发放记录由 verify 自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体值必须在运行态重新采集。"
+    },
+    {
+      "fieldPath": "delivery_authors.0.rank",
+      "value": 2,
+      "source": "synthetic_contract",
+      "reason": "relieved author 是 SearchCandidate mock 的第二行；rank 只用于保持 DeliveryCandidate 请求形态，不参与 matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783575400,
+      "source": "synthetic_contract",
+      "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+    }
+  ]
+}

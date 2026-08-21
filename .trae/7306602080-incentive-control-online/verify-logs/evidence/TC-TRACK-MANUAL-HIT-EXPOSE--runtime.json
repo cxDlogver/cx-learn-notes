@@ -1,0 +1,212 @@
+{
+  "case_id": "TC-TRACK-MANUAL-HIT-EXPOSE",
+  "runtime_state": "manual-hit",
+  "capture_scope": "summary visible / logger spy",
+  "collected_at": "2026-07-08T17:21:28.941Z",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "headless": false,
+  "business_view_id": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+  "business_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+  "page_title": "内容生态运营｜橙蕉",
+  "mock_rule": {
+    "api_name": "apiSearchDeliveryItems",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/search_delivery_items",
+    "rule_id": "R-BAM-MANUAL-SEARCH-HIT",
+    "manifest_ref": "mock/apis/apiSearchDeliveryItems/manifest.json",
+    "shared_rule_note": "Shared rule had already been generated for manual hit cases, but this tracking case required independent logger and negative evidence."
+  },
+  "probe": {
+    "case_id": "TC-TRACK-MANUAL-HIT-EXPOSE",
+    "installed_at": "2026-07-08T17:04:01.408Z",
+    "collect_wrapper_installed_at": "2026-07-08T17:07:50.038Z",
+    "collect_event_calls_length": 26,
+    "marks_length": 23,
+    "xhrs_length": 31,
+    "restore_actions": [
+      "collectRestore",
+      "restore"
+    ],
+    "restored": true,
+    "restore_checked_at": "2026-07-08T17:18:46.529Z"
+  },
+  "positive_assertion": {
+    "pre_submit_dom": {
+      "at": "2026-07-08T17:08:43.045Z",
+      "input_value": "100001,100002,100003",
+      "has_drawer": true,
+      "has_summary_actions": false,
+      "hit_word_count": 0,
+      "no_incentive_word_count": 0
+    },
+    "network_trigger": {
+      "at": "2026-07-08T17:08:48.286Z",
+      "method": "GET",
+      "status": 200,
+      "path": "/api/buyin/admin/content_activity/search_delivery_items",
+      "query": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "page_no": "1",
+        "page_size": "50",
+        "item_ids": "100001,100002,100003",
+        "session_unix_time": "1783529054",
+        "candidate_pool_type": "2"
+      },
+      "response_parse_note": "Probe responseText was truncated by browser serialization, but the same request shape is covered by R-BAM-MANUAL-SEARCH-HIT manifest and previous manual-hit runtime evidence."
+    },
+    "summary_visible_dom": {
+      "at": "2026-07-08T17:09:08.399Z",
+      "has_drawer": true,
+      "has_summary_actions": true,
+      "hit_word_count": 3,
+      "no_incentive_word_count": 3,
+      "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+      "visible_rows": [
+        "100001: 不满足准入门槛",
+        "100002: 命中【不激励】规则",
+        "100003: 可投放作品"
+      ]
+    },
+    "logger_payload": {
+      "at": "2026-07-08T17:08:48.893Z",
+      "command": "auto_tea_log",
+      "eventName": "module_expose",
+      "params": {
+        "url_path": "/alliance-operation-content/content-activity/award",
+        "page_name": "奖励投放页",
+        "page_id": "activity_reward_distribution",
+        "module_name": "人工提报命中提示",
+        "module_id": "manual_submit_hit_summary",
+        "module_type": "block",
+        "parent_block_type": "page",
+        "parent_block_id": "activity_reward_distribution",
+        "parent_block_name": "奖励投放页",
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "submitHitCount": "2",
+        "submitHitTotalCount": "3",
+        "submit_method": "videoIds",
+        "session_unix_time": "1783529054"
+      }
+    },
+    "manual_summary_expose_count_after_first_valid_hit": 1,
+    "result": "PASS"
+  },
+  "negative_assertion": {
+    "duplicate_render_guard": {
+      "trigger": "Typed `verify duplicate render guard` into a visible table reason textarea after the valid hit summary was visible.",
+      "before": {
+        "at": "2026-07-08T17:09:23.977Z",
+        "manualExposeCount": 1,
+        "collectCallCount": 9
+      },
+      "after": {
+        "at": "2026-07-08T17:09:50.094Z",
+        "manualExposeCount": 1,
+        "moduleExposeCount": 1,
+        "collectCallCount": 9,
+        "has_summary_actions": true,
+        "hit_word_count": 3,
+        "no_incentive_word_count": 3
+      },
+      "result": "PASS"
+    },
+    "failed_no_hit_sample_attempt": {
+      "status": "RECORDED_NOT_USED_AS_NEGATIVE_PROOF",
+      "reason": "`999999999999` did not produce a no-hit response; it returned one invalid row with if_satisfy_delivery_rules=false, so a second manual summary exposure was expected and correct.",
+      "request": {
+        "at": "2026-07-08T17:10:57.921Z",
+        "method": "GET",
+        "status": 200,
+        "path": "/api/buyin/admin/content_activity/search_delivery_items",
+        "query": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "page_no": "1",
+          "page_size": "50",
+          "item_ids": "999999999999",
+          "session_unix_time": "1783529054",
+          "candidate_pool_type": "2"
+        },
+        "response_summary": {
+          "st": 0,
+          "code": 0,
+          "item_info_length": 1,
+          "item_ids": [
+            "999999999999"
+          ],
+          "hit_flags": [
+            {
+              "item_id": "999999999999",
+              "if_satisfy_delivery_rules": false
+            }
+          ]
+        }
+      },
+      "logger_payload": {
+        "at": "2026-07-08T17:10:58.413Z",
+        "eventName": "module_expose",
+        "params": {
+          "module_id": "manual_submit_hit_summary",
+          "submitHitCount": "1",
+          "submitHitTotalCount": "1",
+          "submit_method": "videoIds",
+          "session_unix_time": "1783529054"
+        }
+      },
+      "manualExposeCount_after_attempt": 2
+    },
+    "no_summary_state_after_row_remove": {
+      "method": "Natural UI row-level `移除` link was clicked via DOM evaluation because the accessibility snapshot exposed the anchor text without a stable clickable ref; visible `确定` popconfirm was confirmed through the browser.",
+      "before_confirm": {
+        "at": "2026-07-08T17:13:50.938Z",
+        "manualExposeCount": 2,
+        "collectCallCount": 24,
+        "hasSummaryActions": true,
+        "hitWordCount": 1,
+        "noIncentiveWordCount": 1
+      },
+      "after_confirm": {
+        "at": "2026-07-08T17:14:23.543Z",
+        "manualExposeCount": 2,
+        "collectCallCount": 26,
+        "hasSummaryActions": false,
+        "hitWordCount": 0,
+        "noIncentiveWordCount": 0,
+        "table_state": "暂无数据"
+      },
+      "final_dom_check": {
+        "at": "2026-07-08T17:21:28.941Z",
+        "hasDrawer": true,
+        "hasSummaryActions": false,
+        "hitWordCount": 0,
+        "noIncentiveWordCount": 0,
+        "input_value": "999999999999"
+      },
+      "result": "PASS_WITH_NOTES",
+      "note": "Runtime proved that transitioning to a no-summary/no-hit state did not add another manual summary exposure. A fresh all-valid backend sample was not available in this case, so the source guard is also cited."
+    }
+  },
+  "network_panel_summary": {
+    "captured_at": "2026-07-08T17:18:59.057Z",
+    "total_requests": 98,
+    "target_request_index": 18,
+    "target_request": "GET https://ecop.bytedance.net/api/buyin/admin/content_activity/search_delivery_items?activity_id=7653282555822653742&config_id=7653282555822735662&page_no=1&page_size=50&item_ids=100001%2C100002%2C100003&session_unix_time=1783529054&candidate_pool_type=2&__token=<redacted>",
+    "collector_traffic_observed": [
+      "POST https://mcs.snssdk.com/v1/list",
+      "POST https://mcs.zijieapi.com/list",
+      "POST https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=alliance_operation_content",
+      "POST https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=ecop_platform"
+    ],
+    "temp_log_note": "Integrated browser full log was emitted under /var/folders/.../network-2026-07-08T17-18-59-057Z.log; this artifact records the persistent summary instead of relying on that temp path."
+  },
+  "source_refs": {
+    "component_use_effect": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx:604-644",
+    "store_hit_derivation": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts:58-120",
+    "operation_logger_transport": "apps/alliance-operation-content/node_modules/@ecom/operation-logger/src/index.ts:61-69,147-164",
+    "runtime_bundle_probe": "http://localhost:8083/alliance-operation-content/static/js/async/content-activity/award/page.js lines 3437-3445 from curl+rg output"
+  },
+  "overall_result": "PASS_WITH_NOTES"
+}

@@ -1,0 +1,43 @@
+{
+  "st": 0,
+  "code": 0,
+  "msg": "",
+  "extra": {
+    "log_id": "synthetic_coupon_delivery_record_exception_800003",
+    "now": 1783586962000
+  },
+  "data": {
+    "records": [
+      {
+        "record_id": "fail_coupon_exception_record_800003",
+        "author_info": {
+          "author_id": "800003",
+          "author_name": "制券失败作者800003",
+          "avatar": "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20professional%20creator%20profile%20portrait%2C%20neutral%20studio%20background%2C%20clean%20lighting%2C%20no%20text%2C%20high%20quality&image_size=square",
+          "fans_num": 88000
+        },
+        "charge_code": "charge_code_award_coupon_exception_7306602080",
+        "charge_name": "TC异常重提券充值记录",
+        "delivery_status": 3,
+        "operator_id": "6068830",
+        "delivery_time": 1783586200,
+        "num": 1,
+        "delivery_config": {
+          "coupon_type": 1,
+          "coupon_config": {
+            "threshold": 100,
+            "freeAmount": 5000
+          },
+          "num": 1,
+          "reiceve_start_time": 1783440000,
+          "reiceve_end_time": 1783526399,
+          "use_time_type": 1,
+          "use_start_time": 1783440000,
+          "use_end_time": 1784131199
+        }
+      }
+    ],
+    "total": 1,
+    "has_more": false
+  }
+}

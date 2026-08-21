@@ -1,0 +1,10 @@
+{
+  "ruleId": "DEFAULT_NOOP",
+  "status": "passed",
+  "apiName": "apiDeliveryDouPlusCoupon",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+  "purpose": "Structural default no-op artifact for manifest validation. Current verify case does not use this response as evidence.",
+  "runtimeBehavior": "No mock operations are attached to DEFAULT_NOOP; only concrete R-BAM-AWARD-COUPON-PENALTY is expected during TC-INT-AWARD-COUPON-PENALTY.",
+  "realVerify": "No-hit award write requests must not be used for case closure. Real backend behavior remains a real verify recovery item."
+}

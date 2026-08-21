@@ -1,0 +1,152 @@
+{
+  "case_id": "TC-INT-AWARD-EMPTY-LIST",
+  "captured_at": "2026-07-09T18:35:42+08:00",
+  "result": "PASS_WITH_NOTES",
+  "runtime_mode": "MOCK_PREVIEW",
+  "browser_tool": "integrated_browser",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_url_sanitized": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=award_empty_final_202607091910",
+  "activity_id": "7653282555822653742",
+  "config_id": "7653282555822735662",
+  "selected_tab": "配置一（人工提报）",
+  "submit_from": "batch upload",
+  "reward_type": "DOU+币",
+  "natural_ui_steps": [
+    "Reloaded the award page with cache-bust _verify_reload=award_empty_final_202607091910 after reapplying BAM patches.",
+    "Clicked `新增提报`, switched to `批量上传`, entered `https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080`, and clicked ordinary `提交`.",
+    "Confirmed one physical Drawer row was rendered from the setup mock, with title `批量上传空名单不发奖作品` and item_id `700004`.",
+    "Clicked `提交并投放` and observed Modal text `本次共投放 0 个作品，预计占用 0 元DOU+币`.",
+    "Selected charge record `周度-镇楼神贴奖-陈侯聪-40000` through the real combobox search path by typing `周度` and pressing Enter.",
+    "Clicked Modal `确定` after charge validation unlocked the button.",
+    "Observed Modal and Drawer close/reset to the page empty state with no success toast and no final award API transport."
+  ],
+  "setup_precondition": {
+    "api_name": "apiGetDeliveryItemsFromSheet",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+    "rule_id": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+    "runtime_marker": "[BAM_MOCK_HIT]",
+    "request_body": {
+      "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662"
+    },
+    "mocked_response_summary": {
+      "total_num": 1,
+      "candidate_num": 0,
+      "item_id": "700004",
+      "title": "批量上传空名单不发奖作品",
+      "if_delivery": false,
+      "if_satisfy_delivery_rules": true,
+      "if_not_incentive": false,
+      "delivery_amount": 30000,
+      "rank": 1
+    },
+    "runtime_dom": {
+      "drawer_physical_row_visible": true,
+      "drawer_text_contains_sample_title": true,
+      "drawer_summary": "Drawer rendered one physical row so the user could naturally click `提交并投放`; the effective Modal delivery list was empty after BatchSubmitModal filtered `if_delivery === true`."
+    }
+  },
+  "modal_before_confirm": {
+    "visible": true,
+    "text": "投放奖励\n本次共投放 0 个作品，预计占用 0 元DOU+币\n关联充值记录\n请选择\n若无可用资源，请\n点此充值\n确定取消",
+    "effective_delivery_count": 0,
+    "estimated_cost_yuan": 0,
+    "confirm_button_enabled_before_charge": false
+  },
+  "charge_amount_check": {
+    "api_name": "apiChargeAmountCheck",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/charge_amount_check",
+    "rule_id": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+    "runtime_marker": "[BAM_MOCK_HIT]",
+    "request_body": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "charge_code": "LST12606290003681",
+      "session_unix_time": 1783593168,
+      "delivery_from": 2,
+      "resource_type": 5,
+      "delivery_list": []
+    },
+    "mocked_response": {
+      "st": 0,
+      "code": 0,
+      "msg": "",
+      "data": {
+        "can_delivery": true,
+        "left_amount": 1900000,
+        "current_use_amount": 0
+      }
+    },
+    "runtime_dom": {
+      "charge_record": "周度-镇楼神贴奖-陈侯聪-40000",
+      "confirm_button_enabled_after_charge": true
+    },
+    "mock_boundary": "This mock only unblocks the Modal charge validation precondition for delivery_list=[]; it is not a final award success mock."
+  },
+  "final_award_no_call": {
+    "api_name": "apiDeliveryDouPlusCoin",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+    "expected_behavior": "No apiDeliveryDouPlusCoin call because submitSendAwardVideos returns before calling the API when the effective submit list is empty.",
+    "console_markers_observed": {
+      "apiDeliveryDouPlusCoin": [],
+      "bam_mock_hit_for_final_award": false,
+      "bam_mock_synthetic_contract_for_final_award": false
+    },
+    "performance_business_requests_sanitized": [
+      "GET /api/buyin/admin/content_activity/detail?activity_id=7653282555822653742",
+      "GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet?sheet_url=https%3A%2F%2Fbytedance.larkoffice.com%2Fsheets%2Faward-empty-list-7306602080&activity_id=7653282555822653742&config_id=7653282555822735662",
+      "GET /api/buyin/admin/content_activity/get_charge_record?cj_project_id=11260415003222&page_num=1&page_size=20&resource_type=5",
+      "POST /api/buyin/admin/content_activity/charge_amount_check"
+    ],
+    "performance_counts": {
+      "business": 4,
+      "get_delivery_items_from_sheet": 1,
+      "charge_amount_check": 1,
+      "delivery_dou_plus_coin": 0
+    },
+    "browser_network_output_summary": [
+      "The post-confirm browser_network_requests output contained `POST /api/buyin/admin/content_activity/charge_amount_check`.",
+      "No XHR/fetch entry for `/api/buyin/admin/content_activity/delivery_dou_plus_coin` appeared after the final click.",
+      "Network URLs were summarized with `__token` removed; no cookie, storage, or auth token values were read or persisted."
+    ],
+    "result": "PASS"
+  },
+  "post_submit_dom": {
+    "modal_closed": true,
+    "drawer_closed": true,
+    "page_returned_to_empty_state": true,
+    "page_has_add_button": true,
+    "toast_candidates": [],
+    "success_text_present": false,
+    "forbidden_success_texts": [
+      "发放成功",
+      "投放成功",
+      "下发成功",
+      "发送成功",
+      "提交成功",
+      "奖励发放成功"
+    ],
+    "empty_list_modal_text_still_present": false
+  },
+  "code_path_evidence": {
+    "source_file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+    "empty_guard": "submitSendAwardVideos computes submitList from delivery_list for UploadCandidate and returns { resultCode: 0 } before apiDeliveryDouPlusCoin when submitList.length === 0.",
+    "toast_guard": "message.success(MESSAGES.SEND_AWARD_VIDEOS_SUCCESS) is inside the apiDeliveryDouPlusCoin response branch, so the empty-list early return does not create a fake success toast.",
+    "close_behavior": "handleOk closes/resets the Modal when resultCode === 0; runtime DOM confirmed reset without final award transport."
+  },
+  "screenshot": {
+    "attempted_filename": "verify-logs/screenshots/TC-INT-AWARD-EMPTY-LIST-final-no-call.png",
+    "materialization_type": "inline_only",
+    "local_file_created": false,
+    "reason": "integrated_browser returned an inline screenshot preview but did not materialize the requested workspace file path",
+    "observed_preview_state": "Final page empty state with `新增提报` visible and no Modal/Drawer."
+  },
+  "residual_risks": [
+    "MOCK_PREVIEW setup and charge-validation mocks verify frontend empty-list behavior and no-call safety, but do not prove real sheet parsing or real charge validation backend behavior.",
+    "The final no-call assertion is frontend runtime evidence: no final transport, no final BAM marker, and no success/fake-success UI were observed."
+  ]
+}

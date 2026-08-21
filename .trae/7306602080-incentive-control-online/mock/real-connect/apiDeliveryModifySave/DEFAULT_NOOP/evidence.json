@@ -1,0 +1,10 @@
+{
+  "ruleId": "DEFAULT_NOOP",
+  "status": "passed",
+  "apiName": "apiDeliveryModifySave",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+  "purpose": "Structural default no-op artifact for manifest validation. Current verify case does not use this response as evidence.",
+  "runtimeBehavior": "No mock operations are attached to DEFAULT_NOOP; only concrete `R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE` is expected during TC-INT-AWARD-COIN-PENALTY setup.",
+  "realVerify": "No-hit write requests must not be used for case closure. Real backend behavior remains a real verify recovery item."
+}

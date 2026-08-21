@@ -1,0 +1,58 @@
+{
+  "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+  "caseId": "TC-INT-AWARD-EMPTY-LIST",
+  "originStage": "verify",
+  "capturedAt": "2026-07-09T10:21:39.948Z",
+  "browserRuntimeMode": "TRAE_DESKTOP",
+  "browserTool": "integrated_browser",
+  "captureMethod": "xhr_response_listener",
+  "page": {
+    "urlSanitized": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=award_empty_final_202607091758",
+    "title": "内容生态运营｜橙蕉",
+    "tab": "配置一（人工提报）",
+    "entry": "奖励下发 / 新增提报 / 批量上传 / 提交并投放"
+  },
+  "uiSteps": [
+    "输入批量上传表格链接 https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+    "点击普通提交并由 apiGetDeliveryItemsFromSheet / R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST 恢复 1 条 if_delivery=false 物理行",
+    "点击提交并投放打开投放奖励 Modal",
+    "Modal DOM 显示：本次共投放 0 个作品，预计占用 0 元DOU+币",
+    "选择充值记录 周度-镇楼神贴奖-陈侯聪-40000，触发 apiChargeAmountCheck"
+  ],
+  "request": {
+    "method": "POST",
+    "urlSanitized": "/api/buyin/admin/content_activity/charge_amount_check?__token=[REDACTED]",
+    "body": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "charge_code": "LST12606290003681",
+      "delivery_list": [],
+      "session_unix_time": 1783591836,
+      "delivery_from": 2,
+      "resource_type": 5
+    }
+  },
+  "realResponse": {
+    "status": 200,
+    "bodyPath": "response.json",
+    "summary": {
+      "st": 10000000,
+      "code": 10000000,
+      "msg": "参数错误",
+      "dataKeys": []
+    }
+  },
+  "modalObservedBeforeMock": {
+    "text": "投放奖励\n本次共投放 0 个作品，预计占用 0 元DOU+币\n关联充值记录\n周度-镇楼神贴奖-陈侯聪-40000\n余额不足。剩余可用：0元，本期预计消耗0元\n确定取消",
+    "okButtonDisabled": true,
+    "reason": "真实 empty-list 金额校验未返回 can_delivery=true，无法继续触发 submitSendAwardVideos 的空名单 no-call guard。"
+  },
+  "mockBoundary": {
+    "purpose": "只解除 empty-list Modal 的金额校验前置拦截，使 Verify 能点击确定并证明最终 apiDeliveryDouPlusCoin 不被调用。",
+    "forbidden": [
+      "不得 mock apiDeliveryDouPlusCoin success",
+      "不得把金额校验 mock 作为最终发奖成功证据",
+      "最终 case pass 必须采集 no apiDeliveryDouPlusCoin marker/XHR/fetch 和 no success toast"
+    ]
+  }
+}

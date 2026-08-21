@@ -1,0 +1,72 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+  "body": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "charge_code": "charge_code_award_coin_timeout_7306602080",
+    "delivery_list": [
+      {
+        "item_id": "700003",
+        "delivery_config": {
+          "delivery_amount": 30000,
+          "delivery_duration": 7200,
+          "target_likes": 1,
+          "target_audience": 1,
+          "effective_time": 1783612800
+        },
+        "delivery_reason": "批量上传 timeout 可投放样本"
+      }
+    ],
+    "session_unix_time": 1783578953,
+    "delivery_from": 2
+  },
+  "requestFieldsForMatching": {
+    "delivery_from": 2,
+    "delivery_list.0.item_id": "700003"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7653282555822653742",
+      "source": "route_context",
+      "reason": "当前人工提报 vmok 奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7653282555822735662",
+      "source": "route_context",
+      "reason": "当前配置一人工提报配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "charge_code",
+      "value": "charge_code_award_coin_timeout_7306602080",
+      "source": "synthetic_contract",
+      "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体值必须在运行态重新采集。"
+    },
+    {
+      "fieldPath": "delivery_list.0.delivery_config",
+      "value": "see body.delivery_list[0].delivery_config",
+      "source": "synthetic_contract",
+      "reason": "上传名单样本由独立 sheet setup rule 自然渲染并传入 final award request；不参与 matcher。"
+    },
+    {
+      "fieldPath": "delivery_list.0.delivery_reason",
+      "value": "批量上传 timeout 可投放样本",
+      "source": "synthetic_contract",
+      "reason": "上传名单样本携带的投放原因；不参与 matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783578953,
+      "source": "synthetic_contract",
+      "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+    }
+  ],
+  "writeInterfaceSafety": {
+    "sendRealBackendRequest": false,
+    "reason": "MOCK_PREVIEW 下 `delivery_dou_plus_coin` 为发奖写接口；发送真实请求可能产生发奖事务，必须由 BAM mock runtime 返回标记的 synthetic timeout response。",
+    "realVerify": "真实环境需复验 timeout / network timeout 链路、治理接口一致性和最终发奖事务暂停行为。"
+  }
+}

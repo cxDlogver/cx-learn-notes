@@ -1,0 +1,122 @@
+{
+  "case_id": "TC-UI-MANUAL-HIT-PAGE",
+  "runtime_state": "manual-hit",
+  "capture_scope": "drawer-first-screen",
+  "collected_at": "2026-07-08T22:51:45+08:00",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "headless": false,
+  "source_tab_note": "Business tab with manual submit Drawer retained after clean vmok reload; stale Loading tab was not used.",
+  "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+  "title": "内容生态运营｜橙蕉",
+  "mock_rule": {
+    "api_name": "apiSearchDeliveryItems",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/search_delivery_items",
+    "rule_id": "R-BAM-MANUAL-SEARCH-HIT",
+    "hit_source": "window.__TC_UI_MANUAL_HIT_VERIFY__.hits[0] captured from single-string [BAM_MOCK_HIT] console payload"
+  },
+  "bam_hit": {
+    "hit_count": 1,
+    "first_hit_at": "2026-07-08T14:44:21.774Z",
+    "request_body": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "item_ids": "100001,100002,100003",
+      "session_unix_time": 1783521785,
+      "candidate_pool_type": 2,
+      "page_no": 1,
+      "page_size": 50
+    },
+    "response_summary": {
+      "code": 0,
+      "type": "success",
+      "total_num": 3,
+      "candidate_num": 1,
+      "has_more": false,
+      "item_info_length": 3,
+      "hit_rows": [
+        {
+          "item_id": "100001",
+          "title": "人工提报准入失败作品",
+          "if_satisfy_delivery_rules": false,
+          "if_not_incentive": false,
+          "not_incentive_reason": [],
+          "if_delivery": false
+        },
+        {
+          "item_id": "100002",
+          "title": "人工提报不激励命中作品",
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": true,
+          "not_incentive_reason": [
+            "历史违规命中不激励规则"
+          ],
+          "if_delivery": false
+        },
+        {
+          "item_id": "100003",
+          "title": "人工提报可投放作品",
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": false,
+          "not_incentive_reason": [],
+          "if_delivery": true
+        }
+      ]
+    }
+  },
+  "dom_summary": {
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "text_presence": {
+      "drawer_title": true,
+      "manual_input": true,
+      "batch_upload": true,
+      "invalid_label": true,
+      "not_incentive_label": true,
+      "one_click_remove": true,
+      "export_remove_detail": true,
+      "submit_and_deliver": true,
+      "appeal": false,
+      "low_quality": false,
+      "edit": false
+    },
+    "row_count": 3,
+    "row_texts": [
+      "1 视频标题：人工提报准入失败作品 视频ID：100001 不满足准入门槛 请选择 请选择 请选择 - - 移除",
+      "2 视频标题：人工提报不激励命中作品 视频ID：100002 命中【不激励】规则 请选择 请选择 请选择 - - 移除",
+      "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 - - 移除"
+    ],
+    "button_texts": [
+      "新增提报",
+      "提交",
+      "一键移除",
+      "导出剔除明细",
+      "提交并投放",
+      "取消"
+    ],
+    "manual_input_value": "100001,100002,100003"
+  },
+  "screenshot": {
+    "path": "screenshots/TC-UI-MANUAL-HIT-PAGE--manual-drawer-hit--mock-hit.png",
+    "materialization_type": "local_file",
+    "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced",
+    "sha256": "06850f0b3f449b3d07212521c703a816a00d0eeb367f55bed716479279d73a87",
+    "state_match_hints": [
+      "Drawer title 提报视频 visible",
+      "manual input value 100001,100002,100003 visible",
+      "summary and action buttons visible above table",
+      "three table rows visible",
+      "footer 提交并投放 visible"
+    ]
+  },
+  "network_panel_note": "integrated_browser network history at the later collection point did not retain the earlier GET entry; request method/path/body are therefore evidenced by the captured [BAM_MOCK_HIT] payload and mock manifest, not by browser_network_requests output.",
+  "negative_scope": {
+    "no_auto_removal": "Rows 100001 and 100002 remain visible after hit rendering.",
+    "forbidden_text_absent": [
+      "申诉",
+      "低质",
+      "编辑"
+    ]
+  },
+  "design_reuse_note": "Verify screenshot is runtime source only. It can be reused by /delivery:design as Drawer runtime evidence, but verify does not claim Figma-vs-runtime alignment."
+}

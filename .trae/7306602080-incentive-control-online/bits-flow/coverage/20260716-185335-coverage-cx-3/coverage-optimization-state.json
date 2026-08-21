@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "threshold": 90,
+  "rounds": 3,
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_repo": "ecom/alliance-operation-mono",
+  "fromBranch": "master",
+  "toBranch": "cx-3",
+  "coverage_script": "/Users/bytedance/cx/spec-2/meego-11/.trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js",
+  "coverage_report_ref": {
+    "latest_json": "coverage/latest.json",
+    "report_md": "coverage/report.md",
+    "uncovered_list_json": "coverage/uncovered-list.json",
+    "uncovered_list_md": "coverage/uncovered-list.md",
+    "generated_at": "",
+    "huatuo_update_ref": "coverage/update-response.json"
+  },
+  "state_initialization": {
+    "initialized_from_template": true,
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_log_loaded": true,
+    "previous_state_ref": "../20260716-171133-coverage-cx-3/coverage-optimization-state.json",
+    "previous_state_loaded": true,
+    "previous_state_notes": "Previous run ended BLOCKED after clearing the only effective non-BAM inserted-line candidate; this run refreshes Huatuo again using the user-provided real online award URL as UI entry context."
+  },
+  "execution_policy": {
+    "candidate_source_ref": "coverage/uncovered-list.json",
+    "script_default_filters": [
+      "coverRatio < 100",
+      "insertLines > 0",
+      "exclude path segment named bam"
+    ],
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_active_effects": ["SKIP_SAME_VERSION"],
+    "single_target_per_round": true,
+    "same_run_dedup_ref": "rounds_log[].target_file",
+    "all_target_files_enter_global_exclusion_log": true,
+    "code_changed_targets_remain_retriable": false,
+    "side_effect_write_policy": "ALLOW_UI_TRIGGER_WITH_BROWSER_INTERCEPT_ONLY",
+    "write_intercept_required_for": [
+      "create",
+      "update",
+      "delete",
+      "submit",
+      "send_award",
+      "modify_config",
+      "send_notification",
+      "any_side_effect_write"
+    ],
+    "write_intercept_evidence_required": true,
+    "exclusion_reason_recording": "DO_NOT_RECORD_SELECTION_REASON",
+    "file_coverage_version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion",
+    "active_exclusion_only_when_file_coverage_version_matches": true
+  },
+  "overall_cover_ratio_before": null,
+  "overall_cover_ratio_after": null,
+  "rounds_log": [],
+  "request_field_sources": [
+    {
+      "endpoint": "N/A",
+      "method": "N/A",
+      "fields": [
+        {
+          "field": "activity_id",
+          "value": "7629288371705643310",
+          "source": "user-provided real online entry URL"
+        },
+        {
+          "field": "cjSiteCode",
+          "value": "St12502250000001",
+          "source": "user-provided real online entry URL"
+        }
+      ],
+      "source_type": "REAL_UI",
+      "evidence_ref": "round-meta.json.user_args.entry_url",
+      "notes": "Used only as a real online UI entry context unless a valid target file is selected after Huatuo refresh."
+    }
+  ],
+  "write_request_intercepts": [],
+  "verification": {
+    "commands": [],
+    "passed": [],
+    "failed": [],
+    "known_unrelated_failures": []
+  },
+  "blockers": [
+    {
+      "id": "INPUT-USER-TEST-REPORT-MISSING",
+      "severity": "P2_NOTE",
+      "status": "OPEN",
+      "evidence": "Required coverage input 10-user-test-report.md is absent in the selected workspace; 06-debug-verification.md and 07-design-alignment.md are available fallback evidence sources.",
+      "impact": "Does not block coverage pull; may reduce direct mapping to final UAT evidence."
+    }
+  ],
+  "overall_status": "IN_PROGRESS"
+}

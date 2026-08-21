@@ -1,0 +1,716 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiDeliveryDouPlusCoupon",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console"
+    ],
+    "snapshotSummary": "integrated_browser snapshot viewId=f56171fb-9ae8-4e99-8749-ecc9e4f68a5a; title=内容生态运营｜橙蕉; business URL is alliance-operation-content award vmok; current detour installs DOU+券 award write-interface safety before natural UI submit.",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "synthetic_contract",
+    "artifactDir": "../../real-connect/apiDeliveryDouPlusCoupon",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-AWARD-COUPON-PENALTY",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coupon must not send a real award request during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-COUPON-PENALTY must verify frontend handling of a natural-penalty non-success award response.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "R-BAM-AWARD-COUPON-RELIEVED",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coupon must not send a real award request during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-COUPON-RELIEVED must verify frontend handling of a governance-relieved success award response.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coupon must not send a real award request during verify.",
+        "interfaceNecessity": "TC-INT-AWARD-EXCEPTION must verify frontend handling of an exception-like UploadCandidate coupon award response.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-PENALTY",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "charge_code": "charge_code_award_coupon_7306602080",
+          "delivery_authors": [
+            {
+              "candidate_id": "800001",
+              "rank": 1
+            }
+          ],
+          "session_unix_time": 1783572400,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_authors.0.candidate_id": "800001"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前内容活动奖励投放页 activity_id；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "route_context",
+            "reason": "DOU+券配置 ID；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coupon_7306602080",
+            "source": "synthetic_contract",
+            "reason": "券充值 / 发放记录由 verify 自然 UI 弹窗选择后产生；具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "delivery_authors.0.rank",
+            "value": 1,
+            "source": "synthetic_contract",
+            "reason": "保持 DeliveryCandidate request shape；不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783572400,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "syntheticContractReason": "The award API is a backend write interface. MOCK_PREVIEW must return a marked non-success response without sending a real award transaction.",
+      "interfaceNecessity": "Frontend success is strict st === 0 && code === 0; this rule supplies a non-success natural-penalty branch for TC-INT-AWARD-COUPON-PENALTY.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/response.json",
+      "browserPrecheckStatus": "passed"
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-RELIEVED",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "charge_code": "charge_code_award_coupon_relieved_7306602080",
+          "delivery_authors": [
+            {
+              "candidate_id": "800002",
+              "rank": 2
+            }
+          ],
+          "session_unix_time": 1783575400,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_authors.0.candidate_id": "800002"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前内容活动奖励投放页 activity_id；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "route_context",
+            "reason": "DOU+券配置 ID；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coupon_relieved_7306602080",
+            "source": "synthetic_contract",
+            "reason": "券充值 / 发放记录由 verify 自然 UI 弹窗选择后产生；具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "delivery_authors.0.rank",
+            "value": 2,
+            "source": "synthetic_contract",
+            "reason": "relieved author 是 SearchCandidate mock 的第二行；不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783575400,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "syntheticContractReason": "The award API is a backend write interface. MOCK_PREVIEW must return a marked success response without sending a real award transaction.",
+      "interfaceNecessity": "Frontend success is strict st === 0 && code === 0; this rule supplies a success governance-relieved branch for TC-INT-AWARD-COUPON-RELIEVED.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/response.json",
+      "browserPrecheckStatus": "passed"
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "fail_delivery_task_id": "fail_coupon_exception_800003",
+          "charge_code": "charge_code_award_coupon_exception_7306602080",
+          "delivery_list": [
+            {
+              "item_id": "800003",
+              "delivery_config": {
+                "coupon_type": 1,
+                "coupon_config": {
+                  "threshold": 100,
+                  "freeAmount": 5000
+                },
+                "num": 1,
+                "reiceve_start_time": 1783440000,
+                "reiceve_end_time": 1783526399,
+                "use_time_type": 1,
+                "use_start_time": 1783440000,
+                "use_end_time": 1784131199
+              }
+            }
+          ],
+          "session_unix_time": 1783586962,
+          "delivery_from": 2
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 2,
+          "delivery_list.0.item_id": "800003"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前内容活动奖励投放页 activity_id；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "route_context",
+            "reason": "DOU+券配置 ID；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "fail_delivery_task_id",
+            "value": "fail_coupon_exception_800003",
+            "source": "synthetic_contract",
+            "reason": "制券失败任务 ID 来自 setup rule；不参与 final-write matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coupon_exception_7306602080",
+            "source": "synthetic_contract",
+            "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；具体值必须在运行态重新采集。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783586962,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "syntheticContractReason": "The award API is a backend write interface. MOCK_PREVIEW must return a marked exception response without sending a real award transaction.",
+      "interfaceNecessity": "Frontend exception mapping must convert msg=exception to fixed copy 治理校验异常，请联系管理员 for TC-INT-AWARD-EXCEPTION.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/response.json",
+      "browserPrecheckStatus": "passed"
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "delivery_from",
+    "delivery_authors.0.candidate_id",
+    "delivery_list.0.item_id"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "delivery_from",
+      "impactType": "rule_branch",
+      "reason": "DeliveryFrom.SearchCandidate distinguishes the DOU+ coupon page-selected author submit path from upload-list submit branches.",
+      "uiTarget": "DOU+券奖励投放 / 投放奖励 Modal"
+    },
+    {
+      "fieldPath": "delivery_authors.0.candidate_id",
+      "impactType": "submit_assertion",
+      "reason": "Natural UI SearchCandidate author samples distinguish governance branches by selected coupon candidate. Other request fields such as activity_id/config_id/charge_code/session_unix_time/rank remain collection-only.",
+      "uiTarget": "DOU+券奖励投放 / 投放奖励 Modal"
+    },
+    {
+      "fieldPath": "delivery_list.0.item_id",
+      "impactType": "submit_assertion",
+      "reason": "Natural UI failed-coupon resubmit path builds UploadCandidate delivery_list from records[].author_info.author_id; item_id=800003 identifies the exception branch.",
+      "uiTarget": "DOU+券奖励投放 / 重新提交制券抽屉 / 确认提交"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-PENALTY",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_authors.0.candidate_id": "800001"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-RELIEVED",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_authors.0.candidate_id": "800002"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+      "requestFields": {
+        "delivery_from": 2,
+        "delivery_list.0.item_id": "800003"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-PENALTY",
+      "caseIds": [
+        "TC-INT-AWARD-COUPON-PENALTY"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "DOU+券奖励投放 / 发奖按钮 / 投放奖励 Modal",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_authors.0.candidate_id": "800001"
+      },
+      "mockRule": "命中 DOU+券 SearchCandidate penalty author 发奖请求时，不发送真实后端发奖写请求，返回 marked synthetic non-success response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "charge_code": "charge_code_award_coupon_7306602080",
+          "delivery_authors": [
+            {
+              "candidate_id": "800001",
+              "rank": 1
+            }
+          ],
+          "session_unix_time": 1783572400,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_authors.0.candidate_id": "800001"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前内容活动奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "route_context",
+            "reason": "DOU+券配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coupon_7306602080",
+            "source": "synthetic_contract",
+            "reason": "券充值 / 发放记录必须在 verify 自然 UI 中选择并记录实际值；本字段只保持 synthetic request schema。"
+          },
+          {
+            "fieldPath": "delivery_authors.0.rank",
+            "value": 1,
+            "source": "synthetic_contract",
+            "reason": "保持 DeliveryCandidate request shape；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783572400,
+            "source": "synthetic_contract",
+            "reason": "保持发奖会话 request shape；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+          "requestFieldsForMatching": {
+            "delivery_from": 1,
+            "delivery_authors.0.candidate_id": "800001"
+          }
+        },
+        "mockedResponse": {
+          "st": 1,
+          "code": 10017001,
+          "msg": "命中自然处罚，无法发奖"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-COUPON-PENALTY requires a non-success DOU+ coupon award response to verify frontend no-success/no-fake-success handling.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real DOU+ coupon award request.",
+        "interfaceNecessity": "TC-INT-AWARD-COUPON-PENALTY requires the frontend non-success branch for natural penalty.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT] for R-BAM-AWARD-COUPON-PENALTY; frontend must show error/no-success and must not fake success or inject item columns into the coupon author table.",
+      "realVerify": "真实 DOU+券治理处罚状态和最终发奖事务一致性必须在真实环境复验；mock 只关闭 frontend response branch。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs -> PASS; reapply-bam-mocks.mjs --apply -> PASS; BAM inline matcher delivery_authors.0.candidate_id=800001 and synthetic non-success response are present.",
+        "reason": "UI natural click is a write operation and must wait for patched BAM; supplemental verification audits matcher, synthetic response and marker shape before returning to verify.",
+        "verifiedAt": "2026-07-09T04:50:30.000Z"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-RELIEVED",
+      "caseIds": [
+        "TC-INT-AWARD-COUPON-RELIEVED"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "DOU+券奖励投放 / 发奖按钮 / 投放奖励 Modal",
+      "requestFields": {
+        "delivery_from": 1,
+        "delivery_authors.0.candidate_id": "800002"
+      },
+      "mockRule": "命中 DOU+券 SearchCandidate relieved author 发奖请求时，不发送真实后端发奖写请求，返回 marked synthetic success response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "charge_code": "charge_code_award_coupon_relieved_7306602080",
+          "delivery_authors": [
+            {
+              "candidate_id": "800002",
+              "rank": 2
+            }
+          ],
+          "session_unix_time": 1783575400,
+          "delivery_from": 1
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 1,
+          "delivery_authors.0.candidate_id": "800002"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前内容活动奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "route_context",
+            "reason": "DOU+券配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coupon_relieved_7306602080",
+            "source": "synthetic_contract",
+            "reason": "券充值 / 发放记录必须在 verify 自然 UI 中选择并记录实际值；本字段只保持 synthetic request schema。"
+          },
+          {
+            "fieldPath": "delivery_authors.0.rank",
+            "value": 2,
+            "source": "synthetic_contract",
+            "reason": "relieved author 是 SearchCandidate mock 的第二行；rank 不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783575400,
+            "source": "synthetic_contract",
+            "reason": "保持发奖会话 request shape；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+          "requestFieldsForMatching": {
+            "delivery_from": 1,
+            "delivery_authors.0.candidate_id": "800002"
+          }
+        },
+        "mockedResponse": {
+          "st": 0,
+          "code": 0,
+          "msg": "success"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-COUPON-RELIEVED requires a success DOU+ coupon award response to verify frontend success branch and no governance-block handling.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real DOU+ coupon award request.",
+        "interfaceNecessity": "TC-INT-AWARD-COUPON-RELIEVED requires the frontend success branch for governance-relieved state.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT] for R-BAM-AWARD-COUPON-RELIEVED; frontend must not show governance failure copy and must enter success flow for st=0/code=0.",
+      "realVerify": "真实 DOU+券治理解除状态、券账户一致性和最终发奖事务一致性必须在真实环境复验；mock 只关闭 frontend response branch。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs -> PASS after adding R-BAM-AWARD-COUPON-RELIEVED; reapply-bam-mocks.mjs --apply -> PASS; BAM inline matcher delivery_authors.0.candidate_id=800002 and synthetic success response are present.",
+        "reason": "Supplemental verification audits matcher, synthetic success response, marker shape and no-real-write safety before returning to verify.",
+        "verifiedAt": "2026-07-09T13:58:00+08:00"
+      }
+    },
+    {
+      "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+      "caseIds": [
+        "TC-INT-AWARD-EXCEPTION"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "DOU+券奖励投放 / 重新提交制券抽屉 / 确认提交",
+      "requestFields": {
+        "delivery_from": 2,
+        "delivery_list.0.item_id": "800003"
+      },
+      "mockRule": "命中 DOU+券 failed-coupon resubmit UploadCandidate exception 发奖请求时，不发送真实后端发奖写请求，返回 marked synthetic exception-like response。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "body": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226",
+          "fail_delivery_task_id": "fail_coupon_exception_800003",
+          "charge_code": "charge_code_award_coupon_exception_7306602080",
+          "delivery_list": [
+            {
+              "item_id": "800003",
+              "delivery_config": {
+                "coupon_type": 1,
+                "coupon_config": {
+                  "threshold": 100,
+                  "freeAmount": 5000
+                },
+                "num": 1,
+                "reiceve_start_time": 1783440000,
+                "reiceve_end_time": 1783526399,
+                "use_time_type": 1,
+                "use_start_time": 1783440000,
+                "use_end_time": 1784131199
+              }
+            }
+          ],
+          "session_unix_time": 1783586962,
+          "delivery_from": 2
+        },
+        "requestFieldsForMatching": {
+          "delivery_from": 2,
+          "delivery_list.0.item_id": "800003"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "route_context",
+            "reason": "当前内容活动奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886355226",
+            "source": "route_context",
+            "reason": "DOU+券配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "fail_delivery_task_id",
+            "value": "fail_coupon_exception_800003",
+            "source": "synthetic_contract",
+            "reason": "来自制券失败 setup rule；用于审计重提路径，不参与 final-write matcher。"
+          },
+          {
+            "fieldPath": "charge_code",
+            "value": "charge_code_award_coupon_exception_7306602080",
+            "source": "synthetic_contract",
+            "reason": "券充值 / 发放记录必须在 verify 自然 UI 中选择并记录实际值；本字段只保持 synthetic request schema。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783586962,
+            "source": "synthetic_contract",
+            "reason": "发奖会话时间来自页面 session；verify 自然 UI 需记录运行态实际值。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+          "requestFieldsForMatching": {
+            "delivery_from": 2,
+            "delivery_list.0.item_id": "800003"
+          }
+        },
+        "mockedResponse": {
+          "st": 1,
+          "code": 500,
+          "msg": "exception"
+        },
+        "interfaceNecessity": "TC-INT-AWARD-EXCEPTION requires an exception-like DOU+ coupon award response to verify fixed exception copy and no-success/no-continuation behavior.",
+        "uiNaturalAttemptCount": 2,
+        "syntheticContractReason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction."
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/request.json",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW write-interface safety: do not send real DOU+ coupon award request.",
+        "interfaceNecessity": "TC-INT-AWARD-EXCEPTION requires the frontend exception branch for failed-coupon resubmit.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT] for R-BAM-AWARD-COUPON-EXCEPTION; frontend must show 治理校验异常，请联系管理员 and must not show 提交成功 / 发奖成功 or continue the success flow.",
+      "realVerify": "真实 DOU+券制券失败重提、治理异常响应和最终发奖事务一致性必须在真实环境复验；mock 只关闭 frontend exception response branch。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+        "reason": "Supplemental verification audits matcher, synthetic exception response, marker shape and no-real-write safety before returning to verify.",
+        "verifiedAt": "2026-07-09T16:58:00+08:00"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "requestFields": {},
+      "mockRule": "未命中具体 coupon award rule 时保持原 BAM 请求逻辑；不得用 default no-op 关闭写接口 case。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDeliveryDouPlusCoupon/DEFAULT_NOOP/evidence.json"
+      },
+      "verifyAssertion": "DEFAULT_NOOP exists only as manifest fallback and is not used for TC-INT-AWARD-COUPON-PENALTY, TC-INT-AWARD-COUPON-RELIEVED, or TC-INT-AWARD-EXCEPTION closure.",
+      "realVerify": "No-hit award write requests are outside current verify case and must not be used as success evidence.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs checks upload/no-hit request falls back to DEFAULT_NOOP.",
+        "reason": "DEFAULT_NOOP is a structural fallback only; it is not a UI success rule.",
+        "verifiedAt": "2026-07-09T04:50:30.000Z"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiDeliveryDouPlusCoupon",
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; REPLACE inline patch apiDeliveryDouPlusCoupon; inline matchers include delivery_authors.0.candidate_id=800001/800002 and delivery_list.0.item_id=800003."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+    "verifiedAt": "2026-07-09T16:58:00+08:00"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiDeliveryDouPlusCoupon in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-09T09:05:13.114Z"
+  }
+}

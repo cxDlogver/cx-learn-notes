@@ -1,0 +1,210 @@
+[
+  {
+    "lineNum": 134,
+    "code": "    runInAction(() => {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 135,
+    "code": "      this.pendingNoAwardAuthorItems = [];",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 136,
+    "code": "    });",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 219,
+    "code": "          this.pendingNoAwardAuthorItems = [];",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 265,
+    "code": "      this.pendingNoAwardAuthorItems = [];",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 415,
+    "code": "        this.syncPendingNoAwardAuthorItems([newAuthor]);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 473,
+    "code": "        this.syncPendingNoAwardAuthorItems(updateAuthors);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 498,
+    "code": "    const pendingById = new Map(",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 499,
+    "code": "      this.pendingNoAwardAuthorItems",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 500,
+    "code": "        .map((author) => [this.getAuthorId(author), author] as const)",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 501,
+    "code": "        .filter((entry): entry is readonly [string, delivery_author_info] => Boolean(entry[0])),",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 502,
+    "code": "    );",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 504,
+    "code": "    authors.forEach((author) => {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 505,
+    "code": "      const authorId = this.getAuthorId(author);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 506,
+    "code": "      if (!authorId) {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 507,
+    "code": "        return;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 508,
+    "code": "      }",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 509,
+    "code": "      if (author.if_delivery === false) {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 510,
+    "code": "        pendingById.set(authorId, { ...author, if_delivery: false });",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 511,
+    "code": "        return;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 512,
+    "code": "      }",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 513,
+    "code": "      if (author.if_delivery === true) {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 514,
+    "code": "        pendingById.delete(authorId);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 515,
+    "code": "      }",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 516,
+    "code": "    });",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 518,
+    "code": "    this.pendingNoAwardAuthorItems = Array.from(pendingById.values());",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  }
+]

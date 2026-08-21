@@ -1,0 +1,998 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiSearchDeliveryItems",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/search_delivery_items",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console",
+      "xhr_response_listener"
+    ],
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiSearchDeliveryItems",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.json",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/evidence.json"
+      },
+      {
+        "ruleId": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.json",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.json",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/search_delivery_items",
+        "query": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "page_no": 1,
+          "page_size": 50,
+          "item_ids": "100001,100002,100003",
+          "session_unix_time": 1783520153,
+          "candidate_pool_type": 2
+        },
+        "requestFieldsForMatching": {
+          "item_ids": "100001,100002,100003",
+          "candidate_pool_type": 2,
+          "page_no": 1,
+          "page_size": 50
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7653282555822653742",
+            "source": "network_request",
+            "reason": "当前人工提报活动真实 route 与目标 XHR query 自然携带；不改变手动输入命中态 rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7653282555822735662",
+            "source": "network_request",
+            "reason": "当前 `配置一（人工提报）` 的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783520153,
+            "source": "network_request",
+            "reason": "发奖会话时间戳由页面 store 自然生成；同一场景中会随会话变化，不作为 mock matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.item_info",
+          "value": "three manual submission rows: invalid, not-incentive, valid",
+          "reason": "真实响应成功但只有准入失败行，无法覆盖 `命中【不激励】规则` 行态、mixed summary 和 submit guard；MOCK_PREVIEW 按矩阵补充 mixed hit 样本。",
+          "realVerify": "后端 ready 后用真实含 if_not_incentive/not_incentive_reason 的人工提报样本复验。"
+        },
+        {
+          "responsePath": "data.total_num",
+          "value": 3,
+          "reason": "覆盖人工提报 Drawer summary 总数。",
+          "realVerify": "后端 ready 后复验真实 total_num。"
+        },
+        {
+          "responsePath": "data.candidate_num",
+          "value": 1,
+          "reason": "覆盖 mixed 样本中可投放作品数量。",
+          "realVerify": "后端 ready 后复验真实 candidate_num。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": false,
+          "reason": "手动输入最多 50 条，当前样本一页内返回。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    },
+    {
+      "ruleId": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/search_delivery_items",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "publish_start_time": 1782403200,
+          "publish_end_time": 1783526399,
+          "page_no": 1,
+          "page_size": 50,
+          "session_unix_time": 1783565669,
+          "candidate_pool_type": 1
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "candidate_pool_type": 1,
+          "page_no": 1,
+          "page_size": 50
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "publish_start_time",
+            "value": 1782403200,
+            "source": "network_request",
+            "reason": "当前配置一页面日期筛选自然携带；不参与 rule matcher。"
+          },
+          {
+            "fieldPath": "publish_end_time",
+            "value": 1783526399,
+            "source": "network_request",
+            "reason": "当前配置一页面日期筛选自然携带；不参与 rule matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783565669,
+            "source": "network_request",
+            "reason": "发奖会话时间戳随页面会话变化；只用于 payload 审计，不参与 matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "st/code/msg",
+          "value": "0/0/empty success",
+          "reason": "自然 SearchCandidate 请求点可达，但真实响应为 code=10001602 查询失败；MOCK_PREVIEW 只恢复当前 active case 的候选样本以重跑 UI setup 保存。",
+          "realVerify": "后端 ready 后复验真实 SearchCandidate 成功响应与错误码消除。"
+        },
+        {
+          "responsePath": "data.item_info",
+          "value": "two DOU+ coin SearchCandidate deliverable rows: candidate_id=7655364163166869874 without delivery_config.effective_time and candidate_id=700002 with delivery_config.effective_time",
+          "reason": "Penalty and relieved cases need distinct naturally selectable candidates under the same real SearchCandidate request matcher.",
+          "realVerify": "后端 ready 后复验真实候选列表、配置字段来源与配置保存后回显。"
+        },
+        {
+          "responsePath": "data.total_num/data.candidate_num/data.has_more",
+          "value": "2/2/false",
+          "reason": "Only current active award candidates are restored; no broad candidate pool expansion.",
+          "realVerify": "后端 ready 后复验真实分页、数量和排序。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "activity_id",
+    "config_id",
+    "item_ids",
+    "candidate_pool_type",
+    "page_no",
+    "page_size"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "activity_id",
+      "impactType": "record_identity",
+      "reason": "SearchCandidate 恢复 rule 只服务当前活动 activity_id=7655304206886322458，避免命中其它奖励投放活动的候选查询。",
+      "uiTarget": "DOU+币奖励投放 / SearchCandidate 列表"
+    },
+    {
+      "fieldPath": "config_id",
+      "impactType": "record_identity",
+      "reason": "SearchCandidate 恢复 rule 只服务当前配置一 config_id=7655304206886338842，避免命中其它配置页候选查询。",
+      "uiTarget": "DOU+币奖励投放 / SearchCandidate 列表"
+    },
+    {
+      "fieldPath": "item_ids",
+      "impactType": "record_identity",
+      "reason": "手动输入作品 ID 决定返回的人工提报行集合和命中态样本。",
+      "uiTarget": "人工提报 Drawer / 手动输入 textarea"
+    },
+    {
+      "fieldPath": "candidate_pool_type",
+      "impactType": "rule_branch",
+      "reason": "`CandidatePoolType.PassFilterRule` 决定当前请求查询待发奖池，命中态 rule 只覆盖手动提报发奖前候选查询。",
+      "uiTarget": "manuallySubmitVideoStore.fetchVideosByItemIds"
+    },
+    {
+      "fieldPath": "page_no",
+      "impactType": "pagination",
+      "reason": "当前手动输入命中态只覆盖第一页返回；其它页走 no-op 或后续规则。",
+      "uiTarget": "apiSearchDeliveryItems pagination"
+    },
+    {
+      "fieldPath": "page_size",
+      "impactType": "pagination",
+      "reason": "手动输入提交默认 page_size=50；其它 page_size 走 no-op 或后续规则。",
+      "uiTarget": "apiSearchDeliveryItems pagination"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+      "requestFields": {
+        "item_ids": "100001,100002,100003",
+        "candidate_pool_type": 2,
+        "page_no": 1,
+        "page_size": 50
+      }
+    },
+    {
+      "ruleId": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886338842",
+        "candidate_pool_type": 1,
+        "page_no": 1,
+        "page_size": 50
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-MANUAL-SEARCH-HIT",
+      "caseIds": [
+        "TC-UI-MANUAL-HIT-PAGE",
+        "TC-CELL-MANUAL-HIT-STATUS",
+        "TC-INT-MANUAL-SUBMIT-GUARD",
+        "TC-TRACK-MANUAL-HIT-EXPOSE"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "人工提报 Drawer / 手动输入提交",
+      "requestFields": {
+        "item_ids": "100001,100002,100003",
+        "candidate_pool_type": 2,
+        "page_no": 1,
+        "page_size": 50
+      },
+      "mockRule": "命中人工提报手动输入搜索请求时，先调用原接口，再最小设置 data.item_info、data.total_num、data.candidate_num、data.has_more，形成准入失败 / 不激励命中 / 可投放 mixed 样本。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/search_delivery_items",
+        "query": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "page_no": 1,
+          "page_size": 50,
+          "item_ids": "100001,100002,100003",
+          "session_unix_time": 1783520153,
+          "candidate_pool_type": 2
+        },
+        "requestFieldsForMatching": {
+          "item_ids": "100001,100002,100003",
+          "candidate_pool_type": 2,
+          "page_no": 1,
+          "page_size": 50
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783520153,
+            "source": "network_request",
+            "reason": "发奖会话时间戳由页面 store 自然生成；同一场景中会随会话变化，不作为 mock matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.json",
+      "mockedResponsePath": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.item_info",
+          "value": [
+            {
+              "item_card": {
+                "item_model": {
+                  "item_id": "100001",
+                  "base_model": {
+                    "item_info": {
+                      "counter_info": {
+                        "repin_count": 0,
+                        "play_count": 0,
+                        "share_count": 0
+                      },
+                      "comment_count_info": {
+                        "comment_count": 0
+                      },
+                      "base_info": {
+                        "title": "人工提报准入失败作品",
+                        "cover": {
+                          "uri": "manual_hit_cover_100001",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20review%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    },
+                    "ecom_statistics_info": {},
+                    "tag_info": {
+                      "tags": [],
+                      "top_tags_first_line": [],
+                      "top_tags_second_line": []
+                    }
+                  },
+                  "custom_model": {
+                    "AuthorPlatformModel": {
+                      "statistics_item": [
+                        {
+                          "desc": "全域成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "total_pay_amt",
+                          "hover": "全域成交金额，全域成交金额为直接成交金额、间接成交金额、种草成交金额三者相加，累计到昨日的支付金额"
+                        },
+                        {
+                          "desc": "直接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "direct_pay_amt",
+                          "hover": "直接成交金额，用户直接通过视频挂载的购物车锚点或广告购买商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "间接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "indirect_pay_amt",
+                          "hover": "间接成交金额，用户通过视频的头像呼吸灯/橱窗等渠道购买该作者/店铺的商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "种草成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "seed_pay_amt",
+                          "hover": "种草成交金额，用户看了视频后通过搜索/商城等渠道购买其他作者/店铺的商品，累计到昨日的成交金额"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "item_author_info": {
+                  "author_id": "900001"
+                }
+              },
+              "if_delivery": false,
+              "delivery_config": {},
+              "if_satisfy_delivery_rules": false,
+              "rank": 1,
+              "if_not_incentive": false,
+              "not_incentive_reason": []
+            },
+            {
+              "item_card": {
+                "item_model": {
+                  "item_id": "100002",
+                  "base_model": {
+                    "item_info": {
+                      "counter_info": {
+                        "repin_count": 0,
+                        "play_count": 0,
+                        "share_count": 0
+                      },
+                      "comment_count_info": {
+                        "comment_count": 0
+                      },
+                      "base_info": {
+                        "title": "人工提报不激励命中作品",
+                        "cover": {
+                          "uri": "manual_hit_cover_100002",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20display%20with%20neutral%20background%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    },
+                    "ecom_statistics_info": {},
+                    "tag_info": {
+                      "tags": [],
+                      "top_tags_first_line": [],
+                      "top_tags_second_line": []
+                    }
+                  },
+                  "custom_model": {
+                    "AuthorPlatformModel": {
+                      "statistics_item": [
+                        {
+                          "desc": "全域成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "total_pay_amt",
+                          "hover": "全域成交金额，全域成交金额为直接成交金额、间接成交金额、种草成交金额三者相加，累计到昨日的支付金额"
+                        },
+                        {
+                          "desc": "直接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "direct_pay_amt",
+                          "hover": "直接成交金额，用户直接通过视频挂载的购物车锚点或广告购买商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "间接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "indirect_pay_amt",
+                          "hover": "间接成交金额，用户通过视频的头像呼吸灯/橱窗等渠道购买该作者/店铺的商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "种草成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "seed_pay_amt",
+                          "hover": "种草成交金额，用户看了视频后通过搜索/商城等渠道购买其他作者/店铺的商品，累计到昨日的成交金额"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "item_author_info": {
+                  "author_id": "900002"
+                }
+              },
+              "if_delivery": false,
+              "delivery_config": {},
+              "if_satisfy_delivery_rules": true,
+              "rank": 2,
+              "if_not_incentive": true,
+              "not_incentive_reason": [
+                "历史违规命中不激励规则"
+              ]
+            },
+            {
+              "item_card": {
+                "item_model": {
+                  "item_id": "100003",
+                  "base_model": {
+                    "item_info": {
+                      "counter_info": {
+                        "repin_count": 0,
+                        "play_count": 0,
+                        "share_count": 0
+                      },
+                      "comment_count_info": {
+                        "comment_count": 0
+                      },
+                      "base_info": {
+                        "title": "人工提报可投放作品",
+                        "cover": {
+                          "uri": "manual_hit_cover_100003",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20lifestyle%20product%20scene%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    },
+                    "ecom_statistics_info": {},
+                    "tag_info": {
+                      "tags": [],
+                      "top_tags_first_line": [],
+                      "top_tags_second_line": []
+                    }
+                  },
+                  "custom_model": {
+                    "AuthorPlatformModel": {
+                      "statistics_item": [
+                        {
+                          "desc": "全域成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "total_pay_amt",
+                          "hover": "全域成交金额，全域成交金额为直接成交金额、间接成交金额、种草成交金额三者相加，累计到昨日的支付金额"
+                        },
+                        {
+                          "desc": "直接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "direct_pay_amt",
+                          "hover": "直接成交金额，用户直接通过视频挂载的购物车锚点或广告购买商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "间接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "indirect_pay_amt",
+                          "hover": "间接成交金额，用户通过视频的头像呼吸灯/橱窗等渠道购买该作者/店铺的商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "种草成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "seed_pay_amt",
+                          "hover": "种草成交金额，用户看了视频后通过搜索/商城等渠道购买其他作者/店铺的商品，累计到昨日的成交金额"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "item_author_info": {
+                  "author_id": "900003"
+                }
+              },
+              "if_delivery": true,
+              "delivery_config": {},
+              "if_satisfy_delivery_rules": true,
+              "rank": 3,
+              "if_not_incentive": false,
+              "not_incentive_reason": []
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "覆盖人工提报 mixed 命中态：准入失败、不激励命中、可投放保留项。"
+        },
+        {
+          "op": "set",
+          "path": "data.total_num",
+          "value": 3,
+          "source": "mock_rule",
+          "reason": "覆盖 Drawer summary 总数。"
+        },
+        {
+          "op": "set",
+          "path": "data.candidate_num",
+          "value": 1,
+          "source": "mock_rule",
+          "reason": "覆盖 mixed 样本中可投放作品数量。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": false,
+          "source": "mock_rule",
+          "reason": "覆盖手动输入一页内返回。"
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/search_delivery_items",
+          "query": {
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662",
+            "page_no": 1,
+            "page_size": 50,
+            "item_ids": "100001,100002,100003",
+            "session_unix_time": 1783520153,
+            "candidate_pool_type": 2
+          }
+        }
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.json",
+        "mockedResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.mocked.json",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/evidence.json"
+      },
+      "verifyAssertion": "patched BAM 命中后输出单字符串 `[BAM_MOCK_HIT]` 且 ruleId=`R-BAM-MANUAL-SEARCH-HIT`；requestBody 包含 item_ids=100001,100002,100003、candidate_pool_type=2、page_no=1、page_size=50；mockedResponse 的 3 条 item 均包含 item_card.item_author_info.author_id；Drawer 显示 summary、`一键移除`、`导出剔除明细`、`不满足准入门槛` 和 `命中【不激励】规则` 行态。",
+      "realVerify": "后端 ready 后复验真实人工提报 search_delivery_items 是否返回 if_not_incentive/not_incentive_reason 及 mixed 命中态。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> ADD inline patch apiSearchDeliveryItems",
+        "reason": "patched BAM runtime 审核已确认 R-BAM-MANUAL-SEARCH-HIT matcher、mockOperations、mixed hit response 和 inline marker；浏览器自然 UI [BAM_MOCK_HIT]、DOM、Network、截图仍回到 TC-UI-MANUAL-HIT-PAGE 单 case 闭环。"
+      }
+    },
+    {
+      "ruleId": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+      "caseIds": [
+        "TC-INT-AWARD-COIN-PENALTY__search_candidate_restore",
+        "TC-INT-AWARD-COIN-RELIEVED__search_candidate_restore"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "DOU+币奖励投放 / SearchCandidate 候选列表 / 修改配置前置样本恢复",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886338842",
+        "candidate_pool_type": 1,
+        "page_no": 1,
+        "page_size": 50
+      },
+      "mockRule": "命中当前活动与配置一的 DOU+币 SearchCandidate 首屏请求时，先调用原接口保留真实失败基线，再最小设置 success shell 和 2 条候选：penalty candidate 7655364163166869874 保持不预填 effective_time，relieved candidate 700002 预填完整 delivery_config 供 TC-INT-AWARD-COIN-RELIEVED 自然 UI 单选。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/search_delivery_items",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "publish_start_time": 1782403200,
+          "publish_end_time": 1783526399,
+          "page_no": 1,
+          "page_size": 50,
+          "session_unix_time": 1783565669,
+          "candidate_pool_type": 1
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "candidate_pool_type": 1,
+          "page_no": 1,
+          "page_size": 50
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "publish_start_time",
+            "value": 1782403200,
+            "source": "network_request",
+            "reason": "当前配置一页面日期筛选自然携带；不参与 rule matcher。"
+          },
+          {
+            "fieldPath": "publish_end_time",
+            "value": 1783526399,
+            "source": "network_request",
+            "reason": "当前配置一页面日期筛选自然携带；不参与 rule matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783565669,
+            "source": "network_request",
+            "reason": "发奖会话时间戳随页面会话变化；只用于 payload 审计，不参与 matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.json",
+      "mockedResponsePath": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "st",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "真实 SearchCandidate 请求可达但返回业务失败；MOCK_PREVIEW 恢复成功 shell 以重跑当前 verify setup 保存路径。"
+        },
+        {
+          "op": "set",
+          "path": "code",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "真实 SearchCandidate 请求可达但返回业务失败；MOCK_PREVIEW 恢复成功 code 以渲染候选行。"
+        },
+        {
+          "op": "set",
+          "path": "msg",
+          "value": "",
+          "source": "mock_rule",
+          "reason": "清空失败文案，避免页面停留在查询失败态。"
+        },
+        {
+          "op": "set",
+          "path": "data.total_num",
+          "value": 2,
+          "source": "mock_rule",
+          "reason": "只恢复当前 case 所需单条 DOU+币候选样本。"
+        },
+        {
+          "op": "set",
+          "path": "data.candidate_num",
+          "value": 2,
+          "source": "mock_rule",
+          "reason": "当前恢复样本为 1 条可投放候选。"
+        },
+        {
+          "op": "set",
+          "path": "data.item_info",
+          "value": [
+            {
+              "item_card": {
+                "item_model": {
+                  "item_id": "7655364163166869874",
+                  "base_model": {
+                    "item_info": {
+                      "counter_info": {
+                        "repin_count": 0,
+                        "play_count": 0,
+                        "share_count": 0
+                      },
+                      "comment_count_info": {
+                        "comment_count": 0
+                      },
+                      "base_info": {
+                        "title": "DOU+币 SearchCandidate 可投放作品",
+                        "cover": {
+                          "uri": "search_candidate_coin_penalty_cover_7655364163166869874",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20review%20scene%2C%20clean%20studio%20lighting%2C%20neutral%20background%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    },
+                    "ecom_statistics_info": {},
+                    "tag_info": {
+                      "tags": [],
+                      "top_tags_first_line": [],
+                      "top_tags_second_line": []
+                    }
+                  },
+                  "custom_model": {
+                    "AuthorPlatformModel": {
+                      "statistics_item": [
+                        {
+                          "desc": "全域成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "total_pay_amt",
+                          "hover": "全域成交金额，全域成交金额为直接成交金额、间接成交金额、种草成交金额三者相加，累计到昨日的支付金额"
+                        },
+                        {
+                          "desc": "直接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "direct_pay_amt",
+                          "hover": "直接成交金额，用户直接通过视频挂载的购物车锚点或广告购买商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "间接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "indirect_pay_amt",
+                          "hover": "间接成交金额，用户通过视频的头像呼吸灯/橱窗等渠道购买该作者/店铺的商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "种草成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "seed_pay_amt",
+                          "hover": "种草成交金额，用户看了视频后通过搜索/商城等渠道购买其他作者/店铺的商品，累计到昨日的成交金额"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "if_delivery": true,
+              "delivery_config": {
+                "delivery_amount": 5000,
+                "delivery_duration": 7200,
+                "target_likes": 44,
+                "target_audience": 1
+              },
+              "if_satisfy_delivery_rules": true,
+              "rank": 1,
+              "if_not_incentive": false,
+              "not_incentive_reason": [],
+              "history_delivery_info": []
+            },
+            {
+              "item_card": {
+                "item_model": {
+                  "item_id": "700002",
+                  "base_model": {
+                    "item_info": {
+                      "counter_info": {
+                        "repin_count": 0,
+                        "play_count": 0,
+                        "share_count": 0
+                      },
+                      "comment_count_info": {
+                        "comment_count": 0
+                      },
+                      "base_info": {
+                        "title": "DOU+币解除状态可投放作品",
+                        "cover": {
+                          "uri": "search_candidate_coin_relieved_cover_700002",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20creator%20product%20showcase%2C%20clean%20studio%20lighting%2C%20neutral%20background%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    },
+                    "ecom_statistics_info": {},
+                    "tag_info": {
+                      "tags": [],
+                      "top_tags_first_line": [],
+                      "top_tags_second_line": []
+                    }
+                  },
+                  "custom_model": {
+                    "AuthorPlatformModel": {
+                      "statistics_item": [
+                        {
+                          "desc": "全域成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "total_pay_amt",
+                          "hover": "全域成交金额，全域成交金额为直接成交金额、间接成交金额、种草成交金额三者相加，累计到昨日的支付金额"
+                        },
+                        {
+                          "desc": "直接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "direct_pay_amt",
+                          "hover": "直接成交金额，用户直接通过视频挂载的购物车锚点或广告购买商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "间接成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "indirect_pay_amt",
+                          "hover": "间接成交金额，用户通过视频的头像呼吸灯/橱窗等渠道购买该作者/店铺的商品，累计到昨日的成交金额，未剔除退款金额"
+                        },
+                        {
+                          "desc": "种草成交",
+                          "type": 1,
+                          "value": "0",
+                          "code": "seed_pay_amt",
+                          "hover": "种草成交金额，用户看了视频后通过搜索/商城等渠道购买其他作者/店铺的商品，累计到昨日的成交金额"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "if_delivery": true,
+              "delivery_config": {
+                "delivery_amount": 5000,
+                "delivery_duration": 7200,
+                "target_likes": 44,
+                "target_audience": 1,
+                "effective_time": 1783656000
+              },
+              "if_satisfy_delivery_rules": true,
+              "rank": 2,
+              "if_not_incentive": false,
+              "not_incentive_reason": [],
+              "history_delivery_info": []
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "恢复候选 7655364163166869874 的可投放行；刻意不补 delivery_config.effective_time，必须通过真实 UI 修改配置保存取得。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": false,
+          "source": "mock_rule",
+          "reason": "当前恢复样本一页内返回。"
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/search_delivery_items",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886338842",
+            "publish_start_time": 1782403200,
+            "publish_end_time": 1783526399,
+            "page_no": 1,
+            "page_size": 50,
+            "session_unix_time": 1783565669,
+            "candidate_pool_type": 1
+          },
+          "requestFieldsForMatching": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886338842",
+            "candidate_pool_type": 1,
+            "page_no": 1,
+            "page_size": 50
+          }
+        },
+        "fieldFill": []
+      },
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.json",
+        "mockedResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.mocked.json",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/evidence.json"
+      },
+      "verifyAssertion": "patched BAM 命中后输出单字符串 `[BAM_MOCK_HIT]` 且 ruleId=`R-BAM-SEARCH-CANDIDATE-COIN-PENALTY`；requestBody 包含 activity_id=7655304206886322458、config_id=7655304206886338842、candidate_pool_type=1、page_no=1、page_size=50；mockedResponse 包含候选 7655364163166869874 且其 delivery_config 不包含 effective_time，并包含候选 700002 且其 delivery_config 包含 effective_time；penalty case 仍必须真实 UI `修改配置/保存`，relieved case 必须自然 UI 单选 700002 后发奖。",
+      "realVerify": "后端 ready 后复验真实 SearchCandidate 列表、真实 delivery_modify_save 持久化、真实治理处罚状态和最终发奖事务一致性。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs -> PASS after relieved scope update; reapply-bam-mocks.mjs --apply -> PASS; BAM inline SearchCandidate response now contains penalty candidate 7655364163166869874 and relieved candidate 700002.",
+        "reason": "Supplemental verification audits matcher, two-row mocked response, penalty no-effective_time boundary, relieved effective_time precondition and inline marker before returning to verify.",
+        "verifiedAt": "2026-07-09T04:16:11.068Z"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "uiTarget": "no-hit 默认规则",
+      "requestFields": {},
+      "mockRule": "未命中具体 search_delivery_items rule 时返回原响应，不做 response 改写。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/request.json",
+        "rawResponse": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.raw.txt",
+        "response": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.json",
+        "evidence": "../../real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/evidence.json"
+      },
+      "verifyAssertion": "未命中人工提报 mixed hit 或当前 DOU+币 SearchCandidate 恢复 matcher 的请求返回原响应且不输出成功 mock hit。",
+      "realVerify": "后端 ready 后复验其它人工提报搜索条件 no-hit 行为。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "script.mjs; node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs -> PASS",
+        "reason": "接口级派生脚本确认人工提报 matcher、SearchCandidate matcher 之外的请求落入 DEFAULT_NOOP，当前默认规则无 mockOperations，不输出成功 mock hit。"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiSearchDeliveryItems",
+    "notes": "No wrapper request field patch required because generated wrapper already passes activity_id, config_id, page_no, page_size, item_ids, session_unix_time and candidate_pool_type.",
+    "lastPatchedAt": "2026-07-09T03:28:35.513Z"
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api -> PASS.",
+    "verifiedAt": "2026-07-09T04:16:11.068Z"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiSearchDeliveryItems in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-09T04:15:43.905Z"
+  }
+}

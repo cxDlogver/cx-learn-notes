@@ -1,0 +1,12 @@
+{
+  "ruleId": "DEFAULT_NOOP",
+  "status": "passed",
+  "apiName": "apiGetDouPlusCouponDeliveryRecord",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+  "captured_at": "2026-07-09T16:51:00+08:00",
+  "purpose": "Structural fallback for manifest completeness. No-hit requests must fall through to the original BAM request at runtime and must not emit R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION.",
+  "caseUsage": "N/A; this artifact must not be used to close TC-INT-AWARD-EXCEPTION.",
+  "request": "mock/real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/request.json",
+  "response": "mock/real-connect/apiGetDouPlusCouponDeliveryRecord/DEFAULT_NOOP/response.json"
+}

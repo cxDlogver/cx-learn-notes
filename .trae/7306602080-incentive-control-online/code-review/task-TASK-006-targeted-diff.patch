@@ -1,0 +1,227 @@
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx b/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx
+index 11d530a16..4ecc59b2b 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx
+@@ -24,7 +24,7 @@ function ManuallySubmitVideosDrawer({
+   const {
+     store: { manuallySubmitVideoStore },
+   } = useContext(StoreContext);
+-  const { clearVideoItems, videoItems, session_unix_time, initData, hasManualInputHitItems } =
++  const { clearVideoItems, videoItems, session_unix_time, initData, hasSubmitHitItems } =
+     manuallySubmitVideoStore;
+   const [batchSubmitModalVisible, setBatchSubmitModalVisible] = useState(false);
+   const validateBeforeSubmitRef = useRef<() => Promise<boolean>>(async () => true);
+@@ -46,7 +46,7 @@ function ManuallySubmitVideosDrawer({
+       message.warn(MESSAGES.SELECT_VIDEO);
+       return;
+     }
+-    if (hasManualInputHitItems) {
++    if (hasSubmitHitItems) {
+       message.error('请先移除不满足准入门槛或命中【不激励】规则的作品');
+       return;
+     }
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx b/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx
+index 6392f5bf2..d561efc2b 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx
+@@ -92,7 +92,7 @@ interface EditableCellProps {
+   record: delivery_item_info;
+   handleSave: (record: delivery_item_info) => void;
+   readOnly?: boolean;
+-  showManualHitStatus?: boolean;
++  showSubmitHitStatus?: boolean;
+ }
+ 
+ const EditableCell: React.FC<EditableCellProps> = ({
+@@ -103,19 +103,19 @@ const EditableCell: React.FC<EditableCellProps> = ({
+   record,
+   handleSave,
+   readOnly,
+-  showManualHitStatus,
++  showSubmitHitStatus,
+   ...restProps
+ }) => {
+   const form = useContext(EditableContext)!;
+   const watchedTargetAudience = Form.useWatch(['delivery_config', 'target_audience'], form);
+   const itemID = record?.item_card?.item_model?.item_id;
+-  const manualHitLabels = showManualHitStatus
++  const hitStatusLabels = showSubmitHitStatus
+     ? [
+         record?.if_satisfy_delivery_rules === false ? MANUAL_SUBMIT_HIT_LABELS.invalid : undefined,
+         record?.if_not_incentive === true ? MANUAL_SUBMIT_HIT_LABELS.notIncentive : undefined,
+       ].filter(Boolean)
+     : [];
+-  const shouldShowLegacyInvalidStatus = !showManualHitStatus && record?.if_satisfy_delivery_rules === false;
++  const shouldShowLegacyInvalidStatus = !showSubmitHitStatus && record?.if_satisfy_delivery_rules === false;
+ 
+   const handleAwardRecordClick = () => {
+     if (!itemID) {
+@@ -255,9 +255,9 @@ const EditableCell: React.FC<EditableCellProps> = ({
+                 <div style={{ color: '#666', textAlign: 'left' }}>
+                   视频ID：{record?.item_card?.item_model?.item_id || ''}
+                 </div>
+-                {manualHitLabels.length > 0 && (
+-                  <div className={styles.hitStatusLabels}>{manualHitLabels.join('  ')}</div>
+-                )}
++                {hitStatusLabels.length > 0 ? (
++                  <div className={styles.hitStatusLabels}>{hitStatusLabels.join('  ')}</div>
++                ) : null}
+               </div>
+             </div>
+             {(shouldShowLegacyInvalidStatus || record?.if_delivered === true) && (
+@@ -479,11 +479,11 @@ function _ManuallySubmitVideosForm({
+   const {
+     videoItems: dataSource,
+     setVideoItems,
+-    manualInputHitCount,
+-    manualInputTotalCount,
+-    hasManualInputHitItems,
+-    removeManualInputHitItems,
+-    exportManualInputHitRecords,
++    submitHitCount,
++    submitHitTotalCount,
++    hasSubmitHitItems,
++    removeSubmitHitItems,
++    exportSubmitHitRecords,
+     removingHitItems,
+     exportingRemoveRecords,
+     isHitVideoItem,
+@@ -605,10 +605,10 @@ function _ManuallySubmitVideosForm({
+     delete rowFormsRef.current[getItemKey(row)];
+   };
+ 
+-  const handleRemoveManualHitItems = async () => {
++  const handleRemoveSubmitHitItems = async () => {
+     const mergedDraftData = getMergedDraftData();
+     const hitItemKeys = mergedDraftData.filter((item) => isHitVideoItem(item)).map(getItemKey);
+-    const success = await removeManualInputHitItems(mergedDraftData);
++    const success = await removeSubmitHitItems(mergedDraftData);
+     if (success) {
+       hitItemKeys.forEach((itemKey) => {
+         delete rowFormsRef.current[itemKey];
+@@ -616,8 +616,8 @@ function _ManuallySubmitVideosForm({
+     }
+   };
+ 
+-  const handleExportManualHitRecords = () => {
+-    void exportManualInputHitRecords(getMergedDraftData());
++  const handleExportSubmitHitRecords = () => {
++    void exportSubmitHitRecords(getMergedDraftData());
+   };
+ 
+   const defaultColumns: (ColumnTypes[number] & {
+@@ -710,7 +710,7 @@ function _ManuallySubmitVideosForm({
+         title: col.title,
+         handleSave,
+         readOnly: false,
+-        showManualHitStatus: hasManualInputHitItems,
++        showSubmitHitStatus: hasSubmitHitItems,
+       }),
+     };
+   });
+@@ -728,19 +728,19 @@ function _ManuallySubmitVideosForm({
+         <span className={styles.required}>*</span>
+         <span>奖励配置</span>
+       </div>
+-      {hasManualInputHitItems && (
++      {hasSubmitHitItems && (
+         <div className={styles.manualHitToolbar}>
+           <div className={styles.manualHitSummary}>
+             <span className={styles.manualHitSummaryIcon}>i</span>
+             <span>
+-              {`共${manualInputTotalCount}个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：${manualInputHitCount}个`}
++              {`共${submitHitTotalCount}个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：${submitHitCount}个`}
+             </span>
+           </div>
+           <Space>
+-            <Button type="primary" loading={removingHitItems} onClick={handleRemoveManualHitItems}>
++            <Button type="primary" loading={removingHitItems} onClick={handleRemoveSubmitHitItems}>
+               一键移除
+             </Button>
+-            <Button loading={exportingRemoveRecords} onClick={handleExportManualHitRecords}>
++            <Button loading={exportingRemoveRecords} onClick={handleExportSubmitHitRecords}>
+               导出剔除明细
+             </Button>
+           </Space>
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts b/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts
+index d7958e231..2bd0484bf 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts
+@@ -18,7 +18,7 @@ import {
+ import { kSubmitMethod } from '../components/manually-submit-videos/manually-submit-videos-drawer/submit-selector';
+ 
+ const kMaxManualSubmitCount = 50;
+-const kManualHitSubmitMethod = kSubmitMethod.videoIds;
++const kReusableHitSubmitMethods = new Set<string>([kSubmitMethod.videoIds, kSubmitMethod.url]);
+ 
+ const getResponseCode = (response?: { st?: number; code?: number }): number | undefined => {
+   if (response?.st === 0 && response?.code === 0) {
+@@ -55,8 +55,8 @@ export class ManuallySubmitVideoStore {
+       if_delivery: item?.if_delivery ?? true,
+     }));
+ 
+-  get isManualInputMode() {
+-    return this.submitMethod === kManualHitSubmitMethod;
++  get isReusableHitSubmitMode() {
++    return Boolean(this.submitMethod && kReusableHitSubmitMethods.has(this.submitMethod));
+   }
+ 
+   isHitVideoItem = (item?: delivery_item_info) =>
+@@ -100,23 +100,23 @@ export class ManuallySubmitVideoStore {
+     return records;
+   };
+ 
+-  get manualInputHitItems() {
+-    if (!this.isManualInputMode) {
++  get submitHitItems() {
++    if (!this.isReusableHitSubmitMode) {
+       return [];
+     }
+     return this.getHitItems(this.videoItems);
+   }
+ 
+-  get manualInputHitCount() {
+-    return this.manualInputHitItems.length;
++  get submitHitCount() {
++    return this.submitHitItems.length;
+   }
+ 
+-  get manualInputTotalCount() {
+-    return this.isManualInputMode ? this.videoItems.length : 0;
++  get submitHitTotalCount() {
++    return this.isReusableHitSubmitMode ? this.videoItems.length : 0;
+   }
+ 
+-  get hasManualInputHitItems() {
+-    return this.manualInputHitCount > 0;
++  get hasSubmitHitItems() {
++    return this.submitHitCount > 0;
+   }
+ 
+   // 初始化数据
+@@ -247,9 +247,9 @@ export class ManuallySubmitVideoStore {
+     });
+   };
+ 
+-  // 一键移除手动输入命中的作品
+-  removeManualInputHitItems = async (currentItems: delivery_item_info[] = this.videoItems) => {
+-    if (!this.isManualInputMode) {
++  // 一键移除当前提报命中的作品
++  removeSubmitHitItems = async (currentItems: delivery_item_info[] = this.videoItems) => {
++    if (!this.isReusableHitSubmitMode) {
+       return false;
+     }
+ 
+@@ -298,9 +298,9 @@ export class ManuallySubmitVideoStore {
+     }
+   };
+ 
+-  // 导出当前手动输入命中的剔除明细
+-  exportManualInputHitRecords = async (currentItems: delivery_item_info[] = this.videoItems) => {
+-    if (!this.isManualInputMode) {
++  // 导出当前提报命中的剔除明细
++  exportSubmitHitRecords = async (currentItems: delivery_item_info[] = this.videoItems) => {
++    if (!this.isReusableHitSubmitMode) {
+       return false;
+     }
+ 

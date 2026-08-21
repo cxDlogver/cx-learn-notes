@@ -1,0 +1,69 @@
+{
+  "status": "passed",
+  "source": "browser_network",
+  "capturedAt": "2026-07-09T15:04:07+08:00",
+  "agent": "main-agent",
+  "originStage": "verify",
+  "resumeCommand": "/delivery:verify",
+  "resumeCase": "TC-INT-AWARD-TIMEOUT",
+  "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+  "apiName": "apiChargeAmountCheck",
+  "browser": {
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "profile": "Trae integrated browser current session",
+    "ssoResult": "business_page",
+    "sensitiveStateRead": false
+  },
+  "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+  "uiPath": [
+    "内容活动-奖励投放",
+    "新增提报",
+    "批量上传",
+    "输入 https://bytedance.larkoffice.com/sheets/award-timeout-7306602080",
+    "普通提交，上传名单进入 1 条可投放作品 700003",
+    "提交并投放",
+    "选择 DOU+币充值记录 `周度-镇楼神贴奖-陈侯聪-40000`"
+  ],
+  "naturalRequestEvidence": {
+    "requestMatched": true,
+    "requestBodySummary": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "charge_code": "LST12606290003681",
+      "delivery_list": [
+        {
+          "amount": 30000
+        }
+      ],
+      "session_unix_time": 1783580153,
+      "delivery_from": 2,
+      "resource_type": 5
+    },
+    "responseBodySummary": {
+      "st": 0,
+      "code": 0,
+      "msg": "",
+      "data": {
+        "can_delivery": false,
+        "total_amount": 4000000,
+        "left_amount": 0,
+        "current_use_amount": 30000,
+        "used_amount": 2100000
+      }
+    },
+    "runtimeBlocker": "Modal `确定` disabled; visible validation copy: `余额不足。剩余可用：0元，本期预计消耗300元`."
+  },
+  "networkLogRef": "/var/folders/g3/gkh9674s19x35p641jykwjbw0000gn/T/trae/browser-logs/network-2026-07-09T06-56-35-090Z.log",
+  "mockPlan": {
+    "contractMode": "real_browser_request",
+    "runtimeBehavior": "Call original apiChargeAmountCheck first, then apply minimal mockOperations to set data.can_delivery=true and data.left_amount=1900000 for the current timeout upload-list amount check.",
+    "forbiddenClaims": [
+      "Do not claim real charge balance is sufficient.",
+      "Do not close TC-INT-AWARD-TIMEOUT until apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT is naturally triggered and verified.",
+      "Do not use this precondition mock as final award success evidence."
+    ]
+  },
+  "realVerify": "后端 ready 或真实充值记录余额可用后，使用自然 UI 重新选择真实可发放充值记录复验 `can_delivery=true`，并移除该前置 mock。"
+}

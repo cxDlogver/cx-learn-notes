@@ -1,0 +1,174 @@
+{
+  "case_id": "TC-INT-AWARD-COIN-RELIEVED",
+  "captured_at": "2026-07-09T12:34:47+0800",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "view_id": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=relieved_case_202607091230",
+  "sample": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "candidate_id": "700002",
+    "candidate_rank": 2,
+    "delivery_from": 1,
+    "award_type": "DOU+币",
+    "candidate_source": "SearchCandidate",
+    "candidate_title": "DOU+币解除状态可投放作品",
+    "relieved_state_boundary": "mock sample uses delivery_config.effective_time=1783656000 to represent申诉解除/自主解封解除可投放分支"
+  },
+  "search_candidate_restore": {
+    "api_name": "apiSearchDeliveryItems",
+    "rule_id": "R-BAM-SEARCH-CANDIDATE-COIN-PENALTY",
+    "method_path": "GET /api/buyin/admin/content_activity/search_delivery_items",
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "page_no": 1,
+      "page_size": 50,
+      "session_unix_time": 1783571101,
+      "candidate_pool_type": 1
+    },
+    "mocked_response_summary": {
+      "total_num": 2,
+      "candidate_num": 2,
+      "items": [
+        {
+          "item_id": "7655364163166869874",
+          "title": "DOU+币 SearchCandidate 可投放作品",
+          "if_delivery": true,
+          "rank": 1,
+          "has_delivery_config_effective_time": false
+        },
+        {
+          "item_id": "700002",
+          "title": "DOU+币解除状态可投放作品",
+          "if_delivery": true,
+          "rank": 2,
+          "delivery_config_effective_time": 1783656000
+        }
+      ]
+    },
+    "result": "PASS"
+  },
+  "pre_submit_ui_state": {
+    "candidate_selection": {
+      "method": "component label DOM click fallback after integrated_browser coordinate clicks landed outside checkbox; no store/state mutation",
+      "checkboxes": [
+        {
+          "index": 0,
+          "checked": false
+        },
+        {
+          "index": 1,
+          "checked": true
+        }
+      ],
+      "selected_candidate_id": "700002"
+    },
+    "charge_record_selection": {
+      "display_name": "cc抖+币-程可歆-15000",
+      "charge_code": "LST12604140006412",
+      "method": "visible custom combobox option was selected by dispatching mouse event sequence to the option node after browser_click was intercepted by the dropdown overlay; no store/state mutation",
+      "selected_option_state": true,
+      "confirm_button_enabled_before_click": true
+    }
+  },
+  "final_award": {
+    "api_name": "apiDeliveryDouPlusCoin",
+    "rule_id": "R-BAM-AWARD-COIN-RELIEVED",
+    "method_path": "POST /api/buyin/admin/content_activity/delivery_dou_plus_coin",
+    "natural_ui_action": "DOU+币奖励发放 modal selected charge record `cc抖+币-程可歆-15000`, then clicked `确定` with browser_click",
+    "capture_window_started_at": "2026-07-09T04:33:01.856Z",
+    "synthetic_contract_marker_captured": true,
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "charge_code": "LST12604140006412",
+      "delivery_items": [
+        {
+          "candidate_id": "700002",
+          "rank": 2
+        }
+      ],
+      "session_unix_time": 1783571101,
+      "delivery_from": 1
+    },
+    "mocked_response": {
+      "st": 0,
+      "code": 0,
+      "msg": "success"
+    },
+    "synthetic_reason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction.",
+    "captured_marker_times": {
+      "synthetic_contract_at": "2026-07-09T04:33:06.472Z",
+      "bam_mock_hit_at": "2026-07-09T04:33:06.475Z"
+    },
+    "network_panel_observation": {
+      "workspace_network_log": "verify-logs/evidence/TC-INT-AWARD-COIN-RELIEVED--browser-network-final.log",
+      "capture_xhr_calls_to_delivery_dou_plus_coin": [],
+      "capture_fetch_calls_to_delivery_dou_plus_coin": [],
+      "delivery_dou_plus_coin_xhr_present_in_network_log": false,
+      "charge_amount_check_xhr_present_in_network_log": true,
+      "interpretation": "No real delivery_dou_plus_coin XHR/fetch is present after the capture window; final award was handled by BAM synthetic markers."
+    },
+    "post_click_ui_observation": {
+      "success_toast_seen": true,
+      "success_text_sample": "提交成功",
+      "modal_closed_after_success": true,
+      "visible_penalty_failure_text_seen": false,
+      "candidate_title_visible_after_success": true,
+      "relieved_candidate_title_visible_after_success": true,
+      "candidate_deleted_seen": false,
+      "checked_state_after_success": [
+        {
+          "index": 0,
+          "checked": false
+        },
+        {
+          "index": 1,
+          "checked": true
+        }
+      ],
+      "stable_buttons_after_success": [
+        "批量提交",
+        "修改配置",
+        "修改配置"
+      ]
+    },
+    "result": "PASS_WITH_NOTES"
+  },
+  "materialized_files": {
+    "runtime_json": "verify-logs/evidence/TC-INT-AWARD-COIN-RELIEVED--runtime.json",
+    "markdown_summary": "verify-logs/evidence/TC-INT-AWARD-COIN-RELIEVED.md",
+    "final_network_log": {
+      "path": "verify-logs/evidence/TC-INT-AWARD-COIN-RELIEVED--browser-network-final.log",
+      "line_count": 99,
+      "contains_charge_amount_check": true,
+      "contains_delivery_dou_plus_coin": false
+    },
+    "success_toast_screenshot": {
+      "path": "screenshots/TC-INT-AWARD-COIN-RELIEVED-success-toast.png",
+      "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced"
+    },
+    "final_page_screenshot": {
+      "path": "screenshots/TC-INT-AWARD-COIN-RELIEVED-final-page.png",
+      "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced"
+    }
+  },
+  "case_closure_decision": {
+    "search_candidate_restore_closed": true,
+    "relieved_candidate_ui_selection_closed": true,
+    "charge_record_selection_closed": true,
+    "final_award_runtime_branch_exercised": true,
+    "write_interface_safety_closed": true,
+    "case_final_result": "PASS_WITH_NOTES",
+    "notes": [
+      "MOCK_PREVIEW verifies frontend success response branch and write-interface safety only.",
+      "Real governance relieved state, real backend status 1/2 semantics, real charge account consistency and final award transaction remain real verify recheck.",
+      "The checkbox and charge-record selection used DOM event fallbacks because integrated_browser coordinate/overlay clicks were blocked; both triggered component events and were verified through DOM selected state plus final request payload."
+    ],
+    "gate_effect": "Current case no longer blocks verify queue, but /delivery:design remains blocked until all remaining verify cases and audits close."
+  }
+}

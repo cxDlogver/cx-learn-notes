@@ -1,0 +1,74 @@
+{
+  "apiName": "apiGetDouPlusCouponMakeFailRecord",
+  "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+  "caseIds": [
+    "TC-INT-AWARD-EXCEPTION__make_fail_setup"
+  ],
+  "status": "passed",
+  "capturedAt": "2026-07-09T16:36:40+08:00",
+  "agent": "main-agent",
+  "originStage": "/delivery:verify",
+  "resumeCase": "TC-INT-AWARD-EXCEPTION",
+  "browser": {
+    "runtimeMode": "TRAE_DESKTOP",
+    "tool": "integrated_browser",
+    "viewId": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+    "headless": false,
+    "ssoResult": "business_page"
+  },
+  "uiTrigger": {
+    "page": "奖励投放 / DOU+券配置二 / 制券失败警告",
+    "operationPath": [
+      "复用 activity_id=7655304206886322458 的奖励投放 vmok 页",
+      "切换到配置一清理当前 tab 状态",
+      "点击配置二",
+      "MakeCouponFailedWarnings 组件自然发起制券失败任务查询"
+    ],
+    "requestReached": true,
+    "targetPath": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+    "writeRequestTriggered": false
+  },
+  "realRequestEvidence": {
+    "source": "natural_ui_xhr_probe",
+    "method": "GET",
+    "urlRedacted": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record?activity_id=7655304206886322458&config_id=7655304206886355226&__token=[REDACTED]",
+    "requestRef": "request.json",
+    "networkRequestIndex": 9
+  },
+  "realResponseEvidence": {
+    "source": "natural_ui_xhr_probe",
+    "rawResponseRef": "response.raw.txt",
+    "responseRef": "response.json",
+    "status": 200,
+    "businessCode": 0,
+    "businessMessage": "",
+    "responseRole": "real empty baseline; task_list is null before MOCK_PREVIEW setup"
+  },
+  "mockContractEvidence": {
+    "mockedResponseRef": "response.mocked.json",
+    "generatedTypeRef": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts#get_dou_plus_coupon_make_fail_record_response",
+    "storeConsumptionRef": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+    "fieldContract": [
+      "response.code === 0",
+      "response.data.task_list[]",
+      "task.delivery_task_id",
+      "task.num",
+      "task.coupon_type",
+      "task.coupon_config"
+    ],
+    "reason": "TC-INT-AWARD-EXCEPTION 的最终 DOU+券 UploadCandidate 发奖路径需要先展示制券失败警告，再通过自然 UI 打开 ResubmitAwardAuthorDrawer。真实响应 task_list=null 无法覆盖该状态，MOCK_PREVIEW 只补当前 case 的一个任务入口。"
+  },
+  "nonCompressionBoundary": {
+    "keptAssertions": [
+      "制券失败 warning 只作为进入重提抽屉的 setup",
+      "失败明细列表必须由 apiGetDouPlusCouponDeliveryRecord 独立 setup",
+      "最终 exception 断言仍必须由 apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-EXCEPTION 闭合",
+      "不得把 task_list mock 命中等同于发奖 exception PASS"
+    ],
+    "forbiddenShortcut": "不得点击未受 R-BAM-AWARD-COUPON-EXCEPTION synthetic safety rule 保护的确认提交。"
+  },
+  "realVerifyRecovery": [
+    "后端 ready 后使用真实制券失败任务复验 task_list 字段。",
+    "真实制券失败任务 ID 与失败明细列表、最终重提发奖事务一致性需联调复验。"
+  ]
+}

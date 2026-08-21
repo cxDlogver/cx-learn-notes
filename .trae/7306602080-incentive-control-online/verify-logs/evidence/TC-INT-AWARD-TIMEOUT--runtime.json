@@ -1,0 +1,159 @@
+{
+  "case_id": "TC-INT-AWARD-TIMEOUT",
+  "recorded_at": "2026-07-09T08:00:01Z",
+  "result": "PASS_WITH_NOTES",
+  "runtime": {
+    "browser_tool": "integrated_browser",
+    "browser_runtime_mode": "TRAE_DESKTOP",
+    "view_id": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=award_timeout_fix_202607091640",
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "selected_tab": "配置一（人工提报）",
+    "submit_from": "batch upload",
+    "reward_type": "DOU+币"
+  },
+  "precondition": {
+    "sheet_rule_id": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+    "sheet_api_name": "apiGetDeliveryItemsFromSheet",
+    "sheet_request_summary": {
+      "sheet_url": "https://bytedance.larkoffice.com/sheets/award-timeout-7306602080",
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662"
+    },
+    "sheet_mocked_response_summary": {
+      "total_num": 1,
+      "candidate_num": 1,
+      "item_id": "700003",
+      "title": "批量上传 timeout 可投放作品",
+      "delivery_amount": 30000,
+      "if_delivery": true,
+      "rank": 1,
+      "if_not_incentive": false
+    },
+    "runtime_dom": {
+      "batch_row_visible": true,
+      "batch_row_id_or_title_visible": true,
+      "delivery_reason": "批量上传 timeout 可投放样本"
+    }
+  },
+  "charge_amount_check": {
+    "api_name": "apiChargeAmountCheck",
+    "rule_id": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/charge_amount_check",
+    "request_body": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "charge_code": "LST12606290003681",
+      "delivery_from": 2,
+      "resource_type": 5,
+      "delivery_list": [
+        {
+          "amount": 30000
+        }
+      ]
+    },
+    "mocked_response": {
+      "code": 0,
+      "type": "success",
+      "data": {
+        "can_delivery": true,
+        "total_amount": 4000000,
+        "left_amount": 1900000,
+        "current_use_amount": 30000,
+        "used_amount": 2100000
+      },
+      "msg": ""
+    },
+    "runtime_dom": {
+      "charge_record": "周度-镇楼神贴奖-陈侯聪-40000",
+      "balance_copy_visible": true,
+      "balance_copy": "余额充足。剩余可用：19000元，本期预计消耗300元",
+      "confirm_button_enabled": true
+    },
+    "result": "PASS"
+  },
+  "final_award": {
+    "api_name": "apiDeliveryDouPlusCoin",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+    "rule_id": "R-BAM-AWARD-COIN-TIMEOUT",
+    "console_markers": [
+      "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+      "[BAM_MOCK_HIT]"
+    ],
+    "request_body": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "charge_code": "LST12606290003681",
+      "delivery_list": [
+        {
+          "item_id": "700003",
+          "delivery_config": {
+            "delivery_amount": 30000,
+            "delivery_duration": 7200,
+            "target_likes": 1,
+            "target_audience": 1,
+            "effective_time": 1783612800
+          },
+          "delivery_reason": "批量上传 timeout 可投放样本"
+        }
+      ],
+      "delivery_from": 2
+    },
+    "mocked_response": {
+      "st": 1,
+      "code": 504,
+      "msg": "timeout"
+    },
+    "write_safety": {
+      "synthetic_contract": true,
+      "reason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction.",
+      "no_real_write_network_summary": "verify-logs/evidence/TC-INT-AWARD-TIMEOUT--browser-network-final.log",
+      "network_observation": [
+        "POST /api/buyin/admin/content_activity/charge_amount_check observed",
+        "No XHR/fetch entry for /api/buyin/admin/content_activity/delivery_dou_plus_coin in browser_network_requests output after final click",
+        "Final award was represented by BAM synthetic console markers only"
+      ]
+    },
+    "post_submit_dom": {
+      "governance_timeout_copy_visible": true,
+      "alert_role_text": "治理校验失败，请稍后重试",
+      "alert_role_visible": true,
+      "alert_class_name": "src-routes-content-activity-award-components-send-award-batch-submit-modal-index-module__submitErrorMessage-aUoDZj",
+      "success_toast_visible": false,
+      "modal_stayed_open": true,
+      "modal_text_sample": "投放奖励本次共投放 1 个作品，预计占用 300 元DOU+币关联充值记录周度-镇楼神贴奖-陈侯聪-40000余额充足。剩余可用：19000元，本期预计消耗300元治理校验失败，请稍后重试确定取消"
+    },
+    "result": "PASS_WITH_NOTES"
+  },
+  "code_fix_evidence": {
+    "handoff": "code-fix-handoff.md",
+    "fix_scope": "MICRO_CODE_FIX",
+    "fixture": "verify-logs/test-fixtures/award-timeout-visible-feedback.mjs",
+    "verification_summary": "verify-logs/baseline/award-timeout-code-fix-verification.md",
+    "persistent_error_dom_anchor": "role=\"alert\""
+  },
+  "console_noise_classification": {
+    "hmr_hook_order_warning_seen": true,
+    "classification": "ENV_NOISE_HMR_REFRESH",
+    "basis": [
+      "The warning references a hot-update chunk for BatchSubmitModal after adding a new top-level hook while the old Modal instance was mounted.",
+      "Source code now declares submitErrorMessage useState at the component top level before selectedChargeRecordCodeRef and before all conditional branches.",
+      "Fresh production build completed successfully.",
+      "Post-refresh DOM evidence shows the expected alert and no React error boundary screen."
+    ]
+  },
+  "screenshot": {
+    "attempted_filename": "verify-logs/screenshots/TC-INT-AWARD-TIMEOUT--final-timeout-fixed.png",
+    "materialization_type": "inline_only",
+    "local_file_created": false,
+    "reason": "integrated_browser returned inline screenshot preview but did not materialize the requested workspace file path"
+  },
+  "residual_risks": [
+    "MOCK_PREVIEW synthetic response verifies frontend timeout response handling and write-interface safety only; it does not prove real backend timeout behavior or real award transaction behavior.",
+    "Real backend governance timeout and final transaction semantics remain real verify / post-verify recheck items.",
+    "The React hook-order warning observed in console is classified as HMR refresh noise and not as stable source hook-order violation."
+  ]
+}

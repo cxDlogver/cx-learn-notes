@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "kind": "coverage_browser_write_intercept_summary",
+  "round": 2,
+  "exportedAt": "2026-07-16T11:33:46.690Z",
+  "pageUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "pageTitle": "内容生态运营｜橙蕉",
+  "selectedTabText": [
+    {
+      "text": "配置五",
+      "selected": "true"
+    }
+  ],
+  "interceptVersion": "nested-business-success-v2",
+  "registeredEndpoints": [
+    "/api/buyin/admin/content_activity/delivery_modify_save",
+    "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+    "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+    "/api/buyin/admin/content_activity/candidate_remove"
+  ],
+  "interceptCount": 4,
+  "endpointCounts": {
+    "/api/buyin/admin/content_activity/delivery_modify_save": 1,
+    "/api/buyin/admin/content_activity/delivery_dou_plus_coin": 3
+  },
+  "items": [
+    {
+      "index": 0,
+      "interceptedAt": "2026-07-16T11:20:13.069Z",
+      "transport": "xhr",
+      "method": "POST",
+      "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+      "bodySummary": {
+        "keys": [
+          "activity_id",
+          "candidate_ids",
+          "config_id",
+          "if_delivery",
+          "item_modify_config",
+          "session_unix_time"
+        ],
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "session_unix_time": 1784200344,
+        "candidate_ids_count": 10,
+        "delivery_items_count": 0,
+        "delivery_list_count": 0,
+        "first_delivery_item_keys": []
+      },
+      "responseSummary": null,
+      "interceptVersion": ""
+    },
+    {
+      "index": 1,
+      "interceptedAt": "2026-07-16T11:23:22.770Z",
+      "transport": "xhr",
+      "method": "POST",
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "bodySummary": {
+        "keys": [
+          "activity_id",
+          "charge_code",
+          "config_id",
+          "delivery_from",
+          "delivery_items",
+          "session_unix_time"
+        ],
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "charge_code": "LST12604140006412",
+        "delivery_from": 1,
+        "session_unix_time": 1784200344,
+        "candidate_ids_count": 0,
+        "delivery_items_count": 10,
+        "delivery_list_count": 0,
+        "first_delivery_item_keys": [
+          "candidate_id",
+          "rank"
+        ],
+        "first_delivery_item_rank": 1,
+        "min_rank": 1,
+        "max_rank": 10
+      },
+      "responseSummary": null,
+      "interceptVersion": ""
+    },
+    {
+      "index": 2,
+      "interceptedAt": "2026-07-16T11:26:18.149Z",
+      "transport": "xhr",
+      "method": "POST",
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "bodySummary": {
+        "keys": [
+          "activity_id",
+          "charge_code",
+          "config_id",
+          "delivery_from",
+          "delivery_items",
+          "session_unix_time"
+        ],
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "charge_code": "LST12604140006412",
+        "delivery_from": 1,
+        "session_unix_time": 1784200344,
+        "candidate_ids_count": 0,
+        "delivery_items_count": 10,
+        "delivery_list_count": 0,
+        "first_delivery_item_keys": [
+          "candidate_id",
+          "rank"
+        ],
+        "first_delivery_item_rank": 1,
+        "min_rank": 1,
+        "max_rank": 10
+      },
+      "responseSummary": {
+        "keys": [
+          "code",
+          "data",
+          "msg",
+          "st"
+        ],
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "dataKeys": [
+          "code",
+          "delivery_task_id",
+          "msg",
+          "st"
+        ],
+        "dataSt": 0,
+        "dataCode": 0,
+        "dataMsg": "success",
+        "hasDeliveryTaskId": true
+      },
+      "interceptVersion": "nested-business-success-v2"
+    },
+    {
+      "index": 3,
+      "interceptedAt": "2026-07-16T11:29:04.600Z",
+      "transport": "xhr",
+      "method": "POST",
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "bodySummary": {
+        "keys": [
+          "activity_id",
+          "charge_code",
+          "config_id",
+          "delivery_from",
+          "delivery_items",
+          "session_unix_time"
+        ],
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705725230",
+        "charge_code": "LST12604140006412",
+        "delivery_from": 1,
+        "session_unix_time": 1784200344,
+        "candidate_ids_count": 0,
+        "delivery_items_count": 10,
+        "delivery_list_count": 0,
+        "first_delivery_item_keys": [
+          "candidate_id",
+          "rank"
+        ],
+        "first_delivery_item_rank": 1,
+        "min_rank": 1,
+        "max_rank": 10
+      },
+      "responseSummary": {
+        "keys": [
+          "code",
+          "data",
+          "msg",
+          "st"
+        ],
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "dataKeys": [
+          "code",
+          "delivery_task_id",
+          "msg",
+          "st"
+        ],
+        "dataSt": 0,
+        "dataCode": 0,
+        "dataMsg": "success",
+        "hasDeliveryTaskId": true
+      },
+      "interceptVersion": "nested-business-success-v2"
+    }
+  ],
+  "shimRemoved": true,
+  "objectPrototypeStDescriptorExists": false,
+  "sensitiveDataPolicy": "No cookie, token, localStorage, sessionStorage, full request body, or candidate id list was persisted."
+}

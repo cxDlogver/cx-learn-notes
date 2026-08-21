@@ -1,0 +1,74 @@
+[
+  {
+    "lineNum": 594,
+    "code": "      const mergedData = getMergedDraftData();",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 649,
+    "code": "    const mergedDraftData = getMergedDraftData();",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 650,
+    "code": "    const rowKey = getItemKey(row);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 651,
+    "code": "    const removedItem = mergedDraftData.find((item) => getItemKey(item) === rowKey) ?? row;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 652,
+    "code": "    if (isHitVideoItem(removedItem)) {",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 653,
+    "code": "      preserveRemovedSubmitHitItems([removedItem]);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 654,
+    "code": "    }",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 656,
+    "code": "    const newData = mergedDraftData.filter((item) => getItemKey(item) !== rowKey);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 658,
+    "code": "    delete rowFormsRef.current[rowKey];",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  }
+]

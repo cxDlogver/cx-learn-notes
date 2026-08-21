@@ -1,0 +1,54 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/candidate_remove",
+  "body": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "remove_candidates": [
+      {
+        "candidate_id": "100001",
+        "remove_reason": "手动移除"
+      },
+      {
+        "candidate_id": "100002",
+        "remove_reason": "命中【不激励】规则"
+      }
+    ]
+  },
+  "requestFieldsForMatching": {
+    "remove_candidates.0.remove_reason": "手动移除",
+    "remove_candidates.1.remove_reason": "命中【不激励】规则"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7653282555822653742",
+      "source": "route_context",
+      "reason": "人工提报页面 route 上下文与手动命中态 GET 请求自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7653282555822735662",
+      "source": "route_context",
+      "reason": "当前人工提报配置 ID；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "remove_candidates.0.candidate_id",
+      "value": "100001",
+      "source": "selected_record",
+      "reason": "来自当前手动命中态首个准入失败作品 `item_card.item_model.item_id`；用于提交 payload 审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "remove_candidates.1.candidate_id",
+      "value": "100002",
+      "source": "selected_record",
+      "reason": "来自当前手动命中态第二个不激励命中作品 `item_card.item_model.item_id`；用于提交 payload 审计，不参与 matcher。"
+    }
+  ],
+  "writeInterfaceSafety": {
+    "sendRealBackendRequest": false,
+    "reason": "MOCK_PREVIEW 下 `candidate_remove` 为写接口；发送真实请求可能持久化剔除候选，必须由 BAM mock runtime 返回标记的 synthetic success。",
+    "realVerify": "真实环境需复验 candidate_remove 持久化、失败 msg 和剔除明细记录生成。"
+  }
+}

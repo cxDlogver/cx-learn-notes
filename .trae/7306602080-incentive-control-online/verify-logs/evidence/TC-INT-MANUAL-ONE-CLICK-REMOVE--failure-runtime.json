@@ -1,0 +1,170 @@
+{
+  "case_id": "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+  "assertion_ref": "negative_assertion",
+  "captured_at": "2026-07-08T15:58:20Z",
+  "browser": {
+    "tool": "integrated_browser",
+    "viewId": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+  },
+  "mock_runtime": {
+    "apiName": "apiCandidateRemove",
+    "method": "POST",
+    "path": "/api/buyin/admin/content_activity/candidate_remove",
+    "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+    "manifest_ref": "../../mock/apis/apiCandidateRemove/manifest.json",
+    "rule_map_ref": "../../mock/rule-map.json",
+    "request_matcher": {
+      "remove_candidates.0.remove_reason": "手动移除",
+      "remove_candidates.1.remove_reason": "__BAM_MOCK_ABSENT__"
+    },
+    "synthetic_contract_marker": {
+      "event": "BAM_MOCK_SYNTHETIC_CONTRACT",
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "100001",
+            "remove_reason": "手动移除"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 1,
+        "code": 1,
+        "msg": "一键移除失败"
+      }
+    },
+    "hit_marker": {
+      "event": "BAM_MOCK_HIT",
+      "ruleId": "R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT",
+      "requestBody": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "remove_candidates": [
+          {
+            "candidate_id": "100001",
+            "remove_reason": "手动移除"
+          }
+        ]
+      },
+      "mockedResponse": {
+        "st": 1,
+        "code": 1,
+        "msg": "一键移除失败"
+      }
+    },
+    "real_backend_write_request_sent": false,
+    "network_summary": {
+      "candidate_remove_fetch_or_xhr_records": [],
+      "search_delivery_items_xhr_status": 200,
+      "note": "candidate_remove synthetic runtime returned before real fetch/xhr; request evidence comes from BAM console marker."
+    }
+  },
+  "setup_actions": [
+    {
+      "step": "reload_page_after_bam_reapply",
+      "result": "business page loaded"
+    },
+    {
+      "step": "open_manual_submit_drawer",
+      "method": "browser_click",
+      "result": "drawer opened"
+    },
+    {
+      "step": "type_manual_ids",
+      "value": "100001,100002,100003",
+      "method": "browser_type",
+      "result": "input accepted"
+    },
+    {
+      "step": "submit_manual_ids",
+      "method": "browser_click",
+      "result": "R-BAM-MANUAL-SEARCH-HIT created mixed hit state"
+    },
+    {
+      "step": "remove_second_hit_row",
+      "method": "browser_click on Popconfirm trigger and confirm",
+      "instrumentation_note": "The row-level <a> had no accessibility ref. Temporary role/aria-label attributes were added to visible row remove links only for browser automation targeting; no business state, React state, store, request, or visual content was modified.",
+      "result": "row 100002 removed by UI Popconfirm, leaving 100001 and 100003"
+    }
+  ],
+  "before_failure_click": {
+    "summary_text": "共2个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：1个",
+    "rows": [
+      {
+        "index": 1,
+        "item_id": "100001",
+        "text": "1 视频标题：人工提报准入失败作品 视频ID：100001 不满足准入门槛 请选择 请选择 请选择 - - 移除"
+      },
+      {
+        "index": 2,
+        "item_id": "100003",
+        "text": "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 - - 移除"
+      }
+    ],
+    "item_presence": {
+      "100001": true,
+      "100002": false,
+      "100003": true,
+      "one_click_remove": true,
+      "export_remove": true,
+      "submit_and_deliver": true
+    },
+    "screenshot": {
+      "path": "screenshots/TC-INT-MANUAL-ONE-CLICK-REMOVE--single-hit-before-failure.png",
+      "sha256": "09c8ad2ac676d3ce8014ee83c13fa1589b881f80ad6928afacf52458c3d18bcf",
+      "dimensions": "2549x1875"
+    }
+  },
+  "action": {
+    "method": "browser_click",
+    "target": "一键移除",
+    "snapshot_ref": "e28",
+    "result": "synthetic failure branch matched"
+  },
+  "after_failure_click": {
+    "summary_text": "共2个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：1个",
+    "rows": [
+      {
+        "index": 1,
+        "item_id": "100001",
+        "text": "1 视频标题：人工提报准入失败作品 视频ID：100001 不满足准入门槛 请选择 请选择 请选择 - - 移除"
+      },
+      {
+        "index": 2,
+        "item_id": "100003",
+        "text": "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 - - 移除"
+      }
+    ],
+    "item_presence": {
+      "100001": true,
+      "100002": false,
+      "100003": true,
+      "one_click_remove": true,
+      "export_remove": true,
+      "submit_and_deliver": true
+    },
+    "negative_side_effects": {
+      "batch_upload_modal_opened": false,
+      "fake_award_success": false,
+      "appeal_ui_opened": false
+    },
+    "screenshot": {
+      "path": "screenshots/TC-INT-MANUAL-ONE-CLICK-REMOVE--single-hit-after-failure.png",
+      "sha256": "841c272c9c5f3a3e06a96f8ca15a052cc3cbfd014c9feace2d8f8136157bb279",
+      "dimensions": "2549x1875"
+    }
+  },
+  "assertion_result": {
+    "api_failure_does_not_remove_row": "PASS",
+    "other_rows_unchanged": "PASS",
+    "request_contains_activity_config_remove_candidates_remove_reason": "PASS",
+    "no_batch_or_fake_success_side_effect": "PASS"
+  },
+  "limitations": [
+    "MOCK_PREVIEW synthetic response proves frontend failure handling for the request shape; it does not prove real backend failure codes or persistence behavior."
+  ]
+}

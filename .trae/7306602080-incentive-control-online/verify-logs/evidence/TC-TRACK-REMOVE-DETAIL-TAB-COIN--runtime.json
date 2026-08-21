@@ -1,0 +1,196 @@
+{
+  "case_id": "TC-TRACK-REMOVE-DETAIL-TAB-COIN",
+  "runtime_state": "coin-tab-switch",
+  "capture_scope": "tab+logger",
+  "collected_at": "2026-07-09T10:50:01.673Z",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "headless": false,
+  "business_view_id": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "business_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=track_remove_coin_payload_202607092012",
+  "privacy": {
+    "cookies_read": false,
+    "storage_read": false,
+    "authorization_persisted": false,
+    "token_persisted": false,
+    "persisted_urls_redacted": true
+  },
+  "mock_rule": {
+    "api_name": "apiGetDouPlusCoinRemoveRecord",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+    "rule_id": "R-BAM-COIN-REMOVE-DEFAULT",
+    "manifest_ref": "mock/apis/apiGetDouPlusCoinRemoveRecord/manifest.json",
+    "shared_rule_note": "Shared default remove-detail rule already generated for coin page/table cases; this tracking case records independent click/expose/runtime evidence."
+  },
+  "natural_ui_steps": [
+    "Reloaded activity award page with _verify_reload=track_remove_coin_payload_202607092012.",
+    "Confirmed selected config tab is 配置一 and current reward_type is DOU+币.",
+    "Installed temporary collectEvent/fetch/XHR/sendBeacon/console probe without reading cookies or storage.",
+    "Clicked visible Radio.Button text 剔除明细 through integrated_browser.",
+    "Waited for table request, analytics transport flush and module exposure effect.",
+    "Restored temporary probe."
+  ],
+  "before_click_dom": {
+    "active_radios": [
+      "奖励下发",
+      "奖励下发"
+    ],
+    "active_tabs": [
+      "配置一",
+      "配置一"
+    ],
+    "config_modules": [
+      {
+        "module_id": "allocation_one",
+        "module_name": "配置一",
+        "extra": {
+          "activity_id": "7655304206886322458",
+          "reward_type": "DOU+币"
+        }
+      },
+      {
+        "module_id": "allocation_two",
+        "module_name": "配置二",
+        "extra": {
+          "activity_id": "7655304206886322458",
+          "reward_type": "DOU+券"
+        }
+      }
+    ],
+    "remove_detail_control": {
+      "tag": "LABEL",
+      "class_name": "auxo-radio-button-wrapper",
+      "text": "剔除明细"
+    },
+    "has_coin_text": true,
+    "has_coupon_text": false
+  },
+  "after_click_dom": {
+    "active_radios": [
+      "剔除明细",
+      "剔除明细"
+    ],
+    "active_tabs": [
+      "配置一",
+      "配置一"
+    ],
+    "remove_detail_module": {
+      "payload": {
+        "module_id": "remove_detail_data",
+        "module_name": "内容活动剔除明细",
+        "module_type": "tab_module",
+        "parent_block_type": "page",
+        "parent_block_id": "activity_reward_distribution",
+        "extra": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "config_index": "1",
+          "config_name": "配置一",
+          "reward_type": "DOU+币"
+        }
+      },
+      "rect": {
+        "x": 215,
+        "y": 492,
+        "width": 1267,
+        "height": 805
+      },
+      "visible": true
+    },
+    "table_headers": [
+      "作品内容",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ],
+    "has_coin_text": true,
+    "has_coupon_text": false
+  },
+  "business_network_trigger": {
+    "transport": "xhr",
+    "method": "GET",
+    "status": 200,
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+    "query": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "page": "1",
+      "page_num": "20"
+    },
+    "browser_performance_observed": true,
+    "bam_marker_observed_in_console": {
+      "event": "BAM_MOCK_HIT",
+      "api_name": "apiGetDouPlusCoinRemoveRecord",
+      "rule_id": "R-BAM-COIN-REMOVE-DEFAULT",
+      "request_body": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886338842",
+        "page_num": 20,
+        "page": 1
+      }
+    }
+  },
+  "logger_runtime_evidence": {
+    "collect_event_wrapper_calls": 0,
+    "analytics_transport_requests_observed": 5,
+    "direct_payload_observation": "not_observable_in_integrated_browser_runtime",
+    "runtime_handler_binding": {
+      "radio_group_on_change_contains_send_element_click_log": true,
+      "click_payload_static_fields": {
+        "page_id": "activity_reward_distribution",
+        "module_id": "remove_detail_data",
+        "module_name": "内容活动剔除明细",
+        "module_type": "tab_module",
+        "parent_block_id": "activity_reward_distribution",
+        "parent_block_name": "奖励投放页",
+        "parent_block_type": "page",
+        "element_id": "remove_detail_tab",
+        "element_name": "剔除明细",
+        "element_type": "tab"
+      },
+      "click_payload_dynamic_context_source": "currentConfigLogContext",
+      "resolved_dynamic_context_from_active_runtime_dom": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886338842",
+        "config_index": "1",
+        "config_name": "配置一",
+        "reward_type": "DOU+币"
+      }
+    },
+    "module_expose_payload": {
+      "module_id": "remove_detail_data",
+      "module_name": "内容活动剔除明细",
+      "module_type": "tab_module",
+      "parent_block_type": "page",
+      "parent_block_id": "activity_reward_distribution",
+      "extra": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886338842",
+        "config_index": "1",
+        "config_name": "配置一",
+        "reward_type": "DOU+币"
+      },
+      "selector_visible": true
+    },
+    "negative_reward_type_check": {
+      "click_and_expose_context_reward_type": "DOU+币",
+      "does_not_report_coupon_reward_type": true,
+      "coupon_remove_record_request_count": 0,
+      "coupon_table_headers_absent": [
+        "作者信息"
+      ]
+    }
+  },
+  "probe_restore": {
+    "restored": true,
+    "collect_event_calls": 0,
+    "event_payload_snippets": 0,
+    "network_records": 6
+  },
+  "result": "PASS_WITH_NOTES",
+  "notes": [
+    "Local runtime proved natural click, DOU+币 request, BAM rule hit, active module payload, bound click handler and source transport chain.",
+    "Direct collectEvent business payload was not observable through the integrated browser runtime in this case, matching the known TC-TRACK-CFG-RULE-LINK limitation; DA UV aggregation remains a post-verify analytics recheck."
+  ]
+}

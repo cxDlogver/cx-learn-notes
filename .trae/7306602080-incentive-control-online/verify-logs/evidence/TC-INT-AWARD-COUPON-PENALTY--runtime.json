@@ -1,0 +1,195 @@
+{
+  "case_id": "TC-INT-AWARD-COUPON-PENALTY",
+  "captured_at": "2026-07-09T13:40:14+0800",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "view_id": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=coupon_author_restore_202607091324",
+  "sample": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "candidate_id": "800001",
+    "candidate_rank": 1,
+    "delivery_from": 1,
+    "award_type": "DOU+券",
+    "candidate_source": "apiSearchDeliveryAuthor",
+    "candidate_name": "券候选作者800001",
+    "charge_record_display_name": "cc抖+券-程可歆-5000",
+    "charge_code": "LST12607070007003"
+  },
+  "search_candidate_restore": {
+    "api_name": "apiSearchDeliveryAuthor",
+    "rule_id": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+    "method_path": "GET /api/buyin/admin/content_activity/search_delivery_author",
+    "natural_ui_action": "切换到 DOU+券 `配置二` 后自然触发作者候选查询",
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "publish_start_time": 1783440000,
+      "publish_end_time": 1783526399,
+      "page_no": 1,
+      "page_size": 50,
+      "session_unix_time": 1783575127,
+      "candidate_pool_type": 1,
+      "award_period": 1
+    },
+    "mocked_response_summary": {
+      "st": 0,
+      "code": 0,
+      "msg": "",
+      "total_num": 1,
+      "candidate_num": 1,
+      "has_more": false,
+      "author_id": "800001",
+      "author_name": "券候选作者800001",
+      "if_delivery": true,
+      "rank": 1,
+      "coupon_config": {
+        "coupon_type": 1,
+        "threshold": 0,
+        "freeAmount": 5000,
+        "num": 1,
+        "reiceve_start_time": 1783440000,
+        "reiceve_end_time": 1783526399,
+        "use_time_type": 1,
+        "use_start_time": 1783440000,
+        "use_end_time": 1784131199
+      }
+    },
+    "network_original_response_capture": {
+      "transport": "xhr",
+      "status": 200,
+      "response_summary": {
+        "st": 0,
+        "code": 0,
+        "msg": "",
+        "total_num": 0,
+        "candidate_num": 0,
+        "has_more": false,
+        "delivery_author_info_len": 0
+      },
+      "interpretation": "The browser XHR listener observes the original backend response before the BAM runtime applies mockOperations; the mocked author row is verified by the console `[BAM_MOCK_HIT]` marker and visible DOM."
+    },
+    "post_search_ui_observation": {
+      "selected_tab": "配置二",
+      "author_visible": true,
+      "author_text_sample": "券候选作者800001 / UID: 800001",
+      "list_count_text": "共1位满足准入门槛的作者，当前合计1位作者",
+      "coupon_columns_visible": [
+        "券类型",
+        "奖励金额",
+        "券数量",
+        "领取有效期",
+        "使用有效期类型",
+        "使用有效期"
+      ],
+      "work_item_columns_visible": []
+    },
+    "result": "PASS"
+  },
+  "pre_submit_ui_state": {
+    "candidate_selection": {
+      "method": "clicked visible `一键全选`; button changed to `取消全选`; no store/state mutation",
+      "selected_candidate_id": "800001",
+      "selected_candidate_count": 1
+    },
+    "charge_record_selection": {
+      "display_name": "cc抖+券-程可歆-5000",
+      "charge_code": "LST12607070007003",
+      "method": "custom combobox opened through focus/ArrowDown after integrated_browser clicks were blocked by hidden input/overlay; first visible option selected with Enter; no store/state mutation",
+      "confirm_button_enabled_before_click": true,
+      "modal_text_after_selection": "投放奖励 本次共投放 1 位作者，预计占用 1 张满0减50的DOU+券。关联充值记录 cc抖+券-程可歆-5000 余额充足。剩余可用：4188元，本期预计消耗500元 确定取消"
+    }
+  },
+  "final_award": {
+    "api_name": "apiDeliveryDouPlusCoupon",
+    "rule_id": "R-BAM-AWARD-COUPON-PENALTY",
+    "method_path": "POST /api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+    "natural_ui_action": "DOU+券奖励发放 modal selected charge record `cc抖+券-程可歆-5000`, then clicked `确定` with browser_click",
+    "synthetic_contract_marker_captured": true,
+    "bam_mock_hit_marker_captured": true,
+    "request_body": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "charge_code": "LST12607070007003",
+      "delivery_authors": [
+        {
+          "candidate_id": "800001",
+          "rank": 1
+        }
+      ],
+      "session_unix_time": 1783575127,
+      "publish_start_time": 1783440000,
+      "publish_end_time": 1783526399,
+      "award_period": 1,
+      "delivery_from": 1
+    },
+    "mocked_response": {
+      "st": 1,
+      "code": 10017001,
+      "msg": "命中自然处罚，无法发奖"
+    },
+    "synthetic_reason": "Write-interface safety under MOCK_PREVIEW; do not send real award transaction.",
+    "network_panel_observation": {
+      "workspace_network_log": "verify-logs/evidence/TC-INT-AWARD-COUPON-PENALTY--browser-network-final.log",
+      "delivery_dou_plus_coupon_xhr_present_in_network_log": false,
+      "charge_amount_check_xhr_present_in_network_log": true,
+      "interpretation": "No real delivery_dou_plus_coupon XHR/fetch is present after the final click; final award was handled by BAM synthetic markers."
+    },
+    "post_click_ui_observation": {
+      "visible_penalty_error_toast_seen": true,
+      "visible_penalty_error_text": "提交作者奖励投放失败: 10017001, 命中自然处罚，无法发奖",
+      "success_toast_seen": false,
+      "success_text_seen": false,
+      "modal_stayed_open": true,
+      "modal_text": "投放奖励 本次共投放 1 位作者，预计占用 1 张满0减50的DOU+券。 关联充值记录 cc抖+券-程可歆-5000 余额充足。剩余可用：4188元，本期预计消耗500元 确定取消",
+      "author_row_still_visible": true,
+      "coupon_author_name_visible": true,
+      "coupon_columns_visible": [
+        "券类型",
+        "奖励金额",
+        "券数量",
+        "领取有效期",
+        "使用有效期类型",
+        "使用有效期"
+      ],
+      "work_item_columns_visible": []
+    },
+    "inline_screenshot_attempt": {
+      "filename_requested": "screenshots/TC-INT-AWARD-COUPON-PENALTY--final.png",
+      "materialized_local_file": false,
+      "materialization_type": "tool_image_displayed_not_materialized",
+      "reason": "integrated_browser returned an inline screenshot image but did not create the requested local file"
+    },
+    "result": "PASS_WITH_NOTES"
+  },
+  "materialized_files": {
+    "runtime_json": "verify-logs/evidence/TC-INT-AWARD-COUPON-PENALTY--runtime.json",
+    "markdown_summary": "verify-logs/evidence/TC-INT-AWARD-COUPON-PENALTY.md",
+    "final_network_log": {
+      "path": "verify-logs/evidence/TC-INT-AWARD-COUPON-PENALTY--browser-network-final.log",
+      "contains_charge_amount_check": true,
+      "contains_delivery_dou_plus_coupon": false
+    },
+    "final_screenshot": {
+      "path": "screenshots/TC-INT-AWARD-COUPON-PENALTY--final.png",
+      "materialized_local_file": false,
+      "materialization_type": "tool_image_displayed_not_materialized"
+    }
+  },
+  "case_closure_decision": {
+    "search_candidate_restore_closed": true,
+    "coupon_candidate_ui_selection_closed": true,
+    "charge_record_selection_closed": true,
+    "final_award_runtime_branch_exercised": true,
+    "write_interface_safety_closed": true,
+    "case_final_result": "PASS_WITH_NOTES",
+    "notes": [
+      "MOCK_PREVIEW verifies frontend non-success response branch and write-interface safety only.",
+      "Real governance penalty status, real coupon charge account consistency and final award transaction remain real verify recheck.",
+      "The charge-record selection used keyboard fallback because integrated_browser clicks were blocked by a hidden input/overlay; the selected record was verified through DOM selected state, enabled confirm button, modal text and final request payload."
+    ],
+    "gate_effect": "Current case no longer blocks verify queue, but /delivery:design remains blocked until all remaining verify cases and audits close."
+  }
+}

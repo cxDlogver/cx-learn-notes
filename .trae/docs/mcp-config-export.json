@@ -1,0 +1,207 @@
+{
+  "exportTime": "2026-06-23",
+  "scope": "/Users/bytedance/Desktop/BPO2/.trae",
+  "sanitized": true,
+  "notes": [
+    "This export contains server names, runtime descriptor paths, stage usage, and tool names only.",
+    "Credential-bearing runtime state is intentionally omitted."
+  ],
+  "repoDeclarations": [
+    {
+      "file": ".trae/agents/prd-analyzer.md",
+      "mcpServers": [
+        "bytedance-figma-mcp",
+        "Figma_AI_Bridge",
+        "LarkDocs",
+        "feishu"
+      ]
+    },
+    {
+      "file": ".trae/agents/tech-planner.md",
+      "mcpServers": [
+        "bytedance-figma-mcp"
+      ]
+    }
+  ],
+  "runtimeRoots": [
+    "/Users/bytedance/.trae-cn/mcps/s_BPO2-59140f6a/prd-analyzer",
+    "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent",
+    "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_coder"
+  ],
+  "mcpServers": [
+    {
+      "name": "bytedance-figma-mcp",
+      "runtimeName": "mcp_bytedance-figma-mcp",
+      "requiredFor": [
+        "delivery:prd",
+        "delivery:plan",
+        "delivery:design",
+        "F2C evidence"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_BPO2-59140f6a/prd-analyzer/mcp_bytedance-figma-mcp",
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_bytedance-figma-mcp"
+      ],
+      "requiredTools": [
+        "get_bytedance_figma_data",
+        "get_figma_data",
+        "download_figma_images",
+        "get_local_variables"
+      ]
+    },
+    {
+      "name": "Figma_AI_Bridge",
+      "runtimeName": "mcp_Figma_AI_Bridge",
+      "requiredFor": [
+        "fallback only"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_Figma_AI_Bridge"
+      ],
+      "requiredTools": [
+        "get_figma_data",
+        "download_figma_images"
+      ]
+    },
+    {
+      "name": "LarkDocs",
+      "runtimeName": "mcp_LarkDocs",
+      "requiredFor": [
+        "delivery:init",
+        "delivery:prd"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_BPO2-59140f6a/prd-analyzer/mcp_LarkDocs",
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_LarkDocs",
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_coder/mcp_LarkDocs"
+      ],
+      "requiredTools": [
+        "get_lark_doc_content",
+        "search_lark_doc"
+      ]
+    },
+    {
+      "name": "larkparser",
+      "runtimeName": "larkparser",
+      "requiredFor": [
+        "delivery:init",
+        "feishu-doc-extractor fallback"
+      ],
+      "descriptorPaths": [],
+      "installPackage": "@byted/larkparser-cli",
+      "entrypoint": "larkparser-mcp",
+      "requiredTools": [
+        "lark_fetch",
+        "lark_search",
+        "lark_render",
+        "lark_auth"
+      ]
+    },
+    {
+      "name": "feishu",
+      "runtimeName": "mcp_feishu",
+      "requiredFor": [
+        "delivery:init",
+        "delivery:prd",
+        "feishu-doc-extractor"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_BPO2-59140f6a/prd-analyzer/mcp_feishu",
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_feishu"
+      ],
+      "requiredTools": [
+        "feishu_get_user",
+        "feishu_auth",
+        "feishu_fetch_doc",
+        "feishu_lark_parser",
+        "feishu_wiki_space_node",
+        "feishu_search_doc_wiki",
+        "feishu_doc_media",
+        "feishu_whiteboard",
+        "feishu_sheet"
+      ]
+    },
+    {
+      "name": "d2c-mcp-server",
+      "runtimeName": "mcp_d2c-mcp-server",
+      "requiredFor": [
+        "delivery:code F2C_REQUIRED",
+        "delivery:design"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_d2c-mcp-server"
+      ],
+      "installPackage": "@byted/codin-d2c-mcp",
+      "entrypoint": "codin-d2c-mcp",
+      "requiredTools": [
+        "get_d2c_json",
+        "get_d2c_result",
+        "get_d2c_scss_result",
+        "get_d2c_plugin_list"
+      ]
+    },
+    {
+      "name": "byted_fe_mcp",
+      "runtimeName": "mcp_byted_fe_mcp",
+      "requiredFor": [
+        "delivery:plan",
+        "delivery:code component evidence"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_byted_fe_mcp"
+      ],
+      "requiredTools": [
+        "search_component",
+        "search_components_multi",
+        "list_library_components"
+      ]
+    },
+    {
+      "name": "integrated_browser",
+      "runtimeName": "integrated_browser",
+      "requiredFor": [
+        "delivery:verify",
+        "delivery:design",
+        "delivery:bits --coverage"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/integrated_browser",
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_coder/integrated_browser"
+      ],
+      "requiredTools": [
+        "browser_navigate",
+        "browser_snapshot",
+        "browser_take_screenshot",
+        "browser_console_messages",
+        "browser_network_requests",
+        "browser_click",
+        "browser_type",
+        "browser_wait_for",
+        "browser_evaluate"
+      ]
+    },
+    {
+      "name": "chrome-devtools",
+      "runtimeName": "mcp_chrome-devtools",
+      "requiredFor": [
+        "browser fallback",
+        "diagnostics"
+      ],
+      "descriptorPaths": [
+        "/Users/bytedance/.trae-cn/mcps/s_alliance-operation-mono-90c139bb/solo_agent/mcp_chrome-devtools"
+      ],
+      "requiredTools": [
+        "new_page",
+        "navigate_page",
+        "take_snapshot",
+        "take_screenshot",
+        "list_console_messages",
+        "list_network_requests",
+        "click",
+        "fill",
+        "type_text",
+        "wait_for"
+      ]
+    }
+  ]
+}

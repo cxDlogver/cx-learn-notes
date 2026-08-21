@@ -1,0 +1,74 @@
+{
+  "case_id": "TC-INT-AWARD-COUPON-PENALTY",
+  "captured_at": "2026-07-09T13:08:10+0800",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "view_id": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001&_verify_reload=relieved_case_202607091230",
+  "active_tab": "配置二",
+  "award_type": "DOU+券",
+  "natural_ui_trigger": "installed response listener, clicked `配置一`, then clicked `配置二` to naturally refetch the DOU+券 author candidate list",
+  "api": {
+    "api_name": "apiSearchDeliveryAuthor",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/search_delivery_author"
+  },
+  "natural_request": {
+    "redacted_url": "/api/buyin/admin/content_activity/search_delivery_author?activity_id=7655304206886322458&config_id=7655304206886355226&publish_start_time=1783440000&publish_end_time=1783526399&page_no=1&page_size=50&session_unix_time=1783573124&candidate_pool_type=1&award_period=1&__token=[REDACTED]",
+    "query": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "publish_start_time": 1783440000,
+      "publish_end_time": 1783526399,
+      "page_no": 1,
+      "page_size": 50,
+      "session_unix_time": 1783573124,
+      "candidate_pool_type": 1,
+      "award_period": 1
+    },
+    "status": 200,
+    "response": {
+      "extra": {
+        "now": 1783573690000,
+        "log_id": "2026070913081003669CCEBEC3549BBAC2"
+      },
+      "data": {
+        "total_num": 0,
+        "candidate_num": 0,
+        "has_more": false
+      },
+      "st": 0,
+      "code": 0,
+      "msg": ""
+    }
+  },
+  "dom_observation": {
+    "active_config_tab": "配置二",
+    "author_filter_visible": true,
+    "author_filter_placeholder": "输入作者ID，逗号隔开，最多50个",
+    "action_buttons_visible": [
+      "一键全选",
+      "批量修改",
+      "批量提交"
+    ],
+    "empty_text_visible": true,
+    "empty_text": "暂无符合门槛的数据",
+    "count_text_visible": true,
+    "count_text": "共0位满足准入门槛的作者，当前合计0位作者",
+    "candidate_card_count": 0,
+    "snapshot_summary": "integrated_browser snapshot shows 配置二 selected, DOU+券 author input and batch buttons visible, empty image visible, and no selectable author card."
+  },
+  "mock_gap": {
+    "apiSearchDeliveryAuthor_manifest_exists": false,
+    "apiSearchDeliveryAuthor_rule_map_exists": false,
+    "blocking_reason": "Final apiDeliveryDouPlusCoupon mock rule requires delivery_authors.0.candidate_id=800001, but the natural DOU+券 author candidate list is empty, so the final award modal cannot be opened from natural UI.",
+    "detour_needed": "MOCK_PREVIEW read-only candidate restore for apiSearchDeliveryAuthor / R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY"
+  },
+  "case_effect": {
+    "positive_assertion": "NOT_EXECUTED",
+    "negative_assertion": "NOT_EXECUTED",
+    "evidence_required": "NOT_EXECUTED",
+    "result": "MOCK_DETOUR_REQUIRED",
+    "gate_effect": "/delivery:design remains blocked"
+  }
+}

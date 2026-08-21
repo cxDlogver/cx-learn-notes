@@ -1,0 +1,59 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+  "body": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "charge_code": "charge_code_award_coin_7306602080",
+    "delivery_items": [
+      {
+        "candidate_id": "7655364163166869874",
+        "rank": 1
+      }
+    ],
+    "session_unix_time": 1783490000,
+    "delivery_from": 1
+  },
+  "requestFieldsForMatching": {
+    "delivery_from": 1,
+    "delivery_items.0.candidate_id": "7655364163166869874"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7655304206886322458",
+      "source": "route_context",
+      "reason": "当前 DOU+币 SearchCandidate vmok 奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7655304206886338842",
+      "source": "route_context",
+      "reason": "当前 DOU+币 SearchCandidate 奖励配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "charge_code",
+      "value": "charge_code_award_coin_7306602080",
+      "source": "synthetic_contract",
+      "reason": "充值记录由自然 UI 弹窗选择后产生；mock detour 仅记录符合 wrapper schema 的占位审计值，具体有效充值记录必须在 verify 自然 UI 中重新采集。"
+    },
+    {
+      "fieldPath": "delivery_items.0.rank",
+      "value": 1,
+      "source": "synthetic_contract",
+      "reason": "当前 rule 只用 candidate_id 区分 penalty 分支；rank 只用于保持 `DeliveryCandidate` 请求形态，不参与 matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783490000,
+      "source": "synthetic_contract",
+      "reason": "发奖会话时间来自页面 session；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+    }
+  ],
+  "writeInterfaceSafety": {
+    "sendRealBackendRequest": false,
+    "reason": "MOCK_PREVIEW 下 `delivery_dou_plus_coin` 为发奖写接口；发送真实请求可能产生发奖事务，必须由 BAM mock runtime 返回标记的 synthetic non-success response。",
+    "realVerify": "真实环境需复验自然处罚状态、解除状态、治理接口一致性和最终发奖事务。"
+  }
+}

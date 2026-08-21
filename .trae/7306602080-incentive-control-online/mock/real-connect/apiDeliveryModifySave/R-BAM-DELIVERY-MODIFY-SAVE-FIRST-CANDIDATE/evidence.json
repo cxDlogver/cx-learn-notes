@@ -1,0 +1,63 @@
+{
+  "ruleId": "R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-COIN-PENALTY",
+  "apiName": "apiDeliveryModifySave",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_modify_save",
+  "captured_at": "2026-07-08T19:38:00Z",
+  "interfaceNecessity": "TC-INT-AWARD-COIN-PENALTY must use the natural DOU+ coin SearchCandidate page. The current page has 50 selectable candidates, but every candidate is missing `delivery_config.effective_time`; frontend batch submit blocks until this required field is completed. The real UI `修改配置/保存` path calls `apiDeliveryModifySave` before the final award submit can be verified.",
+  "syntheticContractReason": "The UI request point is known and reachable through the first candidate `修改配置` drawer, but `delivery_modify_save` is a write interface. Under MOCK_PREVIEW the request must not be sent to the real backend; the BAM runtime returns a marked synthetic success instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "Runtime DOM/React props show candidate `7655364163166869874`, rank `1`, `if_delivery=true`, and `delivery_config.effective_time=null`; clicking `批量提交` after all-select produced required-field modal for cards 1-50.",
+      "reason": "Saving the drawer before BAM patch would call a backend write API and may persistently modify the activity candidate configuration."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "Source path `sendAwardToVideoStore.ts#L236-L288` calls `apiDeliveryModifySave` from `updateAwardConfigForItem/updateAwardConfigForItems`; BAM wrapper `apiDeliveryModifySave` maps `candidate_ids`, `item_modify_config`, and `if_delivery` to POST `/delivery_modify_save`.",
+      "reason": "A repeated natural save without BAM patch has the same write side effect; the request shape is therefore recorded as synthetic and must be confirmed by patched runtime during verify."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/request.json",
+    "response": "mock/real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/response.json",
+    "sourceRefs": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts#L236-L288",
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToVideoStore.ts#L475-L497",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video/index.tsx#L313-L326",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-videos/award-video-config-editor/index.tsx#L41-L56",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts#L1587-L1605"
+    ]
+  },
+  "naturalUiSample": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886338842",
+    "candidate_id": "7655364163166869874",
+    "rank": 1,
+    "if_delivery": true,
+    "missing_effective_time_count": 50,
+    "source": "integrated_browser React props and visible DOU+ coin SearchCandidate list before final submit"
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-AWARD-COIN-PENALTY",
+    "requiredChecks": [
+      "natural UI `修改配置/保存` for first candidate",
+      "POST request body contains `candidate_ids[0]=7655364163166869874`, `if_delivery=true`, and `item_modify_config.effective_time`",
+      "runtime marker includes `R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE`",
+      "first candidate shows non-empty 投放生效时间 after save",
+      "then resume final DOU+ coin award modal `确定` and verify `R-BAM-AWARD-COIN-PENALTY`"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实 `delivery_modify_save` 复验持久化配置、权限、失败 msg、候选池刷新和发奖提交前置条件。"
+}

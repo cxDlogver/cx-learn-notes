@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "cov_run_id": "20260716-225251-coverage-cx-3",
+  "round": 1,
+  "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "environment": "REAL_ONLINE",
+  "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "executed_at": "2026-07-16T15:02:39+08:00",
+  "ui_path": [
+    "Open real online award page",
+    "Select 配置一（人工提报）",
+    "Open 新增提报 drawer",
+    "Submit manual item ids 1279271921656,28083207347,7634842254674947950",
+    "Remove first hit item via row action and confirm",
+    "Install browser-side intercept for download_content_remove_record",
+    "Click 导出剔除明细 and receive mock response without backend write",
+    "Switch to 批量上传",
+    "Submit invalid sheet url https://bytedance.larkoffice.com/sheets/invalid_for_coverage_7306602080",
+    "Observe final empty table state after real read request"
+  ],
+  "request_evidence": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/search_delivery_items",
+      "method": "GET",
+      "network_log_ref": "evidence/round-1-network.log#L3",
+      "request_source": "REAL_UI",
+      "backend": "sent",
+      "notes": "Manual item id submit used real online request and response."
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+      "method": "GET",
+      "network_log_ref": "evidence/round-1-network.log#L68",
+      "request_source": "REAL_UI",
+      "backend": "sent",
+      "notes": "Batch upload invalid sheet url used real online read request; response led to empty table state."
+    }
+  ],
+  "write_intercepts": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/download_content_remove_record",
+      "method": "POST",
+      "transport": "xhr",
+      "trigger_ui": "导出剔除明细",
+      "match_rule": "path equals /api/buyin/admin/content_activity/download_content_remove_record",
+      "request_body": "{\"records\":[{\"item_id\":\"1279271921656\",\"remove_reason\":\"手动移除\"}]}",
+      "mock_response": {
+        "st": 0,
+        "code": 0,
+        "msg": "success",
+        "data": {}
+      },
+      "browser_intercept_record": {
+        "backend_write": "not_sent",
+        "at": "2026-07-16T14:57:47.932Z"
+      },
+      "backend_not_hit_evidence": "evidence/round-1-network.log has no download_content_remove_record entry; page-side __coverage225251.intercepts[0].backend_write = not_sent.",
+      "status": "INTERCEPTED",
+      "notes": "Mock response intentionally omitted data.lark_url to cover export missing-link failure branch without sending the write request to backend."
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "export_missing_link",
+      "path": "evidence/round-1-export-missing-link.png",
+      "notes": "After row remove and export click; write endpoint was intercepted in browser."
+    },
+    {
+      "name": "batch_upload_final",
+      "path": "evidence/round-1-batch-upload-final.png",
+      "notes": "Batch upload invalid sheet link final state, table shows 暂无数据."
+    }
+  ],
+  "dom_summary": {
+    "final_state": "批量上传 tab active, invalid sheet url retained, reward config table empty with 暂无数据, drawer still open.",
+    "loading_visible_after_wait": false,
+    "visible_key_text": [
+      "提报视频",
+      "手动输入",
+      "批量上传",
+      "查看上传模板",
+      "暂无数据",
+      "取消",
+      "提交并投放"
+    ]
+  },
+  "network_log_ref": "evidence/round-1-network.log",
+  "console_notes": [
+    "Console contained monitoring/beacon abort noise only; no business runtime crash was observed."
+  ],
+  "coverage_refresh": {
+    "latest_json": "coverage/latest.json",
+    "report_md": "coverage/report.md",
+    "generated_at": "2026-07-16T15:02:39.420Z",
+    "overall_cover_ratio_after": "91.28%",
+    "target_file_cover_ratio_after": "95.33%",
+    "target_file_effective_uncovered_after": 7
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "source": "browser_network",
+  "status": "passed",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/charge_amount_check",
+  "body": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "charge_code": "LST12606290003681",
+    "delivery_list": [
+      {
+        "amount": 30000
+      }
+    ],
+    "session_unix_time": 1783580153,
+    "delivery_from": 2,
+    "resource_type": 5
+  },
+  "requestFieldsForMatching": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "delivery_from": 2,
+    "resource_type": 5,
+    "delivery_list.0.amount": 30000
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "charge_code",
+      "value": "LST12606290003681",
+      "source": "selected_record",
+      "reason": "自然 UI 选择充值记录 `周度-镇楼神贴奖-陈侯聪-40000` 后由接口 payload 携带；不同充值记录不改变当前 timeout case 的上传名单金额校验分支，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783580153,
+      "source": "network_request",
+      "reason": "页面发奖会话时间戳来自运行态；只用于请求审计，不参与 runtime matcher。"
+    }
+  ],
+  "safety": {
+    "sendRealBackendRequest": true,
+    "reason": "该接口为发奖前金额校验 POST，已通过自然 UI 触发并得到真实失败基线；不是最终发奖事务写接口。runtime 先调用原接口再做最小字段改写。"
+  }
+}

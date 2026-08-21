@@ -1,0 +1,25 @@
+TC-INT-AWARD-COIN-PENALTY final award network evidence
+captured_at: 2026-07-09T12:00:26+0800
+browser_tool: integrated_browser
+view_id: f56171fb-9ae8-4e99-8749-ecc9e4f68a5a
+source_network_log: /var/folders/g3/gkh9674s19x35p641jykwjbw0000gn/T/trae/browser-logs/network-2026-07-09T03-56-51-954Z.log
+sanitization: __token query values redacted from persisted evidence
+
+Pre-click baseline:
+- network count before final confirm: 100 total
+- matched relevant business write APIs before final confirm: none for delivery_dou_plus_coin; none for delivery_modify_save in the current restored-sample submit window
+- observed precondition reads/checks:
+  - GET /api/buyin/admin/content_activity/get_charge_record?cj_project_id=11260227002740&page_num=1&page_size=20&resource_type=5&__token=<redacted>
+  - POST /api/buyin/admin/content_activity/charge_amount_check?__token=<redacted>
+
+Post-click final confirm:
+- network count after final confirm: 100 total
+- rg scan on source_network_log for delivery_dou_plus_coin|delivery_modify_save|search_delivery_items returned no matches
+- rg scan on source_network_log for get_charge_record|charge_amount_check returned:
+  - [71] GET /api/buyin/admin/content_activity/get_charge_record?cj_project_id=11260227002740&page_num=1&page_size=20&resource_type=5&__token=<redacted>
+  - [86] POST /api/buyin/admin/content_activity/charge_amount_check?__token=<redacted>
+
+Conclusion:
+- No real POST /api/buyin/admin/content_activity/delivery_dou_plus_coin XHR was observed after clicking the final award modal confirm button.
+- No real POST /api/buyin/admin/content_activity/delivery_modify_save XHR was observed in this current restored-sample final-submit window.
+- Final award write-interface safety is instead proven by console markers persisted in TC-INT-AWARD-COIN-PENALTY--runtime.json: [BAM_MOCK_SYNTHETIC_CONTRACT] and [BAM_MOCK_HIT] for apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-PENALTY.

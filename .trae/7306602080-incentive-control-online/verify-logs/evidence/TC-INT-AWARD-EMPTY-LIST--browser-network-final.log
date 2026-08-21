@@ -1,0 +1,25 @@
+TC-INT-AWARD-EMPTY-LIST final browser network summary
+captured_at: 2026-07-09T18:35:42+08:00
+source: integrated_browser browser_network_requests + in-page Performance API resource entries
+sanitization: __token removed; no cookie/localStorage/sessionStorage/Authorization data read or persisted
+
+Business content_activity requests observed in the final run:
+1. GET /api/buyin/admin/content_activity/detail?activity_id=7653282555822653742
+2. GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet?sheet_url=https%3A%2F%2Fbytedance.larkoffice.com%2Fsheets%2Faward-empty-list-7306602080&activity_id=7653282555822653742&config_id=7653282555822735662
+3. GET /api/buyin/admin/content_activity/get_charge_record?cj_project_id=11260415003222&page_num=1&page_size=20&resource_type=5
+4. POST /api/buyin/admin/content_activity/charge_amount_check
+
+Counts:
+- business content_activity requests: 4
+- get_delivery_items_from_sheet: 1
+- charge_amount_check: 1
+- delivery_dou_plus_coin: 0
+
+Console mock markers:
+- [BAM_MOCK_HIT] apiGetDeliveryItemsFromSheet / R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST
+- [BAM_MOCK_HIT] apiChargeAmountCheck / R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST
+- No [BAM_MOCK_HIT] or [BAM_MOCK_SYNTHETIC_CONTRACT] marker for apiDeliveryDouPlusCoin
+
+Final assertion:
+- After Modal `确定`, no XHR/fetch/resource entry for /api/buyin/admin/content_activity/delivery_dou_plus_coin was observed.
+- No final award success mock was used for this case.

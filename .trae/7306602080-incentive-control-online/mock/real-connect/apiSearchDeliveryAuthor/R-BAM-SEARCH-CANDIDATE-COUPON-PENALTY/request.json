@@ -1,0 +1,53 @@
+{
+  "ruleId": "R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY",
+  "apiName": "apiSearchDeliveryAuthor",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/search_delivery_author",
+  "source": "real_browser_request",
+  "capturedAt": "2026-07-09T13:08:10+08:00",
+  "browserRuntimeMode": "TRAE_DESKTOP",
+  "browserTool": "integrated_browser",
+  "viewId": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+  "uiTrigger": "DOU+券奖励投放页切换到配置二后自然触发作者候选首屏查询",
+  "redactedUrl": "/api/buyin/admin/content_activity/search_delivery_author?activity_id=7655304206886322458&config_id=7655304206886355226&publish_start_time=1783440000&publish_end_time=1783526399&page_no=1&page_size=50&session_unix_time=1783573124&candidate_pool_type=1&award_period=1&__token=[REDACTED]",
+  "query": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "publish_start_time": 1783440000,
+    "publish_end_time": 1783526399,
+    "page_no": 1,
+    "page_size": 50,
+    "session_unix_time": 1783573124,
+    "candidate_pool_type": 1,
+    "award_period": 1
+  },
+  "requestFieldsForMatching": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "candidate_pool_type": 1,
+    "award_period": 1,
+    "page_no": 1,
+    "page_size": 50
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "publish_start_time",
+      "value": 1783440000,
+      "source": "network_request",
+      "reason": "当前 DOU+券配置二页面日期筛选自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "publish_end_time",
+      "value": 1783526399,
+      "source": "network_request",
+      "reason": "当前 DOU+券配置二页面日期筛选自然携带；不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783573124,
+      "source": "network_request",
+      "reason": "发奖会话时间戳随页面会话变化；只用于 payload 审计，不参与 matcher。"
+    }
+  ],
+  "status": 200
+}

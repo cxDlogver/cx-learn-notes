@@ -1,0 +1,570 @@
+<!-- D2C Generated XML - Figma URL: https://www.figma.com/design/fNJJ7mEmEMYU5y0tcAZm3X/Untitled?node-id=1-9770&p=f&m=dev -->
+<!-- Generated at: 2026-07-08T09:01:10.029Z -->
+<!-- 🗑️ This is a temporary file, please delete after code generation -->
+
+<MainUI pv="v260603-v4.3.web.en" xml-id="f23009fa1a8a8c69" type="xml">
+  <Page id="1:9770" display="flex" flex-direction="column" width="100%" min-height="100vh" background-color="rgb(248,249,250)">
+    <!-- Top Navigation Header -->
+    <Header id="1:9867" display="flex" flex-direction="row" align-items="center" justify-content="space-between" height="52px" padding="10px 16px" background-color="rgb(255,255,255)" border-bottom="1px solid rgb(238,239,240)" impl-role="header" z-index="100">
+      <Container id="I1:9871;2:4570" display="flex" flex-direction="row" align-items="center" gap="26px">
+        <!-- Brand Logo Area -->
+        <Container id="I1:9871;2:4571" display="flex" flex-direction="row" align-items="center" gap="4px">
+          <Logo id="I1:9871;2:4573" width="38px" height="32px">
+            <Image id="1:9876" width="46.19px" height="36.78px" src="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/b3e8e397-015c-4616-a48e-384e730d978f"/>
+          </Logo>
+          <Text id="I1:9871;2:4582" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="600" font-size="14px" line-height="19.6px" color="rgb(17,17,17)">内容生态运营</Text>
+        </Container>
+        <!-- Quick Menu Button -->
+        <Button id="1:9872" display="flex" flex-direction="row" justify-content="center" align-items="center" gap="12px" padding="0px 18px" height="26px" background-color="rgb(248,249,250)" border-radius="4px" border="1px solid rgb(238,239,240)" impl-role="button" _strokeStyleName="Line/line-1">
+          <Text id="1:9875" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="20px" color="rgb(37,41,49)" white-space="nowrap" _fillStyleName="Text-icon/text-icon-0">+ 常用菜单</Text>
+        </Button>
+      </Container>
+      <!-- Top Header Search & User Actions -->
+      <Container id="I1:9871;2:4589" display="flex" flex-direction="row" align-items="center" gap="54px">
+        <!-- Search Box -->
+        <Container id="I1:9871;2:4620" display="flex" flex-direction="row" justify-content="flex-end" width="200px" height="32px" border-radius="56px">
+          <Container id="I1:9871;2:4621" display="flex" flex-direction="row" align-items="center" gap="8px" padding="0px 10px" width="100%" background-color="rgb(248,249,250)" border-radius="4px" border="1px solid rgb(238,239,240)" _strokeStyleName="Line/line-1">
+            <Icon id="I1:9871;2:4623" name="icon/16x16/搜索" width="20px" height="20px" flex-shrink="0" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/d5ca67cd-5f13-4ffa-ade3-cb12297d4a04" image-format="png" figma-instance="true" figma-component-key="4704512c8692ab689f2e8c13c7f9b9ad65728a6e" figma-component-name="icon/16x16/搜索" />
+            <Text id="I1:9871;2:4624" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="14px" line-height="20px" color="rgb(137,139,143)" white-space="nowrap" _fillStyleName="text-icon/text-icon-2">搜功能/商家/商品</Text>
+          </Container>
+        </Container>
+        <!-- Message & User Profile -->
+        <Container id="I1:9871;2:4625" display="flex" flex-direction="row" align-items="center" gap="16px">
+          <Icon id="I1:9871;2:4627" name="消息" width="24px" height="24px" flex-shrink="0" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/a389440e-d793-4884-b0f4-8429120c800f" image-format="png" figma-instance="true" figma-component-key="58569f5f052035bd95672db82e9a90a3c682c07f" figma-component-name="消息" />
+          <Image id="I1:9871;2:4628" width="32px" height="32px" border-radius="50%" src="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/6445cb96-b265-468a-bb60-26c162529905"/>
+        </Container>
+      </Container>
+    </Header>
+    <!-- Sub-header Tab Bar -->
+    <Container id="1:9776" display="flex" flex-direction="row" align-items="center" padding="0px 0px 0px 28px" height="36px" background-color="rgba(242,243,245,0.5)" border-bottom="1px solid rgb(238,239,240)" box-shadow="0px 1px 0px 0px rgba(0,0,0,0.05)" impl-role="nav" _strokeStyleName="Line/line-1">
+      <Container id="1:9777" display="flex" flex-direction="column" width="140px">
+        <Container id="1:9780" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="2px 24px 8px 18px" background-color="rgb(255,255,255)" border-radius="0px 0px 4px 4px" box-shadow="0px 1.2px 3.6px 0px rgba(0,0,0,0.11)">
+          <Text id="1:9781" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="12px" line-height="20px" color="rgb(25,102,255)" white-space="nowrap" _fillStyleName="text-icon/text-icon-0">内容活动</Text>
+          <IconButton id="1:9782" width="16px" height="16px" flex-shrink="0" figma-instance="true" figma-component-key="cd0b8ff89ad7f5c23c00ad10ed95ac4bf0b52c2c" figma-component-name="icons_16px_window_close_outlined">
+            <Icon id="I1:9782;4499:402;886:112" name="check-small" width="11px" height="11px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/095a67d3-ea4c-4e9d-b486-8528ddba4f5e" image-format="png" _fillStyleName="fill/fill-deepen-2"/>
+          </IconButton>
+        </Container>
+      </Container>
+      <Divider id="1:9783" width="1px" height="12px" background-color="rgb(238,239,240)" figma-instance="true" figma-component-key="9b69285b10839e182977f8797c7c43600293548d" figma-component-name="分隔线" />
+    </Container>
+    <!-- Master Workspace (Sidebar + Main Workspace) -->
+    <Container display="flex" flex-direction="row" flex-grow="1" width="100%">
+      <!-- Left Primary Icon Menu Sidebar -->
+      <Sidebar id="1:9840" display="flex" flex-direction="column" justify-content="space-between" align-items="center" padding="8px 0px 12px 0px" width="70px" background-color="rgb(255,255,255)" border-right="1px solid rgb(238,239,240)" flex-shrink="0">
+        <Container id="1:9842" display="flex" flex-direction="column" align-items="center" gap="16px">
+          <Divider id="1:9844" width="16px" height="1px" background-color="rgb(235,240,245)"/>
+          <Container id="1:9845" display="flex" flex-direction="column" gap="2px">
+            <!-- Nav Item 1 -->
+            <Container id="1:9846" display="flex" flex-direction="column" justify-content="center" align-items="center" gap="1px" padding="0px 2px" width="52px" height="52px" border-radius="8px">
+              <Icon id="1:9847" name="icon" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/3dddce82-accf-4c98-ad5d-8ff0b8848ae1" image-format="png" figma-instance="true" figma-component-key="c0aa229ca2377767a43f1ec0b5ebde9bf5a54ef8" figma-component-set-key="bbe47747e99c6f2ad66b9369f5fadc3c7a75969b" figma-component-set-name="icon" figma-component-name="Property 1=DataChartIcon" figma-component-properties='{"Property 1":"DataChartIcon"}' />
+              <Text id="1:9848" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="10px" line-height="16px" color="rgb(0,0,0)" text-align="center">作者运营</Text>
+            </Container>
+            <!-- Nav Item 2 (Active State) -->
+            <Container id="1:9849" display="flex" flex-direction="column" justify-content="center" align-items="center" gap="1px" padding="0px 2px" width="52px" height="52px" background-color="rgb(229,239,255)" border-radius="8px">
+              <Icon id="1:9850" name="icon_" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/f2b981d6-096f-4a59-951b-c03f3c90eed6" image-format="png" figma-instance="true" figma-component-key="dc561274949f6b940cd9e2ab3623facd10bd2f00" figma-component-name="icon_" />
+              <Text id="1:9851" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="10px" line-height="16px" color="rgb(25,102,255)" text-align="center" _fillStyleName="Primary/brand">内容运营</Text>
+            </Container>
+            <!-- Nav Item 3 -->
+            <Container id="1:9852" display="flex" flex-direction="column" justify-content="center" align-items="center" gap="1px" padding="0px 2px" width="52px" height="52px" border-radius="8px">
+              <Icon id="1:9853" name="icon_" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/76acf8f5-5b23-412f-9e4b-3087ed4d4b58" image-format="png" figma-instance="true" figma-component-key="774ce20ce300fac97806ceef2351d6ce0be7e759" figma-component-name="icon_" />
+              <Text id="1:9854" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="10px" line-height="16px" color="rgb(0,0,0)" text-align="center">商达撮合</Text>
+            </Container>
+            <!-- Nav Item 4 -->
+            <Container id="1:9855" display="flex" flex-direction="column" justify-content="center" align-items="center" gap="1px" padding="0px 2px" width="52px" height="52px" border-radius="8px">
+              <Icon id="1:9856" name="icon_" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/0bc33fd8-7213-4c30-ae40-d079782a97b6" image-format="png" figma-instance="true" figma-component-key="9a28c364e7b78acf6f6c2c32621d9be70d494180" figma-component-name="icon_" />
+              <Text id="1:9857" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="10px" line-height="16px" color="rgb(0,0,0)" text-align="center">策略平台</Text>
+            </Container>
+            <!-- Nav Item 5 -->
+            <Container id="1:9858" display="flex" flex-direction="column" justify-content="center" align-items="center" gap="1px" padding="0px 2px" width="52px" height="52px" border-radius="8px">
+              <Icon id="1:9859" name="icon" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/86b096ef-28a3-427b-94d1-abcc2c7a35d4" image-format="png" figma-instance="true" figma-component-key="6449a49ad4f1d8773e558ef5ea5b17ff60d25531" figma-component-set-key="bbe47747e99c6f2ad66b9369f5fadc3c7a75969b" figma-component-set-name="icon" figma-component-name="Property 1=RewardsPunishmentsIcon" figma-component-properties='{"Property 1":"RewardsPunishmentsIcon"}' />
+              <Text id="1:9860" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="10px" line-height="16px" color="rgb(0,0,0)" text-align="center">数据洞察</Text>
+            </Container>
+            <!-- Nav Item 6 -->
+            <Container id="1:9861" display="flex" flex-direction="column" justify-content="center" align-items="center" gap="1px" padding="0px 2px" width="52px" height="52px" border-radius="8px">
+              <Icon id="1:9862" name="icon" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/41d448a6-37df-4387-b025-7e816bad7ff6" image-format="png" figma-instance="true" figma-component-key="a24b189da5231385664d2cdc4124dde73011a3ef" figma-component-name="商品中心" />
+              <Text id="1:9863" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="10px" line-height="16px" color="rgb(0,0,0)" text-align="center">产研工具</Text>
+            </Container>
+          </Container>
+        </Container>
+        <!-- Bottom settings trigger -->
+        <IconButton id="1:9864" width="32px" height="32px" border-radius="4px" box-shadow="inset 0 0 0 0.89px rgb(238,239,240)" _strokeStyleName="Line/line-1">
+          <Icon id="1:10175" name="icon_" width="18px" height="18px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/ed1bb059-4893-406b-9ab1-fbeb86bbeaae" image-format="png" figma-instance="true" figma-component-key="c1acfe8981bfe2f260aea79c4358f7a2446eb756" figma-component-name="icon_" />
+        </IconButton>
+      </Sidebar>
+      <!-- Secondary Text Menu Sidebar -->
+      <Sidebar id="1:9786" display="flex" flex-direction="column" gap="10px" padding="10px 8px 0px 20px" width="139px" background-color="rgb(255,255,255)" border-right="1px solid rgb(238,239,240)" flex-shrink="0">
+        <Container id="1:9788" display="flex" flex-direction="column" gap="10px">
+          <!-- Nav Group 1 -->
+          <Container id="1:9789" display="flex" flex-direction="column" gap="4px">
+            <Container id="1:9790" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="6px 0px">
+              <Text id="1:9791" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">视频管理</Text>
+              <Icon id="1:9792" name="icons_3px_unfold_outlined" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/6c2b14b8-9052-48e4-bda4-5208ee75cea1" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+            </Container>
+            <Container id="1:9795" display="flex" flex-direction="row" align-items="center" padding="6px 0px" width="80px">
+              <Text id="1:9796" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">视频查询</Text>
+            </Container>
+          </Container>
+          <!-- Nav Group 2 -->
+          <Container id="1:9799" display="flex" flex-direction="column" gap="4px">
+            <Container id="1:9800" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="6px 0px">
+              <Text id="1:9801" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">热点管理</Text>
+              <Icon id="1:9802" name="icons_3px_unfold_outlined" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/88dd6d92-27af-4da0-8fae-050f2034a32d" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+            </Container>
+            <Container id="1:9805" display="flex" flex-direction="row" align-items="center" padding="6px 0px" width="80px">
+              <Text id="1:9806" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">热点列表</Text>
+            </Container>
+          </Container>
+          <!-- Nav Group 3 -->
+          <Container id="1:9809" display="flex" flex-direction="column" gap="4px">
+            <Container id="1:9810" display="flex" flex-direction="row" align-items="center" gap="4px" padding="6px 0px">
+              <Text id="1:9811" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">买家秀活动</Text>
+              <Icon id="1:9812" name="icons_3px_unfold_outlined" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/6bfaeb8f-8876-412d-b1db-8813fe56d9bb" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+            </Container>
+            <Container id="1:9815" display="flex" flex-direction="row" align-items="center" padding="6px 0px" width="80px">
+              <Text id="1:9816" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">买家秀话题</Text>
+            </Container>
+          </Container>
+          <!-- Nav Group 4 (Active Content Group) -->
+          <Container id="1:9819" display="flex" flex-direction="column" gap="4px">
+            <Container id="1:9820" display="flex" flex-direction="row" align-items="center" gap="4px" padding="6px 0px">
+              <Text id="1:9821" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">好看计划评选</Text>
+              <Icon id="1:9822" name="icons_3px_unfold_outlined" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/06853cf4-3f7c-4e10-825f-07fac60e37f4" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+            </Container>
+            <Container id="1:9825" display="flex" flex-direction="row" align-items="center" padding="6px 0px" width="80px">
+              <Text id="1:9826" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">好看作者评选</Text>
+            </Container>
+            <Container id="1:9831" display="flex" flex-direction="row" align-items="center" padding="6px 0px" width="80px">
+              <Text id="1:9832" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">好看内容评选</Text>
+            </Container>
+            <Container id="1:9835" display="flex" flex-direction="row" align-items="center" gap="4px" padding="6px 0px">
+              <Text id="1:9836" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">内容活动</Text>
+              <Icon id="1:9837" name="icons_3px_unfold_outlined" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/8ce6a046-d9f1-4400-a5bf-6b308e74902e" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+            </Container>
+          </Container>
+        </Container>
+        <!-- Sub Menu Item (Active Highlight) -->
+        <Container id="1:9839" display="flex" flex-direction="row" align-items="center" padding="6px" width="101px" height="28px" background-color="rgb(235,243,255)" border-radius="4px" margin-top="10px" _fillStyleName="Primary/bright" figma-instance="true" figma-component-key="b5e18453267ce7be8f694f79e0fa3ea45d8c9e6b" figma-component-set-key="e063c5c917ffc1d2a8ff4c81dd4a790ecf69e04f" figma-component-set-name="三级导航" figma-component-name="Property 1=0" figma-component-properties='{"Property 1":"0"}'>
+          <Text id="I1:9839;494:107279" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="12px" line-height="16px" color="rgb(25,102,255)" white-space="nowrap" _fillStyleName="Primary/brand">内容活动列表</Text>
+        </Container>
+      </Sidebar>
+      <!-- Main Content Area -->
+      <MainContent display="flex" flex-direction="column" gap="16px" padding="24px" flex-grow="1" overflow-y="auto">
+        <!-- Page Step Header Panel -->
+        <Card id="1:10187" display="flex" flex-direction="column" gap="16px" padding="20px" background-color="rgb(255,255,255)" border-radius="5px">
+          <Text id="1:10188" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="18px" line-height="28px" color="rgb(37,41,49)" _textTokenName="Heading/H4-Medium" _fillStyleName="Text-icon/text-icon-0">内容活动列表</Text>
+          <!-- Form Stepper Wizard -->
+          <Stepper display="flex" flex-direction="row" align-items="center" justify-content="center" gap="24px" width="100%">
+            <!-- Step 1: Completed -->
+            <Step id="1:10192" display="flex" flex-direction="row" align-items="center" gap="8px" figma-instance="true" figma-component-key="04feb529779a7ba2c7a3cffb2e3b89be74a4009d" figma-component-set-key="dc41ecca752e5169d0a6fab32771a1d8bc511aa0" figma-component-set-name="step" figma-component-name="Last one=false, Property 3=horizontal" figma-component-properties='{"Last one":"false","Property 3":"horizontal"}'>
+              <Container display="flex" align-items="center" justify-content="center" width="48px" height="48px" background-color="rgb(0,136,255)" border-radius="50%">
+                <Text font-family="Barlow, sans-serif" font-weight="600" font-size="18px" color="rgb(255,255,255)">1</Text>
+              </Container>
+              <Container display="flex" flex-direction="column" gap="4px">
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)">活动配置</Text>
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(137,139,143)">活动基础配置</Text>
+              </Container>
+            </Step>
+            <Divider id="I1:10192;69538:37455" width="100px" height="1px" border-style="dashed" border-color="rgb(25,102,255)" figma-instance="true" figma-component-key="83188fc00dad77185deea8d74c323c899456748f" figma-component-set-key="d28d95e4dfe7d3b20d97e7fc4da971903ab58fed" figma-component-set-name="ArrowLine" figma-component-name="方向=横向" figma-component-properties='{"方向":"横向"}' />
+            <!-- Step 2: Active -->
+            <Step id="1:10189" display="flex" flex-direction="row" align-items="center" gap="8px" figma-instance="true" figma-component-key="04feb529779a7ba2c7a3cffb2e3b89be74a4009d" figma-component-set-key="dc41ecca752e5169d0a6fab32771a1d8bc511aa0" figma-component-set-name="step" figma-component-name="Last one=false, Property 3=horizontal" figma-component-properties='{"Last one":"false","Property 3":"horizontal"}'>
+              <Container display="flex" align-items="center" justify-content="center" width="48px" height="48px" background-color="rgb(0,136,255)" border-radius="50%">
+                <Text font-family="Barlow, sans-serif" font-weight="600" font-size="18px" color="rgb(223,240,255)">2</Text>
+              </Container>
+              <Container display="flex" flex-direction="column" gap="4px">
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)">奖励配置</Text>
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(137,139,143)">奖励类型和奖励规则配置</Text>
+              </Container>
+            </Step>
+            <Divider id="1:10191" width="100px" height="1px" border-style="dashed" border-color="rgb(25,102,255)" figma-instance="true" figma-component-key="83188fc00dad77185deea8d74c323c899456748f" figma-component-set-key="d28d95e4dfe7d3b20d97e7fc4da971903ab58fed" figma-component-set-name="ArrowLine" figma-component-name="方向=横向" figma-component-properties='{"方向":"横向"}' />
+            <!-- Step 3: Pending -->
+            <Step id="1:10190" display="flex" flex-direction="row" align-items="center" gap="8px" figma-instance="true" figma-component-key="04feb529779a7ba2c7a3cffb2e3b89be74a4009d" figma-component-set-key="dc41ecca752e5169d0a6fab32771a1d8bc511aa0" figma-component-set-name="step" figma-component-name="Last one=false, Property 3=horizontal" figma-component-properties='{"Last one":"false","Property 3":"horizontal"}'>
+              <Container display="flex" align-items="center" justify-content="center" width="48px" height="48px" background-color="rgb(240,246,255)" border-radius="50%">
+                <Text font-family="Barlow, sans-serif" font-weight="600" font-size="18px" color="rgb(71,132,255)">3</Text>
+              </Container>
+              <Container display="flex" flex-direction="column" gap="4px">
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" line-height="20px" color="rgb(37,41,49)">关联触达渠道</Text>
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="12px" line-height="16px" color="rgb(137,139,143)">关联触达任务或其他触达形式</Text>
+              </Container>
+            </Step>
+          </Stepper>
+        </Card>
+        <!-- Configuration Management Section -->
+        <Container display="flex" flex-direction="row" justify-content="space-between" align-items="center" margin-top="8px">
+          <Text id="1:10186" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="18px" line-height="28px" color="rgb(37,41,49)" _textTokenName="Heading/H4-Medium" _fillStyleName="Text-icon/text-icon-0">奖励配置</Text>
+          <Button id="1:10193" display="flex" flex-direction="row" justify-content="center" align-items="center" padding="6px 16px" width="92px" height="32px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="b00cf39e1a50c9c6e0ba4c7d6842b4fd1b8c5ee2" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=M, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"M","State":"normal","Type":"Secondary"}'>
+            <Text id="I1:10193;69:1221" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="400" font-size="14px" color="rgb(25,102,255)" white-space="nowrap" _fillStyleName="Primary/brand">+ 新增配置</Text>
+          </Button>
+        </Container>
+        <!-- Primary Configuration Box ("配置一" Form Block) [CR-12] -->
+        <Container id="1:10194" display="flex" flex-direction="column" gap="24px" padding="24px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(220,222,225)" relative="true" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0">
+          <!-- Delete Configuration Button -->
+          <IconButton id="1:10195" position="absolute" right="16px" top="16px" width="16px" height="16px" impl-role="button" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除">
+            <Icon id="1:9886" name="删除" width="16px" height="16px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/134bac68-2c78-4896-a65f-423d9321de55" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+          </IconButton>
+          <!-- Section Header -->
+          <Container display="flex" flex-direction="row" align-items="center" gap="8px">
+            <Text id="1:10210" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" color="rgb(0,0,0)" _colorVariable="Grays/Black">配置一</Text>
+          </Container>
+          <!-- Form Row 1: Reward Type -->
+          <Container display="flex" flex-direction="row" align-items="center" gap="16px">
+            <Label id="1:10209" width="100px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(0,0,0)" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">奖励类型</Label>
+            <Container display="flex" flex-direction="row" gap="24px" impl-role="control" impl-web="radio">
+              <Radio id="1:10205" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                <Container width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                  <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                </Container>
+                <Text id="I1:10205;28399:219491;57322:50922;10943:109622" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">DOU+币</Text>
+              </Radio>
+              <Radio id="1:10207" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                <Container width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                <Text id="I1:10207;28399:219537;57322:50922;10943:109622" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">DOU+券</Text>
+              </Radio>
+            </Container>
+          </Container>
+          <!-- Form Row 2: Audience Eligibility -->
+          <Container display="flex" flex-direction="column" gap="8px">
+            <Container display="flex" flex-direction="row" align-items="center" gap="16px">
+              <Label id="1:10208" width="100px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(0,0,0)" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">活动参与资格</Label>
+              <Container display="flex" flex-direction="row" gap="24px" impl-role="control" impl-web="radio">
+                <Radio id="1:10206" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                  <Container width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                    <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                  </Container>
+                  <Text id="I1:10206;28399:219491;57322:50922;10943:109622" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">全部用户</Text>
+                </Radio>
+                <Radio id="1:10204" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                  <Container width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text id="I1:10204;28399:219537;57322:50922;10943:109622" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">仅限预埋用户</Text>
+                </Radio>
+              </Container>
+            </Container>
+            <!-- Helper Instruction link -->
+            <Container padding-left="116px" display="flex" flex-direction="row" align-items="center" gap="4px">
+              <Text id="1:10202" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" line-height="20px" _textTokenName="Paragraph/P1-Regular" _fillStyleName="Text-icon/text-icon-3">
+                <Span color="rgb(188,189,192)">奖励发放环节将进行账号校验，命中【不激励】规则的账号无法被发奖 </Span>
+                <Span color="rgb(25,102,255)" text-decoration="underline">查看【不激励】规则</Span>
+              </Text>
+            </Container>
+          </Container>
+          <!-- Form Row 3: Format Requirement -->
+          <Container display="flex" flex-direction="row" align-items="center" gap="16px">
+            <Label id="1:10218" width="100px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(0,0,0)" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">内容体裁要求</Label>
+            <Container display="flex" flex-direction="row" gap="24px" impl-role="control" impl-web="checkbox">
+              <Checkbox id="1:10297" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="checkbox" impl-behavior="checkbox checked(true)" figma-instance="true" figma-component-key="deb9a88cda5a5193f0fb3c578e18e60e8a20fb83" figma-component-set-key="0f5952b22c0299d0227053e836bbf49723c1eaf5" figma-component-set-name="Checkbox" figma-component-name="Selected=True, Half-selected=False, Lable=False, State=normal" figma-component-properties='{"Half-selected":"False","Lable":"False","Selected":"True","State":"normal"}'>
+                <Icon id="1:10024" name="Checkbox" width="16px" height="15.37px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e0a6c233-9696-4dcc-b352-ab7a02612094" image-format="png" figma-instance="true" figma-component-key="deb9a88cda5a5193f0fb3c578e18e60e8a20fb83" figma-component-set-key="0f5952b22c0299d0227053e836bbf49723c1eaf5" figma-component-set-name="Checkbox" figma-component-name="Selected=True, Half-selected=False, Lable=False, State=normal" figma-component-properties='{"Half-selected":"False","Lable":"False","Selected":"True","State":"normal"}' />
+                <Text id="1:10299" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>视频</Text>
+              </Checkbox>
+              <Checkbox id="1:10298" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="checkbox" impl-behavior="checkbox checked(false)" figma-instance="true" figma-component-key="beaa88b557484b2764cec786530ae76c6320e7b1" figma-component-set-key="0f5952b22c0299d0227053e836bbf49723c1eaf5" figma-component-set-name="Checkbox" figma-component-name="Selected=False, Half-selected=False, Lable=False, State=normal" figma-component-properties='{"Half-selected":"False","Lable":"False","Selected":"False","State":"normal"}'>
+                <Icon id="1:10025" name="Checkbox" width="16px" height="15.37px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/1b12bfbc-b4fb-434b-bd4c-57bb9f258c21" image-format="png" figma-instance="true" figma-component-key="beaa88b557484b2764cec786530ae76c6320e7b1" figma-component-set-key="0f5952b22c0299d0227053e836bbf49723c1eaf5" figma-component-set-name="Checkbox" figma-component-name="Selected=False, Half-selected=False, Lable=False, State=normal" figma-component-properties='{"Half-selected":"False","Lable":"False","Selected":"False","State":"normal"}' />
+                <Text id="1:10300" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>图文</Text>
+              </Checkbox>
+            </Container>
+          </Container>
+          <!-- Form Row 4: Criteria (准入门槛) [CR-12] -->
+          <Container display="flex" flex-direction="row" gap="16px">
+            <Label id="1:10219" width="100px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(0,0,0)" padding-top="8px" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">准入门槛</Label>
+            <!-- Nested logic block with And/Or Tree structure -->
+            <Container display="flex" flex-direction="column" gap="16px" flex-grow="1" padding="16px" background-color="rgb(250,251,252)" border-radius="4px" border="1px solid rgb(238,239,240)" relative="true">
+              <!-- Logic Connector Visual Wrapper -->
+              <Container id="1:10259" position="absolute" left="12px" top="48px" bottom="48px" width="30px" display="flex" justify-content="center" align-items="center">
+                <Box width="2px" height="100%" background-color="rgb(238,239,240)"/>
+                <Container id="1:10264" position="absolute" padding="2px 5px" background-color="rgb(255,242,217)" border-radius="2px" border="1px solid rgb(255,255,255)" _fillStyleName="function/warning/bright" _strokeStyleName="fil/fade-0">
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" color="rgb(255,159,26)">且</Text>
+                </Container>
+              </Container>
+              <!-- Sub-Condition Entry 1 -->
+              <Container display="flex" flex-direction="row" align-items="center" gap="12px" padding-left="40px">
+                <Select id="1:10248" width="180px" impl-web="select" impl-behavior="select placeholder(&apos;关联话题&apos;)" impl-role="control" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}'>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">关联话题</Text>
+                </Select>
+                <Radio id="1:10282" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                    <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                  </Box>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">指定话题</Text>
+                </Radio>
+                <Radio id="1:10278" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">批量上传</Text>
+                </Radio>
+                <Container display="flex" flex-grow="1">
+                  <Select id="1:10288" width="100%" impl-web="select" impl-behavior="select placeholder(&apos;请输入话题ID或名称&apos;)" impl-role="control" figma-instance="true" figma-component-key="299f65570070abf7a917a5751ba42ef8519edf36" figma-component-set-key="ee13f74ee2cf28b5e05a7c3e323382bb2b16cfb4" figma-component-set-name="Select" figma-component-name="Filled Value=False, Multiple=False, Danger=False, Fold=False, State=normal, frame=true" figma-component-properties='{"Danger":"False","Filled Value":"False","Fold":"False","Multiple":"False","State":"normal","frame":"true"}' />
+                </Container>
+                <IconButton width="32px" height="32px" impl-role="button">
+                  <Icon id="1:10242" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/bc69abc3-5606-485a-b33e-4e15205fecbd" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                </IconButton>
+              </Container>
+              <!-- Sub-Condition Entry 2 -->
+              <Container display="flex" flex-direction="row" align-items="center" gap="12px" padding-left="40px">
+                <Select id="1:10247" width="180px" impl-web="select" impl-behavior="select placeholder(&apos;关联买家秀活动&apos;)" impl-role="control" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}'>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">关联买家秀活动</Text>
+                </Select>
+                <Radio id="1:10281" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                    <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                  </Box>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">指定活动</Text>
+                </Radio>
+                <Radio id="1:10277" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">批量上传</Text>
+                </Radio>
+                <Container display="flex" flex-grow="1">
+                  <Select id="1:10115" width="100%" impl-web="select" impl-behavior="select placeholder(&apos;请选择买家秀活动ID或名称&apos;)" impl-role="control" _fillStyleName="Black/二级文字"/>
+                </Container>
+                <IconButton width="32px" height="32px" impl-role="button">
+                  <Icon id="1:10241" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/f0248975-d54b-4b3c-8e36-799a72575715" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                </IconButton>
+              </Container>
+              <!-- Sub-Condition Entry 3 -->
+              <Container display="flex" flex-direction="row" align-items="center" gap="12px" padding-left="40px">
+                <Select id="1:10249" width="180px" impl-web="select" impl-behavior="select placeholder(&apos;关联标记&apos;)" impl-role="control"/>
+                <Radio id="1:10284" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                    <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                  </Box>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">全部标记</Text>
+                </Radio>
+                <Radio id="1:10280" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="d4d052268aa744c413c7383a52b2adcecf1e4db6" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Disable, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Disable"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(188,189,192)">指定SPU</Text>
+                </Radio>
+                <IconButton width="32px" height="32px" impl-role="button" margin-left="auto">
+                  <Icon id="1:10240" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/915c394a-f13d-4366-af01-f171907d1dc1" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                </IconButton>
+              </Container>
+              <!-- Sub-Condition Entry 4 -->
+              <Container display="flex" flex-direction="row" align-items="center" gap="12px" padding-left="40px">
+                <Select id="1:10251" width="180px" impl-web="select" impl-behavior="select placeholder(&apos;关联好物清单&apos;)" impl-role="control"/>
+                <Radio id="1:10283" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                    <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                  </Box>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">全部商品</Text>
+                </Radio>
+                <Radio id="1:10279" display="flex" flex-direction="row" align-items="center" gap="6px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="d4d052268aa744c413c7383a52b2adcecf1e4db6" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Disable, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Disable"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(188,189,192)">指定SPU</Text>
+                </Radio>
+                <IconButton width="32px" height="32px" impl-role="button" margin-left="auto">
+                  <Icon id="1:10243" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/f1e0862d-3e06-4fe9-902e-6ae122e7fcad" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                </IconButton>
+              </Container>
+              <!-- Dropdown row for extra items -->
+              <Container display="flex" flex-direction="row" gap="12px" padding-left="40px">
+                <Container display="flex" flex-direction="row" align-items="center" gap="8px">
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(137,139,143)">电商意图</Text>
+                  <Select id="1:10286" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;请选择&apos;)" impl-role="control" figma-instance="true" figma-component-key="299f65570070abf7a917a5751ba42ef8519edf36" figma-component-set-key="ee13f74ee2cf28b5e05a7c3e323382bb2b16cfb4" figma-component-set-name="Select" figma-component-name="Filled Value=False, Multiple=False, Danger=False, Fold=False, State=normal, frame=true" figma-component-properties='{"Danger":"False","Filled Value":"False","Fold":"False","Multiple":"False","State":"normal","frame":"true"}' />
+                  <IconButton width="32px" height="32px" impl-role="button">
+                    <Icon id="1:10245" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/f3cf5c49-8dfd-4685-bed2-aa364d690189" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                  </IconButton>
+                </Container>
+                <Container display="flex" flex-direction="row" align-items="center" gap="8px">
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(137,139,143)">ugc内容类型</Text>
+                  <Select id="1:10287" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;请选择&apos;)" impl-role="control" figma-instance="true" figma-component-key="299f65570070abf7a917a5751ba42ef8519edf36" figma-component-set-key="ee13f74ee2cf28b5e05a7c3e323382bb2b16cfb4" figma-component-set-name="Select" figma-component-name="Filled Value=False, Multiple=False, Danger=False, Fold=False, State=normal, frame=true" figma-component-properties='{"Danger":"False","Filled Value":"False","Fold":"False","Multiple":"False","State":"normal","frame":"true"}' />
+                  <IconButton width="32px" height="32px" impl-role="button">
+                    <Icon id="1:10246" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e11e3e93-7df7-4a3c-aa09-62a2213a503a" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                  </IconButton>
+                </Container>
+                <Container display="flex" flex-direction="row" align-items="center" gap="8px">
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(137,139,143)">内容评级</Text>
+                  <Select id="1:10285" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;请选择&apos;)" impl-role="control" figma-instance="true" figma-component-key="299f65570070abf7a917a5751ba42ef8519edf36" figma-component-set-key="ee13f74ee2cf28b5e05a7c3e323382bb2b16cfb4" figma-component-set-name="Select" figma-component-name="Filled Value=False, Multiple=False, Danger=False, Fold=False, State=normal, frame=true" figma-component-properties='{"Danger":"False","Filled Value":"False","Fold":"False","Multiple":"False","State":"normal","frame":"true"}' />
+                  <IconButton width="32px" height="32px" impl-role="button">
+                    <Icon id="1:10244" name="删除" width="16px" height="14.57px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/bb5ac36d-bfdb-45bf-8704-722fcf571090" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                  </IconButton>
+                </Container>
+              </Container>
+              <!-- Add criteria conditions button -->
+              <Container padding-left="40px" margin-top="8px">
+                <Button id="1:10266" display="flex" flex-direction="row" align-items="center" gap="10px" padding="5px 16px" width="97px" height="32px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button">
+                  <Text id="1:10270" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(25,102,255)" white-space="nowrap">+添加条件</Text>
+                </Button>
+              </Container>
+            </Container>
+          </Container>
+          <!-- Add Section Block Separator (Add threshold block button) -->
+          <Container padding-left="116px">
+            <Button id="1:10220" display="flex" flex-direction="row" align-items="center" gap="10px" padding="5px 16px" width="102px" height="30.74px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button">
+              <Icon id="1:10222" name="Union" width="16px" height="15px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/a3e8f390-6f4c-4e74-880d-0ca18618f3ed" image-format="png"/>
+              <Text id="1:10227" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(25,102,255)">添加门槛</Text>
+            </Button>
+          </Container>
+          <!-- Form Row 5: Reward Rules -->
+          <Container display="flex" flex-direction="column" gap="16px">
+            <Container display="flex" flex-direction="row" align-items="center" gap="16px">
+              <Label id="1:10213" width="100px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(0,0,0)" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">奖励规则</Label>
+              <Container display="flex" flex-direction="row" gap="24px" impl-role="control" impl-web="radio">
+                <Radio id="1:10294" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" display="flex" align-items="center" justify-content="center">
+                    <Box width="8px" height="8px" background-color="rgb(25,102,255)" border-radius="50%"/>
+                  </Box>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">按照指定条件发奖</Text>
+                </Radio>
+                <Radio id="1:10295" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">按照权重排名发奖</Text>
+                </Radio>
+                <Radio id="1:10296" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                  <Box width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">按照人工提报发奖</Text>
+                </Radio>
+              </Container>
+            </Container>
+            <!-- Rule Block Item 1 (规则一 Container) [CR-12] -->
+            <Container id="1:10330" display="flex" flex-direction="column" gap="16px" padding="16px" background-color="rgb(255,255,255)" border-radius="5px" border="1px solid rgb(237,237,237)" padding-left="116px">
+              <!-- Sub Rule Title -->
+              <Container id="1:10290" display="flex" flex-direction="row" align-items="center" gap="8px" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" color="rgb(37,41,49)">规则一</Text>
+              </Container>
+              <!-- Sub Section 1: Conditions List [CR-12] -->
+              <Container display="flex" flex-direction="row" gap="16px" margin-top="8px">
+                <Label id="1:10332" width="80px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>条件限制</Label>
+                <Container display="flex" flex-direction="column" gap="12px" flex-grow="1" padding="12px" background-color="rgb(250,251,252)" border-radius="4px" relative="true">
+                  <!-- Logical AND Line Connector -->
+                  <Container id="1:10348" position="absolute" left="-12px" top="24px" bottom="24px" width="24px" display="flex" justify-content="center" align-items="center">
+                    <Container padding="2px 5px" background-color="rgb(255,242,217)" border-radius="2px">
+                      <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" color="rgb(255,159,26)">且</Text>
+                    </Container>
+                  </Container>
+                  <!-- Criteria Row 1 -->
+                  <Container display="flex" flex-direction="row" align-items="center" gap="8px" padding-left="16px">
+                    <Select id="1:10342" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;内容播放量&apos;)" impl-role="control"/>
+                    <Text id="1:10334" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">数值范围在</Text>
+                    <Container display="flex" flex-direction="row" align-items="center" gap="4px">
+                      <Input id="1:10324" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                      <Text>-</Text>
+                      <Input id="1:10326" width="71px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                    </Container>
+                    <IconButton width="32px" height="32px" impl-role="button" margin-left="auto">
+                      <Icon id="1:10339" name="删除" width="16px" height="15.09px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/9bb61073-366c-484b-9d18-94bc271976b3" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                    </IconButton>
+                  </Container>
+                  <!-- Criteria Row 2 -->
+                  <Container display="flex" flex-direction="row" align-items="center" gap="8px" padding-left="16px">
+                    <Select id="1:10344" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;全域成交价值&apos;)" impl-role="control"/>
+                    <Text id="1:10335" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">数值范围在</Text>
+                    <Container display="flex" flex-direction="row" align-items="center" gap="4px">
+                      <Input id="1:10325" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                      <Text>-</Text>
+                      <Input id="1:10327" width="71px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                    </Container>
+                    <IconButton width="32px" height="32px" impl-role="button" margin-left="auto">
+                      <Icon id="1:10340" name="删除" width="16px" height="15.09px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/c8933cc3-98eb-40b8-b3ed-350e29fb8ba8" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                    </IconButton>
+                  </Container>
+                  <!-- Criteria Row 3 -->
+                  <Container display="flex" flex-direction="row" align-items="center" gap="8px" padding-left="16px">
+                    <Select id="1:10346" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;账号粉丝量&apos;)" impl-role="control"/>
+                    <Text id="1:10337" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">在</Text>
+                    <Container display="flex" flex-direction="row" align-items="center" gap="4px">
+                      <Input id="1:10352" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                      <Text>-</Text>
+                      <Input id="1:10353" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                    </Container>
+                    <Text id="1:10338" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">区间</Text>
+                    <IconButton width="32px" height="32px" impl-role="button" margin-left="auto">
+                      <Icon id="1:10341" name="删除" width="16px" height="15.09px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/4578383c-54bb-40b8-8007-49942e81bdf1" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                    </IconButton>
+                  </Container>
+                </Container>
+              </Container>
+              <!-- Sub Section 2: Sorting Rules [CR-12] -->
+              <Container display="flex" flex-direction="row" gap="16px" margin-top="8px">
+                <Label id="1:10333" width="80px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>排序规则</Label>
+                <Container id="1:10331" display="flex" flex-direction="column" gap="12px" flex-grow="1" padding="12px" background-color="rgb(250,251,252)" border-radius="4px">
+                  <Container display="flex" flex-direction="row" align-items="center" gap="8px">
+                    <Select id="1:10302" width="120px" impl-web="select" impl-behavior="select placeholder(&apos;内容播放量&apos;)" impl-role="control" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}' />
+                    <Text id="1:10336" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">排名在</Text>
+                    <Container display="flex" flex-direction="row" align-items="center" gap="4px">
+                      <Input id="1:10314" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                      <Text>-</Text>
+                      <Input id="1:10315" width="71px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input type(number)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                    </Container>
+                    <IconButton width="32px" height="32px" impl-role="button" margin-left="auto">
+                      <Icon id="1:10301" name="删除" width="16px" height="15.09px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/72ea3e5a-1868-4136-b4a2-3a801780faf2" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                    </IconButton>
+                  </Container>
+                  <Container>
+                    <Button id="1:10308" display="flex" flex-direction="row" align-items="center" gap="10px" padding="5px 16px" width="97px" height="32px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(190,194,203)" impl-role="button">
+                      <Text id="I1:10308;10312" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(157,161,169)" white-space="nowrap">+添加条件</Text>
+                    </Button>
+                  </Container>
+                </Container>
+              </Container>
+              <!-- Sub Section 3: Reward Amount [CR-13] -->
+              <Container display="flex" flex-direction="row" align-items="center" gap="16px" margin-top="8px">
+                <Label id="1:10291" width="80px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                  <Span color="rgb(255,73,73)">*</Span>
+                  <Span color="rgb(37,41,49)">奖励金额</Span>
+                </Label>
+                <Container id="1:10317" display="flex" flex-direction="row" align-items="center" gap="8px">
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">单条内容</Text>
+                  <Input id="1:10318" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input placeholder(&apos;金额&apos;)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                  <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">元DOU+币</Text>
+                </Container>
+              </Container>
+              <!-- Sub Section 4: Reward Amount Limit [CR-13] -->
+              <Container display="flex" flex-direction="column" gap="4px" margin-top="8px">
+                <Container display="flex" flex-direction="row" align-items="center" gap="16px">
+                  <Label id="1:10292" width="80px" text-align="right" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                    <Span color="rgb(252,38,38)">*</Span>
+                    <Span color="rgb(37,41,49)">奖励发放数量</Span>
+                  </Label>
+                  <Container id="1:10321" display="flex" flex-direction="row" align-items="center" gap="8px">
+                    <Input id="1:10322" width="70px" height="30.74px" border-radius="4px" border="1px solid rgb(220,222,225)" impl-web="input" impl-behavior="input placeholder(&apos;数量&apos;)" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                    <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(37,41,49)">份</Text>
+                  </Container>
+                </Container>
+                <Container padding-left="100px">
+                  <Text id="1:10215" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" color="rgb(204,204,204)" _colorVariable="Fills - Vibrant/Primary" _textTokenName="Paragraph/P1-Regular">需填写活动周期内该配置下发放奖励的总份数</Text>
+                </Container>
+              </Container>
+              <!-- Sub Section 5: Reward Rules Summary Note -->
+              <Container padding-left="100px" margin-top="8px">
+                <Text id="1:10214" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" line-height="20px" color="rgb(142,142,147)" _colorVariable="Grays/Gray" _textTokenName="Paragraph/P1-Regular">奖励规则说明：当内容满足内容播放量排名在1-20 且 全域成交价值数值范围在1000-5000且账号粉丝量在1万-5万且内容质量满足优质-标杆、优质-良好，单条内容可获得5000DOU+币，活动期间奖励数量共50份。</Text>
+              </Container>
+            </Container>
+            <!-- Actions for rules panel -->
+            <Container padding-left="116px" display="flex" flex-direction="row" gap="12px" margin-top="8px">
+              <Button id="1:10231" display="flex" flex-direction="row" align-items="center" gap="10px" padding="5px 16px" height="30.74px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button">
+                <Text id="1:10238" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(25,102,255)">添加规则</Text>
+              </Button>
+              <Button id="1:10228" display="flex" flex-direction="row" align-items="center" gap="10px" padding="5px 16px" height="30.74px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button">
+                <Text id="1:10230" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(25,102,255)">复制规则</Text>
+              </Button>
+            </Container>
+          </Container>
+          <!-- Divider -->
+          <Divider height="1px" background-color="rgb(238,239,240)" margin-top="16px"/>
+          <!-- Bottom Summary & Block Actions -->
+          <Container display="flex" flex-direction="row" justify-content="space-between" align-items="center" margin-top="8px">
+            <Container display="flex" flex-direction="row" align-items="center" gap="12px">
+              <Label id="1:10216" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(0,0,0)" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">预估奖励总额</Label>
+              <Text id="1:10289" font-family="&apos;PingFang SC&apos;, sans-serif" font-weight="500" font-size="14px" color="rgb(37,41,49)" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>100000 元</Text>
+            </Container>
+            <Container display="flex" flex-direction="row" gap="12px">
+              <Button id="1:10211" display="flex" flex-direction="row" justify-content="center" align-items="center" padding="6px 16px" height="30.74px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="b00cf39e1a50c9c6e0ba4c7d6842b4fd1b8c5ee2" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=M, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"M","State":"normal","Type":"Secondary"}'>
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(25,102,255)">复制配置</Text>
+              </Button>
+              <Button id="1:10212" display="flex" flex-direction="row" justify-content="center" align-items="center" padding="6px 16px" height="30.74px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="b00cf39e1a50c9c6e0ba4c7d6842b4fd1b8c5ee2" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=M, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"M","State":"normal","Type":"Secondary"}'>
+                <Text font-family="&apos;PingFang SC&apos;, sans-serif" font-size="14px" color="rgb(25,102,255)">新增配置</Text>
+              </Button>
+            </Container>
+          </Container>
+        </Container>
+      </MainContent>
+    </Container>
+    <!-- Sticky Bottom Actions Footer Bar -->
+    <Footer display="flex" flex-direction="row" justify-content="center" align-items="center" gap="12px" padding="16px 24px" background-color="rgb(255,255,255)" border-top="1px solid rgb(238,239,240)" box-shadow="0px -2px 10px rgba(0,0,0,0.05)" z-index="100">
+      <Button id="1:10083" display="flex" flex-direction="row" justify-content="center" align-items="center" padding="6px 12px" width="63px" height="26px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="47924550328e2ae7877f66557e3f065b1d7c7866" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=S, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"S","State":"normal","Type":"Secondary"}'>
+        <Text id="I1:10083;69:1283" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" color="rgb(25,102,255)" white-space="nowrap" _textTokenName="caption-regular" _fillStyleName="Primary/brand">上一步</Text>
+      </Button>
+      <Button id="1:10084" display="flex" flex-direction="row" justify-content="center" align-items="center" padding="6px 12px" width="75px" height="26px" background-color="rgb(255,255,255)" border-radius="4px" border="1px solid rgb(25,102,255)" impl-role="button" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="47924550328e2ae7877f66557e3f065b1d7c7866" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=S, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"S","State":"normal","Type":"Secondary"}'>
+        <Text id="I1:10084;69:1283" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" color="rgb(25,102,255)" white-space="nowrap" _textTokenName="caption-regular" _fillStyleName="Primary/brand">保存草稿</Text>
+      </Button>
+      <Button id="1:10082" display="flex" flex-direction="row" justify-content="center" align-items="center" padding="6px 12px" width="63px" height="26px" background-color="rgb(25,102,255)" border-radius="4px" impl-role="button" _fillStyleName="Primary/brand" figma-instance="true" figma-component-key="db50027495d0a758127268c3982677c9edde17fc" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=S, Type=Primary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"S","State":"normal","Type":"Primary"}'>
+        <Text id="I1:10082;69:979" font-family="&apos;PingFang SC&apos;, sans-serif" font-size="12px" color="rgb(255,255,255)" white-space="nowrap" _textTokenName="caption-regular" _fillStyleName="fill/fade-0">下一步</Text>
+      </Button>
+    </Footer>
+  </Page>
+</MainUI>

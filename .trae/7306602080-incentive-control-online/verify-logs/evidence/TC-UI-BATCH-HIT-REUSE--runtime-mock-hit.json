@@ -1,0 +1,159 @@
+{
+  "case_id": "TC-UI-BATCH-HIT-REUSE",
+  "captured_at": "2026-07-09T02:03:27+08:00",
+  "browser": {
+    "tool": "integrated_browser",
+    "view_id": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+  },
+  "input_state": {
+    "submit_method": "url",
+    "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+    "placeholder": "请填写或粘贴飞书表格链接"
+  },
+  "runtime_action": {
+    "steps": [
+      "refresh business page after BAM marker patch",
+      "click 新增提报",
+      "click 批量上传",
+      "type stable sheet URL",
+      "click real 提交 button",
+      "repeat same GET-only submit after installing console probe for structured marker capture"
+    ],
+    "script_boundary": "window.__tcBatchHitProbe and window.__tcBatchHitConsoleProbe only recorded XHR/console/DOM evidence; they did not mutate store, request payload, response body, or mockedResponse."
+  },
+  "network": {
+    "transport": "xhr",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+    "url": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet?sheet_url=https%3A%2F%2Fbytedance.larkoffice.com%2Fsheets%2Fbatch-hit-7306602080&activity_id=7653282555822653742&config_id=7653282555822735662&__token=11e6b6d20e56b42e9acc315f68d3eef8",
+    "status": 200,
+    "raw_response_observed_by_xhr": {
+      "st": 10001604,
+      "code": 10001604,
+      "msg": "表格数据不符合要求，请检查数据格式是否正确",
+      "data": {},
+      "log_id": "2026070902025300A9AB5EAA169E44A8A8"
+    },
+    "raw_response_note": "BAM runtime patch intentionally calls the original request first, then applies manifest mockOperations; therefore XHR sees the real failure body while UI consumes the patched mockedResponse."
+  },
+  "bam_mock_hit": {
+    "event": "BAM_MOCK_HIT",
+    "api": {
+      "apiName": "apiGetDeliveryItemsFromSheet",
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet"
+    },
+    "ruleId": "R-BAM-BATCH-SHEET-HIT",
+    "requestBody": {
+      "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662"
+    },
+    "mockedResponse_summary": {
+      "st": 0,
+      "code": 0,
+      "msg": "",
+      "total_num": 3,
+      "candidate_num": 1,
+      "has_more": false,
+      "rows": [
+        {
+          "item_id": "200001",
+          "author_id": "920001",
+          "title": "批量上传准入失败作品",
+          "if_delivery": false,
+          "if_satisfy_delivery_rules": false,
+          "if_not_incentive": false,
+          "not_incentive_reason": []
+        },
+        {
+          "item_id": "200002",
+          "author_id": "920002",
+          "title": "批量上传不激励命中作品",
+          "if_delivery": false,
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": true,
+          "not_incentive_reason": [
+            "历史违规命中不激励规则"
+          ]
+        },
+        {
+          "item_id": "200003",
+          "author_id": "920003",
+          "title": "批量上传可投放作品",
+          "if_delivery": true,
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": false,
+          "not_incentive_reason": []
+        }
+      ]
+    }
+  },
+  "ui_observed": {
+    "summary_text_present": true,
+    "summary_text": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+    "buttons": {
+      "has_submit": true,
+      "has_remove_all": true,
+      "has_export_remove_detail": true,
+      "has_submit_and_deliver": true,
+      "has_cancel": true
+    },
+    "rows": [
+      {
+        "item_id": "200001",
+        "title": "批量上传准入失败作品",
+        "hit_label": "不满足准入门槛"
+      },
+      {
+        "item_id": "200002",
+        "title": "批量上传不激励命中作品",
+        "hit_label": "命中【不激励】规则"
+      },
+      {
+        "item_id": "200003",
+        "title": "批量上传可投放作品",
+        "hit_label": "N/A"
+      }
+    ],
+    "hit_label_styles": [
+      {
+        "label": "不满足准入门槛",
+        "className": "src-routes-content-activity-award-components-manually-submit-videos-manually-submit-videos-drawer-manually-submit-videos-form-index-module__hitStatusLabels-WMe3vp",
+        "color": "rgb(245, 63, 63)",
+        "fontSize": "12px",
+        "display": "block"
+      },
+      {
+        "label": "命中【不激励】规则",
+        "className": "src-routes-content-activity-award-components-manually-submit-videos-manually-submit-videos-drawer-manually-submit-videos-form-index-module__hitStatusLabels-WMe3vp",
+        "color": "rgb(245, 63, 63)",
+        "fontSize": "12px",
+        "display": "block"
+      }
+    ],
+    "negative_checks": {
+      "no_unsupported_hit_ui_text": true,
+      "no_manual_only_error_layout_text": true,
+      "no_real_failure_message_visible": true,
+      "no_appeal_or_extra_governance_ui": true
+    }
+  },
+  "screenshot": {
+    "path": "screenshots/TC-UI-BATCH-HIT-REUSE--batch-hit-runtime.png",
+    "materialization_type": "local_file",
+    "file_verified": true,
+    "image": {
+      "format": "PNG",
+      "width": 2549,
+      "height": 1875
+    },
+    "design_reuse_note": "Verify screenshot is a reusable runtime source for /delivery:design only; it is not Figma-vs-runtime alignment proof."
+  },
+  "classification": {
+    "result": "RUNTIME_MOCK_HIT_CAPTURED",
+    "failure_type": "N/A",
+    "mock_boundary": "MOCK_PREVIEW runtime operation; not a real backend success contract."
+  }
+}

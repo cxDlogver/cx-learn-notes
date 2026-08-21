@@ -1,0 +1,83 @@
+{
+  "caseId": "TC-DATA-COIN-FILTER-SCHEMA",
+  "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+  "apiName": "apiGetDouPlusCoinRemoveRecord",
+  "capturedAt": "2026-07-08T11:37:02.185Z",
+  "browser": {
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "viewId": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "ssoResult": "business_page"
+  },
+  "uiTrigger": {
+    "pageUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "steps": [
+      "保持 DOU+币 `剔除明细` Tab active",
+      "在作品ID输入框填入 `100001,100002`",
+      "在操作人 PeopleSelect 搜索 `chenxiang.2003` 并选择 `6068830 / 陈相`",
+      "点击 `查询`"
+    ]
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+    "query": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "page": 1,
+      "page_num": 20,
+      "candidate_ids": "100001,100002",
+      "operator_id": "6068830"
+    },
+    "redactedUrl": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record?activity_id=7655304206886322458&config_id=7655304206886338842&page=1&page_num=20&candidate_ids=100001%2C100002&operator_id=6068830&__token=<redacted>"
+  },
+  "realResponse": {
+    "status": 200,
+    "bodyLength": 138,
+    "summary": {
+      "code": 0,
+      "msg": "",
+      "hasData": true,
+      "total": 0,
+      "has_more": false,
+      "recordsLength": 0,
+      "dataKeys": [
+        "has_more",
+        "total"
+      ]
+    },
+    "rawResponse": "response.raw.txt",
+    "parsedResponse": "response.json"
+  },
+  "domFacts": {
+    "activeTabText": [
+      "配置一",
+      "剔除明细"
+    ],
+    "candidateInputValue": "100001,100002",
+    "operatorSelectedText": "陈相",
+    "operatorSelectedIdFromDropdown": "6068830",
+    "filterLabelsVisible": [
+      "作品ID",
+      "操作人"
+    ],
+    "forbiddenFiltersAbsent": [
+      "充值记录",
+      "投放状态"
+    ],
+    "tableHeaders": [
+      "作品内容",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ]
+  },
+  "currentRuntimeMismatch": {
+    "observedConsoleMarker": "[BAM_MOCK_HIT]",
+    "observedRuleId": "R-BAM-COIN-REMOVE-DEFAULT",
+    "reason": "现有默认 rule 仅按 page/page_num 匹配，筛选请求也错误命中默认列表 rule；本 detour 必须收紧默认 matcher 并新增 R-BAM-COIN-REMOVE-FILTER。"
+  },
+  "screenshot": "../../../screenshots/TC-DATA-COIN-FILTER-SCHEMA--coin-filter-open--filter-row.png",
+  "rawNetworkOutputPolicy": "browser_network_requests 原始输出含 __token，未落盘；仅保存脱敏 URL、请求字段和响应摘要。"
+}

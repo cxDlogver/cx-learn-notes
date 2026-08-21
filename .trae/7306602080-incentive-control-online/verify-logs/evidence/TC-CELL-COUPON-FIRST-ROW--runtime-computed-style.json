@@ -1,0 +1,102 @@
+{
+  "case_id": "TC-CELL-COUPON-FIRST-ROW",
+  "captured_at": "2026-07-08T13:58:00Z",
+  "browser_runtime": {
+    "mode": "TRAE_DESKTOP",
+    "tool": "integrated_browser",
+    "view_id": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "headless": false,
+    "page_title": "内容生态运营｜橙蕉",
+    "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+  },
+  "runtime_state": {
+    "reward_type": "DOU+券",
+    "active_config_tab": "配置二",
+    "active_sub_tab": "剔除明细",
+    "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+    "filter_candidate_value": "",
+    "headers": [
+      "作者信息",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ],
+    "first_row_text": "券作者示例 ID: 900001 命中【不激励】规则 2026/07/08 20:40:40 陈相",
+    "cell_text": [
+      "券作者示例 ID: 900001",
+      "命中【不激励】规则",
+      "2026/07/08 20:40:40",
+      "陈相"
+    ],
+    "forbidden_visible": {
+      "work_content": false,
+      "delivery_status": false,
+      "coupon_count": false,
+      "raw_operator_id_in_row": false,
+      "work_title_structure": false
+    }
+  },
+  "computed_style": {
+    "author_cell": {
+      "text": "券作者示例 ID: 900001",
+      "fontSize": "12px",
+      "color": "rgb(37, 41, 49)",
+      "width": 331,
+      "height": 72,
+      "display": "table-cell",
+      "visibility": "visible"
+    },
+    "author_image": {
+      "text": "",
+      "fontSize": "12px",
+      "color": "rgb(37, 41, 49)",
+      "width": 40,
+      "height": 40,
+      "display": "block",
+      "visibility": "visible"
+    },
+    "author_id": {
+      "text": "ID: 900001",
+      "fontSize": "12px",
+      "color": "rgb(37, 41, 49)",
+      "width": 61,
+      "height": 16,
+      "display": "block",
+      "visibility": "visible"
+    },
+    "reason_cell": {
+      "text": "命中【不激励】规则",
+      "fontSize": "12px",
+      "color": "rgb(37, 41, 49)",
+      "width": 264,
+      "height": 72,
+      "display": "table-cell",
+      "visibility": "visible"
+    },
+    "time_cell": {
+      "text": "2026/07/08 20:40:40",
+      "fontSize": "12px",
+      "color": "rgb(37, 41, 49)",
+      "width": 238,
+      "height": 72,
+      "display": "table-cell",
+      "visibility": "visible"
+    },
+    "operator_cell": {
+      "text": "陈相",
+      "fontSize": "12px",
+      "color": "rgb(37, 41, 49)",
+      "width": 159,
+      "height": 72,
+      "display": "table-cell",
+      "visibility": "visible"
+    }
+  },
+  "privacy": {
+    "cookie_read": false,
+    "localStorage_read": false,
+    "sessionStorage_read": false,
+    "authorization_persisted": false,
+    "raw_token_persisted": false
+  }
+}

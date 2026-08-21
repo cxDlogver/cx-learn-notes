@@ -1,0 +1,274 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "threshold": 90,
+  "rounds": 3,
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_repo": "ecom/alliance-operation-mono",
+  "fromBranch": "master",
+  "toBranch": "cx-3",
+  "coverage_script": ".trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js",
+  "coverage_report_ref": {
+    "latest_json": "coverage/latest.json",
+    "report_md": "coverage/report.md",
+    "uncovered_list_json": "coverage/uncovered-list.json",
+    "uncovered_list_md": "coverage/uncovered-list.md",
+    "generated_at": "2026-07-16T15:02:39.420Z",
+    "huatuo_update_ref": "coverage/update-response.json"
+  },
+  "state_initialization": {
+    "initialized_from_template": true,
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_log_loaded": true,
+    "previous_state_ref": "../20260716-200649-coverage-cx-3/coverage-optimization-state.json",
+    "previous_state_loaded": true,
+    "previous_state_notes": "Previous run ended PASS_WITH_NOTES at 89.56%; same-version targets from that run were skipped before selecting manuallySubmitVideoStore.ts."
+  },
+  "execution_policy": {
+    "candidate_source_ref": "coverage/uncovered-list.json",
+    "script_default_filters": [
+      "coverRatio < 100",
+      "insertLines > 0",
+      "exclude path segment named bam"
+    ],
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_active_effects": [
+      "SKIP_SAME_VERSION"
+    ],
+    "single_target_per_round": true,
+    "same_run_dedup_ref": "rounds_log[].target_file",
+    "all_target_files_enter_global_exclusion_log": true,
+    "code_changed_targets_remain_retriable": false,
+    "side_effect_write_policy": "ALLOW_UI_TRIGGER_WITH_BROWSER_INTERCEPT_ONLY",
+    "write_intercept_required_for": [
+      "create",
+      "update",
+      "delete",
+      "submit",
+      "send_award",
+      "modify_config",
+      "send_notification",
+      "any_side_effect_write"
+    ],
+    "write_intercept_evidence_required": true,
+    "exclusion_reason_recording": "DO_NOT_RECORD_SELECTION_REASON",
+    "file_coverage_version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion",
+    "active_exclusion_only_when_file_coverage_version_matches": true
+  },
+  "overall_cover_ratio_before": 89.56,
+  "overall_cover_ratio_after": 91.28,
+  "rounds_log": [
+    {
+      "round": 1,
+      "status": "PASS",
+      "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+      "target_report_ref": "coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/report.md",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 17,
+        "cover_ratio": "88.67%",
+        "insert_lines": 150,
+        "current_file_coverage_version": "huatuo:1863460942dab643",
+        "excluded_candidates": [
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+            "effective_uncovered_inserted_rows": 26,
+            "current_file_coverage_version": "huatuo:a8063018ce0bb551",
+            "matched_global_exclusion_entry_id": "cov-20260716-200649-r2-send-award-to-author-store-ts",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r2-send-award-to-author-store-ts"
+          },
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+            "effective_uncovered_inserted_rows": 25,
+            "current_file_coverage_version": "huatuo:91cb2311c8682c4e",
+            "matched_global_exclusion_entry_id": "cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r1-batch-submit-modal-index-tsx"
+          },
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+            "effective_uncovered_inserted_rows": 20,
+            "current_file_coverage_version": "huatuo:fd505ef218d83512",
+            "matched_global_exclusion_entry_id": "cov-20260716-200649-r3-award-utils-ts",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r3-award-utils-ts"
+          }
+        ],
+        "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+        "global_exclusion_status": "NO_MATCH",
+        "matched_global_exclusion_entry_id": "",
+        "matched_global_exclusion_file_coverage_version": "",
+        "same_run_target_status": "NO_MATCH",
+        "selection_after_refresh": false
+      },
+      "plan_ref": "coverage-optimization-plan-round-1.md",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "UI_COVERAGE_WITH_WRITE_INTERCEPT",
+        "global_exclusion_entry_id": "cov-20260716-225251-r1-manually-submit-video-store-ts",
+        "notes": "Real online manual submit flow reduced target file effective uncovered rows from 17 to 7 and overall coverage reached threshold."
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY",
+        "entry_id": "cov-20260716-225251-r1-manually-submit-video-store-ts",
+        "source_file_coverage_version": "huatuo:9b2e17f6cdac59ab",
+        "latest_seen_file_coverage_version": "huatuo:9b2e17f6cdac59ab",
+        "version_comparison": "NOT_APPLICABLE",
+        "evidence": "coverage/results/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts/report.md",
+        "audited_at": "2026-07-16T15:03:30+08:00",
+        "notes": "Selected initially at huatuo:1863460942dab643; refreshed report registered huatuo:9b2e17f6cdac59ab for future same-version skip."
+      },
+      "code_optimization": {
+        "status": "SKIPPED",
+        "changed_files": [],
+        "summary": "No business code edit was needed; this round used real online UI coverage only.",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "DONE",
+        "environment": "REAL_ONLINE",
+        "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "人工提报命中不激励/准入门槛作品后可移除并导出剔除明细",
+            "test_case_ref": "09-test-case-matrix.md#人工提报",
+            "evidence_ref": "evidence/round-1-ui-evidence.json",
+            "notes": "Manual submit item ids, row remove, export intercept, and batch upload empty-state path were covered through real online UI."
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/search_delivery_items",
+            "method": "GET",
+            "fields": [
+              "activity_id",
+              "config_id",
+              "item_ids",
+              "session_unix_time",
+              "candidate_pool_type",
+              "page_no",
+              "page_size"
+            ],
+            "source_type": "REAL_UI",
+            "evidence_ref": "evidence/round-1-network.log#L3",
+            "notes": "Real online request generated by manual item id submit."
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+            "method": "GET",
+            "fields": [
+              "sheet_url",
+              "activity_id",
+              "config_id"
+            ],
+            "source_type": "REAL_UI",
+            "evidence_ref": "evidence/round-1-network.log#L68",
+            "notes": "Real online request generated by batch upload submit."
+          }
+        ],
+        "write_request_intercepts": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/download_content_remove_record",
+            "method": "POST",
+            "uncovered_lines": [
+              352
+            ],
+            "trigger_ui": "导出剔除明细",
+            "match_rule": "path equals /api/buyin/admin/content_activity/download_content_remove_record",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/0/mock_response",
+            "ui_after_mock_evidence_ref": "evidence/round-1-export-missing-link.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/0/backend_not_hit_evidence",
+            "status": "INTERCEPTED",
+            "notes": "Browser XHR intercept returned code 0 with missing lark_url to cover the missing-link failure branch while preventing backend write."
+          }
+        ]
+      },
+      "coverage_refresh": {
+        "command": "/Users/bytedance/.nvm/versions/node/v18.20.8/bin/node .trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js --browserCaptureServer --repoRoot /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono --gitRepo ecom/alliance-operation-mono --fromBranch master --toBranch cx-3 --outDir /Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/coverage/20260716-225251-coverage-cx-3/coverage",
+        "before_ratio": 89.56,
+        "after_ratio": 91.28,
+        "latest_json": "coverage/latest.json",
+        "report_md": "coverage/report.md",
+        "refreshed_at": "2026-07-16T15:02:39.420Z"
+      },
+      "verification": {
+        "commands": [
+          {
+            "command": "git -C meego-7306602080/repos/alliance-operation-mono diff --check",
+            "status": "PASS",
+            "notes": "No output."
+          },
+          {
+            "command": "git -C meego-7306602080/repos/alliance-operation-mono status --short",
+            "status": "PASS",
+            "notes": "No output; business repo clean."
+          },
+          {
+            "command": "jq -e '.updateApi.coverRatio == \"91.28%\" and (.totals.effectiveUncoveredInsertedRows == 79)' coverage/latest.json",
+            "status": "PASS",
+            "notes": "latest.json refreshed and threshold reached."
+          },
+          {
+            "command": "jq -e '.write_intercepts[0].browser_intercept_record.backend_write == \"not_sent\"' evidence/round-1-ui-evidence.json",
+            "status": "PASS",
+            "notes": "Write intercept evidence recorded backend_write not_sent."
+          }
+        ],
+        "passed": [
+          "Real online read requests were observed in Network log.",
+          "download_content_remove_record did not appear in Network log and was captured by browser-side XHR intercept.",
+          "Huatuo refreshed overall coverage reached 91.28%."
+        ],
+        "failed": [],
+        "known_unrelated_failures": [
+          "Console contained monitoring/beacon abort noise for mcs/mon endpoints; not related to coverage path."
+        ]
+      },
+      "blockers": []
+    }
+  ],
+  "request_field_sources": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/search_delivery_items",
+      "method": "GET",
+      "source_type": "REAL_UI",
+      "evidence_ref": "evidence/round-1-network.log#L3"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+      "method": "GET",
+      "source_type": "REAL_UI",
+      "evidence_ref": "evidence/round-1-network.log#L68"
+    }
+  ],
+  "write_request_intercepts": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/download_content_remove_record",
+      "method": "POST",
+      "status": "INTERCEPTED",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/0"
+    }
+  ],
+  "verification": {
+    "commands": [
+      "git -C meego-7306602080/repos/alliance-operation-mono diff --check",
+      "git -C meego-7306602080/repos/alliance-operation-mono status --short",
+      "jq -e latest.json coverage threshold assertion",
+      "jq -e evidence write intercept assertion"
+    ],
+    "passed": [
+      "Business repo clean.",
+      "Coverage artifacts refreshed.",
+      "Evidence JSON valid.",
+      "Overall coverage 91.28% >= threshold 90%."
+    ],
+    "failed": [],
+    "known_unrelated_failures": []
+  },
+  "blockers": [],
+  "overall_status": "PASS"
+}

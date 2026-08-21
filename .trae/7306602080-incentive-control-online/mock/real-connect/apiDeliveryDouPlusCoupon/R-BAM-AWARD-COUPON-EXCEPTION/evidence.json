@@ -1,0 +1,72 @@
+{
+  "ruleId": "R-BAM-AWARD-COUPON-EXCEPTION",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-EXCEPTION",
+  "apiName": "apiDeliveryDouPlusCoupon",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+  "captured_at": "2026-07-09T16:51:00+08:00",
+  "interfaceNecessity": "TC-INT-AWARD-EXCEPTION must verify frontend handling of an exception-like DOU+ coupon award response from the natural failed-coupon resubmit path.",
+  "syntheticContractReason": "delivery_dou_plus_coupon is the final award write API. Under MOCK_PREVIEW, the real backend write must not be sent before BAM safety runtime is patched. The natural upstream path and request fields are proven by MakeCouponFailedWarnings -> ResubmitAwardAuthorDrawer -> couponDeliveryRecordStore.submitDelivery.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "couponDeliveryRecordStore.submitDelivery maps deliveryRecords[].author_info.author_id to delivery_list[].item_id and calls apiDeliveryDouPlusCoupon with delivery_from=DeliveryFrom.UploadCandidate.",
+      "reason": "A real click before BAM patch would send the final award write request."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "apiDeliveryDouPlusCoupon wrapper forwards fail_delivery_task_id, charge_code, delivery_list, session_unix_time and delivery_from to POST /delivery_dou_plus_coupon; final matcher is delivery_from=2 and delivery_list.0.item_id=800003.",
+      "reason": "The repeated natural final click must wait for marked synthetic runtime to prevent real award side effects."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/request.json",
+    "response": "mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/response.json",
+    "sourceRefs": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/resubmit-award-author-drawer/index.tsx",
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts"
+    ],
+    "exceptionMapping": "msg=exception matches /exception|异常|系统错误|内部错误|internal\\s+error|server\\s+error/i and must display 治理校验异常，请联系管理员."
+  },
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "businessPageViewId": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+    "pageState": "business_page",
+    "snapshotSummary": "配置二业务页已打开；setup rule 已展示 `点此查看并重新提交`，后续 verify 将在 patched BAM 后自然点击确认提交。",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-AWARD-EXCEPTION",
+    "requiredChecks": [
+      "自然 UI 选择充值记录后点击 `确认提交`",
+      "runtime marker includes R-BAM-AWARD-COUPON-EXCEPTION",
+      "requestBody includes delivery_from=2 and delivery_list[0].item_id=800003",
+      "UI displays 治理校验异常，请联系管理员",
+      "no 提交成功 / 发奖成功 toast",
+      "drawer or flow remains paused; no success continuation"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实制券失败任务、真实充值记录和真实治理异常响应复验最终 DOU+券重提发奖事务一致性。"
+}

@@ -1,0 +1,86 @@
+{
+  "apiName": "apiGetDouPlusCouponRemoveRecord",
+  "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+  "captured_at": "2026-07-08T13:13:34Z",
+  "origin_stage": "verify",
+  "resume_case": "TC-DATA-COUPON-FILTER-SCHEMA",
+  "browser": {
+    "browser_runtime_mode": "TRAE_DESKTOP",
+    "browser_tool": "integrated_browser",
+    "headless": false,
+    "view_id": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "sso_result": "business_page"
+  },
+  "natural_ui_path": [
+    "配置二",
+    "奖励下发",
+    "剔除明细",
+    "作者ID输入 900001,900002",
+    "操作人 PeopleSelect 搜索 陈相并选择",
+    "查询"
+  ],
+  "request_observation": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+    "query": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page": "1",
+      "page_num": "20",
+      "candidate_ids": "900001,900002",
+      "operator_id": "6068830"
+    },
+    "redacted_query_keys": [
+      "__token"
+    ],
+    "forbidden_query_keys_absent": [
+      "author_ids"
+    ],
+    "status": 200,
+    "transport": "xhr"
+  },
+  "response_observation": {
+    "source": "in-page XHR listener after natural UI filter query",
+    "raw_response": "response.raw.txt",
+    "parsed_response": "response.json",
+    "response_shape": {
+      "st": 0,
+      "code": 0,
+      "msg": "",
+      "data": {
+        "total": 0,
+        "has_more": false
+      }
+    },
+    "mock_preview_fill_reason": "真实筛选响应成功但为空，无法覆盖查询后列表刷新和筛选记录渲染；MOCK_PREVIEW 在真实响应基础上最小补 records/total/has_more。"
+  },
+  "dom_observation": {
+    "before_query": {
+      "author_input": "900001,900002",
+      "operator_selected_text": "陈相"
+    },
+    "after_query": {
+      "required_text_present": [
+        "作者ID",
+        "操作人",
+        "陈相",
+        "作者信息",
+        "剔除发奖原因",
+        "剔除发奖时间"
+      ],
+      "forbidden_text_absent": [
+        "作品ID",
+        "作品内容"
+      ],
+      "real_response_state": "empty_table_before_filter_mock"
+    }
+  },
+  "privacy": {
+    "cookies_read": false,
+    "storage_read": false,
+    "authorization_persisted": false,
+    "token_persisted": false,
+    "raw_token_url_persisted": false
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "status": "passed",
+  "apiName": "apiGetDouPlusCouponRemoveRecord",
+  "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+  "caseIds": [
+    "TC-UI-COUPON-REMOVE-PAGE",
+    "TC-DATA-COUPON-COLUMNS",
+    "TC-CELL-COUPON-FIRST-ROW",
+    "TC-INT-REMOVE-TAB-SWITCH-COUPON",
+    "TC-TRACK-REMOVE-DETAIL-TAB-COUPON"
+  ],
+  "capturedAt": "2026-07-08T12:40:39.995Z",
+  "originStage": "verify",
+  "resumeCommand": "/delivery:verify",
+  "browser": {
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "viewId": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "ssoResult": "business_page",
+    "networkEvidenceLevel": "URL / method / status / response text captured by in-page XHR wrapper; no cookie, storage, Authorization, or token persisted"
+  },
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "activity_id": "7655304206886322458",
+      "page": "award",
+      "operation": "点击 DOU+券配置二后进入奖励投放并点击 `剔除明细`",
+      "result": "target_request_captured_without_mock",
+      "observed": {
+        "selectedConfigTab": "配置二",
+        "rewardType": "DOU+券",
+        "activeSubTab": "剔除明细",
+        "config_id": "7655304206886355226",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "page": 1,
+            "page_num": 20
+          },
+          "redactedQueryKeys": [
+            "__token"
+          ]
+        },
+        "mockMarker": "absent",
+        "domSummary": {
+          "removeTabVisible": true,
+          "filterLabels": [
+            "作者ID",
+            "操作人"
+          ],
+          "headers": [
+            "作者信息",
+            "剔除发奖原因",
+            "剔除发奖时间",
+            "操作人"
+          ],
+          "forbiddenHeadersAbsent": [
+            "作品内容",
+            "券数量",
+            "投放状态"
+          ],
+          "emptyState": "暂无数据"
+        }
+      }
+    },
+    {
+      "attempt": 2,
+      "activity_id": "7655304206886322458",
+      "page": "award",
+      "operation": "在 DOU+券剔除明细筛选区点击 `查询`，通过页面内 XHR 监听器读取同一默认请求响应体",
+      "result": "target_response_captured",
+      "observed": {
+        "selectedConfigTab": "配置二",
+        "rewardType": "DOU+券",
+        "activeSubTab": "剔除明细",
+        "config_id": "7655304206886355226",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226",
+            "page": 1,
+            "page_num": 20
+          },
+          "redactedQueryKeys": [
+            "__token"
+          ]
+        },
+        "responseSummary": {
+          "httpStatus": 200,
+          "st": 0,
+          "code": 0,
+          "msg": "",
+          "dataKeys": [
+            "total",
+            "has_more"
+          ],
+          "recordsLength": null,
+          "total": 0,
+          "has_more": false
+        }
+      }
+    }
+  ],
+  "realConnectArtifacts": {
+    "request": "request.json",
+    "rawResponse": "response.raw.txt",
+    "response": "response.json",
+    "mockedResponse": "response.mocked.json"
+  },
+  "privacy": {
+    "cookiesRead": false,
+    "storageRead": false,
+    "authorizationPersisted": false,
+    "tokenPersisted": false
+  },
+  "realVerify": "后端 ready 后需用真实非空 DOU+券剔除记录复验分页、排序、has_more、作者信息和操作人展示。"
+}

@@ -1,0 +1,35 @@
+{
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/charge_amount_check",
+  "sanitizedUrl": "/api/buyin/admin/content_activity/charge_amount_check?__token=[REDACTED]",
+  "body": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "charge_code": "LST12606290003681",
+    "delivery_list": [],
+    "session_unix_time": 1783591836,
+    "delivery_from": 2,
+    "resource_type": 5
+  },
+  "requestFieldsForMatching": {
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662",
+    "delivery_from": 2,
+    "resource_type": 5,
+    "delivery_list": []
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "charge_code",
+      "value": "LST12606290003681",
+      "source": "selected_record",
+      "reason": "自然 UI 选择充值记录后由接口 payload 携带；当前 empty-list 金额校验不按充值记录 code 分支，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783591836,
+      "source": "network_request",
+      "reason": "运行态会话时间戳用于请求审计，不参与 matcher。"
+    }
+  ]
+}

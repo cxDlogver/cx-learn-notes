@@ -1,0 +1,99 @@
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.module.scss b/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.module.scss
+index 434d23c48..b1c1c6cdf 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.module.scss
++++ b/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.module.scss
+@@ -86,3 +86,23 @@
+     }
+   }
+ }
++
++.noIncentivePrompt {
++  display: inline-flex;
++  align-items: center;
++  gap: 8px;
++  color: #bcbdc0;
++  font-size: 14px;
++  line-height: 20px;
++}
++
++.noIncentiveRuleLink {
++  color: #0088ff;
++  cursor: pointer;
++  text-decoration: none;
++
++  &:hover {
++    color: #0088ff;
++    text-decoration: underline;
++  }
++}
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx b/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx
+index 9c0c1e7f8..d44756add 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx
++++ b/apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx
+@@ -9,7 +9,7 @@ import '@ecom/auxo-pro-form/es/preset/import/contentType/number';
+ import '@ecom/auxo-pro-form/es/preset/import/contentType/pureText';
+ import '@ecom/auxo-pro-form/es/preset/import/contentType/text';
+ import { Button, Card, Popconfirm } from '@ecom/auxo';
+-import { AddIcon, DeleteIcon } from '@ecom/auxo/es/components/icon';
++import { AddIcon, DeleteIcon, DoubtIcon } from '@ecom/auxo/es/components/icon';
+ import {
+   rewardTypeOptions,
+   awardRuleModeOptions,
+@@ -40,6 +40,26 @@ import EstimatedTotalRewardDisplay from '../estimated-total-reward-display';
+ import CopyConfigModal from './copy-config-modal';
+ import { get } from 'lodash';
+ 
++const NO_INCENTIVE_PROMPT_COPY = '奖励发放环节将进行账号校验，命中【不激励】规则的账号无法被发奖';
++const NO_INCENTIVE_RULE_LINK_COPY = '查看【不激励】规则';
++const NO_INCENTIVE_RULE_URL =
++  'https://bytedance.larkoffice.com/wiki/TraawmZfSi9dnlk25pBcKhRinUh?from=from_copylink';
++
++const NoIncentiveRulePrompt = () => (
++  <span className={styles.noIncentivePrompt}>
++    <DoubtIcon style={{ color: '#BCBDC0', flex: 'none', fontSize: 12 }} svgProps={{ width: 12, height: 12 }} />
++    <span>{NO_INCENTIVE_PROMPT_COPY}</span>
++    <a
++      className={styles.noIncentiveRuleLink}
++      href={NO_INCENTIVE_RULE_URL}
++      target="_blank"
++      rel="noopener noreferrer"
++    >
++      {NO_INCENTIVE_RULE_LINK_COPY}
++    </a>
++  </span>
++);
++
+ const StepRewardConfig: React.FC = () => {
+   const {
+     store: { dataStore },
+@@ -612,7 +632,10 @@ const StepRewardConfig: React.FC = () => {
+                   initialValue: false,
+                 },
+                 dependencies: ({ index }) => {
+-                  return [['reward_configs', index, 'reward_type']];
++                  return [
++                    ['reward_configs', index, 'reward_type'],
++                    ['reward_configs', index, 'has_select_crowd'],
++                  ];
+                 },
+                 dynamicProps: ({ form: formInstance, index }) => ({
+                   onChange: () => {
+@@ -622,12 +645,17 @@ const StepRewardConfig: React.FC = () => {
+                   },
+                 }),
+                 dynamicItemProps: ({ rootValue, index }) => {
+-                  if (rootValue.reward_configs[index].reward_type === RewardType.DouPlusCoupon) {
++                  const rewardConfig = rootValue.reward_configs?.[index];
++                  const extra = !rewardConfig?.has_select_crowd ? <NoIncentiveRulePrompt /> : undefined;
++
++                  if (rewardConfig?.reward_type === RewardType.DouPlusCoupon) {
+                     return {
++                      extra,
+                       tooltip: '只有符合活动参与资格的用户才有机会获奖，请谨慎选择',
+                     };
+                   }
+                   return {
++                    extra,
+                     tooltip: '只有符合活动参与资格的用户投稿的作品才有机会获奖，请谨慎选择',
+                   };
+                 },

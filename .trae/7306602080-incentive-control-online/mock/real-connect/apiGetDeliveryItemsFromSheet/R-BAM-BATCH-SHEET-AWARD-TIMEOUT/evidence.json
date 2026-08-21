@@ -1,0 +1,80 @@
+{
+  "apiName": "apiGetDeliveryItemsFromSheet",
+  "ruleId": "R-BAM-BATCH-SHEET-AWARD-TIMEOUT",
+  "caseIds": [
+    "TC-INT-AWARD-TIMEOUT__batch_sheet_setup"
+  ],
+  "status": "passed",
+  "capturedAt": "2026-07-09T14:35:53+08:00",
+  "agent": "main-agent",
+  "originStage": "/delivery:verify",
+  "resumeCase": "TC-INT-AWARD-TIMEOUT",
+  "browser": {
+    "runtimeMode": "TRAE_DESKTOP",
+    "tool": "integrated_browser",
+    "viewId": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "headless": false,
+    "ssoResult": "business_page"
+  },
+  "uiTrigger": {
+    "page": "奖励投放 / 人工提报 Drawer / 批量上传",
+    "operationPath": [
+      "打开 activity_id=7653282555822653742 的奖励投放页",
+      "点击新增提报",
+      "选择提报方式=批量上传",
+      "输入 sheet URL: https://bytedance.larkoffice.com/sheets/award-timeout-7306602080",
+      "点击普通提交"
+    ],
+    "requestReached": true,
+    "targetPath": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+    "writeRequestTriggered": false
+  },
+  "realRequestEvidence": {
+    "source": "natural_ui_xhr_probe",
+    "method": "GET",
+    "urlRedacted": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet?sheet_url=https%3A%2F%2Fbytedance.larkoffice.com%2Fsheets%2Faward-timeout-7306602080&activity_id=7653282555822653742&config_id=7653282555822735662&__token=[REDACTED]",
+    "requestRef": "request.json",
+    "networkLog": "/var/folders/g3/gkh9674s19x35p641jykwjbw0000gn/T/trae/browser-logs/network-2026-07-09T06-36-10-580Z.log",
+    "networkRequestIndexes": [
+      75,
+      89
+    ]
+  },
+  "realResponseEvidence": {
+    "source": "natural_ui_xhr_probe",
+    "rawResponseRef": "response.raw.txt",
+    "responseRef": "response.json",
+    "status": 200,
+    "businessCode": 10001604,
+    "businessMessage": "表格数据不符合要求，请检查数据格式是否正确",
+    "responseRole": "real failure baseline, not claimed as successful backend contract"
+  },
+  "mockContractEvidence": {
+    "mockedResponseRef": "response.mocked.json",
+    "generatedTypeRef": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts#get_delivery_items_from_sheet_response",
+    "storeConsumptionRef": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#fetchVideosBySheetUrl",
+    "fieldContract": [
+      "response.code === 0",
+      "response.data.item_info[]",
+      "item.item_card.item_model.item_id",
+      "item.if_delivery === true",
+      "item.delivery_config",
+      "item.delivery_reason"
+    ],
+    "reason": "TC-INT-AWARD-TIMEOUT 的最终发奖 matcher 需要自然 UI 上传名单 request 携带 delivery_list[0].item_id=700003；不能修改已闭合的 R-BAM-BATCH-SHEET-HIT，因此新增独立 setup sheet rule。"
+  },
+  "nonCompressionBoundary": {
+    "keptAssertions": [
+      "批量上传必须自然触发 apiGetDeliveryItemsFromSheet",
+      "setup rule 只提供 700003 上传名单样本",
+      "最终 timeout 断言仍必须由 apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT 闭合",
+      "不得复用 DEFAULT_NOOP 或已闭合 batch-hit rule 关闭 timeout case"
+    ],
+    "forbiddenShortcut": "不得把 setup mock 命中等同于最终发奖 timeout PASS；不得点击未受 synthetic safety rule 保护的提交并投放。"
+  },
+  "realVerifyRecovery": [
+    "后端 ready 后使用真实可访问 sheet 复验 code=0 的 get_delivery_items_from_sheet 响应。",
+    "复验真实 sheet 能自然返回 item_id=700003 或等价可投放样本。",
+    "真实 timeout 行为需在联调环境复验，不由 setup sheet rule 代替。"
+  ]
+}

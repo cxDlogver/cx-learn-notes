@@ -1,0 +1,171 @@
+{
+  "case_id": "TC-INT-MANUAL-SUBMIT-GUARD",
+  "captured_at": "2026-07-08T15:10:38.184Z",
+  "browser": {
+    "tool": "integrated_browser",
+    "view_id": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "title": "内容生态运营｜橙蕉",
+    "headless": false
+  },
+  "precondition": {
+    "runtime_state": "manual-hit",
+    "manual_input_value": "100001,100002,100003",
+    "rule_id": "R-BAM-MANUAL-SEARCH-HIT",
+    "api_name": "apiSearchDeliveryItems",
+    "hit_rows_not_removed": true,
+    "visible_text": {
+      "drawer_title": true,
+      "summary": "共3个作品，其中不满足准入门槛或命中【不激励】规则的作品数为：2个",
+      "invalid_label": "不满足准入门槛",
+      "not_incentive_label": "命中【不激励】规则",
+      "one_click_remove": true,
+      "export_remove_detail": true,
+      "footer_submit": true
+    },
+    "previous_state_evidence_ref": "verify-logs/evidence/TC-UI-MANUAL-HIT-PAGE--manual-hit-runtime.json"
+  },
+  "action": {
+    "natural_ui_click_attempts": [
+      {
+        "attempt": 1,
+        "result": "TOOL_BLOCKED",
+        "details": "browser_click on ref e23 failed because click coordinates (-184, 136) were outside the visible viewport after initial snapshot."
+      },
+      {
+        "attempt": 2,
+        "result": "SUCCESS",
+        "details": "After selecting the loaded business tab again, browser_click on ref e23 succeeded."
+      },
+      {
+        "attempt": 3,
+        "result": "SUCCESS",
+        "details": "Repeated natural browser_click on ref e23 with DOM MutationObserver installed to capture the transient Auxo message."
+      }
+    ],
+    "clicked_element": {
+      "role": "button",
+      "name": "提交并投放",
+      "snapshot_ref": "e23"
+    },
+    "instrumentation": {
+      "type": "DOM_MUTATION_OBSERVER",
+      "purpose": "capture transient Auxo message text after natural browser_click",
+      "installed_at": "2026-07-08T15:09:52.392Z",
+      "does_not_modify_store_or_network": true
+    }
+  },
+  "observed_after_click": {
+    "blocking_message": {
+      "captured_by": "DOM_MUTATION_OBSERVER",
+      "text": "请先移除不满足准入门槛或命中【不激励】规则的作品",
+      "mutation_count": 1,
+      "mutation_at": "2026-07-08T15:09:59.061Z",
+      "mutation_class": "auxo-message-notice auxo-move-up-appear auxo-move-up-appear-start auxo-move-up"
+    },
+    "drawer_still_open": true,
+    "summary_still_present": true,
+    "hit_labels_still_present": {
+      "invalid_label": true,
+      "not_incentive_label": true
+    },
+    "footer_submit_button": {
+      "text": "提交并投放",
+      "visible": true,
+      "disabled": false,
+      "class_name": "auxo-btn auxo-btn-primary",
+      "rect": {
+        "x": 1992,
+        "y": 1573,
+        "width": 105,
+        "height": 32
+      }
+    },
+    "batch_submit_modal": {
+      "visible": false,
+      "title_present": false,
+      "modal_texts": []
+    },
+    "success_feedback": {
+      "success_toast": false,
+      "fake_success_text": false
+    },
+    "legacy_or_wrong_guards_absent": {
+      "required_fields_message": false,
+      "legacy_invalid_message": false
+    }
+  },
+  "network_no_call": {
+    "observer_before_resource_total": 217,
+    "after_wait_resource_total": 229,
+    "browser_network_requests_after_wait_count": 22,
+    "reward_submit_patterns": [
+      "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+      "/api/buyin/admin/content_activity/delivery_dou_plus_coupon"
+    ],
+    "before_reward_submit_urls": [],
+    "after_reward_submit_urls": [],
+    "reward_submit_delta": 0,
+    "browser_network_after_wait_summary": {
+      "only_monitoring_or_tracking_domains_observed_after_click": true,
+      "domains_or_paths": [
+        "https://mcs.snssdk.com/v1/list",
+        "https://mcs.zijieapi.com/list",
+        "https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=ecop_platform",
+        "https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=alliance_operation_content"
+      ]
+    },
+    "content_activity_delivery_or_submit_urls_sanitized": [
+      "GET /api/buyin/admin/content_activity/search_delivery_items?activity_id=7653282555822653742&config_id=7653282555822735662&page_no=1&page_size=50&item_ids=100001,100002,100003&session_unix_time=1783521785&candidate_pool_type=2&__token=<redacted>",
+      "GET /api/buyin/admin/content_activity/search_delivery_items?activity_id=7653282555822653742&config_id=7653282555822735662&page_no=1&page_size=50&item_ids=100001,100002,100003&session_unix_time=1783521785&candidate_pool_type=2&__token=<redacted>"
+    ]
+  },
+  "console": {
+    "after_click_messages": []
+  },
+  "screenshot": {
+    "screenshot_path": "screenshots/TC-INT-MANUAL-SUBMIT-GUARD--manual-hit--drawer-footer-guard.png",
+    "source_temp_path": "$(getconf DARWIN_USER_TEMP_DIR)/trae/screenshots/TC-INT-MANUAL-SUBMIT-GUARD--manual-hit--drawer-footer-guard.png",
+    "materialization_type": "local_file",
+    "file_type": "PNG image data, 2549 x 1875, 8-bit/color RGB, non-interlaced",
+    "size_bytes": 1136138,
+    "sha256": "e5057b9964d91705866361fd191ea1e78420831d991e2907a091a71a4fe200ef",
+    "runtime_state": "manual-hit",
+    "capture_scope": "drawer-footer-guard",
+    "note": "Screenshot was captured after guard click and delay; transient message was no longer visible, but Drawer, hit rows, footer button and no modal state remain visible."
+  },
+  "source_evidence": {
+    "guard_source": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx#L44-L52",
+    "hit_predicate_source": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L62-L68",
+    "drawer_ok_source": "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx#L94-L105",
+    "reward_submit_api_sources": [
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts#L1638-L1668",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts#L1748-L1773"
+    ],
+    "plan_contract": "artifacts/7306602080-incentive-control-online/04-tech-plan.md#L173"
+  },
+  "assertion_mapping": {
+    "positive_assertion": {
+      "guard_check_if_satisfy_delivery_rules_false_or_if_not_incentive": "PASS"
+    },
+    "negative_assertion": {
+      "no_dou_plus_coin_or_coupon_reward_submit_request": "PASS",
+      "no_fake_success": "PASS"
+    },
+    "visual_assertion": {
+      "footer_button_remains_visible_but_business_guard_blocks": "PASS"
+    },
+    "negative_visual_assertion": {
+      "no_success_toast_or_batch_submit_modal": "PASS"
+    },
+    "evidence_required": {
+      "before_action_after": "PASS",
+      "network_no_call": "PASS"
+    }
+  },
+  "result": "PASS_WITH_NOTES",
+  "residual_risks": [
+    "MOCK_PREVIEW only: current evidence proves frontend guard under BAM mock hit state; real backend governance fields still require real verify.",
+    "Transient Auxo message was captured by DOM MutationObserver because snapshot/body text did not retain it after animation."
+  ]
+}

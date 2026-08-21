@@ -1,0 +1,90 @@
+{
+  "ruleId": "R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-EXCEPTION",
+  "apiName": "apiGetDouPlusCouponDeliveryRecord",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+  "captured_at": "2026-07-09T16:49:22+08:00",
+  "interfaceNecessity": "TC-INT-AWARD-EXCEPTION must open ResubmitAwardAuthorDrawer from the failed coupon warning and obtain a failed author row so couponDeliveryRecordStore.deliveryList naturally creates delivery_list[0].item_id=800003 for the final apiDeliveryDouPlusCoupon request.",
+  "syntheticContractReason": "The natural UI request point was reached twice, but the upstream delivery_task_id fail_coupon_exception_800003 is itself produced by the make-fail setup mock. The real backend has no corresponding failed coupon task and returns st/code=10000000 参数错误. Therefore this downstream setup response must be marked synthetic_contract instead of pretending the error body is a real success contract.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "request_seen",
+      "trigger": "点击配置二制券失败警告按钮 `点此查看并重新提交` 打开 ResubmitAwardAuthorDrawer",
+      "network": {
+        "method": "GET",
+        "url": "https://ecop.bytedance.net/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record?activity_id=7655304206886322458&config_id=7655304206886355226&page=1&page_num=20&delivery_task_id=fail_coupon_exception_800003&__token=<redacted>",
+        "requestIndex": 91,
+        "networkLog": "/var/folders/g3/gkh9674s19x35p641jykwjbw0000gn/T/trae/browser-logs/network-2026-07-09T08-48-04-102Z.log"
+      },
+      "result": "Network URL confirms natural UI request shape. No final award submit clicked."
+    },
+    {
+      "attempt": 2,
+      "status": "real_response_error",
+      "trigger": "安装只读 XHR/fetch listener 后关闭抽屉，再自然点击 `点此查看并重新提交`",
+      "capturedResponse": {
+        "httpStatus": 200,
+        "body": {
+          "st": 10000000,
+          "code": 10000000,
+          "msg": "参数错误",
+          "extra": {
+            "now": 1783586962000,
+            "log_id": "20260709164922776D21AD5CAC6FAD7A3C"
+          },
+          "data": {}
+        }
+      },
+      "result": "Request is reachable, but the real backend cannot resolve the mocked delivery_task_id. Use synthetic contract for this setup record."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/request.json",
+    "response": "mock/real-connect/apiGetDouPlusCouponDeliveryRecord/R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION/response.json",
+    "sourceRefs": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/resubmit-award-author-drawer/index.tsx",
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts"
+    ],
+    "codeConsumption": "couponDeliveryRecordStore.deliveryList maps records[].author_info.author_id to delivery_list[].item_id and carries delivery_config into apiDeliveryDouPlusCoupon."
+  },
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "businessPageViewId": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+    "pageState": "business_page",
+    "snapshotSummary": "配置二已选中；DOM 中存在 `点此查看并重新提交`；点击后 Drawer 显示 `重新提交制券`、`充值记录`、`发奖名单`、`确认提交`，未点击确认提交。",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-AWARD-EXCEPTION",
+    "requiredChecks": [
+      "自然 UI 点击 `点此查看并重新提交` 后命中 R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION",
+      "抽屉发奖名单显示作者 800003",
+      "后续最终提交 requestBody 自然携带 delivery_from=2 and delivery_list[0].item_id=800003",
+      "最终写接口由 R-BAM-AWARD-COUPON-EXCEPTION synthetic rule 拦截"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实制券失败任务 ID 复验 get_dou_plus_coupon_delivery_record 成功响应、作者明细和最终重提发券事务一致性。"
+}

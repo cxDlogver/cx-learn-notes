@@ -1,0 +1,27 @@
+{
+  "status": "synthetic_contract",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+  "query": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "page": 1,
+    "page_num": 20,
+    "delivery_task_id": "fail_coupon_exception_800003"
+  },
+  "requestFieldsForMatching": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "delivery_task_id": "fail_coupon_exception_800003",
+    "page": 1,
+    "page_num": 20
+  },
+  "collectionOnlyFields": [],
+  "sendRealBackendRequest": false,
+  "sendRealBackendRequestReason": "The natural UI request point was verified twice, but the upstream delivery_task_id is a mock setup task and the real backend returns 参数错误. Runtime uses a marked synthetic contract to provide the failed-coupon detail row required by TC-INT-AWARD-EXCEPTION.",
+  "safety": {
+    "side_effect": "read_only_get",
+    "triggered_by": "natural_ui",
+    "notes": "Triggered by MakeCouponFailedWarnings -> ResubmitAwardAuthorDrawer. No final award submit was clicked while collecting this setup request."
+  }
+}

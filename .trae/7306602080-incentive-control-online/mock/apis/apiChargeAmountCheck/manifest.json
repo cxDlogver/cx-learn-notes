@@ -1,0 +1,658 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiChargeAmountCheck",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/charge_amount_check",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "network",
+      "console",
+      "xhr_response_listener"
+    ],
+    "snapshotSummary": "integrated_browser timeout upload-list award Modal; batch upload setup has item_id=700003 and delivery amount=30000; apiChargeAmountCheck returned can_delivery=false/left_amount=0 and disabled Modal 确定.",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiChargeAmountCheck",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+        "status": "passed",
+        "request": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/request.json",
+        "rawResponse": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.raw.txt",
+        "response": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json"
+      },
+      {
+        "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+        "status": "passed",
+        "request": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/request.json",
+        "rawResponse": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.raw.txt",
+        "response": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.json",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/request.json",
+        "rawResponse": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.raw.txt",
+        "response": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/charge_amount_check",
+        "body": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "charge_code": "LST12606290003681",
+          "delivery_list": [
+            {
+              "amount": 30000
+            }
+          ],
+          "session_unix_time": 1783580153,
+          "delivery_from": 2,
+          "resource_type": 5
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "delivery_from": 2,
+          "resource_type": 5,
+          "delivery_list.0.amount": 30000
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "charge_code",
+            "value": "LST12606290003681",
+            "source": "selected_record",
+            "reason": "自然 UI 选择充值记录后由接口 payload 携带；当前 mock 不按充值记录 code 分支，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783580153,
+            "source": "network_request",
+            "reason": "运行态会话时间戳仅用于审计，不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.can_delivery",
+          "value": true,
+          "reason": "真实金额校验响应为 can_delivery=false，导致 Modal 确定置灰，无法继续自然触发最终发奖 timeout safety rule；MOCK_PREVIEW 仅解除当前 timeout 上传名单样本的金额前置拦截。",
+          "realVerify": "真实充值记录余额可用后，用自然 UI 复验后端返回 can_delivery=true。"
+        },
+        {
+          "responsePath": "data.left_amount",
+          "value": 1900000,
+          "reason": "保持 total_amount=4000000、used_amount=2100000、current_use_amount=30000 的真实基线，只把剩余可用金额恢复为足够覆盖本次 300 元投放。",
+          "realVerify": "真实充值记录余额可用后，用真实 left_amount 复验。"
+        }
+      ]
+    },
+    {
+      "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/charge_amount_check",
+        "body": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "charge_code": "LST12606290003681",
+          "delivery_list": [],
+          "session_unix_time": 1783591836,
+          "delivery_from": 2,
+          "resource_type": 5
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "delivery_from": 2,
+          "resource_type": 5,
+          "delivery_list": []
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "charge_code",
+            "value": "LST12606290003681",
+            "source": "selected_record",
+            "reason": "自然 UI 选择充值记录后由接口 payload 携带；empty-list 金额校验不按充值记录 code 分支，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783591836,
+            "source": "network_request",
+            "reason": "运行态会话时间戳用于请求审计，不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "st",
+          "value": 0,
+          "reason": "真实 empty-list 金额校验响应为 st/code=10000000 参数错误，导致 Modal 确定置灰；MOCK_PREVIEW 仅解除当前 empty-list 前置拦截。",
+          "realVerify": "后端允许 empty delivery_list 校验或真实充值记录余额可用后，用自然 UI 复验。"
+        },
+        {
+          "responsePath": "code",
+          "value": 0,
+          "reason": "与 st 一起恢复成功 shell，使前端读取 data.can_delivery。",
+          "realVerify": "后端允许 empty delivery_list 校验后复验真实成功 shell。"
+        },
+        {
+          "responsePath": "msg",
+          "value": "",
+          "reason": "清除参数错误文案，仅用于金额校验前置；不作为最终发奖成功文案。",
+          "realVerify": "后端允许 empty delivery_list 校验后复验真实 msg。"
+        },
+        {
+          "responsePath": "data.can_delivery",
+          "value": true,
+          "reason": "解除 Modal recordValidationState.Valid 前置，使后续点击确定能执行 submitSendAwardVideos 的空名单 no-call guard。",
+          "realVerify": "真实接口支持 empty-list 金额校验后复验 can_delivery=true。"
+        },
+        {
+          "responsePath": "data.left_amount",
+          "value": 1900000,
+          "reason": "提供足够剩余金额以通过前端校验展示；不声明真实充值记录余额。",
+          "realVerify": "真实充值记录余额可用后用真实 left_amount 复验。"
+        },
+        {
+          "responsePath": "data.current_use_amount",
+          "value": 0,
+          "reason": "保持 empty-list Modal 的 0 元消耗语义。",
+          "realVerify": "真实接口支持 empty-list 金额校验后复验 current_use_amount=0。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "activity_id",
+    "config_id",
+    "delivery_from",
+    "resource_type",
+    "delivery_list.0.amount",
+    "delivery_list"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "activity_id",
+      "impactType": "record_identity",
+      "reason": "当前金额校验 mock 只服务活动 7653282555822653742 的上传名单验证，不扩大到其它活动。",
+      "uiTarget": "奖励投放 / 人工提报 / 上传名单发奖 Modal"
+    },
+    {
+      "fieldPath": "config_id",
+      "impactType": "record_identity",
+      "reason": "当前金额校验 mock 只服务配置 7653282555822735662 的 timeout 上传名单验证，不扩大到其它奖励配置。",
+      "uiTarget": "奖励投放 / 人工提报 / 上传名单发奖 Modal"
+    },
+    {
+      "fieldPath": "delivery_from",
+      "impactType": "rule_branch",
+      "reason": "`delivery_from=2` 区分上传名单发奖校验和页面筛选发奖校验，避免影响 SearchCandidate 发奖 case。",
+      "uiTarget": "奖励投放 / 提交并投放 / 发奖 Modal"
+    },
+    {
+      "fieldPath": "resource_type",
+      "impactType": "rule_branch",
+      "reason": "`resource_type=5` 区分当前 DOU+币金额校验资源类型，避免影响 DOU+券或其它资源类型。",
+      "uiTarget": "奖励投放 / DOU+币充值记录选择"
+    },
+    {
+      "fieldPath": "delivery_list.0.amount",
+      "impactType": "submit_assertion",
+      "reason": "上传名单 setup item_id=700003 的投放金额为 30000；金额校验请求不包含 item_id，只能用自然 payload 中的 amount 收敛当前前置状态。",
+      "uiTarget": "奖励投放 / 上传名单发奖 Modal / 金额校验"
+    },
+    {
+      "fieldPath": "delivery_list",
+      "impactType": "submit_assertion",
+      "reason": "empty-list 上传名单金额校验请求自然携带 delivery_list=[]；该字段区分 empty-list 前置和 timeout 的 delivery_list[0].amount=30000 前置，避免扩大 matcher。",
+      "uiTarget": "奖励投放 / 上传名单发奖 Modal / 金额校验"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+      "requestFields": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "delivery_from": 2,
+        "resource_type": 5,
+        "delivery_list.0.amount": 30000
+      }
+    },
+    {
+      "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+      "requestFields": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "delivery_from": 2,
+        "resource_type": 5,
+        "delivery_list": []
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+      "caseIds": [
+        "TC-INT-AWARD-TIMEOUT__charge_amount_check"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "奖励投放 / 人工提报 / 上传名单发奖 Modal / DOU+币充值记录金额校验",
+      "requestFields": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "delivery_from": 2,
+        "resource_type": 5,
+        "delivery_list.0.amount": 30000
+      },
+      "mockRule": "命中 timeout 上传名单发奖 Modal 的金额校验请求时，先调用原 `charge_amount_check` 接口保留真实失败基线，再最小设置 `data.can_delivery=true` 和 `data.left_amount=1900000`，解除 Modal 确定置灰以继续触发最终发奖 timeout safety rule。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/charge_amount_check",
+        "body": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "charge_code": "LST12606290003681",
+          "delivery_list": [
+            {
+              "amount": 30000
+            }
+          ],
+          "session_unix_time": 1783580153,
+          "delivery_from": 2,
+          "resource_type": 5
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "delivery_from": 2,
+          "resource_type": 5,
+          "delivery_list.0.amount": 30000
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "charge_code",
+            "value": "LST12606290003681",
+            "source": "selected_record",
+            "reason": "自然 UI 选择充值记录后由接口 payload 携带；具体余额真实性不由当前 mock 证明，不参与 matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783580153,
+            "source": "network_request",
+            "reason": "运行态会话时间戳用于请求审计，不参与 matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+      "mockedResponsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.can_delivery",
+          "value": true,
+          "source": "mock_rule",
+          "reason": "解除当前 timeout 上传名单样本的金额校验前置拦截，使最终发奖 timeout rule 可由自然 UI 触发。"
+        },
+        {
+          "op": "set",
+          "path": "data.left_amount",
+          "value": 1900000,
+          "source": "mock_rule",
+          "reason": "提供足够剩余金额以通过前端 recordValidationState.Valid 判定；不声明真实充值记录余额。"
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/charge_amount_check",
+          "body": {
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662",
+            "charge_code": "LST12606290003681",
+            "delivery_list": [
+              {
+                "amount": 30000
+              }
+            ],
+            "session_unix_time": 1783580153,
+            "delivery_from": 2,
+            "resource_type": 5
+          },
+          "requestFieldsForMatching": {
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662",
+            "delivery_from": 2,
+            "resource_type": 5,
+            "delivery_list.0.amount": 30000
+          },
+          "collectionOnlyFields": [
+            {
+              "fieldPath": "charge_code",
+              "value": "LST12606290003681",
+              "source": "selected_record",
+              "reason": "自然 UI 选择充值记录后由接口 payload 携带；不参与 runtime matcher。"
+            },
+            {
+              "fieldPath": "session_unix_time",
+              "value": 1783580153,
+              "source": "network_request",
+              "reason": "运行态会话时间戳用于请求审计，不参与 matcher。"
+            }
+          ]
+        },
+        "responsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+        "browserPrecheckStatus": "passed"
+      },
+      "responseIntegrity": {
+        "source": "realConnectArtifact.response",
+        "mode": "path_reference"
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT",
+        "status": "passed",
+        "request": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/request.json",
+        "rawResponse": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.raw.txt",
+        "response": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json"
+      },
+      "verifyAssertion": "`apiChargeAmountCheck` runtime 命中 `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT` 时必须输出单字符串 `[BAM_MOCK_HIT]`，requestBody 包含 `delivery_from=2`、`resource_type=5`、`delivery_list[0].amount=30000`，mockedResponse 包含 `data.can_delivery=true`、`data.left_amount=1900000`，并且该前置 mock 不发送或替代最终发奖接口。",
+      "realVerify": "真实充值记录余额可用后，用自然 UI 复验后端 `can_delivery=true` 和真实 left_amount；当前 case 最终仍必须由 `apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT` 关闭。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json",
+        "reason": "真实请求/响应已由自然 UI 捕获；补充脚本验证 matcher、mockOperations 与 BAM patch。"
+      }
+    },
+    {
+      "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+      "caseIds": [
+        "TC-INT-AWARD-EMPTY-LIST__charge_amount_check"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "奖励投放 / 人工提报 / empty-list 上传名单发奖 Modal / DOU+币充值记录金额校验",
+      "requestFields": {
+        "activity_id": "7653282555822653742",
+        "config_id": "7653282555822735662",
+        "delivery_from": 2,
+        "resource_type": 5,
+        "delivery_list": []
+      },
+      "mockRule": "命中 empty-list 上传名单发奖 Modal 的金额校验请求时，先调用原 charge_amount_check 接口保留真实参数错误基线，再最小设置成功 shell、data.can_delivery=true、data.left_amount=1900000、data.current_use_amount=0，只解除 Modal 确定置灰以继续验证最终发奖 no-call guard。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/charge_amount_check",
+        "body": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "charge_code": "LST12606290003681",
+          "delivery_list": [],
+          "session_unix_time": 1783591836,
+          "delivery_from": 2,
+          "resource_type": 5
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7653282555822653742",
+          "config_id": "7653282555822735662",
+          "delivery_from": 2,
+          "resource_type": 5,
+          "delivery_list": []
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "charge_code",
+            "value": "LST12606290003681",
+            "source": "selected_record",
+            "reason": "自然 UI 选择充值记录后由接口 payload 携带；empty-list 金额校验不按充值记录 code 分支，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "session_unix_time",
+            "value": 1783591836,
+            "source": "network_request",
+            "reason": "运行态会话时间戳用于请求审计，不参与 runtime matcher。"
+          }
+        ]
+      },
+      "realResponsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.json",
+      "mockedResponsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "st",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "解除 empty-list 金额校验参数错误 shell。"
+        },
+        {
+          "op": "set",
+          "path": "code",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "解除 empty-list 金额校验参数错误 shell。"
+        },
+        {
+          "op": "set",
+          "path": "msg",
+          "value": "",
+          "source": "mock_rule",
+          "reason": "清除参数错误文案，仅服务金额校验前置。"
+        },
+        {
+          "op": "set",
+          "path": "data.can_delivery",
+          "value": true,
+          "source": "mock_rule",
+          "reason": "使 Modal 确定按钮可用，以自然触发 submitSendAwardVideos 的空名单 no-call guard。"
+        },
+        {
+          "op": "set",
+          "path": "data.left_amount",
+          "value": 1900000,
+          "source": "mock_rule",
+          "reason": "提供足够剩余金额以通过前端 recordValidationState.Valid 判定；不声明真实充值记录余额。"
+        },
+        {
+          "op": "set",
+          "path": "data.current_use_amount",
+          "value": 0,
+          "source": "mock_rule",
+          "reason": "保持 empty-list 0 元消耗语义。"
+        }
+      ],
+      "responseContract": {
+        "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/charge_amount_check",
+          "body": {
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662",
+            "charge_code": "LST12606290003681",
+            "delivery_list": [],
+            "session_unix_time": 1783591836,
+            "delivery_from": 2,
+            "resource_type": 5
+          },
+          "requestFieldsForMatching": {
+            "activity_id": "7653282555822653742",
+            "config_id": "7653282555822735662",
+            "delivery_from": 2,
+            "resource_type": 5,
+            "delivery_list": []
+          },
+          "collectionOnlyFields": [
+            {
+              "fieldPath": "charge_code",
+              "value": "LST12606290003681",
+              "source": "selected_record",
+              "reason": "自然 UI 选择充值记录后由接口 payload 携带；empty-list 金额校验不按充值记录 code 分支，不参与 runtime matcher。"
+            },
+            {
+              "fieldPath": "session_unix_time",
+              "value": 1783591836,
+              "source": "network_request",
+              "reason": "运行态会话时间戳用于请求审计，不参与 runtime matcher。"
+            }
+          ]
+        },
+        "responsePath": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.json",
+        "browserPrecheckStatus": "passed",
+        "fieldFill": [
+          {
+            "responsePath": "st",
+            "value": 0,
+            "reason": "真实 empty-list 金额校验响应为 st/code=10000000 参数错误，导致 Modal 确定置灰；MOCK_PREVIEW 仅解除当前 empty-list 前置拦截。",
+            "realVerify": "后端允许 empty delivery_list 校验或真实充值记录余额可用后，用自然 UI 复验。"
+          },
+          {
+            "responsePath": "code",
+            "value": 0,
+            "reason": "与 st 一起恢复成功 shell，使前端读取 data.can_delivery。",
+            "realVerify": "后端允许 empty delivery_list 校验后复验真实成功 shell。"
+          },
+          {
+            "responsePath": "msg",
+            "value": "",
+            "reason": "清除参数错误文案，仅用于金额校验前置；不作为最终发奖成功文案。",
+            "realVerify": "后端允许 empty delivery_list 校验后复验真实 msg。"
+          },
+          {
+            "responsePath": "data.can_delivery",
+            "value": true,
+            "reason": "解除 Modal recordValidationState.Valid 前置，使后续点击确定能执行 submitSendAwardVideos 的空名单 no-call guard。",
+            "realVerify": "真实接口支持 empty-list 金额校验后复验 can_delivery=true。"
+          },
+          {
+            "responsePath": "data.left_amount",
+            "value": 1900000,
+            "reason": "提供足够剩余金额以通过前端校验展示；不声明真实充值记录余额。",
+            "realVerify": "真实充值记录余额可用后用真实 left_amount 复验。"
+          },
+          {
+            "responsePath": "data.current_use_amount",
+            "value": 0,
+            "reason": "保持 empty-list Modal 的 0 元消耗语义。",
+            "realVerify": "真实接口支持 empty-list 金额校验后复验 current_use_amount=0。"
+          }
+        ]
+      },
+      "responseIntegrity": {
+        "source": "realConnectArtifact.response",
+        "mode": "path_reference"
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST",
+        "status": "passed",
+        "request": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/request.json",
+        "rawResponse": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.raw.txt",
+        "response": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.json",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/evidence.json"
+      },
+      "verifyAssertion": "`apiChargeAmountCheck` runtime 命中 `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST` 时必须输出单字符串 `[BAM_MOCK_HIT]`，requestBody 包含 `delivery_from=2`、`resource_type=5`、`delivery_list=[]`，mockedResponse 包含 `data.can_delivery=true`、`data.current_use_amount=0`，并且该前置 mock 不发送或替代最终 `apiDeliveryDouPlusCoin`。",
+      "realVerify": "后端允许 empty delivery_list 金额校验或真实充值记录余额可用后，用自然 UI 复验；当前 case 最终必须由 no apiDeliveryDouPlusCoin marker/XHR/fetch 和 no success toast 关闭。",
+      "verify": {
+        "status": "passed",
+        "method": "browser+mock-test",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/evidence.json",
+        "reason": "真实请求/响应已由自然 UI 捕获；`node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/script.mjs` 和 `verify.mjs` 已确认 matcher、mockOperations 与 BAM patch。"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "isDefault": true,
+      "enabled": true,
+      "uiTarget": "apiChargeAmountCheck no-hit fallback",
+      "requestFields": {},
+      "mockRule": "未命中当前 timeout 上传名单金额校验 matcher 时保持原 BAM 响应。",
+      "realConnectArtifact": {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/request.json",
+        "rawResponse": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.raw.txt",
+        "response": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.json",
+        "evidence": "../../real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/evidence.json"
+      },
+      "verifyAssertion": "No-hit requests must fall through to the original apiChargeAmountCheck request path and must not emit a mock hit for timeout rule.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "mock/apis/apiChargeAmountCheck/verify.mjs",
+        "reason": "DEFAULT_NOOP 是结构性 no-hit fallback；当前 UI case 不应命中该 rule，补充脚本通过 wrong amount / SearchCandidate / other activity 请求验证 no-hit fallback。"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiChargeAmountCheck",
+    "lastPatchedAt": "2026-07-09T15:11:00+08:00",
+    "notes": "Runtime generated from manifest; call original POST validation first, then apply minimal operations for timeout upload-list amount check and empty-list amount-check precondition."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/script.mjs && node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/verify.mjs && node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api",
+    "verifiedAt": "2026-07-09T18:25:00+08:00"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiChargeAmountCheck in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-09T10:26:16.371Z"
+  }
+}

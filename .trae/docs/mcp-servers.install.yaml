@@ -1,0 +1,127 @@
+# Sanitized MCP install template for the Trae delivery workflow.
+# Exported from /Users/bytedance/Desktop/BPO2/.trae on 2026-06-23.
+#
+# Notes:
+# - No token, cookie, OAuth state, UAT, or local browser profile is exported here.
+# - `name` uses the runtime server name observed in Trae descriptors.
+# - Internal packages usually require ByteDance network / VPN / SSO and access to the internal npm registry.
+# - `integrated_browser` is a Trae built-in browser MCP and is not configured here as stdio/http/sse.
+
+mcp_servers:
+  # Figma: primary workflow Figma MCP.
+  # Repo aliases: bytedance-figma-mcp / mcp_bytedance-figma-mcp.
+  # Required tools: get_bytedance_figma_data, get_figma_data, download_figma_images, get_local_variables.
+  - name: mcp_bytedance-figma-mcp
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - --registry=https://bnpm.byted.org/
+      - "@byted/bytedance-figma-mcp"
+      - --stdio
+    env: []
+    timeout: 30s
+
+  # Figma bridge: fallback only. Prefer mcp_bytedance-figma-mcp for PRD fileKey/nodeId direct reads.
+  # Required tools: get_figma_data, download_figma_images.
+  - name: mcp_Figma_AI_Bridge
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - figma-developer-mcp
+      - --stdio
+    env: []
+    timeout: 30s
+
+  # Feishu/Lark user-context MCP.
+  # Required tools include: feishu_get_user, feishu_auth, feishu_fetch_doc, feishu_lark_parser,
+  # feishu_wiki_space_node, feishu_search_doc_wiki, feishu_doc_media, feishu_whiteboard, feishu_sheet.
+  - name: mcp_feishu
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - --registry=https://bnpm.byted.org/
+      - "@i18n-ecom/feishu-lark-mcp-server"
+    env: []
+    timeout: 60s
+
+  # LarkDocs MCP.
+  # Required tools: get_lark_doc_content, search_lark_doc.
+  - name: mcp_LarkDocs
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - --registry=https://bnpm.byted.org/
+      - "@byted/mcp-lark-docs@latest"
+    env: []
+    timeout: 30s
+
+  # LarkParser MCP.
+  # Package aliases/bins: larkparser, larkparser-cli, larkparser-mcp.
+  # Available MCP tools: lark_fetch, lark_search, lark_render, lark_auth.
+  # Auth options:
+  # - Interactive: run `npx -y --registry=https://bnpm.byted.org/ @byted/larkparser-cli larkparser auth login`
+  # - Non-interactive: set USER_JWT_EXEC or USER_JWT_TOKEN in env; do not hardcode token values here.
+  - name: larkparser
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - --registry=https://bnpm.byted.org/
+      - "@byted/larkparser-cli"
+      - larkparser-mcp
+    env:
+      - key: USER_JWT_EXEC
+        value: "${USER_JWT_EXEC}"
+    timeout: 60s
+
+  # FE component-library MCP.
+  # Required tools: search_component, search_components_multi, list_library_components.
+  - name: mcp_byted_fe_mcp
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - --registry=https://bnpm.byted.org/
+      - "@byted/byted_fe_mcp@latest"
+    env: []
+    timeout: 30s
+
+  # Chrome DevTools fallback MCP.
+  # Required tools include: new_page, navigate_page, take_snapshot, take_screenshot,
+  # list_console_messages, list_network_requests, click, fill, type_text, wait_for.
+  - name: mcp_chrome-devtools
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - chrome-devtools-mcp@latest
+      - --autoConnect
+    env: []
+    timeout: 30s
+
+  # D2C/F2C MCP.
+  # Required tools: get_d2c_json, get_d2c_result, get_d2c_scss_result, get_d2c_plugin_list.
+  # Optional env placeholders are intentionally empty; configure D2C_MODEL / CODIN_D2C_PPE /
+  # D2C token / Figma token in the target environment when needed.
+  - name: mcp_d2c-mcp-server
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - --registry=https://bnpm.byted.org/
+      - "@byted/codin-d2c-mcp"
+    env: []
+    timeout: 60s
+
+  # Trae built-in browser MCP.
+  # Observed runtime name: integrated_browser.
+  # Do not configure it here unless the target platform exposes it as an external MCP.
+  # Required tools include: browser_navigate, browser_snapshot, browser_take_screenshot,
+  # browser_console_messages, browser_network_requests, browser_click, browser_type,
+  # browser_wait_for.
+  # /delivery:bits --coverage additionally requires browser_evaluate on an authenticated Huatuo page;
+  # do not export browser cookies or credential-bearing runtime state.

@@ -1,0 +1,23 @@
+# Figma Cache Manifest
+
+| cache_id | source | nodeId | depth_or_purpose | path | used_by | note |
+|---|---|---|---|---|---|---|
+| F1 | get_figma_data | 0:1 | depth=2 entry canvas | figma-cache/nodes/F1-get_figma_data-0_1-d2.md; figma-cache/raw/F1-get_figma_data-0_1-d2.txt | E-FIG-001, G1-G3, Atlas | PRD URL node-id=0-1 parsed to nodeId 0:1; no Desktop context. |
+| F2 | get_figma_data | 1:9176 | depth=3 atlas top frame | figma-cache/nodes/F2-get_figma_data-1_9176-d3.md; figma-cache/raw/F2-get_figma_data-1_9176-d3.txt | E-FIG-002, E-FIG-003, E-FIG-004, E-FIG-005, E-FIG-006, E-FIG-007, Atlas | Top frame contains config after states, removal detail states, manual submit state frames. |
+| F3 | get_figma_data | 1:12120 | depth=4 DOU+币剔除明细 | figma-cache/nodes/F3-get_figma_data-1_12120-d4.md; figma-cache/raw/F3-get_figma_data-1_12120-d4.txt | E-FIG-005, G7-G9, G13-G15 | Confirms active 剔除明细 Tab, filters, table columns, pagination. |
+| F4 | get_figma_data | 1:12390 | depth=4 DOU+券剔除明细 | figma-cache/nodes/F4-get_figma_data-1_12390-d4.md; figma-cache/raw/F4-get_figma_data-1_12390-d4.txt | E-FIG-006, G7-G9, G13-G15 | Confirms active 剔除明细 Tab, filters, author table columns, pagination. |
+| F5 | get_figma_data | 25:13842 | depth=5 人工提报命中态 | figma-cache/nodes/F5-get_figma_data-25_13842-d5.md; figma-cache/raw/F5-get_figma_data-25_13842-d5.txt | E-FIG-007, G10, G13-G15 | State frame contains background sibling and Drawer content; toolbar/action group/table parent scanned. |
+| F6 | get_figma_data | 25:13971 | depth=5 人工提报批量上传态 | figma-cache/nodes/F6-get_figma_data-25_13971-d5.md; figma-cache/raw/F6-get_figma_data-25_13971-d5.txt | E-FIG-008, G10, G14-G15 | Batch upload option baseline/reference; also used for screenshot export runtime probe. |
+| F7 | get_figma_data | 87:7016 | depth=6 人工提报命中态表格行 | figma-cache/nodes/F7-get_figma_data-87_7016-d6.md; figma-cache/raw/F7-get_figma_data-87_7016-d6.txt | E-FIG-007, G7, G13-G15 | Deep scan of BodyRows, including 不满足准入门槛 / 命中【不激励】规则 / 行级移除. |
+| F8 | get_figma_data | 101:6332 | depth=6 人工提报批量上传表格 | figma-cache/nodes/F8-get_figma_data-101_6332-d6.md; figma-cache/raw/F8-get_figma_data-101_6332-d6.txt | E-FIG-008, G7, G14-G15 | Deep scan of batch upload table baseline and legacy invalid/delivered states. |
+| IMG1 | download_figma_images | 25:13971 | runtime probe screenshot | figma-cache/screenshots/25_13971-artificial-submit-removal-probe.png | Tool Capability, Screenshot Export Log | descriptor-limited but runtime-validated FRAME export. |
+| IMG2 | download_figma_images | 1:9176 | atlas overview screenshot | figma-cache/screenshots/1_9176-atlas-overview.png | Visual Tile Index, Atlas | Overview tile for page/top-frame and region mapping. |
+| IMG3 | download_figma_images | 1:9770 | config all-user after screenshot | figma-cache/screenshots/1_9770-config-all-user-after.png | E-FIG-003, Page Coverage | Main-state screenshot for 活动参与资格=全部用户. |
+| IMG4 | download_figma_images | 1:10938 | config prefilled after screenshot | figma-cache/screenshots/1_10938-config-prefilled-after.png | E-FIG-004, Page Coverage | Main-state screenshot for 活动参与资格=仅限预埋用户. |
+| IMG5 | download_figma_images | 1:12120 | DOU+币剔除明细 screenshot | figma-cache/screenshots/1_12120-dou-coin-removal-detail.png | E-FIG-005, Page Coverage | Table/filter/pagination screenshot. |
+| IMG6 | download_figma_images | 1:12390 | DOU+券剔除明细 screenshot | figma-cache/screenshots/1_12390-dou-coupon-removal-detail.png | E-FIG-006, Page Coverage | Table/filter/pagination screenshot. |
+| IMG7 | download_figma_images | 25:13842 | manual submit hit state screenshot | figma-cache/screenshots/25_13842-manual-submit-hit-state.png | E-FIG-007, Page Coverage | Drawer hit state screenshot with alert/action/table/footer. |
+| IMG8 | download_figma_images | 25:13971 | manual submit batch upload screenshot | figma-cache/screenshots/25_13971-manual-submit-batch-upload-state.png | E-FIG-008, State Matrix | Batch upload option screenshot and table baseline. |
+| L1 | feishu_fetch_doc | T7YXwTv6FiBka9kJ3J3c6DKVnGh | supplemental wiki | supplement-cache/docs/L1-T7YX-interface-doc.md; supplement-cache/raw/L1-feishu_fetch_doc-T7YX-interface-doc.txt | Interface evidence | Unified severe violation/no-incentive interface semantics. |
+| L2 | feishu_fetch_doc | VW1WwrmQfiMYC2keWg4cldranzg | failed supplemental wiki | supplement-cache/raw/L2-feishu_fetch_doc-VW1W-related-doc.error.json | P1_SOURCE_GAP | Permission/network failure; not treated as Figma unavailable. |
+| L3 | feishu_fetch_doc | obcngtkz1pm2sl78aw573g1q | failed minutes LR | supplement-cache/raw/L3-feishu_fetch_doc-minutes-LR.error.json | P1_SOURCE_GAP | feishu_fetch_doc cannot parse minutes URL; not a PRD-stage P0. |

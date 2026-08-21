@@ -1,0 +1,116 @@
+{
+  "caseId": "TC-DATA-COIN-FILTER-SCHEMA",
+  "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+  "apiName": "apiGetDouPlusCoinRemoveRecord",
+  "capturedAt": "2026-07-08T11:59:18Z",
+  "browser": {
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "viewId": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "ssoResult": "business_page"
+  },
+  "uiTrigger": {
+    "pageUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "steps": [
+      "复用 DOU+币 `剔除明细` Tab active 的业务页",
+      "确认作品ID输入框值为 `100001,100002`",
+      "确认操作人 PeopleSelect 选中 `陈相`，对应 operator_id=`6068830`",
+      "点击 `查询`"
+    ]
+  },
+  "request": {
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+    "query": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "page": 1,
+      "page_num": 20,
+      "candidate_ids": "100001,100002",
+      "operator_id": "6068830"
+    },
+    "redactedUrl": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record?activity_id=7655304206886322458&config_id=7655304206886338842&page=1&page_num=20&candidate_ids=100001%2C100002&operator_id=6068830&__token=<redacted>"
+  },
+  "networkSummary": {
+    "latestMatchingRequestIndex": 87,
+    "method": "GET",
+    "type": "XHR",
+    "rawNetworkLogPersisted": false,
+    "rawNetworkLogPolicy": "browser_network_requests output contained __token; only redacted request summary is persisted in this evidence file."
+  },
+  "consoleMarker": {
+    "event": "BAM_MOCK_HIT",
+    "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+    "requestBody": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "candidate_ids": "100001,100002",
+      "operator_id": "6068830",
+      "page_num": 20,
+      "page": 1
+    },
+    "mockedResponseSummary": {
+      "code": 0,
+      "total": 1,
+      "has_more": false,
+      "recordsLength": 1,
+      "firstRecord": {
+        "record_id": "coin_remove_filter_record_20260708001",
+        "item_id": "100001",
+        "title": "筛选后夏日穿搭短视频",
+        "remove_reason": "筛选命中【不激励】规则",
+        "operator_id": "6068830",
+        "remove_time": 1783510622
+      }
+    },
+    "source": "latest [BAM_MOCK_HIT] console message after reapply; older default-rule hits are superseded by the hot-update marker `src_bam_ecom_buyin_admin_api_index_ts.e0a2ea97860b848c.hot-update.js`."
+  },
+  "domFacts": {
+    "activeTabText": [
+      "配置一",
+      "剔除明细"
+    ],
+    "candidateInputValue": "100001,100002",
+    "operatorSelectedText": "陈相",
+    "operatorSelectedId": "6068830",
+    "filterLabelsVisible": [
+      "作品ID",
+      "操作人"
+    ],
+    "forbiddenFiltersAbsent": [
+      "充值记录",
+      "投放状态"
+    ],
+    "tableHeaders": [
+      "作品内容",
+      "剔除发奖原因",
+      "剔除发奖时间",
+      "操作人"
+    ],
+    "firstRowText": "筛选后夏日穿搭短视频\\nID: 100001\\n筛选命中【不激励】规则\\n2026/07/08 19:37:02\\n陈相"
+  },
+  "screenshots": [
+    {
+      "path": "screenshots/TC-DATA-COIN-FILTER-SCHEMA--coin-filter-open--filter-mock-hit-table.png",
+      "captureScope": "DOU+币剔除明细筛选区和表格",
+      "materializationType": "local_file"
+    },
+    {
+      "path": "screenshots/TC-DATA-COIN-FILTER-SCHEMA--coin-filter-open--filter-mock-hit.png",
+      "captureScope": "viewport fallback",
+      "materializationType": "local_file"
+    }
+  ],
+  "mockArtifacts": {
+    "manifest": "mock/apis/apiGetDouPlusCoinRemoveRecord/manifest.json",
+    "script": "mock/apis/apiGetDouPlusCoinRemoveRecord/script.mjs",
+    "verify": "mock/apis/apiGetDouPlusCoinRemoveRecord/verify.mjs",
+    "realConnectEvidence": "mock/real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/evidence.json"
+  },
+  "result": "PASS_WITH_NOTES",
+  "notes": [
+    "当前证据验证 MOCK_PREVIEW 下筛选 rule 命中、请求字段透传和筛选后列表刷新。",
+    "真实后端 operator_id 权限范围、排序和分页仍需后端 ready 后 real verify。"
+  ]
+}

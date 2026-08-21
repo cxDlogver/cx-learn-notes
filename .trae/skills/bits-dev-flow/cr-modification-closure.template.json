@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "mode": "cr",
+  "mr": {
+    "repo": "",
+    "number": "",
+    "url": "",
+    "version": "",
+    "source_commit": "",
+    "branch": ""
+  },
+  "sources": [
+    {
+      "source_id": "",
+      "type": "CODEBASE_ASSISTANT|AIME|BITS_CODE_GUARD|MANUAL",
+      "artifact_ref": "",
+      "fetched_at": "",
+      "status": "",
+      "notes": ""
+    }
+  ],
+  "review_execution_policy": {
+    "default_decision": "BLOCKED",
+    "requires_scope_audit_before_edit": true,
+    "requires_change_audit_before_edit": true,
+    "accepted_decisions": ["ACCEPT", "PARTIAL"],
+    "accepted_decisions_require_verification": true,
+    "unreachable_current_flow_decision": "REJECT|ALREADY_FIXED",
+    "minimum_change_required": true,
+    "submit_requires_user_authorization": true,
+    "default_requires_individual_thread_reply": true,
+    "submit_requires_individual_thread_reply": true,
+    "submit_requires_reply_before_resolve": true,
+    "submit_requires_resolve_after_reply": true,
+    "submit_requires_resolve_after_push": true,
+    "submit_disallows_aggregate_reply_only": true
+  },
+  "issues": [
+    {
+      "issue_id": "",
+      "source_refs": [],
+      "review_claim": "",
+      "normalized_claim": "",
+      "classification": "",
+      "decision": "BLOCKED",
+      "decision_reason": "",
+      "requirement_refs": [],
+      "atomic_requirement_refs": [],
+      "test_case_refs": [],
+      "scope_audit": {
+        "in_current_requirement_repo": false,
+        "repo_path": "",
+        "allowed_files": [],
+        "out_of_scope_reason": "",
+        "requires_user_confirmation": false,
+        "reachability": {
+          "reachable_in_current_flow": false,
+          "blocked_by_outer_component": false,
+          "evidence": "",
+          "decision": "PROCESS|REJECT_UNREACHABLE"
+        }
+      },
+      "change_audit": {
+        "meaningful": false,
+        "coverable": false,
+        "over_defensive": false,
+        "security_guard_minimal": false,
+        "minimal_change": false,
+        "code_style_compliant": false,
+        "affects_requirement_behavior": "NO",
+        "test_case_impact": ""
+      },
+      "implementation": {
+        "status": "NOT_STARTED",
+        "commits": [],
+        "changed_files": [],
+        "solution_summary": "",
+        "result_summary": ""
+      },
+      "verification": {
+        "commands": [],
+        "passed": [],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "review_writeback": {
+        "thread_ids": [],
+        "status": "PENDING",
+        "reply_required": true,
+        "resolve_required": false,
+        "resolve_required_when_submit": true,
+        "comment_refs": [],
+        "thread_writebacks": [
+          {
+            "thread_id": "",
+            "reply_status": "PENDING|REPLIED|SKIPPED|FAILED",
+            "reply_comment_id": "",
+            "reply_artifact_ref": "",
+            "resolve_status": "PENDING|RESOLVED|SKIPPED|FAILED",
+            "resolve_artifact_ref": "",
+            "notes": ""
+          }
+        ],
+        "message_summary": ""
+      }
+    }
+  ],
+  "overall_status": "IN_PROGRESS"
+}

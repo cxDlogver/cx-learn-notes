@@ -1,0 +1,20 @@
+TC-INT-AWARD-TIMEOUT browser_network_requests summary
+recorded_at: 2026-07-09T08:00:01Z
+browser_tool: integrated_browser
+view_id: 4c1e4095-84d7-42ee-abee-63b7eabd8d7e
+
+Observed business XHRs relevant to this case:
+- GET /api/buyin/admin/content_activity/detail?activity_id=7653282555822653742
+- GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet
+- POST /api/buyin/admin/content_activity/charge_amount_check
+
+Final write request check:
+- Expected final write path: /api/buyin/admin/content_activity/delivery_dou_plus_coin
+- browser_network_requests output after final click: no XHR/fetch entry for delivery_dou_plus_coin.
+- Final award evidence is console synthetic only:
+  - [BAM_MOCK_SYNTHETIC_CONTRACT] apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT
+  - [BAM_MOCK_HIT] apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT
+
+Interpretation:
+- apiChargeAmountCheck is a pre-award validation POST and is allowed for this case.
+- apiDeliveryDouPlusCoin is the final write API. Under MOCK_PREVIEW, no real final write request was observed.

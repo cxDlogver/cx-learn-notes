@@ -1,0 +1,51 @@
+{
+  "status": "PASSED",
+  "mode": "preflight",
+  "checker_kind": "probe_chain",
+  "verification_level": "branch_exists",
+  "summary": "All target branches passed the configured branch-existence probe chain.",
+  "reason": "",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_app_or_package": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "next_step": "/delivery:bam:plan-methods",
+  "available_probe_kinds": [
+    "command_template",
+    "bits_cli_bam_psm_list_version"
+  ],
+  "items": [
+    {
+      "psm": "ecom.buyin.admin_api",
+      "branch": "feat_bujili",
+      "checker_kind": "probe_chain",
+      "selected_probe_kind": "command_template",
+      "selected_verification_level": "branch_exists",
+      "command": "source ~/.nvm/nvm.sh && nvm use 18 >/dev/null && cd /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content && npm exec -- bam ls | grep -F \"ecom.buyin.admin_api\" | grep -F \"feat_bujili\"",
+      "exit_code": 0,
+      "auth_status": "AUTH_OK",
+      "result": "PASSED",
+      "matched_signal": "BRANCH_CHECK_PASSED",
+      "summary": "Checker confirmed ecom.buyin.admin_api@feat_bujili.",
+      "stdout_summary": "│ * ecom.buyin.admin_api │ ecom.buyin.admin_api │ master │ 1.0.1937@feat_bujili │ 1.0.1951@master │",
+      "stderr_summary": "",
+      "probe_attempts": [
+        {
+          "probe_kind": "command_template",
+          "verification_level": "branch_exists",
+          "command": "source ~/.nvm/nvm.sh && nvm use 18 >/dev/null && cd /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content && npm exec -- bam ls | grep -F \"ecom.buyin.admin_api\" | grep -F \"feat_bujili\"",
+          "exit_code": 0,
+          "auth_status": "AUTH_OK",
+          "result": "PASSED",
+          "matched_signal": "BRANCH_CHECK_PASSED",
+          "summary": "Checker confirmed ecom.buyin.admin_api@feat_bujili.",
+          "stdout_summary": "│ * ecom.buyin.admin_api │ ecom.buyin.admin_api │ master │ 1.0.1937@feat_bujili │ 1.0.1951@master │",
+          "stderr_summary": ""
+        }
+      ],
+      "fallback_used": false
+    }
+  ],
+  "notes": [
+    "Probe chain order: `command_template` -> `bits_cli_bam_psm_list_version`."
+  ]
+}

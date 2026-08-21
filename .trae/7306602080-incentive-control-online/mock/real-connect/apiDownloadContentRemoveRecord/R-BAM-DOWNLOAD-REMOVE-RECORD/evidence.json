@@ -1,0 +1,64 @@
+{
+  "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-MANUAL-EXPORT",
+  "apiName": "apiDownloadContentRemoveRecord",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+  "captured_at": "2026-07-08T16:30:00Z",
+  "interfaceNecessity": "AR-009 and TC-INT-MANUAL-EXPORT require `apiDownloadContentRemoveRecord` to return `data.lark_url` before the frontend opens the generated removal-detail sheet.",
+  "syntheticContractReason": "The UI request point is known and reachable through the `导出剔除明细` button, but this interface creates a Feishu removal-detail resource. Under MOCK_PREVIEW the request must not rely on real Feishu permission or sheet generation; the BAM runtime returns a marked synthetic success instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "Source path `manually-submit-videos-form/index.tsx#L667-L669` binds `导出剔除明细` to `exportSubmitHitRecords`; `manuallySubmitVideoStore.ts#L301-L345` calls `apiDownloadContentRemoveRecord` only after building hit records.",
+      "reason": "A real click before BAM patch would attempt the external Feishu-sheet generation path; verify policy requires mock detour first."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "BAM wrapper `apiDownloadContentRemoveRecord` maps `records` to POST `/download_content_remove_record`; upstream `R-BAM-MANUAL-SEARCH-HIT` mock data now provides author IDs `900001` and `900002` needed by `buildContentRemoveRecords`.",
+      "reason": "A repeated real click without BAM patch would have the same external-generation dependency; the request shape is therefore recorded as synthetic and must be confirmed by patched runtime during verify."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/request.json",
+    "response": "mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json",
+    "sourceRefs": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L62-L100",
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L301-L345",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx#L667-L669",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts#L2586-L2604",
+      "artifacts/7306602080-incentive-control-online/04-tech-plan.md#L46-L48",
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#TC-INT-MANUAL-EXPORT"
+    ]
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "negativeControl": {
+    "excluded_valid_record": {
+      "author_id": "900003",
+      "item_id": "100003",
+      "item_name": "人工提报可投放作品",
+      "reason": "The valid item is not a hit item and must not appear in the natural UI export request."
+    }
+  },
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-MANUAL-EXPORT",
+    "requiredChecks": [
+      "natural UI click `导出剔除明细`",
+      "POST request body contains exactly hit records `100001` and `100002` with author_id/item_id/item_name/remove_reason/penalty_reason as applicable",
+      "request body excludes valid record `100003`",
+      "runtime marker includes `R-BAM-DOWNLOAD-REMOVE-RECORD`",
+      "`data.lark_url` is passed to `window.open(..., '_blank', 'noopener,noreferrer')` or equivalent open evidence",
+      "no local file is created and no old `下载移除明细` copy or appeal entry appears"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实 `download_content_remove_record` 复验 Feishu 表格权限、操作人来源、字段完整性和真实 lark_url 可访问性。"
+}

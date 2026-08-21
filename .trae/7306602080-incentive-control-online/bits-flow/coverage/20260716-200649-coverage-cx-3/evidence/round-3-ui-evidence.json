@@ -1,0 +1,131 @@
+{
+  "captured_at": "2026-07-16T13:01:34.002Z",
+  "browser_runtime": "integrated_browser",
+  "environment": "REAL_ONLINE",
+  "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "page_title": "内容生态运营｜橙蕉",
+  "active_config": "配置三",
+  "reward_type": "DOU+券",
+  "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+  "target_file_coverage_version": "huatuo:8f372a792f0f4739",
+  "screenshot_ref": "evidence/coverage-round3-resubmit-coupon-failure.png",
+  "real_ui_path": [
+    "真实线上奖励下发页",
+    "配置三 / DOU+券",
+    "真实 get_dou_plus_coupon_make_fail_record 返回制券失败任务",
+    "点击“点此查看并重新提交”打开重提制券抽屉",
+    "真实 get_dou_plus_coupon_delivery_record 返回 1 位作者发奖名单：UID 776711481616552",
+    "真实 get_charge_record 返回充值记录并选择 cc抖+券-程可歆-5000",
+    "页面展示余额充足：剩余可用 3628 元",
+    "点击确认提交触发 delivery_dou_plus_coupon，浏览器内拦截并返回 code 非 0 timeout 失败响应",
+    "再次点击确认提交触发 delivery_dou_plus_coupon，浏览器内拦截并返回 st 非 0 系统异常失败响应"
+  ],
+  "read_or_no_side_effect_requests": [
+    {
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+      "backend": "real",
+      "result_summary": "配置三存在制券失败任务 7655640336232120586"
+    },
+    {
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/search_delivery_author",
+      "backend": "real",
+      "result_summary": "配置三奖励下发作者列表为 0 位；该读接口未接管"
+    },
+    {
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record",
+      "backend": "real",
+      "result_summary": "重提制券抽屉真实加载 1 位作者发奖名单"
+    },
+    {
+      "method": "GET",
+      "path": "/api/buyin/admin/content_activity/get_charge_record",
+      "backend": "real",
+      "result_summary": "真实充值记录下拉包含 cc抖+券-程可歆-5000 和 cc抖+券-程可歆-3000"
+    }
+  ],
+  "request_field_sources": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "method": "POST",
+      "fields": [
+        "activity_id",
+        "config_id",
+        "fail_delivery_task_id",
+        "charge_code",
+        "delivery_list",
+        "delivery_from"
+      ],
+      "source_type": "REAL_UI_AND_REAL_RESPONSE",
+      "evidence_ref": "evidence/round-3-ui-evidence.json",
+      "notes": "字段来自真实活动 URL、配置三上下文、真实失败任务、真实发奖名单和真实充值记录选择。"
+    }
+  ],
+  "write_request_intercepts": [
+    {
+      "at": "2026-07-16T13:00:45.561Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705692462",
+        "fail_delivery_task_id": "7655640336232120586",
+        "charge_code": "LST12607070007003",
+        "delivery_list_count": 1,
+        "delivery_from": 2
+      },
+      "mock_response": {
+        "code": 504,
+        "msg": "timeout while making DOU+ coupon",
+        "data": {
+          "code": 504,
+          "msg": "timeout while making DOU+ coupon"
+        }
+      },
+      "backend_write": "not_sent",
+      "scenario": "code_nonzero_timeout"
+    },
+    {
+      "at": "2026-07-16T13:01:18.583Z",
+      "transport": "xhr",
+      "method": "POST",
+      "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "url_redaction": "__token redacted",
+      "payload_summary": {
+        "activity_id": "7629288371705643310",
+        "config_id": "7629288371705692462",
+        "fail_delivery_task_id": "7655640336232120586",
+        "charge_code": "LST12607070007003",
+        "delivery_list_count": 1,
+        "delivery_from": 2
+      },
+      "mock_response": {
+        "code": 0,
+        "msg": "系统错误：制券服务异常",
+        "data": {
+          "st": 500,
+          "code": 0,
+          "msg": "系统错误：制券服务异常"
+        }
+      },
+      "backend_write": "not_sent",
+      "scenario": "st_nonzero_system_error"
+    }
+  ],
+  "ui_observation": {
+    "selected_charge_record": "cc抖+券-程可歆-5000",
+    "balance_text": "余额充足。剩余可用：3628元",
+    "award_list_summary": "1 位作者，UID：776711481616552，折扣券 0.02折（上限210元），1张",
+    "drawer_still_open": true
+  },
+  "browser_runtime_notes": [
+    "write intercept installed before clicking 确认提交",
+    "Object.prototype.st getter shim installed only in browser session so wrapped request response can expose data.st to frontend branch checks",
+    "No cookie/localStorage/sessionStorage was read or persisted",
+    "Only delivery_dou_plus_coupon write requests were intercepted; read requests were not intercepted"
+  ]
+}

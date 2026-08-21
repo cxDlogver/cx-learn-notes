@@ -1,0 +1,69 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+  "sendRealBackendRequest": false,
+  "sendRealBackendRequestReason": "MOCK_PREVIEW write-interface safety: delivery_dou_plus_coupon is an award write API and must not send a real backend request during verify.",
+  "body": {
+    "activity_id": "7655304206886322458",
+    "config_id": "7655304206886355226",
+    "fail_delivery_task_id": "fail_coupon_exception_800003",
+    "charge_code": "charge_code_award_coupon_exception_7306602080",
+    "session_unix_time": 1783586962,
+    "delivery_list": [
+      {
+        "item_id": "800003",
+        "delivery_config": {
+          "coupon_type": 1,
+          "coupon_config": {
+            "threshold": 100,
+            "freeAmount": 5000
+          },
+          "num": 1,
+          "reiceve_start_time": 1783440000,
+          "reiceve_end_time": 1783526399,
+          "use_time_type": 1,
+          "use_start_time": 1783440000,
+          "use_end_time": 1784131199
+        }
+      }
+    ],
+    "delivery_from": 2
+  },
+  "requestFieldsForMatching": {
+    "delivery_from": 2,
+    "delivery_list.0.item_id": "800003"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7655304206886322458",
+      "source": "route_context",
+      "reason": "当前内容活动奖励投放页 activity_id；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7655304206886355226",
+      "source": "route_context",
+      "reason": "DOU+券配置 ID；用于提交 payload 审计，不参与 runtime matcher。"
+    },
+    {
+      "fieldPath": "fail_delivery_task_id",
+      "value": "fail_coupon_exception_800003",
+      "source": "synthetic_contract",
+      "reason": "来自 MakeCouponFailedWarnings setup rule；用于证明重提路径，不参与最终写接口 matcher。"
+    },
+    {
+      "fieldPath": "charge_code",
+      "value": "charge_code_award_coupon_exception_7306602080",
+      "source": "synthetic_contract",
+      "reason": "充值记录由 verify 自然 UI 弹窗选择后产生；mock detour 只保持 request schema，实际值需运行态记录。"
+    },
+    {
+      "fieldPath": "session_unix_time",
+      "value": 1783586962,
+      "source": "synthetic_contract",
+      "reason": "发奖会话时间来自页面 Date.now；mock detour 使用稳定值保持 request schema，verify 自然 UI 需记录运行态实际值。"
+    }
+  ]
+}

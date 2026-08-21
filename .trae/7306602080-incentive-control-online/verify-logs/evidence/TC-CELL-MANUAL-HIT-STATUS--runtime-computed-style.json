@@ -1,0 +1,87 @@
+{
+  "case_id": "TC-CELL-MANUAL-HIT-STATUS",
+  "runtime_state": "manual-hit-row",
+  "capture_scope": "table first hit row",
+  "collected_at": "2026-07-08T23:00:20+08:00",
+  "browser_runtime_mode": "TRAE_DESKTOP",
+  "browser_tool": "integrated_browser",
+  "headless": false,
+  "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+  "title": "内容生态运营｜橙蕉",
+  "reused_runtime_source": {
+    "from_case_id": "TC-UI-MANUAL-HIT-PAGE",
+    "runtime_evidence": "verify-logs/evidence/TC-UI-MANUAL-HIT-PAGE--manual-hit-runtime.json",
+    "screenshot": "screenshots/TC-UI-MANUAL-HIT-PAGE--manual-drawer-hit--mock-hit.png",
+    "reuse_reason": "Same Drawer state and same R-BAM-MANUAL-SEARCH-HIT payload; this case independently records cell-level row text and computed style."
+  },
+  "rows": [
+    {
+      "item_id": "100001",
+      "row_text": "1 视频标题：人工提报准入失败作品 视频ID：100001 不满足准入门槛 请选择 请选择 请选择 - - 移除",
+      "labels": {
+        "invalid": true,
+        "not_incentive": false
+      },
+      "has_remove_action": true,
+      "has_editable_placeholders": true
+    },
+    {
+      "item_id": "100002",
+      "row_text": "2 视频标题：人工提报不激励命中作品 视频ID：100002 命中【不激励】规则 请选择 请选择 请选择 - - 移除",
+      "labels": {
+        "invalid": false,
+        "not_incentive": true
+      },
+      "has_remove_action": true,
+      "has_editable_placeholders": true
+    },
+    {
+      "item_id": "100003",
+      "row_text": "3 视频标题：人工提报可投放作品 视频ID：100003 请选择 请选择 请选择 - - 移除",
+      "labels": {
+        "invalid": false,
+        "not_incentive": false
+      },
+      "has_remove_action": true,
+      "has_editable_placeholders": true
+    }
+  ],
+  "label_elements": {
+    "invalid": {
+      "text": "不满足准入门槛",
+      "item_id": "100001",
+      "tag": "div",
+      "class_name": "src-routes-content-activity-award-components-manually-submit-videos-manually-submit-videos-drawer-manually-submit-videos-form-index-module__hitStatusLabels-WMe3vp",
+      "color": "rgb(245, 63, 63)",
+      "font_size": "12px",
+      "font_weight": "400",
+      "line_height": "18px",
+      "display": "block"
+    },
+    "not_incentive": {
+      "text": "命中【不激励】规则",
+      "item_id": "100002",
+      "tag": "div",
+      "class_name": "src-routes-content-activity-award-components-manually-submit-videos-manually-submit-videos-drawer-manually-submit-videos-form-index-module__hitStatusLabels-WMe3vp",
+      "color": "rgb(245, 63, 63)",
+      "font_size": "12px",
+      "font_weight": "400",
+      "line_height": "18px",
+      "display": "block"
+    }
+  },
+  "text_presence": {
+    "invalid_label": true,
+    "not_incentive_label": true,
+    "empty_status_dash_only_for_hit_rows": false,
+    "appeal": false,
+    "low_quality": false
+  },
+  "negative_scope": {
+    "no_auto_delete": "Rows 100001 and 100002 remain visible.",
+    "remove_hot_area_retained": "Each row text includes 移除.",
+    "editable_columns_retained": "Rows include editable placeholders such as 请选择 and/or input cells.",
+    "no_empty_hit_label": "Hit rows have explicit red labels, not empty status placeholders."
+  },
+  "design_reuse_note": "This is runtime source only. /delivery:design must compare exact Figma positioning and spacing separately."
+}

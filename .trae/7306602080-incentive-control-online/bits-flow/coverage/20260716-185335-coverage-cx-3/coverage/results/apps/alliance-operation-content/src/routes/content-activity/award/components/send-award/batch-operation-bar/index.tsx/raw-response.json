@@ -1,0 +1,4518 @@
+{
+  "requestedAt": "2026-07-16T11:40:34.484Z",
+  "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fsend-award%2Fbatch-operation-bar%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+  "method": "GET",
+  "status": 200,
+  "ok": true,
+  "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fcomponents%2Fsend-award%2Fbatch-operation-bar%2Findex.tsx&devicePlatform=&deviceModel=&appId=&appVersion=",
+  "parsed": {
+    "status": 0,
+    "message": "ok",
+    "data": [
+      {
+        "lineNum": 1,
+        "code": "import React, { useContext, useState } from 'react';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 2,
+        "code": "import { StoreContext } from '../../../stores';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 3,
+        "code": "import styles from './index.module.scss';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 4,
+        "code": "import { InfoIcon } from '@ecom/auxo/es/components/icon';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 5,
+        "code": "import { Button, message } from '@ecom/auxo';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 6,
+        "code": "import BatchEditModal from '../batch-edit-modal';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 7,
+        "code": "import { MESSAGES } from '../../../constants';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 8,
+        "code": "import {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 9,
+        "code": "  AuthorDeliveryConfig,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 10,
+        "code": "  delivery_author_info,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 11,
+        "code": "  delivery_item_info,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 12,
+        "code": "  ItemDeliveryConfig,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 13,
+        "code": "  NotDeliveryReason,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 14,
+        "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 15,
+        "code": "import { CouponUseTimeType } from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/common';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 16,
+        "code": "import { AwardVideoConfigUpdateBundle } from '../../../types';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 17,
+        "code": "import { observer } from 'mobx-react-lite';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 18,
+        "code": "import BatchSubmitModal from '../batch-submit-modal';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 19,
+        "code": "import MissingRequiredFieldsModal from './missing-required-fields-modal';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 20,
+        "code": "import AuthorValidityConsistencyModal from './author-validity-consistency-modal';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 21,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 22,
+        "code": "export enum BatchOperationType {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 23,
+        "code": "  Video = 1,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 24,
+        "code": "  Author = 2,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 25,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 26,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 27,
+        "code": "function getSelectedCountByType({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 28,
+        "code": "  type,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 29,
+        "code": "  selectedAwardVideos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 30,
+        "code": "  selectedAwardAuthors,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 31,
+        "code": "}: {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 32,
+        "code": "  type: BatchOperationType;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 33,
+        "code": "  selectedAwardVideos: Record<number, string>;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 34,
+        "code": "  selectedAwardAuthors: Record<number, string>;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 35,
+        "code": "}): number {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 36,
+        "code": "  switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 37,
+        "code": "    case BatchOperationType.Video:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 38,
+        "code": "      return Object.keys(selectedAwardVideos).length;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 39,
+        "code": "    case BatchOperationType.Author:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 40,
+        "code": "      return Object.keys(selectedAwardAuthors).length;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 41,
+        "code": "    default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 42,
+        "code": "      return 0;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 43,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 44,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 45,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 46,
+        "code": "function mergeVideoSubmitItems(",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 47,
+        "code": "  selectedAwardVideoInfos: delivery_item_info[],",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 48,
+        "code": "  pendingNoAwardVideoItems: delivery_item_info[],",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 49,
+        "code": "): delivery_item_info[] {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 50,
+        "code": "  const selectedItemIds = new Set(",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 51,
+        "code": "    selectedAwardVideoInfos.map((item) => item.item_card?.item_model?.item_id).filter(Boolean),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 52,
+        "code": "  );",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 53,
+        "code": "  return [",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 54,
+        "code": "    ...selectedAwardVideoInfos,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 55,
+        "code": "    ...pendingNoAwardVideoItems.filter((item) => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 56,
+        "code": "      const itemId = item.item_card?.item_model?.item_id;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 57,
+        "code": "      return itemId && !selectedItemIds.has(itemId);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 58,
+        "code": "    }),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 59,
+        "code": "  ];",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 60,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 61,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 62,
+        "code": "function mergeAuthorSubmitItems(",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 63,
+        "code": "  selectedAwardAuthorInfos: delivery_author_info[],",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 64,
+        "code": "  pendingNoAwardAuthorItems: delivery_author_info[],",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 65,
+        "code": "): delivery_author_info[] {",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 66,
+        "code": "  const selectedAuthorIds = new Set(",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 67,
+        "code": "    selectedAwardAuthorInfos.map((item) => item.author_info?.author_id).filter(Boolean),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 68,
+        "code": "  );",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 69,
+        "code": "  return [",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 70,
+        "code": "    ...selectedAwardAuthorInfos,",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 71,
+        "code": "    ...pendingNoAwardAuthorItems.filter((item) => {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 72,
+        "code": "      const authorId = item.author_info?.author_id;",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 73,
+        "code": "      return authorId && !selectedAuthorIds.has(authorId);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 74,
+        "code": "    }),",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 75,
+        "code": "  ];",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 76,
+        "code": "}",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 77,
+        "code": "",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 78,
+        "code": "function _BatchInfo({ type }: { type: BatchOperationType }) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 79,
+        "code": "  const {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 80,
+        "code": "    store: { sendAwardToVideoStore, sendAwardToAuthorStore },",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 81,
+        "code": "  } = useContext(StoreContext);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 82,
+        "code": "  const isAuthor = type === BatchOperationType.Author;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 83,
+        "code": "  const candidateNum = isAuthor ? sendAwardToAuthorStore.candidateNum : sendAwardToVideoStore.candidateNum;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 84,
+        "code": "  const totalNum = isAuthor",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 85,
+        "code": "    ? sendAwardToAuthorStore.pagination.total || 0",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 86,
+        "code": "    : sendAwardToVideoStore.pagination.total || 0;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 87,
+        "code": "  const unit = isAuthor ? '位' : '条';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 88,
+        "code": "  const subjectText = isAuthor ? '作者' : '作品';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 89,
+        "code": "  const hintContent = `共${candidateNum}${unit}满足准入门槛的${subjectText}，当前合计${totalNum}${unit}${subjectText}`;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 90,
+        "code": "  return (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 91,
+        "code": "    <div className={styles.batchInfo}>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 92,
+        "code": "      <InfoIcon className={styles.infoIcon} />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 93,
+        "code": "      <span className={styles.infoText}>因数据产出时效稍晚，建议每日12点之后再操作发奖，{hintContent}</span>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 94,
+        "code": "    </div>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 95,
+        "code": "  );",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 96,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 97,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 98,
+        "code": "const BatchInfo = observer(_BatchInfo);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 99,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 100,
+        "code": "const kVideoBatchEditOptions = [",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 101,
+        "code": "  // 'shouldAward',",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 102,
+        "code": "  // 'delivery_amount',",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 103,
+        "code": "  'delivery_duration',",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 104,
+        "code": "  'target_likes',",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 105,
+        "code": "  'target_audience',",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 106,
+        "code": "  'effective_time',",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 107,
+        "code": "];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 108,
+        "code": "const kAuthorBatchEditOptions = ['reiceve_time_range', 'use_time_range'];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 109,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 110,
+        "code": "function hasValue(value: unknown): boolean {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 111,
+        "code": "  return value !== null && value !== undefined;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 112,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 113,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 114,
+        "code": "function getDeliveryItemSeq(item: { rank?: number }, fallback: number): number {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 115,
+        "code": "  return item.rank ?? fallback;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 116,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 117,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 118,
+        "code": "function getVideoMissingRequiredIndexes(selectedAwardVideos: delivery_item_info[]): number[] {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 119,
+        "code": "  return selectedAwardVideos",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 120,
+        "code": "    .map((item, idx) => ({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 121,
+        "code": "      missing: !hasValue(item.delivery_config?.effective_time),",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 122,
+        "code": "      seq: getDeliveryItemSeq(item, idx + 1),",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 123,
+        "code": "    }))",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 124,
+        "code": "    .filter((item) => item.missing)",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 125,
+        "code": "    .map((item) => item.seq);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 126,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 127,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 128,
+        "code": "function getAuthorMissingRequiredIndexes(selectedAwardAuthors: delivery_author_info[]): number[] {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 129,
+        "code": "  return selectedAwardAuthors",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 130,
+        "code": "    .map((item, idx) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 131,
+        "code": "      const config = item.delivery_config;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 132,
+        "code": "      const missingReceiveTimeRange =",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 133,
+        "code": "        !hasValue(config?.reiceve_start_time) || !hasValue(config?.reiceve_end_time);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 134,
+        "code": "      const missingUseTimeType = !hasValue(config?.use_time_type);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 135,
+        "code": "      let missingUseTimeValue = false;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 136,
+        "code": "      switch (config?.use_time_type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 137,
+        "code": "        case CouponUseTimeType.TimeRange:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 138,
+        "code": "          missingUseTimeValue = !hasValue(config?.use_start_time) || !hasValue(config?.use_end_time);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 139,
+        "code": "          break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 140,
+        "code": "        case CouponUseTimeType.AfterReiceve:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 141,
+        "code": "          missingUseTimeValue = !hasValue(config?.days_after_use);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 142,
+        "code": "          break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 143,
+        "code": "        default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 144,
+        "code": "          missingUseTimeValue = true;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 145,
+        "code": "          break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 146,
+        "code": "      }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 147,
+        "code": "      return {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 148,
+        "code": "        missing: missingReceiveTimeRange || missingUseTimeType || missingUseTimeValue,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 149,
+        "code": "        seq: getDeliveryItemSeq(item, idx + 1),",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 150,
+        "code": "      };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 151,
+        "code": "    })",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 152,
+        "code": "    .filter((item) => item.missing)",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 153,
+        "code": "    .map((item) => item.seq);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 154,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 155,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 156,
+        "code": "function checkAuthorValidityConsistency(selectedAwardAuthors: delivery_author_info[]): {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 157,
+        "code": "  isConsistent: boolean;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 158,
+        "code": "  diffFields: string[];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 159,
+        "code": "} {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 160,
+        "code": "  if (selectedAwardAuthors.length <= 1) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 161,
+        "code": "    return {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 162,
+        "code": "      isConsistent: true,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 163,
+        "code": "      diffFields: [],",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 164,
+        "code": "    };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 165,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 166,
+        "code": "  const diffFieldSet = new Set<string>();",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 167,
+        "code": "  const baseConfig = selectedAwardAuthors[0]?.delivery_config;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 168,
+        "code": "  if (!baseConfig || !hasValue(baseConfig.use_time_type)) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 169,
+        "code": "    return {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 170,
+        "code": "      isConsistent: false,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 171,
+        "code": "      diffFields: ['使用有效期类型'],",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 172,
+        "code": "    };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 173,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 174,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 175,
+        "code": "  selectedAwardAuthors.forEach((item) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 176,
+        "code": "    const config = item.delivery_config;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 177,
+        "code": "    if (!config) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 178,
+        "code": "      diffFieldSet.add('领用有效期');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 179,
+        "code": "      diffFieldSet.add('使用有效期类型');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 180,
+        "code": "      diffFieldSet.add('使用有效期');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 181,
+        "code": "      return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 182,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 183,
+        "code": "    if (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 184,
+        "code": "      config.reiceve_start_time !== baseConfig.reiceve_start_time ||",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 185,
+        "code": "      config.reiceve_end_time !== baseConfig.reiceve_end_time",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 186,
+        "code": "    ) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 187,
+        "code": "      diffFieldSet.add('领用有效期');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 188,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 189,
+        "code": "    if (config.use_time_type !== baseConfig.use_time_type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 190,
+        "code": "      diffFieldSet.add('使用有效期类型');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 191,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 192,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 193,
+        "code": "    switch (config.use_time_type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 194,
+        "code": "      case CouponUseTimeType.TimeRange:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 195,
+        "code": "        if (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 196,
+        "code": "          config.use_start_time !== baseConfig.use_start_time ||",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 197,
+        "code": "          config.use_end_time !== baseConfig.use_end_time",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 198,
+        "code": "        ) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 199,
+        "code": "          diffFieldSet.add('使用有效期');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 200,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 201,
+        "code": "        break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 202,
+        "code": "      case CouponUseTimeType.AfterReiceve:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 203,
+        "code": "        if (config.days_after_use !== baseConfig.days_after_use) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 204,
+        "code": "          diffFieldSet.add('使用有效期');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 205,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 206,
+        "code": "        break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 207,
+        "code": "      default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 208,
+        "code": "        diffFieldSet.add('使用有效期');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 209,
+        "code": "        break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 210,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 211,
+        "code": "  });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 212,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 213,
+        "code": "  return {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 214,
+        "code": "    isConsistent: diffFieldSet.size === 0,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 215,
+        "code": "    diffFields: Array.from(diffFieldSet),",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 216,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 217,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 218,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 219,
+        "code": "const kAuthorValidityDiffFieldOrder = ['领用有效期', '使用有效期类型', '使用有效期'];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 220,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 221,
+        "code": "function normalizeAuthorValidityDiffFields(fields: string[]): string[] {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 222,
+        "code": "  const fieldSet = new Set(fields);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 223,
+        "code": "  return kAuthorValidityDiffFieldOrder.filter((field) => fieldSet.has(field));",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 224,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 225,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 226,
+        "code": "function _BatchEditButton({ type, disabled }: { type: BatchOperationType; disabled?: boolean }) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 227,
+        "code": "  const {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 228,
+        "code": "    store: { sendAwardToVideoStore, sendAwardToAuthorStore },",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 229,
+        "code": "  } = useContext(StoreContext);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 230,
+        "code": "  const { selectedAwardVideos, updateAwardConfigForItems } = sendAwardToVideoStore;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 231,
+        "code": "  const { selectedAwardAuthors, updateAwardConfigForAuthors } = sendAwardToAuthorStore;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 232,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 233,
+        "code": "  let options: string[] = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 234,
+        "code": "  switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 235,
+        "code": "    case BatchOperationType.Video:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 236,
+        "code": "      options = kVideoBatchEditOptions;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 237,
+        "code": "      break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 238,
+        "code": "    case BatchOperationType.Author:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 239,
+        "code": "      options = kAuthorBatchEditOptions;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 240,
+        "code": "      break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 241,
+        "code": "    default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 242,
+        "code": "      options = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 243,
+        "code": "      break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 244,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 245,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 246,
+        "code": "  const [batchEditModalVisible, setBatchEditModalVisible] = useState(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 247,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 248,
+        "code": "  const onBatchEditCancel = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 249,
+        "code": "    setBatchEditModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 250,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 251,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 252,
+        "code": "  const onBatchEditOk = async (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 253,
+        "code": "    shouldAward?: boolean,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 254,
+        "code": "    awardConfig?: ItemDeliveryConfig | AuthorDeliveryConfig,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 255,
+        "code": "    notAwardReason?: NotDeliveryReason,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 256,
+        "code": "  ) => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 257,
+        "code": "    if (shouldAward === undefined && awardConfig === undefined && notAwardReason === undefined) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 258,
+        "code": "      message.warn(MESSAGES.UPDATE_VIDEO_AWARD_CONFIG_EMPTY);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 259,
+        "code": "      setBatchEditModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 260,
+        "code": "      return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 261,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 262,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 263,
+        "code": "    try {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 264,
+        "code": "      switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 265,
+        "code": "        case BatchOperationType.Author: {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 266,
+        "code": "          const result = await updateAwardConfigForAuthors(selectedAwardAuthors, {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 267,
+        "code": "            if_delivery: shouldAward,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 268,
+        "code": "            delivery_config: awardConfig as AuthorDeliveryConfig,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 269,
+        "code": "            not_delivery_reason: notAwardReason,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 270,
+        "code": "          });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 271,
+        "code": "          if (result) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 272,
+        "code": "            message.success('更新作者奖励配置成功');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 273,
+        "code": "            setBatchEditModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 274,
+        "code": "          } else {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 275,
+        "code": "            message.error(MESSAGES.UPDATE_AUTHOR_AWARD_CONFIG_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 276,
+        "code": "          }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 277,
+        "code": "          break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 278,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 279,
+        "code": "        case BatchOperationType.Video: {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 280,
+        "code": "          const updates = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 281,
+        "code": "          for (const [index, itemId] of Object.entries(selectedAwardVideos)) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 282,
+        "code": "            const update: AwardVideoConfigUpdateBundle = {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 283,
+        "code": "              index: Number(index),",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 284,
+        "code": "              itemId,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 285,
+        "code": "              configUpdate: {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 286,
+        "code": "                if_delivery: shouldAward,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 287,
+        "code": "                delivery_config: awardConfig as ItemDeliveryConfig,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 288,
+        "code": "                not_delivery_reason: notAwardReason,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 289,
+        "code": "              },",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 290,
+        "code": "            };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 291,
+        "code": "            updates.push(update);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 292,
+        "code": "          }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 293,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 294,
+        "code": "          const result = await updateAwardConfigForItems(updates);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 295,
+        "code": "          if (result) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 296,
+        "code": "            message.success(MESSAGES.UPDATE_VIDEO_AWARD_CONFIG_SUCCESS);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 297,
+        "code": "            setBatchEditModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 298,
+        "code": "          } else {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 299,
+        "code": "            message.error(MESSAGES.UPDATE_VIDEO_AWARD_CONFIG_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 300,
+        "code": "          }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 301,
+        "code": "          break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 302,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 303,
+        "code": "        default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 304,
+        "code": "          return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 305,
+        "code": "      }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 306,
+        "code": "    } catch (error) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 307,
+        "code": "      if (type === BatchOperationType.Author) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 308,
+        "code": "        message.error(MESSAGES.UPDATE_AUTHOR_AWARD_CONFIG_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 309,
+        "code": "      } else if (type === BatchOperationType.Video) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 310,
+        "code": "        message.error(MESSAGES.UPDATE_VIDEO_AWARD_CONFIG_FAILED);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 311,
+        "code": "      }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 312,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 313,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 314,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 315,
+        "code": "  const handleBatchEdit = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 316,
+        "code": "    const selectedCount = getSelectedCountByType({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 317,
+        "code": "      type,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 318,
+        "code": "      selectedAwardVideos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 319,
+        "code": "      selectedAwardAuthors,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 320,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 321,
+        "code": "    if (selectedCount === 0) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 322,
+        "code": "      message.warn('请先勾选待操作项');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 323,
+        "code": "      return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 324,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 325,
+        "code": "    setBatchEditModalVisible(true);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 326,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 327,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 328,
+        "code": "  return (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 329,
+        "code": "    <>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 330,
+        "code": "      <Button",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 331,
+        "code": "        className={styles.batchEditButton}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 332,
+        "code": "        data-aot-ele=\"批量修改\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 333,
+        "code": "        type=\"dashed\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 334,
+        "code": "        size=\"small\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 335,
+        "code": "        disabled={disabled}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 336,
+        "code": "        onClick={handleBatchEdit}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 337,
+        "code": "      >",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 338,
+        "code": "        批量修改",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 339,
+        "code": "      </Button>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 340,
+        "code": "      <BatchEditModal",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 341,
+        "code": "        visible={batchEditModalVisible}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 342,
+        "code": "        type={(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 343,
+        "code": "          switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 344,
+        "code": "            case BatchOperationType.Author:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 345,
+        "code": "              return 'author';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 346,
+        "code": "            case BatchOperationType.Video:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 347,
+        "code": "              return 'video';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 348,
+        "code": "            default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 349,
+        "code": "              return 'video';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 350,
+        "code": "          }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 351,
+        "code": "        })()}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 352,
+        "code": "        optionItems={options}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 353,
+        "code": "        selectedCount={getSelectedCountByType({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 354,
+        "code": "          type,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 355,
+        "code": "          selectedAwardVideos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 356,
+        "code": "          selectedAwardAuthors,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 357,
+        "code": "        })}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 358,
+        "code": "        onCancel={onBatchEditCancel}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 359,
+        "code": "        onOk={onBatchEditOk}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 360,
+        "code": "      />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 361,
+        "code": "    </>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 362,
+        "code": "  );",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 363,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 364,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 365,
+        "code": "const BatchEditButton = observer(_BatchEditButton);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 366,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 367,
+        "code": "function _BatchSubmitButton({ type, disabled }: { type: BatchOperationType; disabled?: boolean }) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 368,
+        "code": "  const {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 369,
+        "code": "    store: { sendAwardToVideoStore, sendAwardToAuthorStore },",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 370,
+        "code": "  } = useContext(StoreContext);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 371,
+        "code": "  const {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 372,
+        "code": "    selectedAwardVideos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 373,
+        "code": "    getSelectedAwardVideoItemInfos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 374,
+        "code": "    pendingNoAwardVideoItems,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 375,
+        "code": "    clearPendingNoAwardVideoItems,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 376,
+        "code": "    activity_id: videoActivityId,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 377,
+        "code": "    config_id: videoConfigId,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 378,
+        "code": "    session_unix_time: videoSessionUnixTime,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 379,
+        "code": "  } = sendAwardToVideoStore;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 380,
+        "code": "  const {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 381,
+        "code": "    selectedAwardAuthors,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 382,
+        "code": "    getSelectedAwardAuthorInfos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 383,
+        "code": "    pendingNoAwardAuthorItems,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 384,
+        "code": "    clearPendingNoAwardAuthorItems,",
+        "isAddLine": true,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 385,
+        "code": "    activity_id: authorActivityId,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 386,
+        "code": "    config_id: authorConfigId,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 387,
+        "code": "    session_unix_time: authorSessionUnixTime,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 388,
+        "code": "    filterOptions: authorFilterOptions,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 389,
+        "code": "    award_period: authorAwardPeriod,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 390,
+        "code": "  } = sendAwardToAuthorStore;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 391,
+        "code": "  const [batchSubmitModalVisible, setBatchSubmitModalVisible] = useState(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 392,
+        "code": "  const [missingRequiredModalVisible, setMissingRequiredModalVisible] = useState(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 393,
+        "code": "  const [authorValidityConsistencyModalVisible, setAuthorValidityConsistencyModalVisible] = useState(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 394,
+        "code": "  const [authorValidityDiffFields, setAuthorValidityDiffFields] = useState<string[]>([]);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 395,
+        "code": "  const [missingRequiredIndexes, setMissingRequiredIndexes] = useState<number[]>([]);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 396,
+        "code": "  const selectedAwardVideoInfos = getSelectedAwardVideoItemInfos(selectedAwardVideos);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 397,
+        "code": "  const selectedAwardAuthorInfos = getSelectedAwardAuthorInfos(selectedAwardAuthors);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 398,
+        "code": "  const submitAwardVideoInfos = mergeVideoSubmitItems(selectedAwardVideoInfos, pendingNoAwardVideoItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 399,
+        "code": "  const submitAwardAuthorInfos = mergeAuthorSubmitItems(selectedAwardAuthorInfos, pendingNoAwardAuthorItems);",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 400,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 401,
+        "code": "  const onButtonClick = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 402,
+        "code": "    const selectedCount = getSelectedCountByType({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 403,
+        "code": "      type,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 404,
+        "code": "      selectedAwardVideos,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 405,
+        "code": "      selectedAwardAuthors,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 406,
+        "code": "    });",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 407,
+        "code": "    if (selectedCount === 0) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 408,
+        "code": "      message.warn('请先勾选待操作项');",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 409,
+        "code": "      return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 410,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 411,
+        "code": "    let missingIndexes: number[] = [];",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 412,
+        "code": "    switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 413,
+        "code": "      case BatchOperationType.Author:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 414,
+        "code": "        missingIndexes = getAuthorMissingRequiredIndexes(selectedAwardAuthorInfos);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 415,
+        "code": "        break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 416,
+        "code": "      case BatchOperationType.Video:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 417,
+        "code": "        missingIndexes = getVideoMissingRequiredIndexes(selectedAwardVideoInfos);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 418,
+        "code": "        break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 419,
+        "code": "      default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 420,
+        "code": "        return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 421,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 422,
+        "code": "    if (missingIndexes.length > 0) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 423,
+        "code": "      setMissingRequiredIndexes(missingIndexes);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 424,
+        "code": "      setMissingRequiredModalVisible(true);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 425,
+        "code": "      return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 426,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 427,
+        "code": "    if (type === BatchOperationType.Author) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 428,
+        "code": "      const checkResult = checkAuthorValidityConsistency(selectedAwardAuthorInfos);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 429,
+        "code": "      if (!checkResult.isConsistent) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 430,
+        "code": "        setAuthorValidityDiffFields(normalizeAuthorValidityDiffFields(checkResult.diffFields));",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 431,
+        "code": "        setAuthorValidityConsistencyModalVisible(true);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 432,
+        "code": "        return;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 433,
+        "code": "      }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 434,
+        "code": "    }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 435,
+        "code": "    setBatchSubmitModalVisible(true);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 436,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 437,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 438,
+        "code": "  const onBatchSubmitCancel = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 439,
+        "code": "    setBatchSubmitModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 440,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 441,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 442,
+        "code": "  const onBatchSubmitOk = async () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 443,
+        "code": "    if (type === BatchOperationType.Video) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 444,
+        "code": "      clearPendingNoAwardVideoItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 445,
+        "code": "    } else if (type === BatchOperationType.Author) {",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 446,
+        "code": "      clearPendingNoAwardAuthorItems();",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 447,
+        "code": "    }",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 448,
+        "code": "    setBatchSubmitModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 449,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 450,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 451,
+        "code": "  return (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 452,
+        "code": "    <>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 453,
+        "code": "      <Button",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 454,
+        "code": "        className={styles.batchSubmitButton}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 455,
+        "code": "        data-aot-ele=\"批量提交\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 456,
+        "code": "        type=\"primary\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 457,
+        "code": "        size=\"small\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 458,
+        "code": "        disabled={disabled}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 459,
+        "code": "        onClick={onButtonClick}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 460,
+        "code": "      >",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 461,
+        "code": "        批量提交",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 462,
+        "code": "      </Button>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 463,
+        "code": "      <BatchSubmitModal",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 464,
+        "code": "        visible={batchSubmitModalVisible}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 465,
+        "code": "        type={(() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 466,
+        "code": "          switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 467,
+        "code": "            case BatchOperationType.Author:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 468,
+        "code": "              return 'author';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 469,
+        "code": "            case BatchOperationType.Video:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 470,
+        "code": "              return 'video';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 471,
+        "code": "            default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 472,
+        "code": "              return 'video';",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 473,
+        "code": "          }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 474,
+        "code": "        })()}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 475,
+        "code": "        activityId={type === BatchOperationType.Author ? authorActivityId : videoActivityId}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 476,
+        "code": "        configId={type === BatchOperationType.Author ? authorConfigId : videoConfigId}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 477,
+        "code": "        sessionUnixTime={type === BatchOperationType.Author ? authorSessionUnixTime : videoSessionUnixTime}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 478,
+        "code": "        publishStartTime={",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 479,
+        "code": "          type === BatchOperationType.Author ? authorFilterOptions?.publish_start_time : undefined",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 480,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 481,
+        "code": "        publishEndTime={",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 482,
+        "code": "          type === BatchOperationType.Author ? authorFilterOptions?.publish_end_time : undefined",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 483,
+        "code": "        }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 484,
+        "code": "        awardPeriod={type === BatchOperationType.Author ? authorAwardPeriod : undefined}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 485,
+        "code": "        selectedAwardVideos={submitAwardVideoInfos}",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 486,
+        "code": "        selectedAwardAuthors={submitAwardAuthorInfos}",
+        "isAddLine": true,
+        "isInsertLine": true,
+        "isIgnoreLine": false,
+        "isCoverageLine": true
+      },
+      {
+        "lineNum": 487,
+        "code": "        onCancel={onBatchSubmitCancel}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 488,
+        "code": "        onOk={onBatchSubmitOk}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 489,
+        "code": "      />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 490,
+        "code": "      <MissingRequiredFieldsModal",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 491,
+        "code": "        visible={missingRequiredModalVisible}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 492,
+        "code": "        missingIndexes={missingRequiredIndexes}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 493,
+        "code": "        onClose={() => setMissingRequiredModalVisible(false)}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 494,
+        "code": "      />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 495,
+        "code": "      <AuthorValidityConsistencyModal",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 496,
+        "code": "        visible={authorValidityConsistencyModalVisible}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 497,
+        "code": "        diffFields={authorValidityDiffFields}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 498,
+        "code": "        onClose={() => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 499,
+        "code": "          setAuthorValidityConsistencyModalVisible(false);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 500,
+        "code": "          setAuthorValidityDiffFields([]);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 501,
+        "code": "        }}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 502,
+        "code": "      />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 503,
+        "code": "    </>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 504,
+        "code": "  );",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 505,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 506,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 507,
+        "code": "const BatchSubmitButton = observer(_BatchSubmitButton);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 508,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 509,
+        "code": "function _BatchOperationButtons({ type, disabled }: { type: BatchOperationType; disabled?: boolean }) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 510,
+        "code": "  const {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 511,
+        "code": "    store: { sendAwardToVideoStore, sendAwardToAuthorStore },",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 512,
+        "code": "  } = useContext(StoreContext);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 513,
+        "code": "  let isAllSelected = false;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 514,
+        "code": "  let toggleSelectAll: () => void = () => {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 515,
+        "code": "    console.warn(`未知 type ${type}，一键全选功能待接入`);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 516,
+        "code": "  };",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 517,
+        "code": "  switch (type) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 518,
+        "code": "    case BatchOperationType.Video:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 519,
+        "code": "      toggleSelectAll = sendAwardToVideoStore.toggleSelectAll;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 520,
+        "code": "      isAllSelected = sendAwardToVideoStore.isAllSelectableVideosSelected;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 521,
+        "code": "      break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 522,
+        "code": "    case BatchOperationType.Author:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 523,
+        "code": "      toggleSelectAll = sendAwardToAuthorStore.toggleSelectAll;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 524,
+        "code": "      isAllSelected = sendAwardToAuthorStore.isAllSelectableAuthorsSelected;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 525,
+        "code": "      break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 526,
+        "code": "    default:",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 527,
+        "code": "      break;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 528,
+        "code": "  }",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 529,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 530,
+        "code": "  return (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 531,
+        "code": "    <div className={styles.batchOperationButtons}>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 532,
+        "code": "      <Button",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 533,
+        "code": "        data-aot-ele=\"一键全选\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 534,
+        "code": "        type=\"dashed\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 535,
+        "code": "        size=\"small\"",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 536,
+        "code": "        disabled={disabled}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 537,
+        "code": "        onClick={toggleSelectAll}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 538,
+        "code": "      >",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 539,
+        "code": "        {isAllSelected ? '取消全选' : '一键全选'}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 540,
+        "code": "      </Button>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 541,
+        "code": "      <BatchEditButton type={type} disabled={disabled} />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 542,
+        "code": "      <BatchSubmitButton type={type} disabled={disabled} />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 543,
+        "code": "    </div>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 544,
+        "code": "  );",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 545,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 546,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 547,
+        "code": "const BatchOperationButtons = observer(_BatchOperationButtons);",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 548,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 549,
+        "code": "export default function BatchOperationBar({",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 550,
+        "code": "  type,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 551,
+        "code": "  disabled,",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 552,
+        "code": "}: {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 553,
+        "code": "  type: BatchOperationType;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 554,
+        "code": "  disabled?: boolean;",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 555,
+        "code": "}) {",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 556,
+        "code": "  return (",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 557,
+        "code": "    <div className={styles.batchOperationBar}>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 558,
+        "code": "      <BatchInfo type={type} />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 559,
+        "code": "      <BatchOperationButtons type={type} disabled={disabled} />",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 560,
+        "code": "    </div>",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 561,
+        "code": "  );",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 562,
+        "code": "}",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      },
+      {
+        "lineNum": 563,
+        "code": "",
+        "isAddLine": false,
+        "isInsertLine": false,
+        "isIgnoreLine": false,
+        "isCoverageLine": false
+      }
+    ]
+  }
+}

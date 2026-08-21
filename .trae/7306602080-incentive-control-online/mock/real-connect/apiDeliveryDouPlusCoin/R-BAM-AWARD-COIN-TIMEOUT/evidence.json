@@ -1,0 +1,62 @@
+{
+  "ruleId": "R-BAM-AWARD-COIN-TIMEOUT",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-TIMEOUT",
+  "apiName": "apiDeliveryDouPlusCoin",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+  "captured_at": "2026-07-09T14:35:53+08:00",
+  "interfaceNecessity": "AR-005 and TC-INT-AWARD-TIMEOUT require the DOU+ coin UploadCandidate award submit wrapper to return a timeout-like response so frontend fixed timeout copy and pause behavior can be verified.",
+  "syntheticContractReason": "The UI request point is known from BatchSubmitModal and the generated BAM wrapper, but delivery_dou_plus_coin is a write interface. Under MOCK_PREVIEW the request must not be sent to the real backend; the BAM runtime returns a marked synthetic timeout response instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "`09-test-case-matrix.md` defines TC-INT-AWARD-TIMEOUT as BAM_RUNTIME_MOCK with ruleId R-BAM-AWARD-COIN-TIMEOUT; BatchSubmitModal calls apiDeliveryDouPlusCoin from the natural modal `确定` path after upload-list setup.",
+      "reason": "A real click before BAM patch would send a backend award write request; verify policy requires mock detour first."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "Natural UI already reached the safe read setup request apiGetDeliveryItemsFromSheet with sheet_url=award-timeout-7306602080; final write request is therefore necessary but still unsafe until BAM patch is applied.",
+      "reason": "A repeated real click without BAM patch would have the same write side effect; the response branch is recorded as synthetic and must be confirmed by patched runtime during verify."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/request.json",
+    "response": "mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/response.json",
+    "naturalUiSample": {
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662",
+      "delivery_from": 2,
+      "delivery_list.0.item_id": "700003",
+      "source": "apiGetDeliveryItemsFromSheet / R-BAM-BATCH-SHEET-AWARD-TIMEOUT setup rule returns a single deliverable upload-list item."
+    },
+    "sourceRefs": [
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#TC-INT-AWARD-TIMEOUT",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx#submitSendAwardVideos",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx#deliveryList",
+      "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts#isAwardDeliveryTimeoutLike",
+      "apps/alliance-operation-content/src/routes/content-activity/award/constants.ts#SEND_AWARD_GOVERNANCE_TIMEOUT"
+    ]
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-AWARD-TIMEOUT",
+    "requiredChecks": [
+      "natural UI batch upload with sheet_url=award-timeout-7306602080 shows deliverable item_id=700003",
+      "natural UI selects a valid DOU+ coin charge record",
+      "click modal `确定` from natural UI",
+      "runtime marker includes R-BAM-AWARD-COIN-TIMEOUT and requestBody delivery_from=2 / delivery_list[0].item_id=700003",
+      "frontend displays fixed copy `治理校验失败，请稍后重试`",
+      "no success toast, no successful continuation, and no real delivery_dou_plus_coin XHR/fetch is sent"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实环境复验 timeout / network timeout 链路、治理接口一致性和最终发奖事务暂停行为。"
+}

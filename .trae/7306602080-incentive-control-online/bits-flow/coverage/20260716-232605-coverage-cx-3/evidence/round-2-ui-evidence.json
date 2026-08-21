@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "round": 2,
+  "exported_at": "2026-07-16T16:20:18.010Z",
+  "coverage_command": "/delivery:bits --coverage url入口 https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001 --threshold 96",
+  "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "environment": "REAL_ONLINE",
+  "browser_view_id": "288d7b9d-03fe-4006-9380-03810d4c957d",
+  "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+  "target_file_coverage_version_before_refresh": "huatuo:0676324834683b2c",
+  "target_uncovered_lines_before_refresh": [
+    89,
+    90,
+    99,
+    102,
+    126,
+    150,
+    151,
+    182,
+    209,
+    210
+  ],
+  "selected_flow": {
+    "name": "配置三 / DOU+券 / 制券失败重新提交 / 作者提交异常",
+    "reason": "配置五 DOU+币视频批量提交被真实 UI 前置校验拦截，第一条作品缺少必填的投放生效时间；配置三存在真实制券失败重新提交入口，能进入同一 BatchSubmitModal 作者提交链路并覆盖 submitSendAwardAuthors catch 分支。",
+    "preconditions": [
+      "配置三奖励类型为 DOU+券",
+      "页面存在制券失败警告：任务ID 7655640336232120586",
+      "点击“点此查看并重新提交”打开“重新提交制券”弹窗",
+      "选择真实充值记录 cc抖+券-程可歆-3000",
+      "真实余额校验返回“余额充足。剩余可用：6元”",
+      "弹窗内发奖名单包含 1 位作者：迪迦，UID 776711481616552"
+    ]
+  },
+  "attempted_video_flow": {
+    "name": "配置五 / DOU+币 / 视频批量提交异常",
+    "status": "BLOCKED_BY_REAL_UI_VALIDATION",
+    "evidence": [
+      "配置五奖励类型为 DOU+币，页面展示 10 条满足准入门槛的作品。",
+      "选择第一条作品后点击批量提交，前端弹出“请完成所有被选中卡片的必填项，再点击提交。待填写卡片序号1。”",
+      "打开第一条作品“修改配置”后确认投放生效时间为空；DatePicker 还要求选择当前时间之后的时间。",
+      "为避免真实保存修改或继续绕过前置校验，本轮改走配置三 DOU+券制券失败重新提交入口。"
+    ],
+    "write_intercepts_attempted": [
+      {
+        "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+        "status": "INSTALLED_BUT_NOT_HIT",
+        "backend_write": "not_sent",
+        "notes": "日期校验未通过，未触发保存请求。"
+      }
+    ]
+  },
+  "read_requests": {
+    "policy": "read-only/no-side-effect APIs remain real online requests",
+    "observed": [
+      {
+        "endpoint": "/api/buyin/admin/content_activity/get_charge_record",
+        "method": "GET",
+        "source": "真实重新提交制券弹窗加载充值记录"
+      },
+      {
+        "endpoint": "/api/buyin/admin/content_activity/charge_amount_check",
+        "method": "POST",
+        "source": "选择 cc抖+券-程可歆-3000 后真实余额校验",
+        "observed_ui": "余额充足。剩余可用：6元"
+      }
+    ]
+  },
+  "write_intercepts": {
+    "policy": "all write/side-effect APIs are intercepted in the built-in browser before network; backend_write is not_sent",
+    "intercepts": [
+      {
+        "index": 0,
+        "interceptedAt": "2026-07-16T16:19:04.183Z",
+        "transport": "xhr",
+        "method": "POST",
+        "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "logicalEndpoint": "coupon",
+        "bodySummary": {
+          "keys": [
+            "activity_id",
+            "charge_code",
+            "config_id",
+            "delivery_from",
+            "delivery_list",
+            "fail_delivery_task_id",
+            "session_unix_time"
+          ],
+          "activity_id_present": true,
+          "config_id_present": true,
+          "charge_code_present": true,
+          "delivery_from": 2,
+          "delivery_authors_count": 0,
+          "delivery_items_count": 0,
+          "delivery_list_count": 1,
+          "remove_candidates_count": 0,
+          "has_publish_start_time": false,
+          "has_publish_end_time": false
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true,
+        "mockBehavior": "throw_on_response_st_access_for_author_submit",
+        "interceptVersion": "round2-submit-exception-v2"
+      },
+      {
+        "index": 1,
+        "interceptedAt": "2026-07-16T16:19:57.108Z",
+        "transport": "xhr",
+        "method": "POST",
+        "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "logicalEndpoint": "coupon",
+        "bodySummary": {
+          "keys": [
+            "activity_id",
+            "charge_code",
+            "config_id",
+            "delivery_from",
+            "delivery_list",
+            "fail_delivery_task_id",
+            "session_unix_time"
+          ],
+          "activity_id_present": true,
+          "config_id_present": true,
+          "charge_code_present": true,
+          "delivery_from": 2,
+          "delivery_authors_count": 0,
+          "delivery_list_count": 1,
+          "fail_delivery_task_id_present": true
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true,
+        "mockBehavior": "network_error_reject_for_submitSendAwardAuthors_catch",
+        "interceptVersion": "round2-submit-network-error-v1"
+      }
+    ],
+    "intercepted_endpoint_counts": {
+      "/api/buyin/admin/content_activity/delivery_dou_plus_coupon": 2
+    }
+  },
+  "ui_after_mock": {
+    "modal_still_open": true,
+    "confirm_button_enabled_after_error": true,
+    "visible_modal_snippet": "重新提交制券 关联充值记录 充值记录 cc抖+券-程可歆-3000 余额充足。剩余可用：6元 发奖名单 序号 作者信息 券类型 奖励金额 奖励数量 领取有效期 使用有效期类型 使用有效期 1 迪迦 UID：776711481616552 折扣券 0.02折（上限210元） 1张 固定时间起止 确认提交取消",
+    "notes": "异常提交后弹窗未关闭，符合 submitResult.resultCode != 0 时不执行 onOk/关闭弹窗的行为；toast/alert 未稳定保留在 DOM 中。"
+  },
+  "runtime_notes": [
+    "Round1 的 Object.prototype.st getter 污染曾导致普通对象 st 赋值报错；本轮刷新页面后仅在提交前安装临时拦截。",
+    "第二次拦截改用网络错误型 XHR error 事件，避免继续依赖 prototype shim，并更直接覆盖 submitSendAwardAuthors catch 分支。",
+    "控制台中存在 Huatuo/monitor 上报 ERR_ABORTED 噪声，与本轮写接口拦截无关。"
+  ],
+  "side_effect_policy": {
+    "online_entry": true,
+    "read_only_apis_real": true,
+    "write_apis_intercepted_before_network": true,
+    "backend_write": "not_sent",
+    "no_localhost": true,
+    "no_vmok_or_bam_runtime_mock": true,
+    "no_submit_flag": true,
+    "no_commit_push_publish_or_remote_coverage_review": true
+  },
+  "coverage_refresh": {
+    "status": "COMPLETED",
+    "refreshed_at": "2026-07-16T16:22:16.524Z",
+    "overall_cover_ratio_after": "97.03%",
+    "threshold": "96%",
+    "result": "PASS",
+    "latest_json": "../coverage/latest.json",
+    "report_md": "../coverage/report.md"
+  }
+}

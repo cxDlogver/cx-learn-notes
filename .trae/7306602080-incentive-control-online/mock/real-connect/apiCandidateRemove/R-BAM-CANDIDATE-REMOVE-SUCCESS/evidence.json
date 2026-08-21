@@ -1,0 +1,54 @@
+{
+  "ruleId": "R-BAM-CANDIDATE-REMOVE-SUCCESS",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+  "apiName": "apiCandidateRemove",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/candidate_remove",
+  "captured_at": "2026-07-08T15:31:00Z",
+  "interfaceNecessity": "AR-008 and TC-INT-MANUAL-ONE-CLICK-REMOVE require a successful candidate_remove response before frontend removes hit rows from the current Drawer list.",
+  "syntheticContractReason": "The UI request point is known and reachable through the `一键移除` button, but `candidate_remove` is a write interface. Under MOCK_PREVIEW the request must not be sent to the real backend; the BAM runtime returns a marked synthetic success instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "Source path `manually-submit-videos-form/index.tsx#L655-L665` binds `一键移除` to `removeSubmitHitItems`; `manuallySubmitVideoStore.ts#L251-L294` calls `apiCandidateRemove` only after building hit candidates.",
+      "reason": "A real click before BAM patch would send a backend write request; verify policy requires mock detour first."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "BAM wrapper `apiCandidateRemove` maps `activity_id`, `config_id`, `remove_candidates` to POST `/candidate_remove`; existing mock search state proves candidate IDs `100001` and `100002` are current hit rows.",
+      "reason": "A repeated real click without BAM patch would have the same write side effect; the request shape is therefore recorded as synthetic and must be confirmed by patched runtime during verify."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiCandidateRemove/R-BAM-CANDIDATE-REMOVE-SUCCESS/request.json",
+    "response": "mock/real-connect/apiCandidateRemove/R-BAM-CANDIDATE-REMOVE-SUCCESS/response.json",
+    "sourceRefs": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L63-L88",
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts#L251-L294",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx#L655-L665",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts#L2883-L2905",
+      "artifacts/7306602080-incentive-control-online/04-tech-plan.md#L46"
+    ]
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-MANUAL-ONE-CLICK-REMOVE",
+    "requiredChecks": [
+      "natural UI click `一键移除`",
+      "POST request body contains `remove_candidates` with remove_reason values",
+      "runtime marker includes `R-BAM-CANDIDATE-REMOVE-SUCCESS`",
+      "hit rows disappear and valid row remains",
+      "no batch submit modal or fake award success appears"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实 `candidate_remove` 复验持久化剔除记录、失败 msg、候选池刷新和后续剔除明细可查询。"
+}

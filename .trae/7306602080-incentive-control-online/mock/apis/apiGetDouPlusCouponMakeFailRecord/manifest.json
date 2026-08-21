@@ -1,0 +1,250 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiGetDouPlusCouponMakeFailRecord",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "network",
+      "console",
+      "xhr_response_listener"
+    ],
+    "snapshotSummary": "integrated_browser DOU+券配置二 MakeCouponFailedWarnings 自然请求返回 task_list=null；当前 rule 只补 TC-INT-AWARD-EXCEPTION 的制券失败任务入口。",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiGetDouPlusCouponMakeFailRecord",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226"
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226"
+        },
+        "collectionOnlyFields": []
+      },
+      "responsePath": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.task_list",
+          "value": "one failed coupon task delivery_task_id=fail_coupon_exception_800003",
+          "reason": "真实配置二响应 task_list=null，无法自然打开重新提交制券抽屉；MOCK_PREVIEW 只补当前 exception case 的失败任务入口。",
+          "realVerify": "后端 ready 后用真实制券失败任务复验 task_list。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "activity_id",
+    "config_id"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "activity_id",
+      "impactType": "record_identity",
+      "reason": "制券失败任务入口只服务当前 DOU+券活动页，不扩大到其它活动。",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 制券失败警告"
+    },
+    {
+      "fieldPath": "config_id",
+      "impactType": "record_identity",
+      "reason": "制券失败任务入口只服务配置二 DOU+券，不影响 DOU+币或其它配置。",
+      "uiTarget": "奖励投放 / DOU+券配置二 / 制券失败警告"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+      "caseIds": [
+        "TC-INT-AWARD-EXCEPTION__make_fail_setup"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "奖励投放 / DOU+券配置二 / 制券失败警告",
+      "requestFields": {
+        "activity_id": "7655304206886322458",
+        "config_id": "7655304206886355226"
+      },
+      "mockRule": "命中配置二制券失败任务查询时，先调用原接口保留真实空任务基线，再最小设置 data.task_list 为一个 exception 专用失败任务入口。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226"
+        },
+        "requestFieldsForMatching": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886355226"
+        },
+        "collectionOnlyFields": []
+      },
+      "realResponsePath": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.task_list",
+          "value": [
+            {
+              "delivery_task_id": "fail_coupon_exception_800003",
+              "make_time": 1783586200,
+              "num": 1,
+              "coupon_type": 1,
+              "coupon_config": {
+                "threshold": 100,
+                "freeAmount": 5000
+              }
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "恢复 TC-INT-AWARD-EXCEPTION 的制券失败重提入口，使后续失败明细列表可由自然 UI 打开。"
+        }
+      ],
+      "responseContract": {
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226"
+          },
+          "requestFieldsForMatching": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886355226"
+          },
+          "collectionOnlyFields": []
+        },
+        "responsePath": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+        "browserPrecheckStatus": "passed"
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-COUPON-MAKE-FAIL-EXCEPTION",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json"
+      },
+      "verifyAssertion": "自然 UI 配置二加载后必须输出 [BAM_MOCK_HIT] ruleId=R-BAM-COUPON-MAKE-FAIL-EXCEPTION，并出现制券失败警告 `点此查看并重新提交`，但不得触发最终发奖写接口。",
+      "realVerify": "后端 ready 后用真实制券失败任务复验 task_list；该 setup 不替代失败明细列表和最终发奖 exception 断言。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json",
+        "reason": "真实空任务基线已由自然 UI 捕获；补充脚本验证 matcher、mockOperations 与 BAM patch。"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "isDefault": true,
+      "enabled": true,
+      "uiTarget": "apiGetDouPlusCouponMakeFailRecord no-hit fallback",
+      "requestFields": {},
+      "mockRule": "未命中当前配置二制券失败任务 matcher 时保持原 BAM 响应。",
+      "realConnectArtifact": {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCouponMakeFailRecord/R-BAM-COUPON-MAKE-FAIL-EXCEPTION/evidence.json"
+      },
+      "verifyAssertion": "No-hit requests must fall through to the original apiGetDouPlusCouponMakeFailRecord response and must not emit a mock hit for exception setup rule.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "mock/apis/apiGetDouPlusCouponMakeFailRecord/verify.mjs",
+        "reason": "DEFAULT_NOOP 是结构性 no-hit fallback；补充脚本通过 other config 请求验证 no-hit fallback。"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiGetDouPlusCouponMakeFailRecord",
+    "notes": "Runtime generated from manifest; call original GET first, then apply minimal task_list setup for TC-INT-AWARD-EXCEPTION.",
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply -> PASS; ADD inline patch apiGetDouPlusCouponMakeFailRecord."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "bam-test",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponMakeFailRecord/verify.mjs -> PASS; reapply-bam-mocks.mjs --apply -> PASS; standard verify-bam-mock rerun required after finalVerification sync.",
+    "verifiedAt": "2026-07-09T16:41:00+08:00"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "ADD inline patch apiGetDouPlusCouponMakeFailRecord in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-09T08:40:35.962Z"
+  }
+}

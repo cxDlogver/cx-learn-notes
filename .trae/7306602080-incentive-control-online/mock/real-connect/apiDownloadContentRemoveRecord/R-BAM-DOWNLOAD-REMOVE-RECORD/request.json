@@ -1,0 +1,78 @@
+{
+  "status": "synthetic_contract",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+  "body": {
+    "records": [
+      {
+        "author_id": "900001",
+        "item_id": "100001",
+        "item_name": "人工提报准入失败作品",
+        "remove_reason": "手动移除"
+      },
+      {
+        "author_id": "900002",
+        "item_id": "100002",
+        "item_name": "人工提报不激励命中作品",
+        "remove_reason": "命中【不激励】规则",
+        "penalty_reason": "历史违规命中不激励规则"
+      }
+    ]
+  },
+  "requestFieldsForMatching": {
+    "records.0.remove_reason": "手动移除",
+    "records.1.remove_reason": "命中【不激励】规则"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "records.0.author_id",
+      "value": "900001",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第一条准入失败作品的 item_card.item_author_info.author_id；用于导出字段审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "records.0.item_id",
+      "value": "100001",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第一条准入失败作品的 item_card.item_model.item_id；用于导出字段审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "records.0.item_name",
+      "value": "人工提报准入失败作品",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第一条准入失败作品的标题；用于导出字段审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "records.1.author_id",
+      "value": "900002",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第二条不激励作品的 item_card.item_author_info.author_id；用于导出字段审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "records.1.item_id",
+      "value": "100002",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第二条不激励作品的 item_card.item_model.item_id；用于导出字段审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "records.1.item_name",
+      "value": "人工提报不激励命中作品",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第二条不激励作品的标题；用于导出字段审计，不参与 matcher。"
+    },
+    {
+      "fieldPath": "records.1.penalty_reason",
+      "value": "历史违规命中不激励规则",
+      "source": "selected_record",
+      "reason": "来自人工提报 mixed hit 态第二条不激励作品的最新 not_incentive_reason；用于导出字段审计，不参与 matcher。"
+    }
+  ],
+  "negativeControl": {
+    "excluded_valid_record": {
+      "author_id": "900003",
+      "item_id": "100003",
+      "item_name": "人工提报可投放作品",
+      "reason": "可发奖记录 if_delivery=true 且非命中项，后续自然 UI request 中不得出现。"
+    }
+  }
+}

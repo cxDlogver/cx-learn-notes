@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "threshold": 90,
+  "rounds": 3,
+  "workspace": "",
+  "execution_repo_root": "",
+  "target_repo": "",
+  "fromBranch": "",
+  "toBranch": "",
+  "coverage_script": "",
+  "coverage_report_ref": {
+    "latest_json": "",
+    "report_md": "",
+    "uncovered_list_json": "",
+    "uncovered_list_md": "",
+    "generated_at": "",
+    "huatuo_update_ref": ""
+  },
+  "state_initialization": {
+    "initialized_from_template": true,
+    "global_exclusion_log_ref": "",
+    "global_exclusion_log_loaded": false,
+    "previous_state_ref": "",
+    "previous_state_loaded": false,
+    "previous_state_notes": ""
+  },
+  "execution_policy": {
+    "candidate_source_ref": "coverage/uncovered-list.json",
+    "script_default_filters": [
+      "coverRatio < 100",
+      "insertLines > 0",
+      "exclude path segment named bam"
+    ],
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_active_effects": ["SKIP_SAME_VERSION"],
+    "single_target_per_round": true,
+    "same_run_dedup_ref": "rounds_log[].target_file",
+    "all_target_files_enter_global_exclusion_log": true,
+    "code_changed_targets_remain_retriable": false,
+    "side_effect_write_policy": "ALLOW_UI_TRIGGER_WITH_BROWSER_INTERCEPT_ONLY",
+    "write_intercept_required_for": [
+      "create",
+      "update",
+      "delete",
+      "submit",
+      "send_award",
+      "modify_config",
+      "send_notification",
+      "any_side_effect_write"
+    ],
+    "write_intercept_evidence_required": true,
+    "exclusion_reason_recording": "DO_NOT_RECORD_SELECTION_REASON",
+    "file_coverage_version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion",
+    "active_exclusion_only_when_file_coverage_version_matches": true
+  },
+  "overall_cover_ratio_before": null,
+  "overall_cover_ratio_after": null,
+  "rounds_log": [
+    {
+      "round": 1,
+      "status": "NOT_STARTED|IN_PROGRESS|PASS|PASS_WITH_NOTES|BLOCKED|FAIL",
+      "target_file": "",
+      "target_report_ref": "",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 0,
+        "cover_ratio": "",
+        "insert_lines": 0,
+        "current_file_coverage_version": "",
+        "excluded_candidates": [],
+        "global_exclusion_log_ref": "",
+        "global_exclusion_status": "NO_MATCH|ACTIVE_SKIP|VERSION_CHANGED_ALLOW|NO_VERSION_RECORDED_ALLOW",
+        "matched_global_exclusion_entry_id": "",
+        "matched_global_exclusion_file_coverage_version": "",
+        "same_run_target_status": "NO_MATCH|ALREADY_TARGETED_SKIP",
+        "selection_after_refresh": false
+      },
+      "plan_ref": "",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "CODE_OPTIMIZED|UI_COVERAGE_REAL_REQUESTS|UI_COVERAGE_WITH_WRITE_INTERCEPT|BLOCKED|SKIPPED",
+        "global_exclusion_entry_id": "",
+        "notes": ""
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY|SKIP_SAME_VERSION|SUPERSEDE_VERSION_CHANGED|BLOCKED",
+        "entry_id": "",
+        "source_file_coverage_version": "",
+        "latest_seen_file_coverage_version": "",
+        "version_comparison": "SAME_VERSION_ACTIVE|VERSION_CHANGED_SUPERSEDE|NO_VERSION_RECORDED|NOT_APPLICABLE",
+        "evidence": "",
+        "audited_at": "",
+        "notes": ""
+      },
+      "code_optimization": {
+        "status": "NOT_STARTED|DONE|SKIPPED|BLOCKED",
+        "changed_files": [],
+        "summary": "",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "NOT_STARTED|DONE|SKIPPED|BLOCKED",
+        "environment": "REAL_ONLINE",
+        "entry_url": "",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "",
+            "test_case_ref": "",
+            "evidence_ref": "",
+            "notes": ""
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "",
+            "method": "",
+            "fields": [],
+            "source_type": "REAL_UI|REAL_RESPONSE|REAL_BUSINESS_DATA|BAM_MOCK_REQUEST_FIELDS",
+            "evidence_ref": "",
+            "notes": ""
+          }
+        ],
+        "write_request_intercepts": [
+          {
+            "endpoint": "",
+            "method": "",
+            "uncovered_lines": [],
+            "trigger_ui": "",
+            "match_rule": "",
+            "mock_response_ref": "",
+            "ui_after_mock_evidence_ref": "",
+            "backend_not_hit_evidence_ref": "",
+            "status": "INTERCEPTED|BLOCKED",
+            "notes": ""
+          }
+        ]
+      },
+      "coverage_refresh": {
+        "command": "",
+        "before_ratio": null,
+        "after_ratio": null,
+        "latest_json": "",
+        "report_md": "",
+        "refreshed_at": ""
+      },
+      "verification": {
+        "commands": [],
+        "passed": [],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "blockers": []
+    }
+  ],
+  "request_field_sources": [],
+  "write_request_intercepts": [],
+  "verification": {
+    "commands": [],
+    "passed": [],
+    "failed": [],
+    "known_unrelated_failures": []
+  },
+  "blockers": [],
+  "overall_status": "IN_PROGRESS|PASS|PASS_WITH_NOTES|BLOCKED|FAIL"
+}

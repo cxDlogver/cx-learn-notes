@@ -1,0 +1,267 @@
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/resubmit-award-author-drawer/index.tsx b/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/resubmit-award-author-drawer/index.tsx
+index ac8d36b9e..02fc01a61 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/resubmit-award-author-drawer/index.tsx
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/resubmit-award-author-drawer/index.tsx
+@@ -292,7 +292,6 @@ function _ResubmitAwardAuthorDrawer({
+         session_unix_time: Math.floor(Date.now() / 1000),
+       });
+       if (!res) {
+-        message.error('提交失败，请稍后重试');
+         return;
+       }
+       message.success('提交成功');
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx b/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx
+index fa35792e8..ba14b5af9 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx
+@@ -24,6 +24,12 @@ import { MESSAGES } from '../../../constants';
+ import { ChargeRecordBalanceInfo } from './charge-record-balance-info';
+ import { formatCouponAmount } from '../award-authors/award-author-config-editor-form';
+ import { fenToYuan } from '@/routes/content-activity/utils/utils';
++import {
++  getAwardDeliveryExceptionMessage,
++  getAwardDeliveryResponseErrorMessage,
++  getAwardDeliveryResultCode,
++  isAwardDeliverySuccessResponse,
++} from '../../../utils';
+ 
+ async function submitSendAwardVideos({
+   activity_id,
+@@ -42,6 +48,12 @@ async function submitSendAwardVideos({
+   session_unix_time: number;
+   delivery_from: DeliveryFrom;
+ }): Promise<number> {
++  const submitList =
++    delivery_from === DeliveryFrom.UploadCandidate ? delivery_list ?? [] : delivery_items ?? [];
++  if (submitList.length === 0) {
++    return 0;
++  }
++
+   let resultCode = 0;
+   try {
+     const res = await apiDeliveryDouPlusCoin({
+@@ -53,15 +65,15 @@ async function submitSendAwardVideos({
+       session_unix_time,
+       delivery_from,
+     });
+-    resultCode = res.st === 0 && res.code === 0 ? 0 : res.code ?? res.st;
+-    if (resultCode === 0) {
++    resultCode = getAwardDeliveryResultCode(res);
++    if (isAwardDeliverySuccessResponse(res)) {
+       message.success(MESSAGES.SEND_AWARD_VIDEOS_SUCCESS);
+     } else {
+-      message.error(`${MESSAGES.SEND_AWARD_VIDEOS_FAILED}: ${resultCode}, ${res.msg}`);
++      message.error(getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_VIDEOS_FAILED));
+     }
+-  } catch {
++  } catch (error) {
+     resultCode = -1;
+-    message.error(MESSAGES.SEND_AWARD_VIDEOS_FAILED);
++    message.error(getAwardDeliveryExceptionMessage(error));
+   }
+   return resultCode;
+ }
+@@ -89,6 +101,12 @@ async function submitSendAwardAuthors({
+   award_period?: AwardPeriod;
+   delivery_from: DeliveryFrom;
+ }): Promise<number> {
++  const submitList =
++    delivery_from === DeliveryFrom.UploadCandidate ? delivery_list ?? [] : delivery_authors ?? [];
++  if (submitList.length === 0) {
++    return 0;
++  }
++
+   let resultCode = 0;
+   try {
+     const res = await apiDeliveryDouPlusCoupon({
+@@ -103,15 +121,15 @@ async function submitSendAwardAuthors({
+       award_period,
+       delivery_from,
+     });
+-    resultCode = res.st === 0 && res.code === 0 ? 0 : res.code ?? res.st;
+-    if (resultCode === 0) {
++    resultCode = getAwardDeliveryResultCode(res);
++    if (isAwardDeliverySuccessResponse(res)) {
+       message.success(MESSAGES.SEND_AWARD_AUTHORS_SUCCESS);
+     } else {
+-      message.error(`${MESSAGES.SEND_AWARD_AUTHORS_FAILED}: ${resultCode}, ${res.msg}`);
++      message.error(getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_AUTHORS_FAILED));
+     }
+-  } catch {
++  } catch (error) {
+     resultCode = -1;
+-    message.error(MESSAGES.SEND_AWARD_AUTHORS_FAILED);
++    message.error(getAwardDeliveryExceptionMessage(error));
+   }
+   return resultCode;
+ }
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/constants.ts b/apps/alliance-operation-content/src/routes/content-activity/award/constants.ts
+index cd9256a48..2cc8dde03 100755
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/constants.ts
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/constants.ts
+@@ -89,6 +89,8 @@ export const MESSAGES = {
+   SEND_AWARD_VIDEOS_FAILED: '提交视频奖励投放失败',
+   SEND_AWARD_AUTHORS_SUCCESS: '提交成功',
+   SEND_AWARD_AUTHORS_FAILED: '提交作者奖励投放失败',
++  SEND_AWARD_GOVERNANCE_TIMEOUT: '治理校验失败，请稍后重试',
++  SEND_AWARD_GOVERNANCE_EXCEPTION: '治理校验异常，请联系管理员',
+   VIDEO_NOT_FOUND: '未找到该视频',
+   SELECT_VIDEO: '请选择视频',
+   SELECT_FIELD: '请选择要修改的字段',
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts b/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts
+index f7a733c9c..26612786a 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts
+@@ -14,6 +14,11 @@ import {
+ import { message } from '@ecom/auxo';
+ import { MESSAGES } from '../constants';
+ import { CouponUseTimeType } from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/common';
++import {
++  getAwardDeliveryExceptionMessage,
++  getAwardDeliveryResponseErrorMessage,
++  isAwardDeliverySuccessResponse,
++} from '../utils';
+ 
+ const DEFAULT_PAGE_SIZE = 20;
+ 
+@@ -180,24 +185,29 @@ export class CouponDeliveryRecordStore {
+       'delivery_from' | 'activity_id' | 'config_id' | 'fail_delivery_task_id' | 'delivery_list'
+     >,
+   ): Promise<delivery_dou_plus_coupon_response | undefined> => {
++    const deliveryList = this.deliveryList;
++    if (deliveryList.length === 0) {
++      return undefined;
++    }
++
+     try {
+       const res = await apiDeliveryDouPlusCoupon({
+         activity_id: this.activity_id,
+         config_id: this.config_id,
+         fail_delivery_task_id: this.delivery_task_id,
+         ...payload,
+-        delivery_list: this.deliveryList,
++        delivery_list: deliveryList,
+         delivery_from: DeliveryFrom.UploadCandidate,
+       });
+-      const resultCode = res.st === 0 && res.code === 0 ? 0 : res.code ?? res.st;
+-      if (resultCode === 0) {
++      if (isAwardDeliverySuccessResponse(res)) {
+         message.success(MESSAGES.SEND_AWARD_AUTHORS_SUCCESS);
++        return res;
+       } else {
+-        message.error(`${MESSAGES.SEND_AWARD_AUTHORS_FAILED}: ${resultCode}, ${res.msg}`);
++        message.error(getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_AUTHORS_FAILED));
++        return undefined;
+       }
+-      return res;
+-    } catch {
+-      message.error(MESSAGES.SEND_AWARD_AUTHORS_FAILED);
++    } catch (error) {
++      message.error(getAwardDeliveryExceptionMessage(error));
+       return undefined;
+     }
+   };
+diff --git a/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts b/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts
+index 00c17d242..3876e3a5f 100644
+--- a/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts
++++ b/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts
+@@ -1,8 +1,18 @@
+ import NP from 'number-precision';
++import { MESSAGES } from './constants';
+ 
+ const kSecondsPerHour = 3600;
+ const kHalfHourScale = 2;
+ const kHourTolerance = 1e-3;
++const kTimeoutErrorCodes = new Set(['ECONNABORTED', 'ETIMEDOUT']);
++const kTimeoutTextPattern = /timeout|timed\s*out|time\s*out|超时/i;
++const kExceptionTextPattern = /exception|异常|系统错误|内部错误|internal\s+error|server\s+error/i;
++
++type AwardDeliveryResponse = {
++  st: number;
++  msg?: string;
++  code?: number;
++};
+ 
+ function normalizeToHalfHour(value: number): number {
+   const scaled = NP.times(value, kHalfHourScale);
+@@ -29,3 +39,80 @@ export function hourToSecond(value?: number): number | undefined {
+   const normalizedHour = normalizeToHalfHour(Number(value));
+   return Math.round(NP.times(normalizedHour, kSecondsPerHour));
+ }
++
++function toPlainRecord(value: unknown): Record<string, unknown> | undefined {
++  return value && typeof value === 'object' ? (value as Record<string, unknown>) : undefined;
++}
++
++function stringifyToken(value: unknown): string {
++  if (typeof value === 'string' || typeof value === 'number') {
++    return String(value);
++  }
++  return '';
++}
++
++function collectErrorText(error: unknown): string {
++  const record = toPlainRecord(error);
++  if (!record) {
++    return stringifyToken(error);
++  }
++
++  const response = toPlainRecord(record.response);
++  const data = toPlainRecord(response?.data);
++  return [
++    record.code,
++    record.name,
++    record.message,
++    record.msg,
++    response?.statusText,
++    data?.code,
++    data?.message,
++    data?.msg,
++  ]
++    .map(stringifyToken)
++    .filter(Boolean)
++    .join(' ');
++}
++
++export function isAwardDeliverySuccessResponse(res?: AwardDeliveryResponse): boolean {
++  return res?.st === 0 && res?.code === 0;
++}
++
++export function getAwardDeliveryResultCode(res?: AwardDeliveryResponse): number {
++  if (isAwardDeliverySuccessResponse(res)) {
++    return 0;
++  }
++  if (res?.code !== undefined && res.code !== 0) {
++    return res.code;
++  }
++  if (res?.st !== undefined && res.st !== 0) {
++    return res.st;
++  }
++  return -1;
++}
++
++export function isAwardDeliveryTimeoutLike(errorOrMessage: unknown): boolean {
++  const record = toPlainRecord(errorOrMessage);
++  const code = stringifyToken(record?.code);
++  return kTimeoutErrorCodes.has(code) || kTimeoutTextPattern.test(collectErrorText(errorOrMessage));
++}
++
++export function getAwardDeliveryResponseErrorMessage(
++  res: AwardDeliveryResponse,
++  fallbackMessage: string,
++): string {
++  if (isAwardDeliveryTimeoutLike(res.msg)) {
++    return MESSAGES.SEND_AWARD_GOVERNANCE_TIMEOUT;
++  }
++  if (kExceptionTextPattern.test(res.msg ?? '')) {
++    return MESSAGES.SEND_AWARD_GOVERNANCE_EXCEPTION;
++  }
++  const resultCode = getAwardDeliveryResultCode(res);
++  return `${fallbackMessage}: ${resultCode}, ${res.msg}`;
++}
++
++export function getAwardDeliveryExceptionMessage(error: unknown): string {
++  return isAwardDeliveryTimeoutLike(error)
++    ? MESSAGES.SEND_AWARD_GOVERNANCE_TIMEOUT
++    : MESSAGES.SEND_AWARD_GOVERNANCE_EXCEPTION;
++}

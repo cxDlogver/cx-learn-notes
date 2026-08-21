@@ -1,0 +1,98 @@
+{
+  "code": 0,
+  "msg": "",
+  "extra": {
+    "now": 1783566954000,
+    "log_id": "202607091115519D70E2FE75755D902C31"
+  },
+  "data": {
+    "total_num": 1,
+    "candidate_num": 1,
+    "item_info": [
+      {
+        "item_card": {
+          "item_model": {
+            "item_id": "7655364163166869874",
+            "base_model": {
+              "item_info": {
+                "counter_info": {
+                  "repin_count": 0,
+                  "play_count": 0,
+                  "share_count": 0
+                },
+                "comment_count_info": {
+                  "comment_count": 0
+                },
+                "base_info": {
+                  "title": "DOU+币 SearchCandidate 可投放作品",
+                  "cover": {
+                    "uri": "search_candidate_coin_penalty_cover_7655364163166869874",
+                    "url_list": [
+                      "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20product%20review%20scene%2C%20clean%20studio%20lighting%2C%20neutral%20background%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                    ],
+                    "width": 750,
+                    "height": 1000
+                  }
+                }
+              },
+              "ecom_statistics_info": {},
+              "tag_info": {
+                "tags": [],
+                "top_tags_first_line": [],
+                "top_tags_second_line": []
+              }
+            },
+            "custom_model": {
+              "AuthorPlatformModel": {
+                "statistics_item": [
+                  {
+                    "desc": "全域成交",
+                    "type": 1,
+                    "value": "0",
+                    "code": "total_pay_amt",
+                    "hover": "全域成交金额，全域成交金额为直接成交金额、间接成交金额、种草成交金额三者相加，累计到昨日的支付金额"
+                  },
+                  {
+                    "desc": "直接成交",
+                    "type": 1,
+                    "value": "0",
+                    "code": "direct_pay_amt",
+                    "hover": "直接成交金额，用户直接通过视频挂载的购物车锚点或广告购买商品，累计到昨日的成交金额，未剔除退款金额"
+                  },
+                  {
+                    "desc": "间接成交",
+                    "type": 1,
+                    "value": "0",
+                    "code": "indirect_pay_amt",
+                    "hover": "间接成交金额，用户通过视频的头像呼吸灯/橱窗等渠道购买该作者/店铺的商品，累计到昨日的成交金额，未剔除退款金额"
+                  },
+                  {
+                    "desc": "种草成交",
+                    "type": 1,
+                    "value": "0",
+                    "code": "seed_pay_amt",
+                    "hover": "种草成交金额，用户看了视频后通过搜索/商城等渠道购买其他作者/店铺的商品，累计到昨日的成交金额"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "if_delivery": true,
+        "delivery_config": {
+          "delivery_amount": 5000,
+          "delivery_duration": 7200,
+          "target_likes": 44,
+          "target_audience": 1
+        },
+        "if_satisfy_delivery_rules": true,
+        "rank": 1,
+        "if_not_incentive": false,
+        "not_incentive_reason": [],
+        "history_delivery_info": []
+      }
+    ],
+    "has_more": false
+  },
+  "st": 0
+}

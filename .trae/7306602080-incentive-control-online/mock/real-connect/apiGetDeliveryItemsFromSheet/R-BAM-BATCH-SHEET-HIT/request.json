@@ -1,0 +1,31 @@
+{
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+  "query": {
+    "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080",
+    "activity_id": "7653282555822653742",
+    "config_id": "7653282555822735662"
+  },
+  "requestFieldsForMatching": {
+    "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+  },
+  "collectionOnlyFields": [
+    {
+      "fieldPath": "activity_id",
+      "value": "7653282555822653742",
+      "source": "network_request",
+      "reason": "当前奖励投放活动 route 与目标 XHR query 自然携带；不改变批量上传 mock rule 命中。"
+    },
+    {
+      "fieldPath": "config_id",
+      "value": "7653282555822735662",
+      "source": "network_request",
+      "reason": "当前配置一人工提报配置 ID 由目标 XHR query 自然携带；不参与 runtime matcher。"
+    }
+  ],
+  "safety": {
+    "side_effect": "read_only_get",
+    "triggered_by": "natural_ui",
+    "notes": "由 Drawer 批量上传模式输入 sheet URL 后点击提交触发；未使用同源 fetch、curl 或 fixture 触发。"
+  }
+}

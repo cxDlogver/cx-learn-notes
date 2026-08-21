@@ -1,0 +1,5168 @@
+{
+  "index": 2,
+  "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+  "coverageFile": {
+    "label": "sendAwardToAuthorStore.ts",
+    "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+    "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+    "labels": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "sendAwardToAuthorStore.ts"
+    ],
+    "addLines": 38,
+    "insertLines": 33,
+    "coverLines": 29,
+    "uncoveredLines": 4,
+    "coverRatio": "87.88%",
+    "ignoreLines": [],
+    "ignoreReason": "",
+    "effectFiles": [
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/award-authors/award-author/index.tsx",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+        "ratio": "--"
+      }
+    ]
+  },
+  "response": {
+    "requestedAt": "2026-07-16T16:22:12.673Z",
+    "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FsendAwardToAuthorStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "method": "GET",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FsendAwardToAuthorStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "parsed": {
+      "status": 0,
+      "message": "ok",
+      "data": [
+        {
+          "lineNum": 1,
+          "code": "import { makeAutoObservable, runInAction } from 'mobx';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 2,
+          "code": "import dayjs from 'dayjs';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 3,
+          "code": "import type { Store } from './store';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 4,
+          "code": "import { AwardAuthorConfigUpdate, AwardAuthorsFilterOptions, LoadingState, PaginationData } from '../types';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 5,
+          "code": "import { MESSAGES, PAGINATION_CONFIG } from '../constants';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 6,
+          "code": "import {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 7,
+          "code": "  apiDeliveryModifySave,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 8,
+          "code": "  apiGetDeliveryAuthorItems,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 9,
+          "code": "  apiSearchDeliveryAuthor,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 10,
+          "code": "} from '@/bam/ecom.buyin.admin_api';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 11,
+          "code": "import { message } from '@ecom/auxo';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 12,
+          "code": "import {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 13,
+          "code": "  CandidatePoolType,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 14,
+          "code": "  delivery_author_info,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 15,
+          "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 16,
+          "code": "import {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 17,
+          "code": "  AwardPeriod,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 18,
+          "code": "  content_activity_reward_config_vo,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 19,
+          "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/common';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 20,
+          "code": "import { ItemDto } from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.kol_summary.api/kol_item';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 21,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 22,
+          "code": "export class SendAwardToAuthorStore {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 23,
+          "code": "  awardAuthorItems: delivery_author_info[] = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 24,
+          "code": "  // index in list -> author id",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 25,
+          "code": "  selectedAwardAuthors: Record<number, string> = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 26,
+          "code": "  pendingNoAwardAuthorItems: delivery_author_info[] = [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 27,
+          "code": "  // authorId -> top 3 videos",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 28,
+          "code": "  authorTopVideosMap: Record<string, ItemDto[]> = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 29,
+          "code": "  // authorId -> loading state",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 30,
+          "code": "  authorTopVideosLoadingMap: Record<string, boolean> = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 31,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 32,
+          "code": "  candidateNum = 0; // 候选数量（满足奖励要求的数量）",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 33,
+          "code": "  inRankTotal = 0; // CandidatePoolType.InRank 的 total",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 34,
+          "code": "  complementNum = 0; // 从 CandidatePoolType.PassFilterRule 中已添加的补位作者数量",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 35,
+          "code": "  passFilterRuleTotal = 0; // CandidatePoolType.PassFilterRule 的 total",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 36,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 37,
+          "code": "  // 状态数据",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 38,
+          "code": "  activity_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 39,
+          "code": "  config_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 40,
+          "code": "  session_unix_time?: number;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 41,
+          "code": "  award_period?: AwardPeriod;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 42,
+          "code": "  award_config?: content_activity_reward_config_vo;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 43,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 44,
+          "code": "  filterOptions: AwardAuthorsFilterOptions = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 45,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 46,
+          "code": "  pagination: PaginationData = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 47,
+          "code": "    current: 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 48,
+          "code": "    pageSize: PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 49,
+          "code": "    total: 0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 50,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 51,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 52,
+          "code": "  loadingState = LoadingState.Idle;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 53,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 54,
+          "code": "  private fetchReqId = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 55,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 56,
+          "code": "  private _root: Store;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 57,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 58,
+          "code": "  // eslint-disable-next-line @typescript-eslint/member-ordering",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 59,
+          "code": "  constructor(r: Store) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 60,
+          "code": "    makeAutoObservable(this);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 61,
+          "code": "    this._root = r;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 62,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 63,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 64,
+          "code": "  setBasicContext = ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 65,
+          "code": "    activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 66,
+          "code": "    config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 67,
+          "code": "    award_period,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 68,
+          "code": "    award_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 69,
+          "code": "  }: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 70,
+          "code": "    activity_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 71,
+          "code": "    config_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 72,
+          "code": "    award_period?: AwardPeriod;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 73,
+          "code": "    award_config?: content_activity_reward_config_vo;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 74,
+          "code": "  }) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 75,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 76,
+          "code": "      this.activity_id = activity_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 77,
+          "code": "      this.config_id = config_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 78,
+          "code": "      this.session_unix_time = this.session_unix_time ?? Math.floor(Date.now() / 1000);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 79,
+          "code": "      this.award_config = award_config;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 80,
+          "code": "      this.award_period = award_config?.award_period ?? award_period;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 81,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 82,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 83,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 84,
+          "code": "  initData = async () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 85,
+          "code": "    await this.fetchData(1, this.pagination.pageSize, this.filterOptions);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 86,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 87,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 88,
+          "code": "  applyFilters = async (filters: AwardAuthorsFilterOptions) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 89,
+          "code": "    this.updateFilters(filters);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 90,
+          "code": "    await this.fetchData(1, this.pagination.pageSize, this.filterOptions);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 91,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 92,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 93,
+          "code": "  updateFilters = (filters: AwardAuthorsFilterOptions) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 94,
+          "code": "    this.recreateSessionId();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 95,
+          "code": "    const normalizedFilters = this.applyWholeActivityTimeRange(filters);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 96,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 97,
+          "code": "      this.filterOptions = normalizedFilters;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 98,
+          "code": "      this.pagination = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 99,
+          "code": "        ...this.pagination,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 100,
+          "code": "        current: 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 101,
+          "code": "      };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 102,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 103,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 104,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 105,
+          "code": "  /** 整个活动周期：作者侧时间锁定为活动开始 ~ min(T-1, 活动结束时间) */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 106,
+          "code": "  private applyWholeActivityTimeRange = (filters: AwardAuthorsFilterOptions): AwardAuthorsFilterOptions => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 107,
+          "code": "    if (this.award_period !== AwardPeriod.WholeActivity) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 108,
+          "code": "      return filters;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 109,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 110,
+          "code": "    const activityStartUnix = this._root.dataStore.activityDetail?.start_time;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 111,
+          "code": "    const activityEndUnix = this._root.dataStore.activityDetail?.end_time;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 112,
+          "code": "    if (!activityStartUnix) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 113,
+          "code": "      return filters;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 114,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 115,
+          "code": "    const yesterdayEndUnix = dayjs().subtract(1, 'day').endOf('day').unix();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 116,
+          "code": "    const publishEndUnix =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 117,
+          "code": "      activityEndUnix && yesterdayEndUnix > activityEndUnix ? activityEndUnix : yesterdayEndUnix;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 118,
+          "code": "    return {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 119,
+          "code": "      ...filters,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 120,
+          "code": "      publish_start_time: activityStartUnix,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 121,
+          "code": "      publish_end_time: publishEndUnix,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 122,
+          "code": "    };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 123,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 124,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 125,
+          "code": "  recreateSessionId = () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 126,
+          "code": "    const sessionId = Math.floor(Date.now() / 1000);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 127,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 128,
+          "code": "      this.session_unix_time = sessionId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 129,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 130,
+          "code": "    return sessionId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 131,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 132,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 133,
+          "code": "  clearPendingNoAwardAuthorItems = () => {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 134,
+          "code": "    runInAction(() => {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 135,
+          "code": "      this.pendingNoAwardAuthorItems = [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 136,
+          "code": "    });",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 137,
+          "code": "  };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 138,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 139,
+          "code": "  fetchData = async (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 140,
+          "code": "    page = 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 141,
+          "code": "    size: number = PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 142,
+          "code": "    filters?: AwardAuthorsFilterOptions,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 143,
+          "code": "    candidate_pool_type: CandidatePoolType = CandidatePoolType.InRank,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 144,
+          "code": "  ) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 145,
+          "code": "    const reqId = ++this.fetchReqId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 146,
+          "code": "    const sessionAtStart = this.session_unix_time;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 147,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 148,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 149,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 150,
+          "code": "        this.loadingState = LoadingState.Loading;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 151,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 152,
+          "code": "      const response = await apiSearchDeliveryAuthor({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 153,
+          "code": "        /** 活动id */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 154,
+          "code": "        activity_id: this.activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 155,
+          "code": "        /** 配置id */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 156,
+          "code": "        config_id: this.config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 157,
+          "code": "        /** 稿件发布开始时间（unix时间戳，秒） */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 158,
+          "code": "        publish_start_time: filters?.publish_start_time || undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 159,
+          "code": "        /** 稿件发布结束时间（unix时间戳，秒） */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 160,
+          "code": "        publish_end_time: filters?.publish_end_time || undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 161,
+          "code": "        /** 作者ids（多个用“,”分割，max：50） */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 162,
+          "code": "        author_ids: filters?.author_ids?.join(',') || undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 163,
+          "code": "        /** 页数（从1开始） */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 164,
+          "code": "        page_no: page,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 165,
+          "code": "        /** 分页个数（max：50） */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 166,
+          "code": "        page_size: size,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 167,
+          "code": "        /** 发奖会话unix时间戳（秒） */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 168,
+          "code": "        session_unix_time: sessionAtStart,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 169,
+          "code": "        /** 查询哪个数据池的作品 */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 170,
+          "code": "        candidate_pool_type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 171,
+          "code": "        /** 奖励发放周期 */",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 172,
+          "code": "        award_period: this.award_period,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 173,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 174,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 175,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 176,
+          "code": "        // 过期响应丢弃：仅处理最新请求且会话未变化",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 177,
+          "code": "        if (reqId !== this.fetchReqId || sessionAtStart !== this.session_unix_time) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 178,
+          "code": "          return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 179,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 180,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 181,
+          "code": "        if (response?.code === 0 && response?.data) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 182,
+          "code": "          const { data } = response;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 183,
+          "code": "          let newTotal = 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 184,
+          "code": "          switch (candidate_pool_type) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 185,
+          "code": "            case CandidatePoolType.InRank:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 186,
+          "code": "              this.inRankTotal = data?.candidate_num || 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 187,
+          "code": "              newTotal = this.inRankTotal;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 188,
+          "code": "              break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 189,
+          "code": "            case CandidatePoolType.PassFilterRule: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 190,
+          "code": "              const pageAuthorsNum = page * size;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 191,
+          "code": "              const totalNum = data?.total_num || 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 192,
+          "code": "              const totalAuthorNum = pageAuthorsNum <= totalNum ? pageAuthorsNum : totalNum;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 193,
+          "code": "              this.complementNum = totalAuthorNum - this.inRankTotal;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 194,
+          "code": "              newTotal = totalAuthorNum;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 195,
+          "code": "              break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 196,
+          "code": "            }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 197,
+          "code": "            default:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 198,
+          "code": "              break;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 199,
+          "code": "          }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 200,
+          "code": "          this.passFilterRuleTotal = data?.total_num ?? 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 201,
+          "code": "          this.filterOptions = filters || {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 202,
+          "code": "          this.candidateNum = data?.candidate_num || 0;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 203,
+          "code": "          this.pagination = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 204,
+          "code": "            current: page,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 205,
+          "code": "            pageSize: size,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 206,
+          "code": "            total: newTotal,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 207,
+          "code": "          };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 208,
+          "code": "          this.awardAuthorItems = this.fillDefaultValueForDeliveryItemInfos(",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 209,
+          "code": "            data.delivery_author_info || [],",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 210,
+          "code": "            candidate_pool_type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 211,
+          "code": "          );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 212,
+          "code": "          this.selectedAwardAuthors = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 213,
+          "code": "          this.pendingNoAwardAuthorItems = [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 214,
+          "code": "          this.authorTopVideosMap = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 215,
+          "code": "          this.authorTopVideosLoadingMap = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 216,
+          "code": "        } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 217,
+          "code": "          message.error(response?.msg || MESSAGES.FETCH_AUTHOR_LIST_FAILED);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 218,
+          "code": "          this.awardAuthorItems = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 219,
+          "code": "          this.pendingNoAwardAuthorItems = [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 220,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 221,
+          "code": "        this.loadingState = LoadingState.Idle;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 222,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 223,
+          "code": "    } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 224,
+          "code": "      // 过期响应丢弃：仅处理最新请求且会话未变化",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 225,
+          "code": "      if (reqId !== this.fetchReqId || sessionAtStart !== this.session_unix_time) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 226,
+          "code": "        return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 227,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 228,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 229,
+          "code": "      message.error(MESSAGES.FETCH_AUTHOR_LIST_FAILED);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 230,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 231,
+          "code": "        this.awardAuthorItems = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 232,
+          "code": "        this.loadingState = LoadingState.Error;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 233,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 234,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 235,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 236,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 237,
+          "code": "  handlePaginationChange = (page: number, pageSize?: number) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 238,
+          "code": "    const newPageSize = pageSize || this.pagination.pageSize;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 239,
+          "code": "    if ((page - 1) * newPageSize >= this.inRankTotal) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 240,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 241,
+          "code": "        this.pagination.current = page;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 242,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 243,
+          "code": "      this.setAwardAuthorItems([]);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 244,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 245,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 246,
+          "code": "    this.fetchData(page, newPageSize, this.filterOptions);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 247,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 248,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 249,
+          "code": "  handleComplementRequest = async () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 250,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 251,
+          "code": "      await this.fetchData(",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 252,
+          "code": "        this.pagination.current,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 253,
+          "code": "        this.pagination.pageSize,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 254,
+          "code": "        this.filterOptions,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 255,
+          "code": "        CandidatePoolType.PassFilterRule,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 256,
+          "code": "      );",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 257,
+          "code": "    } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 258,
+          "code": "      message.error(MESSAGES.FETCH_AUTHOR_LIST_FAILED);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 259,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 260,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 261,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 262,
+          "code": "  setAwardAuthorItems = (items: delivery_author_info[], total?: number) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 263,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 264,
+          "code": "      this.awardAuthorItems = items;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 265,
+          "code": "      this.pendingNoAwardAuthorItems = [];",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 266,
+          "code": "      if (typeof total === 'number') {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 267,
+          "code": "        this.pagination.total = total;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 268,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 269,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 270,
+          "code": "    this.unselectAll();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 271,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 272,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 273,
+          "code": "  // 获取指定作者前3个符合门槛视频，并缓存到 authorTopVideosMap",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 274,
+          "code": "  fetchTop3VideosByAuthorId = async (authorId: string): Promise<ItemDto[]> => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 275,
+          "code": "    if (!authorId) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 276,
+          "code": "      return [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 277,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 278,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 279,
+          "code": "      this.authorTopVideosLoadingMap[authorId] = true;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 280,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 281,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 282,
+          "code": "      const response = await apiGetDeliveryAuthorItems({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 283,
+          "code": "        activity_id: this.activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 284,
+          "code": "        config_id: this.config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 285,
+          "code": "        author_id: authorId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 286,
+          "code": "        publish_start_time: this.filterOptions?.publish_start_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 287,
+          "code": "        publish_end_time: this.filterOptions?.publish_end_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 288,
+          "code": "        page_num: 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 289,
+          "code": "        page_size: 3,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 290,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 291,
+          "code": "      const videos = response?.code === 0 && response?.data?.item_cards ? response.data.item_cards : [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 292,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 293,
+          "code": "        this.authorTopVideosMap[authorId] = videos;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 294,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 295,
+          "code": "      return videos;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 296,
+          "code": "    } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 297,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 298,
+          "code": "        this.authorTopVideosMap[authorId] = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 299,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 300,
+          "code": "      return [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 301,
+          "code": "    } finally {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 302,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 303,
+          "code": "        this.authorTopVideosLoadingMap[authorId] = false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 304,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 305,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 306,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 307,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 308,
+          "code": "  getTopVideosByAuthorId = (authorId: string): ItemDto[] => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 309,
+          "code": "    return this.authorTopVideosMap[authorId] || [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 310,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 311,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 312,
+          "code": "  // 选中逻辑",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 313,
+          "code": "  toggleAwardAuthorSelection = (index: number, authorId: string) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 314,
+          "code": "    if (!this.isAuthorSelectable(index, authorId)) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 315,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 316,
+          "code": "        delete this.selectedAwardAuthors[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 317,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 318,
+          "code": "      return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 319,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 320,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 321,
+          "code": "      const selectedAuthorId = this.selectedAwardAuthors[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 322,
+          "code": "      if (selectedAuthorId && selectedAuthorId === authorId) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 323,
+          "code": "        delete this.selectedAwardAuthors[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 324,
+          "code": "      } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 325,
+          "code": "        this.selectedAwardAuthors[index] = authorId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 326,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 327,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 328,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 329,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 330,
+          "code": "  changeAwardAuthorSelection = (index: number, authorId: string, isSelected: boolean) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 331,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 332,
+          "code": "      if (isSelected && this.isAuthorSelectable(index, authorId)) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 333,
+          "code": "        this.selectedAwardAuthors[index] = authorId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 334,
+          "code": "      } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 335,
+          "code": "        delete this.selectedAwardAuthors[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 336,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 337,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 338,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 339,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 340,
+          "code": "  toggleSelectAll = () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 341,
+          "code": "    const selectableAuthors = this.getSelectableAuthorItems();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 342,
+          "code": "    if (Object.keys(this.selectedAwardAuthors).length === Object.keys(selectableAuthors).length) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 343,
+          "code": "      this.unselectAll();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 344,
+          "code": "    } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 345,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 346,
+          "code": "        this.selectedAwardAuthors = selectableAuthors;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 347,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 348,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 349,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 350,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 351,
+          "code": "  get isAllSelectableAuthorsSelected(): boolean {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 352,
+          "code": "    const selectableAuthors = this.getSelectableAuthorItems();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 353,
+          "code": "    const selectableCount = Object.keys(selectableAuthors).length;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 354,
+          "code": "    if (selectableCount === 0) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 355,
+          "code": "      return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 356,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 357,
+          "code": "    return Object.keys(this.selectedAwardAuthors).length === selectableCount;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 358,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 359,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 360,
+          "code": "  checkIsSelected = (index: number, authorId?: string): boolean => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 361,
+          "code": "    if (authorId === undefined || authorId === null) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 362,
+          "code": "      return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 363,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 364,
+          "code": "    if (!this.isAuthorSelectable(index, authorId)) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 365,
+          "code": "      return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 366,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 367,
+          "code": "    return this.selectedAwardAuthors[index] === authorId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 368,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 369,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 370,
+          "code": "  getSelectedAwardAuthorInfos = (selectedAwardAuthors: Record<number, string>) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 371,
+          "code": "    return Object.entries(selectedAwardAuthors)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 372,
+          "code": "      .map(([index, authorId]) => this.getAuthorByIndexAndCheckAuthorId(Number(index), authorId))",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 373,
+          "code": "      .filter((item) => item !== undefined && item !== null);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 374,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 375,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 376,
+          "code": "  updateAwardConfigForAuthor = async (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 377,
+          "code": "    index: number,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 378,
+          "code": "    authorId: string,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 379,
+          "code": "    configUpdate: AwardAuthorConfigUpdate,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 380,
+          "code": "  ): Promise<boolean> => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 381,
+          "code": "    const authorInStore = this.getAuthorByIndexAndCheckAuthorId(index, authorId);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 382,
+          "code": "    if (!authorInStore) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 383,
+          "code": "      message.error(MESSAGES.AUTHOR_NOT_FOUND);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 384,
+          "code": "      return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 385,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 386,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 387,
+          "code": "    const newAuthor: delivery_author_info = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 388,
+          "code": "      ...authorInStore,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 389,
+          "code": "    };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 390,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 391,
+          "code": "    if (configUpdate.if_delivery !== undefined) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 392,
+          "code": "      newAuthor.if_delivery = configUpdate.if_delivery;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 393,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 394,
+          "code": "    if (configUpdate.delivery_config !== undefined) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 395,
+          "code": "      newAuthor.delivery_config = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 396,
+          "code": "        ...newAuthor.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 397,
+          "code": "        ...configUpdate.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 398,
+          "code": "      };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 399,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 400,
+          "code": "    if (configUpdate.not_delivery_reason !== undefined) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 401,
+          "code": "      newAuthor.not_delivery_reason = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 402,
+          "code": "        ...newAuthor.not_delivery_reason,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 403,
+          "code": "        ...configUpdate.not_delivery_reason,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 404,
+          "code": "      };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 405,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 406,
+          "code": "    const shouldClearSelection = newAuthor.if_delivery === false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 407,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 408,
+          "code": "    const result = await this.sendUpdateAwardConfigRequest([newAuthor]);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 409,
+          "code": "    if (result) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 410,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 411,
+          "code": "        const targetIndex = this.awardAuthorItems.findIndex((i) => i.author_info?.author_id === authorId);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 412,
+          "code": "        if (targetIndex >= 0) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 413,
+          "code": "          this.awardAuthorItems[targetIndex] = newAuthor;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 414,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 415,
+          "code": "        this.syncPendingNoAwardAuthorItems([newAuthor]);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 416,
+          "code": "        if (shouldClearSelection) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 417,
+          "code": "          delete this.selectedAwardAuthors[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 418,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 419,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 420,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 421,
+          "code": "    return result;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 422,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 423,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 424,
+          "code": "  updateAwardConfigForAuthors = async (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 425,
+          "code": "    selectedAwardAuthors: Record<number, string>,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 426,
+          "code": "    configUpdate: AwardAuthorConfigUpdate,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 427,
+          "code": "  ): Promise<boolean> => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 428,
+          "code": "    const updateAuthors: delivery_author_info[] = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 429,
+          "code": "    const clearSelectionIndexes: number[] = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 430,
+          "code": "    for (const [index, authorId] of Object.entries(selectedAwardAuthors)) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 431,
+          "code": "      const authorInStore = this.getAuthorByIndexAndCheckAuthorId(Number(index), authorId);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 432,
+          "code": "      if (!authorInStore) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 433,
+          "code": "        message.error(MESSAGES.AUTHOR_NOT_FOUND);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 434,
+          "code": "        return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 435,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 436,
+          "code": "      const newAuthor: delivery_author_info = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 437,
+          "code": "        ...authorInStore,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 438,
+          "code": "      };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 439,
+          "code": "      if (configUpdate.if_delivery !== undefined) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 440,
+          "code": "        newAuthor.if_delivery = configUpdate.if_delivery;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 441,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 442,
+          "code": "      if (configUpdate.delivery_config !== undefined) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 443,
+          "code": "        newAuthor.delivery_config = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 444,
+          "code": "          ...newAuthor.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 445,
+          "code": "          ...configUpdate.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 446,
+          "code": "        };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 447,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 448,
+          "code": "      if (configUpdate.not_delivery_reason !== undefined) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 449,
+          "code": "        newAuthor.not_delivery_reason = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 450,
+          "code": "          ...newAuthor.not_delivery_reason,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 451,
+          "code": "          ...configUpdate.not_delivery_reason,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 452,
+          "code": "        };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 453,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 454,
+          "code": "      if (newAuthor.if_delivery === false) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 455,
+          "code": "        clearSelectionIndexes.push(Number(index));",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 456,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 457,
+          "code": "      updateAuthors.push(newAuthor);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 458,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 459,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 460,
+          "code": "    const result = await this.sendUpdateAwardConfigRequest(updateAuthors);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 461,
+          "code": "    if (result) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 462,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 463,
+          "code": "        updateAuthors.forEach((updatedAuthor) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 464,
+          "code": "          const authorId = updatedAuthor.author_info?.author_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 465,
+          "code": "          if (!authorId) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 466,
+          "code": "            return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 467,
+          "code": "          }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 468,
+          "code": "          const targetIndex = this.awardAuthorItems.findIndex((i) => i.author_info?.author_id === authorId);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 469,
+          "code": "          if (targetIndex >= 0) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 470,
+          "code": "            this.awardAuthorItems[targetIndex] = updatedAuthor;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 471,
+          "code": "          }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 472,
+          "code": "        });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 473,
+          "code": "        this.syncPendingNoAwardAuthorItems(updateAuthors);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 474,
+          "code": "        clearSelectionIndexes.forEach((index) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 475,
+          "code": "          delete this.selectedAwardAuthors[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 476,
+          "code": "        });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 477,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 478,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 479,
+          "code": "    return result;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 480,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 481,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 482,
+          "code": "  private getAuthorByIndexAndCheckAuthorId = (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 483,
+          "code": "    index: number,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 484,
+          "code": "    authorId: string,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 485,
+          "code": "  ): delivery_author_info | undefined => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 486,
+          "code": "    const authorList = this.awardAuthorItems;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 487,
+          "code": "    let authorInStore: delivery_author_info | undefined = authorList[index];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 488,
+          "code": "    const authorIdInStore = authorInStore?.author_info?.author_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 489,
+          "code": "    if (!authorIdInStore || authorIdInStore !== authorId) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 490,
+          "code": "      authorInStore = authorList.find((i) => i.author_info?.author_id === authorId);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 491,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 492,
+          "code": "    return authorInStore;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 493,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 494,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 495,
+          "code": "  private getAuthorId = (author?: delivery_author_info) => author?.author_info?.author_id;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 496,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 497,
+          "code": "  private syncPendingNoAwardAuthorItems = (authors: delivery_author_info[]) => {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 498,
+          "code": "    const pendingById = new Map(",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 499,
+          "code": "      this.pendingNoAwardAuthorItems",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 500,
+          "code": "        .map((author) => [this.getAuthorId(author), author] as const)",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 501,
+          "code": "        .filter((entry): entry is readonly [string, delivery_author_info] => Boolean(entry[0])),",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 502,
+          "code": "    );",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 503,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 504,
+          "code": "    authors.forEach((author) => {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 505,
+          "code": "      const authorId = this.getAuthorId(author);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 506,
+          "code": "      if (!authorId) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 507,
+          "code": "        return;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 508,
+          "code": "      }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 509,
+          "code": "      if (author.if_delivery === false) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 510,
+          "code": "        pendingById.set(authorId, { ...author, if_delivery: false });",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 511,
+          "code": "        return;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 512,
+          "code": "      }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 513,
+          "code": "      if (author.if_delivery === true) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 514,
+          "code": "        pendingById.delete(authorId);",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 515,
+          "code": "      }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 516,
+          "code": "    });",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 517,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 518,
+          "code": "    this.pendingNoAwardAuthorItems = Array.from(pendingById.values());",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 519,
+          "code": "  };",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 520,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 521,
+          "code": "  private unselectAll = () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 522,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 523,
+          "code": "      this.selectedAwardAuthors = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 524,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 525,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 526,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 527,
+          "code": "  private isAuthorSelectable = (index: number, authorId: string): boolean => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 528,
+          "code": "    const author = this.getAuthorByIndexAndCheckAuthorId(index, authorId);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 529,
+          "code": "    return author?.if_delivery === true;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 530,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 531,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 532,
+          "code": "  private getSelectableAuthorItems = (): Record<number, string> => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 533,
+          "code": "    const selectedItems: Record<number, string> = {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 534,
+          "code": "    this.awardAuthorItems.forEach((item, index) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 535,
+          "code": "      if (item.if_delivery !== true) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 536,
+          "code": "        return;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 537,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 538,
+          "code": "      const authorId = item.author_info?.author_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 539,
+          "code": "      if (authorId) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 540,
+          "code": "        selectedItems[index] = authorId;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 541,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 542,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 543,
+          "code": "    return selectedItems;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 544,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 545,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 546,
+          "code": "  private sendUpdateAwardConfigRequest = async (authors: delivery_author_info[]): Promise<boolean> => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 547,
+          "code": "    if (authors.length === 0) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 548,
+          "code": "      message.error(MESSAGES.AUTHOR_UPDATE_EMPTY);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 549,
+          "code": "      return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 550,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 551,
+          "code": "    const groups = new Map<string, delivery_author_info[]>();",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 552,
+          "code": "    for (const author of authors) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 553,
+          "code": "      const key = JSON.stringify({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 554,
+          "code": "        if_delivery: author.if_delivery ?? null,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 555,
+          "code": "        delivery_config: author.delivery_config ?? null,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 556,
+          "code": "        not_delivery_reason: author.not_delivery_reason ?? null,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 557,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 558,
+          "code": "      const groupItems = groups.get(key) || [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 559,
+          "code": "      groupItems.push(author);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 560,
+          "code": "      groups.set(key, groupItems);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 561,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 562,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 563,
+          "code": "    for (const groupItems of groups.values()) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 564,
+          "code": "      const candidateIds = groupItems",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 565,
+          "code": "        .map((author) => author.author_info?.author_id)",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 566,
+          "code": "        .filter((authorId): authorId is string => Boolean(authorId));",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 567,
+          "code": "      if (candidateIds.length === 0) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 568,
+          "code": "        message.error(MESSAGES.AUTHOR_ID_EMPTY);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 569,
+          "code": "        return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 570,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 571,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 572,
+          "code": "      const sampleAuthor = groupItems[0];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 573,
+          "code": "      try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 574,
+          "code": "        const response = await apiDeliveryModifySave({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 575,
+          "code": "          activity_id: this.activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 576,
+          "code": "          config_id: this.config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 577,
+          "code": "          session_unix_time: this.session_unix_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 578,
+          "code": "          candidate_ids: candidateIds,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 579,
+          "code": "          author_modify_config: sampleAuthor.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 580,
+          "code": "          if_delivery: sampleAuthor.if_delivery,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 581,
+          "code": "          not_delivery_reason: sampleAuthor.not_delivery_reason,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 582,
+          "code": "        });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 583,
+          "code": "        if (response?.code !== 0) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 584,
+          "code": "          message.error(response?.msg || MESSAGES.AUTHOR_SAVE_FAILED);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 585,
+          "code": "          return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 586,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 587,
+          "code": "      } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 588,
+          "code": "        message.error(MESSAGES.AUTHOR_SAVE_FAILED);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 589,
+          "code": "        return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 590,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 591,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 592,
+          "code": "    return true;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 593,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 594,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 595,
+          "code": "  private fillDefaultValueForDeliveryItemInfos = (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 596,
+          "code": "    items: delivery_author_info[],",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 597,
+          "code": "    candidatePoolType: CandidatePoolType,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 598,
+          "code": "  ): delivery_author_info[] => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 599,
+          "code": "    if (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 600,
+          "code": "      candidatePoolType !== CandidatePoolType.InRank &&",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 601,
+          "code": "      candidatePoolType !== CandidatePoolType.PassFilterRule",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 602,
+          "code": "    ) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 603,
+          "code": "      return items;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 604,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 605,
+          "code": "    const defaultIfDelivery = candidatePoolType === CandidatePoolType.InRank;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 606,
+          "code": "    const defaultCouponType = this.award_config?.douPlusCouponAwardSetInfo?.couponType;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 607,
+          "code": "    const defaultCouponConfig = this.award_config?.douPlusCouponAwardSetInfo?.config;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 608,
+          "code": "    const hasDefaultCouponType = defaultCouponType !== null && defaultCouponType !== undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 609,
+          "code": "    const hasDefaultCouponConfig = defaultCouponConfig !== null && defaultCouponConfig !== undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 610,
+          "code": "    return items.map((item) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 611,
+          "code": "      const hasIfDelivery = item.if_delivery !== null && item.if_delivery !== undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 612,
+          "code": "      const hasCouponType =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 613,
+          "code": "        item.delivery_config?.coupon_type !== null && item.delivery_config?.coupon_type !== undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 614,
+          "code": "      const hasCouponConfig =",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 615,
+          "code": "        item.delivery_config?.coupon_config !== null && item.delivery_config?.coupon_config !== undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 616,
+          "code": "      const hasCouponNum = item.delivery_config?.num !== null && item.delivery_config?.num !== undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 617,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 618,
+          "code": "      if (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 619,
+          "code": "        hasIfDelivery &&",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 620,
+          "code": "        (hasCouponType || !hasDefaultCouponType) &&",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 621,
+          "code": "        (hasCouponConfig || !hasDefaultCouponConfig) &&",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 622,
+          "code": "        hasCouponNum",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 623,
+          "code": "      ) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 624,
+          "code": "        return item;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 625,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 626,
+          "code": "      return {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 627,
+          "code": "        ...item,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 628,
+          "code": "        if_delivery: hasIfDelivery ? item.if_delivery : defaultIfDelivery,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 629,
+          "code": "        delivery_config: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 630,
+          "code": "          ...item.delivery_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 631,
+          "code": "          coupon_type: hasCouponType ? item.delivery_config?.coupon_type : defaultCouponType,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 632,
+          "code": "          coupon_config: hasCouponConfig ? item.delivery_config?.coupon_config : defaultCouponConfig,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 633,
+          "code": "          num: hasCouponNum ? item.delivery_config?.num : 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 634,
+          "code": "        },",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 635,
+          "code": "      };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 636,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 637,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 638,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 639,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        }
+      ]
+    }
+  }
+}

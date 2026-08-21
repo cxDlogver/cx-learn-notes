@@ -1,0 +1,1014 @@
+# BAM Mock Change Log
+
+## 2026-07-09 18:22 Asia/Shanghai - apiChargeAmountCheck - planned
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-EMPTY-LIST`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-EMPTY-LIST`; ruleId=`R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST`; apiName=`apiChargeAmountCheck`
+- 调整原因: `TC-INT-AWARD-EMPTY-LIST` 的批量上传 setup 已自然进入 Modal，并明确展示 `本次共投放 0 个作品，预计占用 0 元DOU+币`；但 Modal 的确认按钮仍依赖充值记录校验 `recordValidationState=Valid`。自然 UI 选择充值记录后，`apiChargeAmountCheck` 请求体为 `delivery_list=[]`，真实响应 `st/code=10000000,msg=参数错误,data={}`，导致 `确定` 置灰，无法继续触发 `submitSendAwardVideos` 中的空名单 no-call guard。因此只补一个金额校验前置 mock，使 empty-list Modal 可点击确定；不得新增或启用最终 `apiDeliveryDouPlusCoin` success mock，case pass 仍必须证明最终发奖接口没有被调用且没有 fake success。
+- 受影响接口:
+  - apiName: `apiChargeAmountCheck`
+  - method/path: `POST /api/buyin/admin/content_activity/charge_amount_check`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST`
+      - request key/value: `activity_id=7653282555822653742,config_id=7653282555822735662,delivery_from=2,resource_type=5,delivery_list=[]`
+      - mock 规则: 命中 empty-list 上传名单金额校验请求时，先调用原 `charge_amount_check` 保留真实参数错误基线，再最小设置 success shell、`data.can_delivery=true`、`data.left_amount=1900000`、`data.current_use_amount=0`，只解除 Modal `确定` 置灰。
+      - mock key / target override: `st`, `code`, `msg`, `data.can_delivery`, `data.left_amount`, `data.current_use_amount`
+      - 覆盖场景: `TC-INT-AWARD-EMPTY-LIST` 的金额校验前置；不替代最终发奖接口、不声明真实充值记录余额。
+  - 修改:
+    - ruleId: `DEFAULT_NOOP`
+      - 原行为: 未命中 timeout 金额校验 matcher 时返回原响应。
+      - 目标行为: 未命中 timeout / empty-list 具体 matcher 时继续 DEFAULT_NOOP；empty-list 请求必须命中 `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST`。
+      - request key/value 是否变化: 否，默认规则仍为空 matcher。
+  - 删除: 无
+  - 保留:
+    - ruleId: `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT`
+      - 保留原因: `TC-INT-AWARD-TIMEOUT` 已闭合，不能改写其金额前置样本。
+    - `apiDeliveryDouPlusCoin` 既有 penalty / relieved / timeout / default rule
+      - 保留原因: empty-list case 的最终断言是 no-call/no-success，不新增最终发奖 success rule。
+- 验证计划: 写入 `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/*`，更新 `mock/apis/apiChargeAmountCheck/manifest.json` / `script.mjs` / `verify.mjs`、同步 rule-map；执行 `apiChargeAmountCheck` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；随后回到人工提报批量上传自然 UI，重新选择充值记录，确认 `[BAM_MOCK_HIT]` 命中 empty-list 金额校验，再点击 Modal `确定` 采集无 `apiDeliveryDouPlusCoin` marker/XHR/fetch 且无成功发奖 toast 的最终证据。
+- required_resume_checks: `TC-INT-AWARD-EMPTY-LIST` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/request.json`: 自然 UI 选择充值记录后触发 POST，matcher 字段为 `activity_id=7653282555822653742,config_id=7653282555822735662,delivery_from=2,resource_type=5,delivery_list=[]`。
+  - `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.raw.txt`: 自然请求真实响应，HTTP 200，业务体 `st/code=10000000,msg=参数错误,data={}`。
+  - `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-EMPTY-LIST/response.mocked.json`: 在真实参数错误基线上恢复 success shell，设置 `data.can_delivery=true,left_amount=1900000,current_use_amount=0`。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/script.mjs`: PASS，确认 timeout 与 empty-list 两条 matcher 和 mocked response 摘要。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；13 个 manifest 全量 reapply，`apiChargeAmountCheck` inline patch 已 REPLACE。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 17:54 Asia/Shanghai - apiGetDeliveryItemsFromSheet - planned
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-EMPTY-LIST`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-EMPTY-LIST`; ruleId=`R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST`; apiName=`apiGetDeliveryItemsFromSheet`
+- 调整原因: `TC-INT-AWARD-EMPTY-LIST` 要求通过自然 UI 构造“有效发奖名单为空”的上传名单发奖场景，并最终证明不触发 `apiDeliveryDouPlusCoin`、不展示 fake success。代码路径核对确认 reward-list 选择态不能自然保留 `if_delivery=false` 行，物理空 Drawer 会被 `SELECT_VIDEO` guard 拦截；人工提报批量上传可用一条 `if_delivery=false` 且非命中态样本进入 Drawer，再由 `BatchSubmitModal` 过滤出空 `delivery_list`。因此需要新增只读 setup rule 恢复该前置列表状态；最终发奖写接口不得新增 success mock，case pass 必须回到自然 UI 做 no-call/no-success 断言。
+- 受影响接口:
+  - apiName: `apiGetDeliveryItemsFromSheet`
+  - method/path: `GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST`
+      - request key/value: `sheet_url=https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080`
+      - mock 规则: 命中 empty-list 专用批量上传 sheet URL 时，先调用原只读 GET 保留真实失败基线，再最小设置 success shell 和 1 条非命中态 `if_delivery=false` 作品 `item_id=700004`，使 Drawer 物理列表非空、Modal 内有效 `delivery_list=[]`。
+      - mock key / target override: `st`, `code`, `msg`, `data.item_info`, `data.total_num`, `data.candidate_num`, `data.has_more`
+      - 覆盖场景: `TC-INT-AWARD-EMPTY-LIST` 的批量上传 setup；不替代最终 `apiDeliveryDouPlusCoin` 断言。
+  - 修改:
+    - ruleId: `DEFAULT_NOOP`
+      - 原行为: 未命中 batch-hit / timeout sheet URL 时返回原响应。
+      - 目标行为: 未命中三条具体 sheet URL 时继续 DEFAULT_NOOP；empty-list sheet URL 必须命中 `R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST`。
+      - request key/value 是否变化: 否，默认规则仍为空 matcher。
+  - 删除: 无
+  - 保留:
+    - ruleId: `R-BAM-BATCH-SHEET-HIT`
+      - 保留原因: 已服务批量上传命中态与后续 batch remove/export 前置状态，不能为 empty-list 改写共享样本。
+    - ruleId: `R-BAM-BATCH-SHEET-AWARD-TIMEOUT`
+      - 保留原因: `TC-INT-AWARD-TIMEOUT` 已闭合，setup rule 不得重开或改写。
+    - `apiDeliveryDouPlusCoin` 既有 penalty / relieved / timeout / default rule
+      - 保留原因: 本 case 最终断言是 no-call/no-success，不新增最终发奖 success rule。
+- 验证计划: 写入并复用 `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/*`，更新 `mock/apis/apiGetDeliveryItemsFromSheet/manifest.json` / `verify.mjs`、同步 rule-map；执行 `apiGetDeliveryItemsFromSheet` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；随后回到人工提报批量上传自然 UI 输入 empty-list sheet URL，采集 setup `[BAM_MOCK_HIT]`、Drawer 非空、Modal `本次共投放 0 个作品`、点击 Modal `确定` 后无 `apiDeliveryDouPlusCoin` marker/XHR/fetch 且无成功发奖 toast。
+- required_resume_checks: `TC-INT-AWARD-EMPTY-LIST` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/request.json`: 自然 UI 批量上传普通提交 GET 请求，matcher 字段为 `sheet_url=https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080`，采集字段为 `activity_id=7653282555822653742`、`config_id=7653282555822735662`。
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.raw.txt`: 自然请求真实失败响应，HTTP 200，业务体 `st/code=10001604`、`msg=表格数据不符合要求，请检查数据格式是否正确`。
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.mocked.json`: 在真实失败基线上恢复 1 条非命中态 `if_delivery=false` 作品 `item_id=700004`，`candidate_num=0`。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/script.mjs`: PASS，确认 matcher 命中与 mocked response 摘要。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；13 个 manifest 全量 reapply，`apiGetDeliveryItemsFromSheet` inline patch 已 REPLACE。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 16:20 Asia/Shanghai - apiDeliveryDouPlusCoupon - planned
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-EXCEPTION`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-EXCEPTION`; ruleId=`R-BAM-AWARD-COUPON-EXCEPTION`; apiName=`apiDeliveryDouPlusCoupon`
+- 调整原因: `TC-INT-AWARD-EXCEPTION` 要求通过自然 UI 点击 DOU+券上传名单发奖，验证 exception-like response 映射到固定 PRD 文案 `治理校验异常，请联系管理员`，且流程暂停、不展示成功 toast。`apiDeliveryDouPlusCoupon` 是发奖写接口，现有 manifest 只覆盖 SearchCandidate 的 `800001` penalty 和 `800002` relieved；当前矩阵明确 exception matcher 为 `delivery_from=2,delivery_list.0.item_id=800003`，no-hit 会落到真实发奖写请求风险。必须新增 marked synthetic exception rule，并保留真实错误码承载和最终发奖事务 real verify。
+- 受影响接口:
+  - apiName: `apiDeliveryDouPlusCoupon`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coupon`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-AWARD-COUPON-EXCEPTION`
+      - request key/value: `delivery_from=2,delivery_list.0.item_id=800003`
+      - mock 规则: 命中 DOU+券上传名单 exception 发奖请求时，不发送真实后端发奖写接口，返回 marked synthetic exception-like response `{st:1,code:500,msg:"exception"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`。
+      - mock key / target override: full synthetic response
+      - 覆盖场景: `TC-INT-AWARD-EXCEPTION` 当前 active case 的 fixed exception copy、no continue award 和 no success toast 断言。
+  - 修改:
+    - ruleId: `DEFAULT_NOOP`
+      - 原行为: 上传名单 DOU+券请求落入 DEFAULT_NOOP。
+      - 目标行为: 仅非目标 no-hit 请求继续 DEFAULT_NOOP；`delivery_from=2,delivery_list.0.item_id=800003` 必须命中 `R-BAM-AWARD-COUPON-EXCEPTION`。
+      - request key/value 是否变化: 否，默认规则仍为空 matcher。
+  - 删除: 无
+  - 保留:
+    - ruleId: `R-BAM-AWARD-COUPON-PENALTY`
+      - 保留原因: SearchCandidate penalty case 已闭合，必须继续匹配 `delivery_from=1,delivery_authors.0.candidate_id=800001`。
+    - ruleId: `R-BAM-AWARD-COUPON-RELIEVED`
+      - 保留原因: SearchCandidate relieved case 已闭合，必须继续匹配 `delivery_from=1,delivery_authors.0.candidate_id=800002`。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只新增 DOU+券 exception 写接口 safety rule，不删除或降级既有 mock runtime。
+- 验证计划: 写入 `mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-EXCEPTION/*`、更新 `mock/apis/apiDeliveryDouPlusCoupon/manifest.json` / `verify.mjs`、同步 rule-map；执行 `apiDeliveryDouPlusCoupon` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；回到 vmok 页面通过自然 UI 触发 DOU+券上传名单发奖，采集 `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`、request body、exception 固定文案、no success toast、modal/flow pause 和 no-real-write evidence。
+- required_resume_checks: `TC-INT-AWARD-EXCEPTION` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行状态: planned
+
+### 2026-07-09 16:29 Asia/Shanghai scope update
+- 更新原因: 继续核对自然 UI 前置路径后确认，`TC-INT-AWARD-EXCEPTION` 的 DOU+券 UploadCandidate 分支需要上传名单 setup 自然生成 `delivery_list[0].item_id=800003`；现有 `apiGetDeliveryItemsFromSheet` 只恢复共享 `200003` 和 DOU+币 timeout 专用 `700003`。同时券金额校验 `resource_type=6`，UploadCandidate 作者分支提交 `delivery_list[0].num` 而非 DOU+币 `amount`，不能复用 `apiChargeAmountCheck / R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT`。
+- 新增受影响接口:
+  - apiName: `apiGetDeliveryItemsFromSheet`
+    - method/path: `GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet`
+    - planned ruleId: `R-BAM-BATCH-SHEET-AWARD-COUPON-EXCEPTION`
+    - request key/value: `sheet_url=https://bytedance.larkoffice.com/sheets/award-coupon-exception-7306602080`
+    - 目标行为: 返回 1 条可投放作者上传名单样本，`author_info.author_id=800003`，使最终 DOU+券上传名单发奖 request 自然携带 `delivery_list[0].item_id=800003`。
+  - apiName: `apiChargeAmountCheck`
+    - method/path: `POST /api/buyin/admin/content_activity/charge_amount_check`
+    - planned ruleId: `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-COUPON-EXCEPTION`
+    - request key/value: `activity_id=7653282555822653742,config_id=7653282555822735662,delivery_from=2,resource_type=6,delivery_list.0.num=1`
+    - 目标行为: 命中当前券 exception 上传名单金额校验请求时，调用原接口后最小设置 `data.can_delivery=true`、`data.left_amount=1900000`，解除 Modal `确定` 置灰；不替代最终 `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-EXCEPTION`。
+- 保留: 已验证的 `R-BAM-BATCH-SHEET-HIT`、`R-BAM-BATCH-SHEET-AWARD-TIMEOUT`、`R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT`、`R-BAM-AWARD-COUPON-PENALTY`、`R-BAM-AWARD-COUPON-RELIEVED` 均保留；不得改写已闭合 case 证据。
+- 验证计划更新: 三个接口均完成 supplemental verify、全量 reapply 和标准 `verify-bam-mock.mjs` 后，才能恢复 `TC-INT-AWARD-EXCEPTION` 自然 UI。
+- 执行状态: planned
+
+### 2026-07-09 16:37 Asia/Shanghai scope correction
+- 纠偏原因: 继续核对实际代码与自然 UI 后确认，`apiGetDeliveryItemsFromSheet` 只由 `ManuallySubmitVideoStore.fetchVideosBySheetUrl` 调用，返回 `delivery_item_info[]` 并只进入 `BatchSubmitModal type="video"`，最终触发 `apiDeliveryDouPlusCoin`；不能自然生成 `apiDeliveryDouPlusCoupon` 的 `delivery_list[0].item_id=800003`。`BatchSubmitModal type="author"` 的当前自然入口是 SearchCandidate 批量提交，默认 `delivery_from=1`；真正自然生成 DOU+券 `delivery_from=2 + delivery_list[]` 的路径是 `MakeCouponFailedWarnings -> ResubmitAwardAuthorDrawer -> couponDeliveryRecordStore.submitDelivery`，该路径不调用 `apiChargeAmountCheck`，充值记录只由 `apiGetChargeRecord` 列表选择。
+- 替换受影响 setup 接口:
+  - 废弃本轮新增计划:
+    - `apiGetDeliveryItemsFromSheet / R-BAM-BATCH-SHEET-AWARD-COUPON-EXCEPTION`
+    - `apiChargeAmountCheck / R-BAM-CHARGE-AMOUNT-CHECK-AWARD-COUPON-EXCEPTION`
+    - 原因: 两者不是 `TC-INT-AWARD-EXCEPTION` 矩阵要求的 DOU+券 UploadCandidate 自然 UI 路径。
+  - 新增:
+    - apiName: `apiGetDouPlusCouponMakeFailRecord`
+      - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coupon_make_fail_record`
+      - planned ruleId: `R-BAM-COUPON-MAKE-FAIL-EXCEPTION`
+      - request key/value: `activity_id=7655304206886322458,config_id=7655304206886355226`
+      - 真实基线: 自然 UI 配置二请求返回 `st=0,code=0,msg="",data.task_list=null`。
+      - 目标行为: 在真实空基线上最小设置 `data.task_list[0]`，展示制券失败警告并暴露 `delivery_task_id=fail_coupon_exception_800003`。
+    - apiName: `apiGetDouPlusCouponDeliveryRecord`
+      - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record`
+      - planned ruleId: `R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION`
+      - request key/value: `activity_id=7655304206886322458,config_id=7655304206886355226,delivery_task_id=fail_coupon_exception_800003,page=1,page_num=20`
+      - 目标行为: 返回 1 条失败制券作者记录，`author_info.author_id=800003`、`num=1`、券配置完整，使最终 `apiDeliveryDouPlusCoupon` 请求自然携带 `delivery_from=2,delivery_list.0.item_id=800003`。
+  - 保留:
+    - `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-EXCEPTION`
+      - request key/value: `delivery_from=2,delivery_list.0.item_id=800003`
+      - 目标行为: 最终写接口仍使用 marked synthetic exception response `{st:1,code:500,msg:"exception"}`，runtime 输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`，不发送真实发奖请求。
+- 验证计划更新: 先补 `apiGetDouPlusCouponMakeFailRecord` setup rule 并 reapply，使自然 UI 出现“点此查看并重新提交”；再从该自然入口采集 / 补齐 `apiGetDouPlusCouponDeliveryRecord` setup rule；最后补齐 `apiDeliveryDouPlusCoupon` exception synthetic rule，执行三个接口 supplemental verify、全量 reapply 和标准 `verify-bam-mock.mjs`，再恢复 `TC-INT-AWARD-EXCEPTION` 自然 UI。
+- 执行状态: planned
+
+### 2026-07-09 16:51 Asia/Shanghai scope update
+- 更新原因: `apiGetDouPlusCouponMakeFailRecord / R-BAM-COUPON-MAKE-FAIL-EXCEPTION` 已通过标准 mock 审核，并在自然 UI 配置二展示“点此查看并重新提交”。从该按钮自然打开 `ResubmitAwardAuthorDrawer` 后，页面两次触发 `GET /api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record?activity_id=7655304206886322458&config_id=7655304206886355226&page=1&page_num=20&delivery_task_id=fail_coupon_exception_800003`；第二次只读监听捕获真实 HTTP 200 body 为 `st=10000000,code=10000000,msg=参数错误,data={}`。这证明请求形态和 UI 入口真实可达，但由于上游失败任务 `fail_coupon_exception_800003` 是 mock 出来的 setup task，真实后端没有对应投放明细，不能把该失败 body 伪装成真实成功合同。因此 `apiGetDouPlusCouponDeliveryRecord / R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION` 必须标记为 `synthetic_contract`，用 generated type 与代码消费链路补一条作者 `800003` 的明细记录。
+- 受影响接口:
+  - apiName: `apiGetDouPlusCouponDeliveryRecord`
+    - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coupon_delivery_record`
+    - planned ruleId: `R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION`
+    - request key/value: `activity_id=7655304206886322458,config_id=7655304206886355226,delivery_task_id=fail_coupon_exception_800003,page=1,page_num=20`
+    - mock 规则: 命中失败任务明细查询时，不再发送真实后端请求，返回 marked synthetic response，`data.records[0].author_info.author_id=800003`、`num=1`、券配置完整；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`。
+    - mock key / target override: full synthetic response
+    - 覆盖场景: `TC-INT-AWARD-EXCEPTION` 的重提抽屉发奖名单 setup，使后续最终 DOU+券发奖请求自然构造 `delivery_from=2,delivery_list.0.item_id=800003`。
+  - apiName: `apiDeliveryDouPlusCoupon`
+    - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coupon`
+    - planned ruleId: `R-BAM-AWARD-COUPON-EXCEPTION`
+    - request key/value: `delivery_from=2,delivery_list.0.item_id=800003`
+    - mock 规则: 命中 DOU+券失败制券重提最终发奖请求时，不发送真实后端发奖写接口，返回 marked synthetic exception-like response `{st:1,code:500,msg:"exception"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`。
+    - mock key / target override: full synthetic response
+    - 覆盖场景: `TC-INT-AWARD-EXCEPTION` 的 fixed exception copy、no continue award、no success toast、no real write。
+- rule-map 预期变更:
+  - 新增:
+    - `apiGetDouPlusCouponDeliveryRecord / R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION`
+    - `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-EXCEPTION`
+  - 修改:
+    - `apiDeliveryDouPlusCoupon`: 在保留 `R-BAM-AWARD-COUPON-PENALTY`、`R-BAM-AWARD-COUPON-RELIEVED` 和 `DEFAULT_NOOP` 的基础上追加 UploadCandidate exception matcher。
+  - 删除: 无
+  - 保留: `TC-INT-AWARD-TIMEOUT` 相关 `apiGetDeliveryItemsFromSheet`、`apiChargeAmountCheck`、`apiDeliveryDouPlusCoin` 证据和规则均保持不变，不重新打开 timeout case。
+- 验证计划更新: 写入两个接口 real-connect / manifest / rule-map / runtime / verify 后，执行两个接口 supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、两个接口标准 `verify-bam-mock.mjs`；随后刷新 exception 活动页，从“点此查看并重新提交”自然打开抽屉，选择充值记录，点击“确认提交”，采集 `apiGetDouPlusCouponDeliveryRecord` synthetic marker、`apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-EXCEPTION` synthetic marker、request body、固定异常文案和负向断言。
+- 执行证据:
+  - `mock/apis/apiGetDouPlusCouponDeliveryRecord/manifest.json`: `patch.status=patched`, `finalVerification.status=passed`，且 `R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION.verify.status=passed`
+  - `mock/apis/apiDeliveryDouPlusCoupon/manifest.json`: `patch.status=patched`, `finalVerification.status=passed`，且 `R-BAM-AWARD-COUPON-EXCEPTION.verify.status=passed`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/script.mjs`: PASS，确认 matcher 命中 `R-BAM-COUPON-DELIVERY-RECORD-EXCEPTION` 且 mocked author_id=`800003`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/script.mjs`: PASS，确认 coupon penalty / relieved / exception 三个 synthetic rule 均可命中
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/verify.mjs`: PASS
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；13 个 manifest 全量 reapply，`apiGetDouPlusCouponDeliveryRecord` inline patch ADD，`apiDeliveryDouPlusCoupon` inline patch REPLACE
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponDeliveryRecord/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+- 执行状态: verified
+
+## 2026-07-09 15:11 Asia/Shanghai - apiChargeAmountCheck - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-TIMEOUT`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-TIMEOUT`; ruleId=`R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT`; apiName=`apiChargeAmountCheck`
+- 调整原因: `TC-INT-AWARD-TIMEOUT` 已通过自然 UI 批量上传命中 `apiGetDeliveryItemsFromSheet / R-BAM-BATCH-SHEET-AWARD-TIMEOUT` 并进入最终发奖 Modal，但选择 DOU+币充值记录后，发奖前置校验接口 `apiChargeAmountCheck` 自然响应 `can_delivery=false/left_amount=0/current_use_amount=30000`，Modal `确定` 被置灰，导致无法自然触发最终 `apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT` synthetic timeout 写接口安全门。该接口是发奖前金额校验 POST，不是最终发奖事务写接口；本次 detour 使用已采集的真实失败基线，通过 `mockOperations` 仅把当前 timeout 上传名单样本的余额校验结果改为可发放，继续回到自然 UI 点击 Modal `确定`，不得把该 mock readiness 当作 timeout case PASS。
+- 受影响接口:
+  - apiName: `apiChargeAmountCheck`
+  - method/path: `POST /api/buyin/admin/content_activity/charge_amount_check`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT`
+      - request key/value: `activity_id=7653282555822653742,config_id=7653282555822735662,delivery_from=2,resource_type=5,delivery_list.0.amount=30000`
+      - mock 规则: 命中 timeout 上传名单发奖 Modal 的金额校验请求时，先调用原 `charge_amount_check` 接口保留真实失败基线，再最小设置 `data.can_delivery=true`、`data.left_amount=1900000`，保持 `st=0/code=0/current_use_amount=30000`，解除 Modal `确定` 置灰以继续自然触发最终发奖写接口 safety rule。
+      - mock key / target override: `data.can_delivery`, `data.left_amount`
+      - 覆盖场景: `TC-INT-AWARD-TIMEOUT` 当前 active case 的充值金额校验前置状态；不替代最终 `apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT` timeout response branch，也不证明真实充值记录余额。
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中当前 timeout 上传名单金额校验 matcher 时保持原 BAM 响应。
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback。
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - ruleId: `R-BAM-BATCH-SHEET-AWARD-TIMEOUT`
+      - 保留原因: 已验证的上传名单 setup rule 继续负责自然产生 `delivery_list[0].item_id=700003`。
+    - ruleId: `R-BAM-AWARD-COIN-TIMEOUT`
+      - 保留原因: 最终 DOU+币发奖写接口 synthetic timeout safety rule 必须继续独立服务 Modal `确定` 运行态验证。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只新增金额校验前置 rule，不删除或降级既有 mock runtime。
+- 验证计划: 写入 `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/*`、新增 `mock/apis/apiChargeAmountCheck/manifest.json` / `script.mjs` / `verify.mjs`、更新 rule-map；执行 `apiChargeAmountCheck` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；回到同一 vmok 页面重新选择 DOU+币充值记录并点击 Modal `确定`，采集 `apiChargeAmountCheck` `[BAM_MOCK_HIT]` 和最终 `apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-TIMEOUT` `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`、request body、timeout 固定文案、no success toast、no successful continuation、无真实发奖写请求。
+- required_resume_checks: `TC-INT-AWARD-TIMEOUT` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/request.json`: 自然 UI 选择充值记录后触发 `POST /charge_amount_check`，matcher 字段为 `activity_id=7653282555822653742`、`config_id=7653282555822735662`、`delivery_from=2`、`resource_type=5`、`delivery_list.0.amount=30000`。
+  - `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.raw.txt`: 自然请求真实响应 `st=0/code=0/msg=""`，但 `data.can_delivery=false`、`left_amount=0`、`current_use_amount=30000`，Modal 文案为 `余额不足。剩余可用：0元，本期预计消耗300元`。
+  - `mock/real-connect/apiChargeAmountCheck/R-BAM-CHARGE-AMOUNT-CHECK-AWARD-TIMEOUT/response.mocked.json`: 在真实失败基线上仅设置 `data.can_delivery=true`、`data.left_amount=1900000`，不改最终发奖接口 response。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/script.mjs`: PASS，确认 matcher 命中与 mocked response 摘要。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；11 个 manifest 全量 reapply，`apiChargeAmountCheck` inline patch 已 ADD。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiChargeAmountCheck/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+  - regression: `apiGetDeliveryItemsFromSheet` 与 `apiDeliveryDouPlusCoin` supplemental verify + 标准 `verify-bam-mock.mjs` 均 PASS；timeout setup rule 与最终 award timeout rule 未被金额校验 rule 覆盖。
+- 执行状态: verified
+
+## 2026-07-09 14:26 Asia/Shanghai - apiDeliveryDouPlusCoin / apiGetDeliveryItemsFromSheet - planned
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-TIMEOUT`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-TIMEOUT`; ruleId=`R-BAM-AWARD-COIN-TIMEOUT`; apiName=`apiDeliveryDouPlusCoin`
+- 调整原因: `TC-INT-AWARD-TIMEOUT` 要求通过自然 UI 点击 DOU+币上传名单发奖，验证 timeout-like response 映射到固定 PRD 文案 `治理校验失败，请稍后重试`，且流程暂停、不展示成功 toast。`apiDeliveryDouPlusCoin` 是发奖写接口，现有 manifest 只有 SearchCandidate 路径的 penalty / relieved 规则；若 timeout case no-hit 会落到真实发奖写请求。当前矩阵明确 timeout matcher 为 `delivery_from=2,delivery_list.0.item_id=700003`，而已闭合 batch 复用 rule 返回的可投放作品是 `200003`，不能修改共享已闭合证据规则；因此需要新增一个独立 sheet setup rule 返回 `700003`，再新增 marked synthetic timeout rule，并保留真实 timeout 链路 real verify。
+- 受影响接口:
+  - apiName: `apiGetDeliveryItemsFromSheet`
+  - method/path: `GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+  - apiName: `apiDeliveryDouPlusCoin`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coin`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-BATCH-SHEET-AWARD-TIMEOUT`
+      - request key/value: `sheet_url=https://bytedance.larkoffice.com/sheets/award-timeout-7306602080`
+      - mock 规则: 命中 timeout 专用批量上传 sheet URL 时，保留原 `R-BAM-BATCH-SHEET-HIT` 不变，新增独立 response operations 返回 1 条可投放 DOU+币作品 `item_id=700003`，使后续上传名单发奖 request 自然携带 `delivery_list[0].item_id=700003`。
+      - mock key / target override: `st/code/msg/data.total_num/data.candidate_num/data.item_info/data.has_more`
+      - 覆盖场景: `TC-INT-AWARD-TIMEOUT` 的上传名单 setup；不替代最终发奖 timeout response branch。
+    - ruleId: `R-BAM-AWARD-COIN-TIMEOUT`
+      - request key/value: `delivery_from=2,delivery_list.0.item_id=700003`
+      - mock 规则: 命中 DOU+币上传名单发奖 timeout request 时，不发送真实后端发奖写接口，返回 marked synthetic timeout-like response `{st:1,code:504,msg:"timeout"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`。
+      - mock key / target override: full synthetic response
+      - 覆盖场景: `TC-INT-AWARD-TIMEOUT` 当前 active case 的 fixed timeout copy、no continue award 和 no success toast 断言。
+  - 保留:
+    - ruleId: `R-BAM-AWARD-COIN-PENALTY`
+      - 保留原因: SearchCandidate penalty case 已闭合，必须继续匹配 `delivery_from=1,delivery_items.0.candidate_id=7655364163166869874`。
+    - ruleId: `R-BAM-AWARD-COIN-RELIEVED`
+      - 保留原因: SearchCandidate relieved case 已闭合，必须继续匹配 `delivery_from=1,delivery_items.0.candidate_id=700002`。
+    - ruleId: `R-BAM-BATCH-SHEET-HIT`
+      - 保留原因: 该 rule 已服务 `TC-UI-BATCH-HIT-REUSE`、batch remove/export 等已闭合 case，不能为了 timeout setup 改写为 `700003`。
+    - ruleId: `DEFAULT_NOOP`
+      - 保留原因: no-hit fallback 必须继续存在，但不得用于关闭写接口 case。
+- 验证计划: 写入 `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/*` 和 `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/*`、更新两个接口 manifest/rule-map/verify；执行两个接口 supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、两个接口标准 `verify-bam-mock.mjs`；回到 vmok 页面通过自然 UI 上传 timeout 专用 sheet URL，选择 DOU+币充值记录并点击 Modal `确定`，采集 timeout synthetic marker / hit marker、request body、固定 PRD 文案、no success toast、modal/flow pause 和 no-real-write evidence。
+- required_resume_checks: `TC-INT-AWARD-TIMEOUT` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/request.json`: 自然 UI 批量上传普通提交 GET 请求，matcher 字段为 `sheet_url=https://bytedance.larkoffice.com/sheets/award-timeout-7306602080`，采集字段为 `activity_id=7653282555822653742`、`config_id=7653282555822735662`。
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.raw.txt`: 自然请求真实失败响应，HTTP 200，业务体 `st/code=10001604`、`msg=表格数据不符合要求，请检查数据格式是否正确`。
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-TIMEOUT/response.mocked.json`: 在真实失败基线上恢复 1 条可投放 DOU+币作品 `item_id=700003`，`if_delivery=true`，带完整 `delivery_config`。
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/request.json`: synthetic request 记录 `delivery_from=2`、`delivery_list.0.item_id=700003`，并显式标记 `sendRealBackendRequest=false`。
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-TIMEOUT/response.json`: synthetic timeout-like response `{st:1,code:504,msg:"timeout"}`。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs`: PASS。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；10 个 manifest 全量 reapply，`apiGetDeliveryItemsFromSheet` 与 `apiDeliveryDouPlusCoin` inline patch 均已 REPLACE。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 13:50 Asia/Shanghai - apiDeliveryDouPlusCoupon / apiSearchDeliveryAuthor - planned
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COUPON-RELIEVED`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COUPON-RELIEVED`; ruleId=`R-BAM-AWARD-COUPON-RELIEVED`; apiName=`apiDeliveryDouPlusCoupon`
+- 调整原因: `TC-INT-AWARD-COUPON-RELIEVED` 要求通过自然 UI 点击 DOU+券奖励发放，验证解除状态不被前端误阻断并沿用成功流程。现有 `apiDeliveryDouPlusCoupon` 只有 penalty author `800001` 的 non-success synthetic rule；若复用会误走处罚分支，若 no-hit 则可能触发真实发奖写接口。当前 `apiSearchDeliveryAuthor` 只恢复 `800001`，无法自然选择矩阵要求的 relieved author `800002`。因此需要在同一 DOU+券作者候选首屏 matcher 下追加第二条可投放 relieved 作者，并新增 `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-RELIEVED` marked synthetic success rule；真实解除状态、券账户一致性和发奖事务仍为 real verify。
+- 受影响接口:
+  - apiName: `apiSearchDeliveryAuthor`
+  - method/path: `GET /api/buyin/admin/content_activity/search_delivery_author`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+  - apiName: `apiDeliveryDouPlusCoupon`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coupon`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 修改:
+    - ruleId: `R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY`
+      - 原行为: 返回 1 条可投放 penalty 作者 `800001`，供 `TC-INT-AWARD-COUPON-PENALTY` 自然 UI 选中并触发 non-success final award rule。
+      - 目标行为: 保留 `800001` 不变，并追加第 2 条可投放 relieved 作者 `800002`，`rank=2`，完整 DOU+券 delivery_config，使 active relieved case 可通过自然 UI 单选第 2 行并打开投放奖励 Modal。
+      - request key/value 是否变化: 否；仍为 `activity_id=7655304206886322458,config_id=7655304206886355226,candidate_pool_type=1,award_period=1,page_no=1,page_size=50`。
+  - 新增:
+    - ruleId: `R-BAM-AWARD-COUPON-RELIEVED`
+      - request key/value: `delivery_from=1,delivery_authors.0.candidate_id=800002`
+      - mock 规则: 命中 DOU+券 relieved author 发奖请求时，不发送真实后端发奖写接口，返回 marked synthetic success response `{st:0,code:0,msg:"success"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`。
+      - mock key / target override: full synthetic response
+      - 覆盖场景: `TC-INT-AWARD-COUPON-RELIEVED` 当前 active case 的 frontend success branch、no governance failure copy 和 no candidate deletion 断言。
+  - 保留:
+    - ruleId: `R-BAM-AWARD-COUPON-PENALTY`
+      - 保留原因: penalty case 已闭合到当前 verify scope；该 rule 必须继续匹配 `800001` 并返回 non-success。
+    - ruleId: `DEFAULT_NOOP`
+      - 保留原因: no-hit fallback 必须继续存在，但不得用于关闭写接口 case。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只服务 active relieved case，不删除或降级既有 mock runtime。
+- 验证计划: 更新 real-connect / manifest / rule-map / verify；执行 `apiSearchDeliveryAuthor` 和 `apiDeliveryDouPlusCoupon` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、两接口标准 `verify-bam-mock.mjs`；回到同一 vmok 页面刷新 DOU+券 `配置二`，单选 relieved author `800002`，选择券充值记录并点击 Modal `确定`，采集 success synthetic marker / hit marker、request body、success message / close / reset 以及 no governance failure / no candidate deletion evidence。
+- required_resume_checks: `TC-INT-AWARD-COUPON-RELIEVED` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.mocked.json`: SearchCandidate 首屏 response 已包含 penalty author `800001` 与 relieved author `800002` 两行，`total_num=2`、`candidate_num=2`、`has_more=false`，两行均 `if_delivery=true` 且带完整 DOU+券配置。
+  - `mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/request.json`: synthetic request 记录 `delivery_from=1`、`delivery_authors.0.candidate_id=800002`、`rank=2`，并显式标记 `sendRealBackendRequest=false`。
+  - `mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-RELIEVED/response.json`: synthetic success response `{st:0,code:0,msg:"success"}`。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/verify.mjs`: PASS。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；10 个 manifest 全量 reapply，`apiSearchDeliveryAuthor` 与 `apiDeliveryDouPlusCoupon` inline patch 均已 REPLACE。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 13:15 Asia/Shanghai - apiSearchDeliveryAuthor - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COUPON-PENALTY`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COUPON-PENALTY`; ruleId=`R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY`; apiName=`apiSearchDeliveryAuthor`
+- 调整原因: `TC-INT-AWARD-COUPON-PENALTY` 已完成 `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-PENALTY` 写接口 safety rule，但自然 UI 切到 DOU+券 `配置二` 后，`apiSearchDeliveryAuthor` 返回 `{st:0,code:0,data:{total_num:0,candidate_num:0,has_more:false}}`，页面显示空态，无法自然选中 `candidate_id=800001` 并打开最终发奖 Modal。该接口是只读候选列表查询，当前 mock artifact / rule-map 中缺失该接口；需要在真实空响应基线上最小恢复 1 条可投放作者候选，保证后续最终发奖仍由自然 UI 点击触发 `apiDeliveryDouPlusCoupon`。
+- 受影响接口:
+  - apiName: `apiSearchDeliveryAuthor`
+  - method/path: `GET /api/buyin/admin/content_activity/search_delivery_author`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY`
+      - request key/value: `activity_id=7655304206886322458,config_id=7655304206886355226,candidate_pool_type=1,award_period=1,page_no=1,page_size=50`
+      - mock 规则: 命中当前活动 DOU+券 `配置二` SearchCandidate 作者候选首屏请求时，先调用原接口保留真实空响应基线，再最小设置 `st=0`、`code=0`、`msg=""`、`data.total_num=1`、`data.candidate_num=1`、`data.delivery_author_info[0]` 为可投放作者 `author_id/candidate_id=800001`、`data.has_more=false`；runtime 输出 `[BAM_MOCK_HIT]`。
+      - mock key / target override: `st/code/msg/data.total_num/data.candidate_num/data.delivery_author_info/data.has_more`
+      - 覆盖场景: 仅恢复 `TC-INT-AWARD-COUPON-PENALTY` 的 DOU+券作者候选，使自然 UI 可选中作者并继续触发最终 `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-PENALTY` 写接口安全门；不替代真实治理处罚状态、充值记录选择或发奖事务一致性。
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中当前 DOU+券候选恢复 matcher 时保持原 BAM 响应。
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback。
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - ruleId: `R-BAM-AWARD-COUPON-PENALTY`
+      - 保留原因: 最终 DOU+券发奖写接口 synthetic non-success rule 必须继续独立服务 Modal `确定` 运行态验证，本次只恢复前置只读候选列表。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只新增 `apiSearchDeliveryAuthor`，不删除或降级既有 mock runtime。
+- 验证计划: 写入自然空响应 request / response.raw.txt / response.json / response.mocked.json / evidence.json、manifest、rule-map、runtime 和 verify 脚本；执行 `apiSearchDeliveryAuthor` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；回到同一 vmok 页面刷新 DOU+券 `配置二`，采集 `[BAM_MOCK_HIT]`，选中作者 `800001`，选择券记录并点击 Modal `确定`，再采集 `apiDeliveryDouPlusCoupon / R-BAM-AWARD-COUPON-PENALTY` 的 synthetic marker / hit marker、request body、非成功 message、no success toast、no fake success 和无作品列误注入证据。
+- required_resume_checks: `TC-INT-AWARD-COUPON-PENALTY` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/request.json`: 自然 DOU+券 `配置二` 作者候选首屏请求，matcher 字段为 `activity_id=7655304206886322458`、`config_id=7655304206886355226`、`candidate_pool_type=1`、`award_period=1`、`page_no=1`、`page_size=50`；`publish_start_time/publish_end_time/session_unix_time` 保留为采集字段。
+  - `mock/real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.raw.txt`: 自然请求真实空响应 `{st:0,code:0,msg:"",data:{total_num:0,candidate_num:0,has_more:false}}`。
+  - `mock/real-connect/apiSearchDeliveryAuthor/R-BAM-SEARCH-CANDIDATE-COUPON-PENALTY/response.mocked.json`: 在真实空响应基础上恢复 1 条可投放 DOU+券作者 `800001`，`if_delivery=true`，`rank=1`，并带完整券配置和领用 / 使用有效期。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/verify.mjs`: PASS，确认 matcher、mockOperations、真实空响应基线、mocked selectable author、no-hit fallback 和 BAM marker。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；10 个 manifest 全量 reapply，新增 `apiSearchDeliveryAuthor` inline patch。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryAuthor/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 12:44 Asia/Shanghai - apiDeliveryDouPlusCoupon - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COUPON-PENALTY`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COUPON-PENALTY`; ruleId=`R-BAM-AWARD-COUPON-PENALTY`; apiName=`apiDeliveryDouPlusCoupon`
+- 调整原因: `TC-INT-AWARD-COUPON-PENALTY` 要求通过 DOU+券奖励投放自然 UI 点击发奖，验证自然处罚响应不会进入成功发奖分支。`apiDeliveryDouPlusCoupon` 是发奖写接口，当前 mock artifact / rule-map / BAM inline patch 均缺失该接口安全门；若直接点击，可能 no-hit 并发送真实后端写请求。必须先新增 marked synthetic non-success rule，返回 `{st:1,code:10017001,msg:"命中自然处罚，无法发奖"}` 并输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`，再恢复当前 case 做自然 UI 取证。mock 只关闭 MOCK_PREVIEW 前端 response branch，不证明真实治理处罚状态或发奖事务一致性。
+- 受影响接口:
+  - apiName: `apiDeliveryDouPlusCoupon`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coupon`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-AWARD-COUPON-PENALTY`
+      - request key/value: `delivery_from=1,delivery_authors.0.candidate_id=800001`
+      - mock 规则: 命中 DOU+券 SearchCandidate 作者发奖 penalty request 时，不发送真实后端发奖写接口，返回 marked synthetic non-success response `{st:1,code:10017001,msg:"命中自然处罚，无法发奖"}`。
+      - mock key / target override: full synthetic response
+      - 覆盖场景: `TC-INT-AWARD-COUPON-PENALTY` 当前 active case 的 frontend response branch、message / no-success / no fake success / no 作品列误塞入券表断言。
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体规则时保持原 BAM 请求逻辑；不得用 default no-op 关闭写接口 case。
+      - mock key / target override: N/A
+      - 覆盖场景: 结构性 fallback。
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只新增 DOU+券发奖写接口安全门，不删除或降级既有 mock runtime。
+- 验证计划: 写入 synthetic request / response / evidence、manifest、rule-map、runtime 和 verify 脚本；执行接口 supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；回到 vmok 页面通过自然 UI DOU+券发奖路径选择有效券记录并点击确定，捕获 `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`、request body、阻断 message、no success toast、no fake success、no 作品列误塞入券表和本地 evidence。
+- required_resume_checks: `TC-INT-AWARD-COUPON-PENALTY` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/request.json`: synthetic request 记录 `delivery_from=1`、`delivery_authors.0.candidate_id=800001`，并显式标记 `sendRealBackendRequest=false`。
+  - `mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/response.json`: synthetic non-success response `{st:1,code:10017001,msg:"命中自然处罚，无法发奖"}`。
+  - `mock/apis/apiDeliveryDouPlusCoupon/manifest.json`: `R-BAM-AWARD-COUPON-PENALTY.verify.status=passed`、`patch.status=patched`、`rehydration.status=passed`、`finalVerification.status=passed`。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；9 个 manifest 全量 reapply，新增 `apiDeliveryDouPlusCoupon` inline patch。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoupon/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 12:13 Asia/Shanghai - apiDeliveryDouPlusCoin / apiSearchDeliveryItems - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COIN-RELIEVED`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COIN-RELIEVED`; ruleId=`R-BAM-AWARD-COIN-RELIEVED`; apiName=`apiDeliveryDouPlusCoin`
+- 调整原因: `TC-INT-AWARD-COIN-RELIEVED` 需要通过自然 UI 点击 DOU+币奖励发放，验证解除状态不被前端误阻断并沿用成功流程。现有 `apiDeliveryDouPlusCoin` 只包含 penalty candidate `7655364163166869874` 的 non-success synthetic rule；若复用该 rule 会把 relieved case 误打到处罚分支，若 no-hit 则可能触发真实发奖写接口。当前 SearchCandidate mock 也只返回 penalty 候选，无法自然选择矩阵要求的 relieved candidate `700002`。因此需要在同一 SearchCandidate 首屏 matcher 下追加第二条可投放 relieved 候选，并新增 `apiDeliveryDouPlusCoin / R-BAM-AWARD-COIN-RELIEVED` marked synthetic success rule；真实解除状态和发奖事务仍为 real verify。
+- 受影响接口:
+  - apiName: `apiSearchDeliveryItems`
+  - method/path: `GET /api/buyin/admin/content_activity/search_delivery_items`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+  - apiName: `apiDeliveryDouPlusCoin`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coin`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 修改:
+    - ruleId: `R-BAM-SEARCH-CANDIDATE-COIN-PENALTY`
+      - 原行为: 返回 1 条 penalty 候选 `7655364163166869874`，不预填 `delivery_config.effective_time`，供 penalty case 真实 UI setup 保存。
+      - 目标行为: 保留 penalty 候选不变，并追加第 2 条 relieved 候选 `700002`，预填完整 `delivery_config.effective_time`，使 active relieved case 可通过自然 UI 单选第 2 行并打开投放奖励 Modal。
+      - request key/value 是否变化: 否；仍为 `activity_id=7655304206886322458,config_id=7655304206886338842,candidate_pool_type=1,page_no=1,page_size=50`。
+  - 新增:
+    - ruleId: `R-BAM-AWARD-COIN-RELIEVED`
+      - request key/value: `delivery_from=1,delivery_items.0.candidate_id=700002`
+      - mock 规则: 命中 DOU+币 relieved candidate 发奖请求时，不发送真实后端发奖写接口，返回 marked synthetic success response `{st:0,code:0,msg:"success"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`。
+      - mock key / target override: full synthetic response
+      - 覆盖场景: `TC-INT-AWARD-COIN-RELIEVED` 当前 active case 的 frontend success branch、no governance failure copy 和 no candidate deletion 断言。
+  - 保留:
+    - ruleId: `R-BAM-AWARD-COIN-PENALTY`
+      - 保留原因: penalty case 已闭合到当前 verify scope；该 rule 必须继续匹配 `7655364163166869874` 并返回 non-success。
+    - ruleId: `DEFAULT_NOOP`
+      - 保留原因: no-hit fallback 必须继续存在，但不得用于关闭写接口 case。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只服务 active relieved case，不删除或降级既有 mock runtime。
+- 验证计划: 更新 real-connect / manifest / rule-map / verify；执行 `apiSearchDeliveryItems` 和 `apiDeliveryDouPlusCoin` supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、两接口标准 `verify-bam-mock.mjs`；回到同一 vmok 页面刷新 SearchCandidate，单选 relieved candidate `700002`，选择充值记录并点击 Modal `确定`，采集 success synthetic marker / hit marker、request body、success message/close/reset 以及 no governance failure / no candidate deletion evidence。
+- required_resume_checks: `TC-INT-AWARD-COIN-RELIEVED` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行证据:
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/request.json`: synthetic request 记录 `delivery_from=1`、`delivery_items.0.candidate_id=700002`，并显式标记 `sendRealBackendRequest=false`。
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/response.json`: synthetic success response `{st:0,code:0,msg:"success"}`。
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.mocked.json`: SearchCandidate 首屏 response 已包含 penalty candidate `7655364163166869874` 与 relieved candidate `700002` 两行。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs`: PASS。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；8 个 manifest 全量 reapply，`apiSearchDeliveryItems` 与 `apiDeliveryDouPlusCoin` inline patch 均已 REPLACE。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+- 执行状态: verified
+
+## 2026-07-09 11:26 Asia/Shanghai - apiSearchDeliveryItems - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COIN-PENALTY`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COIN-PENALTY`; ruleId=`R-BAM-SEARCH-CANDIDATE-COIN-PENALTY`; apiName=`apiSearchDeliveryItems`
+- 调整原因: `TC-INT-AWARD-COIN-PENALTY` 在 reload 后已确认浏览器加载当前仓库 patched BAM chunk，但自然 SearchCandidate 首屏请求 `GET /api/buyin/admin/content_activity/search_delivery_items` 返回 `code=10001602 / 查询发放奖励失败`，页面没有候选行，导致无法继续通过真实 UI `修改配置/保存` 触发 `apiDeliveryModifySave` synthetic safety rule。不能把前置样本缺失推断为 setup 保存已验证，也不能跳过保存路径，因此需要新增只服务当前 DOU+币配置一的 SearchCandidate 恢复 rule，恢复候选 `7655364163166869874`，并刻意不预填 `delivery_config.effective_time`，保证后续仍必须走真实 UI 保存取证。
+- 受影响接口:
+  - apiName: `apiSearchDeliveryItems`
+  - method/path: `GET /api/buyin/admin/content_activity/search_delivery_items`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-SEARCH-CANDIDATE-COIN-PENALTY`
+      - request key/value: `activity_id=7655304206886322458,config_id=7655304206886338842,candidate_pool_type=1,page_no=1,page_size=50`
+      - mock 规则: 命中当前活动和配置一的 DOU+币 SearchCandidate 首屏请求时，先调用原接口保留真实失败基线，再最小设置 `st=0`、`code=0`、`msg=""`、`data.total_num=1`、`data.candidate_num=1`、`data.item_info[0]` 为候选 `7655364163166869874`、`data.has_more=false`；runtime 输出 `[BAM_MOCK_HIT]`
+      - mock key / target override: `st/code/msg/data.total_num/data.candidate_num/data.item_info/data.has_more`
+      - 覆盖场景: 仅恢复当前 active case 的 DOU+币候选行，使真实 UI `修改配置/保存` 可以重新触发 `apiDeliveryModifySave`；不替代 setup 保存 marker、最终发奖 marker、后端治理处罚状态或持久化。
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中人工提报 mixed hit 或当前 SearchCandidate 恢复 matcher 时保持原 BAM 响应。
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback。
+  - 修改:
+    - ruleId: `R-BAM-MANUAL-SEARCH-HIT`
+      - 原行为: 仅按 `item_ids/candidate_pool_type/page_no/page_size` 命中人工提报手动输入 mixed hit。
+      - 目标行为: 保持原 matcher、response 和 case 覆盖不变；同接口新增 `activity_id/config_id` 作为 SearchCandidate 恢复 rule 的影响字段，人工提报 rule 不扩大命中范围。
+      - request key/value 是否变化: 否。
+  - 删除: 无
+  - 保留:
+    - ruleId: `R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE`
+      - 保留原因: 当前 detour 只恢复候选行，后续仍必须自然 UI 保存并采集 setup save synthetic marker / hit marker。
+    - ruleId: `R-BAM-AWARD-COIN-PENALTY`
+      - 保留原因: 最终 DOU+币发奖 penalty rule 仍独立服务 Modal `确定` 非成功分支验证。
+- 验证计划: 更新 `apiSearchDeliveryItems` manifest / rule-map / verify；执行接口 supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；回到同一 vmok 页面 reload/refetch，先采集 SearchCandidate `[BAM_MOCK_HIT]`，再通过真实 UI `修改配置/保存` 采集 `apiDeliveryModifySave` `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]` 和行内投放生效时间回显。
+- required_resume_checks: `TC-INT-AWARD-COIN-PENALTY` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行状态: verified
+- 验证证据:
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/request.json`: 自然 UI SearchCandidate 请求包含 `activity_id=7655304206886322458`、`config_id=7655304206886338842`、`candidate_pool_type=1`、`page_no=1`、`page_size=50`，并保留 `publish_start_time/publish_end_time/session_unix_time` 为采集字段。
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.raw.txt`: 自然请求业务失败响应 `code=10001602 / 查询发放奖励失败`，作为可达请求和失败基线，不声明为真实成功合同。
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-SEARCH-CANDIDATE-COIN-PENALTY/response.mocked.json`: 恢复 1 条 DOU+币候选 `7655364163166869874`，`delivery_config` 含金额、时长、目标偏好和目标受众，但不含 `effective_time`。
+  - `mock/apis/apiSearchDeliveryItems/manifest.json`: `R-BAM-SEARCH-CANDIDATE-COIN-PENALTY.verify.status=passed`、`patch.status=patched`、`finalVerification.status=passed`。
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs`: PASS，确认 matcher、mockOperations、真实失败基线、mocked response 和 no-`effective_time` 边界。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS，8 个 manifest 全量 reapply，`apiSearchDeliveryItems` inline patch 已 REPLACE。
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS。
+  - regression: `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryModifySave/verify.mjs` 与 `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs` 均 PASS，setup save 和最终发奖 synthetic safety rules 未被 SearchCandidate 恢复 rule 覆盖。
+
+## 2026-07-09 03:38 Asia/Shanghai - apiDeliveryModifySave - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COIN-PENALTY`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COIN-PENALTY`; ruleId=`R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE`; apiName=`apiDeliveryModifySave`
+- 调整原因: `TC-INT-AWARD-COIN-PENALTY` 的 DOU+币 SearchCandidate 自然 UI 候选页 50 个可投放作品均缺少 `delivery_config.effective_time`，批量提交会被页面必填校验拦截。按 verify 的 UI 条件自动补齐协议，需要通过真实 UI “修改配置/保存”补齐第 1 个候选的投放生效时间；该保存动作会触发写接口 `apiDeliveryModifySave`。当前 mock 产物没有该写接口安全门，若直接保存会向真实后端发送配置修改请求，因此必须先新增 marked synthetic success runtime，再回到当前 case 自然 UI 补齐并继续最终发奖 Modal `确定` 验证。
+- 受影响接口:
+  - apiName: `apiDeliveryModifySave`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_modify_save`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE`
+      - request key/value: `candidate_ids.0=7655364163166869874,if_delivery=true`
+      - mock 规则: 命中第 1 个自然 UI DOU+币候选的发奖配置保存请求时，不发送真实后端写接口，返回 marked synthetic success response `{st:0,code:0,msg:"success"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`
+      - mock key / target override: full synthetic response
+      - 覆盖场景: 仅服务 `TC-INT-AWARD-COIN-PENALTY` 的 UI 条件补齐前置动作；不替代最终 `apiDeliveryDouPlusCoin` penalty 发奖验证
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体规则时保持原 BAM 请求逻辑；不得用 default no-op 关闭写接口 case
+      - mock key / target override: N/A
+      - 覆盖场景: 结构性 fallback
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiDeliveryDouPlusCoin`
+      - 保留原因: `R-BAM-AWARD-COIN-PENALTY` 的最终发奖 penalty rule 必须继续存在，本次只补齐前置配置保存写接口安全门。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前 detour 只新增 `apiDeliveryModifySave`，不删除或降级既有 mock runtime。
+- 验证计划: 写入 synthetic request/response/evidence、manifest、rule-map、runtime 和 verify 脚本；执行全量 `reapply-bam-mocks.mjs --apply`、接口 supplemental verify 和标准 `verify-bam-mock.mjs`；回到同一 vmok 页面通过真实“修改配置/保存”补齐 `effective_time`，采集 `apiDeliveryModifySave` synthetic marker / hit marker 后恢复最终 `apiDeliveryDouPlusCoin` 发奖验证。
+- required_resume_checks: `TC-INT-AWARD-COIN-PENALTY` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行状态: verified
+- 验证证据:
+  - `mock/apis/apiDeliveryModifySave/manifest.json`: `R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE` matcher 为 `candidate_ids.0=7655364163166869874,if_delivery=true`；`patch.status=patched`、`rehydration.status=passed`、`finalVerification.status=passed`
+  - `mock/real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/request.json`: synthetic request 记录当前自然 UI 第 1 个 DOU+币候选 `candidate_id=7655364163166869874`，并包含 `item_modify_config.effective_time=1783648800`；`sendRealBackendRequest=false`
+  - `mock/real-connect/apiDeliveryModifySave/R-BAM-DELIVERY-MODIFY-SAVE-FIRST-CANDIDATE/response.json`: synthetic success response `{st:0,code:0,msg:"success"}`
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；8 个 manifest 全量 reapply，新增 `apiDeliveryModifySave` inline patch 并保留 `apiDeliveryDouPlusCoin` matcher
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryModifySave/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryModifySave/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+  - regression: `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs` 与对应标准 `verify-bam-mock.mjs` 均 PASS，最终发奖 penalty rule 未被新增保存接口覆盖
+- 恢复说明: `apiDeliveryModifySave` mock detour 只关闭前置配置保存写接口安全门；`TC-INT-AWARD-COIN-PENALTY` 仍必须回到自然 UI 执行“修改配置/保存”采集 runtime marker，并继续最终 `apiDeliveryDouPlusCoin` Modal `确定` 验证。
+
+## 2026-07-09 03:19 Asia/Shanghai - apiDeliveryDouPlusCoin - scope update verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COIN-PENALTY`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COIN-PENALTY`; ruleId=`R-BAM-AWARD-COIN-PENALTY`; apiName=`apiDeliveryDouPlusCoin`
+- 调整原因: 自然 UI 已在 DOU+币非人工提报页定位到可选 SearchCandidate 样本，activity_id=`7655304206886322458`，config_id=`7655304206886338842`，首个可投放候选 `delivery_items[0].candidate_id=7655364163166869874`，rank=`1`。既有 matcher 仍为矩阵占位 `700001`；若直接点击最终 `确定`，当前请求不会命中 `R-BAM-AWARD-COIN-PENALTY`，可能落到 `DEFAULT_NOOP` / 真实后端写接口路径。不得为了交付把 case 缩成 mock readiness，因此需要在最终 UI 提交前受控更新同一 rule 的 matcher 到自然 UI 样本。
+- 受影响接口:
+  - apiName: `apiDeliveryDouPlusCoin`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coin`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 修改:
+    - ruleId: `R-BAM-AWARD-COIN-PENALTY`
+      - 原 request key/value: `delivery_from=1,delivery_items.0.candidate_id=700001`
+      - 目标 request key/value: `delivery_from=1,delivery_items.0.candidate_id=7655364163166869874`
+      - mock 规则: 保持 synthetic non-success response `{st:1,code:10017001,msg:"命中自然处罚，无法发奖"}`，继续禁止真实后端发奖写请求，继续输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`
+      - 覆盖场景: 不改变需求范围；仍关闭 `TC-INT-AWARD-COIN-PENALTY` 的 frontend response branch、message/no-success/no-close/no-reorder 运行态验证
+  - 保留:
+    - ruleId: `DEFAULT_NOOP`
+      - 保留原因: no-hit fallback 必须继续存在，但不得用于关闭当前写接口 case。
+    - 其它已验证接口和 rule
+      - 保留原因: 当前只修改 `apiDeliveryDouPlusCoin` 的 penalty matcher，不删除或降级其它 mock runtime。
+- 验证计划: 同步 request/manifest/rule-map/verify/文档中的 candidate matcher，执行 `reapply-bam-mocks.mjs --apply`、接口 supplemental verify 和标准 `verify-bam-mock.mjs`；之后回到同一自然 UI 发奖路径点击 Modal `确定`，采集 synthetic marker / hit marker / message / no-success / no-close / no-reorder evidence。
+- required_resume_checks: `TC-INT-AWARD-COIN-PENALTY` case-result、`06-debug-verification.md`、delivery-mock.md、`browser-verify-runbook.json`
+- 执行状态: verified
+- 验证证据:
+  - `mock/apis/apiDeliveryDouPlusCoin/manifest.json`: `R-BAM-AWARD-COIN-PENALTY` matcher 已更新为 `delivery_from=1,delivery_items.0.candidate_id=7655364163166869874`；`patch.status=patched`、`rehydration.status=passed`、`finalVerification.status=passed`
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/request.json`: synthetic request 已同步自然 UI SearchCandidate 样本 `activity_id=7655304206886322458`、`config_id=7655304206886338842`、`delivery_items.0.candidate_id=7655364163166869874`，并保持 `sendRealBackendRequest=false`
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS；`apiDeliveryDouPlusCoin` inline patch 已 REPLACE
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+  - `rg` in BAM target confirms inline matcher candidate_id=`7655364163166869874`
+- 恢复说明: scope update 只保证最终自然 UI 写接口点击会命中安全 synthetic contract；`TC-INT-AWARD-COIN-PENALTY` 仍必须执行 Modal `确定` 并采集 `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`、message、no-success/no-close/no-reorder evidence 后才能关闭。
+
+## 2026-07-09 02:55 Asia/Shanghai - apiDeliveryDouPlusCoin - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-AWARD-COIN-PENALTY`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-AWARD-COIN-PENALTY`; ruleId=`R-BAM-AWARD-COIN-PENALTY`; apiName=`apiDeliveryDouPlusCoin`
+- 调整原因: `TC-INT-AWARD-COIN-PENALTY` 要求点击 DOU+币奖励发放后验证自然处罚非成功 response branch：前端不得展示 `提交成功` toast，不得执行 `onOk` 成功关闭 / reset，也不得自动改变候选排序。`apiDeliveryDouPlusCoin` 是写接口，`MOCK_PREVIEW` 下不能向真实后端发送发奖请求；当前 mock 产物缺失，必须先生成 marked synthetic contract runtime，再回到自然 UI 发奖点击取证。真实治理处罚状态和发奖事务一致性仍保留 real verify，不用 mock 伪闭合。
+- 受影响接口:
+  - apiName: `apiDeliveryDouPlusCoin`
+  - method/path: `POST /api/buyin/admin/content_activity/delivery_dou_plus_coin`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-AWARD-COIN-PENALTY`
+      - request key/value: `delivery_from=1,delivery_items.0.candidate_id=700001`
+      - mock 规则: 命中 DOU+币页面筛选候选发奖请求时，不发送真实后端写接口，返回 marked synthetic non-success response `{st:1,code:10017001,msg:"命中自然处罚，无法发奖"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`
+      - mock key / target override: full synthetic response with `st/code/msg`
+      - 覆盖场景: `TC-INT-AWARD-COIN-PENALTY` 当前 active case 的 frontend response branch、message/no-success/no-close 运行态验证
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中 penalty 具体请求时保持原 BAM 请求逻辑；不得用 default no-op 关闭写接口 case
+      - mock key / target override: N/A
+      - 覆盖场景: 结构性 fallback，避免任意 DOU+币发奖请求都被 penalty mock 捕获
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiSearchDeliveryItems`
+      - 保留原因: 已验证的手动输入 mixed hit rule 仍服务人工提报前置与后续 case，不被发奖 detour 覆盖。
+    - apiName: `apiCandidateRemove`
+      - 保留原因: success/failure synthetic rules 已服务一键移除 case，当前发奖接口 detour 不删除或降级。
+    - apiName: `apiDownloadContentRemoveRecord`
+      - 保留原因: 导出剔除明细 synthetic rule 已验证，当前发奖接口 detour 不删除或降级。
+    - apiName: `apiGetDeliveryItemsFromSheet`
+      - 保留原因: 批量上传命中态 rule 已验证，当前发奖接口 detour 不删除或降级。
+    - apiName: `apiGetDouPlusCoinRemoveRecord` / `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的剔除明细默认/筛选规则必须继续存在，本次 reapply 不删除或降级既有接口产物。
+- 验证计划: 写入 synthetic request/response/evidence、manifest、rule-map、runtime 和 verify 脚本；执行接口 supplemental verify、全量 `reapply-bam-mocks.mjs --apply`、标准 `verify-bam-mock.mjs`；回到 vmok 页面通过自然 UI DOU+币发奖路径选择有效充值记录并点击确定，捕获 `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`、request body、错误 message、modal no-close/no-success、候选列表无自动排序变化和本地 evidence。
+- required_resume_checks: `TC-INT-AWARD-COIN-PENALTY` case-result、`06-debug-verification.md`、Case Evidence Coverage Audit、delivery-mock.md、`browser-verify-runbook.json`
+- 执行状态: verified
+- 验证证据:
+  - `mock/apis/apiDeliveryDouPlusCoin/manifest.json`: `patch.status=patched`, `rehydration.status=passed`, `finalVerification.status=passed`，且 `R-BAM-AWARD-COIN-PENALTY.verify.status=passed`
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/request.json`: synthetic request 记录 `delivery_from=1`、`delivery_items.0.candidate_id=700001`，并显式标记 `sendRealBackendRequest=false`
+  - `mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-PENALTY/response.json`: synthetic non-success response `{st:1,code:10017001,msg:"命中自然处罚，无法发奖"}`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/verify.mjs`: 接口级补充校验通过，确认 synthetic marker、matcher、fallback 和 BAM wrapper 字段透传
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDeliveryDouPlusCoin/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: 标准最终审核通过
+  - `mock/rule-map.json`: `.interfaces | length = 7`
+- 恢复说明: mock detour 只关闭 `apiDeliveryDouPlusCoin` / `R-BAM-AWARD-COIN-PENALTY` 的 runtime readiness；`TC-INT-AWARD-COIN-PENALTY` 仍必须回到自然 UI 发奖路径采集 `[BAM_MOCK_SYNTHETIC_CONTRACT]` / `[BAM_MOCK_HIT]`、message、no-success/no-close/no-reorder 证据后才能关闭。
+
+## 2026-07-09 01:39 Asia/Shanghai - apiGetDeliveryItemsFromSheet - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-UI-BATCH-HIT-REUSE`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-UI-BATCH-HIT-REUSE`; ruleId=`R-BAM-BATCH-SHEET-HIT`; apiName=`apiGetDeliveryItemsFromSheet`
+- 调整原因: `TC-UI-BATCH-HIT-REUSE` 要求批量上传输入 sheet URL 后触发 `apiGetDeliveryItemsFromSheet` 并复用手动输入命中态 summary、红字行态和 submit guard。自然 UI 已触发目标 GET，但真实 sheet 样本返回 `code=10001604 / 表格数据不符合要求`，页面保持空表且无命中 summary。不得为了交付把 case 降级为“只验证 GET 被调用”，因此需要新增批量上传 sheet mock rule，保留真实失败请求/响应为基线，并用 generated type + store/render 消费链路构造 MOCK_PREVIEW mixed hit 样本。
+- 受影响接口:
+  - apiName: `apiGetDeliveryItemsFromSheet`
+  - method/path: `GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-BATCH-SHEET-HIT`
+      - request key/value: `sheet_url=https://bytedance.larkoffice.com/sheets/batch-hit-7306602080`
+      - mock 规则: 命中批量上传 sheet 请求时，调用原接口后最小设置 `st=0`、`code=0`、`msg=""`、`data.total_num=3`、`data.candidate_num=1`、`data.item_info` 三行 mixed hit 样本、`data.has_more=false`
+      - mock key / target override: `data.item_info[*].if_satisfy_delivery_rules`, `data.item_info[*].if_not_incentive`, `data.item_info[*].not_incentive_reason`, `data.total_num`, `data.candidate_num`, `data.has_more`
+      - 覆盖场景: 批量上传 Drawer baseline、命中态 summary、红字行态、submit guard；后续 `TC-INT-BATCH-ONE-CLICK-REMOVE` / `TC-INT-BATCH-EXPORT` 仍需逐 case 自然 UI 独立取证
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体 sheet URL 时返回原响应
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback，避免任意 sheet URL 被 mock
+  - scope update:
+    - `09-test-case-matrix.md` 原 mock field row 将 `sheet_url/activity_id/config_id` 标为非影响字段；本 detour 为避免默认 rule 过宽，明确把本 case 的真实 `sheet_url` 作为唯一 runtime matcher，`activity_id/config_id` 仍为 collection-only 字段。
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiSearchDeliveryItems`
+      - 保留原因: 已验证的手动输入 mixed hit rule 仍服务人工提报后续 case 和对照，不被批量上传 detour 覆盖。
+    - apiName: `apiCandidateRemove`
+      - 保留原因: success/failure synthetic rules 已服务手动输入 case，且后续批量一键移除会独立复用自然 UI 取证。
+    - apiName: `apiDownloadContentRemoveRecord`
+      - 保留原因: 导出剔除明细 synthetic rule 已验证，后续批量导出仍需独立取证。
+    - apiName: `apiGetDouPlusCoinRemoveRecord` / `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的剔除明细默认/筛选规则必须继续存在，本次 reapply 不删除或降级既有接口产物。
+- 验证计划: 写入 real-connect / manifest / rule-map / runtime / verify 脚本；执行接口 supplemental verify、`init-bam-mock.mjs --apply` 或全量 reapply、标准 `verify-bam-mock.mjs`；回到 vmok 页面保持批量上传自然 UI 路径点击 `提交`，捕获 `[BAM_MOCK_HIT]` 命中 `R-BAM-BATCH-SHEET-HIT`、Network 摘要、DOM summary/row/guard 和本地截图。
+- required_resume_checks: `TC-UI-BATCH-HIT-REUSE` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md、`browser-verify-runbook.json`
+- 执行状态: verified
+- 验证证据:
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/request.json`: 自然 UI 批量上传请求包含稳定 `sheet_url=https://bytedance.larkoffice.com/sheets/batch-hit-7306602080`，并携带 `activity_id/config_id`
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.raw.txt`: 自然请求业务失败响应 `code=10001604`，作为可达请求和失败基线，不声明为真实成功合同
+  - `mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-HIT/response.mocked.json`: 批量上传 mixed hit 样本，含 `200001/200002/200003` 三行、2 个命中项和 1 个可投放项
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/init-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/manifest.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: `ADD inline patch apiGetDeliveryItemsFromSheet`
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDeliveryItemsFromSheet/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS，6 个 manifest 全量 reapply；6 个接口标准 `verify-bam-mock.mjs` 审计均 PASS
+- 恢复说明: mock runtime 审查通过；必须回到 `/delivery:verify` 当前 case，通过自然 UI 批量上传路径重新点击 `提交`，捕获 `[BAM_MOCK_HIT]`、DOM、Network 和本地截图后才能关闭断言；不得用 mock 审核结果替代业务 UI 证据。
+
+## 2026-07-09 00:20 Asia/Shanghai - apiDownloadContentRemoveRecord + apiSearchDeliveryItems - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-MANUAL-EXPORT`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-MANUAL-EXPORT`; primary ruleId=`R-BAM-DOWNLOAD-REMOVE-RECORD`; apiName=`apiDownloadContentRemoveRecord`; upstream ruleId=`R-BAM-MANUAL-SEARCH-HIT`; upstream apiName=`apiSearchDeliveryItems`
+- 调整原因: 生成 `apiDownloadContentRemoveRecord` runtime 前，静态核对 `TC-INT-MANUAL-EXPORT` 的 request 组装链路发现 `buildContentRemoveRecords` 从 `item.item_card.item_author_info.author_id` 取账号 ID，而当前 `R-BAM-MANUAL-SEARCH-HIT` mock 命中态只设置了 `item_card.item_model`，没有设置 `item_author_info`。若只新增下载接口 mock，会导致“records 包含账号ID”断言无法闭合。不得为了交付跳过账号 ID 字段，因此本次 detour 需要补齐上游命中态 mock 数据闭合。
+- 受影响接口:
+  - apiName: `apiDownloadContentRemoveRecord`
+  - method/path: `POST /api/buyin/admin/content_activity/download_content_remove_record`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+  - upstream apiName: `apiSearchDeliveryItems`
+  - upstream method/path: `GET /api/buyin/admin/content_activity/search_delivery_items`
+  - upstream BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-DOWNLOAD-REMOVE-RECORD`
+      - request key/value: `records.0.remove_reason=手动移除,records.1.remove_reason=命中【不激励】规则`
+      - mock 规则: 命中导出剔除明细请求时返回 marked synthetic `data.lark_url`，不触发真实飞书生成链路。
+      - mock key / target override: full synthetic response with `data.lark_url`
+      - 覆盖场景: `TC-INT-MANUAL-EXPORT` 当前 active case；同 rule 供 `TC-INT-BATCH-EXPORT` 后续独立取证复用。
+  - 修改:
+    - ruleId: `R-BAM-MANUAL-SEARCH-HIT`
+      - 原行为: mixed hit response 设置 3 条 `item_card.item_model`、命中态和原因字段，但未设置 `item_card.item_author_info.author_id`。
+      - 目标行为: 在 3 条 item 的 `item_card.item_author_info.author_id` 写入稳定作者 ID；保持原 item_id、命中态、summary、candidate_num 和 matcher 不变。
+      - request key/value 是否变化: 否；只补 response 数据闭合，`ruleMatchKeys` 不变。
+  - 删除: 无
+  - 保留:
+    - apiName: `apiCandidateRemove`
+      - 保留原因: 一键移除 success/failure synthetic rules 与当前导出 case 独立，reapply 时必须继续存在。
+    - apiName: `apiGetDouPlusCoinRemoveRecord` / `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的剔除明细默认/筛选规则必须继续存在，本次 reapply 不删除或降级既有接口产物。
+- 验证计划: 同步更新 `apiSearchDeliveryItems` manifest / mocked response / verify 以检查 author_id 数据闭合；新增 `apiDownloadContentRemoveRecord` manifest / runtime / verify；执行全量 reapply 和两个受影响接口的标准 `verify-bam-mock.mjs`；回到当前 `TC-INT-MANUAL-EXPORT` 自然 UI 点击取证。
+- required_resume_checks: `TC-INT-MANUAL-EXPORT` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md、`browser-verify-runbook.json`
+- 执行结果: verified
+- 验证证据:
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.mocked.json`: 已补齐 `item_card.item_author_info.author_id=900001/900002/900003`
+  - `mock/apis/apiSearchDeliveryItems/manifest.json`: 已同步 mocked response 与 verifyAssertion 的 author_id 闭合要求
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: PASS，新增 `apiDownloadContentRemoveRecord` marker 并重插保留接口 marker
+- 恢复说明: scope update 只为保留账号 ID 断言；mock 审查通过后仍必须回到当前 verify case 自然点击导出，不能用静态补数据替代 UI request 证据。
+
+## 2026-07-09 00:15 Asia/Shanghai - apiDownloadContentRemoveRecord - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-MANUAL-EXPORT`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-MANUAL-EXPORT`; ruleId=`R-BAM-DOWNLOAD-REMOVE-RECORD`; apiName=`apiDownloadContentRemoveRecord`
+- 调整原因: `TC-INT-MANUAL-EXPORT` 的正向、负向与 open/spa evidence 断言要求自然 UI 点击 `导出剔除明细` 后调用 `download_content_remove_record`，request 只包含剔除记录并处理 `data.lark_url`。当前 mock 产物尚无 `apiDownloadContentRemoveRecord` 接口级 runtime；该接口会生成飞书明细链接，`MOCK_PREVIEW` 下不能为了关闭 case 调真实后端或真实飞书权限链路，也不能跳过导出交互范围。
+- 受影响接口:
+  - apiName: `apiDownloadContentRemoveRecord`
+  - method/path: `POST /api/buyin/admin/content_activity/download_content_remove_record`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-DOWNLOAD-REMOVE-RECORD`
+      - request key/value: `records.0.remove_reason=手动移除,records.1.remove_reason=命中【不激励】规则`
+      - mock 规则: 命中人工提报/批量上传命中态导出请求时，不发送真实飞书生成链路，返回标记的 synthetic success response `{st:0,code:0,msg:"success",data:{lark_url:"https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080"}}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`
+      - mock key / target override: full synthetic response with `data.lark_url`
+      - 覆盖场景: `TC-INT-MANUAL-EXPORT` 当前 active case；同 rule 供后续 `TC-INT-BATCH-EXPORT` 独立取证复用
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体 rule 时返回原响应
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiSearchDeliveryItems`
+      - 保留原因: 人工提报 mixed hit 态仍依赖该 rule 构造自然 UI 前置状态。
+    - apiName: `apiCandidateRemove`
+      - 保留原因: 已验证的一键移除 success/failure synthetic rules 必须继续存在，不能被本次导出 mock 调整覆盖或删除。
+    - apiName: `apiGetDouPlusCoinRemoveRecord` / `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的剔除明细默认/筛选规则必须继续存在，本次 reapply 不删除或降级既有接口产物。
+- 验证计划: 写入 synthetic request/response/evidence、manifest、rule-map、runtime 和 verify 脚本；执行 reapply、接口级补充 verify 和标准 `verify-bam-mock.mjs`；回到 vmok 页面重建人工提报 mixed hit 态，通过自然 UI 点击 `导出剔除明细`，采集 synthetic marker、request body、`window.open`/SPA evidence、无本地文件、按钮文案、无旧文案/申诉入口、截图和不导出可发奖记录证据。
+- required_resume_checks: `TC-INT-MANUAL-EXPORT` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md、`browser-verify-runbook.json`
+- 执行结果: verified
+- 验证证据:
+  - `mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/request.json`: synthetic request 包含两条剔除 records，并保留 `100003/900003` 为 excluded negative control
+  - `mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json`: synthetic success response 含 `data.lark_url`
+  - `mock/real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/evidence.json`: 已记录两轮 UI 自然点击安全阻断、接口必要性和 real verify 回收项
+  - `mock/apis/apiDownloadContentRemoveRecord/manifest.json`: 已包含 `R-BAM-DOWNLOAD-REMOVE-RECORD` 与 `DEFAULT_NOOP`，`finalVerification.status=passed`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiDownloadContentRemoveRecord/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiDownloadContentRemoveRecord/manifest.json --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api`: PASS
+  - regression: `apiCandidateRemove`、`apiGetDouPlusCoinRemoveRecord`、`apiGetDouPlusCouponRemoveRecord` 的 supplemental verify 与标准 `verify-bam-mock.mjs` 均 PASS
+- 恢复说明: mock runtime 审查通过后必须回到 `/delivery:verify` 当前 case `TC-INT-MANUAL-EXPORT`，通过自然 UI 点击 `导出剔除明细` 关闭断言；不得用 mock 审核结果替代业务 UI 证据。
+
+## 2026-07-08 23:46 Asia/Shanghai - apiCandidateRemove - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-MANUAL-ONE-CLICK-REMOVE`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-MANUAL-ONE-CLICK-REMOVE`; ruleId=`R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT`; apiName=`apiCandidateRemove`
+- 调整原因: `TC-INT-MANUAL-ONE-CLICK-REMOVE` 的负向断言要求“API 失败不得移除行，其他行不变”。已完成的 `R-BAM-CANDIDATE-REMOVE-SUCCESS` 只能覆盖双命中成功分支，不能替代失败分支；不得为了交付压缩该断言。由于 `candidate_remove` 是写接口，`MOCK_PREVIEW` 下仍必须由 BAM synthetic runtime 拦截，不发送真实后端请求。
+- 受影响接口:
+  - apiName: `apiCandidateRemove`
+  - method/path: `POST /api/buyin/admin/content_activity/candidate_remove`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT`
+      - request key/value: `remove_candidates.0.remove_reason=手动移除,remove_candidates.1.remove_reason=__BAM_MOCK_ABSENT__`
+      - mock 规则: 命中人工提报单命中一键移除请求时，不发送真实后端写接口，返回标记的 synthetic failure response `{st:1,code:1,msg:"一键移除失败"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`
+      - mock key / target override: full synthetic failure response
+      - 覆盖场景: 当前 active case 的 `negative_assertion`：先在人工提报 mixed hit 态自然手动移除一条命中行，再点击 `一键移除`，验证失败响应不移除剩余命中行且合法行不变
+  - 修改:
+    - ruleId: `R-BAM-CANDIDATE-REMOVE-SUCCESS`
+      - 原行为: 双命中请求 synthetic success
+      - 目标行为: 保持不变；继续覆盖成功分支和后续 `TC-INT-BATCH-ONE-CLICK-REMOVE` 独立取证
+      - request key/value 是否变化: 否
+    - ruleId: `DEFAULT_NOOP`
+      - 原行为: no-hit fallback
+      - 目标行为: 保持不变
+      - request key/value 是否变化: 否
+  - 删除: 无
+  - 保留:
+    - apiName: `apiSearchDeliveryItems`
+      - 保留原因: 人工提报 mixed hit 态仍依赖该 rule 构造自然 UI 前置状态。
+    - apiName: `apiGetDouPlusCoinRemoveRecord` / `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的剔除明细默认/筛选规则必须继续存在，本次 reapply 不删除或降级既有接口产物。
+- 验证计划: 写入 failure synthetic request/response/evidence、manifest、rule-map、runtime 和 verify 脚本；执行 reapply、接口级补充 verify 和标准 `verify-bam-mock.mjs`；回到 vmok 页面重建人工提报 mixed hit 态，通过自然 UI 手动移除一条命中行后点击 `一键移除`，采集失败 marker、request body、before/action/after DOM、行保持、错误提示、无提交成功假象和截图。
+- required_resume_checks: `TC-INT-MANUAL-ONE-CLICK-REMOVE` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- verify 恢复结果: `TC-INT-MANUAL-ONE-CLICK-REMOVE` 已回到 `/delivery:verify` 完成 success / failure 自然 UI 证据对账，case-result 为 `PASS_WITH_NOTES`；真实后端持久化、失败码和剔除明细联动仍是 real verify 回收项。
+- 验证证据:
+  - `mock/real-connect/apiCandidateRemove/R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT/request.json`: synthetic failure request 只包含单个 `remove_candidates[0]`，且 matcher 要求 `remove_candidates.1.remove_reason=__BAM_MOCK_ABSENT__`
+  - `mock/real-connect/apiCandidateRemove/R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT/response.json`: synthetic failure response `{st:1,code:1,msg:"一键移除失败"}`
+  - `mock/apis/apiCandidateRemove/manifest.json`: 已包含 `R-BAM-CANDIDATE-REMOVE-SUCCESS`、`R-BAM-CANDIDATE-REMOVE-FAILURE-SINGLE-HIT` 和 `DEFAULT_NOOP`，`finalVerification.status=passed`
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: `REPLACE inline patch apiCandidateRemove`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiCandidateRemove/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiCandidateRemove/manifest.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json`: PASS
+- 恢复说明: mock runtime 已完成；必须回到 `/delivery:verify` 当前 case `TC-INT-MANUAL-ONE-CLICK-REMOVE`，通过自然 UI 重建人工提报 mixed hit 态，手动移除一条命中行后点击 `一键移除`，捕获失败 marker、DOM、截图和负向断言证据后才能关闭 case。
+
+## 2026-07-08 22:27 Asia/Shanghai - apiSearchDeliveryItems - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-UI-MANUAL-HIT-PAGE`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-UI-MANUAL-HIT-PAGE`; ruleId=`R-BAM-MANUAL-SEARCH-HIT`; apiName=`apiSearchDeliveryItems`
+- 调整原因: `MOCK_PREVIEW` 下人工提报命中态首屏 case 需要运行时 BAM mock；自然 UI 已在 `配置一（人工提报）` 的 `手动输入` 中提交 `100001,100002,100003` 并触发真实 GET `/api/buyin/admin/content_activity/search_delivery_items`，真实响应成功且返回 3 条准入失败作品，但 console 未出现 `apiSearchDeliveryItems` 的 `[BAM_MOCK_HIT]`，且真实样本没有行级 `if_not_incentive/not_incentive_reason`，无法覆盖 `命中【不激励】规则` 行态、summary 混合计数和 submit guard 的 MOCK_PREVIEW 目标。必须新增 `R-BAM-MANUAL-SEARCH-HIT`，保留自然请求和真实响应基线，不能为了交付压缩人工提报命中态范围。
+- 受影响接口:
+  - apiName: `apiSearchDeliveryItems`
+  - method/path: `GET /api/buyin/admin/content_activity/search_delivery_items`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-MANUAL-SEARCH-HIT`
+      - request key/value: `item_ids=100001,100002,100003,candidate_pool_type=2,page_no=1,page_size=50`
+      - mock 规则: 命中人工提报手动输入搜索请求时，调用原接口后最小设置 `data.item_info` 中 3 条作品的 `if_satisfy_delivery_rules/if_not_incentive/not_incentive_reason/delivery_config`，并设置 `data.total_num=3`、`data.candidate_num=1`、`data.has_more=false`
+      - mock key / target override: `data.item_info[*].if_satisfy_delivery_rules`, `data.item_info[*].if_not_incentive`, `data.item_info[*].not_incentive_reason`, `data.item_info[*].delivery_config`, `data.total_num`, `data.candidate_num`, `data.has_more`
+      - 覆盖场景: 人工提报 Drawer 手动输入命中态、summary、`一键移除`、`导出剔除明细`、红字行态和 submit guard 前置可见态
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体规则时返回原响应
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiGetDouPlusCoinRemoveRecord`
+      - 保留原因: 已验证的 DOU+币默认和筛选规则必须继续存在，本次 reapply 不删除或降级币接口产物。
+    - apiName: `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的 DOU+券默认和筛选规则必须继续存在，本次 reapply 不删除或降级券接口产物。
+- 验证计划: 写入 real-connect / manifest / rule-map / runtime / verify 脚本；执行 `reapply-bam-mocks.mjs --apply` 和 `verify-bam-mock.mjs`；回到 vmok 页面自然点击 `提交`，观察 `[BAM_MOCK_HIT]` 命中 `R-BAM-MANUAL-SEARCH-HIT` 且 Drawer 渲染 mixed hit rows。
+- required_resume_checks: `TC-UI-MANUAL-HIT-PAGE` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- 验证证据:
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/request.json`: 自然 UI 手动输入请求包含 `item_ids=100001,100002,100003`、`candidate_pool_type=2`、`page_no=1`、`page_size=50`
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.raw.txt`: 真实后端成功响应作为 mock 改写基准；真实样本包含 3 条准入失败行但无 `if_not_incentive/not_incentive_reason`
+  - `mock/real-connect/apiSearchDeliveryItems/R-BAM-MANUAL-SEARCH-HIT/response.mocked.json`: mixed 命中态包含准入失败、不激励命中、可投放保留项
+  - `mock/apis/apiSearchDeliveryItems/manifest.json`: `R-BAM-MANUAL-SEARCH-HIT.verify.status=passed`, `DEFAULT_NOOP.verify.status=passed`, `finalVerification.status=passed`
+  - `mock/rule-map.json`: 已包含 `apiSearchDeliveryItems` / `R-BAM-MANUAL-SEARCH-HIT`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: `ADD inline patch apiSearchDeliveryItems`
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiSearchDeliveryItems/manifest.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json`: PASS
+- 恢复说明: mock runtime 已完成；`TC-UI-MANUAL-HIT-PAGE` 和 `TC-CELL-MANUAL-HIT-STATUS` 已回到 `/delivery:verify` 并以 PASS_WITH_NOTES 关闭各自运行态断言。下一步必须继续 Verify Case Queue 第 17 个 case `TC-INT-MANUAL-SUBMIT-GUARD`，共享 rule 不自动关闭其它 case。
+
+## 2026-07-08 21:14 Asia/Shanghai - apiGetDouPlusCouponRemoveRecord - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-DATA-COUPON-FILTER-SCHEMA`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-DATA-COUPON-FILTER-SCHEMA`; ruleId=`R-BAM-COUPON-REMOVE-FILTER`; apiName=`apiGetDouPlusCouponRemoveRecord`
+- 调整原因: `MOCK_PREVIEW` 下 DOU+券筛选 schema case 需要运行时 BAM mock；自然 UI 已在作者ID输入 `900001,900002` 并选择操作人 `陈相` 后触发真实 GET 请求，请求包含 `candidate_ids=900001,900002`、`operator_id=6068830` 且不包含 `author_ids`，但当前接口 manifest 只有默认列表 rule，筛选请求落入 `DEFAULT_NOOP` 并返回真实空数据，无法覆盖筛选后列表刷新断言。必须新增筛选 rule，且继续保留默认 rule 的 absent matcher，不能为了交付压缩 DOU+券筛选范围。
+- 受影响接口:
+  - apiName: `apiGetDouPlusCouponRemoveRecord`
+  - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-COUPON-REMOVE-FILTER`
+      - request key/value: `candidate_ids=900001,900002,operator_id=6068830,page=1,page_num=20`
+      - mock 规则: 命中 DOU+券作者ID + 操作人筛选请求时，调用原接口后最小设置 `data.records`、`data.total`、`data.has_more`
+      - mock key / target override: `data.records,total,has_more`
+      - 覆盖场景: DOU+券剔除明细筛选区作者 ID 批量输入、操作人 PeopleSelect、查询刷新和 request 字段映射
+  - 修改:
+    - ruleId: `R-BAM-COUPON-REMOVE-DEFAULT`
+      - 原行为: 仅匹配 `page=1,page_num=20,candidate_ids=__BAM_MOCK_ABSENT__,operator_id=__BAM_MOCK_ABSENT__`
+      - 目标行为: 保持不变，继续防止默认 rule 吞掉筛选请求
+      - request key/value 是否变化: 否
+  - 删除: 无
+  - 保留:
+    - ruleId: `DEFAULT_NOOP`
+      - 保留原因: 未命中具体 rule 时继续返回原响应
+    - apiName: `apiGetDouPlusCoinRemoveRecord`
+      - 保留原因: 已验证的 DOU+币默认和筛选规则必须继续存在，本次 reapply 只调整 DOU+券接口 marker，不删除或降级币接口产物。
+- 验证计划: 记录筛选真实 request/response，更新 real-connect / manifest / rule-map / runtime / verify 脚本；执行 reapply 和 verify-bam-mock；回到 vmok 页面自然查询，观察 `[BAM_MOCK_HIT]` 命中 `R-BAM-COUPON-REMOVE-FILTER` 且请求包含 `candidate_ids/operator_id`、不包含 `author_ids`。
+- required_resume_checks: `TC-DATA-COUPON-FILTER-SCHEMA` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- 验证证据:
+  - `mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/request.json`: 自然 UI 筛选请求包含 `candidate_ids=900001,900002`、`operator_id=6068830`、`page=1`、`page_num=20`
+  - `mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.raw.txt`: 真实后端成功响应为空列表，作为 mock 改写基准
+  - `mock/apis/apiGetDouPlusCouponRemoveRecord/manifest.json`: `R-BAM-COUPON-REMOVE-FILTER.verify.status=passed`, `finalVerification.status=passed`
+  - `mock/rule-map.json`: DOU+券接口已包含 `R-BAM-COUPON-REMOVE-FILTER`
+  - `node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponRemoveRecord/verify.mjs`: PASS
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply`: `REPLACE inline patch apiGetDouPlusCouponRemoveRecord`
+  - `node .trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs --manifest artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCouponRemoveRecord/manifest.json --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --rule-map artifacts/7306602080-incentive-control-online/mock/rule-map.json`: PASS
+- 恢复说明: mock runtime 已完成；必须回到 `/delivery:verify` 当前 case `TC-DATA-COUPON-FILTER-SCHEMA`，通过自然 UI 点击 `查询` 捕获运行态 `[BAM_MOCK_HIT]`、Network 摘要、DOM 和截图后才能关闭 case。
+
+## 2026-07-08 20:38 Asia/Shanghai - apiGetDouPlusCouponRemoveRecord - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-UI-COUPON-REMOVE-PAGE`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-UI-COUPON-REMOVE-PAGE`; ruleId=`R-BAM-COUPON-REMOVE-DEFAULT`; apiName=`apiGetDouPlusCouponRemoveRecord`
+- 调整原因: `MOCK_PREVIEW` 下 DOU+券剔除明细默认列表需要运行时 BAM mock；自然 UI 已在 `配置二` / DOU+券 / `剔除明细` 触发真实 GET 请求，页面呈现 DOU+券作者表结构但后端返回空态，无法覆盖首行作者信息、分页和 cell 渲染断言。必须按真实请求字段补充默认列表 rule，并显式保留筛选 rule 到 `TC-DATA-COUPON-FILTER-SCHEMA` 单独闭合，不能为了交付压缩 DOU+券范围。
+- 受影响接口:
+  - apiName: `apiGetDouPlusCouponRemoveRecord`
+  - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-COUPON-REMOVE-DEFAULT`
+      - request key/value: `page=1,page_num=20,candidate_ids=__BAM_MOCK_ABSENT__,operator_id=__BAM_MOCK_ABSENT__`
+      - mock 规则: 命中默认第一页且无作者ID/操作人筛选的 DOU+券剔除明细请求时，调用原接口后最小设置 `data.records`、`data.total`、`data.has_more`
+      - mock key / target override: `data.records,total,has_more`
+      - 覆盖场景: DOU+券剔除明细默认首屏、表头白名单、首行作者信息、Tab 切换和剔除明细 Tab 埋点前置可见态
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体规则时返回原响应
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit 默认规则
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiGetDouPlusCoinRemoveRecord`
+      - 保留原因: 已验证的 DOU+币默认和筛选规则必须继续存在，本次 reapply 只追加 DOU+券接口 marker，不删除或降级币接口产物。
+- 验证计划: 写入 real-connect / manifest / rule-map / runtime / verify 脚本后，用生成器 patch 目标 BAM marker；回到 vmok 页面自然点击 DOU+券 `剔除明细`，观察 `[BAM_MOCK_HIT]` 且 ruleId=`R-BAM-COUPON-REMOVE-DEFAULT`，表格出现作者维度 mock 首行；再执行接口级补充校验、reapply 和 `verify-bam-mock.mjs`。
+- required_resume_checks: `TC-UI-COUPON-REMOVE-PAGE` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- 验证证据:
+  - `mock/apis/apiGetDouPlusCouponRemoveRecord/manifest.json`: `patch.status=patched`, `rehydration.status=passed`, `finalVerification.status=passed`，且 `R-BAM-COUPON-REMOVE-DEFAULT.verify.status=passed`
+  - `verify-logs/evidence/TC-UI-COUPON-REMOVE-PAGE--mock-hit-runtime.json`: 自然 UI 路径 `配置二 -> 奖励下发 -> 剔除明细` 命中 `[BAM_MOCK_HIT]`，ruleId=`R-BAM-COUPON-REMOVE-DEFAULT`
+  - `screenshots/TC-UI-COUPON-REMOVE-PAGE--remove-detail-coupon-default--mock-hit.png`: DOU+券剔除明细运行态截图已物化
+  - `mock/apis/apiGetDouPlusCouponRemoveRecord/verify.mjs`: 接口级补充校验通过
+  - `.trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs`: 标准最终审核通过
+
+## 2026-07-08 19:39 Asia/Shanghai - apiGetDouPlusCoinRemoveRecord - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-DATA-COIN-FILTER-SCHEMA`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-DATA-COIN-FILTER-SCHEMA`; ruleId=`R-BAM-COIN-REMOVE-FILTER`; apiName=`apiGetDouPlusCoinRemoveRecord`
+- 调整原因: `MOCK_PREVIEW` 下 DOU+币筛选 schema case 需要运行时 BAM mock；自然 UI 已输入 `candidate_ids=100001,100002` 并选择操作人 `6068830` 后触发真实 GET 请求，但当前 `R-BAM-COIN-REMOVE-DEFAULT` 仅按 `page=1,page_num=20` 匹配，错误覆盖了筛选请求。必须先收紧默认 rule 的 matcher，再新增筛选 rule，避免多 rule 命中和筛选请求被默认数据吞掉。
+- 受影响接口:
+  - apiName: `apiGetDouPlusCoinRemoveRecord`
+  - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coin_remove_record`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-COIN-REMOVE-FILTER`
+      - request key/value: `candidate_ids=100001,100002,operator_id=6068830,page=1,page_num=20`
+      - mock 规则: 命中筛选请求时调用原接口后最小设置 `data.records`、`data.total`、`data.has_more`
+      - mock key / target override: `data.records,total,has_more`
+      - 覆盖场景: DOU+币剔除明细筛选区作品 ID 批量输入、操作人 PeopleSelect、查询刷新和 request 字段映射
+  - 修改:
+    - ruleId: `R-BAM-COIN-REMOVE-DEFAULT`
+      - 原行为: `page=1,page_num=20` 即命中，导致带 `candidate_ids/operator_id` 的筛选请求也命中默认列表 rule
+      - 目标行为: 默认列表 rule 仅在 `page=1,page_num=20,candidate_ids=__BAM_MOCK_ABSENT__,operator_id=__BAM_MOCK_ABSENT__` 时命中
+      - request key/value 是否变化: 是，新增两个 absent matcher 以防止与筛选 rule 重叠
+  - 删除: 无
+  - 保留:
+    - ruleId: `DEFAULT_NOOP`
+      - 保留原因: 未命中具体 rule 时继续返回原响应
+- 验证计划: 记录筛选真实 request/response，更新 real-connect / manifest / rule-map / runtime / BAM marker；执行 reapply 和 verify-bam-mock；回到 vmok 页面自然查询，观察 `[BAM_MOCK_HIT]` 命中 `R-BAM-COIN-REMOVE-FILTER` 且请求包含 `candidate_ids/operator_id`。
+- required_resume_checks: `TC-DATA-COIN-FILTER-SCHEMA` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- 验证证据:
+  - `mock/apis/apiGetDouPlusCoinRemoveRecord/manifest.json`: `patch.status=patched`, `rehydration.status=passed`, `finalVerification.status=passed`，且 `R-BAM-COIN-REMOVE-FILTER.verify.status=passed`
+  - `verify-logs/evidence/TC-DATA-COIN-FILTER-SCHEMA--mock-hit-runtime.json`: 自然 UI 点击 `查询` 后命中 `[BAM_MOCK_HIT]`，ruleId=`R-BAM-COIN-REMOVE-FILTER`，requestBody 包含 `candidate_ids=100001,100002`、`operator_id=6068830`、`page=1`、`page_num=20`
+  - `screenshots/TC-DATA-COIN-FILTER-SCHEMA--coin-filter-open--filter-mock-hit-table.png`: 筛选区和筛选后表格运行态截图已物化
+  - `mock/apis/apiGetDouPlusCoinRemoveRecord/verify.mjs`: 接口级补充校验通过
+  - `.trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs`: 标准最终审核通过
+
+## 2026-07-08 23:22 Asia/Shanghai - apiCandidateRemove - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-INT-MANUAL-ONE-CLICK-REMOVE`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-INT-MANUAL-ONE-CLICK-REMOVE`; ruleId=`R-BAM-CANDIDATE-REMOVE-SUCCESS`; apiName=`apiCandidateRemove`
+- 调整原因: `MOCK_PREVIEW` 下人工提报 `一键移除` 必须通过真实 UI 点击触发 `candidate_remove` wrapper 并获得成功响应后更新列表；当前 mock 产物尚无 `apiCandidateRemove` 规则。该接口是写接口，不能把请求发送到真实后端；必须在 BAM wrapper 内用标记的 synthetic success runtime 拦截，保留真实持久化 real verify 回收项，不能为了交付跳过一键移除 case。
+- 受影响接口:
+  - apiName: `apiCandidateRemove`
+  - method/path: `POST /api/buyin/admin/content_activity/candidate_remove`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-CANDIDATE-REMOVE-SUCCESS`
+      - request key/value: `remove_candidates.0.remove_reason=手动移除,remove_candidates.1.remove_reason=命中【不激励】规则`
+      - mock 规则: 命中人工提报/批量上传 hit rows 的一键移除请求时，不发送真实后端写接口，返回标记的 synthetic success response `{st:0,code:0,msg:"success"}`；runtime 必须输出 `[BAM_MOCK_SYNTHETIC_CONTRACT]` 和 `[BAM_MOCK_HIT]`
+      - mock key / target override: full synthetic response
+      - 覆盖场景: `TC-INT-MANUAL-ONE-CLICK-REMOVE` 当前 active case；同 rule 供后续 `TC-INT-BATCH-ONE-CLICK-REMOVE` 独立取证复用
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体 rule 时返回原响应
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit fallback
+  - 修改: 无
+  - 删除: 无
+  - 保留:
+    - apiName: `apiSearchDeliveryItems`
+      - 保留原因: 已验证人工提报命中态 rule 必须继续存在，本次只追加 candidate_remove 接口 marker。
+    - apiName: `apiGetDouPlusCoinRemoveRecord` / `apiGetDouPlusCouponRemoveRecord`
+      - 保留原因: 已验证的剔除明细默认/筛选规则必须继续存在，本次 reapply 不删除或降级既有接口产物。
+- 验证计划: 写入 real-connect synthetic request/response/evidence、manifest、rule-map、runtime 和 verify 脚本；执行 reapply 和 `verify-bam-mock.mjs`；回到 vmok 页面自然点击 `一键移除`，观察 synthetic marker / `[BAM_MOCK_HIT]`、POST request 形态、命中行消失、合法行保留和无提交成功假象。
+- required_resume_checks: `TC-INT-MANUAL-ONE-CLICK-REMOVE` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- 验证证据:
+  - `mock/apis/apiCandidateRemove/manifest.json`: `patch.status=passed`, `rehydration.status=passed`, `finalVerification.status=passed`，且 `R-BAM-CANDIDATE-REMOVE-SUCCESS.verify.status=passed`
+  - `mock/apis/apiCandidateRemove/verify.mjs`: 接口级补充校验通过，确认 synthetic success、wrong remove reason fallback 和 BAM marker
+  - `.trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs`: 标准 reapply 通过并新增 `apiCandidateRemove` inline patch
+  - `.trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs`: 标准最终审核通过
+
+## 2026-07-08 18:57 Asia/Shanghai - apiGetDouPlusCoinRemoveRecord - verified
+- 来源阶段: `/delivery:mock`
+- 关联恢复点: `/delivery:verify` active case `TC-UI-COIN-REMOVE-PAGE`
+- origin / resume identity: origin_stage=`verify`; resume_command=`/delivery:verify`; resume_case=`TC-UI-COIN-REMOVE-PAGE`; ruleId=`R-BAM-COIN-REMOVE-DEFAULT`; apiName=`apiGetDouPlusCoinRemoveRecord`
+- 调整原因: `MOCK_PREVIEW` 下 DOU+币剔除明细默认列表需要运行时 BAM mock；第二轮自然 UI 尝试已触发真实 GET 请求，真实响应成功但为空数据，无法覆盖首行记录、分页和 cell 渲染断言，需要在真实响应基础上最小改写 `data.records,total,has_more`。
+- 受影响接口:
+  - apiName: `apiGetDouPlusCoinRemoveRecord`
+  - method/path: `GET /api/buyin/admin/content_activity/get_dou_plus_coin_remove_record`
+  - BAM 文件: `apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts`
+- rule-map 预期变更:
+  - 新增:
+    - ruleId: `R-BAM-COIN-REMOVE-DEFAULT`
+      - request key/value: `page=1,page_num=20`
+      - mock 规则: 命中默认分页请求时调用原接口后最小设置 `data.records`、`data.total`、`data.has_more`
+      - mock key / target override: `data.records,total,has_more`
+      - 覆盖场景: DOU+币剔除明细默认页、表头、首行、Tab 切换、剔除明细 Tab 埋点前置可见态
+    - ruleId: `DEFAULT_NOOP`
+      - request key/value: `{}`
+      - mock 规则: 未命中具体规则时返回原响应
+      - mock key / target override: N/A
+      - 覆盖场景: no-hit 默认规则
+  - 修改: 无
+  - 删除: 无
+  - 保留: 无
+- 验证计划: 写入 real-connect / manifest / rule-map 后，用生成器 patch 目标 BAM marker；回到 vmok 页面自然点击 `剔除明细`，观察 `[BAM_MOCK_HIT]` 且表格出现 mock 首行；再执行 `verify-bam-mock.mjs`。
+- required_resume_checks: `TC-UI-COIN-REMOVE-PAGE` case-result、`06-debug-verification.md`、Runtime Screenshot Evidence Index、Case Evidence Coverage Audit、delivery-mock.md
+- 执行结果: verified
+- 验证证据:
+  - `mock/apis/apiGetDouPlusCoinRemoveRecord/manifest.json`: `patch.status=patched`, `rehydration.status=passed`, `finalVerification.status=passed`
+  - `verify-logs/evidence/TC-UI-COIN-REMOVE-PAGE--mock-hit-runtime.json`: 自然 UI reload 后点击 `剔除明细`，命中 `[BAM_MOCK_HIT]`
+  - `screenshots/TC-UI-COIN-REMOVE-PAGE--remove-detail-coin-default--mock-hit.png`: mock 命中后的运行态截图已物化
+  - `mock/apis/apiGetDouPlusCoinRemoveRecord/verify.mjs`: 接口级补充校验通过
+  - `.trae/skills/bam-mock-runtime-generator/scripts/verify-bam-mock.mjs`: 标准最终审核通过

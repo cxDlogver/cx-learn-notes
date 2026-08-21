@@ -1,0 +1,36 @@
+TC-INT-BATCH-EXPORT network evidence
+captured_at: 2026-07-09T02:38:07+08:00
+browser_tool: integrated_browser
+business_view_id: 4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba
+
+Precondition restore:
+- Natural UI click: 批量上传提交按钮
+- Probe XHR: GET /api/buyin/admin/content_activity/get_delivery_items_from_sheet?... status=200
+- BAM marker: [BAM_MOCK_HIT] apiName=apiGetDeliveryItemsFromSheet ruleId=R-BAM-BATCH-SHEET-HIT
+- Restored rows: 200001 / 200002 / 200003
+
+Export click:
+- Natural UI click: 导出剔除明细
+- Browser action result: new tab c2f537ab-2725-427d-95e7-099720896371 opened https://bytedance.larkoffice.com/sheets/mock_content_remove_record_7306602080
+- BAM marker: [BAM_MOCK_SYNTHETIC_CONTRACT] apiName=apiDownloadContentRemoveRecord ruleId=R-BAM-DOWNLOAD-REMOVE-RECORD
+- BAM marker: [BAM_MOCK_HIT] apiName=apiDownloadContentRemoveRecord ruleId=R-BAM-DOWNLOAD-REMOVE-RECORD
+- Request records:
+  - records[0]: author_id=920001, item_id=200001, item_name=批量上传准入失败作品, remove_reason=手动移除
+  - records[1]: author_id=920002, item_id=200002, item_name=批量上传不激励命中作品, remove_reason=命中【不激励】规则, penalty_reason=历史违规命中不激励规则
+- Negative control: row 200003 / author_id=920003 stayed visible in Drawer and was absent from export request records.
+
+Browser Network panel after export click:
+- POST https://mcs.zijieapi.com/list type=XHR
+- POST https://mcs.snssdk.com/v1/list type=XHR
+- POST https://mcs.zijieapi.com/list type=XHR
+- POST https://mcs.snssdk.com/v1/list type=XHR
+- POST https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=ecop_platform type=XHR
+- POST https://mon.zijieapi.com/monitor_browser/collect/batch/?biz_id=alliance_operation_content type=XHR
+
+No real export fetch/XHR:
+- real_download_content_remove_record_fetch_or_xhr_records: []
+- boundary: MOCK_PREVIEW synthetic runtime returns the export response before a real download_content_remove_record fetch/XHR; request/response evidence is the BAM synthetic/hit marker.
+
+Filesystem negative check:
+- command: find "$HOME/Downloads" -maxdepth 1 -type f -mmin -10 -print
+- output: <empty>

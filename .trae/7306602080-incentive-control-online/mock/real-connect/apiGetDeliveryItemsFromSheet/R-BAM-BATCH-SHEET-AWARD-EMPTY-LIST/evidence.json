@@ -1,0 +1,64 @@
+{
+  "apiName": "apiGetDeliveryItemsFromSheet",
+  "ruleId": "R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST",
+  "caseIds": [
+    "TC-INT-AWARD-EMPTY-LIST__batch_sheet_setup"
+  ],
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+  "capturedAt": "2026-07-09T17:45:55+08:00",
+  "originStage": "verify",
+  "resumeCase": "TC-INT-AWARD-EMPTY-LIST",
+  "uiTrigger": {
+    "page": "内容活动-奖励投放 / 配置一（人工提报）",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "steps": [
+      "刷新配置一人工提报页到干净状态",
+      "点击“新增提报”",
+      "选择“批量上传”",
+      "输入 https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+      "点击 Drawer 内普通“提交”按钮"
+    ],
+    "sideEffectBoundary": "只触发只读 get_delivery_items_from_sheet；未点击“提交并投放”，未打开最终投放 Modal，未触发 delivery_dou_plus_coin。"
+  },
+  "realRequest": {
+    "query": {
+      "sheet_url": "https://bytedance.larkoffice.com/sheets/award-empty-list-7306602080",
+      "activity_id": "7653282555822653742",
+      "config_id": "7653282555822735662"
+    },
+    "redaction": "运行态 URL 自动附带的 __token 参数未落盘。"
+  },
+  "realResponse": {
+    "httpStatus": 200,
+    "bodyPath": "mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.json",
+    "summary": {
+      "st": 10001604,
+      "code": 10001604,
+      "msg": "表格数据不符合要求，请检查数据格式是否正确",
+      "data": {}
+    }
+  },
+  "mockedResponse": {
+    "bodyPath": "mock/real-connect/apiGetDeliveryItemsFromSheet/R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST/response.mocked.json",
+    "summary": {
+      "st": 0,
+      "code": 0,
+      "total_num": 1,
+      "candidate_num": 0,
+      "item_info": [
+        {
+          "item_id": "700004",
+          "if_delivery": false,
+          "if_satisfy_delivery_rules": true,
+          "if_not_incentive": false
+        }
+      ]
+    }
+  },
+  "interfaceNecessity": "TC-INT-AWARD-EMPTY-LIST 需要自然 UI 进入 BatchSubmitModal 后由 `BatchSubmitModal` 按 `if_delivery === true` 过滤出空 `delivery_list`；reward-list 选择态无法自然产生该状态，因为 `if_delivery=false` 行会被清除选择，物理空 Drawer 又会被 `SELECT_VIDEO` guard 拦截。",
+  "codeConsumption": "ManuallySubmitVideoStore.fillIfDeliveryTrue 会保留后端返回的 `if_delivery=false`；ManuallySubmitVideosDrawer 只拦截物理空列表、命中不激励/不满足准入和必填项；BatchSubmitModal 在 Modal 内过滤 `selectedAwardVideos.filter(item => item.if_delivery === true)` 并将空 `delivery_list` 交给 `submitSendAwardVideos` 的 no-call guard。",
+  "mockRule": "命中 empty-list 专用 sheet URL 时，调用原接口保留真实失败基线，再最小设置 success shell 和 1 条非命中态 `if_delivery=false` DOU+币作品。",
+  "verifyAssertion": "自然 UI 批量上传 empty-list 专用 sheet URL 必须输出 `[BAM_MOCK_HIT]` ruleId=R-BAM-BATCH-SHEET-AWARD-EMPTY-LIST；Drawer 物理列表非空且无命中提示；投放 Modal 显示本次共投放 0 个作品；点击 Modal 确定后不得出现 `apiDeliveryDouPlusCoin` marker、真实 XHR/fetch 或 `提交成功` toast。",
+  "realVerify": "后端 ready 后用真实 sheet / 真实治理剔除样本复验后端是否能自然返回空有效名单；真实发奖事务状态仍需 real verify。"
+}

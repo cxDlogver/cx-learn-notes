@@ -1,0 +1,152 @@
+{
+  "case_id": "TC-INT-REMOVE-TAB-SWITCH-COUPON",
+  "captured_at": "2026-07-08T14:02:33Z",
+  "browser": {
+    "tool": "integrated_browser",
+    "viewId": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "title": "内容生态运营｜橙蕉"
+  },
+  "precondition": {
+    "active_top_config": "配置二",
+    "reward_type": "DOU+券",
+    "before_action": "Clicked legacy SubTab 奖励下发 to establish before state",
+    "before_state": {
+      "active_sub_tab": "奖励下发",
+      "radio_buttons": [
+        {
+          "text": "奖励下发",
+          "checked": true,
+          "className": "auxo-radio-button-wrapper auxo-radio-button-wrapper-checked",
+          "rect": { "x": 317, "y": 516, "width": 91, "height": 32 }
+        },
+        {
+          "text": "投放明细",
+          "checked": false,
+          "className": "auxo-radio-button-wrapper",
+          "rect": { "x": 408, "y": 516, "width": 90, "height": 32 }
+        },
+        {
+          "text": "剔除明细",
+          "checked": false,
+          "className": "auxo-radio-button-wrapper",
+          "rect": { "x": 498, "y": 516, "width": 90, "height": 32 }
+        }
+      ],
+      "coupon_remove_table_visible": false,
+      "coin_remove_table_visible": false,
+      "legacy_tabs_visible": true
+    }
+  },
+  "action": {
+    "type": "natural_ui_click",
+    "target": "剔除明细 SubTab",
+    "browser_ref": "e49",
+    "result": "click_success"
+  },
+  "after_state": {
+    "active_top_config": "配置二",
+    "active_sub_tab": "剔除明细",
+    "active_sub_tab_style": {
+      "className": "auxo-radio-button-wrapper auxo-radio-button-wrapper-checked",
+      "color": "rgb(25, 102, 255)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "borderColor": "rgb(220, 222, 225)",
+      "rect": { "x": 498, "y": 516, "width": 90, "height": 32 }
+    },
+    "headers": ["作者信息", "剔除发奖原因", "剔除发奖时间", "操作人"],
+    "first_rows": [
+      "券作者示例 ID: 900001 命中【不激励】规则 2026/07/08 20:40:40 陈相"
+    ],
+    "filter_controls": {
+      "author_label_visible": true,
+      "operator_visible": true,
+      "query_visible": true,
+      "reset_visible": true
+    },
+    "positive_visible": {
+      "coupon_author_headers": true,
+      "coupon_author_row": true,
+      "remove_reason": true,
+      "pagination_total": true
+    },
+    "negative_visible": {
+      "legacy_tabs_visible": true,
+      "coin_work_headers_visible": false,
+      "coin_work_sample_visible": false,
+      "coupon_quantity_visible": false,
+      "delivery_status_visible": false,
+      "work_content_visible": false
+    }
+  },
+  "network": {
+    "tool": "browser_network_requests",
+    "current_request_index": 87,
+    "method": "GET",
+    "url_redacted": "https://ecop.bytedance.net/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record?activity_id=7655304206886322458&config_id=7655304206886355226&page=1&page_num=20&__token=<redacted>",
+    "resource_type": "XHR",
+    "request_params": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page": "1",
+      "page_num": "20",
+      "candidate_ids": "__BAM_MOCK_ABSENT__",
+      "operator_id": "__BAM_MOCK_ABSENT__"
+    },
+    "adjacent_people_request_redacted": "https://ecop.bytedance.net/common/index/batchGetEaUsers?employeeIds=6068830&isInternalStaff=true&withOpenId=true&__token=<redacted>"
+  },
+  "console_mock_hit": {
+    "tool": "browser_console_messages",
+    "event": "BAM_MOCK_HIT",
+    "apiName": "apiGetDouPlusCouponRemoveRecord",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+    "ruleId": "R-BAM-COUPON-REMOVE-DEFAULT",
+    "requestBody": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page_num": 20,
+      "page": 1
+    },
+    "mockedResponse_summary": {
+      "code": 0,
+      "type": "success",
+      "data.total": 40,
+      "data.has_more": true,
+      "data.records[0].record_id": "coupon_remove_record_20260708001",
+      "data.records[0].author_info.author_id": "900001",
+      "data.records[0].author_info.author_name": "券作者示例",
+      "data.records[0].remove_reason": "命中【不激励】规则",
+      "data.records[0].operator_id": "6068830",
+      "data.records[0].remove_time": 1783514440
+    },
+    "logId": "2026070821574300A9AB5EAA169E22B9C9"
+  },
+  "legacy_return_check": {
+    "action": "Clicked 投放明细 SubTab after remove-detail evidence capture",
+    "active_sub_tab": "投放明细",
+    "radio_buttons": [
+      { "text": "奖励下发", "checked": false, "className": "auxo-radio-button-wrapper" },
+      { "text": "投放明细", "checked": true, "className": "auxo-radio-button-wrapper auxo-radio-button-wrapper-checked" },
+      { "text": "剔除明细", "checked": false, "className": "auxo-radio-button-wrapper" }
+    ],
+    "coupon_remove_filter_visible": false,
+    "coupon_remove_headers_visible": false,
+    "detail_headers": ["作者信息", "投放时间", "发放数量（张）", "状态", "创建人"]
+  },
+  "screenshot": {
+    "materialization_type": "local_file",
+    "path": "screenshots/TC-INT-REMOVE-TAB-SWITCH-COUPON--coupon-tab-switch--mock-hit.png",
+    "pixelWidth": 2549,
+    "pixelHeight": 1875,
+    "capture_scope": "SubTab+table",
+    "design_reuse_note": "runtime source only; verify does not assert Figma-vs-runtime alignment"
+  },
+  "classification": {
+    "runtime_result": "PASS_WITH_NOTES",
+    "notes": [
+      "MOCK_PREVIEW default rule hit proves frontend runtime path and request shape only.",
+      "Figma alignment and real backend load timing remain recheck items outside this verify case closure."
+    ]
+  }
+}

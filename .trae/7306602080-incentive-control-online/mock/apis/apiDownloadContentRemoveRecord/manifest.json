@@ -1,0 +1,351 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiDownloadContentRemoveRecord",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console"
+    ],
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "realConnect": {
+    "status": "synthetic_contract",
+    "artifactDir": "../../real-connect/apiDownloadContentRemoveRecord",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/request.json",
+        "response": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json",
+        "evidence": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW external-resource safety: download_content_remove_record must not rely on real Feishu sheet generation during verify.",
+        "interfaceNecessity": "AR-009 and TC-INT-MANUAL-EXPORT require `data.lark_url` to validate frontend open handling after export.",
+        "uiNaturalAttemptCount": 2
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+      "source": "synthetic_contract",
+      "evidence": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/evidence.json",
+      "request": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+        "body": {
+          "records": [
+            {
+              "author_id": "900001",
+              "item_id": "100001",
+              "item_name": "人工提报准入失败作品",
+              "remove_reason": "手动移除"
+            },
+            {
+              "author_id": "900002",
+              "item_id": "100002",
+              "item_name": "人工提报不激励命中作品",
+              "remove_reason": "命中【不激励】规则",
+              "penalty_reason": "历史违规命中不激励规则"
+            }
+          ]
+        },
+        "requestFieldsForMatching": {
+          "records.0.remove_reason": "手动移除",
+          "records.1.remove_reason": "命中【不激励】规则"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "records.0.author_id",
+            "value": "900001",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第一条准入失败作品的作者 ID；用于导出字段审计，不参与 matcher。"
+          },
+          {
+            "fieldPath": "records.0.item_id",
+            "value": "100001",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第一条准入失败作品的视频 ID；用于导出字段审计，不参与 matcher。"
+          },
+          {
+            "fieldPath": "records.0.item_name",
+            "value": "人工提报准入失败作品",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第一条准入失败作品的视频名称；用于导出字段审计，不参与 matcher。"
+          },
+          {
+            "fieldPath": "records.1.author_id",
+            "value": "900002",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第二条不激励作品的作者 ID；用于导出字段审计，不参与 matcher。"
+          },
+          {
+            "fieldPath": "records.1.item_id",
+            "value": "100002",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第二条不激励作品的视频 ID；用于导出字段审计，不参与 matcher。"
+          },
+          {
+            "fieldPath": "records.1.item_name",
+            "value": "人工提报不激励命中作品",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第二条不激励作品的视频名称；用于导出字段审计，不参与 matcher。"
+          },
+          {
+            "fieldPath": "records.1.penalty_reason",
+            "value": "历史违规命中不激励规则",
+            "source": "selected_record",
+            "reason": "来自人工提报 mixed hit 态第二条不激励作品的最新处罚原因；用于导出字段审计，不参与 matcher。"
+          }
+        ]
+      },
+      "syntheticContractReason": "download_content_remove_record creates an external Feishu removal-detail sheet; MOCK_PREVIEW must return a marked synthetic `lark_url` and defer real permission verification.",
+      "interfaceNecessity": "The frontend calls `window.open(lark_url, '_blank', 'noopener,noreferrer')` only after a successful response.",
+      "uiNaturalAttemptCount": 2,
+      "responsePath": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json",
+      "browserPrecheckStatus": "passed"
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "records.0.remove_reason",
+    "records.1.remove_reason"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "records.0.remove_reason",
+      "impactType": "submit_assertion",
+      "reason": "第一条剔除记录必须来自准入失败作品并映射为 `手动移除`，用于验证导出 records 仅包含待剔除项。",
+      "uiTarget": "人工提报 Drawer / 导出剔除明细"
+    },
+    {
+      "fieldPath": "records.1.remove_reason",
+      "impactType": "submit_assertion",
+      "reason": "第二条剔除记录必须来自不激励命中作品并映射为 `命中【不激励】规则`，用于区分命中项与可发奖记录。",
+      "uiTarget": "人工提报 Drawer / 导出剔除明细"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+      "requestFields": {
+        "records.0.remove_reason": "手动移除",
+        "records.1.remove_reason": "命中【不激励】规则"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-DOWNLOAD-REMOVE-RECORD",
+      "caseIds": [
+        "TC-INT-MANUAL-EXPORT",
+        "TC-INT-BATCH-EXPORT"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "syntheticContract": true,
+      "uiTarget": "人工提报 Drawer / 导出剔除明细",
+      "requestFields": {
+        "records.0.remove_reason": "手动移除",
+        "records.1.remove_reason": "命中【不激励】规则"
+      },
+      "mockRule": "命中人工提报/批量上传导出剔除明细 payload 时，不依赖真实 Feishu 生成链路，返回标记 synthetic success response 和 `data.lark_url`。",
+      "realRequest": {
+        "method": "POST",
+        "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+        "body": {
+          "records": [
+            {
+              "author_id": "900001",
+              "item_id": "100001",
+              "item_name": "人工提报准入失败作品",
+              "remove_reason": "手动移除"
+            },
+            {
+              "author_id": "900002",
+              "item_id": "100002",
+              "item_name": "人工提报不激励命中作品",
+              "remove_reason": "命中【不激励】规则",
+              "penalty_reason": "历史违规命中不激励规则"
+            }
+          ]
+        },
+        "requestFieldsForMatching": {
+          "records.0.remove_reason": "手动移除",
+          "records.1.remove_reason": "命中【不激励】规则"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "records.0.author_id",
+            "value": "900001",
+            "source": "selected_record",
+            "reason": "当前手动命中态准入失败作品的 author_id，来自上游 `apiSearchDeliveryItems` mock response；用于 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "records.0.item_id",
+            "value": "100001",
+            "source": "selected_record",
+            "reason": "当前手动命中态准入失败作品的 item_id；用于 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "records.0.item_name",
+            "value": "人工提报准入失败作品",
+            "source": "selected_record",
+            "reason": "当前手动命中态准入失败作品的标题；用于 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "records.1.author_id",
+            "value": "900002",
+            "source": "selected_record",
+            "reason": "当前手动命中态不激励作品的 author_id，来自上游 `apiSearchDeliveryItems` mock response；用于 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "records.1.item_id",
+            "value": "100002",
+            "source": "selected_record",
+            "reason": "当前手动命中态不激励作品的 item_id；用于 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "records.1.item_name",
+            "value": "人工提报不激励命中作品",
+            "source": "selected_record",
+            "reason": "当前手动命中态不激励作品的标题；用于 payload 审计，不参与 runtime matcher。"
+          },
+          {
+            "fieldPath": "records.1.penalty_reason",
+            "value": "历史违规命中不激励规则",
+            "source": "selected_record",
+            "reason": "当前手动命中态不激励作品的最新处罚原因；用于 payload 审计，不参与 runtime matcher。"
+          }
+        ]
+      },
+      "mockedResponsePath": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json",
+      "responseContract": {
+        "source": "synthetic_contract",
+        "evidence": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/evidence.json",
+        "request": {
+          "method": "POST",
+          "path": "/api/buyin/admin/content_activity/download_content_remove_record",
+          "body": {
+            "records": [
+              {
+                "author_id": "900001",
+                "item_id": "100001",
+                "item_name": "人工提报准入失败作品",
+                "remove_reason": "手动移除"
+              },
+              {
+                "author_id": "900002",
+                "item_id": "100002",
+                "item_name": "人工提报不激励命中作品",
+                "remove_reason": "命中【不激励】规则",
+                "penalty_reason": "历史违规命中不激励规则"
+              }
+            ]
+          }
+        },
+        "syntheticContractReason": "MOCK_PREVIEW external-resource safety: download_content_remove_record must not rely on real Feishu sheet generation during verify; runtime returns marked synthetic success.",
+        "interfaceNecessity": "The current frontend opens `data.lark_url` only after successful download_content_remove_record response.",
+        "uiNaturalAttemptCount": 2
+      },
+      "realConnectArtifact": {
+        "status": "synthetic_contract",
+        "request": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/request.json",
+        "response": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/response.json",
+        "evidence": "../../real-connect/apiDownloadContentRemoveRecord/R-BAM-DOWNLOAD-REMOVE-RECORD/evidence.json",
+        "syntheticContractReason": "MOCK_PREVIEW external-resource safety: download_content_remove_record must not rely on real Feishu sheet generation during verify.",
+        "interfaceNecessity": "TC-INT-MANUAL-EXPORT requires a success response with `data.lark_url` to verify frontend open handling.",
+        "uiNaturalAttemptCount": 2
+      },
+      "verifyAssertion": "Patched BAM runtime must emit `[BAM_MOCK_SYNTHETIC_CONTRACT]` and `[BAM_MOCK_HIT]` for `R-BAM-DOWNLOAD-REMOVE-RECORD`; UI must send only hit records and open the returned `lark_url`.",
+      "realVerify": "后端 ready 后复验真实 Feishu 表格权限、操作人来源、字段完整性和真实 lark_url 可访问性。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDownloadContentRemoveRecord/verify.mjs passed; patched BAM marker emits `[BAM_MOCK_SYNTHETIC_CONTRACT]` and `[BAM_MOCK_HIT]` for the synthetic export branch. Business UI evidence remains owned by TC-INT-MANUAL-EXPORT.",
+        "reason": "Mock runtime audit passed; browser natural UI export click remains the active verify case and is not closed by this manifest verification.",
+        "verifiedAt": "2026-07-08T16:31:00Z"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "requestFields": {},
+      "mockRule": "未命中具体规则时保持原 BAM 请求逻辑；不得用 default no-op 关闭下载 case。",
+      "realConnectArtifact": {
+        "status": "passed",
+        "request": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/request.json",
+        "rawResponse": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/response.raw.txt",
+        "response": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/response.json",
+        "evidence": "../../real-connect/apiDownloadContentRemoveRecord/DEFAULT_NOOP/evidence.json"
+      },
+      "verifyAssertion": "DEFAULT_NOOP exists only as manifest default fallback and is not used for TC-INT-MANUAL-EXPORT closure.",
+      "realVerify": "No-hit download requests are outside current verify case and must not be used as success evidence.",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiDownloadContentRemoveRecord/verify.mjs passed; single-record and wrong-second-reason requests fall back to DEFAULT_NOOP.",
+        "reason": "DEFAULT_NOOP is a structural fallback only; it is not a UI success rule and is audited by the interface verification script.",
+        "verifiedAt": "2026-07-08T16:31:00Z"
+      }
+    }
+  ],
+  "patch": {
+    "targetBamFile": "index.ts",
+    "status": "passed",
+    "marker": "BAM_MOCK_PATCH_START apiDownloadContentRemoveRecord",
+    "evidence": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "verifiedAt": "2026-07-08T16:31:00Z"
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "mixed",
+    "evidence": "reapply-bam-mocks.mjs added inline patch for apiDownloadContentRemoveRecord; apiDownloadContentRemoveRecord/verify.mjs passed for the synthetic export branch and default fallback; verify-bam-mock.mjs is the final audit command for this manifest. UI acceptance resumes at TC-INT-MANUAL-EXPORT.",
+    "reason": "Manifest, rule-map, synthetic export response, default fallback, and patched BAM marker are ready for the active verify case; this does not close business UI assertions.",
+    "verifiedAt": "2026-07-08T16:31:00Z"
+  },
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiDownloadContentRemoveRecord in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-08T19:46:19.308Z"
+  }
+}

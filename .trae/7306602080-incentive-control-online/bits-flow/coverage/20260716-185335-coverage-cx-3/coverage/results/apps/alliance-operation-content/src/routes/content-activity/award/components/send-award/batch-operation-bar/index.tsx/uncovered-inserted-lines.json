@@ -1,0 +1,42 @@
+[
+  {
+    "lineNum": 56,
+    "code": "      const itemId = item.item_card?.item_model?.item_id;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 57,
+    "code": "      return itemId && !selectedItemIds.has(itemId);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 72,
+    "code": "      const authorId = item.author_info?.author_id;",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 73,
+    "code": "      return authorId && !selectedAuthorIds.has(authorId);",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  },
+  {
+    "lineNum": 446,
+    "code": "      clearPendingNoAwardAuthorItems();",
+    "isAddLine": true,
+    "isInsertLine": true,
+    "isIgnoreLine": false,
+    "isCoverageLine": false
+  }
+]

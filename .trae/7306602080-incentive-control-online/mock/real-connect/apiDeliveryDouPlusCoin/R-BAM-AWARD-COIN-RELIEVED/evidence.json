@@ -1,0 +1,63 @@
+{
+  "ruleId": "R-BAM-AWARD-COIN-RELIEVED",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-COIN-RELIEVED",
+  "apiName": "apiDeliveryDouPlusCoin",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coin",
+  "captured_at": "2026-07-09T12:13:00+08:00",
+  "interfaceNecessity": "AR-003 and TC-INT-AWARD-COIN-RELIEVED require the DOU+ coin award submit wrapper to return a success response for a governance-relieved candidate so frontend success flow and no governance-block copy can be verified.",
+  "syntheticContractReason": "The UI request point is known from BatchSubmitModal and the generated BAM wrapper, but delivery_dou_plus_coin is a write interface. Under MOCK_PREVIEW the request must not be sent to the real backend; the BAM runtime returns a marked synthetic success response instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "`09-test-case-matrix.md` defines TC-INT-AWARD-COIN-RELIEVED as BAM_RUNTIME_MOCK with ruleId R-BAM-AWARD-COIN-RELIEVED; BatchSubmitModal calls apiDeliveryDouPlusCoin from the natural modal `确定` path.",
+      "reason": "A real click before BAM patch would send a backend award write request; verify policy requires mock detour first."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "BAM wrapper apiDeliveryDouPlusCoin maps activity_id, config_id, charge_code, delivery_items, delivery_list, session_unix_time and delivery_from to POST /delivery_dou_plus_coin; award/utils.ts treats st=0/code=0 as success.",
+      "reason": "A repeated real click without BAM patch would have the same write side effect; the response branch is therefore recorded as synthetic and must be confirmed by patched runtime during verify."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/request.json",
+    "response": "mock/real-connect/apiDeliveryDouPlusCoin/R-BAM-AWARD-COIN-RELIEVED/response.json",
+    "naturalUiSample": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886338842",
+      "candidate_id": "700002",
+      "rank": 2,
+      "delivery_from": 1,
+      "source": "SearchCandidate mock scope update for TC-INT-AWARD-COIN-RELIEVED; natural browser verification must select the visible second row."
+    },
+    "sourceRefs": [
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#L41",
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#L73",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx#L34-L79",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx#L449-L483",
+      "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts#L63-L80"
+    ]
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-AWARD-COIN-RELIEVED",
+    "requiredChecks": [
+      "natural UI SearchCandidate list shows relieved candidate 700002 and complete delivery_config.effective_time",
+      "natural UI selects only relieved candidate 700002, opens DOU+ coin award modal and selects a valid charge record",
+      "click modal `确定` from natural UI",
+      "runtime marker includes R-BAM-AWARD-COIN-RELIEVED and requestBody delivery_from=1 / delivery_items[0].candidate_id=700002",
+      "success branch closes/resets as frontend success flow while no governance failure copy appears",
+      "case evidence records that real governance relieved state and transaction consistency remain real verify"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实环境复验申诉解除/自主解封解除状态、治理接口一致性和最终发奖事务一致性。"
+}

@@ -1,0 +1,79 @@
+{
+  "ruleId": "R-BAM-AWARD-COUPON-PENALTY",
+  "status": "synthetic_contract",
+  "origin_stage": "verify",
+  "resume_case": "TC-INT-AWARD-COUPON-PENALTY",
+  "apiName": "apiDeliveryDouPlusCoupon",
+  "method": "POST",
+  "path": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+  "captured_at": "2026-07-09T12:44:00+08:00",
+  "interfaceNecessity": "AR-004 and TC-INT-AWARD-COUPON-PENALTY require the DOU+ coupon award submit wrapper to return a natural-penalty non-success response so frontend no-success/no-fake-success behavior can be verified.",
+  "syntheticContractReason": "The UI request point is known from BatchSubmitModal and the generated BAM wrapper, but delivery_dou_plus_coupon is a backend write interface. Under MOCK_PREVIEW the request must not be sent to the real backend; the BAM runtime returns a marked synthetic non-success response instead.",
+  "uiNaturalAttemptCount": 2,
+  "uiNaturalAttempts": [
+    {
+      "attempt": 1,
+      "status": "not_sent_by_policy",
+      "evidence": "09-test-case-matrix.md defines TC-INT-AWARD-COUPON-PENALTY as BAM_RUNTIME_MOCK with ruleId R-BAM-AWARD-COUPON-PENALTY; batch-submit-modal/index.tsx lines 112-123 call apiDeliveryDouPlusCoupon from the natural modal submit path.",
+      "reason": "A real click before BAM patch would send a backend award write request; verify policy requires mock detour first."
+    },
+    {
+      "attempt": 2,
+      "status": "not_sent_by_policy",
+      "evidence": "BAM wrapper apiDeliveryDouPlusCoupon lines 1831-1844 maps activity_id, config_id, charge_code, delivery_list, delivery_authors, session_unix_time, delivery_from and related fields to POST /delivery_dou_plus_coupon; response type lines 214-220 exposes st/msg/code.",
+      "reason": "A repeated real click without BAM patch would have the same write side effect; the response branch is therefore recorded as synthetic and must be confirmed by patched runtime during verify."
+    }
+  ],
+  "requestEvidence": {
+    "request": "mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/request.json",
+    "response": "mock/real-connect/apiDeliveryDouPlusCoupon/R-BAM-AWARD-COUPON-PENALTY/response.json",
+    "matrixContract": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "candidate_id": "800001",
+      "rank": 1,
+      "delivery_from": 1,
+      "source": "09-test-case-matrix.md case row and BAM Mock Response Field Coverage Matrix"
+    },
+    "sourceRefs": [
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#L42",
+      "artifacts/7306602080-incentive-control-online/09-test-case-matrix.md#L74",
+      "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx#L112-L129",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts#L1814-L1844",
+      "apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity.ts#L189-L220"
+    ]
+  },
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "browserTool": "integrated_browser",
+    "headless": false,
+    "businessPageViewId": "f56171fb-9ae8-4e99-8749-ecc9e4f68a5a",
+    "snapshotSummary": "业务页 title=内容生态运营｜橙蕉；URL 为 alliance-operation-content award vmok；当前 detour 不发送真实 DOU+券发奖写请求，只为后续自然 UI submit 安装 BAM safety rule。",
+    "localServiceOwnerCheck": {
+      "status": "matched_current_execution_repo",
+      "port": 8083,
+      "pid": 95994,
+      "command": "node /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/node_modules/.bin/../@edenx/app-tools/bin/index.js dev",
+      "cwd": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content",
+      "expectedRepoRoot": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono"
+    }
+  },
+  "expectedRuntimeMarkers": [
+    "[BAM_MOCK_SYNTHETIC_CONTRACT]",
+    "[BAM_MOCK_HIT]"
+  ],
+  "verifyResume": {
+    "resume_command": "/delivery:verify",
+    "resume_case": "TC-INT-AWARD-COUPON-PENALTY",
+    "requiredChecks": [
+      "natural UI opens DOU+ coupon award modal and selects a valid coupon charge / delivery record",
+      "click modal 确定 from natural UI",
+      "runtime marker includes R-BAM-AWARD-COUPON-PENALTY and requestBody delivery_from=1 / delivery_authors[0].candidate_id=800001",
+      "message shows non-success penalty error and no 提交成功 success toast",
+      "no fake success and no item/work columns are injected into the coupon author table",
+      "case evidence records that real governance status and transaction consistency remain real verify"
+    ]
+  },
+  "realVerify": "后端 ready 后用真实环境复验 DOU+券自然处罚状态、申诉解除/自主解封解除状态和最终发奖事务一致性。"
+}

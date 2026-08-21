@@ -1,0 +1,671 @@
+<!-- D2C Generated XML - Figma URL: https://www.figma.com/design/fNJJ7mEmEMYU5y0tcAZm3X/Untitled?node-id=1-10938&p=f&m=dev -->
+<!-- Generated at: 2026-07-08T09:07:33.493Z -->
+<!-- 🗑️ This is a temporary file, please delete after code generation -->
+
+<MainUI pv="v260603-v4.3.web.en" xml-id="6ca55f44c5247097" type="xml">
+  <Screen id="1:11249" codegen-summary="Content ecology operations platform form layout featuring a multi-step reward configuration with rule groups, condition inputs, checkboxes, and sidebars." _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0">
+    <!-- ROOT LAYOUT CONTAINER -->
+    <Container id="1:10938" display="flex" flex-direction="column" width="1808px" height="2369px" background-color="rgb(244,245,247)" font-family="&apos;PingFang SC&apos;, sans-serif">
+      <!-- TOP GLOBAL HEADER NAVBAR -->
+      <Header id="1:11344" display="flex" flex-direction="row" align-items="center" justify-content="space-between" height="52px" padding="10px 16px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(238,239,240)" border-width="0px 0px 1px 0px" box-shadow="0px 1px 0px 0px rgba(0,0,0,0.05)" z-index="10" impl-role="header">
+        <!-- Brand logo & Title -->
+        <Container id="I1:11348;2:4570" display="flex" flex-direction="row" align-items="center" gap="4px">
+          <Container id="I1:11348;2:4573" display="flex" width="38px" height="32px" justify-content="center" align-items="center">
+            <Icon id="I1:11348;2:4575" name="business-logo" width="36px" height="28px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/b76b7b8b-1618-4101-8ee6-56b4781616de" image-format="png"/>
+          </Container>
+          <Container id="I1:11348;2:4706" display="flex" flex-direction="column">
+            <Text id="I1:11348;2:4582" font-size="14px" font-weight="600" color="rgb(17,17,17)" line-height="20px" white-space="nowrap">内容生态运营</Text>
+          </Container>
+        </Container>
+        <!-- Search and Tools -->
+        <Container id="I1:11348;2:4589" display="flex" flex-direction="row" align-items="center" justify-content="flex-end" gap="48px" flex-grow="1">
+          <!-- Quick Search Input -->
+          <Container id="I1:11348;2:4620" display="flex" width="200px" height="32px" background-color="rgb(248,249,250)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(238,239,240)" impl-role="input">
+            <Container id="I1:11348;2:4621" display="flex" flex-direction="row" align-items="center" gap="8px" padding="0px 10px" width="100%" _strokeStyleName="Line/line-1">
+              <Icon id="I1:11348;2:4623" name="search" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/8a30b35a-11cf-4847-ab3c-b9d6af5627cf" image-format="png" figma-instance="true" figma-component-key="4704512c8692ab689f2e8c13c7f9b9ad65728a6e" figma-component-name="icon/16x16/搜索" />
+              <Text id="I1:11348;2:4624" font-size="14px" color="rgb(137,139,143)" white-space="nowrap" _fillStyleName="text-icon/text-icon-2">搜功能/商家/商品</Text>
+            </Container>
+          </Container>
+          <!-- Utility Buttons and Profile -->
+          <Container id="I1:11348;2:4626" display="flex" flex-direction="row" align-items="center" gap="16px">
+            <Button id="1:11349" display="flex" height="26px" justify-content="center" align-items="center" padding="0px 18px" background-color="rgb(248,249,250)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(238,239,240)" _strokeStyleName="Line/line-1">
+              <Text id="1:11352" font-size="12px" color="rgb(37,41,49)" white-space="nowrap" _fillStyleName="Text-icon/text-icon-0">+ 常用菜单</Text>
+            </Button>
+            <Icon id="I1:11348;2:4627" name="notification" width="24px" height="24px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e9aa9fa4-d253-4a2e-b3a4-65be53d0e0b0" image-format="png" figma-instance="true" figma-component-key="58569f5f052035bd95672db82e9a90a3c682c07f" figma-component-name="消息" />
+            <Image id="I1:11348;2:4628" width="32px" height="32px" border-radius="50%" src="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/3b4329ab-ec09-4783-92fb-53bab43cd4be"/>
+          </Container>
+        </Container>
+      </Header>
+      <!-- WORKSPACE SPLIT: SIDEBARS + MAIN CONTENT CONTAINER -->
+      <Container id="workspace-wrapper" display="flex" flex-direction="row" width="100%" flex-grow="1" overflow="hidden">
+        <!-- PRIMARY SIDEBAR (70px Width) -->
+        <Sidebar id="1:11317" display="flex" flex-direction="column" justify-content="space-between" align-items="center" width="70px" padding="8px 0px 12px 0px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(238,239,240)" border-width="0px 1px 0px 0px" flex-shrink="0" impl-role="nav">
+          <Container id="primary-nav-group" display="flex" flex-direction="column" align-items="center" gap="16px" width="100%">
+            <Container id="1:11320" display="flex" flex-direction="column" align-items="center" gap="8px" width="100%">
+              <!-- Decorative separator -->
+              <Box id="1:11321" width="16px" height="1px" background-color="rgb(235,240,245)"/>
+              <!-- Sidebar Icons List -->
+              <Container id="primary-menu-list" display="flex" flex-direction="column" gap="2px" width="100%" align-items="center">
+                <Container id="1:11323" display="flex" flex-direction="column" justify-content="center" align-items="center" width="52px" height="52px" border-radius="8px">
+                  <Icon id="1:11324" name="author-ops" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/ac3275f8-6ef7-4b66-8e49-e9d15ce1c69e" image-format="png" figma-instance="true" figma-component-key="c0aa229ca2377767a43f1ec0b5ebde9bf5a54ef8" figma-component-set-key="bbe47747e99c6f2ad66b9369f5fadc3c7a75969b" figma-component-set-name="icon" figma-component-name="Property 1=DataChartIcon" figma-component-properties='{"Property 1":"DataChartIcon"}' />
+                  <Text id="1:11325" font-size="10px" color="rgb(0,0,0)" white-space="nowrap">作者运营</Text>
+                </Container>
+                <Container id="1:11326" display="flex" flex-direction="column" justify-content="center" align-items="center" width="52px" height="52px" background-color="rgb(229,239,255)" border-radius="8px">
+                  <Icon id="1:11327" name="content-ops" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/4ef8aaa3-a95a-4224-9f85-fcfd45c7a50e" image-format="png" figma-instance="true" figma-component-key="dc561274949f6b940cd9e2ab3623facd10bd2f00" figma-component-name="icon_" />
+                  <Text id="1:11328" font-size="10px" font-weight="500" color="rgb(25,102,255)" white-space="nowrap" _fillStyleName="Primary/brand">内容运营</Text>
+                </Container>
+                <Container id="1:11329" display="flex" flex-direction="column" justify-content="center" align-items="center" width="52px" height="52px" border-radius="8px">
+                  <Icon id="1:11330" name="b2b-match" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/2ff2959f-2d76-48a4-bb57-2a7f852e69eb" image-format="png" figma-instance="true" figma-component-key="774ce20ce300fac97806ceef2351d6ce0be7e759" figma-component-name="icon_" />
+                  <Text id="1:11331" font-size="10px" color="rgb(0,0,0)" white-space="nowrap">商达撮合</Text>
+                </Container>
+                <Container id="1:11332" display="flex" flex-direction="column" justify-content="center" align-items="center" width="52px" height="52px" border-radius="8px">
+                  <Icon id="1:11333" name="policy-platform" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/402a4d4a-ec50-422a-8970-94dd0f859266" image-format="png" figma-instance="true" figma-component-key="9a28c364e7b78acf6f6c2c32621d9be70d494180" figma-component-name="icon_" />
+                  <Text id="1:11334" font-size="10px" color="rgb(0,0,0)" white-space="nowrap">策略平台</Text>
+                </Container>
+                <Container id="1:11335" display="flex" flex-direction="column" justify-content="center" align-items="center" width="52px" height="52px" border-radius="8px">
+                  <Icon id="1:11336" name="data-insight" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/3b50a6a1-3a0e-40c9-962d-8806f1f69715" image-format="png" figma-instance="true" figma-component-key="6449a49ad4f1d8773e558ef5ea5b17ff60d25531" figma-component-set-key="bbe47747e99c6f2ad66b9369f5fadc3c7a75969b" figma-component-set-name="icon" figma-component-name="Property 1=RewardsPunishmentsIcon" figma-component-properties='{"Property 1":"RewardsPunishmentsIcon"}' />
+                  <Text id="1:11337" font-size="10px" color="rgb(0,0,0)" white-space="nowrap">数据洞察</Text>
+                </Container>
+                <Container id="1:11338" display="flex" flex-direction="column" justify-content="center" align-items="center" width="52px" height="52px" border-radius="8px">
+                  <Icon id="1:11339" name="tools" width="20px" height="20px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/fb9bb7f4-6909-44c5-94b0-c3217122d3e3" image-format="png" figma-instance="true" figma-component-key="a24b189da5231385664d2cdc4124dde73011a3ef" figma-component-name="商品中心" />
+                  <Text id="1:11340" font-size="10px" color="rgb(0,0,0)" white-space="nowrap">产研工具</Text>
+                </Container>
+              </Container>
+            </Container>
+          </Container>
+          <!-- Setting icon at bottom -->
+          <Container id="1:11341" display="flex" width="32px" height="32px" border-radius="4px" box-shadow="inset 0 0 0 0.89px rgb(238,239,240)" justify-content="center" align-items="center" _strokeStyleName="Line/line-1">
+            <Icon id="1:11343" name="settings" width="18px" height="18px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/a6c9b65e-26e7-4bc6-882f-5c75c9f09af5" image-format="png" figma-instance="true" figma-component-key="c1acfe8981bfe2f260aea79c4358f7a2446eb756" figma-component-name="icon_" />
+          </Container>
+        </Sidebar>
+        <!-- SECONDARY COLLAPSIBLE SIDEBAR TREE MENU (130px Width) -->
+        <Sidebar id="1:11263" display="flex" flex-direction="column" width="130px" padding="10px 8px 0px 20px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(238,239,240)" border-width="0px 1px 0px 0px" flex-shrink="0" impl-role="nav">
+          <Container id="1:11265" display="flex" flex-direction="column" gap="10px" width="100%">
+            <!-- Video Management Group -->
+            <Container id="1:11266" display="flex" flex-direction="column" gap="4px" width="100%">
+              <Container id="1:11267" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="6px 0px" width="100%">
+                <Text id="1:11268" font-size="14px" font-weight="500" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">视频管理</Text>
+                <Icon id="1:11269" name="chevron-down" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e28867e8-c0fd-4d2e-b66b-65e6ab8d77c1" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+              </Container>
+              <Container id="1:11270" display="flex" flex-direction="row" padding="6px 0px">
+                <Text id="1:11273" font-size="12px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">视频查询</Text>
+              </Container>
+            </Container>
+            <!-- Hotspot Management Group -->
+            <Container id="1:11276" display="flex" flex-direction="column" gap="4px" width="100%">
+              <Container id="1:11277" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="6px 0px" width="100%">
+                <Text id="1:11278" font-size="14px" font-weight="500" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">热点管理</Text>
+                <Icon id="1:11279" name="chevron-down" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/d2a4d321-5db0-4f25-a7fb-928fbe908a96" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+              </Container>
+              <Container id="1:11280" display="flex" flex-direction="row" padding="6px 0px">
+                <Text id="1:11283" font-size="12px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">热点列表</Text>
+              </Container>
+            </Container>
+            <!-- Buyer Show Group -->
+            <Container id="1:11286" display="flex" flex-direction="column" gap="4px" width="100%">
+              <Container id="1:11287" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="6px 0px" width="100%">
+                <Text id="1:11288" font-size="14px" font-weight="500" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">买家秀活动</Text>
+                <Icon id="1:11289" name="chevron-down" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/7439e75f-42bb-47e3-a041-e58a8efc139e" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+              </Container>
+              <Container id="1:11290" display="flex" flex-direction="row" padding="6px 0px">
+                <Text id="1:11293" font-size="12px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">买家秀话题</Text>
+              </Container>
+            </Container>
+            <!-- Evaluation Group -->
+            <Container id="1:11296" display="flex" flex-direction="column" gap="4px" width="100%">
+              <Container id="1:11297" display="flex" flex-direction="row" justify-content="space-between" align-items="center" padding="6px 0px" width="100%">
+                <Text id="1:11298" font-size="14px" font-weight="500" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">好看计划评选</Text>
+                <Icon id="1:11299" name="chevron-down" width="12px" height="12px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/d44a50f7-b475-4039-8cdd-39a7e7905df5" image-format="png" figma-instance="true" figma-component-key="e2370f8b6203eedbfe342f413b04c8627e6547df" figma-component-name="icons_3px_unfold_outlined" />
+              </Container>
+              <Container id="1:11300" display="flex" flex-direction="row" padding="6px 0px" width="100%">
+                <Text id="1:11303" font-size="12px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">好看作者评选</Text>
+              </Container>
+              <Container id="1:11306" display="flex" flex-direction="row" padding="6px 0px" width="100%">
+                <Text id="1:11309" font-size="12px" color="rgb(85,88,92)" _fillStyleName="Black/二级文字">好看内容评选</Text>
+              </Container>
+            </Container>
+            <!-- Active Page Menu Item -->
+            <Container id="1:11312" display="flex" flex-direction="row" align-items="center" padding="6px 0px" width="100%">
+              <Text id="1:11313" font-size="14px" font-weight="500" color="rgb(37,41,49)" _fillStyleName="text-icon/text-icon-0">内容活动</Text>
+            </Container>
+          </Container>
+          <!-- Active Secondary Item highlight -->
+          <Container id="1:11316" display="flex" flex-direction="row" align-items="center" width="101px" height="28px" padding="6px" background-color="rgb(235,243,255)" border-radius="4px" margin-top="8px" _fillStyleName="Primary/bright" figma-instance="true" figma-component-key="b5e18453267ce7be8f694f79e0fa3ea45d8c9e6b" figma-component-set-key="e063c5c917ffc1d2a8ff4c81dd4a790ecf69e04f" figma-component-set-name="三级导航" figma-component-name="Property 1=0" figma-component-properties='{"Property 1":"0"}'>
+            <Text id="I1:11316;494:107279" font-size="12px" font-weight="500" color="rgb(25,102,255)" white-space="nowrap" _fillStyleName="Primary/brand">内容活动列表</Text>
+          </Container>
+        </Sidebar>
+        <!-- MAIN WORKSPACE CONTAINER -->
+        <ScrollView id="main-content-scroll" display="flex" flex-direction="column" flex-grow="1" overflow-y="auto" padding="16px">
+          <!-- PAGE HEADER BREADCRUMB / TAB BAR -->
+          <Container id="1:11253" display="flex" flex-direction="row" align-items="center" height="36px" padding="0px 0px 0px 28px" background-color="rgba(242,243,245,0.5)" border-style="solid" border-color="rgb(238,239,240)" border-width="0px 0px 1px 0px" backdrop-filter="blur(18px)" box-shadow="0px 1px 0px 0px rgba(0,0,0,0.05)" margin-bottom="16px" _strokeStyleName="Line/line-1">
+            <Container id="1:11254" display="flex" flex-direction="row" align-items="center" gap="8px" width="140px">
+              <Text id="1:11258" font-size="12px" font-weight="500" color="rgb(37,41,49)" white-space="nowrap" _fillStyleName="text-icon/text-icon-0">内容活动</Text>
+              <Container id="1:11259" display="flex" width="16px" height="16px" justify-content="center" align-items="center" figma-instance="true" figma-component-key="cd0b8ff89ad7f5c23c00ad10ed95ac4bf0b52c2c" figma-component-name="icons_16px_window_close_outlined">
+                <Icon id="I1:11259;4499:402;886:112" name="close" width="10px" height="10px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/586e4906-16b5-445b-a4b6-24b1fc016e1c" image-format="png" _fillStyleName="fill/fill-deepen-2"/>
+              </Container>
+            </Container>
+            <Box id="1:11260" width="1px" height="12px" background-color="rgb(238,239,240)" figma-instance="true" figma-component-key="9b69285b10839e182977f8797c7c43600293548d" figma-component-name="分隔线" />
+          </Container>
+          <!-- STEP PROGRESS TRACKER CARD -->
+          <Container id="1:11355" display="flex" flex-direction="column" padding="24px" background-color="rgb(255,255,255)" border-radius="5px" margin-bottom="16px">
+            <Text id="1:11356" font-size="18px" font-weight="500" color="rgb(37,41,49)" margin-bottom="16px" _textTokenName="Heading/H4-Medium" _fillStyleName="Text-icon/text-icon-0">内容活动列表</Text>
+            <!-- Horizontal Steps Container -->
+            <Container id="steps-row" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="100%">
+              <!-- Step 1: Completed / Active -->
+              <Container id="1:11360" display="flex" flex-direction="row" align-items="center" gap="24px" flex-grow="1" figma-instance="true" figma-component-key="04feb529779a7ba2c7a3cffb2e3b89be74a4009d" figma-component-set-key="dc41ecca752e5169d0a6fab32771a1d8bc511aa0" figma-component-set-name="step" figma-component-name="Last one=false, Property 3=horizontal" figma-component-properties='{"Last one":"false","Property 3":"horizontal"}'>
+                <Container id="step1-content" display="flex" flex-direction="row" align-items="center" gap="8px">
+                  <Container id="step1-circle" display="flex" width="48px" height="48px" background-color="rgb(0,136,255)" border-radius="50%" justify-content="center" align-items="center">
+                    <Text id="step1-num" font-size="18px" font-weight="600" color="rgb(255,255,255)">1</Text>
+                  </Container>
+                  <Container display="flex" flex-direction="column" gap="4px">
+                    <Text font-size="14px" font-weight="500" color="rgb(37,41,49)" white-space="nowrap">活动配置</Text>
+                    <Text font-size="12px" color="rgb(137,139,143)" white-space="nowrap">活动基础配置</Text>
+                  </Container>
+                </Container>
+                <!-- Arrow Connector Line -->
+                <Box id="step1-connector" flex-grow="1" height="1px" border-style="dashed" border-color="rgb(25,102,255)" border-width="1px 0px 0px 0px" margin="0px 16px"/>
+              </Container>
+              <!-- Step 2: Selected (Active) -->
+              <Container id="1:11357" display="flex" flex-direction="row" align-items="center" gap="24px" flex-grow="1" figma-instance="true" figma-component-key="04feb529779a7ba2c7a3cffb2e3b89be74a4009d" figma-component-set-key="dc41ecca752e5169d0a6fab32771a1d8bc511aa0" figma-component-set-name="step" figma-component-name="Last one=false, Property 3=horizontal" figma-component-properties='{"Last one":"false","Property 3":"horizontal"}'>
+                <Container id="step2-content" display="flex" flex-direction="row" align-items="center" gap="8px">
+                  <Container id="step2-circle" display="flex" width="48px" height="48px" background-color="rgb(0,136,255)" border-radius="50%" justify-content="center" align-items="center">
+                    <Text id="step2-num" font-size="18px" font-weight="600" color="rgb(223,240,255)">2</Text>
+                  </Container>
+                  <Container display="flex" flex-direction="column" gap="4px">
+                    <Text font-size="14px" font-weight="500" color="rgb(37,41,49)" white-space="nowrap">奖励配置</Text>
+                    <Text font-size="12px" color="rgb(137,139,143)" white-space="nowrap">奖励类型和奖励规则配置</Text>
+                  </Container>
+                </Container>
+                <!-- Arrow Connector Line -->
+                <Box id="step2-connector" flex-grow="1" height="1px" border-style="dashed" border-color="rgb(25,102,255)" border-width="1px 0px 0px 0px" margin="0px 16px"/>
+              </Container>
+              <!-- Step 3: Next / Disabled -->
+              <Container id="1:11358" display="flex" flex-direction="row" align-items="center" gap="8px" figma-instance="true" figma-component-key="04feb529779a7ba2c7a3cffb2e3b89be74a4009d" figma-component-set-key="dc41ecca752e5169d0a6fab32771a1d8bc511aa0" figma-component-set-name="step" figma-component-name="Last one=false, Property 3=horizontal" figma-component-properties='{"Last one":"false","Property 3":"horizontal"}'>
+                <Container id="step3-circle" display="flex" width="48px" height="48px" background-color="rgb(240,246,255)" border-radius="50%" justify-content="center" align-items="center">
+                  <Text id="step3-num" font-size="18px" font-weight="600" color="rgb(71,132,255)">3</Text>
+                </Container>
+                <Container display="flex" flex-direction="column" gap="4px">
+                  <Text font-size="14px" font-weight="500" color="rgb(37,41,49)" white-space="nowrap">关联触达渠道</Text>
+                  <Text font-size="12px" color="rgb(137,139,143)" white-space="nowrap">关联触达任务或其他触达形式</Text>
+                </Container>
+              </Container>
+            </Container>
+          </Container>
+          <!-- WORKSPACE PRIMARY CARD: REWARD CONFIG FORM -->
+          <Card id="1:11457" display="flex" flex-direction="column" padding="24px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="0px 2px 8px rgba(0,0,0,0.04)" margin-bottom="80px" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+            <!-- Header Section of the Config panel -->
+            <Container id="card-header" display="flex" flex-direction="row" justify-content="space-between" align-items="center" margin-bottom="20px">
+              <Text id="1:11354" font-size="18px" font-weight="500" color="rgb(37,41,49)" _textTokenName="Heading/H4-Medium" _fillStyleName="Text-icon/text-icon-0">奖励配置</Text>
+              <Button id="1:11361" display="flex" height="32px" align-items="center" padding="6px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="b00cf39e1a50c9c6e0ba4c7d6842b4fd1b8c5ee2" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=M, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"M","State":"normal","Type":"Secondary"}'>
+                <Text id="I1:11361;69:1221" font-size="14px" color="rgb(25,102,255)" white-space="pre-wrap" _fillStyleName="Primary/brand">+ 新增配置</Text>
+              </Button>
+            </Container>
+            <!-- MAIN FORM SECTION WRAPPER (CONFIG BOX ONE) -->
+            <Container id="1:11362" display="flex" flex-direction="column" padding="24px" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" background-color="rgb(255,255,255)" position="relative" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0">
+              <!-- Delete Configuration Icon -->
+              <Container id="delete-config-btn" position="absolute" top="16px" right="16px" cursor="pointer">
+                <Icon id="1:11363" name="delete" width="16px" height="16px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e5f59166-62af-4f95-a112-1455bb8d2d35" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+              </Container>
+              <!-- Configuration Section Label "配置一" -->
+              <Container display="flex" flex-direction="row" margin-bottom="20px">
+                <Text id="1:11378" font-size="14px" font-weight="500" color="rgb(0,0,0)" _colorVariable="Grays/Black">配置一</Text>
+              </Container>
+              <!-- FORM ROW 1: 奖励类型 -->
+              <Container id="form-row-reward-type" display="flex" flex-direction="row" align-items="center" margin-bottom="20px">
+                <Container width="120px" justify-content="flex-end" padding="0px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11377" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">奖励类型</Text>
+                </Container>
+                <Container display="flex" flex-direction="row" gap="16px">
+                  <!-- Radio Option: DOU+币 (Selected) -->
+                  <Radio id="1:11373" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" impl-role="control" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                    <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                      <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                    </Container>
+                    <Text font-size="14px" color="rgb(37,41,49)">DOU+币</Text>
+                  </Radio>
+                  <!-- Radio Option: DOU+券 -->
+                  <Radio id="1:11375" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" impl-role="control" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                    <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                    <Text font-size="14px" color="rgb(37,41,49)">DOU+券</Text>
+                  </Radio>
+                </Container>
+              </Container>
+              <!-- FORM ROW 2: 活动参与资格 -->
+              <Container id="form-row-qualification" display="flex" flex-direction="row" align-items="center" margin-bottom="20px">
+                <Container width="120px" justify-content="flex-end" padding="0px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11376" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">活动参与资格</Text>
+                </Container>
+                <Container display="flex" flex-direction="row" gap="16px">
+                  <!-- Radio Option: 全部用户 -->
+                  <Radio id="1:11372" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" impl-role="control" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                    <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                    <Text font-size="14px" color="rgb(37,41,49)">全部用户</Text>
+                  </Radio>
+                  <!-- Radio Option: 仅限预埋用户 (Selected) -->
+                  <Radio id="1:11374" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" impl-role="control" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                    <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                      <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                    </Container>
+                    <Text font-size="14px" color="rgb(37,41,49)">仅限预埋用户</Text>
+                  </Radio>
+                </Container>
+              </Container>
+              <!-- FORM ROW 3: 预埋用户名单 -->
+              <Container id="form-row-user-list" display="flex" flex-direction="row" align-items="flex-start" margin-bottom="20px">
+                <Container width="120px" justify-content="flex-end" padding="6px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11385" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">预埋用户名单</Text>
+                </Container>
+                <Container display="flex" flex-direction="column" gap="8px" flex-grow="1" max-width="500px">
+                  <!-- Dropdown Input selection -->
+                  <Select id="1:11371" display="flex" flex-direction="row" align-items="center" justify-content="space-between" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" width="100%" impl-web="select" impl-behavior="select active" impl-role="control" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}'>
+                    <Text id="I1:11371;62407:20847;59149:18990;300:460" font-size="14px" color="rgb(30,30,30)" _colorVariable="var(--sds-color-text-default-default)" _textTokenName="Paragraph/P1-Regular">母亲节礼物我选好了</Text>
+                    <Icon id="I1:11371;62407:20847;59149:18991" name="chevron-down" width="16px" height="16px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/5136ff2e-4c61-40a2-8d06-0ca2d4fad940" image-format="png" figma-instance="true" figma-component-key="f4f93934f39236f6bfe65a65df820c75a68ce72a" figma-component-set-key="bbe47747e99c6f2ad66b9369f5fadc3c7a75969b" figma-component-set-name="icon" figma-component-name="Property 1=DirectionDownIcon" figma-component-properties='{"Property 1":"DirectionDownIcon"}' />
+                  </Select>
+                  <!-- Helper Details Segment 1 -->
+                  <Text id="1:11369" font-size="14px" line-height="20px" color="rgb(188,189,192)" _textTokenName="Paragraph/P1-Regular" _fillStyleName="Text-icon/text-icon-3">
+                    <Span>人群ID：cond_un_1234567   人群数量：56728   </Span>
+                    <Span color="rgb(0,136,255)">查看更多详情</Span>
+                  </Text>
+                  <!-- Helper Details Segment 2 -->
+                  <Text id="1:11370" font-size="14px" line-height="20px" color="rgb(188,189,192)" _textTokenName="Paragraph/P1-Regular" _fillStyleName="Text-icon/text-icon-3">
+                    <Span>奖励发放环节将进行账号校验，命中【不激励】规则的账号无法被发奖   </Span>
+                    <Span color="rgb(0,136,255)">查看【不激励】规则</Span>
+                  </Text>
+                </Container>
+              </Container>
+              <!-- FORM ROW 4: 内容体裁要求 -->
+              <Container id="form-row-genre" display="flex" flex-direction="row" align-items="center" margin-bottom="20px">
+                <Container width="120px" justify-content="flex-end" padding="0px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11386" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">内容体裁要求</Text>
+                </Container>
+                <Container display="flex" flex-direction="row" gap="16px">
+                  <!-- Checkbox: 视频 (Selected) -->
+                  <Checkbox id="1:11467" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="checkbox" impl-behavior="checkbox checked(true)" impl-role="control" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                    <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" background-color="rgb(25,102,255)" border-radius="2px">
+                      <Icon id="1:11465" name="check-mark" width="10px" height="10px" color="rgb(255,255,255)" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/9b537db2-6e37-4359-a250-3fd288e7a87e" image-format="png" figma-instance="true" figma-component-key="deb9a88cda5a5193f0fb3c578e18e60e8a20fb83" figma-component-set-key="0f5952b22c0299d0227053e836bbf49723c1eaf5" figma-component-set-name="Checkbox" figma-component-name="Selected=True, Half-selected=False, Lable=False, State=normal" figma-component-properties='{"Half-selected":"False","Lable":"False","Selected":"True","State":"normal"}' />
+                    </Container>
+                    <Text font-size="14px" color="rgb(37,41,49)">视频</Text>
+                  </Checkbox>
+                  <!-- Checkbox: 图文 (Unselected) -->
+                  <Checkbox id="1:11468" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="checkbox" impl-behavior="checkbox checked(false)" impl-role="control" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                    <Container display="flex" width="16px" height="16px" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="2px" background-color="rgb(255,255,255)"/>
+                    <Text font-size="14px" color="rgb(37,41,49)">图文</Text>
+                  </Checkbox>
+                </Container>
+              </Container>
+              <!-- FORM ROW 5: 准入门槛 (Nested Card/Logic Rules) -->
+              <Container id="form-row-threshold" display="flex" flex-direction="row" align-items="flex-start" margin-bottom="24px">
+                <Container width="120px" justify-content="flex-end" padding="6px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11387" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">准入门槛</Text>
+                </Container>
+                <Container display="flex" flex-direction="column" gap="12px" flex-grow="1" max-width="800px">
+                  <!-- Nested Gate Frame (门槛一) -->
+                  <Container id="threshold-card-one" display="flex" flex-direction="column" border-style="solid" border-color="rgb(238,239,240)" border-width="1px" border-radius="4px" background-color="rgb(255,255,255)" width="100%">
+                    <!-- Collapse Header of Gate One -->
+                    <Container id="1:11439" display="flex" flex-direction="row" align-items="center" padding="10px 16px" background-color="rgb(248,249,250)">
+                      <Icon id="1:11441" name="asterisk-required" width="9px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/f9c87ee3-dfff-408b-8083-10f3fa00e3df" image-format="png" figma-instance="true" figma-component-key="1a9a1cab990d61d63fdad895f545fbad7544d003" figma-component-name="radio/必填" />
+                      <Text id="1:11442" font-size="14px" font-weight="500" color="rgb(37,41,49)" margin-left="4px" _fillStyleName="text-icon/text-icon-0"> 门槛一</Text>
+                    </Container>
+                    <!-- Rule content of Gate One -->
+                    <Container id="threshold-card-one-body" display="flex" flex-direction="row" padding="16px" position="relative" width="100%">
+                      <!-- Logic Connection Indicator Side Pillar (And/Or) -->
+                      <Container id="1:11427" display="flex" flex-direction="row" align-items="center" width="41px" margin-right="16px">
+                        <Container id="1:11429" display="flex" width="11px" height="188px" border-style="solid" border-color="rgb(238,239,240)" border-width="1px 0px 1px 1px" position="relative">
+                          <!-- AND badge overlay centering -->
+                          <Container id="1:11431" position="absolute" top="50%" left="-12px" margin-top="-12px" display="flex" justify-content="center" align-items="center" width="24px" height="24px" background-color="rgb(255,242,217)" border-radius="2px">
+                            <Text id="1:11433" font-size="14px" color="rgb(255,159,26)" font-weight="400" _fillStyleName="function/warning/main">且</Text>
+                          </Container>
+                        </Container>
+                      </Container>
+                      <!-- Form Rule Rows List inside Gate One -->
+                      <Container id="gate-one-rows" display="flex" flex-direction="column" gap="16px" flex-grow="1">
+                        <!-- Row Item: 关联话题 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11456" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control" figma-instance="true" figma-component-key="299f65570070abf7a917a5751ba42ef8519edf36" figma-component-set-key="ee13f74ee2cf28b5e05a7c3e323382bb2b16cfb4" figma-component-set-name="Select" figma-component-name="Filled Value=False, Multiple=False, Danger=False, Fold=False, State=normal, frame=true" figma-component-properties='{"Danger":"False","Filled Value":"False","Fold":"False","Multiple":"False","State":"normal","frame":"true"}'>
+                            <Text font-size="14px" color="rgb(188,189,192)">关联话题</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Container display="flex" flex-direction="row" gap="12px">
+                            <Radio id="1:11450" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                              <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                                <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                              </Container>
+                              <Text font-size="14px" color="rgb(37,41,49)">指定话题</Text>
+                            </Radio>
+                            <Radio id="1:11446" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                              <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                              <Text font-size="14px" color="rgb(37,41,49)">批量上传</Text>
+                            </Radio>
+                          </Container>
+                          <Select id="topic-detail-select" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="215px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                            <Text font-size="14px" color="rgb(188,189,192)">请输入话题ID或名称</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Icon id="1:11410" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/a7d1e530-bf67-445f-a8e1-5d160040f85e" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Row Item: 关联买家秀活动 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11415" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}'>
+                            <Text font-size="14px" color="rgb(188,189,192)">关联买家秀活动</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Container display="flex" flex-direction="row" gap="12px">
+                            <Radio id="1:11449" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                              <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                                <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                              </Container>
+                              <Text font-size="14px" color="rgb(37,41,49)">指定活动</Text>
+                            </Radio>
+                            <Radio id="1:11445" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                              <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                              <Text font-size="14px" color="rgb(37,41,49)">批量上传</Text>
+                            </Radio>
+                          </Container>
+                          <Select id="buyer-show-detail-select" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="215px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                            <Text font-size="14px" color="rgb(188,189,192)">请选择买家秀活动ID或名称</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Icon id="1:11409" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/24d85741-c634-4dfb-80ad-c50959a3c787" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Row Item: 关联标记 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11417" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control">
+                            <Text font-size="14px" color="rgb(188,189,192)">关联标记</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Container display="flex" flex-direction="row" gap="12px">
+                            <Radio id="1:11452" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                              <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                                <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                              </Container>
+                              <Text font-size="14px" color="rgb(37,41,49)">全部标记</Text>
+                            </Radio>
+                            <Radio id="1:11448" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="d4d052268aa744c413c7383a52b2adcecf1e4db6" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Disable, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Disable"}'>
+                              <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                              <Text font-size="14px" color="rgb(188,189,192)">指定SPU</Text>
+                            </Radio>
+                          </Container>
+                          <Box width="215px" height="32px"/>
+                          <!-- Placeholder aligning grid space -->
+                          <Icon id="1:11408" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/3743f738-0ea2-454c-ba74-c64ebbfdd2e1" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Row Item: 关联好物清单 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11419" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control">
+                            <Text font-size="14px" color="rgb(188,189,192)">关联好物清单</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Container display="flex" flex-direction="row" gap="12px">
+                            <Radio id="1:11451" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                              <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                                <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                              </Container>
+                              <Text font-size="14px" color="rgb(37,41,49)">全部商品</Text>
+                            </Radio>
+                            <Radio id="1:11447" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" figma-instance="true" figma-component-key="d4d052268aa744c413c7383a52b2adcecf1e4db6" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Disable, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Disable"}'>
+                              <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                              <Text font-size="14px" color="rgb(188,189,192)">指定SPU</Text>
+                            </Radio>
+                          </Container>
+                          <Box width="215px" height="32px"/>
+                          <!-- Placeholder -->
+                          <Icon id="1:11411" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/0d8a5b25-441d-4490-9d90-78daa27556d3" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Row Item: 电商意图 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11424" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}'>
+                            <Text font-size="14px" color="rgb(188,189,192)">电商意图</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Select id="ecommerce-picker" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="215px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                            <Text font-size="14px" color="rgb(188,189,192)">请选择</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Icon id="1:11413" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/0b8f8e2e-ad5b-4f15-9fe9-e4b63d257fca" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Row Item: ugc内容类型 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11425" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control">
+                            <Text font-size="14px" color="rgb(188,189,192)">ugc内容类型</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Select id="ugc-picker" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="215px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                            <Text font-size="14px" color="rgb(188,189,192)">请选择</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Icon id="1:11414" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/7ae6f68b-792d-4e60-9df8-881292e3c4d0" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Row Item: 内容评级 -->
+                        <Container display="flex" flex-direction="row" align-items="center" gap="16px" width="100%">
+                          <Select id="1:11421" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="200px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" impl-role="control">
+                            <Text font-size="14px" color="rgb(188,189,192)">内容评级</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Select id="rating-picker" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="215px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                            <Text font-size="14px" color="rgb(188,189,192)">请选择</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Icon id="1:11412" name="delete" width="16px" height="14px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/84ebd8f3-0e0e-46ae-8454-d7547753a313" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                        <!-- Action Button inside rule card -->
+                        <Container id="1:11434" display="flex" flex-direction="row" margin-top="8px">
+                          <Button id="1:11435" display="flex" align-items="center" padding="5px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)">
+                            <Text id="1:11438" font-size="14px" color="rgb(25,102,255)">+添加条件</Text>
+                          </Button>
+                        </Container>
+                      </Container>
+                    </Container>
+                  </Container>
+                  <!-- Add Gate Trigger button -->
+                  <Container id="1:11388" display="flex" flex-direction="row" margin-top="4px">
+                    <Button id="1:11389" display="flex" align-items="center" padding="6px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)">
+                      <!-- Sync edit-pencil visual helper icon from design draft -->
+                      <Icon id="1:11390" name="edit" width="16px" height="15px" margin-right="4px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/1fd1729f-fb01-47e1-83dc-a1270ce17dd4" image-format="png"/>
+                      <Text id="1:11395" font-size="14px" color="rgb(25,102,255)">添加门槛</Text>
+                    </Button>
+                  </Container>
+                </Container>
+              </Container>
+              <!-- FORM ROW 6: 奖励规则 -->
+              <Container id="form-row-rules" display="flex" flex-direction="row" align-items="flex-start" margin-bottom="24px">
+                <Container width="120px" justify-content="flex-end" padding="6px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11381" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">奖励规则</Text>
+                </Container>
+                <Container display="flex" flex-direction="column" gap="16px" flex-grow="1" max-width="800px">
+                  <!-- Radio criteria picker -->
+                  <Container display="flex" flex-direction="row" gap="16px" margin-bottom="8px">
+                    <Radio id="1:11462" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(true)" impl-role="control" figma-instance="true" figma-component-key="7cb2d66b85debc21886dfc4688f337e673c297ac" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=True, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"True","state":"Normal"}'>
+                      <Container display="flex" justify-content="center" align-items="center" width="16px" height="16px" border-radius="50%" border="1px solid rgb(25,102,255)" background-color="rgb(255,255,255)">
+                        <Box width="8px" height="8px" border-radius="50%" background-color="rgb(25,102,255)"/>
+                      </Container>
+                      <Text font-size="14px" color="rgb(37,41,49)">按照指定条件发奖</Text>
+                    </Radio>
+                    <Radio id="1:11463" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" impl-role="control" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                      <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                      <Text font-size="14px" color="rgb(37,41,49)">按照权重排名发奖</Text>
+                    </Radio>
+                    <Radio id="1:11464" display="flex" flex-direction="row" align-items="center" gap="8px" impl-web="radio" impl-behavior="radio checked(false)" impl-role="control" figma-instance="true" figma-component-key="862477fcee2d4d4c5ce202e30ff122acbdf5dabb" figma-component-set-key="a8d5cfa3efc264cc945c551622e0d1814394db61" figma-component-set-name="Radio" figma-component-name="state=Normal, label=True, selected=False, isShowDoubt=True" figma-component-properties='{"isShowDoubt":"True","label":"True","selected":"False","state":"Normal"}'>
+                      <Container display="flex" width="16px" height="16px" border-radius="50%" border="1px solid rgb(220,222,225)" background-color="rgb(255,255,255)"/>
+                      <Text font-size="14px" color="rgb(37,41,49)">按照人工提报发奖</Text>
+                    </Radio>
+                  </Container>
+                  <!-- Rule Sub-Card (规则一) -->
+                  <Container id="1:11364" display="flex" flex-direction="column" border-style="solid" border-color="rgb(237,237,237)" border-width="1px" border-radius="5px" padding="16px" background-color="rgb(255,255,255)" width="100%">
+                    <!-- Header Title of Rule One -->
+                    <Container display="flex" flex-direction="row" margin-bottom="16px">
+                      <Text id="I1:11458;10943:109622" font-size="14px" font-weight="500" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">规则一</Text>
+                    </Container>
+                    <!-- Nested Conditions Group Inside Rule One -->
+                    <Container id="rule-one-conditions" display="flex" flex-direction="row" margin-bottom="16px" width="100%">
+                      <Container id="1:11500" width="80px" justify-content="flex-end" padding="6px 12px 0px 0px" flex-shrink="0" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                        <Text font-size="14px" color="rgb(37,41,49)">条件限制</Text>
+                      </Container>
+                      <!-- Block criteria container -->
+                      <Container id="1:11498" display="flex" flex-direction="row" border-style="solid" border-color="rgb(237,237,237)" border-width="1px" border-radius="5px" padding="12px" flex-grow="1">
+                        <!-- Operator logic line -->
+                        <Container display="flex" flex-direction="row" align-items="center" width="41px" margin-right="12px">
+                          <Container display="flex" width="11px" height="100px" border-style="solid" border-color="rgb(238,239,240)" border-width="1px 0px 1px 1px" position="relative">
+                            <Container id="1:11516" position="absolute" top="50%" left="-12px" margin-top="-12px" display="flex" justify-content="center" align-items="center" width="24px" height="24px" background-color="rgb(255,242,217)" border-radius="2px">
+                              <Text id="1:11518" font-size="14px" color="rgb(255,159,26)" _fillStyleName="function/warning/main">且</Text>
+                            </Container>
+                          </Container>
+                        </Container>
+                        <!-- Values selection rows -->
+                        <Container display="flex" flex-direction="column" gap="12px" flex-grow="1">
+                          <!-- Condition row 1: 内容播放量 -->
+                          <Container display="flex" flex-direction="row" align-items="center" gap="12px" width="100%">
+                            <Select id="1:11510" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="119px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                              <Text font-size="14px" color="rgb(188,189,192)">内容播放量</Text>
+                              <Icon name="chevron-down" width="16px" height="16px"/>
+                            </Select>
+                            <Text id="1:11502" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">数值范围在</Text>
+                            <!-- Range inputs -->
+                            <Input id="1:11492" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Text id="I1:11496;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">-</Text>
+                            <Input id="1:11494" width="71px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Icon id="1:11507" name="delete" width="16px" height="15px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/be0129e6-54b4-418b-b2c0-0b3556015582" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                          </Container>
+                          <!-- Condition row 2: 全域成交价值 -->
+                          <Container display="flex" flex-direction="row" align-items="center" gap="12px" width="100%">
+                            <Select id="1:11512" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="119px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                              <Text font-size="14px" color="rgb(188,189,192)">全域成交价值</Text>
+                              <Icon name="chevron-down" width="16px" height="16px"/>
+                            </Select>
+                            <Text id="1:11503" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">数值范围在</Text>
+                            <!-- Range inputs -->
+                            <Input id="1:11493" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Text id="I1:11497;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">-</Text>
+                            <Input id="1:11495" width="71px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Icon id="1:11508" name="delete" width="16px" height="15px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/032f54ac-9336-448d-9961-92fdcc124854" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                          </Container>
+                          <!-- Condition row 3: 账号粉丝量 -->
+                          <Container display="flex" flex-direction="row" align-items="center" gap="12px" width="100%">
+                            <Select id="1:11514" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="119px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select">
+                              <Text font-size="14px" color="rgb(188,189,192)">账号粉丝量</Text>
+                              <Icon name="chevron-down" width="16px" height="16px"/>
+                            </Select>
+                            <Text id="1:11505" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">在</Text>
+                            <!-- Inputs -->
+                            <Input id="1:11520" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Text id="I1:11519;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">-</Text>
+                            <Input id="1:11521" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Text id="1:11506" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">区间</Text>
+                            <Icon id="1:11509" name="delete" width="16px" height="15px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/eb92de12-f383-4829-948b-18a6c40e78cb" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                          </Container>
+                        </Container>
+                      </Container>
+                    </Container>
+                    <!-- Nested Sorting Rules Group Inside Rule One -->
+                    <Container id="rule-one-sorting" display="flex" flex-direction="row" margin-bottom="16px" width="100%">
+                      <Container id="1:11501" width="80px" justify-content="flex-end" padding="6px 12px 0px 0px" flex-shrink="0" figma-instance="true" figma-component-key="1307e3d3630fd48d1541155e305b0828ba260ef3" figma-component-set-key="f94edac7d6989df387059f43a85f5e92089cf4bf" figma-component-set-name="Label" figma-component-name="asterisk=off, query=off" figma-component-properties='{"asterisk":"off","query":"off"}'>
+                        <Text font-size="14px" color="rgb(37,41,49)">排序规则</Text>
+                      </Container>
+                      <Container id="1:11499" display="flex" flex-direction="row" border-style="solid" border-color="rgb(237,237,237)" border-width="1px" border-radius="5px" padding="12px" flex-grow="1">
+                        <Container display="flex" flex-direction="row" align-items="center" gap="12px" width="100%">
+                          <Select id="1:11470" display="flex" flex-direction="row" align-items="center" justify-content="space-between" width="119px" padding="6px 12px" background-color="rgba(255,255,255,0.85)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="select" figma-instance="true" figma-component-key="c8ae7cb71b962d2a428abe3f659fe4c61c34b91c" figma-component-set-key="aa7c3bc8e7d0d65f9f2dbb2a7f505f9de239ad14" figma-component-set-name="Form" figma-component-name="type=Select, label=Unlabeled, layout=Horizontal" figma-component-properties='{"Show text#55519:0":false,"label":"Unlabeled","layout":"Horizontal","type":"Select"}'>
+                            <Text font-size="14px" color="rgb(188,189,192)">内容播放量</Text>
+                            <Icon name="chevron-down" width="16px" height="16px"/>
+                          </Select>
+                          <Text id="1:11504" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">排名在</Text>
+                          <!-- Single target input -->
+                          <Container id="1:11481" display="flex" flex-direction="row" align-items="center" gap="8px">
+                            <Input id="1:11482" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                            <Text id="I1:11484;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">-</Text>
+                            <Input id="1:11483" width="71px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                          </Container>
+                          <Icon id="1:11469" name="delete" width="16px" height="15px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/8a2587bf-aeb6-4aab-af76-b37ddef436c8" image-format="png" figma-instance="true" figma-component-key="70258726d14c36cdd993283e72299287bb49b58b" figma-component-name="删除" />
+                        </Container>
+                      </Container>
+                    </Container>
+                    <!-- Rule Sub-Card Action Buttons -->
+                    <Container display="flex" flex-direction="row" gap="12px" padding="0px 0px 0px 80px">
+                      <Button id="1:11471" display="flex" align-items="center" padding="5px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(190,194,203)">
+                        <Text font-size="14px" color="rgb(157,161,169)">+添加条件</Text>
+                      </Button>
+                    </Container>
+                  </Container>
+                  <!-- Mandatory/Asterisk Form Items beneath rule description -->
+                  <Container id="mandatory-reward-amount" display="flex" flex-direction="row" align-items="center" margin-top="8px">
+                    <Container width="120px" justify-content="flex-end" padding="0px 12px 0px 0px" flex-shrink="0">
+                      <Text id="I1:11459;10943:109622" font-size="14px" font-weight="500" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">
+                        <Span color="rgb(255,73,73)">*</Span>
+                        <Span color="rgb(37,41,49)"> 奖励金额</Span>
+                      </Text>
+                    </Container>
+                    <Container id="1:11485" display="flex" flex-direction="row" align-items="center" gap="8px">
+                      <Text id="I1:11488;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">单条内容</Text>
+                      <Input id="1:11486" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                      <Text id="I1:11487;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">元DOU+币</Text>
+                    </Container>
+                  </Container>
+                  <Container id="mandatory-reward-count" display="flex" flex-direction="row" align-items="flex-start">
+                    <Container width="120px" justify-content="flex-end" padding="6px 12px 0px 0px" flex-shrink="0">
+                      <Text id="I1:11460;10943:109622" font-size="14px" font-weight="500" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">
+                        <Span color="rgb(252,38,38)">*</Span>
+                        <Span color="rgb(37,41,49)"> 奖励发放数量</Span>
+                      </Text>
+                    </Container>
+                    <Container display="flex" flex-direction="column" gap="4px">
+                      <Container id="1:11489" display="flex" flex-direction="row" align-items="center" gap="8px">
+                        <Input id="1:11490" width="70px" height="30px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(220,222,225)" border-width="1px" border-radius="4px" impl-web="input" impl-role="input" _fillStyleName="fil/fade-0" _strokeStyleName="line/line-0"/>
+                        <Text id="I1:11491;10943:109622" font-size="14px" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">份</Text>
+                      </Container>
+                      <Text id="1:11383" font-size="14px" color="rgb(204,204,204)" _colorVariable="Fills - Vibrant/Primary" _textTokenName="Paragraph/P1-Regular">需填写活动周期内该配置下发放奖励的总份数</Text>
+                    </Container>
+                  </Container>
+                  <!-- Rule Summary text description in gray box -->
+                  <Container display="flex" padding="12px" background-color="rgb(248,249,250)" border-radius="4px" width="100%">
+                    <Text id="1:11382" font-size="14px" line-height="20px" color="rgb(142,142,147)" _colorVariable="Grays/Gray" _textTokenName="Paragraph/P1-Regular">奖励规则说明：当内容满足内容播放量排名在1-20 且 全域成交价值数值范围在1000-5000且账号粉丝量在1万-5万且内容质量满足优质-标杆、优质-良好，单条内容可获得5000DOU+币，活动期间奖励数量共50份。</Text>
+                  </Container>
+                  <!-- Block criteria list actions -->
+                  <Container display="flex" flex-direction="row" gap="12px" margin-top="4px">
+                    <Button id="1:11399" display="flex" align-items="center" padding="6px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)">
+                      <!-- Sync edit-pencil helper icon -->
+                      <Icon id="1:11401" name="add" width="16px" height="15px" margin-right="4px" download-url="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/60647d67-0b4c-48ee-8fbd-f66888b8ccb9" image-format="png"/>
+                      <Text id="1:11406" font-size="14px" color="rgb(25,102,255)">添加规则</Text>
+                    </Button>
+                    <Button id="1:11396" display="flex" align-items="center" padding="6px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)">
+                      <Text id="1:11398" font-size="14px" color="rgb(25,102,255)">复制规则</Text>
+                    </Button>
+                  </Container>
+                </Container>
+              </Container>
+              <!-- FORM ROW 7: 预估奖励总额 -->
+              <Container id="form-row-estimation" display="flex" flex-direction="row" align-items="center">
+                <Container width="120px" justify-content="flex-end" padding="0px 12px 0px 0px" flex-shrink="0">
+                  <Text id="1:11384" font-size="14px" color="rgb(0,0,0)" text-align="right" _colorVariable="Grays/Black" _textTokenName="Paragraph/P1-Regular">预估奖励总额</Text>
+                </Container>
+                <Container id="1:11457" display="flex" flex-direction="row" align-items="center">
+                  <Text id="I1:11457;10943:109622" font-size="14px" font-weight="500" color="rgb(37,41,49)" _textTokenName="body-regular" _fillStyleName="Text-icon/text-icon-0">100000 元</Text>
+                </Container>
+              </Container>
+            </Container>
+            <!-- END OF CONFIG BOX ONE -->
+            <!-- MAIN CARD FOOTER: REPLICATE CONFIG Actions -->
+            <Container id="config-card-actions" display="flex" flex-direction="row" gap="12px" margin-top="20px" padding-left="144px">
+              <Button id="1:11379" display="flex" height="30px" align-items="center" padding="6px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="b00cf39e1a50c9c6e0ba4c7d6842b4fd1b8c5ee2" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=M, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"M","State":"normal","Type":"Secondary"}'>
+                <Text id="I1:11379;69:1221" font-size="14px" color="rgb(25,102,255)" _fillStyleName="Primary/brand">复制配置</Text>
+              </Button>
+              <Button id="1:11380" display="flex" height="30px" align-items="center" padding="6px 16px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="b00cf39e1a50c9c6e0ba4c7d6842b4fd1b8c5ee2" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=M, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"M","State":"normal","Type":"Secondary"}'>
+                <Text id="I1:11380;69:1221" font-size="14px" color="rgb(25,102,255)" _fillStyleName="Primary/brand">新增配置</Text>
+              </Button>
+            </Container>
+          </Card>
+          <!-- END OF MAIN WORKSPACE CARD -->
+        </ScrollView>
+      </Container>
+      <!-- FIXED BOTTOM CONTROL BAR -->
+      <Footer id="fixed-bottom-bar" display="flex" flex-direction="row" justify-content="center" align-items="center" gap="16px" height="60px" background-color="rgb(255,255,255)" border-style="solid" border-color="rgb(238,239,240)" border-width="1px 0px 0px 0px" z-index="20" impl-role="footer">
+        <Button id="1:11251" display="flex" justify-content="center" align-items="center" width="63px" height="26px" padding="6px 12px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="47924550328e2ae7877f66557e3f065b1d7c7866" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=S, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"S","State":"normal","Type":"Secondary"}'>
+          <Text id="I1:11251;69:1283" font-size="12px" color="rgb(25,102,255)" text-align="center" _textTokenName="caption-regular" _fillStyleName="Primary/brand">上一步</Text>
+        </Button>
+        <Button id="1:11252" display="flex" justify-content="center" align-items="center" width="75px" height="26px" padding="6px 12px" background-color="rgb(255,255,255)" border-radius="4px" box-shadow="inset 0 0 0 1px rgb(25,102,255)" _fillStyleName="fill/fade-0" _strokeStyleName="Primary/brand" figma-instance="true" figma-component-key="47924550328e2ae7877f66557e3f065b1d7c7866" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=S, Type=Secondary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"S","State":"normal","Type":"Secondary"}'>
+          <Text id="I1:11252;69:1283" font-size="12px" color="rgb(25,102,255)" text-align="center" _textTokenName="caption-regular" _fillStyleName="Primary/brand">保存草稿</Text>
+        </Button>
+        <Button id="1:11250" display="flex" justify-content="center" align-items="center" width="63px" height="26px" padding="6px 12px" background-color="rgb(25,102,255)" border-radius="4px" impl-role="button" _fillStyleName="Primary/brand" figma-instance="true" figma-component-key="db50027495d0a758127268c3982677c9edde17fc" figma-component-set-key="e188e4fb0b1493a78253e11537d1a4a169b3d7ca" figma-component-set-name="Button" figma-component-name="Size=S, Type=Primary, Icon=false, Danger=False, State=normal" figma-component-properties='{"Danger":"False","Icon":"false","Size":"S","State":"normal","Type":"Primary"}'>
+          <Text id="I1:11250;69:979" font-size="12px" color="rgb(255,255,255)" text-align="center" _textTokenName="caption-regular" _fillStyleName="fill/fade-0">下一步</Text>
+        </Button>
+      </Footer>
+    </Container>
+  </Screen>
+</MainUI>

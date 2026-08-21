@@ -1,0 +1,73 @@
+{
+  "case_id": "TC-UI-BATCH-HIT-REUSE",
+  "captured_at": "2026-07-09T01:46:26+08:00",
+  "capture_source": "integrated_browser main-agent runtime probe",
+  "browser_view_id": "4d0d888f-c82d-42f5-9d8a-7ee4b8ec46ba",
+  "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7653282555822653742&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+  "input_state": {
+    "submit_method": "url",
+    "sheet_url": "https://bytedance.larkoffice.com/sheets/batch-hit-7306602080"
+  },
+  "network": {
+    "transport": "xhr",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet",
+    "url_redacted": "/api/buyin/admin/content_activity/get_delivery_items_from_sheet?sheet_url=https%3A%2F%2Fbytedance.larkoffice.com%2Fsheets%2Fbatch-hit-7306602080&activity_id=7653282555822653742&config_id=7653282555822735662&__token=[REDACTED]",
+    "status": 200,
+    "response": {
+      "code": 10001604,
+      "msg": "表格数据不符合要求，请检查数据格式是否正确",
+      "extra": {
+        "now": 1783532786000,
+        "log_id": "2026070901462600A9AB5EAA169E428912"
+      },
+      "data": {},
+      "st": 10001604
+    }
+  },
+  "dom_state_after_response": {
+    "has_batch_radio_text": true,
+    "has_manual_radio_text": true,
+    "has_template_link": true,
+    "has_no_data": true,
+    "has_summary": false,
+    "has_hit_label": false,
+    "has_submit_button": true,
+    "has_submit_and_deliver_button": true,
+    "buttons": [
+      "新增提报",
+      "提交",
+      "提交并投放",
+      "取消"
+    ],
+    "table_rows": [
+      [
+        "序号",
+        "视频/图文内容",
+        "投放金额（元）",
+        "投放时长",
+        "转化目标偏好",
+        "目标受众",
+        "性别",
+        "年龄",
+        "投放生效时间",
+        "提报理由",
+        "操作"
+      ],
+      [
+        "暂无数据"
+      ]
+    ]
+  },
+  "classification": {
+    "result": "MOCK_DETOUR_REQUIRED",
+    "failure_type": "MOCK_PREVIEW_RULE_MISSING_WITH_REAL_REQUEST_REACHED",
+    "reason": "自然 UI 已触发 apiGetDeliveryItemsFromSheet，但当前 sheet 样本返回业务校验失败且未产生 data.item_info 命中字段；不能用空表状态关闭批量上传 hit-state 断言。",
+    "non_compression_note": "本 case 仍需验证 summary、红字行态、submit guard、批量上传 baseline、Network 与截图；不得降级为只验证接口被调用。"
+  },
+  "probe_state": {
+    "probe_name": "window.__tcBatchHitProbe",
+    "record_count": 2,
+    "restore_required": true
+  }
+}

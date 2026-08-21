@@ -1,0 +1,119 @@
+{
+  "case_id": "TC-DATA-COUPON-FILTER-SCHEMA",
+  "captured_at": "2026-07-08T13:31:35Z",
+  "browser_runtime": {
+    "mode": "TRAE_DESKTOP",
+    "tool": "integrated_browser",
+    "view_id": "4c1e4095-84d7-42ee-abee-63b7eabd8d7e",
+    "headless": false,
+    "page_title": "内容生态运营｜橙蕉",
+    "page_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content%3Ahttp%3A%2F%2Flocalhost%3A8083%2Falliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001"
+  },
+  "natural_ui_path": [
+    "配置二",
+    "奖励下发",
+    "剔除明细",
+    "作者ID输入 900001,900002",
+    "操作人 PeopleSelect 已选择 陈相",
+    "点击 查询"
+  ],
+  "mock_runtime": {
+    "apiName": "apiGetDouPlusCouponRemoveRecord",
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+    "console_marker": "[BAM_MOCK_HIT]",
+    "ruleId": "R-BAM-COUPON-REMOVE-FILTER",
+    "requestBody": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "candidate_ids": "900001,900002",
+      "operator_id": "6068830",
+      "page": 1,
+      "page_num": 20
+    },
+    "mockedResponseSummary": {
+      "data.records.length": 1,
+      "data.records[0].record_id": "coupon_remove_filter_record_20260708001",
+      "data.records[0].author_info.author_id": "900001",
+      "data.records[0].author_info.author_name": "筛选券作者示例",
+      "data.records[0].remove_reason": "筛选命中【不激励】规则",
+      "data.records[0].operator_id": "6068830",
+      "data.records[0].remove_time": 1783516414,
+      "data.total": 1,
+      "data.has_more": false
+    }
+  },
+  "network_request": {
+    "request_index_from_browser_network_log": 88,
+    "method": "GET",
+    "path": "/api/buyin/admin/content_activity/get_dou_plus_coupon_remove_record",
+    "query_sanitized": {
+      "activity_id": "7655304206886322458",
+      "config_id": "7655304206886355226",
+      "page": "1",
+      "page_num": "20",
+      "candidate_ids": "900001,900002",
+      "operator_id": "6068830",
+      "__token": "__REDACTED__"
+    },
+    "assertions": {
+      "candidate_ids_present": true,
+      "operator_id_present": true,
+      "author_ids_absent": true,
+      "no_additional_operator_api_for_filter": true
+    }
+  },
+  "dom_after_query": {
+    "filter_labels": {
+      "作者ID": true,
+      "操作人": true,
+      "作品ID": false,
+      "作品内容": false
+    },
+    "filter_values": {
+      "candidate_input": "900001,900002",
+      "operator_visible_text": "陈相"
+    },
+    "table": {
+      "headers": [
+        "作者信息",
+        "剔除发奖原因",
+        "剔除发奖时间",
+        "操作人"
+      ],
+      "rows": [
+        "筛选券作者示例 ID: 900001 筛选命中【不激励】规则 2026/07/08 21:13:34 陈相"
+      ],
+      "contains_no_data": false,
+      "contains_filtered_author_name": true,
+      "contains_author_id_900001": true,
+      "contains_filtered_remove_reason": true
+    }
+  },
+  "screenshot": {
+    "path": "screenshots/TC-DATA-COUPON-FILTER-SCHEMA--coupon-filter-open--filter-mock-hit-table.png",
+    "materialization_type": "local_file",
+    "file_validation": "PNG image data, 1751 x 1376, 8-bit/color RGB, non-interlaced"
+  },
+  "artifacts": {
+    "manifest": "mock/apis/apiGetDouPlusCouponRemoveRecord/manifest.json",
+    "rule_map": "mock/rule-map.json",
+    "real_connect_request": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/request.json",
+    "real_connect_response": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.json",
+    "mocked_response": "mock/real-connect/apiGetDouPlusCouponRemoveRecord/R-BAM-COUPON-REMOVE-FILTER/response.mocked.json"
+  },
+  "privacy": {
+    "cookie_read": false,
+    "localStorage_read": false,
+    "sessionStorage_read": false,
+    "authorization_persisted": false,
+    "raw_token_persisted": false,
+    "token_policy": "__token observed only in browser network URL and persisted as __REDACTED__"
+  },
+  "result": "PASS_WITH_NOTES",
+  "notes": [
+    "MOCK_PREVIEW runtime passed with controlled BAM mock rule.",
+    "Real backend filter result remains a recheck item because natural real response was success with empty data before mock rewrite.",
+    "Verify screenshot is runtime source only and does not assert Figma-vs-runtime alignment."
+  ]
+}

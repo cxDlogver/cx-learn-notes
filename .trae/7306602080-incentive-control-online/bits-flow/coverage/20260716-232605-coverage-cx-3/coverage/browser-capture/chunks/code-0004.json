@@ -1,0 +1,1764 @@
+{
+  "index": 3,
+  "filePath": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+  "coverageFile": {
+    "label": "couponDeliveryRecordStore.ts",
+    "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts",
+    "packageLabel": "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+    "labels": [
+      "apps/alliance-operation-content/src/routes/content-activity/award/stores",
+      "couponDeliveryRecordStore.ts"
+    ],
+    "addLines": 17,
+    "insertLines": 11,
+    "coverLines": 9,
+    "uncoveredLines": 2,
+    "coverRatio": "81.82%",
+    "ignoreLines": [],
+    "ignoreReason": "",
+    "effectFiles": [
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/make-coupon-failed-warnings/index.tsx",
+        "ratio": "--"
+      },
+      {
+        "path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/store.ts",
+        "ratio": "--"
+      }
+    ]
+  },
+  "response": {
+    "requestedAt": "2026-07-16T16:22:13.067Z",
+    "url": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FcouponDeliveryRecordStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "method": "GET",
+    "status": 200,
+    "ok": true,
+    "finalUrl": "https://huatuo.bytedance.net/api/jsCoverage/branch/code?gitRepo=ecom%2Falliance-operation-mono&fromBranch=master&toBranch=cx-3&filePath=apps%2Falliance-operation-content%2Fsrc%2Froutes%2Fcontent-activity%2Faward%2Fstores%2FcouponDeliveryRecordStore.ts&devicePlatform=&deviceModel=&appId=&appVersion=",
+    "parsed": {
+      "status": 0,
+      "message": "ok",
+      "data": [
+        {
+          "lineNum": 1,
+          "code": "import { makeAutoObservable, runInAction } from 'mobx';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 2,
+          "code": "import type { Store } from './store';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 3,
+          "code": "import { apiDeliveryDouPlusCoupon, apiGetDouPlusCouponDeliveryRecord } from '@/bam/ecom.buyin.admin_api';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 4,
+          "code": "import { LoadingState, PaginationData } from '../types';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 5,
+          "code": "import {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 6,
+          "code": "  delivery_dou_plus_coupon_request,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 7,
+          "code": "  delivery_dou_plus_coupon_response,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 8,
+          "code": "  AuthorDeliveryConfig,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 9,
+          "code": "  DouPlusCouponDeliveryInfo,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 10,
+          "code": "  DeliveryFrom,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 11,
+          "code": "  DouPlusCouponDeliveryRecord,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 12,
+          "code": "  FailCouponTaskInfo,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 13,
+          "code": "} from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/content_activity';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 14,
+          "code": "import { message } from '@ecom/auxo';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 15,
+          "code": "import { MESSAGES } from '../constants';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 16,
+          "code": "import { CouponUseTimeType } from '@/bam/ecom.buyin.admin_api/namespaces/thrift_idls/ecom.buyin.admin_api/content_activity/common';",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 17,
+          "code": "import {",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 18,
+          "code": "  getAwardDeliveryExceptionMessage,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 19,
+          "code": "  getAwardDeliveryResponseErrorMessage,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 20,
+          "code": "  isAwardDeliverySuccessResponse,",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 21,
+          "code": "} from '../utils';",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 22,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 23,
+          "code": "const DEFAULT_PAGE_SIZE = 20;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 24,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 25,
+          "code": "export class CouponDeliveryRecordStore {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 26,
+          "code": "  records: DouPlusCouponDeliveryRecord[] = [];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 27,
+          "code": "  loadingState: LoadingState = LoadingState.Idle;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 28,
+          "code": "  pagination: PaginationData = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 29,
+          "code": "    current: 1,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 30,
+          "code": "    pageSize: DEFAULT_PAGE_SIZE,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 31,
+          "code": "    total: 0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 32,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 33,
+          "code": "  hasMore: boolean = true;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 34,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 35,
+          "code": "  activity_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 36,
+          "code": "  config_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 37,
+          "code": "  delivery_task_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 38,
+          "code": "  taskInfo?: FailCouponTaskInfo;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 39,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 40,
+          "code": "  private _root: Store;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 41,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 42,
+          "code": "  constructor(r: Store) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 43,
+          "code": "    makeAutoObservable(this);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 44,
+          "code": "    this._root = r;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 45,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 46,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 47,
+          "code": "  setTaskInfo = (taskInfo?: FailCouponTaskInfo) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 48,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 49,
+          "code": "      this.taskInfo = taskInfo;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 50,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 51,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 52,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 53,
+          "code": "  updateAllRows = (patch: Partial<AuthorDeliveryConfig>) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 54,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 55,
+          "code": "      this.records = this.records.map((record) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 56,
+          "code": "        ...record,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 57,
+          "code": "        delivery_config: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 58,
+          "code": "          ...(record.delivery_config || {}),",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 59,
+          "code": "          reiceve_start_time:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 60,
+          "code": "            patch.reiceve_start_time !== undefined",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 61,
+          "code": "              ? patch.reiceve_start_time",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 62,
+          "code": "              : record.delivery_config?.reiceve_start_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 63,
+          "code": "          reiceve_end_time:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 64,
+          "code": "            patch.reiceve_end_time !== undefined",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 65,
+          "code": "              ? patch.reiceve_end_time",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 66,
+          "code": "              : record.delivery_config?.reiceve_end_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 67,
+          "code": "          use_time_type:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 68,
+          "code": "            patch.use_time_type !== undefined ? patch.use_time_type : record.delivery_config?.use_time_type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 69,
+          "code": "          use_start_time:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 70,
+          "code": "            patch.use_start_time !== undefined",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 71,
+          "code": "              ? patch.use_start_time",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 72,
+          "code": "              : record.delivery_config?.use_start_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 73,
+          "code": "          use_end_time:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 74,
+          "code": "            patch.use_end_time !== undefined ? patch.use_end_time : record.delivery_config?.use_end_time,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 75,
+          "code": "          days_after_use:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 76,
+          "code": "            patch.days_after_use !== undefined",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 77,
+          "code": "              ? patch.days_after_use",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 78,
+          "code": "              : record.delivery_config?.days_after_use,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 79,
+          "code": "        },",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 80,
+          "code": "      }));",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 81,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 82,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 83,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 84,
+          "code": "  get deliveryList(): DouPlusCouponDeliveryInfo[] {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 85,
+          "code": "    return this.records",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 86,
+          "code": "      .map((row) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 87,
+          "code": "        const authorId = row.author_info?.author_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 88,
+          "code": "        if (!authorId) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 89,
+          "code": "          return undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 90,
+          "code": "        }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 91,
+          "code": "        const recordConfig = row.delivery_config || {};",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 92,
+          "code": "        const useTimeType = recordConfig.use_time_type ?? CouponUseTimeType.TimeRange;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 93,
+          "code": "        const config: AuthorDeliveryConfig = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 94,
+          "code": "          ...recordConfig,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 95,
+          "code": "          coupon_type: recordConfig.coupon_type ?? this.taskInfo?.coupon_type,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 96,
+          "code": "          coupon_config: recordConfig.coupon_config ?? this.taskInfo?.coupon_config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 97,
+          "code": "          num: recordConfig.num ?? this.taskInfo?.num ?? row.num,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 98,
+          "code": "          use_time_type: useTimeType,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 99,
+          "code": "          use_start_time:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 100,
+          "code": "            useTimeType === CouponUseTimeType.TimeRange ? recordConfig.use_start_time : undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 101,
+          "code": "          use_end_time: useTimeType === CouponUseTimeType.TimeRange ? recordConfig.use_end_time : undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 102,
+          "code": "          days_after_use:",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 103,
+          "code": "            useTimeType === CouponUseTimeType.AfterReiceve ? recordConfig.days_after_use : undefined,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 104,
+          "code": "        };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 105,
+          "code": "        return {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 106,
+          "code": "          item_id: authorId,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 107,
+          "code": "          delivery_config: config,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 108,
+          "code": "        };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 109,
+          "code": "      })",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 110,
+          "code": "      .filter(Boolean) as DouPlusCouponDeliveryInfo[];",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 111,
+          "code": "  }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 112,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 113,
+          "code": "  setQuery = ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 114,
+          "code": "    activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 115,
+          "code": "    config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 116,
+          "code": "    delivery_task_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 117,
+          "code": "  }: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 118,
+          "code": "    activity_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 119,
+          "code": "    config_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 120,
+          "code": "    delivery_task_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 121,
+          "code": "  }) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 122,
+          "code": "    runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 123,
+          "code": "      this.activity_id = activity_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 124,
+          "code": "      this.config_id = config_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 125,
+          "code": "      this.delivery_task_id = delivery_task_id;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 126,
+          "code": "    });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 127,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 128,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 129,
+          "code": "  initData = async ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 130,
+          "code": "    activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 131,
+          "code": "    config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 132,
+          "code": "    delivery_task_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 133,
+          "code": "  }: {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 134,
+          "code": "    activity_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 135,
+          "code": "    config_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 136,
+          "code": "    delivery_task_id?: string;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 137,
+          "code": "  }) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 138,
+          "code": "    this.setQuery({ activity_id, config_id, delivery_task_id });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 139,
+          "code": "    await this.fetchData(1, this.pagination.pageSize, false);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 140,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 141,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 142,
+          "code": "  fetchData = async (page = 1, pageSize: number = DEFAULT_PAGE_SIZE, concatNewData = false) => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 143,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 144,
+          "code": "      this.loadingState = LoadingState.Loading;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 145,
+          "code": "      const res = await apiGetDouPlusCouponDeliveryRecord({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 146,
+          "code": "        activity_id: this.activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 147,
+          "code": "        config_id: this.config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 148,
+          "code": "        delivery_task_id: this.delivery_task_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 149,
+          "code": "        page,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 150,
+          "code": "        page_num: pageSize,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 151,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 152,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 153,
+          "code": "        const newRecords = (res.data?.records || []).map((record) => ({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 154,
+          "code": "          ...record,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 155,
+          "code": "          if_delivery: true,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 156,
+          "code": "        }));",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 157,
+          "code": "        this.records = concatNewData ? [...this.records, ...newRecords] : newRecords;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 158,
+          "code": "        this.pagination = {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 159,
+          "code": "          current: page,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 160,
+          "code": "          pageSize,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 161,
+          "code": "          total: res.data?.total || 0,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 162,
+          "code": "        };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 163,
+          "code": "        this.hasMore = res.data?.has_more || false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 164,
+          "code": "        this.loadingState = LoadingState.Idle;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 165,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 166,
+          "code": "    } catch {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 167,
+          "code": "      runInAction(() => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 168,
+          "code": "        this.loadingState = LoadingState.Error;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 169,
+          "code": "        this.hasMore = false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 170,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 171,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 172,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 173,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 174,
+          "code": "  loadMore = async () => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 175,
+          "code": "    if (!this.hasMore) {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 176,
+          "code": "      return false;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 177,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 178,
+          "code": "    await this.fetchData(this.pagination.current + 1, this.pagination.pageSize, true);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 179,
+          "code": "    return this.hasMore;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 180,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 181,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 182,
+          "code": "  submitDelivery = async (",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 183,
+          "code": "    payload: Omit<",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 184,
+          "code": "      delivery_dou_plus_coupon_request,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 185,
+          "code": "      'delivery_from' | 'activity_id' | 'config_id' | 'fail_delivery_task_id' | 'delivery_list'",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 186,
+          "code": "    >,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 187,
+          "code": "  ): Promise<delivery_dou_plus_coupon_response | undefined> => {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 188,
+          "code": "    const deliveryList = this.deliveryList;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 189,
+          "code": "    if (deliveryList.length === 0) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 190,
+          "code": "      return undefined;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 191,
+          "code": "    }",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 192,
+          "code": "",
+          "isAddLine": true,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 193,
+          "code": "    try {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 194,
+          "code": "      const res = await apiDeliveryDouPlusCoupon({",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 195,
+          "code": "        activity_id: this.activity_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 196,
+          "code": "        config_id: this.config_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 197,
+          "code": "        fail_delivery_task_id: this.delivery_task_id,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 198,
+          "code": "        ...payload,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 199,
+          "code": "        delivery_list: deliveryList,",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 200,
+          "code": "        delivery_from: DeliveryFrom.UploadCandidate,",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 201,
+          "code": "      });",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 202,
+          "code": "      if (isAwardDeliverySuccessResponse(res)) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 203,
+          "code": "        message.success(MESSAGES.SEND_AWARD_AUTHORS_SUCCESS);",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 204,
+          "code": "        return res;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 205,
+          "code": "      } else {",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 206,
+          "code": "        message.error(getAwardDeliveryResponseErrorMessage(res, MESSAGES.SEND_AWARD_AUTHORS_FAILED));",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 207,
+          "code": "        return undefined;",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 208,
+          "code": "      }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 209,
+          "code": "    } catch (error) {",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 210,
+          "code": "      message.error(getAwardDeliveryExceptionMessage(error));",
+          "isAddLine": true,
+          "isInsertLine": true,
+          "isIgnoreLine": false,
+          "isCoverageLine": true
+        },
+        {
+          "lineNum": 211,
+          "code": "      return undefined;",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 212,
+          "code": "    }",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 213,
+          "code": "  };",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 214,
+          "code": "}",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        },
+        {
+          "lineNum": 215,
+          "code": "",
+          "isAddLine": false,
+          "isInsertLine": false,
+          "isIgnoreLine": false,
+          "isCoverageLine": false
+        }
+      ]
+    }
+  }
+}

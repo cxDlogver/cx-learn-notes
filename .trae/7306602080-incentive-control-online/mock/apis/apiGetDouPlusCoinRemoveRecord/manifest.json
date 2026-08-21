@@ -1,0 +1,617 @@
+{
+  "version": 2,
+  "mode": "BAM_MOCK_INTERFACE_MANIFEST",
+  "apiName": "apiGetDouPlusCoinRemoveRecord",
+  "method": "GET",
+  "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+  "sourceRuleMap": "../../rule-map.json",
+  "targetBamFile": "index.ts",
+  "rehydration": {
+    "strategy": "manifest_reapply",
+    "status": "passed",
+    "script": ".trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs",
+    "command": "node .trae/skills/bam-mock-runtime-generator/scripts/reapply-bam-mocks.mjs --mock-root artifacts/7306602080-incentive-control-online/mock --bam-root meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api --apply",
+    "evidence": "REPLACE inline patch apiGetDouPlusCoinRemoveRecord in meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/bam/ecom.buyin.admin_api/index.ts",
+    "verifiedAt": "2026-07-08T19:46:19.308Z"
+  },
+  "browserPrecheck": {
+    "status": "passed",
+    "browserRuntimeMode": "TRAE_DESKTOP",
+    "headless": false,
+    "browserTool": "integrated_browser",
+    "builtinBrowserResult": "reused",
+    "openMethod": "integrated_browser",
+    "browserProfile": "Trae integrated browser current session",
+    "vmokUrl": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7655304206886322458&cjDebugSubApp=alliance-operation-content:http://localhost:8083/alliance-operation-content&externalLeadsDomainMock=1&cjSiteCode=St12502250000001",
+    "pageState": "business_page",
+    "evidenceLevel": [
+      "dom",
+      "screenshot",
+      "network",
+      "console"
+    ]
+  },
+  "realConnect": {
+    "status": "passed",
+    "artifactDir": "../../real-connect/apiGetDouPlusCoinRemoveRecord",
+    "artifacts": [
+      {
+        "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/evidence.json"
+      },
+      {
+        "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/evidence.json"
+      },
+      {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/evidence.json"
+      }
+    ]
+  },
+  "responseContracts": [
+    {
+      "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "page": 1,
+          "page_num": 20
+        },
+        "requestFieldsForMatching": {
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变当前默认列表 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "network_request",
+            "reason": "当前 DOU+币配置一的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.records",
+          "value": "one DOU+ coin remove record",
+          "reason": "真实响应成功但为空，无法覆盖首行渲染断言；MOCK_PREVIEW 按矩阵要求补充至少一条作品维度剔除记录。",
+          "realVerify": "后端 ready 后用真实非空剔除记录复验字段来源。"
+        },
+        {
+          "responsePath": "data.total",
+          "value": 40,
+          "reason": "覆盖分页显示和 has_more 语义。",
+          "realVerify": "后端 ready 后复验真实 total 与分页。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": true,
+          "reason": "覆盖默认列表存在下一页的运行态。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    },
+    {
+      "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+      "source": "real_browser_request",
+      "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/evidence.json",
+      "request": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "100001,100002",
+          "operator_id": "6068830"
+        },
+        "requestFieldsForMatching": {
+          "candidate_ids": "100001,100002",
+          "operator_id": "6068830",
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "network_request",
+            "reason": "当前 DOU+币配置一的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ]
+      },
+      "responsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.json",
+      "browserPrecheckStatus": "passed",
+      "fieldFill": [
+        {
+          "responsePath": "data.records",
+          "value": "one filtered DOU+ coin remove record",
+          "reason": "真实筛选响应成功但为空，无法覆盖筛选后列表刷新断言；MOCK_PREVIEW 按矩阵要求补充过滤后的作品剔除记录。",
+          "realVerify": "后端 ready 后用真实筛选条件复验 operator_id 权限范围和 candidate_ids 过滤结果。"
+        },
+        {
+          "responsePath": "data.total",
+          "value": 1,
+          "reason": "覆盖筛选后 total 刷新语义。",
+          "realVerify": "后端 ready 后复验真实 total 与分页。"
+        },
+        {
+          "responsePath": "data.has_more",
+          "value": false,
+          "reason": "覆盖筛选后一页内返回的运行态。",
+          "realVerify": "后端 ready 后复验真实 has_more。"
+        }
+      ]
+    }
+  ],
+  "requestFieldsAffectingRules": [
+    "page",
+    "page_num",
+    "candidate_ids",
+    "operator_id"
+  ],
+  "requestFieldImpact": [
+    {
+      "fieldPath": "page",
+      "impactType": "pagination",
+      "reason": "默认首屏 rule 只覆盖第一页；其他页必须走默认 no-op 或后续规则。",
+      "uiTarget": "DOU+币剔除明细 EcopTable pagination"
+    },
+    {
+      "fieldPath": "page_num",
+      "impactType": "pagination",
+      "reason": "默认首屏 rule 只覆盖每页 20 条的表格请求。",
+      "uiTarget": "DOU+币剔除明细 EcopTable pageSize"
+    },
+    {
+      "fieldPath": "candidate_ids",
+      "impactType": "filter_result",
+      "reason": "作品 ID 批量输入会改变筛选请求和列表刷新结果，必须作为筛选 rule 的关键影响字段。",
+      "uiTarget": "DOU+币剔除明细筛选区 / 作品ID输入框"
+    },
+    {
+      "fieldPath": "operator_id",
+      "impactType": "filter_result",
+      "reason": "操作人 PeopleSelect 选择会改变筛选请求和权限范围，必须作为筛选 rule 的关键影响字段。",
+      "uiTarget": "DOU+币剔除明细筛选区 / 操作人 PeopleSelect"
+    }
+  ],
+  "ruleMatchKeys": [
+    {
+      "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+      "requestFields": {
+        "page": 1,
+        "page_num": 20,
+        "candidate_ids": "__BAM_MOCK_ABSENT__",
+        "operator_id": "__BAM_MOCK_ABSENT__"
+      }
+    },
+    {
+      "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+      "requestFields": {
+        "candidate_ids": "100001,100002",
+        "operator_id": "6068830",
+        "page": 1,
+        "page_num": 20
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "requestFields": {},
+      "isDefault": true
+    }
+  ],
+  "rules": [
+    {
+      "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+      "caseIds": [
+        "TC-UI-COIN-REMOVE-PAGE",
+        "TC-DATA-COIN-COLUMNS",
+        "TC-CELL-COIN-FIRST-ROW",
+        "TC-INT-REMOVE-TAB-SWITCH-COIN",
+        "TC-TRACK-REMOVE-DETAIL-TAB-COIN"
+      ],
+      "changeType": "修改",
+      "enabled": true,
+      "uiTarget": "DOU+币奖励投放 / 剔除明细 Tab",
+      "requestFields": {
+        "page": 1,
+        "page_num": 20,
+        "candidate_ids": "__BAM_MOCK_ABSENT__",
+        "operator_id": "__BAM_MOCK_ABSENT__"
+      },
+      "mockRule": "命中默认第一页且无作品ID/操作人筛选的 DOU+币剔除明细请求时，先调用原接口，再最小设置 data.records、data.total、data.has_more。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "page": 1,
+          "page_num": 20
+        },
+        "requestFieldsForMatching": {
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "__BAM_MOCK_ABSENT__",
+          "operator_id": "__BAM_MOCK_ABSENT__"
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变当前默认列表 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "network_request",
+            "reason": "当前 DOU+币配置一的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ],
+        "note": "真实请求 URL 中的 __token 已脱敏且未持久化。"
+      },
+      "responseContract": {
+        "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886338842",
+            "page": 1,
+            "page_num": 20
+          },
+          "requestFieldsForMatching": {
+            "page": 1,
+            "page_num": 20,
+            "candidate_ids": "__BAM_MOCK_ABSENT__",
+            "operator_id": "__BAM_MOCK_ABSENT__"
+          },
+          "collectionOnlyFields": [
+            {
+              "fieldPath": "activity_id",
+              "value": "7655304206886322458",
+              "source": "network_request",
+              "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变当前默认列表 mock rule 命中。"
+            },
+            {
+              "fieldPath": "config_id",
+              "value": "7655304206886338842",
+              "source": "network_request",
+              "reason": "当前 DOU+币配置一的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+            }
+          ]
+        },
+        "responsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+        "browserPrecheckStatus": "passed"
+      },
+      "realResponsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.records",
+          "value": [
+            {
+              "record_id": "coin_remove_record_20260708001",
+              "item_card": {
+                "item_model": {
+                  "item_id": "100001",
+                  "base_model": {
+                    "item_info": {
+                      "base_info": {
+                        "title": "夏日穿搭短视频示例",
+                        "cover": {
+                          "uri": "coin_remove_cover_20260708001",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20ecommerce%20fashion%20product%20display%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "remove_reason": "命中【不激励】规则",
+              "operator_id": "chenxiang.2003",
+              "remove_time": 1783508217
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "覆盖 DOU+币剔除明细首行作品内容、剔除原因、剔除时间、操作人渲染。"
+        },
+        {
+          "op": "set",
+          "path": "data.total",
+          "value": 40,
+          "source": "mock_rule",
+          "reason": "覆盖分页 total。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": true,
+          "source": "mock_rule",
+          "reason": "覆盖分页 has_more。"
+        }
+      ],
+      "responseIntegrity": {
+        "source": "realConnectArtifact.response",
+        "mode": "path_reference",
+        "listAssertions": [
+          {
+            "responsePath": "data.records",
+            "requestPageSizeField": "page_num",
+            "requestPageNumberField": "page",
+            "totalField": "data.total",
+            "actualLength": 0,
+            "expectedMinLength": 0
+          }
+        ]
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-COIN-REMOVE-DEFAULT",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/evidence.json"
+      },
+      "verifyAssertion": "patched BAM 命中后输出 [BAM_MOCK_HIT]，DOU+币剔除明细展示筛选区、作品表格、分页和 mock 首行，且无投放金额/充值记录列。",
+      "realVerify": "后端 ready 后用真实非空 DOU+币剔除记录复验分页、排序、has_more 和首行字段来源。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "../../../verify-logs/evidence/TC-UI-COIN-REMOVE-PAGE--mock-hit-runtime.json; ../../../screenshots/TC-UI-COIN-REMOVE-PAGE--remove-detail-coin-default--mock-hit.png",
+        "reason": "自然 UI reload 后点击 `剔除明细`，console 输出 [BAM_MOCK_HIT]，表格渲染 mock 首行且旧列缺失。"
+      }
+    },
+    {
+      "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+      "caseIds": [
+        "TC-DATA-COIN-FILTER-SCHEMA"
+      ],
+      "changeType": "新增",
+      "enabled": true,
+      "uiTarget": "DOU+币剔除明细 / 筛选区",
+      "requestFields": {
+        "candidate_ids": "100001,100002",
+        "operator_id": "6068830",
+        "page": 1,
+        "page_num": 20
+      },
+      "mockRule": "命中 DOU+币剔除明细作品ID+操作人筛选请求时，先调用原接口，再最小设置 data.records、data.total、data.has_more。",
+      "realRequest": {
+        "method": "GET",
+        "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+        "query": {
+          "activity_id": "7655304206886322458",
+          "config_id": "7655304206886338842",
+          "page": 1,
+          "page_num": 20,
+          "candidate_ids": "100001,100002",
+          "operator_id": "6068830"
+        },
+        "requestFieldsForMatching": {
+          "candidate_ids": "100001,100002",
+          "operator_id": "6068830",
+          "page": 1,
+          "page_num": 20
+        },
+        "collectionOnlyFields": [
+          {
+            "fieldPath": "activity_id",
+            "value": "7655304206886322458",
+            "source": "network_request",
+            "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+          },
+          {
+            "fieldPath": "config_id",
+            "value": "7655304206886338842",
+            "source": "network_request",
+            "reason": "当前 DOU+币配置一的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+          }
+        ],
+        "note": "真实请求 URL 中的 __token 已脱敏且未持久化。"
+      },
+      "responseContract": {
+        "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+        "source": "real_browser_request",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/evidence.json",
+        "request": {
+          "method": "GET",
+          "path": "/api/buyin/admin/content_activity/get_dou_plus_coin_remove_record",
+          "query": {
+            "activity_id": "7655304206886322458",
+            "config_id": "7655304206886338842",
+            "page": 1,
+            "page_num": 20,
+            "candidate_ids": "100001,100002",
+            "operator_id": "6068830"
+          },
+          "requestFieldsForMatching": {
+            "candidate_ids": "100001,100002",
+            "operator_id": "6068830",
+            "page": 1,
+            "page_num": 20
+          },
+          "collectionOnlyFields": [
+            {
+              "fieldPath": "activity_id",
+              "value": "7655304206886322458",
+              "source": "network_request",
+              "reason": "真实 UI route 上下文和目标 XHR query 携带；不改变筛选 mock rule 命中。"
+            },
+            {
+              "fieldPath": "config_id",
+              "value": "7655304206886338842",
+              "source": "network_request",
+              "reason": "当前 DOU+币配置一的真实配置 ID，由目标 XHR query 自然携带；不参与 runtime matcher。"
+            }
+          ]
+        },
+        "responsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.json",
+        "browserPrecheckStatus": "passed"
+      },
+      "realResponsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.json",
+      "mockedResponsePath": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.mocked.json",
+      "mockOperations": [
+        {
+          "op": "set",
+          "path": "data.records",
+          "value": [
+            {
+              "record_id": "coin_remove_filter_record_20260708001",
+              "item_card": {
+                "item_model": {
+                  "item_id": "100001",
+                  "base_model": {
+                    "item_info": {
+                      "base_info": {
+                        "title": "筛选后夏日穿搭短视频",
+                        "cover": {
+                          "uri": "coin_remove_filter_cover_20260708001",
+                          "url_list": [
+                            "https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=realistic%20vertical%20short%20video%20cover%2C%20summer%20outfit%20product%20showcase%2C%20clean%20studio%20lighting%2C%20no%20text%2C%20high%20quality&image_size=portrait_4_3"
+                          ],
+                          "width": 750,
+                          "height": 1000
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "remove_reason": "筛选命中【不激励】规则",
+              "operator_id": "6068830",
+              "remove_time": 1783510622
+            }
+          ],
+          "source": "mock_rule",
+          "reason": "覆盖筛选后列表刷新，返回与 candidate_ids=100001 关联的一条作品剔除记录。"
+        },
+        {
+          "op": "set",
+          "path": "data.total",
+          "value": 1,
+          "source": "mock_rule",
+          "reason": "覆盖筛选后 total 刷新。"
+        },
+        {
+          "op": "set",
+          "path": "data.has_more",
+          "value": false,
+          "source": "mock_rule",
+          "reason": "覆盖筛选后一页内返回。"
+        }
+      ],
+      "responseIntegrity": {
+        "source": "realConnectArtifact.response",
+        "mode": "path_reference",
+        "listAssertions": [
+          {
+            "responsePath": "data.records",
+            "requestPageSizeField": "page_num",
+            "requestPageNumberField": "page",
+            "totalField": "data.total",
+            "actualLength": 0,
+            "expectedMinLength": 0
+          }
+        ]
+      },
+      "realConnectArtifact": {
+        "ruleId": "R-BAM-COIN-REMOVE-FILTER",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-FILTER/evidence.json"
+      },
+      "verifyAssertion": "patched BAM 命中后输出 [BAM_MOCK_HIT] 且 ruleId=R-BAM-COIN-REMOVE-FILTER；requestBody 包含 candidate_ids=100001,100002 与 operator_id=6068830；筛选区保留作品ID/操作人且列表刷新。",
+      "realVerify": "后端 ready 后用真实筛选条件复验 operator_id 权限范围、candidate_ids 过滤结果、分页和排序。",
+      "verify": {
+        "status": "passed",
+        "method": "browser",
+        "evidence": "../../../verify-logs/evidence/TC-DATA-COIN-FILTER-SCHEMA--mock-hit-runtime.json; ../../../screenshots/TC-DATA-COIN-FILTER-SCHEMA--coin-filter-open--filter-mock-hit-table.png",
+        "reason": "reapply 后回到 vmok 页面自然点击 `查询`，console 输出 [BAM_MOCK_HIT] 且 ruleId=R-BAM-COIN-REMOVE-FILTER；requestBody 包含 candidate_ids/operator_id，表格渲染筛选 mock 首行。"
+      }
+    },
+    {
+      "ruleId": "DEFAULT_NOOP",
+      "changeType": "新增",
+      "enabled": true,
+      "isDefault": true,
+      "requestFields": {},
+      "mockRule": "未命中具体 rule 时返回原响应，不改写 response。",
+      "realConnectArtifact": {
+        "ruleId": "DEFAULT_NOOP",
+        "status": "passed",
+        "request": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/request.json",
+        "rawResponse": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.raw.txt",
+        "response": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/response.json",
+        "evidence": "../../real-connect/apiGetDouPlusCoinRemoveRecord/R-BAM-COIN-REMOVE-DEFAULT/evidence.json"
+      },
+      "verifyAssertion": "no-hit 默认规则保持原 BAM 响应，不输出成功 mock hit。",
+      "realVerify": "后端 ready 后复验非默认分页和筛选未命中时的真实响应。",
+      "verify": {
+        "status": "passed",
+        "method": "bam-test",
+        "evidence": "script.mjs; verify.mjs",
+        "reason": "接口级派生脚本确认 page=2,page_num=20 落入 DEFAULT_NOOP，当前默认规则无 mockOperations，不输出成功 mock hit。"
+      }
+    }
+  ],
+  "patch": {
+    "status": "patched",
+    "targetBamFile": "index.ts",
+    "marker": "BAM_MOCK_PATCH_START apiGetDouPlusCoinRemoveRecord",
+    "lastPatchedAt": "2026-07-08T11:53:04.812Z",
+    "notes": "Reapplied after adding R-BAM-COIN-REMOVE-FILTER and narrowing R-BAM-COIN-REMOVE-DEFAULT; no wrapper request field patch required because generated wrapper already passes activity_id, config_id, page, page_num, candidate_ids, operator_id."
+  },
+  "finalVerification": {
+    "status": "passed",
+    "method": "mixed",
+    "evidence": "node artifacts/7306602080-incentive-control-online/mock/apis/apiGetDouPlusCoinRemoveRecord/verify.mjs -> PASS; verify-logs/evidence/TC-DATA-COIN-FILTER-SCHEMA--mock-hit-runtime.json; screenshots/TC-DATA-COIN-FILTER-SCHEMA--coin-filter-open--filter-mock-hit-table.png",
+    "reason": "Supplemental verify, standard reapply, and natural browser query all passed for default narrowed rule, filter rule, and DEFAULT_NOOP fallback.",
+    "verifiedAt": "2026-07-08T11:59:18Z"
+  }
+}
