@@ -26,7 +26,7 @@
 - `.trae/skills/07-design-alignment/SKILL.md`
 - `.trae/agents/design-checker.md`
 - `.trae/AGENTS.md`
-- `.trae/commands/delivery:design.md`
+- `.trae/commands/delivery/design.md`
 - `.trae/docs/delivery-framework-flow.md`
 
 ## Related Tags
@@ -46,7 +46,7 @@
   - `.trae/skills/07-design-alignment/SKILL.md`
   - `.trae/agents/design-checker.md`
   - `.trae/AGENTS.md`
-  - `.trae/commands/delivery:design.md`
+  - `.trae/commands/delivery/design.md`
   - `.trae/docs/delivery-framework-flow.md`
 - required_case:
   - `TC-PRD-01 screenshot-first regression`
@@ -57,7 +57,7 @@
 | id | assertion | evidence_file | pass_condition | fail_condition |
 |---|---|---|---|---|
 | A1 | design skill 必须先建目标结构再抄录运行态事实 | `.trae/skills/07-design-alignment/SKILL.md` | 存在“先建立目标结构并抄录运行态事实”与 screenshot-first 规则 | 仍允许直接用 DOM / 代码先下结论 |
-| A2 | design command 必须把 screenshot-first 顺序写进 SOP | `.trae/commands/delivery:design.md` | 明确要求“目标可见结构 -> 运行态事实 -> screenshot-first -> DOM解释” | 仍只要求 Figma↔runtime 对比，不固化顺序 |
+| A2 | design command 必须把 screenshot-first 顺序写进 SOP | `.trae/commands/delivery/design.md` | 明确要求“目标可见结构 -> 运行态事实 -> screenshot-first -> DOM解释” | 仍只要求 Figma↔runtime 对比，不固化顺序 |
 | A3 | 全局 gate 必须禁止 DOM 推翻截图冲突 | `.trae/AGENTS.md` | 明确写出截图中的可见结构冲突不得被 DOM / 代码推翻 | 仍允许 DOM / 代码把截图冲突解释回 PASS |
 | A4 | design-checker 必须先输出 `Structure First Check` | `.trae/agents/design-checker.md` | 存在 `Structure First Check` 表和 `VISIBLE_MISMATCH` 约束 | agent 输出合同仍可跳过结构事实抄录 |
 

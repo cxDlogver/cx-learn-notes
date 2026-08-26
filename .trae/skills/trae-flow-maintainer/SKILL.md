@@ -15,7 +15,7 @@ Treat the framework as four layers:
 
 | Layer | Owns | Typical files |
 |---|---|---|
-| Command | User entry, precheck, routing, final Gate Review | `commands/delivery:*.md` |
+| Command | User entry, precheck, routing, final Gate Review | `commands/delivery/*.md` |
 | Skill | Stage rules, required inputs, outputs, gates, stop conditions | `skills/*/SKILL.md` |
 | Agent | Bounded execution role; no stage ownership | `agents/*.md` |
 | Global contract | Cross-stage invariants and role map | `AGENTS.md`, `docs/*` |

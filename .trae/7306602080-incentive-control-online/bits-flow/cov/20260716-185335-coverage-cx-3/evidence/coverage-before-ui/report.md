@@ -1,0 +1,28 @@
+# Huatuo Branch Coverage Report
+
+- generatedAt: `2026-07-16T10:57:50.943Z`
+- gitRepo: `ecom/alliance-operation-mono`
+- fromBranch: `master`
+- toBranch: `cx-3`
+- overallCoverRatio: `44.25%`
+
+| Metric | Value |
+| --- | ---: |
+| filesApiFiles | 24 |
+| nonFullCoverageFiles | 10 |
+| scriptFilteredFiles | 10 |
+| codeRequestFiles | 10 |
+| resultFiles | 8 |
+| skippedFiles | 2 |
+| effectiveUncoveredInsertedRows | 393 |
+
+| Rank | Effective uncovered | Files estimate | coverRatio | Version | File | Report |
+| --- | ---: | ---: | --- | --- | --- | --- |
+| 1 | 122 | 122 | 0.81% | `huatuo:c699f0478ea58c88` | [apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/manually-submit-videos-form/index.tsx) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/components/manual-videos/drawer/form/index.tsx/report.md` |
+| 2 | 97 | 97 | 35.33% | `huatuo:0b32ff642723b2a7` | [apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/stores/manuallySubmitVideoStore.ts/report.md` |
+| 3 | 73 | 73 | 30.48% | `huatuo:be381542a5504dab` | [apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/components/send-award/batch-submit-modal/index.tsx/report.md` |
+| 4 | 49 | 49 | 5.77% | `huatuo:fb3f8deb7135e2b7` | [apps/alliance-operation-content/src/routes/content-activity/award/utils.ts](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/utils.ts) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/utils.ts/report.md` |
+| 5 | 26 | 26 | 21.21% | `huatuo:a8063018ce0bb551` | [apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/stores/sendAwardToAuthorStore.ts/report.md` |
+| 6 | 11 | 11 | 62.07% | `huatuo:4712d1868fdd788a` | [apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/components/send-award/batch-operation-bar/index.tsx/report.md` |
+| 7 | 11 | 11 | 0.00% | `huatuo:cfc02a49f01cbfeb` | [apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/stores/couponDeliveryRecordStore.ts) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/stores/couponDeliveryRecordStore.ts/report.md` |
+| 8 | 4 | 4 | 69.23% | `huatuo:9fb4f28d9d037052` | [apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx](file:///Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono/apps/alliance-operation-content/src/routes/content-activity/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx) | `/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-185335-coverage-cx-3/coverage/r/award/components/manually-submit-videos/manually-submit-videos-drawer/index.tsx/report.md` |

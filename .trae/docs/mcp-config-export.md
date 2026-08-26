@@ -74,7 +74,7 @@ This runtime is narrower than `solo_agent`; do not assume all Figma/D2C/Feishu t
 | `/delivery:verify` | `TRAE_DESKTOP`: `integrated_browser`, fallback `mcp_chrome-devtools`; `COCO_CLI_HEADLESS`: Playwright Chromium or headless browser MCP / DevTools | Desktop: `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_console_messages`, `browser_network_requests`; CLI: headless goto / DOM / screenshot / console / network equivalents | Runtime evidence, screenshots, network/console facts, case queue updates. |
 | `/delivery:design` | `TRAE_DESKTOP`: `integrated_browser`; `COCO_CLI_HEADLESS`: Playwright Chromium or headless browser MCP / DevTools; plus `mcp_bytedance-figma-mcp`, `mcp_d2c-mcp-server` | Runtime screenshots/snapshots plus Figma node/screenshot or D2C node data | Design-vs-runtime evidence; design rework tasks when mismatch exists. |
 | `/delivery:mock` | No MCP required by default | BAM mock is handled by local skill/scripts and platform/CLI integration, not exported here as MCP config. | `delivery-mock.md`, mock manifest, BAM marker patch evidence. |
-| `/delivery:bits --coverage` | `integrated_browser` | `browser_navigate`, `browser_evaluate` | Huatuo branch coverage reports under `bits-flow/coverage/<cov-run-id>/coverage/`, coverage state and review expression. |
+| `/delivery:bits --coverage` | `integrated_browser` | `browser_navigate`, `browser_evaluate` | Huatuo branch coverage reports under `bits-flow/cov/<cov-run-id>/coverage/`, coverage state and review expression. |
 
 ## Server Details
 

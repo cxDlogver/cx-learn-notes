@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "run_id": "20260716-232605-coverage-cx-3",
+  "mode": "/delivery:bits --coverage",
+  "threshold": 96,
+  "captured_at": "2026-07-16T15:53:27.828Z",
+  "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+  "browser_view_id": "288d7b9d-03fe-4006-9380-03810d4c957d",
+  "page_title": "内容生态运营｜橙蕉",
+  "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+  "target_file_coverage_version": "huatuo:9412a594665bd189",
+  "target_lines": [72, 73, 446],
+  "target_flow": "配置二 / DOU+券 / 作者 no-award pending + 作者批量提交成功清理",
+  "ui_result": {
+    "status": "SUCCESS_PATH_REACHED",
+    "selected_tab_text": ["配置二", "配置二"],
+    "visible_modal_count_after_submit": 0,
+    "modal_closed_after_submit": true,
+    "old_failure_text_visible_after_v3": false,
+    "post_submit_visible_buttons_include": ["一键全选", "批量修改", "批量提交", "点此补位"],
+    "notes": "v3 retry reached reward success path, triggered candidate_remove, and closed the batch submit modal."
+  },
+  "runtime_troubleshooting": {
+    "root_cause": "operation-request normalRequest wraps network JSON into FetchResponse { code, type, data, msg } and does not preserve top-level st. The author submit helper checks res.st, so a normal network envelope with data.st was seen by the helper as missing st and produced resultCode -1.",
+    "failed_attempts": [
+      {
+        "intercept_version": "author-coupon-no-award-v1",
+        "delivery_submit_count": 1,
+        "mock_shape": "network response contained code/msg/st plus nested data",
+        "observed_ui": "提交作者奖励投放失败: -1, success",
+        "candidate_remove_count": 0
+      },
+      {
+        "intercept_version": "author-coupon-no-award-v2-top-level-success",
+        "delivery_submit_count": 1,
+        "mock_shape": "top-level BAM success object { st: 0, code: 0, msg: success }",
+        "observed_ui": "提交作者奖励投放失败: -1, success",
+        "candidate_remove_count": 0
+      }
+    ],
+    "successful_attempt": {
+      "intercept_version": "author-coupon-no-award-v3-operation-request-envelope",
+      "mock_shape": "network envelope { code: 0, msg: success, data: { st: 0, code: 0, msg: success } }",
+      "browser_session_compatibility_shim": "Object.prototype.st getter maps success FetchResponse st to data.st only in this browser session.",
+      "source_files_changed": false,
+      "backend_write_policy": "not_sent"
+    }
+  },
+  "read_requests": {
+    "policy": "real online read/no-side-effect requests are allowed",
+    "endpoint_counts": {
+      "/api/buyin/admin/content_activity/get_charge_record": 2,
+      "/api/buyin/admin/content_activity/charge_amount_check": 1
+    },
+    "requests": [
+      {
+        "index": 0,
+        "observed_at": "2026-07-16T15:47:04.551Z",
+        "transport": "xhr",
+        "method": "GET",
+        "endpoint": "/api/buyin/admin/content_activity/get_charge_record",
+        "backend_request": "sent"
+      },
+      {
+        "index": 1,
+        "observed_at": "2026-07-16T15:48:14.226Z",
+        "transport": "xhr",
+        "method": "POST",
+        "endpoint": "/api/buyin/admin/content_activity/charge_amount_check",
+        "backend_request": "sent"
+      },
+      {
+        "index": 2,
+        "observed_at": "2026-07-16T15:53:15.104Z",
+        "transport": "xhr",
+        "method": "GET",
+        "endpoint": "/api/buyin/admin/content_activity/get_charge_record",
+        "backend_request": "sent"
+      }
+    ]
+  },
+  "write_intercepts": {
+    "policy": "all write/side-effect requests are intercepted in browser before network",
+    "endpoint_counts": {
+      "/api/buyin/admin/content_activity/delivery_modify_save": 2,
+      "/api/buyin/admin/content_activity/delivery_dou_plus_coupon": 3,
+      "/api/buyin/admin/content_activity/candidate_remove": 1
+    },
+    "backend_write": "not_sent",
+    "delivery_modify_save": {
+      "count": 2,
+      "status": "INTERCEPTED",
+      "latest_intercept_version": "author-coupon-no-award-v1",
+      "body_summaries": [
+        {
+          "index": 0,
+          "intercepted_at": "2026-07-16T15:40:19.553Z",
+          "if_delivery": false,
+          "candidate_ids_count": 1,
+          "keys": ["activity_id", "author_modify_config", "candidate_ids", "config_id", "if_delivery", "not_delivery_reason", "session_unix_time"],
+          "backend_write": "not_sent"
+        },
+        {
+          "index": 1,
+          "intercepted_at": "2026-07-16T15:46:14.579Z",
+          "if_delivery": true,
+          "candidate_ids_count": 1,
+          "keys": ["activity_id", "author_modify_config", "candidate_ids", "config_id", "if_delivery", "session_unix_time"],
+          "backend_write": "not_sent"
+        }
+      ],
+      "branch_evidence": "First save produced pending no-award author; second save restored another author to awardable state so batch submit selected only rank 2 while pending no-award remained for mergeAuthorSubmitItems()."
+    },
+    "delivery_dou_plus_coupon": {
+      "count": 3,
+      "status": "INTERCEPTED",
+      "successful_intercept_index": 4,
+      "successful_intercept_version": "author-coupon-no-award-v3-operation-request-envelope",
+      "successful_body_summary": {
+        "intercepted_at": "2026-07-16T15:53:15.090Z",
+        "keys": ["activity_id", "award_period", "charge_code", "config_id", "delivery_authors", "delivery_from", "publish_end_time", "publish_start_time", "session_unix_time"],
+        "activity_id_present": true,
+        "config_id_present": true,
+        "session_unix_time_present": true,
+        "charge_code_present": true,
+        "delivery_from": 1,
+        "delivery_authors_count": 1,
+        "first_delivery_author_keys": ["candidate_id", "rank"],
+        "min_delivery_author_rank": 2,
+        "max_delivery_author_rank": 2
+      },
+      "mock_response_summary": {
+        "network_keys": ["code", "data", "msg"],
+        "code": 0,
+        "msg": "success",
+        "data_keys": ["code", "delivery_task_id", "msg", "st"],
+        "data_st": 0,
+        "data_code": 0,
+        "has_delivery_task_id": true,
+        "runtime_compat": "Object.prototype.st getter maps success wrapper st to data.st in this browser session only"
+      },
+      "backend_write": "not_sent",
+      "branch_evidence": "Selected award author rank 2 while one no-award author was pending, exercising mergeAuthorSubmitItems() duplicate-filter path for author pending no-award data."
+    },
+    "candidate_remove": {
+      "count": 1,
+      "status": "INTERCEPTED",
+      "intercept_index": 5,
+      "intercept_version": "author-coupon-no-award-v3-operation-request-envelope",
+      "body_summary": {
+        "intercepted_at": "2026-07-16T15:53:15.095Z",
+        "keys": ["activity_id", "config_id", "remove_candidates"],
+        "activity_id_present": true,
+        "config_id_present": true,
+        "remove_candidates_count": 1,
+        "remove_candidate_reason_codes": ["手动移除"],
+        "first_remove_candidate_keys": ["candidate_id", "remove_reason"]
+      },
+      "mock_response_summary": {
+        "network_keys": ["code", "data", "msg"],
+        "code": 0,
+        "msg": "success",
+        "data_keys": ["code", "msg", "st"],
+        "data_st": 0,
+        "data_code": 0,
+        "runtime_compat": "Object.prototype.st getter maps success wrapper st to data.st in this browser session only"
+      },
+      "backend_write": "not_sent",
+      "branch_evidence": "candidate_remove was called after mocked delivery success, then onOk closed the modal and clearPendingNoAwardAuthorItems() was reached for author batch submit."
+    },
+    "detailed_intercepts": [
+      {
+        "index": 0,
+        "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+        "method": "POST",
+        "transport": "xhr",
+        "intercepted_at": "2026-07-16T15:40:19.553Z",
+        "intercept_version": "author-coupon-no-award-v1",
+        "body_summary": {
+          "keys": ["activity_id", "author_modify_config", "candidate_ids", "config_id", "if_delivery", "not_delivery_reason", "session_unix_time"],
+          "activity_id_present": true,
+          "config_id_present": true,
+          "session_unix_time_present": true,
+          "if_delivery": false,
+          "candidate_ids_count": 1
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true
+      },
+      {
+        "index": 1,
+        "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+        "method": "POST",
+        "transport": "xhr",
+        "intercepted_at": "2026-07-16T15:46:14.579Z",
+        "intercept_version": "author-coupon-no-award-v1",
+        "body_summary": {
+          "keys": ["activity_id", "author_modify_config", "candidate_ids", "config_id", "if_delivery", "session_unix_time"],
+          "activity_id_present": true,
+          "config_id_present": true,
+          "session_unix_time_present": true,
+          "if_delivery": true,
+          "candidate_ids_count": 1
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true
+      },
+      {
+        "index": 2,
+        "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "method": "POST",
+        "transport": "xhr",
+        "intercepted_at": "2026-07-16T15:48:33.382Z",
+        "intercept_version": "author-coupon-no-award-v1",
+        "body_summary": {
+          "delivery_authors_count": 1,
+          "charge_code_present": true,
+          "min_delivery_author_rank": 2,
+          "max_delivery_author_rank": 2
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true,
+        "result": "frontend_failure_resultCode_minus_1"
+      },
+      {
+        "index": 3,
+        "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "method": "POST",
+        "transport": "xhr",
+        "intercepted_at": "2026-07-16T15:51:10.431Z",
+        "intercept_version": "author-coupon-no-award-v2-top-level-success",
+        "body_summary": {
+          "delivery_authors_count": 1,
+          "charge_code_present": true,
+          "min_delivery_author_rank": 2,
+          "max_delivery_author_rank": 2
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true,
+        "result": "frontend_failure_resultCode_minus_1"
+      },
+      {
+        "index": 4,
+        "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+        "method": "POST",
+        "transport": "xhr",
+        "intercepted_at": "2026-07-16T15:53:15.090Z",
+        "intercept_version": "author-coupon-no-award-v3-operation-request-envelope",
+        "body_summary": {
+          "keys": ["activity_id", "award_period", "charge_code", "config_id", "delivery_authors", "delivery_from", "publish_end_time", "publish_start_time", "session_unix_time"],
+          "activity_id_present": true,
+          "config_id_present": true,
+          "session_unix_time_present": true,
+          "charge_code_present": true,
+          "delivery_from": 1,
+          "delivery_authors_count": 1,
+          "first_delivery_author_keys": ["candidate_id", "rank"],
+          "min_delivery_author_rank": 2,
+          "max_delivery_author_rank": 2
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true,
+        "result": "success_path_reached"
+      },
+      {
+        "index": 5,
+        "endpoint": "/api/buyin/admin/content_activity/candidate_remove",
+        "method": "POST",
+        "transport": "xhr",
+        "intercepted_at": "2026-07-16T15:53:15.095Z",
+        "intercept_version": "author-coupon-no-award-v3-operation-request-envelope",
+        "body_summary": {
+          "keys": ["activity_id", "config_id", "remove_candidates"],
+          "activity_id_present": true,
+          "config_id_present": true,
+          "remove_candidates_count": 1,
+          "remove_candidate_reason_codes": ["手动移除"],
+          "first_remove_candidate_keys": ["candidate_id", "remove_reason"]
+        },
+        "backend_write": "not_sent",
+        "intercepted_before_network": true,
+        "result": "success_path_cleanup_reached"
+      }
+    ]
+  },
+  "screenshot_evidence": {
+    "browser_take_screenshot_attempted": true,
+    "attempted_local_paths": [
+      "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-232605-coverage-cx-3/evidence/round-1-after-author-submit.png",
+      "artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-232605-coverage-cx-3/evidence/round-1-after-author-submit.png"
+    ],
+    "local_file_created": false,
+    "tool_result": "browser_take_screenshot rendered the post-submit page preview in the session, but no PNG file was found in the workspace, /tmp, Downloads, Desktop, or .trae-cn search paths.",
+    "replacement_evidence": "ui_result and browser snapshot show visible_modal_count_after_submit = 0, modal_closed_after_submit = true, and main page buttons visible after candidate_remove."
+  },
+  "privacy_and_side_effects": {
+    "saved_cookie": false,
+    "saved_token": false,
+    "saved_local_storage": false,
+    "saved_session_storage": false,
+    "saved_full_request_body": false,
+    "saved_candidate_id_list": false,
+    "write_backend_requests_sent": false,
+    "read_backend_requests_sent": true
+  }
+}

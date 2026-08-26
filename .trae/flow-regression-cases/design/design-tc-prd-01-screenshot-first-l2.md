@@ -27,7 +27,7 @@
 - `.trae/skills/07-design-alignment/SKILL.md`
 - `.trae/agents/design-checker.md`
 - `.trae/AGENTS.md`
-- `.trae/commands/delivery:design.md`
+- `.trae/commands/delivery/design.md`
 
 ## Related Tags
 - stage: `design`

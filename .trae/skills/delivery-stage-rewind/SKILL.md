@@ -55,11 +55,11 @@ Before executing the script, read:
 - `.trae/AGENTS.md`
 - `.trae/PROJECT_CONTEXT.md`
 - `.trae/DELIVERY_STATE.md`
-- `.trae/commands/delivery:prd.md`
-- `.trae/commands/delivery:bam.md` when the target is `bam`
-- `.trae/commands/delivery:plan.md` when the target is `plan`
-- `.trae/commands/delivery:mock.md` when the target is `mock`
-- `.trae/commands/delivery:task.md` when the target is `task`
+- `.trae/commands/delivery/prd.md`
+- `.trae/commands/delivery/bam.md` when the target is `bam`
+- `.trae/commands/delivery/plan.md` when the target is `plan`
+- `.trae/commands/delivery/mock.md` when the target is `mock`
+- `.trae/commands/delivery/task.md` when the target is `task`
 - `.trae/scripts/delivery_stage_rewind.sh`
 
 Confirm:

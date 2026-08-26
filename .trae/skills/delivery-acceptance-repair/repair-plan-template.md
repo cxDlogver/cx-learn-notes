@@ -234,7 +234,7 @@ Rules:
     {
       "stage": "task",
       "required": true,
-      "command_ref": ".trae/commands/delivery:task.md",
+      "command_ref": ".trae/commands/delivery/task.md",
       "skill_refs": [
         ".trae/skills/09-task-planning/SKILL.md",
         ".trae/skills/10-test-case-planning/SKILL.md"
@@ -246,7 +246,7 @@ Rules:
     {
       "stage": "code",
       "required": true,
-      "command_ref": ".trae/commands/delivery:code.md",
+      "command_ref": ".trae/commands/delivery/code.md",
       "skill_refs": [".trae/skills/05-code-implementation/SKILL.md"],
       "owner": "subagent-assisted",
       "required_agent": "code-writer",
@@ -255,7 +255,7 @@ Rules:
     {
       "stage": "verify",
       "required": true,
-      "command_ref": ".trae/commands/delivery:verify.md",
+      "command_ref": ".trae/commands/delivery/verify.md",
       "skill_refs": [".trae/skills/06-debug-verification/SKILL.md"],
       "owner": "main-agent",
       "required_agent": null,

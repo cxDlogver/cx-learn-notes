@@ -19,7 +19,7 @@ Code 阶段的独立审查在普通 Task 完成后容易重复读取完整 `04-t
 ## Changed Process Files
 
 - `AGENTS.md`
-- `commands/delivery:code.md`
+- `commands/delivery/code.md`
 - `skills/05-code-implementation/SKILL.md`
 - `docs/delivery-framework-flow.md`
 
@@ -46,10 +46,10 @@ STATIC_ASSERTION
 
 | id | assertion | evidence_file | pass_condition | fail_condition |
 |---|---|---|---|---|
-| A1 | Code flow defines `Task Context Index`. | `commands/delivery:code.md`, `skills/05-code-implementation/SKILL.md` | Both files mention `Task Context Index`. | Either file lacks the term. |
-| A2 | Code flow defines `Task Review Packet` before independent review. | `commands/delivery:code.md`, `skills/05-code-implementation/SKILL.md` | Both files mention `Task Review Packet` and targeted diff. | Reviewer input can be full-doc only, or packet is absent. |
-| A3 | Independent reviewer still checks strict dimensions. | `commands/delivery:code.md`, `skills/05-code-implementation/SKILL.md`, `AGENTS.md` | Files retain scope, contract, UI evidence, mock boundary, verification freshness or equivalent checks. | Packet protocol replaces or removes independent review dimensions. |
-| A4 | Reviewer expands context on risk. | `commands/delivery:code.md`, `skills/05-code-implementation/SKILL.md` | Files require expanded context when packet is missing, contradictory, stale or high risk. | Reviewer is allowed to PASS from incomplete packet. |
+| A1 | Code flow defines `Task Context Index`. | `commands/delivery/code.md`, `skills/05-code-implementation/SKILL.md` | Both files mention `Task Context Index`. | Either file lacks the term. |
+| A2 | Code flow defines `Task Review Packet` before independent review. | `commands/delivery/code.md`, `skills/05-code-implementation/SKILL.md` | Both files mention `Task Review Packet` and targeted diff. | Reviewer input can be full-doc only, or packet is absent. |
+| A3 | Independent reviewer still checks strict dimensions. | `commands/delivery/code.md`, `skills/05-code-implementation/SKILL.md`, `AGENTS.md` | Files retain scope, contract, UI evidence, mock boundary, verification freshness or equivalent checks. | Packet protocol replaces or removes independent review dimensions. |
+| A4 | Reviewer expands context on risk. | `commands/delivery/code.md`, `skills/05-code-implementation/SKILL.md` | Files require expanded context when packet is missing, contradictory, stale or high risk. | Reviewer is allowed to PASS from incomplete packet. |
 | A5 | Command reuse is freshness-gated. | `skills/05-code-implementation/SKILL.md` | Skill states command results may be reused only when produced after final diff and freshness is verified. | Skill encourages blind reuse or unconditional rerun. |
 
 ## Daily Suite Policy

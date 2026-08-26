@@ -47,7 +47,7 @@ requireIncludes('PROJECT_CONTEXT.md', [
   'browser_runtime_mode=COCO_CLI_HEADLESS',
 ]);
 
-requireIncludes('commands/delivery:design.md', [
+requireIncludes('commands/delivery/design.md', [
   'Browser Runtime Mode',
   'profile / storage state',
   'console',

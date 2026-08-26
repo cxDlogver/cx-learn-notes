@@ -272,14 +272,14 @@ const rootStart = new Map([
   ["CODE_ISSUE", "task"], ["VERIFY_MISSING", "task"], ["ENV_OR_DATA", "task"],
 ]);
 const stageContract = new Map([
-  ["init", { command: ".trae/commands/delivery:init.md", skills: [".trae/skills/01-requirement-intake/SKILL.md", ".trae/skills/02-task-space-init/SKILL.md"], owner: "main-agent", agent: null }],
-  ["prd", { command: ".trae/commands/delivery:prd.md", skills: [".trae/skills/03-prd-analysis/SKILL.md"], owner: "subagent-assisted", agent: "prd-analyzer" }],
-  ["bam", { command: ".trae/commands/delivery:bam.md", skills: [".trae/skills/bam/SKILL.md"], owner: "main-agent", agent: null }],
-  ["plan", { command: ".trae/commands/delivery:plan.md", skills: [".trae/skills/04-tech-planning/SKILL.md"], owner: "subagent-assisted", agent: "tech-planner" }],
-  ["task", { command: ".trae/commands/delivery:task.md", skills: [".trae/skills/09-task-planning/SKILL.md", ".trae/skills/10-test-case-planning/SKILL.md"], owner: "subagent-assisted", agent: "task-planner" }],
-  ["code", { command: ".trae/commands/delivery:code.md", skills: [".trae/skills/05-code-implementation/SKILL.md"], owner: "subagent-assisted", agent: "code-writer" }],
-  ["verify", { command: ".trae/commands/delivery:verify.md", skills: [".trae/skills/06-debug-verification/SKILL.md"], owner: "main-agent", agent: null, helpers: ["runtime-runner"] }],
-  ["design", { command: ".trae/commands/delivery:design.md", skills: [".trae/skills/07-design-alignment/SKILL.md"], owner: "subagent-assisted", agent: "design-checker" }],
+  ["init", { command: ".trae/commands/delivery/init.md", skills: [".trae/skills/01-requirement-intake/SKILL.md", ".trae/skills/02-task-space-init/SKILL.md"], owner: "main-agent", agent: null }],
+  ["prd", { command: ".trae/commands/delivery/prd.md", skills: [".trae/skills/03-prd-analysis/SKILL.md"], owner: "subagent-assisted", agent: "prd-analyzer" }],
+  ["bam", { command: ".trae/commands/delivery/bam.md", skills: [".trae/skills/bam/SKILL.md"], owner: "main-agent", agent: null }],
+  ["plan", { command: ".trae/commands/delivery/plan.md", skills: [".trae/skills/04-tech-planning/SKILL.md"], owner: "subagent-assisted", agent: "tech-planner" }],
+  ["task", { command: ".trae/commands/delivery/task.md", skills: [".trae/skills/09-task-planning/SKILL.md", ".trae/skills/10-test-case-planning/SKILL.md"], owner: "subagent-assisted", agent: "task-planner" }],
+  ["code", { command: ".trae/commands/delivery/code.md", skills: [".trae/skills/05-code-implementation/SKILL.md"], owner: "subagent-assisted", agent: "code-writer" }],
+  ["verify", { command: ".trae/commands/delivery/verify.md", skills: [".trae/skills/06-debug-verification/SKILL.md"], owner: "main-agent", agent: null, helpers: ["runtime-runner"] }],
+  ["design", { command: ".trae/commands/delivery/design.md", skills: [".trae/skills/07-design-alignment/SKILL.md"], owner: "subagent-assisted", agent: "design-checker" }],
 ]);
 
 let expectedSequence = [];

@@ -19,8 +19,8 @@ verify
 ## Changed Process Files
 
 - `AGENTS.md`
-- `commands/delivery:verify.md`
-- `commands/delivery:mock.md`
+- `commands/delivery/verify.md`
+- `commands/delivery/mock.md`
 - `skills/06-debug-verification/SKILL.md`
 - `skills/bam-mock-runtime-generator/SKILL.md`
 
@@ -48,8 +48,8 @@ STATIC_ASSERTION
 | id | assertion | evidence_file | pass_condition | fail_condition |
 |---|---|---|---|---|
 | A1 | Verify allows non-`MOCK_PREVIEW` `SAMPLE_COVERAGE_GAP` when基础真实链路或接口合同已明确，而不是要求真实状态样本已完全闭合。 | `skills/06-debug-verification/SKILL.md`, `AGENTS.md` | Rules mention `base_contract_evidence` or “基础真实链路或接口合同已明确”. | Rules still require only “真实 contract 已关闭/已闭合” as the trigger. |
-| A2 | `/delivery:mock` accepts `base_contract_evidence` and records supplemental-only evidence for sample coverage. | `commands/delivery:mock.md` | Command requires `base_contract_evidence`, `mock_debug_param`, `supplemental_assertions`, and `forbidden_contract_assertions`. | Command requires only `real_contract_evidence` or lacks supplemental-only boundaries. |
-| A3 | Temporary mock cleanup is mandatory before moving to the next case or ending the stage. | `AGENTS.md`, `commands/delivery:mock.md`, `skills/06-debug-verification/SKILL.md` | Rules require deleting temporary rules, BAM patch/wrapper patch, manifest active rule, temporary `__mock__`, and removing debug params. | Rules allow leftover sample-gap mock artifacts or defer cleanup to later stages. |
+| A2 | `/delivery:mock` accepts `base_contract_evidence` and records supplemental-only evidence for sample coverage. | `commands/delivery/mock.md` | Command requires `base_contract_evidence`, `mock_debug_param`, `supplemental_assertions`, and `forbidden_contract_assertions`. | Command requires only `real_contract_evidence` or lacks supplemental-only boundaries. |
+| A3 | Temporary mock cleanup is mandatory before moving to the next case or ending the stage. | `AGENTS.md`, `commands/delivery/mock.md`, `skills/06-debug-verification/SKILL.md` | Rules require deleting temporary rules, BAM patch/wrapper patch, manifest active rule, temporary `__mock__`, and removing debug params. | Rules allow leftover sample-gap mock artifacts or defer cleanup to later stages. |
 | A4 | Mock generator supports a distinct temporary sample-coverage synthetic rule kind. | `skills/bam-mock-runtime-generator/SKILL.md` | Skill mentions `sample_coverage_synthetic` and `SUPPLEMENTAL_ONLY`. | Skill only supports generic synthetic contract or treats temporary sample mock as real verification. |
 
 ## Daily Suite Policy

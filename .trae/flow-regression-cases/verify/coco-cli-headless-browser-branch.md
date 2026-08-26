@@ -20,9 +20,9 @@ verify
 
 - `AGENTS.md`
 - `PROJECT_CONTEXT.md`
-- `commands/delivery:code.md`
-- `commands/delivery:design.md`
-- `commands/delivery:mock.md`
+- `commands/delivery/code.md`
+- `commands/delivery/design.md`
+- `commands/delivery/mock.md`
 - `skills/05-code-implementation/SKILL.md`
 - `skills/06-debug-verification/SKILL.md`
 - `skills/06-debug-verification/browser-verify-runbook.template.json`

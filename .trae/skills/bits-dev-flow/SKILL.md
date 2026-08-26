@@ -14,7 +14,7 @@ description: 当需要执行需求级 BITS 开发任务初始化、处理 Codeba
 3. 基于 Huatuo 分支覆盖率执行覆盖率优化、真实线上 UI 覆盖和刷新验证。
 4. 形成可追溯、可验证、可回写的选择性修复闭环。
 
-本 skill 可以读取其它 skill、command、agent 和阶段产物作为证据，但不得修改其它 skill、command、agent 或它们的触发描述来引入本规范。若 `/delivery:bits` 规范本身需要调整，只能修改本 skill、`.trae/commands/delivery:bits.md` 和必要的全局入口说明。
+本 skill 可以读取其它 skill、command、agent 和阶段产物作为证据，但不得修改其它 skill、command、agent 或它们的触发描述来引入本规范。若 `/delivery:bits` 规范本身需要调整，只能修改本 skill、`.trae/commands/delivery/bits.md` 和必要的全局入口说明。
 
 ## 模式
 
@@ -44,7 +44,7 @@ description: 当需要执行需求级 BITS 开发任务初始化、处理 Codeba
 - `.trae/AGENTS.md`
 - `.trae/PROJECT_CONTEXT.md`
 - `.trae/DELIVERY_STATE.md`
-- `.trae/commands/delivery:bits.md`
+- `.trae/commands/delivery/bits.md`
 - 涉及内部平台 CLI 时，读取 `bytedcli` skill；具体命令、参数、鉴权、fallback 和 domain guide 以该 skill 为准
 
 `--init` 创建或复用 BITS 开发任务时，还必须读取 `.trae/skills/bytedcli/references/subskills/bytedance-bits/GUIDE.md`。`bytedcli bits develop create` 的参数、可省略项、自动解析能力、dry-run 行为和错误处理只以该 `bytedance-bits` 规范为准。其它 bytedcli subskill 或平台中的同名 `space_id` / workspace / devflow 规则不得用于填充 BITS 创建字段。
@@ -60,7 +60,7 @@ description: 当需要执行需求级 BITS 开发任务初始化、处理 Codeba
 
 - 当前覆盖率脚本，优先使用本 skill 内的 `scripts/collect-huatuo-branch-coverage.js`；若用户显式传入脚本路径，则以用户参数为准。
 - 当前 artifacts workspace 中用于映射需求范围的产物，至少包括已存在的 `03-prd-analysis.md`、`delivery-task.md`、`09-test-case-matrix.md`、`05-implementation-log.md`、`10-user-test-report.md`。
-- 当前覆盖率报告目录 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/` 下的 `latest.json`、`report.md`、`uncovered-list.json`、`uncovered-list.md` 和目标文件明细；若不存在，先通过脚本生成。
+- 当前覆盖率报告目录 `<workspace>/bits-flow/cov/<cov-run-id>/coverage/` 下的 `latest.json`、`report.md`、`uncovered-list.json`、`uncovered-list.md` 和目标文件明细；若不存在，先通过脚本生成。
 - 与真实线上 UI 覆盖、请求入参来源、写接口浏览器拦截和 BAM MOCK 已有入参相关的规则或证据；覆盖率优化必须由真实线上 UI 发起。读接口和无副作用接口必须保持真实请求；会落库、发奖、删除、修改配置、发送通知或产生其他线上副作用的写接口，必须在内置浏览器会话内拦截请求并返回 mock 响应，禁止真实命中后端。
 
 ## 产物目录
@@ -121,16 +121,16 @@ description: 当需要执行需求级 BITS 开发任务初始化、处理 Codeba
 
 只创建当前模式需要的文件。同一轮次内可基于新证据更新同名文件；跨轮次必须新建目录，禁止覆盖旧轮次。远端原始快照只能写入本轮 `sources/` 或 `snapshots/`，不得写入 `bits-flow/` 根目录。
 
-`--coverage` 的 Huatuo 原始报告产物写入当前轮次目录 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/`，例如 `bits-flow/coverage/20260626-150451-coverage-feat-meego-7306602080-incentive-control/coverage/results/`。该目录必须由覆盖率脚本重建或替换，且不得默认带 `browser-bridge-*` 目录层。覆盖率脚本产物必须至少包含 `latest.json`、`report.md`、`uncovered-list.json`、`uncovered-list.md` 和逐文件 `report.md` / `summary.json`。不得把本轮唯一有效 `results/` 写到共享 `<workspace>/coverage/`。
+`--coverage` 的 Huatuo 原始报告产物写入当前轮次目录 `<workspace>/bits-flow/cov/<cov-run-id>/coverage/`，例如 `bits-flow/cov/20260626-150451-coverage-feat-meego-7306602080-incentive-control/coverage/results/`。该目录必须由覆盖率脚本重建或替换，且不得默认带 `browser-bridge-*` 目录层。覆盖率脚本产物必须至少包含 `latest.json`、`report.md`、`uncovered-list.json`、`uncovered-list.md` 和逐文件 `report.md` / `summary.json`。不得把本轮唯一有效 `results/` 写到共享 `<workspace>/coverage/`。
 
-`<workspace>/bits-flow/coverage/coverage-exclusion-log.json` 是跨 run 目标文件版本登记与候选跳过事实源，字段和策略以 `coverage-exclusion-log.template.json` 为准。`insertLines = 0` 与 BAM 文件由覆盖率脚本默认过滤；同一轮目标文件、处理结果和全局排除审核写入本轮 state。所有被作为本轮目标文件处理过的文件都必须写入或更新全局日志，并记录当时 Huatuo 文件报告的 `fileCoverageVersion`；后续刷新报告时，只有当前候选的 `fileCoverageVersion` 与 ACTIVE 记录一致，才跳过该文件；版本变化时必须先将旧 ACTIVE 记录标记为 `SUPERSEDED`，再允许该文件重新进入候选。
+`<workspace>/bits-flow/cov/coverage-exclusion-log.json` 是跨 run 目标文件版本登记与候选跳过事实源，字段和策略以 `coverage-exclusion-log.template.json` 为准。`insertLines = 0` 与 BAM 文件由覆盖率脚本默认过滤；同一轮目标文件、处理结果和全局排除审核写入本轮 state。所有被作为本轮目标文件处理过的文件都必须写入或更新全局日志，并记录当时 Huatuo 文件报告的 `fileCoverageVersion`；后续刷新报告时，只有当前候选的 `fileCoverageVersion` 与 ACTIVE 记录一致，才跳过该文件；版本变化时必须先将旧 ACTIVE 记录标记为 `SUPERSEDED`，再允许该文件重新进入候选。
 
 ## 模板文件
 
 - `cr-modification-closure.template.json`：用于初始化 `<workspace>/bits-flow/cr/<cr-run-id>/closure/cr-modification-closure.json`。
-- `coverage-optimization-state.template.json`：用于初始化 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage-optimization-state.json`。
-- `coverage-optimization-plan-round.template.md`：用于初始化 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage-optimization-plan-round-<n>.md`。
-- `coverage-exclusion-log.template.json`：用于初始化 `<workspace>/bits-flow/coverage/coverage-exclusion-log.json`。
+- `coverage-optimization-state.template.json`：用于初始化 `<workspace>/bits-flow/cov/<cov-run-id>/coverage-optimization-state.json`。
+- `coverage-optimization-plan-round.template.md`：用于初始化 `<workspace>/bits-flow/cov/<cov-run-id>/coverage-optimization-plan-round-<n>.md`。
+- `coverage-exclusion-log.template.json`：用于初始化 `<workspace>/bits-flow/cov/coverage-exclusion-log.json`。
 
 `SKILL.md` 只描述 Gate 和执行规则，不重复维护模板中的字段结构。
 
@@ -407,11 +407,11 @@ bytedcli bits develop create \
 
 覆盖率脚本优先使用本 skill 内的 `scripts/collect-huatuo-branch-coverage.js`；若用户显式传入脚本路径，则以用户参数为准。无法唯一确定脚本、仓库或分支时必须暂停。
 
-解析覆盖率上下文后必须创建本轮 `bits-flow/coverage/<cov-run-id>/`，并写入 `round-meta.json`：
+解析覆盖率上下文后必须创建本轮 `bits-flow/cov/<cov-run-id>/`，并写入 `round-meta.json`：
 
 - 记录 workspace、execution repo、target repo、fromBranch、toBranch、threshold、rounds、脚本路径、用户参数、创建时间和状态。
 - 记录本轮 `coverage/`、`coverage-optimization-log.md`、`coverage-optimization-state.json`、`coverage-review-expression.md` 和 `coverage-optimization-plan-round-<n>.md` 的相对路径。
-- 创建或读取 `<workspace>/bits-flow/coverage/coverage-exclusion-log.json`，并基于 `coverage-optimization-state.template.json` 初始化本轮 state。字段结构、默认执行策略和全局排除策略以模板为准；日志不可解析时必须暂停。
+- 创建或读取 `<workspace>/bits-flow/cov/coverage-exclusion-log.json`，并基于 `coverage-optimization-state.template.json` 初始化本轮 state。字段结构、默认执行策略和全局排除策略以模板为准；日志不可解析时必须暂停。
 
 ### 2. 拉取最新覆盖率
 
@@ -421,7 +421,7 @@ bytedcli bits develop create \
 node <coverage-script> \
   --browserCaptureServer \
   --repoRoot <execution_repo_root> \
-  --outDir <workspace>/bits-flow/coverage/<cov-run-id>/coverage
+  --outDir <workspace>/bits-flow/cov/<cov-run-id>/coverage
 
 # 脚本输出 loader 后，在已登录的 Huatuo coverage-list 页面用 browser_evaluate 执行 loader。
 # 浏览器脚本必须在 Huatuo 页面内用 credentials: include 发真实线上请求；
@@ -432,7 +432,7 @@ node <coverage-script> \
 
 - 必须先触发 Huatuo 分支更新，再拉取 `branch/files` 和目标文件 `branch/code`。
 - 必须提取所有未满 100%、`insertLines > 0` 且非 BAM 文件的明细；过滤结果写入脚本产物，避免在 skill 中重复维护候选规则。
-- 必须替换本轮 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/` 的旧产物，不得混入旧报告。
+- 必须替换本轮 `<workspace>/bits-flow/cov/<cov-run-id>/coverage/` 的旧产物，不得混入旧报告。
 - 默认使用“浏览器真实请求 + Node 分段接收落盘”的 capture server 模式：Huatuo API 请求在已登录 Huatuo 页面内发起，本地服务只接收分段响应并生成规范产物，避免 browser_evaluate 返回完整 payload 超时。
 - `--printBrowserScript` + `--fromBrowserPayload` 仅作为人工 fallback；不得把轻量摘要冒充完整报告。
 - 不得使用本地服务代理 Huatuo API，不得手工伪造覆盖率产物，不得把 Cookie 写入产物或提交记录。
@@ -490,7 +490,7 @@ node <coverage-script> \
 2. 对本轮修改运行聚焦验证、`git diff --check` 和可用的 lint / typecheck。
 3. 使用内置浏览器在真实线上环境执行覆盖任务。
 4. 确认读接口和无副作用接口未接管请求、未替换响应；确认所有写接口均由内置浏览器拦截并返回 mock 响应，且未真实命中后端。
-5. 重新执行覆盖率脚本刷新本轮 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/`。
+5. 重新执行覆盖率脚本刷新本轮 `<workspace>/bits-flow/cov/<cov-run-id>/coverage/`。
 6. 基于 `coverage-optimization-state.template.json` 更新本轮 `coverage-optimization-state.json`，记录目标文件处理结果、覆盖率刷新、UI 证据、验证命令、blocker 和全局排除审核。
 7. 本轮目标文件必须同步写入或更新 `coverage-exclusion-log.json`；日志不记录进入排除的业务原因，只登记目标文件、当前 `fileCoverageVersion`、来源 run/round 和证据。写入项时必须保存当前文件 `fileCoverageVersion`，后续刷新发现版本变化时必须 supersede 旧 ACTIVE 项而不是继续跳过。
 
@@ -538,8 +538,8 @@ node <coverage-script> \
 
 必须同时满足：
 
-- `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/latest.json`、`report.md`、`uncovered-list.json`、`uncovered-list.md` 存在且来自本轮脚本刷新。
-- `<workspace>/bits-flow/coverage/coverage-exclusion-log.json` 存在且可解析；本轮所有被作为目标文件处理过的文件已写入或更新该日志，并记录当前 `fileCoverageVersion`。
+- `<workspace>/bits-flow/cov/<cov-run-id>/coverage/latest.json`、`report.md`、`uncovered-list.json`、`uncovered-list.md` 存在且来自本轮脚本刷新。
+- `<workspace>/bits-flow/cov/coverage-exclusion-log.json` 存在且可解析；本轮所有被作为目标文件处理过的文件已写入或更新该日志，并记录当前 `fileCoverageVersion`。
 - 本轮 `coverage-optimization-log.md` 已记录拉取命令、Huatuo 更新时间、整体覆盖率、阈值判断和每轮摘要。
 - 本轮 `coverage-optimization-state.json` 可解析，且基于 `coverage-optimization-state.template.json` 填充了真实轮次、覆盖率、目标文件处理结果、全局排除审核结果、验证和 blocker 证据。
 - 若整体覆盖率未达标，每轮都已记录候选文件选择依据；脚本默认过滤和全局排除日志生效；全局日志不记录进入排除的业务原因，只按目标文件 `fileCoverageVersion` 判断是否跳过，版本变化时必须 supersede 旧 ACTIVE 并允许重新入选。

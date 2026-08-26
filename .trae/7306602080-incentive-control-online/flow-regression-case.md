@@ -19,7 +19,7 @@ verify
 ## Changed Process Files
 
 - `.trae/AGENTS.md`
-- `.trae/commands/delivery:verify.md`
+- `.trae/commands/delivery/verify.md`
 - `.trae/skills/06-debug-verification/SKILL.md`
 - `.trae/skills/06-debug-verification/debug-verification-report.template.md`
 - `.trae/skills/06-debug-verification/debug-verification-case-result.template.md`
@@ -28,7 +28,7 @@ verify
 
 | id | assertion | evidence_file | pass_condition | fail_condition |
 |---|---|---|---|---|
-| A1 | MTR high-risk write safety intercept is classified as `PASS_WITH_NOTES`, not blocker-style `SAFETY_BLOCKED`. | `.trae/skills/06-debug-verification/SKILL.md`; `.trae/commands/delivery:verify.md`; `.trae/AGENTS.md` | Rules require `PASS_WITH_NOTES` for browser-layer write intercept. | Rules require or recommend blocker-style `SAFETY_BLOCKED` / `SAFETY_BLOCKED_PASS_FOR_NO_BACKEND_WRITE` for authorized safety intercept. |
+| A1 | MTR high-risk write safety intercept is classified as `PASS_WITH_NOTES`, not blocker-style `SAFETY_BLOCKED`. | `.trae/skills/06-debug-verification/SKILL.md`; `.trae/commands/delivery/verify.md`; `.trae/AGENTS.md` | Rules require `PASS_WITH_NOTES` for browser-layer write intercept. | Rules require or recommend blocker-style `SAFETY_BLOCKED` / `SAFETY_BLOCKED_PASS_FOR_NO_BACKEND_WRITE` for authorized safety intercept. |
 | A2 | Unverified backend side effects are recorded in `remaining_real_gap`. | `06-debug-verification.md`; `verify-logs/case-results/*.md` | Write-side-effect gaps are explicitly listed in `remaining_real_gap`. | Gaps are omitted or merged into an opaque blocker. |
 | A3 | Safety-intercept write gaps are non-blocking, while real backend success must not be claimed. | `.trae/AGENTS.md`; `.trae/skills/06-debug-verification/SKILL.md`; `06-debug-verification.md` | Rules and report say the gap is non-blocking and forbid claiming real backend side-effect success. | Flow blocks solely because of authorized safety intercept, or claims real backend success without evidence. |
 | A4 | Case-result template no longer lists blocker-style `SAFETY_BLOCKED` in the MTR safety classification example. | `.trae/skills/06-debug-verification/debug-verification-case-result.template.md` | Template lists `WRITE_BROWSER_INTERCEPTED` and instructs `PASS_WITH_NOTES` + `remaining_real_gap`. | Template still lists `SAFETY_BLOCKED` as the expected safety classification for this path. |

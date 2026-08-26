@@ -13,7 +13,7 @@
 - 本轮结束整体覆盖率: ``
 - 本轮选择原因: `按 effectiveUncoveredInsertedRows 最大且未被排除的文件选择`
 - 执行策略来源: `coverage-optimization-state.json.execution_policy`
-- 全局排除日志: `<workspace>/bits-flow/coverage/coverage-exclusion-log.json`
+- 全局排除日志: `<workspace>/bits-flow/cov/coverage-exclusion-log.json`
 - 覆盖执行环境: 必须使用真实线上环境页面；禁止使用 `localhost` 调试入口、本地 dev server、本地 vmok 子应用或只在本地预览中制造覆盖率。
 - 请求边界: 覆盖动作必须由真实线上 UI 发起；读接口和无副作用接口必须真实命中线上后端。BAM MOCK 只能作为请求入参参考，不得接管请求、替换响应或替代真实 UI 覆盖。
 - 写接口边界: 会落库、发奖、删除、修改配置、发送通知或产生其他线上副作用的写接口允许由真实线上 UI 触发发送动作，但必须在内置浏览器会话内拦截请求并返回 mock 响应，禁止真实命中后端。不得因为写接口而停止覆盖率 UI 尝试。
@@ -53,7 +53,7 @@
 
 ### 3.1 报告未覆盖代码行
 
-来源: `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/results/<target-file>/report.md`。以下行号对应本轮 Huatuo 报告生成时的源码；完成代码优化并刷新 Huatuo 后，行号可能重新对齐当前源码。
+来源: `<workspace>/bits-flow/cov/<cov-run-id>/coverage/results/<target-file>/report.md`。以下行号对应本轮 Huatuo 报告生成时的源码；完成代码优化并刷新 Huatuo 后，行号可能重新对齐当前源码。
 
 #### L<line-range>: <title>
 
@@ -160,7 +160,7 @@
 4. 刷新 Huatuo:
    - 使用 skill 内覆盖率脚本触发 `POST /api/jsCoverage/branch`。
    - 再拉取 `branch/files` 和 `branch/code`。
-   - 重新生成 `<workspace>/bits-flow/coverage/<cov-run-id>/coverage/latest.json`、`report.md`、`uncovered-list.*` 与文件级报告。
+   - 重新生成 `<workspace>/bits-flow/cov/<cov-run-id>/coverage/latest.json`、`report.md`、`uncovered-list.*` 与文件级报告。
 
 5. 对比报告:
    - 以刷新后的目标文件 `report.md` 为准。
@@ -212,7 +212,7 @@
 
 ### 10.3 本轮 Huatuo 刷新结果
 
-- 刷新产物目录: `<workspace>/bits-flow/coverage/<cov-run-id>/coverage`
+- 刷新产物目录: `<workspace>/bits-flow/cov/<cov-run-id>/coverage`
 - 分支报告:
 - 目标文件报告:
 - 拉取方式: 使用 `scripts/collect-huatuo-branch-coverage.js --browserCaptureServer` 启动本地接收服务，在已登录 Huatuo 页面内发真实线上请求，并按脚本规范沉淀本轮覆盖率产物。

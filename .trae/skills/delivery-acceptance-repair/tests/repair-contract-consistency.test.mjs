@@ -10,7 +10,7 @@ const traeRoot = path.resolve(here, "../../..");
 const read = relative => readFile(path.join(traeRoot, relative), "utf8");
 
 const repairFiles = [
-  "commands/delivery:repair.md",
+  "commands/delivery/repair.md",
   "skills/delivery-acceptance-repair/SKILL.md",
   "skills/delivery-acceptance-repair/repair-plan-template.md",
   "skills/delivery-acceptance-repair/scripts/create-repair-snapshot.sh",
@@ -20,7 +20,7 @@ const repairFiles = [
 ];
 for (const relative of repairFiles) assert.equal((await stat(path.join(traeRoot, relative))).isFile(), true, `${relative} must exist`);
 
-const command = await read("commands/delivery:repair.md");
+const command = await read("commands/delivery/repair.md");
 const skill = await read("skills/delivery-acceptance-repair/SKILL.md");
 const template = await read("skills/delivery-acceptance-repair/repair-plan-template.md");
 const validator = await read("skills/delivery-acceptance-repair/scripts/validate-repair-artifacts.mjs");
@@ -131,13 +131,13 @@ for (const marker of ["rollback-safety", "rsync -rlt --delete", "git -C", "reset
 }
 
 const ordinaryContracts = [
-  "commands/delivery:prd.md",
-  "commands/delivery:bam.md",
-  "commands/delivery:plan.md",
-  "commands/delivery:task.md",
-  "commands/delivery:code.md",
-  "commands/delivery:verify.md",
-  "commands/delivery:design.md",
+  "commands/delivery/prd.md",
+  "commands/delivery/bam.md",
+  "commands/delivery/plan.md",
+  "commands/delivery/task.md",
+  "commands/delivery/code.md",
+  "commands/delivery/verify.md",
+  "commands/delivery/design.md",
   "skills/03-prd-analysis/SKILL.md",
   "skills/04-tech-planning/SKILL.md",
   "skills/09-task-planning/SKILL.md",

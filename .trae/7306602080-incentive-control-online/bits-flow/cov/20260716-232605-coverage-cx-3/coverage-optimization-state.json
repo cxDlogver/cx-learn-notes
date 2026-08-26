@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "threshold": 96,
+  "rounds": 3,
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_repo": "ecom/alliance-operation-mono",
+  "fromBranch": "master",
+  "toBranch": "cx-3",
+  "coverage_script": ".trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js",
+  "coverage_report_ref": {
+    "latest_json": "coverage/latest.json",
+    "report_md": "coverage/report.md",
+    "uncovered_list_json": "coverage/uncovered-list.json",
+    "uncovered_list_md": "coverage/uncovered-list.md",
+    "generated_at": "2026-07-16T15:27:00.632Z",
+    "huatuo_update_ref": "coverage/update-response.json"
+  },
+  "state_initialization": {
+    "initialized_from_template": true,
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_log_loaded": true,
+    "previous_state_ref": "../20260716-225251-coverage-cx-3/coverage-optimization-state.json",
+    "previous_state_loaded": true,
+    "previous_state_notes": "Previous run ended PASS at threshold 90 with 91.28%; current user threshold is 96, so this run continues from the refreshed 91.28% report. 10-user-test-report.md is absent in the workspace and is recorded as a missing optional coverage-mapping artifact."
+  },
+  "execution_policy": {
+    "candidate_source_ref": "coverage/uncovered-list.json",
+    "script_default_filters": [
+      "coverRatio < 100",
+      "insertLines > 0",
+      "exclude path segment named bam"
+    ],
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_active_effects": [
+      "SKIP_SAME_VERSION"
+    ],
+    "single_target_per_round": true,
+    "same_run_dedup_ref": "rounds_log[].target_file",
+    "all_target_files_enter_global_exclusion_log": true,
+    "code_changed_targets_remain_retriable": false,
+    "side_effect_write_policy": "ALLOW_UI_TRIGGER_WITH_BROWSER_INTERCEPT_ONLY",
+    "write_intercept_required_for": [
+      "create",
+      "update",
+      "delete",
+      "submit",
+      "send_award",
+      "modify_config",
+      "send_notification",
+      "any_side_effect_write"
+    ],
+    "write_intercept_evidence_required": true,
+    "exclusion_reason_recording": "DO_NOT_RECORD_SELECTION_REASON",
+    "file_coverage_version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion",
+    "active_exclusion_only_when_file_coverage_version_matches": true
+  },
+  "overall_cover_ratio_before": 91.28,
+  "overall_cover_ratio_after": null,
+  "rounds_log": [
+    {
+      "round": 1,
+      "status": "IN_PROGRESS",
+      "target_file": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-operation-bar/index.tsx",
+      "target_report_ref": "coverage/r/award/components/send-award/batch-operation-bar/index.tsx/report.md",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 3,
+        "cover_ratio": "89.66%",
+        "insert_lines": 29,
+        "current_file_coverage_version": "huatuo:9412a594665bd189",
+        "excluded_candidates": [
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/sendAwardToAuthorStore.ts",
+            "effective_uncovered_inserted_rows": 26,
+            "current_file_coverage_version": "huatuo:a8063018ce0bb551",
+            "matched_global_exclusion_entry_id": "cov-20260716-200649-r2-send-award-to-author-store-ts",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r2-send-award-to-author-store-ts"
+          },
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/components/send-award/batch-submit-modal/index.tsx",
+            "effective_uncovered_inserted_rows": 25,
+            "current_file_coverage_version": "huatuo:91cb2311c8682c4e",
+            "matched_global_exclusion_entry_id": "cov-20260716-200649-r1-batch-submit-modal-index-tsx",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r1-batch-submit-modal-index-tsx"
+          },
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/utils.ts",
+            "effective_uncovered_inserted_rows": 20,
+            "current_file_coverage_version": "huatuo:fd505ef218d83512",
+            "matched_global_exclusion_entry_id": "cov-20260716-200649-r3-award-utils-ts",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-200649-r3-award-utils-ts"
+          },
+          {
+            "file_path": "apps/alliance-operation-content/src/routes/content-activity/award/stores/manuallySubmitVideoStore.ts",
+            "effective_uncovered_inserted_rows": 7,
+            "current_file_coverage_version": "huatuo:9b2e17f6cdac59ab",
+            "matched_global_exclusion_entry_id": "cov-20260716-225251-r1-manually-submit-video-store-ts",
+            "action": "ACTIVE_SKIP",
+            "evidence": "../coverage-exclusion-log.json#cov-20260716-225251-r1-manually-submit-video-store-ts"
+          }
+        ],
+        "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+        "global_exclusion_status": "NO_MATCH",
+        "matched_global_exclusion_entry_id": "",
+        "matched_global_exclusion_file_coverage_version": "",
+        "same_run_target_status": "NO_MATCH",
+        "selection_after_refresh": false
+      },
+      "plan_ref": "coverage-optimization-plan-round-1.md",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "UI_COVERAGE_WITH_WRITE_INTERCEPT",
+        "global_exclusion_entry_id": "",
+        "notes": "Target lines are reachable DOU+券作者 reward-submit business logic. No code optimization is planned before real online UI coverage."
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY",
+        "entry_id": "cov-20260716-232605-r1-batch-operation-bar-index-tsx",
+        "source_file_coverage_version": "huatuo:9412a594665bd189",
+        "latest_seen_file_coverage_version": "",
+        "version_comparison": "NOT_APPLICABLE",
+        "evidence": "coverage/r/award/components/send-award/batch-operation-bar/index.tsx/report.md",
+        "audited_at": "",
+        "notes": "Entry will be written to ../coverage-exclusion-log.json after UI coverage and Huatuo refresh."
+      },
+      "code_optimization": {
+        "status": "SKIPPED",
+        "changed_files": [],
+        "summary": "No business code edit needed; uncovered rows are current requirement logic.",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "IN_PROGRESS",
+        "environment": "REAL_ONLINE",
+        "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/award?activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "AR-004 / TASK-007 / TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST",
+            "test_case_ref": "09-test-case-matrix.md#TC-INT-AWARD-SUCCESS-UPLOAD-NO-AWARD-LIST",
+            "evidence_ref": "evidence/round-1-ui-evidence.json",
+            "notes": "Will cover author pending no-award merge and post-success cleanup through real online DOU+券 UI."
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/search_delivery_items",
+            "method": "GET",
+            "fields": [
+              "activity_id",
+              "config_id",
+              "author_id",
+              "session_unix_time",
+              "page_no",
+              "page_size"
+            ],
+            "source_type": "REAL_UI",
+            "evidence_ref": "evidence/round-1-ui-evidence.json#/read_requests/search_delivery_items",
+            "notes": "Real online page already loaded 20 DOU+券 author candidates."
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/get_charge_record",
+            "method": "GET",
+            "fields": [
+              "activity_id",
+              "config_id",
+              "launch_resource_manage_type"
+            ],
+            "source_type": "REAL_UI",
+            "evidence_ref": "evidence/round-1-ui-evidence.json#/read_requests/get_charge_record",
+            "notes": "Will be triggered by the real batch submit modal."
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/charge_amount_check",
+            "method": "POST",
+            "fields": [
+              "charge_code",
+              "delivery_amount"
+            ],
+            "source_type": "REAL_UI",
+            "evidence_ref": "evidence/round-1-ui-evidence.json#/read_requests/charge_amount_check",
+            "notes": "Read/no-side-effect balance check remains a real request."
+          }
+        ],
+        "write_request_intercepts": [
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+            "method": "POST",
+            "uncovered_lines": [
+              72,
+              73
+            ],
+            "trigger_ui": "单个作者修改配置为不发奖",
+            "match_rule": "path equals /api/buyin/admin/content_activity/delivery_modify_save",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/delivery_modify_save/mock_response",
+            "ui_after_mock_evidence_ref": "evidence/round-1-author-flow.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/delivery_modify_save/backend_not_hit_evidence",
+            "status": "INTERCEPTED",
+            "notes": "Pending evidence; browser-side XHR/fetch intercept is installed before UI write action."
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+            "method": "POST",
+            "uncovered_lines": [
+              446
+            ],
+            "trigger_ui": "批量提交投放奖励确认",
+            "match_rule": "path equals /api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/delivery_dou_plus_coupon/mock_response",
+            "ui_after_mock_evidence_ref": "evidence/round-1-author-flow.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/delivery_dou_plus_coupon/backend_not_hit_evidence",
+            "status": "INTERCEPTED",
+            "notes": "Pending evidence; mock success response must trigger candidate_remove and onOk cleanup."
+          },
+          {
+            "endpoint": "/api/buyin/admin/content_activity/candidate_remove",
+            "method": "POST",
+            "uncovered_lines": [
+              446
+            ],
+            "trigger_ui": "reward success 后自动上传 no-award author",
+            "match_rule": "path equals /api/buyin/admin/content_activity/candidate_remove",
+            "mock_response_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/candidate_remove/mock_response",
+            "ui_after_mock_evidence_ref": "evidence/round-1-author-flow.png",
+            "backend_not_hit_evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/candidate_remove/backend_not_hit_evidence",
+            "status": "INTERCEPTED",
+            "notes": "Pending evidence; payload must include only no-award author candidates."
+          }
+        ]
+      },
+      "coverage_refresh": {
+        "command": "",
+        "before_ratio": 91.28,
+        "after_ratio": null,
+        "latest_json": "coverage/latest.json",
+        "report_md": "coverage/report.md",
+        "refreshed_at": ""
+      },
+      "verification": {
+        "commands": [],
+        "passed": [],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "blockers": []
+    }
+  ],
+  "request_field_sources": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/search_delivery_items",
+      "method": "GET",
+      "source_type": "REAL_UI",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/read_requests/search_delivery_items"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/get_charge_record",
+      "method": "GET",
+      "source_type": "REAL_UI",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/read_requests/get_charge_record"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/charge_amount_check",
+      "method": "POST",
+      "source_type": "REAL_UI",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/read_requests/charge_amount_check"
+    }
+  ],
+  "write_request_intercepts": [
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_modify_save",
+      "method": "POST",
+      "status": "INTERCEPTED",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/delivery_modify_save"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/delivery_dou_plus_coupon",
+      "method": "POST",
+      "status": "INTERCEPTED",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/delivery_dou_plus_coupon"
+    },
+    {
+      "endpoint": "/api/buyin/admin/content_activity/candidate_remove",
+      "method": "POST",
+      "status": "INTERCEPTED",
+      "evidence_ref": "evidence/round-1-ui-evidence.json#/write_intercepts/candidate_remove"
+    }
+  ],
+  "verification": {
+    "commands": [],
+    "passed": [],
+    "failed": [],
+    "known_unrelated_failures": []
+  },
+  "blockers": [],
+  "overall_status": "IN_PROGRESS"
+}

@@ -120,7 +120,7 @@ graph LR
 | --- | --- | --- | --- | --- | --- |
 | Init | `/delivery:init` | `01-requirement-intake`、`02-task-space-init` | 按需 | `prd-source.md`、`00-inputs.md`、`01-intake.md`、`02-task-space.md` | workspace 与需求源就绪 |
 | PRD | `/delivery:prd` | `03-prd-analysis` | `prd-analyzer` | `03-prd-analysis.md`、`uncertainty-register.md`、`ui-source-map.md`、Figma Atlas / evidence / supplement | 无影响规划的 P0 |
-| BAM | `/delivery:bam` | `bam`、BAM 同步脚本 | 主 Agent | `bam/bam-psm-branch-evidence.json`、`bam/bam-interface-change-evidence.json`、`bam/bam-branch-preflight.json`、`bam/bam-sync-report.md`，mutation 时另含 method 产物 | 以 `commands/delivery:bam.md` 为唯一合同；无分支证据 no-op 放行；有分支证据需 preflight、config、update、cleanup 全闭合 |
+| BAM | `/delivery:bam` | `bam`、BAM 同步脚本 | 主 Agent | `bam/bam-psm-branch-evidence.json`、`bam/bam-interface-change-evidence.json`、`bam/bam-branch-preflight.json`、`bam/bam-sync-report.md`，mutation 时另含 method 产物 | 以 `commands/delivery/bam.md` 为唯一合同；无分支证据 no-op 放行；有分支证据需 preflight、config、update、cleanup 全闭合 |
 | Plan | `/delivery:plan` | `04-tech-planning`、`writing-plans` | `tech-planner` | `04-tech-plan.md` | `READY` / 用户确认 `PARTIAL_READY`，并路由到 task |
 | Task | `/delivery:task` | `task-planning`、`test-case-planning` | `task-planner` 生成任务与测试产物；主 Agent 做最终 Gate | `delivery-task.md`、`09-test-case-matrix.md`，MOCK_PREVIEW 下包含 Test Case Matrix、BAM Mock Response Field Coverage Matrix、Mock Preview Scope、Mock / Real Boundary | Task 可执行且 coverage audit PASS |
 | Mock | `/delivery:mock`（仅 verify / design active case 定向 detour） | `bam-mock-runtime-generator` | 当前执行会话直接进入并完成 BAM 审查 | `delivery-mock.md`、`mock/rule-map.json`、`mock/rule-map.md`、`mock/apis/<apiName>/**` | BAM 矩阵是合同源；mock 生成、patch、验证通过后恢复原 verify/design case |

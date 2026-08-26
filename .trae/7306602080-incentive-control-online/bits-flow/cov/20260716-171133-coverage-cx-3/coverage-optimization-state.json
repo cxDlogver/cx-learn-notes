@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "mode": "coverage",
+  "threshold": 90,
+  "rounds": 3,
+  "workspace": "/Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online",
+  "execution_repo_root": "/Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono",
+  "target_repo": "ecom/alliance-operation-mono",
+  "fromBranch": "master",
+  "toBranch": "cx-3",
+  "coverage_script": "/Users/bytedance/cx/spec-2/meego-11/.trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js",
+  "coverage_report_ref": {
+    "latest_json": "coverage/latest.json",
+    "report_md": "coverage/report.md",
+    "uncovered_list_json": "coverage/uncovered-list.json",
+    "uncovered_list_md": "coverage/uncovered-list.md",
+    "generated_at": "2026-07-16T09:28:09.080Z",
+    "huatuo_update_ref": "coverage/update-response.json"
+  },
+  "state_initialization": {
+    "initialized_from_template": true,
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_log_loaded": true,
+    "previous_state_ref": "",
+    "previous_state_loaded": false,
+    "previous_state_notes": "No previous coverage state under this workspace bits-flow/cov directory."
+  },
+  "execution_policy": {
+    "candidate_source_ref": "coverage/uncovered-list.json",
+    "script_default_filters": [
+      "coverRatio < 100",
+      "insertLines > 0",
+      "exclude path segment named bam"
+    ],
+    "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+    "global_exclusion_active_effects": ["SKIP_SAME_VERSION"],
+    "single_target_per_round": true,
+    "same_run_dedup_ref": "rounds_log[].target_file",
+    "all_target_files_enter_global_exclusion_log": true,
+    "code_changed_targets_remain_retriable": false,
+    "side_effect_write_policy": "ALLOW_UI_TRIGGER_WITH_BROWSER_INTERCEPT_ONLY",
+    "write_intercept_required_for": [
+      "create",
+      "update",
+      "delete",
+      "submit",
+      "send_award",
+      "modify_config",
+      "send_notification",
+      "any_side_effect_write"
+    ],
+    "write_intercept_evidence_required": true,
+    "exclusion_reason_recording": "DO_NOT_RECORD_SELECTION_REASON",
+    "file_coverage_version_source": "coverage/latest.json.uncoveredFiles[].fileCoverageVersion or coverage/results/<file>/summary.json.fileCoverageVersion",
+    "active_exclusion_only_when_file_coverage_version_matches": true
+  },
+  "overall_cover_ratio_before": 61.54,
+  "overall_cover_ratio_after": 66.9,
+  "rounds_log": [
+    {
+      "round": 1,
+      "status": "PASS_WITH_NOTES",
+      "target_file": "apps/alliance-operation-content/src/routes/content-activity/edit/components/step-reward-config/index.tsx",
+      "target_report_ref": "coverage/r/edit/components/step-reward-config/index.tsx/report.md",
+      "candidate_selection": {
+        "effective_uncovered_inserted_rows": 1,
+        "cover_ratio": "98.96%",
+        "insert_lines": 96,
+        "current_file_coverage_version": "huatuo:4ad77f572ef36501",
+        "excluded_candidates": [],
+        "global_exclusion_log_ref": "../coverage-exclusion-log.json",
+        "global_exclusion_status": "NO_MATCH",
+        "matched_global_exclusion_entry_id": "",
+        "matched_global_exclusion_file_coverage_version": "",
+        "same_run_target_status": "NO_MATCH",
+        "selection_after_refresh": false
+      },
+      "plan_ref": "coverage-optimization-plan-round-1.md",
+      "target_result": {
+        "code_changed": false,
+        "result_type": "UI_COVERAGE_REAL_REQUESTS",
+        "global_exclusion_entry_id": "cov-20260716-171133-r1-step-reward-config-index-tsx",
+        "notes": "Target line was kept and covered through real online UI link click. Refresh cleared all script-effective uncovered inserted rows; overall branch ratio remains below threshold."
+      },
+      "global_exclusion_audit": {
+        "decision": "ADD_OR_UPDATE_TARGET_ENTRY",
+        "entry_id": "cov-20260716-171133-r1-step-reward-config-index-tsx",
+        "source_file_coverage_version": "huatuo:4ad77f572ef36501",
+        "latest_seen_file_coverage_version": "huatuo:4ad77f572ef36501",
+        "version_comparison": "NOT_APPLICABLE",
+        "evidence": "coverage-exclusion-log.json entry cov-20260716-171133-r1-step-reward-config-index-tsx; before report evidence/coverage-before-ui/report.md; refreshed coverage/uncovered-list.json empty.",
+        "audited_at": "2026-07-16T09:29:01Z",
+        "notes": "Target file version registered as ACTIVE to prevent same-version duplicate targeting in later runs."
+      },
+      "code_optimization": {
+        "status": "PASS_NO_CODE_CHANGE",
+        "changed_files": [],
+        "summary": "No code optimization applied. The only uncovered line is a valid sendElementClickLog payload field required by AR-015 / TC-TRACK-CFG-RULE-LINK.",
+        "unreachable_removed": [],
+        "over_defensive_simplified": [],
+        "mergeable_simplified": [],
+        "unrelated_added_code_removed": []
+      },
+      "ui_coverage": {
+        "status": "DONE",
+        "environment": "REAL_ONLINE",
+        "entry_url": "https://ecop.bytedance.net/alliance-operation-content/content-activity/edit?type=edit&activity_id=7629288371705643310&cjSiteCode=St12502250000001",
+        "atomic_requirement_evidence_refs": [
+          {
+            "atomic_requirement_ref": "03-prd-analysis.md#AR-015",
+            "test_case_ref": "09-test-case-matrix.md#TC-TRACK-CFG-RULE-LINK",
+            "evidence_ref": "evidence/bits-coverage-round1-config-link-after-20260716.png",
+            "notes": "Real online URL had no cjDebugSubApp, no externalLeadsDomainMock and no localhost resource. Rule link count=6; first link href/target/rel matched requirement; click opened target Lark Wiki."
+          }
+        ],
+        "request_field_sources": [
+          {
+            "endpoint": "N/A",
+            "method": "N/A",
+            "fields": [
+              {
+                "field": "activity_id",
+                "value": "7629288371705643310",
+                "source": "06-debug-verification.md fresh config page rerun evidence; revalidated on real online URL without cjDebugSubApp/externalLeadsDomainMock for this coverage run."
+              }
+            ],
+            "source_type": "REAL_UI",
+            "evidence_ref": "coverage-optimization-plan-round-1.md#10-线上执行记录与证据",
+            "notes": "No business request payload was needed for this link-click coverage."
+          }
+        ],
+        "write_request_intercepts": []
+      },
+      "coverage_refresh": {
+        "command": "source ~/.nvm/nvm.sh && nvm use 18 >/dev/null && node .trae/skills/bits-dev-flow/scripts/collect-huatuo-branch-coverage.js --browserCaptureServer --repoRoot /Users/bytedance/cx/spec-2/meego-11/meego-7306602080/repos/alliance-operation-mono --gitRepo ecom/alliance-operation-mono --fromBranch master --toBranch cx-3 --outDir /Users/bytedance/cx/spec-2/meego-11/artifacts/7306602080-incentive-control-online/bits-flow/cov/20260716-171133-coverage-cx-3/coverage --timeout 30000",
+        "before_ratio": 61.54,
+        "after_ratio": 66.9,
+        "latest_json": "coverage/latest.json",
+        "report_md": "coverage/report.md",
+        "refreshed_at": "2026-07-16T09:28:09.080Z"
+      },
+      "verification": {
+        "commands": [
+          "browser DOM evidence: real online edit URL, no debug/mock params, no localhost resource, six rule links, link click opened Wiki tab",
+          "browser Network evidence: only mcs/monitor requests after click; no content_activity save/export/remove/award write request",
+          "Huatuo browser capture refresh"
+        ],
+        "passed": [
+          "No business code changed.",
+          "Real online UI coverage executed without localhost/vmok/BAM mock.",
+          "Refreshed coverage has nonFullCoverageFiles=0 and effectiveUncoveredInsertedRows=0."
+        ],
+        "failed": [],
+        "known_unrelated_failures": []
+      },
+      "blockers": []
+    }
+  ],
+  "request_field_sources": [],
+  "write_request_intercepts": [],
+  "verification": {
+    "commands": [
+      "jq coverage/latest.json",
+      "sed coverage/report.md",
+      "git status --short --branch"
+    ],
+    "passed": [
+      "coverage/latest.json parse PASS",
+      "coverage/report.md shows overallCoverRatio=66.90%, nonFullCoverageFiles=0, effectiveUncoveredInsertedRows=0",
+      "business repo git status clean on branch cx-3"
+    ],
+    "failed": [],
+    "known_unrelated_failures": []
+  },
+  "blockers": [
+    {
+      "id": "INPUT-USER-TEST-REPORT-MISSING",
+      "severity": "P2_NOTE",
+      "status": "OPEN",
+      "evidence": "Required coverage input 10-user-test-report.md is absent in the selected workspace; 06-debug-verification.md and 07-design-alignment.md were read as fallback user/runtime evidence.",
+      "impact": "Does not block initial coverage pull; may reduce direct mapping to final UAT evidence."
+    },
+    {
+      "id": "COVERAGE-THRESHOLD-NOT-REACHED-NO-CANDIDATE",
+      "severity": "P1_BLOCKER",
+      "status": "OPEN",
+      "evidence": "After round 1 refresh, overallCoverRatio=66.90% < threshold 90, but coverage/uncovered-list.json has no files because Huatuo/script reports nonFullCoverageFiles=0 and effectiveUncoveredInsertedRows=0.",
+      "impact": "No further valid file can be selected under script filters and global exclusion policy; stop without modifying unrelated files."
+    }
+  ],
+  "overall_status": "BLOCKED"
+}

@@ -9,7 +9,7 @@ description: Use when a confirmed frontend tech plan should be implemented in co
 
 根据已确认技术方案完成前端代码实现。该阶段不补 PRD、不猜接口、不做无关重构。
 
-本阶段入口状态机由 `.trae/commands/delivery:code.md` 承接：主 Agent 在 command 内完成 precheck、execution bootstrap、任务队列、派发、独立代码审查、非浏览器 Gate Review、日志和最终放行。本 skill 只定义 code 阶段实现规则、任务输入包、BAM 矩阵核对、验证要求和审查清单；不得把这些规则解释为允许 `code-writer` 接管阶段编排。
+本阶段入口状态机由 `.trae/commands/delivery/code.md` 承接：主 Agent 在 command 内完成 precheck、execution bootstrap、任务队列、派发、独立代码审查、非浏览器 Gate Review、日志和最终放行。本 skill 只定义 code 阶段实现规则、任务输入包、BAM 矩阵核对、验证要求和审查清单；不得把这些规则解释为允许 `code-writer` 接管阶段编排。
 
 代码执行角色分层：
 
@@ -134,7 +134,7 @@ Gate 结论：
 
 `MOCK_PREVIEW` 下 Code不生成/调整 BAM mock，不执行 `/delivery:mock`，不写 `delivery-mock.md`。Code只允许更新 BAM矩阵对应行的 `补充说明`。
 
-阶段编排职责以 `.trae/commands/delivery:code.md` 为准。本 skill 中出现的“主 Agent 必须”均为 command 执行时引用的审查和执行规范，不是 `code-writer` 的任务授权。
+阶段编排职责以 `.trae/commands/delivery/code.md` 为准。本 skill 中出现的“主 Agent 必须”均为 command 执行时引用的审查和执行规范，不是 `code-writer` 的任务授权。
 
 每个 Task 必须至少经过两个互相独立的子 Agent 实例：
 

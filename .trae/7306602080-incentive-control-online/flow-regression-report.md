@@ -29,7 +29,7 @@ verify
 | file | role | checked |
 |---|---|---|
 | `.trae/AGENTS.md` | Global MTR write-safety invariant | PASS |
-| `.trae/commands/delivery:verify.md` | `/delivery:verify --mtr` entry contract | PASS |
+| `.trae/commands/delivery/verify.md` | `/delivery:verify --mtr` entry contract | PASS |
 | `.trae/skills/06-debug-verification/SKILL.md` | Verify-stage MTR source of truth | PASS |
 | `.trae/skills/06-debug-verification/debug-verification-report.template.md` | Future MTR report table and `remaining_real_gap` guard | PASS |
 | `.trae/skills/06-debug-verification/debug-verification-case-result.template.md` | Future case-result template guard | PASS |
@@ -42,7 +42,7 @@ verify
 
 | id | assertion | result | evidence | notes |
 |---|---|---|---|---|
-| A1 | MTR high-risk write safety intercept is classified as `PASS_WITH_NOTES`, not blocker-style `SAFETY_BLOCKED`. | PASS | `.trae/skills/06-debug-verification/SKILL.md`; `.trae/commands/delivery:verify.md`; `.trae/AGENTS.md`; static scan for `SAFETY_BLOCKED_PASS_FOR_NO_BACKEND_WRITE` returned no matches in active artifacts or process source files. | The old literal remains only inside the regression case as historical issue / fail condition text. |
+| A1 | MTR high-risk write safety intercept is classified as `PASS_WITH_NOTES`, not blocker-style `SAFETY_BLOCKED`. | PASS | `.trae/skills/06-debug-verification/SKILL.md`; `.trae/commands/delivery/verify.md`; `.trae/AGENTS.md`; static scan for `SAFETY_BLOCKED_PASS_FOR_NO_BACKEND_WRITE` returned no matches in active artifacts or process source files. | The old literal remains only inside the regression case as historical issue / fail condition text. |
 | A2 | Unverified backend side effects are recorded in `remaining_real_gap`. | PASS | `06-debug-verification.md` MTR rows for `download_content_remove_record`, `delivery_dou_plus_coin`, `delivery_dou_plus_coupon`, `candidate_remove`, `delivery_modify_save`; write-related case-result files. | Each write-side-effect gap states it does not prove real backend side effects. |
 | A3 | Safety-intercept write gaps are non-blocking, while real backend success must not be claimed. | PASS | `.trae/AGENTS.md`; `.trae/skills/06-debug-verification/SKILL.md`; `06-debug-verification.md` Gate Recommendation. | Current blockers are limited to non-write real environment gaps such as DA / UV, samples, permission, sheet, and environment issues. |
 | A4 | Case-result template no longer lists blocker-style `SAFETY_BLOCKED` in the MTR safety classification example. | PASS | `.trae/skills/06-debug-verification/debug-verification-case-result.template.md`; static scan for old placeholder patterns returned no matches. | Template now instructs `WRITE_BROWSER_INTERCEPTED` + `PASS_WITH_NOTES` + `remaining_real_gap`. |

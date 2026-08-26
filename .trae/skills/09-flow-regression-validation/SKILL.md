@@ -65,7 +65,7 @@ context: fork
 - `.trae/DELIVERY_STATE.md`
 - `.trae/skills/delivery-stage-rewind/SKILL.md`
 - `.trae/scripts/delivery_stage_rewind.sh`
-- 被验证阶段的 command，例如 `.trae/commands/delivery:plan.md`
+- 被验证阶段的 command，例如 `.trae/commands/delivery/plan.md`
 - 被验证阶段的 skill，例如 `.trae/skills/04-tech-planning/SKILL.md`
 - 被验证阶段可能委派的 agent，例如 `.trae/agents/tech-planner.md`
 - 当前 workspace 下与该阶段相关的产物，例如：
