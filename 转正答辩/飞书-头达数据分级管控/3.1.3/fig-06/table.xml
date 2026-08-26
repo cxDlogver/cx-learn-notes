@@ -1,0 +1,49 @@
+<table>
+  <colgroup>
+    <col width="190"/>
+    <col width="450"/>
+    <col width="230"/>
+  </colgroup>
+  <thead>
+    <tr>
+      <th background-color="light-gray" vertical-align="middle">
+        <p align="center"><b>页面层</b></p>
+      </th>
+      <th background-color="light-gray" vertical-align="middle">
+        <p align="center"><b>全局公共能力</b></p>
+      </th>
+      <th background-color="light-gray" vertical-align="middle">
+        <p align="center"><b>页面分流与公共组件</b></p>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td background-color="light-orange" vertical-align="middle">
+        <p align="center"><b>字段级链路</b><br/>页面取得字段值<br/><code>字段原始值</code><br/><span text-color="gray">后端返回的业务字段</span></p>
+      </td>
+      <td background-color="light-orange" vertical-align="middle">
+        <p align="center"><b>字段识别</b><br/>识别是否受权限管控<br/><code>isSensitiveMaskedValue</code><br/><span text-color="gray">返回是否进入权限组件</span><br/><b>否</b> → 页面继续原业务处理<br/><b>是</b> → 进入字段权限组件</p>
+      </td>
+      <td background-color="light-orange" vertical-align="middle">
+        <p align="center"><b>字段接入</b><br/>页面继续原业务处理<br/><span text-color="gray">未命中脱敏协议</span><br/><code>MaskedTooltip</code><br/>内部解析字段权限状态<br/><code>parseSensitiveFieldState</code><br/><span text-color="gray">需要确认查看 · 缺少协作人 · 缺少数据权限</span><br/>根据状态展示权限内容和操作入口</p>
+      </td>
+    </tr>
+    <tr>
+      <td background-color="light-green" vertical-align="middle">
+        <p align="center"><b>模块级链路</b><br/>页面提供模块参数<br/><code>fieldKey</code>：数据权限标识<br/><code>authorId</code>：当前作者 ID</p>
+      </td>
+      <td background-color="light-green" vertical-align="middle">
+        <p align="center"><b>模块权限查询</b><br/>查询当前作者的模块权限<br/><code>requestSensitiveModulePermission</code><br/><span text-color="gray">使用 fieldKey 和 authorId 查询</span><br/>转换为模块权限状态<br/><code>getSensitiveModulePermissionState</code><br/><span text-color="gray">向页面返回统一模块状态</span><br/><b>是</b> → 页面加载原业务模块<br/><b>否</b> → 进入模块权限组件</p>
+      </td>
+      <td background-color="light-green" vertical-align="middle">
+        <p align="center"><b>模块接入</b><br/>页面加载原业务模块<br/><span text-color="gray">模块权限允许访问</span><br/><code>SensitiveNoPermission</code><br/>接收模块状态和 <code>fieldKey</code><br/><span text-color="gray">需要确认查看 · 缺少协作人 · 缺少数据权限</span><br/>根据状态展示权限内容和操作入口</p>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" background-color="light-purple" vertical-align="middle">
+        <p align="center"><b>公共组件统一提供权限入口</b><br/>申请协作人　｜　申请数据权限　｜　确认查看</p>
+      </td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,30 @@
+flowchart LR
+    U["运营人员进入<br/>头达数据页面"] --> S{"是否属于<br/>本次管控范围"}
+    S -- "否" --> N["按原逻辑展示"]
+    S -- "是" --> L{"是否为<br/>L4+ 数据"}
+
+    L -- "是" --> C{"是否为该作者<br/>协作人"}
+    C -- "否" --> CA["引导申请协作人"]
+    CA --> C
+    C -- "是" --> P
+    L -- "否" --> P{"是否有<br/>数据权限"}
+
+    P -- "否" --> M["申请对应的<br/>字段或模块权限"]
+    M --> P
+
+    P -- "是" --> E{"七天内是否<br/>确认过查看"}
+    E -- "是" --> D["返回并展示真实数据"]
+    E -- "否" --> H["默认隐藏<br/>展示小眼睛"]
+    H --> R["点击查看<br/>记录操作人 × 作者"]
+    R --> D
+    R -. "访问记录" .-> W["平台侧：频次统计<br/>超阈值预警"]
+
+    classDef phase1 fill:#EEE8FF,stroke:#6D5CA8,color:#30265A,stroke-width:1.4px;
+    classDef phase2 fill:#FFF2CC,stroke:#B58B22,color:#5A4100,stroke-width:1.4px;
+    classDef result fill:#EAF6EF,stroke:#3F8A5E,color:#1F5135,stroke-width:1.4px;
+    classDef platform fill:#EAF2FF,stroke:#4C78C2,color:#173A5E,stroke-width:1.4px;
+
+    class S,P,M phase1;
+    class L,C,CA,E,H,R phase2;
+    class N,D result;
+    class W platform;

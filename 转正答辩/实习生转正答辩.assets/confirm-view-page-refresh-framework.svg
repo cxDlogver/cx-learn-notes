@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">确认查看与页面刷新框架</title>
+  <desc id="desc">确认查看先保存访问记录，再执行页面注册的刷新方法；作者列表重新查询列表，作者详情通过版本号变化重挂载当前Tab，未注册时整页刷新兜底。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#667085"/>
+    </marker>
+    <style>
+      .title { font:600 25px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#26364e; }
+      .panelTitle { font:600 19px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#27364d; }
+      .nodeTitle { font:600 16px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#2d3a4f; text-anchor:middle; }
+      .body { font:500 14px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#46546a; text-anchor:middle; }
+      .small { font:400 12.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#667085; text-anchor:middle; }
+      .code { font:600 12px Menlo,Consolas,monospace; fill:#3f506a; text-anchor:middle; }
+      .commonPanel { fill:#f7f3ff; stroke:#8d78bd; stroke-width:1.4; }
+      .listPanel { fill:#f5f8fd; stroke:#7895bf; stroke-width:1.3; }
+      .detailPanel { fill:#f4faf6; stroke:#76a087; stroke-width:1.3; }
+      .card { fill:#ffffff; stroke:#a4afbd; stroke-width:1.15; }
+      .listCard { fill:#ffffff; stroke:#7895bf; stroke-width:1.15; }
+      .detailCard { fill:#ffffff; stroke:#76a087; stroke-width:1.15; }
+      .resultList { fill:#eaf2ff; stroke:#6688b8; stroke-width:1.35; }
+      .resultDetail { fill:#eaf6ee; stroke:#68947a; stroke-width:1.35; }
+      .fallback { fill:#fff5ed; stroke:#c98153; stroke-width:1.2; }
+      .line { fill:none; stroke:#667085; stroke-width:1.65; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"/>
+  <text x="62" y="55" class="title">确认查看：先记录访问行为，再刷新当前页面数据</text>
+
+  <!-- 统一链路 -->
+  <rect x="220" y="90" width="1160" height="190" rx="18" class="commonPanel"/>
+  <rect x="270" y="142" width="250" height="82" rx="10" class="card"/>
+  <text x="395" y="174" class="nodeTitle">点击小眼睛确认查看</text>
+  <text x="395" y="203" class="small">传入当前作者 ID</text>
+
+  <rect x="675" y="142" width="250" height="82" rx="10" class="card"/>
+  <text x="800" y="174" class="nodeTitle">保存查看记录</text>
+  <text x="800" y="203" class="code">apiSaveAccessDataLog</text>
+
+  <rect x="1080" y="142" width="250" height="82" rx="10" class="card"/>
+  <text x="1205" y="174" class="nodeTitle">执行页面刷新方法</text>
+  <text x="1205" y="203" class="small">记录成功后调用已注册 Handler</text>
+
+  <path d="M520 183 H675" class="line"/>
+  <path d="M925 183 H1080" class="line"/>
+
+  <!-- 作者列表 -->
+  <rect x="70" y="350" width="690" height="455" rx="18" class="listPanel"/>
+  <text x="100" y="390" class="panelTitle">作者列表：沿用当前查询条件重新取数</text>
+
+  <rect x="180" y="432" width="470" height="70" rx="10" class="listCard"/>
+  <text x="415" y="462" class="code">getList(false)</text>
+  <text x="415" y="488" class="small">false 表示不将页码重置为第一页</text>
+
+  <rect x="180" y="548" width="470" height="82" rx="10" class="listCard"/>
+  <text x="415" y="578" class="code">getParams() → apiAuthorSearch</text>
+  <text x="415" y="606" class="small">读取当前页码、筛选、排序和赛道</text>
+
+  <rect x="150" y="682" width="530" height="90" rx="12" class="resultList"/>
+  <text x="415" y="714" class="code">setAuthorList(result)</text>
+  <text x="415" y="744" class="nodeTitle">更新列表状态，表格重新渲染</text>
+
+  <path d="M415 502 V548" class="line"/>
+  <path d="M415 630 V682" class="line"/>
+
+  <!-- 作者详情 -->
+  <rect x="840" y="350" width="690" height="455" rx="18" class="detailPanel"/>
+  <text x="870" y="390" class="panelTitle">作者详情：改变 key，重挂载当前 Tab</text>
+
+  <rect x="950" y="432" width="470" height="70" rx="10" class="detailCard"/>
+  <text x="1185" y="462" class="code">forceRefreshTab(currentTab)</text>
+  <text x="1185" y="488" class="small">当前 Tab 的刷新版本号加一</text>
+
+  <rect x="950" y="548" width="470" height="82" rx="10" class="detailCard"/>
+  <text x="1185" y="578" class="code">tabRefreshVersionMap[currentTab] + 1</text>
+  <text x="1185" y="606" class="small">Fragment key 随版本号发生变化</text>
+
+  <rect x="920" y="682" width="530" height="90" rx="12" class="resultDetail"/>
+  <text x="1185" y="714" class="nodeTitle">当前 Tab 重新挂载</text>
+  <text x="1185" y="744" class="small">Tab 内的数据请求重新执行</text>
+
+  <path d="M1185 502 V548" class="line"/>
+  <path d="M1185 630 V682" class="line"/>
+
+  <!-- 从统一处理分流 -->
+  <path d="M1205 224 V310 H415 V432" class="line"/>
+  <path d="M1205 224 V432" class="line"/>
+
+  <!-- 未注册兜底 -->
+  <rect x="590" y="832" width="420" height="48" rx="9" class="fallback"/>
+  <text x="800" y="862" class="body">页面未注册刷新方法：window.location.reload() 兜底</text>
+  <path d="M1205 280 V320 H800 V832" class="line"/>
+</svg>

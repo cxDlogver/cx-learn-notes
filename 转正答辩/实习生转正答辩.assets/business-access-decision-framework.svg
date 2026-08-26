@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#667085"/>
+    </marker>
+    <style>
+      .title { font: 600 25px "PingFang SC", "Microsoft YaHei", sans-serif; fill: #24344d; }
+      .layer { font: 600 17px "PingFang SC", "Microsoft YaHei", sans-serif; fill: #475467; }
+      .nodeTitle { font: 600 18px "PingFang SC", "Microsoft YaHei", sans-serif; fill: #27364d; }
+      .nodeSub { font: 400 15px "PingFang SC", "Microsoft YaHei", sans-serif; fill: #667085; }
+      .edge { font: 600 14px "PingFang SC", "Microsoft YaHei", sans-serif; fill: #475467; }
+      .decision { fill: #edf3f9; stroke: #7187a3; stroke-width: 1.5; }
+      .action { fill: #fff4e6; stroke: #c6893f; stroke-width: 1.5; }
+      .result { fill: #edf7f0; stroke: #5f9270; stroke-width: 1.5; }
+      .neutral { fill: #ffffff; stroke: #98a2b3; stroke-width: 1.4; }
+      .line { fill: none; stroke: #667085; stroke-width: 1.8; marker-end: url(#arrow); }
+      .divider { stroke: #e4e7ec; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <text x="62" y="46" class="title">头达敏感数据访问判断框架</text>
+
+  <rect x="40" y="70" width="1520" height="118" rx="12" fill="#fafbfc"/>
+  <rect x="40" y="188" width="1520" height="194" fill="#ffffff"/>
+  <rect x="40" y="382" width="1520" height="154" fill="#fafbfc"/>
+  <rect x="40" y="536" width="1520" height="174" fill="#ffffff"/>
+  <rect x="40" y="710" width="1520" height="150" rx="12" fill="#fafbfc"/>
+  <line x1="180" y1="70" x2="180" y2="860" class="divider"/>
+  <line x1="40" y1="188" x2="1560" y2="188" class="divider"/>
+  <line x1="40" y1="382" x2="1560" y2="382" class="divider"/>
+  <line x1="40" y1="536" x2="1560" y2="536" class="divider"/>
+  <line x1="40" y1="710" x2="1560" y2="710" class="divider"/>
+
+  <text x="74" y="133" class="layer">管控范围</text>
+  <text x="74" y="286" class="layer">协作关系</text>
+  <text x="74" y="465" class="layer">数据权限</text>
+  <text x="74" y="625" class="layer">主动查看</text>
+  <text x="74" y="790" class="layer">展示与审计</text>
+
+  <!-- Entry and control scope -->
+  <rect x="300" y="86" width="255" height="72" rx="12" class="neutral"/>
+  <text x="427" y="116" text-anchor="middle" class="nodeTitle">运营人员进入</text>
+  <text x="427" y="141" text-anchor="middle" class="nodeSub">头达数据页面</text>
+
+  <rect x="675" y="86" width="290" height="72" rx="12" class="decision"/>
+  <text x="820" y="129" text-anchor="middle" class="nodeTitle">是否属于本次管控范围？</text>
+
+  <rect x="1110" y="86" width="260" height="72" rx="12" class="result"/>
+  <text x="1240" y="116" text-anchor="middle" class="nodeTitle">不在管控范围</text>
+  <text x="1240" y="141" text-anchor="middle" class="nodeSub">按原逻辑展示</text>
+
+  <path d="M555 122 H675" class="line"/>
+  <path d="M965 122 H1110" class="line"/>
+  <text x="1028" y="112" class="edge">否</text>
+
+  <!-- Collaboration layer -->
+  <rect x="675" y="215" width="290" height="68" rx="12" class="decision"/>
+  <text x="820" y="256" text-anchor="middle" class="nodeTitle">是否为 L4+ 数据？</text>
+
+  <rect x="675" y="307" width="290" height="68" rx="12" class="decision"/>
+  <text x="820" y="348" text-anchor="middle" class="nodeTitle">是否为该作者协作人？</text>
+
+  <rect x="1110" y="230" width="260" height="62" rx="12" class="action"/>
+  <text x="1240" y="268" text-anchor="middle" class="nodeTitle">申请协作人</text>
+
+  <rect x="1110" y="318" width="260" height="52" rx="12" class="action"/>
+  <text x="1240" y="351" text-anchor="middle" class="nodeTitle">审批通过</text>
+
+  <path d="M820 158 V215" class="line"/>
+  <text x="835" y="193" class="edge">是</text>
+  <path d="M820 283 V307" class="line"/>
+  <text x="835" y="301" class="edge">是</text>
+  <path d="M965 341 H1028 V261 H1110" class="line"/>
+  <text x="988" y="330" class="edge">否</text>
+  <path d="M1240 292 V318" class="line"/>
+
+  <!-- Data permission layer -->
+  <rect x="675" y="425" width="290" height="68" rx="12" class="decision"/>
+  <text x="820" y="466" text-anchor="middle" class="nodeTitle">是否有对应数据权限？</text>
+
+  <rect x="1110" y="405" width="260" height="62" rx="12" class="action"/>
+  <text x="1240" y="443" text-anchor="middle" class="nodeTitle">申请对应数据权限</text>
+
+  <rect x="1110" y="482" width="260" height="46" rx="12" class="action"/>
+  <text x="1240" y="512" text-anchor="middle" class="nodeTitle">审批通过</text>
+
+  <path d="M820 375 V425" class="line"/>
+  <text x="835" y="407" class="edge">是</text>
+  <path d="M675 249 H610 V405 H740 V425" class="line"/>
+  <text x="632" y="239" class="edge">否</text>
+  <path d="M1240 370 V386 H820 V425" class="line"/>
+  <path d="M965 459 H1110" class="line"/>
+  <text x="1027" y="449" class="edge">否</text>
+  <path d="M1240 467 V482" class="line"/>
+
+  <!-- Active view layer -->
+  <rect x="675" y="574" width="290" height="68" rx="12" class="decision"/>
+  <text x="820" y="602" text-anchor="middle" class="nodeTitle">七天内是否</text>
+  <text x="820" y="627" text-anchor="middle" class="nodeTitle">确认过查看？</text>
+
+  <rect x="1110" y="560" width="260" height="62" rx="12" class="action"/>
+  <text x="1240" y="586" text-anchor="middle" class="nodeTitle">点击小眼睛</text>
+  <text x="1240" y="610" text-anchor="middle" class="nodeSub">确认查看</text>
+
+  <rect x="1110" y="646" width="260" height="52" rx="12" class="action"/>
+  <text x="1240" y="678" text-anchor="middle" class="nodeTitle">记录操作人 × 作者</text>
+
+  <path d="M820 493 V574" class="line"/>
+  <text x="835" y="548" class="edge">是</text>
+  <path d="M1240 528 V542 H820 V574" class="line"/>
+  <path d="M965 608 H1110" class="line"/>
+  <text x="1027" y="598" class="edge">否</text>
+  <path d="M1240 622 V646" class="line"/>
+
+  <!-- Result and audit -->
+  <rect x="675" y="758" width="290" height="70" rx="12" class="result"/>
+  <text x="820" y="787" text-anchor="middle" class="nodeTitle">返回并展示真实数据</text>
+  <text x="820" y="812" text-anchor="middle" class="nodeSub">页面恢复正常查看</text>
+
+  <rect x="1110" y="758" width="260" height="70" rx="12" class="result"/>
+  <text x="1240" y="787" text-anchor="middle" class="nodeTitle">平台统计访问频次</text>
+  <text x="1240" y="812" text-anchor="middle" class="nodeSub">超出阈值后触发预警</text>
+
+  <path d="M820 642 V758" class="line"/>
+  <text x="835" y="713" class="edge">是</text>
+  <path d="M1240 698 V730 H965 V793" class="line"/>
+  <path d="M1240 698 V758" class="line"/>
+</svg>

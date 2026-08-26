@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow-purple" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#6846C7"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#3E8B45"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#3572C7"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <!-- Test Case Matrix -->
+  <rect x="36" y="48" width="470" height="660" rx="18" fill="#F8F5FF" stroke="#7356D8" stroke-width="2"/>
+  <text x="271" y="105" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="36" font-weight="700" fill="#20242E">Test Case Matrix</text>
+
+  <rect x="64" y="140" width="414" height="210" rx="14" fill="#FFFFFF" stroke="#8062D5" stroke-width="2"/>
+  <rect x="64" y="140" width="14" height="210" rx="7" fill="#7250C9"/>
+  <rect x="116" y="164" width="236" height="50" rx="12" fill="#7250C9"/>
+  <text x="234" y="199" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF">正常列表 Case</text>
+  <text x="112" y="265" font-family="Menlo, SFMono-Regular, monospace" font-size="22" fill="#343843">apiName</text>
+  <text x="224" y="265" font-family="Arial, PingFang SC, sans-serif" font-size="25" fill="#343843">：作品列表接口</text>
+  <text x="112" y="316" font-family="Menlo, SFMono-Regular, monospace" font-size="22" fill="#343843">ruleId</text>
+  <text x="211" y="316" font-family="Arial, PingFang SC, sans-serif" font-size="25" fill="#343843">：R-LIST-NORMAL</text>
+
+  <rect x="64" y="382" width="414" height="210" rx="14" fill="#FFFFFF" stroke="#8062D5" stroke-width="2"/>
+  <rect x="64" y="382" width="14" height="210" rx="7" fill="#7250C9"/>
+  <rect x="116" y="406" width="210" height="50" rx="12" fill="#7250C9"/>
+  <text x="221" y="441" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF">空态 Case</text>
+  <text x="112" y="507" font-family="Menlo, SFMono-Regular, monospace" font-size="22" fill="#343843">apiName</text>
+  <text x="224" y="507" font-family="Arial, PingFang SC, sans-serif" font-size="25" fill="#343843">：作品列表接口</text>
+  <text x="112" y="558" font-family="Menlo, SFMono-Regular, monospace" font-size="22" fill="#343843">ruleId</text>
+  <text x="211" y="558" font-family="Arial, PingFang SC, sans-serif" font-size="25" fill="#343843">：R-LIST-EMPTY</text>
+
+  <line x1="36" y1="624" x2="506" y2="624" stroke="#8062D5" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="271" y="674" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#3E374E">规划时建立映射</text>
+
+  <!-- Mock rule repository -->
+  <rect x="565" y="48" width="470" height="660" rx="18" fill="#FFF8F0" stroke="#E68020" stroke-width="2"/>
+  <text x="800" y="105" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="36" font-weight="700" fill="#20242E">Mock 规则库</text>
+
+  <rect x="620" y="160" width="360" height="178" rx="14" fill="#FFFFFF" stroke="#E68020" stroke-width="2"/>
+  <rect x="620" y="160" width="14" height="178" rx="7" fill="#F08A16"/>
+  <rect x="688" y="196" width="225" height="50" rx="12" fill="#F08A16"/>
+  <text x="800" y="231" text-anchor="middle" font-family="Menlo, SFMono-Regular, monospace" font-size="25" font-weight="700" fill="#FFFFFF">R-LIST-NORMAL</text>
+  <text x="800" y="297" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#333842">返回正常列表数据</text>
+
+  <rect x="620" y="392" width="360" height="178" rx="14" fill="#FFFFFF" stroke="#3E8B45" stroke-width="2"/>
+  <rect x="620" y="392" width="14" height="178" rx="7" fill="#4A9A45"/>
+  <rect x="700" y="428" width="200" height="50" rx="12" fill="#4A9A45"/>
+  <text x="800" y="463" text-anchor="middle" font-family="Menlo, SFMono-Regular, monospace" font-size="25" font-weight="700" fill="#FFFFFF">R-LIST-EMPTY</text>
+  <text x="800" y="529" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#333842">返回空列表数据</text>
+
+  <line x1="565" y1="624" x2="1035" y2="624" stroke="#E68020" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="800" y="674" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#4B3B2C">同一接口按场景拆分规则</text>
+
+  <!-- Page verification -->
+  <rect x="1094" y="48" width="470" height="660" rx="18" fill="#F3F8FF" stroke="#3572C7" stroke-width="2"/>
+  <text x="1329" y="105" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="36" font-weight="700" fill="#20242E">页面验收</text>
+
+  <rect x="1142" y="146" width="374" height="76" rx="13" fill="#FFFFFF" stroke="#3572C7" stroke-width="2"/>
+  <text x="1329" y="195" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#303640">选择当前 Case</text>
+  <line x1="1329" y1="222" x2="1329" y2="260" stroke="#3572C7" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <rect x="1142" y="272" width="374" height="76" rx="13" fill="#FFFFFF" stroke="#3572C7" stroke-width="2"/>
+  <text x="1329" y="321" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#303640">加载绑定的</text>
+  <text x="1434" y="321" font-family="Menlo, SFMono-Regular, monospace" font-size="23" font-weight="600" fill="#303640">ruleId</text>
+  <line x1="1329" y1="348" x2="1329" y2="386" stroke="#3572C7" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <rect x="1142" y="398" width="374" height="76" rx="13" fill="#FFFFFF" stroke="#3572C7" stroke-width="2"/>
+  <text x="1329" y="447" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#303640">页面请求命中响应</text>
+  <line x1="1329" y1="474" x2="1329" y2="512" stroke="#3572C7" stroke-width="3" marker-end="url(#arrow-blue)"/>
+
+  <rect x="1142" y="524" width="374" height="76" rx="13" fill="#FFFFFF" stroke="#3572C7" stroke-width="2"/>
+  <text x="1329" y="573" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#303640">检查页面结果</text>
+
+  <line x1="1094" y1="624" x2="1564" y2="624" stroke="#3572C7" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="1329" y="674" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="27" font-weight="600" fill="#334A66">验收时按 Case 使用规则</text>
+
+  <!-- Mapping lines -->
+  <path d="M478 245 H620" fill="none" stroke="#6846C7" stroke-width="4" marker-end="url(#arrow-purple)"/>
+  <path d="M478 487 H620" fill="none" stroke="#3E8B45" stroke-width="4" marker-end="url(#arrow-green)"/>
+  <path d="M980 249 H1060 V184 H1142" fill="none" stroke="#6846C7" stroke-width="4" marker-end="url(#arrow-purple)"/>
+  <path d="M980 481 H1060 V184" fill="none" stroke="#3E8B45" stroke-width="4"/>
+
+  <!-- Outcome -->
+  <rect x="36" y="752" width="1528" height="108" rx="16" fill="#F3FAF3" stroke="#4A9A45" stroke-width="2"/>
+  <text x="285" y="820" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="29" font-weight="700" fill="#26362B">按测试场景准备规则</text>
+  <circle cx="552" cy="810" r="6" fill="#4A9A45"/>
+  <text x="800" y="820" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="29" font-weight="700" fill="#26362B">执行时准确加载</text>
+  <circle cx="1048" cy="810" r="6" fill="#4A9A45"/>
+  <text x="1300" y="820" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="29" font-weight="700" fill="#26362B">避免按接口盲目批量 Mock</text>
+</svg>

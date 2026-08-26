@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="810" viewBox="0 0 1440 810" role="img" aria-labelledby="title desc">
+  <title id="title">Verify 证据与 Test Case 对齐规范框架图</title>
+  <desc id="desc">Verify 读取 Test Case Matrix，Agent 按 Case 操作页面并及时保存证据，Gate 检查当前 Case 是否完成且证据可用，未通过时返回当前 Case，验证完成后生成单 Case 记录和 Verify 汇总报告供人工复核。</desc>
+  <defs>
+    <filter id="shadow" x="-12%" y="-12%" width="124%" height="132%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#1D2129" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6B82"/>
+    </marker>
+    <style>
+      .title { font: 600 34px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #1D2129; }
+      .subtitle { font: 400 21px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #667085; }
+      .phase { font: 600 17px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #FFFFFF; text-anchor: middle; dominant-baseline: central; }
+      .node-title { font: 600 25px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #1D2129; text-anchor: middle; }
+      .body { font: 400 19px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #5C667A; text-anchor: middle; }
+      .body-strong { font: 500 20px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #344054; text-anchor: middle; }
+      .arrow { fill: none; stroke: #5B6B82; stroke-width: 3; marker-end: url(#arrow); }
+      .arrow-label { font: 500 17px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #526079; text-anchor: middle; }
+      .loop { fill: none; stroke: #C65A5A; stroke-width: 2.6; stroke-dasharray: 9 7; marker-end: url(#arrow); }
+      .loop-label { font: 500 18px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #A44242; text-anchor: middle; }
+      .effect-title { font: 600 22px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #3D3280; }
+      .effect { font: 500 21px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #3D3280; text-anchor: middle; }
+      .effect-desc { font: 400 17px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #685D99; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="810" fill="#F7F8FA"/>
+  <text class="title" x="60" y="68">Verify 证据与 Test Case 对齐规范</text>
+  <text class="subtitle" x="60" y="106">按 Case 操作页面并保存证据，用 Gate 阻止遗漏项直接通过</text>
+
+  <path class="arrow" d="M300 320 H345"/>
+  <path class="arrow" d="M730 320 H775"/>
+  <path class="arrow" d="M1085 320 H1130"/>
+  <text class="arrow-label" x="1107" y="301">通过</text>
+
+  <g filter="url(#shadow)">
+    <rect x="60" y="170" width="240" height="300" rx="20" fill="#FFFFFF" stroke="#D8DEE8" stroke-width="2"/>
+    <rect x="85" y="194" width="72" height="34" rx="17" fill="#7B8794"/>
+    <text class="phase" x="121" y="211">输入</text>
+    <text class="node-title" x="180" y="278">Test Case Matrix</text>
+    <line x1="95" y1="305" x2="265" y2="305" stroke="#E4E7EC" stroke-width="2"/>
+    <text class="body-strong" x="180" y="351">明确需要检查的</text>
+    <text class="body-strong" x="180" y="382">页面功能</text>
+    <text class="body" x="180" y="426">一个 Case 对应</text>
+    <text class="body" x="180" y="455">一个验收场景</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="345" y="170" width="385" height="300" rx="20" fill="#F1EEFF" stroke="#8A78D0" stroke-width="2"/>
+    <rect x="370" y="194" width="72" height="34" rx="17" fill="#6D5CA8"/>
+    <text class="phase" x="406" y="211">执行</text>
+    <text class="node-title" x="537.5" y="270">按 Case 执行 Verify</text>
+
+    <circle cx="397" cy="322" r="16" fill="#6D5CA8"/>
+    <text class="phase" x="397" y="322">1</text>
+    <text class="body-strong" x="548" y="328">逐个 Case 操作真实页面</text>
+
+    <circle cx="397" cy="378" r="16" fill="#6D5CA8"/>
+    <text class="phase" x="397" y="378">2</text>
+    <text class="body-strong" x="548" y="384">完成一项，立即保存证据</text>
+
+    <circle cx="397" cy="434" r="16" fill="#6D5CA8"/>
+    <text class="phase" x="397" y="434">3</text>
+    <text class="body-strong" x="548" y="440">同步更新当前 Case 记录</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="775" y="170" width="310" height="300" rx="20" fill="#FFF6DB" stroke="#D2A63A" stroke-width="2"/>
+    <rect x="800" y="194" width="72" height="34" rx="17" fill="#B58B22"/>
+    <text class="phase" x="836" y="211">检查</text>
+    <text class="node-title" x="930" y="270">Verify Gate</text>
+    <line x1="810" y1="297" x2="1050" y2="297" stroke="#E8D8A6" stroke-width="2"/>
+    <text class="body-strong" x="930" y="342">当前 Case 是否检查完整？</text>
+    <text class="body-strong" x="930" y="382">保存的证据是否可用？</text>
+    <rect x="822" y="414" width="216" height="40" rx="12" fill="#FFF0C2"/>
+    <text class="body" x="930" y="441">缺项或证据不足：不通过</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1130" y="170" width="250" height="300" rx="20" fill="#EAF6EF" stroke="#62A47B" stroke-width="2"/>
+    <rect x="1155" y="194" width="72" height="34" rx="17" fill="#3F8A5E"/>
+    <text class="phase" x="1191" y="211">输出</text>
+    <text class="node-title" x="1255" y="270">可复核的结果</text>
+    <line x1="1165" y1="297" x2="1345" y2="297" stroke="#CDE5D5" stroke-width="2"/>
+    <text class="body-strong" x="1255" y="343">单 Case 验收记录</text>
+    <text class="body-strong" x="1255" y="386">Verify 汇总报告</text>
+    <text class="body" x="1255" y="434">人工根据页面证据</text>
+    <text class="body" x="1255" y="461">直接复核结果</text>
+  </g>
+
+  <path class="loop" d="M930 470 V552 H537 V470"/>
+  <rect x="646" y="528" width="176" height="40" rx="12" fill="#F7F8FA"/>
+  <text class="loop-label" x="734" y="555">未通过：返回当前 Case</text>
+
+  <rect x="60" y="626" width="1320" height="124" rx="18" fill="#EEE8FF"/>
+  <text class="effect-title" x="90" y="672">规范的作用</text>
+  <line x1="250" y1="650" x2="250" y2="727" stroke="#CFC5F2" stroke-width="2"/>
+  <line x1="625" y1="650" x2="625" y2="727" stroke="#CFC5F2" stroke-width="2"/>
+  <line x1="1000" y1="650" x2="1000" y2="727" stroke="#CFC5F2" stroke-width="2"/>
+
+  <text class="effect" x="437" y="679">缺项不能通过</text>
+  <text class="effect-desc" x="437" y="712">Gate 会把任务退回当前 Case</text>
+
+  <text class="effect" x="812" y="679">结果可以复核</text>
+  <text class="effect-desc" x="812" y="712">结论能够回到具体页面证据</text>
+
+  <text class="effect" x="1190" y="679">中断后可以继续</text>
+  <text class="effect-desc" x="1190" y="712">从第一个未完成的 Case 接着执行</text>
+</svg>

@@ -1,0 +1,24 @@
+flowchart TB
+    A["业务字段原始值"] --> B{"字段值类型"}
+    B -- "字符串" --> C{"是否以 **** 开头<br/>且包含 payload"}
+    B -- "数值" --> D{"是否以 -99999.<br/>或 -99999 开头"}
+    B -- "其他类型" --> E["返回 undefined<br/>可以查看"]
+
+    C -- "否" --> E
+    D -- "否" --> E
+    C -- "是" --> F["截取字符串前缀后的 payload"]
+    D -- "是" --> G["截取数值前缀后的 payload"]
+    F --> H{"payload 内容"}
+    G --> H
+
+    H -- "888" --> I["unauthorized / no_cooperation<br/>不是协作人"]
+    H -- "999" --> J["auth_hidden<br/>需要确认查看"]
+    H -- "其他 front_key" --> K["unauthorized / no_data_permission<br/>没有数据权限"]
+
+    classDef source fill:#EAF2FF,stroke:#4C78C2,color:#173A5E,stroke-width:1.3px;
+    classDef process fill:#FFF2CC,stroke:#B58B22,color:#5A4100,stroke-width:1.3px;
+    classDef result fill:#EAF6EF,stroke:#3F8A5E,color:#1F5135,stroke-width:1.3px;
+
+    class A source;
+    class B,C,D,F,G,H process;
+    class E,I,J,K result;

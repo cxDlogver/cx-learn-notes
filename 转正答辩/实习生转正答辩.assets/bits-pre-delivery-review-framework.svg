@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arr-dark" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#344054"/></marker>
+    <marker id="arr-red" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#C9362D"/></marker>
+    <marker id="arr-green" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#2E7D32"/></marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <!-- AI responsibility area -->
+  <rect x="24" y="38" width="866" height="686" rx="18" fill="#FFF7F7" stroke="#D96363" stroke-width="2"/>
+  <text x="457" y="94" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="36" font-weight="700" fill="#9E1717">AI 自动处理</text>
+
+  <rect x="52" y="214" width="164" height="86" rx="13" fill="#FFFFFF" stroke="#C85B5B" stroke-width="2"/>
+  <text x="134" y="267" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="24" font-weight="700" fill="#272B34">拉取评审评论</text>
+
+  <line x1="216" y1="257" x2="246" y2="257" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <rect x="258" y="204" width="190" height="106" rx="13" fill="#FFFFFF" stroke="#C85B5B" stroke-width="2"/>
+  <text x="353" y="244" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="22" font-weight="700" fill="#272B34">关联需求、代码</text>
+  <text x="353" y="279" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="22" font-weight="700" fill="#272B34">和 Test Case</text>
+
+  <line x1="448" y1="257" x2="478" y2="257" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <polygon points="566,188 650,257 566,326 482,257" fill="#FFF7D6" stroke="#C89019" stroke-width="2.5"/>
+  <text x="566" y="265" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#33343A">判断处理方式</text>
+
+  <!-- Accepted branch -->
+  <path d="M650 257 H680 V144 H704" fill="none" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <text x="665" y="225" font-family="Arial, PingFang SC, sans-serif" font-size="19" font-weight="700" fill="#7B3333">接受 / 部分接受</text>
+  <rect x="716" y="105" width="148" height="78" rx="12" fill="#FFFFFF" stroke="#C85B5B" stroke-width="2"/>
+  <text x="790" y="153" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#272B34">最小范围修改</text>
+
+  <line x1="790" y1="183" x2="790" y2="215" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <rect x="696" y="227" width="188" height="98" rx="12" fill="#FFFFFF" stroke="#C85B5B" stroke-width="2"/>
+  <text x="790" y="260" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#272B34">运行相关 Case</text>
+  <text x="790" y="291" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#272B34">构建和代码检查</text>
+
+  <line x1="790" y1="325" x2="790" y2="352" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <polygon points="790,360 866,414 790,468 714,414" fill="#FFF7D6" stroke="#C89019" stroke-width="2.5"/>
+  <text x="790" y="421" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="21" font-weight="700" fill="#33343A">验证是否通过</text>
+
+  <path d="M866 414 H878 V144 H864" fill="none" stroke="#C9362D" stroke-width="3" marker-end="url(#arr-red)"/>
+  <text x="850" y="384" font-family="Arial, PingFang SC, sans-serif" font-size="19" font-weight="700" fill="#C9362D">未通过</text>
+
+  <!-- Rejected / already fixed branch -->
+  <path d="M566 326 V438 H594" fill="none" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <text x="582" y="376" font-family="Arial, PingFang SC, sans-serif" font-size="19" font-weight="700" fill="#5F3C3C">拒绝 / 已修复</text>
+  <rect x="606" y="400" width="174" height="76" rx="12" fill="#FFFFFF" stroke="#C85B5B" stroke-width="2"/>
+  <text x="693" y="447" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="22" font-weight="700" fill="#272B34">整理原因和证据</text>
+
+  <!-- Merge into per-thread replies -->
+  <path d="M790 468 V516 H812" fill="none" stroke="#2E7D32" stroke-width="3" marker-end="url(#arr-green)"/>
+  <text x="804" y="493" font-family="Arial, PingFang SC, sans-serif" font-size="18" font-weight="700" fill="#2E7D32">通过</text>
+  <path d="M780 438 H800 V516 H812" fill="none" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <rect x="702" y="528" width="164" height="80" rx="12" fill="#FFFFFF" stroke="#C85B5B" stroke-width="2.5"/>
+  <text x="784" y="577" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="24" font-weight="700" fill="#272B34">生成逐条回复</text>
+
+  <!-- Human gate -->
+  <rect x="920" y="38" width="318" height="686" rx="18" fill="#F4F8FF" stroke="#4B79C8" stroke-width="2"/>
+  <text x="1079" y="94" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="34" font-weight="700" fill="#174D99">人工最终 Review</text>
+
+  <path d="M866 568 H906 V296 H950" fill="none" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <rect x="962" y="166" width="234" height="260" rx="14" fill="#FFFFFF" stroke="#4B79C8" stroke-width="2.5"/>
+  <text x="1079" y="215" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#25334A">检查原评论和处理判断</text>
+  <line x1="984" y1="248" x2="1174" y2="248" stroke="#AEBBD0" stroke-width="1.5" stroke-dasharray="7 6"/>
+  <text x="1079" y="300" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#25334A">检查代码修改与验证结果</text>
+  <line x1="984" y1="333" x2="1174" y2="333" stroke="#AEBBD0" stroke-width="1.5" stroke-dasharray="7 6"/>
+  <text x="1079" y="385" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#25334A">检查逐条回复内容</text>
+
+  <line x1="1079" y1="426" x2="1079" y2="458" stroke="#344054" stroke-width="3" marker-end="url(#arr-dark)"/>
+  <polygon points="1079,466 1190,525 1079,584 968,525" fill="#FFF7D6" stroke="#C89019" stroke-width="2.5"/>
+  <text x="1079" y="533" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#33343A">是否确认提交</text>
+
+  <path d="M1079 584 V690 H353 V322" fill="none" stroke="#C9362D" stroke-width="3.5" marker-end="url(#arr-red)"/>
+  <rect x="664" y="662" width="224" height="42" rx="9" fill="#FFF1EF"/>
+  <text x="776" y="690" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#B52B24">需要调整：返回评论分析</text>
+
+  <!-- Submit and close -->
+  <rect x="1268" y="38" width="304" height="686" rx="18" fill="#F3FAF3" stroke="#3E8B45" stroke-width="2"/>
+  <text x="1420" y="94" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="34" font-weight="700" fill="#176420">提交与关闭</text>
+
+  <path d="M1190 525 H1248 V146 H1292" fill="none" stroke="#2E7D32" stroke-width="3.5" marker-end="url(#arr-green)"/>
+  <text x="1210" y="508" font-family="Arial, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#2E7D32">确认</text>
+
+  <rect x="1292" y="118" width="256" height="70" rx="12" fill="#FFFFFF" stroke="#3E8B45" stroke-width="2"/>
+  <text x="1420" y="162" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#27352B">明确提交授权</text>
+  <line x1="1420" y1="188" x2="1420" y2="218" stroke="#2E7D32" stroke-width="3" marker-end="url(#arr-green)"/>
+
+  <rect x="1292" y="230" width="256" height="70" rx="12" fill="#FFFFFF" stroke="#3E8B45" stroke-width="2"/>
+  <text x="1420" y="274" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#27352B">提交并推送代码</text>
+  <line x1="1420" y1="300" x2="1420" y2="330" stroke="#2E7D32" stroke-width="3" marker-end="url(#arr-green)"/>
+
+  <rect x="1292" y="342" width="256" height="70" rx="12" fill="#FFFFFF" stroke="#3E8B45" stroke-width="2"/>
+  <text x="1420" y="386" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="23" font-weight="700" fill="#27352B">逐个 Resolve 评论</text>
+  <line x1="1420" y1="412" x2="1420" y2="444" stroke="#2E7D32" stroke-width="3" marker-end="url(#arr-green)"/>
+
+  <polygon points="1420,452 1536,510 1420,568 1304,510" fill="#FFF7D6" stroke="#C89019" stroke-width="2.5"/>
+  <text x="1420" y="518" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="22" font-weight="700" fill="#33343A">是否全部闭环</text>
+
+  <line x1="1420" y1="568" x2="1420" y2="606" stroke="#2E7D32" stroke-width="3.5" marker-end="url(#arr-green)"/>
+  <text x="1438" y="596" font-family="Arial, PingFang SC, sans-serif" font-size="19" font-weight="700" fill="#2E7D32">是</text>
+  <rect x="1292" y="618" width="256" height="70" rx="12" fill="#EAF6EB" stroke="#2E7D32" stroke-width="2.5"/>
+  <text x="1420" y="662" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="24" font-weight="700" fill="#245D29">具备交付条件</text>
+
+  <path d="M1536 510 H1560 V704 H134 V312" fill="none" stroke="#C9362D" stroke-width="3.5" marker-end="url(#arr-red)"/>
+  <text x="1532" y="548" font-family="Arial, PingFang SC, sans-serif" font-size="19" font-weight="700" fill="#C9362D">否</text>
+
+  <!-- Outcome -->
+  <rect x="24" y="758" width="1548" height="110" rx="16" fill="#F5FAF5" stroke="#3E8B45" stroke-width="2"/>
+  <text x="278" y="826" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="29" font-weight="700" fill="#26362B">减少重复评论处理</text>
+  <circle cx="548" cy="815" r="6" fill="#3E8B45"/>
+  <text x="800" y="826" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="29" font-weight="700" fill="#26362B">保留人工最终判断</text>
+  <circle cx="1052" cy="815" r="6" fill="#3E8B45"/>
+  <text x="1305" y="826" text-anchor="middle" font-family="Arial, PingFang SC, sans-serif" font-size="29" font-weight="700" fill="#26362B">提交前完成问题闭环</text>
+</svg>

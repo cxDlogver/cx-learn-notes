@@ -113,7 +113,6 @@ Chromium 多进程模型：https://www.chromium.org/developers/design-documents/
 
 1. 浏览器缓存（Memory Cache / Disk Cache）
 2. 操作系统缓存（DNS 缓存）
-3. 路由器缓存
 4. ISP DNS 缓存
    如果缓存命中，就直接用缓存返回数据，不再走后续步骤。
 

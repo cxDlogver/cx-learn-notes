@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">协作人申请存量弹窗复用框架</title>
+  <desc id="desc">公共权限组件通过统一的 onApply，分别调用作者列表和作者详情页面已有的方法，使各自已经渲染的协作申请弹窗变为可见。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#667085"/>
+    </marker>
+    <style>
+      .title { font:600 25px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#26364e; }
+      .panelTitle { font:600 19px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#27364d; }
+      .nodeTitle { font:600 16px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#2d3a4f; text-anchor:middle; }
+      .body { font:500 14px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#46546a; text-anchor:middle; }
+      .small { font:400 12.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#667085; text-anchor:middle; }
+      .code { font:600 12px Menlo,Consolas,monospace; fill:#3f506a; text-anchor:middle; }
+      .commonPanel { fill:#f7f3ff; stroke:#8d78bd; stroke-width:1.4; }
+      .listPanel { fill:#f5f8fd; stroke:#7895bf; stroke-width:1.3; }
+      .detailPanel { fill:#f4faf6; stroke:#76a087; stroke-width:1.3; }
+      .card { fill:#ffffff; stroke:#a4afbd; stroke-width:1.15; }
+      .listCard { fill:#ffffff; stroke:#7895bf; stroke-width:1.15; }
+      .detailCard { fill:#ffffff; stroke:#76a087; stroke-width:1.15; }
+      .modalList { fill:#eaf2ff; stroke:#6688b8; stroke-width:1.35; }
+      .modalDetail { fill:#eaf6ee; stroke:#68947a; stroke-width:1.35; }
+      .line { fill:none; stroke:#667085; stroke-width:1.65; marker-end:url(#arrow); }
+      .divider { stroke:#d0d5dd; stroke-width:1; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"/>
+  <text x="62" y="55" class="title">协作人申请：通过统一 onApply 复用两套存量弹窗</text>
+
+  <!-- 公共权限组件 -->
+  <rect x="500" y="90" width="600" height="168" rx="18" class="commonPanel"/>
+  <text x="800" y="128" class="nodeTitle">公共权限组件</text>
+  <rect x="555" y="150" width="490" height="70" rx="10" class="card"/>
+  <text x="800" y="178" class="body">识别“缺少协作人”状态</text>
+  <text x="800" y="204" class="code">onApply()</text>
+
+  <!-- 作者列表 -->
+  <rect x="70" y="330" width="690" height="510" rx="18" class="listPanel"/>
+  <text x="100" y="370" class="panelTitle">作者列表：接入已有单作者协作申请链路</text>
+  <text x="415" y="401" class="small">作者列表页面已经渲染 operationModals</text>
+
+  <rect x="180" y="438" width="470" height="70" rx="10" class="listCard"/>
+  <text x="415" y="466" class="code">triggerSingleCooperateApply(record)</text>
+  <text x="415" y="492" class="small">本次需求新增的连接方法</text>
+
+  <rect x="180" y="548" width="470" height="86" rx="10" class="listCard"/>
+  <text x="415" y="578" class="code">handleOperate(Cooperate, record)</text>
+  <text x="415" y="606" class="body">查询申请信息并修改弹窗显示状态</text>
+
+  <rect x="150" y="688" width="530" height="112" rx="12" class="modalList"/>
+  <text x="415" y="720" class="small">operationModals 中已有的协作申请弹窗</text>
+  <text x="415" y="751" class="code">modalProps.visible = true</text>
+  <text x="415" y="779" class="nodeTitle">作者列表协作申请 Modal 显示</text>
+
+  <!-- 作者详情 -->
+  <rect x="840" y="330" width="690" height="510" rx="18" class="detailPanel"/>
+  <text x="870" y="370" class="panelTitle">作者详情：控制当前业务 Tab 中的弹窗</text>
+  <text x="1185" y="401" class="small">需要协作申请能力的业务 Tab 分别渲染 ApplyManageModal</text>
+
+  <rect x="950" y="438" width="470" height="70" rx="10" class="detailCard"/>
+  <text x="1185" y="466" class="code">handleApplyManage()</text>
+  <text x="1185" y="492" class="small">当前 Tab 提供的弹窗打开方法</text>
+
+  <rect x="950" y="548" width="470" height="86" rx="10" class="detailCard"/>
+  <text x="1185" y="578" class="code">setApplyModalVisible(true)</text>
+  <text x="1185" y="606" class="body">修改当前 Tab 维护的显示状态</text>
+
+  <rect x="920" y="688" width="530" height="112" rx="12" class="modalDetail"/>
+  <text x="1185" y="720" class="small">当前业务 Tab 已经渲染的协作申请组件</text>
+  <text x="1185" y="751" class="code">visible = applyModalVisible</text>
+  <text x="1185" y="779" class="nodeTitle">ApplyManageModal 显示</text>
+
+  <!-- 连线 -->
+  <path d="M800 258 V294 H415 V438" class="line"/>
+  <path d="M800 258 V294 H1185 V438" class="line"/>
+  <path d="M415 508 V548" class="line"/>
+  <path d="M415 634 V688" class="line"/>
+  <path d="M1185 508 V548" class="line"/>
+  <path d="M1185 634 V688" class="line"/>
+</svg>

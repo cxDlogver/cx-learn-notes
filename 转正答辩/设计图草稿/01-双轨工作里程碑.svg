@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #273142; }
+      .title { font-size: 36px; font-weight: 600; }
+      .subtitle { font-size: 18px; fill: #667085; }
+      .lane { font-size: 22px; font-weight: 600; }
+      .date { font-size: 18px; font-weight: 600; }
+      .card-title { font-size: 20px; font-weight: 600; }
+      .card-text { font-size: 16px; fill: #475467; }
+      .note { font-size: 17px; fill: #475467; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A2B3"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <text x="80" y="72" class="title">实习工作里程碑：业务交付 × AI 能力沉淀</text>
+  <text x="80" y="108" class="subtitle">业务问题推动工具与流程沉淀，沉淀结果再用于下一项需求</text>
+
+  <rect x="80" y="142" width="22" height="22" rx="5" fill="#4C78C2"/>
+  <text x="116" y="160" class="lane">业务交付</text>
+  <rect x="80" y="650" width="22" height="22" rx="5" fill="#7A5AF8"/>
+  <text x="116" y="668" class="lane">AI 能力沉淀</text>
+
+  <line x1="185" y1="430" x2="1455" y2="430" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- milestone 1 -->
+  <line x1="205" y1="345" x2="205" y2="515" stroke="#D0D5DD" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="205" cy="430" r="12" fill="#273142"/>
+  <text x="205" y="468" text-anchor="middle" class="date">4 月 20 日</text>
+  <rect x="92" y="195" width="226" height="138" rx="16" fill="#EAF2FF" stroke="#4C78C2" stroke-width="2"/>
+  <text x="205" y="234" text-anchor="middle" class="card-title">入职与业务熟悉</text>
+  <text x="205" y="270" text-anchor="middle" class="card-text">熟悉作者运营业务</text>
+  <text x="205" y="297" text-anchor="middle" class="card-text">进入前端需求交付</text>
+  <rect x="92" y="525" width="226" height="120" rx="16" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="2"/>
+  <text x="205" y="565" text-anchor="middle" class="card-title">AI Coding 起步</text>
+  <text x="205" y="600" text-anchor="middle" class="card-text">用于代码理解与实现</text>
+
+  <!-- milestone 2 -->
+  <line x1="500" y1="345" x2="500" y2="515" stroke="#D0D5DD" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="500" cy="430" r="12" fill="#4C78C2"/>
+  <text x="500" y="468" text-anchor="middle" class="date">5 月 7 日</text>
+  <rect x="387" y="195" width="226" height="138" rx="16" fill="#EAF2FF" stroke="#4C78C2" stroke-width="2"/>
+  <text x="500" y="234" text-anchor="middle" class="card-title">头达权限一期合入</text>
+  <text x="500" y="270" text-anchor="middle" class="card-text">字段与模块权限</text>
+  <text x="500" y="297" text-anchor="middle" class="card-text">脱敏展示与权限申请</text>
+  <rect x="387" y="525" width="226" height="120" rx="16" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="2"/>
+  <text x="500" y="565" text-anchor="middle" class="card-title">规范驱动实践</text>
+  <text x="500" y="600" text-anchor="middle" class="card-text">使用 Spec Kit 推进开发</text>
+
+  <!-- milestone 3 -->
+  <line x1="795" y1="345" x2="795" y2="515" stroke="#D0D5DD" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="795" cy="430" r="12" fill="#4C78C2"/>
+  <text x="795" y="468" text-anchor="middle" class="date">6 月 2 日</text>
+  <rect x="682" y="195" width="226" height="138" rx="16" fill="#EAF2FF" stroke="#4C78C2" stroke-width="2"/>
+  <text x="795" y="234" text-anchor="middle" class="card-title">头达权限二期合入</text>
+  <text x="795" y="270" text-anchor="middle" class="card-text">协作关系与查看确认</text>
+  <text x="795" y="297" text-anchor="middle" class="card-text">四种权限状态统一</text>
+  <rect x="682" y="525" width="226" height="120" rx="16" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="2"/>
+  <text x="795" y="565" text-anchor="middle" class="card-title">验证工具沉淀</text>
+  <text x="795" y="598" text-anchor="middle" class="card-text">权限 Mock Skill</text>
+  <text x="795" y="622" text-anchor="middle" class="card-text">覆盖率 Skill</text>
+
+  <!-- milestone 4 -->
+  <line x1="1090" y1="345" x2="1090" y2="515" stroke="#D0D5DD" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="1090" cy="430" r="12" fill="#3A8D5D"/>
+  <text x="1090" y="468" text-anchor="middle" class="date">7 月</text>
+  <rect x="977" y="195" width="226" height="138" rx="16" fill="#EAF6EF" stroke="#3A8D5D" stroke-width="2"/>
+  <text x="1090" y="234" text-anchor="middle" class="card-title">内容激励需求交付</text>
+  <text x="1090" y="270" text-anchor="middle" class="card-text">完整执行开发、验证</text>
+  <text x="1090" y="297" text-anchor="middle" class="card-text">Repair 与发布闭环</text>
+  <rect x="977" y="525" width="226" height="120" rx="16" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="2"/>
+  <text x="1090" y="565" text-anchor="middle" class="card-title">端到端工作流实践</text>
+  <text x="1090" y="600" text-anchor="middle" class="card-text">Mock · Verify · Repair</text>
+
+  <!-- milestone 5 -->
+  <line x1="1385" y1="345" x2="1385" y2="515" stroke="#D0D5DD" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="1385" cy="430" r="12" fill="#7A5AF8"/>
+  <text x="1385" y="468" text-anchor="middle" class="date">7 月底</text>
+  <rect x="1272" y="195" width="226" height="138" rx="16" fill="#ECF8F1" stroke="#3A8D5D" stroke-width="2"/>
+  <text x="1385" y="234" text-anchor="middle" class="card-title">成果复盘与沉淀</text>
+  <text x="1385" y="270" text-anchor="middle" class="card-text">整理交付经验</text>
+  <text x="1385" y="297" text-anchor="middle" class="card-text">形成团队参考材料</text>
+  <rect x="1272" y="525" width="226" height="120" rx="16" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="2"/>
+  <text x="1385" y="565" text-anchor="middle" class="card-title">Agent 评测调研</text>
+  <text x="1385" y="598" text-anchor="middle" class="card-text">统一评测对象、计分</text>
+  <text x="1385" y="622" text-anchor="middle" class="card-text">与对比维度</text>
+
+  <path d="M 200 760 C 480 830, 1120 830, 1400 760" fill="none" stroke="#98A2B3" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="800" y="824" text-anchor="middle" class="note">业务问题 → 工具与流程沉淀 → 在下一项需求中验证 → 形成团队方法参考</text>
+</svg>

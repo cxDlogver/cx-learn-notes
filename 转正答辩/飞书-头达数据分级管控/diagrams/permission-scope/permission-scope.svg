@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">字段级与模块级权限范围</title>
+  <desc id="desc">字段级权限对应八类数据维度，模块级权限对应两类固定页面模块；两类权限使用不同背景色区分。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#718096"/>
+    </marker>
+    <style>
+      .header { fill:#eef0f3; stroke:#8f99a7; stroke-width:1.1; }
+      .header-text { font:600 18px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#273142; text-anchor:middle; }
+      .field-zone { fill:#fff9f3; }
+      .module-zone { fill:#f3faf6; }
+      .scope { fill:#eaf2ff; stroke:#5d88c6; stroke-width:1.25; }
+      .scope-text { font:600 16px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#244a7b; text-anchor:middle; }
+      .state { fill:#fff; stroke:#a8b0bb; stroke-width:1.05; }
+      .state-eye { fill:#fff8e9; stroke:#c4943e; }
+      .state-person { fill:#f5f1ff; stroke:#8b75bd; }
+      .state-permission { fill:#fff1e8; stroke:#c47a46; }
+      .state-text { font:500 13px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#303846; text-anchor:middle; }
+      .trunk { fill:none; stroke:#718096; stroke-width:1.35; }
+      .branch { fill:none; stroke:#718096; stroke-width:1.35; marker-end:url(#arrow); }
+      .divider { stroke:#d9b99c; stroke-width:1.05; }
+      .module-divider { stroke:#9cc4aa; stroke-width:1.05; }
+      .dimension-title { font:600 13.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#704720; text-anchor:start; }
+      .module-title { font:600 13.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#356648; text-anchor:start; }
+      .page { fill:#edf4ff; stroke:#7197c9; stroke-width:1; }
+      .module { fill:#edf8f1; stroke:#70a183; stroke-width:1; }
+      .page-text { font:500 10.2px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#31567e; text-anchor:middle; }
+      .module-text { font:500 10.2px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#356648; text-anchor:middle; }
+      .relation { fill:none; stroke:#718096; stroke-width:1.1; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <!-- 三列标题 -->
+  <rect x="24" y="24" width="180" height="60" class="header"/>
+  <rect x="204" y="24" width="396" height="60" class="header"/>
+  <rect x="620" y="24" width="956" height="60" class="header"/>
+  <text x="114" y="61" class="header-text">管控粒度</text>
+  <text x="402" y="61" class="header-text">四种权限状态</text>
+  <text x="1098" y="61" class="header-text">多类数据维度及对应页面</text>
+
+  <!-- 整行底色区分字段级与模块级 -->
+  <rect x="24" y="96" width="1552" height="522" rx="8" class="field-zone"/>
+  <rect x="24" y="632" width="1552" height="244" rx="8" class="module-zone"/>
+
+  <!-- 字段级权限及四种纵向状态 -->
+  <rect x="45" y="292" width="130" height="66" rx="8" class="scope"/>
+  <text x="110" y="331" class="scope-text">字段级权限</text>
+
+  <rect x="300" y="164" width="250" height="52" rx="7" class="state"/>
+  <rect x="300" y="254" width="250" height="52" rx="7" class="state state-eye"/>
+  <rect x="300" y="344" width="250" height="52" rx="7" class="state state-person"/>
+  <rect x="300" y="434" width="250" height="52" rx="7" class="state state-permission"/>
+  <text x="425" y="196" class="state-text">正常展示</text>
+  <text x="425" y="286" class="state-text">需要点击查看</text>
+  <text x="425" y="376" class="state-text">缺少协作人</text>
+  <text x="425" y="466" class="state-text">缺少数据权限</text>
+  <path d="M175 325 H240 M240 190 V460" class="trunk"/>
+  <path d="M240 190 H300" class="branch"/>
+  <path d="M240 280 H300" class="branch"/>
+  <path d="M240 370 H300" class="branch"/>
+  <path d="M240 460 H300" class="branch"/>
+  <path d="M550 460 H580 V357 H620" class="branch"/>
+
+  <!-- 模块级权限及四种纵向状态 -->
+  <rect x="45" y="719" width="130" height="66" rx="8" class="scope"/>
+  <text x="110" y="758" class="scope-text">模块级权限</text>
+
+  <rect x="300" y="648" width="250" height="42" rx="7" class="state"/>
+  <rect x="300" y="704" width="250" height="42" rx="7" class="state state-eye"/>
+  <rect x="300" y="760" width="250" height="42" rx="7" class="state state-person"/>
+  <rect x="300" y="816" width="250" height="42" rx="7" class="state state-permission"/>
+  <text x="425" y="674" class="state-text">正常展示</text>
+  <text x="425" y="730" class="state-text">需要点击查看</text>
+  <text x="425" y="786" class="state-text">缺少协作人</text>
+  <text x="425" y="842" class="state-text">缺少数据权限</text>
+  <path d="M175 752 H240 M240 669 V837" class="trunk"/>
+  <path d="M240 669 H300" class="branch"/>
+  <path d="M240 725 H300" class="branch"/>
+  <path d="M240 781 H300" class="branch"/>
+  <path d="M240 837 H300" class="branch"/>
+  <path d="M550 837 H580 V754 H620" class="branch"/>
+
+  <!-- 字段级：八类数据维度 -->
+  <g transform="translate(642 105)">
+    <text x="0" y="18" class="dimension-title">作者数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="45" width="128" height="24" rx="6" class="page"/>
+    <text x="64" y="61" class="page-text">作者档案</text>
+    <path d="M128 57 H142" class="relation"/>
+    <rect x="150" y="45" width="108" height="24" rx="6" class="module"/>
+    <text x="204" y="61" class="module-text">基础信息</text>
+    <rect x="0" y="75" width="128" height="24" rx="6" class="page"/>
+    <text x="64" y="91" class="page-text">达人库 / 号簇列表</text>
+    <path d="M128 87 H142" class="relation"/>
+    <rect x="150" y="75" width="108" height="24" rx="6" class="module"/>
+    <text x="204" y="91" class="module-text">交易指标</text>
+  </g>
+
+  <g transform="translate(1118 105)">
+    <text x="0" y="18" class="dimension-title">直播数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="42" width="128" height="22" rx="6" class="page"/>
+    <text x="64" y="57" class="page-text">作者档案</text>
+    <path d="M128 53 H142" class="relation"/>
+    <rect x="150" y="42" width="124" height="22" rx="6" class="module"/>
+    <text x="212" y="57" class="module-text">作者表现趋势</text>
+    <rect x="0" y="70" width="128" height="22" rx="6" class="page"/>
+    <text x="64" y="85" class="page-text">直播分析</text>
+    <path d="M128 81 H142" class="relation"/>
+    <rect x="150" y="70" width="124" height="22" rx="6" class="module"/>
+    <text x="212" y="85" class="module-text">直播核心数据</text>
+    <rect x="0" y="98" width="128" height="22" rx="6" class="page"/>
+    <text x="64" y="113" class="page-text">达人库 / 号簇列表</text>
+    <path d="M128 109 H142" class="relation"/>
+    <rect x="150" y="98" width="124" height="22" rx="6" class="module"/>
+    <text x="212" y="113" class="module-text">交易指标</text>
+  </g>
+
+  <g transform="translate(642 237)">
+    <text x="0" y="18" class="dimension-title">视频数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="42" width="128" height="22" rx="6" class="page"/>
+    <text x="64" y="57" class="page-text">作者档案</text>
+    <path d="M128 53 H142" class="relation"/>
+    <rect x="150" y="42" width="124" height="22" rx="6" class="module"/>
+    <text x="212" y="57" class="module-text">作者表现趋势</text>
+    <rect x="0" y="70" width="128" height="22" rx="6" class="page"/>
+    <text x="64" y="85" class="page-text">作品分析</text>
+    <path d="M128 81 H142" class="relation"/>
+    <rect x="150" y="70" width="124" height="22" rx="6" class="module"/>
+    <text x="212" y="85" class="module-text">核心数据</text>
+    <rect x="0" y="98" width="128" height="22" rx="6" class="page"/>
+    <text x="64" y="113" class="page-text">达人库 / 号簇列表</text>
+    <path d="M128 109 H142" class="relation"/>
+    <rect x="150" y="98" width="124" height="22" rx="6" class="module"/>
+    <text x="212" y="113" class="module-text">交易指标</text>
+  </g>
+
+  <g transform="translate(1118 237)">
+    <text x="0" y="18" class="dimension-title">商品数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="52" width="116" height="24" rx="6" class="page"/>
+    <text x="58" y="68" class="page-text">商品分析</text>
+    <path d="M116 64 H132" class="relation"/>
+    <rect x="140" y="52" width="132" height="24" rx="6" class="module"/>
+    <text x="206" y="68" class="module-text">成交商品明细</text>
+  </g>
+
+  <g transform="translate(642 369)">
+    <text x="0" y="18" class="dimension-title">违规数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="52" width="106" height="24" rx="6" class="page"/>
+    <text x="53" y="68" class="page-text">作者档案</text>
+    <path d="M106 64 H120" class="relation"/>
+    <rect x="128" y="52" width="92" height="24" rx="6" class="module"/>
+    <rect x="228" y="52" width="92" height="24" rx="6" class="module"/>
+    <text x="174" y="68" class="module-text">基础信息</text>
+    <text x="274" y="68" class="module-text">风险信息</text>
+  </g>
+
+  <g transform="translate(1118 369)">
+    <text x="0" y="18" class="dimension-title">佣金数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="52" width="116" height="24" rx="6" class="page"/>
+    <text x="58" y="68" class="page-text">作品分析</text>
+    <path d="M116 64 H132" class="relation"/>
+    <rect x="140" y="52" width="132" height="24" rx="6" class="module"/>
+    <text x="206" y="68" class="module-text">核心数据</text>
+  </g>
+
+  <g transform="translate(642 501)">
+    <text x="0" y="18" class="dimension-title">作品违规数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="52" width="116" height="24" rx="6" class="page"/>
+    <text x="58" y="68" class="page-text">作品分析</text>
+    <path d="M116 64 H132" class="relation"/>
+    <rect x="140" y="52" width="132" height="24" rx="6" class="module"/>
+    <text x="206" y="68" class="module-text">作品列表</text>
+  </g>
+
+  <g transform="translate(1118 501)">
+    <text x="0" y="18" class="dimension-title">直播违规数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="divider"/>
+    <rect x="0" y="52" width="116" height="24" rx="6" class="page"/>
+    <text x="58" y="68" class="page-text">直播分析</text>
+    <path d="M116 64 H132" class="relation"/>
+    <rect x="140" y="52" width="132" height="24" rx="6" class="module"/>
+    <text x="206" y="68" class="module-text">直播列表</text>
+  </g>
+
+  <!-- 模块级：两类固定页面映射 -->
+  <g transform="translate(642 650)">
+    <text x="0" y="18" class="module-title">作者数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="module-divider"/>
+    <rect x="0" y="58" width="122" height="30" rx="6" class="page"/>
+    <text x="61" y="78" class="page-text">作者档案</text>
+    <path d="M122 73 H138" class="relation"/>
+    <rect x="146" y="58" width="148" height="30" rx="6" class="module"/>
+    <text x="220" y="78" class="module-text">体裁经营概览</text>
+  </g>
+
+  <g transform="translate(1118 650)">
+    <text x="0" y="18" class="module-title">违规数据维度权限</text>
+    <line x1="0" y1="30" x2="438" y2="30" class="module-divider"/>
+    <rect x="0" y="58" width="96" height="30" rx="6" class="page"/>
+    <text x="48" y="78" class="page-text">违规处罚</text>
+    <path d="M96 73 H110" class="relation"/>
+    <rect x="118" y="58" width="70" height="30" rx="6" class="module"/>
+    <rect x="196" y="58" width="70" height="30" rx="6" class="module"/>
+    <rect x="274" y="58" width="92" height="30" rx="6" class="module"/>
+    <text x="153" y="78" class="module-text">近期处罚</text>
+    <text x="231" y="78" class="module-text">处罚概览</text>
+    <text x="320" y="78" class="module-text">处罚明细</text>
+  </g>
+</svg>

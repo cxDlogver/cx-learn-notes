@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">四种权限状态的操作与流转</title>
+  <desc id="desc">左侧单独展示四种权限状态的纵向推进，右侧按运营人员、前端页面、后端处理、TCC 和权限平台分列展示每个状态下的处理过程。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#596273"/>
+    </marker>
+    <marker id="state-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#7257c7"/>
+    </marker>
+    <style>
+      .lane { stroke:#98a1ad; stroke-width:1.2; }
+      .head { fill:#eef0f3; stroke:#7f8792; stroke-width:1.2; }
+      .head-text { font:600 18px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#273142; text-anchor:middle; }
+      .node { stroke-width:1.35; }
+      .state-box { fill:#ffffff; stroke:#7257c7; stroke-width:1.5; }
+      .state-text { font:600 16px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#3f326f; text-anchor:middle; }
+      .user { fill:#f3eff9; stroke:#75648d; }
+      .frontend { fill:#eaf2ff; stroke:#4c78c2; }
+      .backend { fill:#f2f4f7; stroke:#657183; }
+      .tcc { fill:#eaf6ef; stroke:#3f8a5e; }
+      .platform { fill:#fff3e8; stroke:#c47a2c; }
+      .result { fill:#edf8f1; stroke:#3f8a5e; }
+      .text { font:400 14px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#29313d; text-anchor:middle; }
+      .small { font:400 12.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#414b59; text-anchor:middle; }
+      .arrow { fill:none; stroke:#596273; stroke-width:1.7; marker-end:url(#arrow); }
+      .transition-line { fill:none; stroke:#7257c7; stroke-width:1.8; stroke-dasharray:7 5; marker-end:url(#state-arrow); }
+      .transition-note { font:500 11.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#6651b8; text-anchor:middle; }
+    </style>
+  </defs>
+
+  <!-- 列与表头 -->
+  <rect x="20" y="20" width="200" height="860" fill="#faf9fd" class="lane"/>
+  <rect x="220" y="20" width="180" height="860" fill="#fcfbfd" class="lane"/>
+  <rect x="400" y="20" width="330" height="860" fill="#fbfdff" class="lane"/>
+  <rect x="730" y="20" width="330" height="860" fill="#fcfcfd" class="lane"/>
+  <rect x="1060" y="20" width="200" height="860" fill="#fbfefc" class="lane"/>
+  <rect x="1260" y="20" width="320" height="860" fill="#fffcf9" class="lane"/>
+
+  <rect x="20" y="20" width="200" height="62" class="head"/>
+  <rect x="220" y="20" width="180" height="62" class="head"/>
+  <rect x="400" y="20" width="330" height="62" class="head"/>
+  <rect x="730" y="20" width="330" height="62" class="head"/>
+  <rect x="1060" y="20" width="200" height="62" class="head"/>
+  <rect x="1260" y="20" width="320" height="62" class="head"/>
+  <text x="120" y="58" class="head-text">权限状态</text>
+  <text x="310" y="58" class="head-text">运营人员</text>
+  <text x="565" y="58" class="head-text">前端页面</text>
+  <text x="895" y="58" class="head-text">后端处理</text>
+  <text x="1160" y="58" class="head-text">TCC</text>
+  <text x="1420" y="58" class="head-text">权限平台</text>
+
+  <!-- 四个状态区间 -->
+  <rect x="30" y="94" width="1540" height="180" rx="10" fill="#fffaf0" stroke="#ead49b"/>
+  <rect x="30" y="286" width="1540" height="198" rx="10" fill="#fff7f5" stroke="#edc1b8"/>
+  <rect x="30" y="496" width="1540" height="178" rx="10" fill="#f5f8ff" stroke="#c5d5f2"/>
+  <rect x="30" y="686" width="1540" height="184" rx="10" fill="#f3faf6" stroke="#b8dcc7"/>
+
+  <!-- 状态列：只负责展示状态推进 -->
+  <rect x="50" y="132" width="140" height="58" rx="10" class="state-box"/>
+  <text x="120" y="155" class="state-text"><tspan x="120">缺少</tspan><tspan x="120" dy="21">协作人</tspan></text>
+
+  <rect x="50" y="334" width="140" height="58" rx="10" class="state-box"/>
+  <text x="120" y="357" class="state-text"><tspan x="120">缺少</tspan><tspan x="120" dy="21">数据权限</tspan></text>
+
+  <rect x="50" y="536" width="140" height="58" rx="10" class="state-box"/>
+  <text x="120" y="559" class="state-text"><tspan x="120">需要</tspan><tspan x="120" dy="21">确认查看</tspan></text>
+
+  <rect x="50" y="736" width="140" height="58" rx="10" class="state-box"/>
+  <text x="120" y="771" class="state-text">正常展示</text>
+
+  <!-- 缺少协作人：横向单向流程 -->
+  <rect x="235" y="143" width="150" height="62" rx="9" class="node user"/>
+  <text x="310" y="168" class="small"><tspan x="310">点击申请</tspan><tspan x="310" dy="19">成为协作人</tspan></text>
+  <rect x="430" y="134" width="270" height="80" rx="9" class="node frontend"/>
+  <text x="565" y="160" class="small"><tspan x="565">填写并提交</tspan><tspan x="565" dy="20">作者与申请信息</tspan></text>
+  <rect x="760" y="134" width="270" height="80" rx="9" class="node backend"/>
+  <text x="895" y="160" class="small"><tspan x="895">记录申请信息</tspan><tspan x="895" dy="20">发起协作人申请</tspan></text>
+  <rect x="1290" y="134" width="260" height="80" rx="9" class="node platform"/>
+  <text x="1420" y="160" class="small"><tspan x="1420">处理协作人申请</tspan><tspan x="1420" dy="20">审批通过后生效</tspan></text>
+  <path d="M385 174 H430" class="arrow"/>
+  <path d="M700 174 H760" class="arrow"/>
+  <path d="M1030 174 H1290" class="arrow"/>
+  <path d="M1420 214 V258 H310 V348" class="transition-line"/>
+  <text x="865" y="252" class="transition-note">审批通过后进入数据权限申请</text>
+
+  <!-- 缺少数据权限：横向单向流程 -->
+  <rect x="235" y="352" width="150" height="62" rx="9" class="node user"/>
+  <text x="310" y="389" class="text">点击申请权限</text>
+  <rect x="430" y="343" width="270" height="80" rx="9" class="node frontend"/>
+  <text x="565" y="369" class="small"><tspan x="565">提交 front_key</tspan><tspan x="565" dy="20">调用 apiGetTccValue</tspan></text>
+  <rect x="760" y="343" width="270" height="80" rx="9" class="node backend"/>
+  <text x="895" y="369" class="small"><tspan x="895">读取</tspan><tspan x="895" dy="20">indicator_auth_config</tspan></text>
+  <rect x="1080" y="343" width="160" height="80" rx="9" class="node tcc"/>
+  <text x="1160" y="369" class="small"><tspan x="1160">匹配 front_key</tspan><tspan x="1160" dy="20">返回 auth_code</tspan></text>
+  <rect x="1290" y="343" width="260" height="80" rx="9" class="node platform"/>
+  <text x="1420" y="369" class="small"><tspan x="1420">打开权限申请入口</tspan><tspan x="1420" dy="20">审批通过后生效</tspan></text>
+  <path d="M385 383 H430" class="arrow"/>
+  <path d="M700 383 H760" class="arrow"/>
+  <path d="M1030 383 H1080" class="arrow"/>
+  <path d="M1240 383 H1290" class="arrow"/>
+  <path d="M1420 423 V468 H310 V544" class="transition-line"/>
+  <text x="865" y="462" class="transition-note">审批通过后进入确认查看</text>
+
+  <!-- 需要确认查看：请求与回执分层，避免折返交叉 -->
+  <rect x="235" y="548" width="150" height="62" rx="9" class="node user"/>
+  <text x="310" y="573" class="small"><tspan x="310">点击小眼睛</tspan><tspan x="310" dy="19">确认查看</tspan></text>
+  <rect x="430" y="539" width="270" height="80" rx="9" class="node frontend"/>
+  <text x="565" y="565" class="small"><tspan x="565">调用</tspan><tspan x="565" dy="20">apiSaveAccessDataLog</tspan></text>
+  <rect x="760" y="539" width="270" height="80" rx="9" class="node backend"/>
+  <text x="895" y="565" class="small"><tspan x="895">记录运营人员、作者</tspan><tspan x="895" dy="20">和查看时间</tspan></text>
+  <path d="M385 579 H430" class="arrow"/>
+  <path d="M700 579 H760" class="arrow"/>
+  <path d="M895 619 V662 H310 V742" class="transition-line"/>
+  <text x="602" y="656" class="transition-note">记录成功后刷新页面</text>
+
+  <!-- 正常展示：请求与返回分层 -->
+  <rect x="235" y="746" width="150" height="62" rx="9" class="node user"/>
+  <text x="310" y="783" class="text">刷新后查看数据</text>
+  <rect x="430" y="737" width="270" height="80" rx="9" class="node frontend"/>
+  <text x="565" y="763" class="small"><tspan x="565">重新请求</tspan><tspan x="565" dy="20">业务数据</tspan></text>
+  <rect x="760" y="737" width="270" height="80" rx="9" class="node backend"/>
+  <text x="895" y="763" class="small"><tspan x="895">权限校验通过</tspan><tspan x="895" dy="20">返回真实数据</tspan></text>
+  <rect x="430" y="830" width="270" height="34" rx="8" class="node result"/>
+  <text x="565" y="852" class="small">展示真实数据</text>
+  <path d="M385 777 H430" class="arrow"/>
+  <path d="M700 777 H760" class="arrow"/>
+  <path d="M895 817 V847 H700" class="arrow"/>
+</svg>

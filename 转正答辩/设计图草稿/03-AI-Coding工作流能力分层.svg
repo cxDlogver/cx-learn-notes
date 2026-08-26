@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #273142; }
+      .title { font-size: 36px; font-weight: 600; }
+      .subtitle { font-size: 18px; fill: #667085; }
+      .layer-no { font-size: 15px; font-weight: 600; fill: #FFFFFF; }
+      .layer-title { font-size: 22px; font-weight: 600; }
+      .chip { font-size: 17px; font-weight: 500; }
+      .side-title { font-size: 22px; font-weight: 600; fill: #FFFFFF; }
+      .side-text { font-size: 15px; fill: #FFFFFF; }
+      .note { font-size: 15px; fill: #475467; }
+      .bottom-title { font-size: 20px; font-weight: 600; }
+      .bottom-text { font-size: 15px; fill: #475467; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A2B3"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#C65A5A"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <text x="80" y="68" class="title">AI Coding 工作流能力分层</text>
+  <text x="80" y="104" class="subtitle">从需求输入到发布交付：规范提供可追踪关系，工具完成执行与校验，人工守住关键判断</text>
+
+  <!-- left gate -->
+  <rect x="80" y="145" width="150" height="600" rx="22" fill="#273142"/>
+  <text x="155" y="194" text-anchor="middle" class="side-title">Gate</text>
+  <line x1="110" y1="218" x2="200" y2="218" stroke="#667085"/>
+  <text x="155" y="264" text-anchor="middle" class="side-text">产物完整性</text>
+  <text x="155" y="310" text-anchor="middle" class="side-text">字段与状态</text>
+  <text x="155" y="356" text-anchor="middle" class="side-text">断言与证据</text>
+  <text x="155" y="402" text-anchor="middle" class="side-text">覆盖率结果</text>
+  <text x="155" y="448" text-anchor="middle" class="side-text">发布条件</text>
+  <path d="M 155 500 L 155 684" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="155" y="532" text-anchor="middle" class="side-text">逐层检查</text>
+  <text x="155" y="705" text-anchor="middle" class="side-text">阻断缺失项</text>
+
+  <!-- right BITS -->
+  <rect x="1370" y="145" width="150" height="600" rx="22" fill="#7A5AF8"/>
+  <text x="1445" y="194" text-anchor="middle" class="side-title">BITS</text>
+  <line x1="1400" y1="218" x2="1490" y2="218" stroke="#BFB0F8"/>
+  <rect x="1392" y="250" width="106" height="72" rx="14" fill="#8C6FF2"/>
+  <text x="1445" y="279" text-anchor="middle" class="side-text">初始化</text>
+  <text x="1445" y="303" text-anchor="middle" class="side-text">任务上下文</text>
+  <rect x="1392" y="342" width="106" height="72" rx="14" fill="#8C6FF2"/>
+  <text x="1445" y="371" text-anchor="middle" class="side-text">覆盖率</text>
+  <text x="1445" y="395" text-anchor="middle" class="side-text">采集与补测</text>
+  <rect x="1392" y="434" width="106" height="72" rx="14" fill="#8C6FF2"/>
+  <text x="1445" y="463" text-anchor="middle" class="side-text">代码评审</text>
+  <text x="1445" y="487" text-anchor="middle" class="side-text">评论处理</text>
+  <rect x="1392" y="526" width="106" height="72" rx="14" fill="#8C6FF2"/>
+  <text x="1445" y="555" text-anchor="middle" class="side-text">发布辅助</text>
+  <text x="1445" y="579" text-anchor="middle" class="side-text">结果检查</text>
+  <text x="1445" y="656" text-anchor="middle" class="side-text">按阶段调用</text>
+  <text x="1445" y="682" text-anchor="middle" class="side-text">可复用工具</text>
+
+  <!-- layer 1 -->
+  <rect x="270" y="145" width="1060" height="94" rx="18" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="2"/>
+  <circle cx="314" cy="192" r="25" fill="#4C78C2"/>
+  <text x="314" y="198" text-anchor="middle" class="layer-no">01</text>
+  <text x="356" y="200" class="layer-title">需求输入层</text>
+  <rect x="560" y="170" width="142" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="631" y="198" text-anchor="middle" class="chip">PRD</text>
+  <rect x="720" y="170" width="142" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="791" y="198" text-anchor="middle" class="chip">Figma</text>
+  <rect x="880" y="170" width="142" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="951" y="198" text-anchor="middle" class="chip">接口协议</text>
+  <rect x="1040" y="170" width="142" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="1111" y="198" text-anchor="middle" class="chip">评审评论</text>
+
+  <path d="M 800 239 L 800 262" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- layer 2 -->
+  <rect x="270" y="267" width="1060" height="94" rx="18" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="2"/>
+  <circle cx="314" cy="314" r="25" fill="#7A5AF8"/>
+  <text x="314" y="320" text-anchor="middle" class="layer-no">02</text>
+  <text x="356" y="322" class="layer-title">合同约束层</text>
+  <rect x="588" y="292" width="178" height="44" rx="12" fill="#F3EEFF"/>
+  <text x="677" y="320" text-anchor="middle" class="chip">Requirement</text>
+  <path d="M 776 314 L 824 314" fill="none" stroke="#7A5AF8" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="836" y="292" width="150" height="44" rx="12" fill="#F3EEFF"/>
+  <text x="911" y="320" text-anchor="middle" class="chip">Task</text>
+  <path d="M 996 314 L 1044 314" fill="none" stroke="#7A5AF8" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="1056" y="292" width="174" height="44" rx="12" fill="#F3EEFF"/>
+  <text x="1143" y="320" text-anchor="middle" class="chip">Test Case</text>
+
+  <path d="M 800 361 L 800 384" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- layer 3 -->
+  <rect x="270" y="389" width="1060" height="94" rx="18" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="2"/>
+  <circle cx="314" cy="436" r="25" fill="#4C78C2"/>
+  <text x="314" y="442" text-anchor="middle" class="layer-no">03</text>
+  <text x="356" y="444" class="layer-title">执行层</text>
+  <rect x="610" y="414" width="180" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="700" y="442" text-anchor="middle" class="chip">AI Coding</text>
+  <rect x="810" y="414" width="180" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="900" y="442" text-anchor="middle" class="chip">本地 Mock</text>
+  <rect x="1010" y="414" width="180" height="44" rx="12" fill="#EAF2FF"/>
+  <text x="1100" y="442" text-anchor="middle" class="chip">Code</text>
+
+  <path d="M 800 483 L 800 506" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- layer 4 -->
+  <rect x="270" y="511" width="1060" height="94" rx="18" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="2"/>
+  <circle cx="314" cy="558" r="25" fill="#B58B22"/>
+  <text x="314" y="564" text-anchor="middle" class="layer-no">04</text>
+  <text x="356" y="566" class="layer-title">验证层</text>
+  <rect x="550" y="536" width="144" height="44" rx="12" fill="#FFF2CC"/>
+  <text x="622" y="564" text-anchor="middle" class="chip">Verify</text>
+  <rect x="712" y="536" width="144" height="44" rx="12" fill="#FFF2CC"/>
+  <text x="784" y="564" text-anchor="middle" class="chip">Design</text>
+  <rect x="874" y="536" width="144" height="44" rx="12" fill="#FFF2CC"/>
+  <text x="946" y="564" text-anchor="middle" class="chip">Evidence</text>
+  <rect x="1036" y="536" width="170" height="44" rx="12" fill="#FFF2CC"/>
+  <text x="1121" y="564" text-anchor="middle" class="chip">真实联调</text>
+
+  <path d="M 800 605 L 800 628" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- layer 5 -->
+  <rect x="270" y="633" width="1060" height="112" rx="18" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="2"/>
+  <circle cx="314" cy="689" r="25" fill="#3A8D5D"/>
+  <text x="314" y="695" text-anchor="middle" class="layer-no">05</text>
+  <text x="356" y="697" class="layer-title">闭环层</text>
+  <rect x="690" y="661" width="196" height="56" rx="14" fill="#FDECEC" stroke="#C65A5A"/>
+  <text x="788" y="696" text-anchor="middle" class="chip">Repair</text>
+  <path d="M 906 689 L 1012 689" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="1032" y="661" width="196" height="56" rx="14" fill="#EAF6EF" stroke="#3A8D5D"/>
+  <text x="1130" y="696" text-anchor="middle" class="chip">发布交付</text>
+  <path d="M 690 688 C 514 688, 486 610, 486 444 C 486 355, 514 314, 560 314" fill="none" stroke="#C65A5A" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#arrow-red)"/>
+  <rect x="424" y="565" width="132" height="56" rx="12" fill="#FFF7F7"/>
+  <text x="490" y="588" text-anchor="middle" class="note">回到最早受影响的</text>
+  <text x="490" y="610" text-anchor="middle" class="note">需求、任务或代码</text>
+
+  <!-- human review -->
+  <rect x="270" y="781" width="1250" height="82" rx="18" fill="#FFF7E6" stroke="#B58B22" stroke-width="2"/>
+  <rect x="294" y="799" width="174" height="46" rx="13" fill="#FFF2CC"/>
+  <text x="381" y="828" text-anchor="middle" class="bottom-title">人工审查</text>
+  <text x="510" y="815" class="bottom-text">审查 Test Case</text>
+  <text x="510" y="840" class="bottom-text">确认需求边界</text>
+  <text x="735" y="815" class="bottom-text">抽查证据与结果</text>
+  <text x="735" y="840" class="bottom-text">确认评论与回答</text>
+  <text x="985" y="815" class="bottom-text">完成真实联调</text>
+  <text x="985" y="840" class="bottom-text">处理环境差异</text>
+  <text x="1205" y="815" class="bottom-text">确认发布窗口</text>
+  <text x="1205" y="840" class="bottom-text">承担最终交付判断</text>
+</svg>

@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">公共组件统一权限展示和操作框架</title>
+  <desc id="desc">字段级使用 MaskedTooltip 替换原字段值，模块级使用 SensitiveNoPermission 替换原业务模块；两个公共组件分别在内部统一处理权限状态、展示内容和操作入口。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#64748b"/>
+    </marker>
+    <style>
+      .panel { fill:#ffffff; stroke:#a5afbd; stroke-width:1.2; }
+      .header { fill:#eef1f5; stroke:#8f9aa8; stroke-width:1.1; }
+      .headerText { font:600 19px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#263244; text-anchor:middle; }
+      .fieldLane { fill:#fff8f1; stroke:#e1ac70; stroke-width:1.05; }
+      .moduleLane { fill:#f2f9f5; stroke:#85aa92; stroke-width:1.05; }
+      .sourceCard { fill:#ffffff; stroke:#a9b3c0; stroke-width:1.1; }
+      .componentCard { fill:#eef5ff; stroke:#7399d3; stroke-width:1.25; }
+      .innerCard { fill:#ffffff; stroke:#9caabd; stroke-width:1.05; }
+      .entryCard { fill:#f7f3ff; stroke:#9b86c9; stroke-width:1.2; }
+      .laneFieldText { font:600 15px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#875327; }
+      .laneModuleText { font:600 15px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#356849; }
+      .titleText { font:600 15px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#293548; text-anchor:middle; }
+      .bodyText { font:500 13px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#3b4658; text-anchor:middle; }
+      .smallText { font:400 11.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#647084; text-anchor:middle; }
+      .codeText { font:600 12px Menlo,Consolas,monospace; fill:#3f4e65; text-anchor:middle; }
+      .stateText { font:500 11.5px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#596577; text-anchor:middle; }
+      .line { fill:none; stroke:#64748b; stroke-width:1.55; marker-end:url(#arrow); }
+      .guide { fill:none; stroke:#8793a4; stroke-width:1.25; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"/>
+
+  <!-- 三列框架 -->
+  <rect x="24" y="24" width="376" height="852" rx="10" class="panel"/>
+  <rect x="424" y="24" width="456" height="852" rx="10" class="panel"/>
+  <rect x="904" y="24" width="672" height="852" rx="10" class="panel"/>
+
+  <rect x="24" y="24" width="376" height="64" class="header"/>
+  <rect x="424" y="24" width="456" height="64" class="header"/>
+  <rect x="904" y="24" width="672" height="64" class="header"/>
+  <text x="212" y="64" class="headerText">原页面内容</text>
+  <text x="652" y="64" class="headerText">公共组件替换</text>
+  <text x="1240" y="64" class="headerText">组件内部统一处理</text>
+
+  <!-- 字段级行 -->
+  <rect x="42" y="112" width="340" height="286" rx="10" class="fieldLane"/>
+  <rect x="442" y="112" width="420" height="286" rx="10" class="fieldLane"/>
+  <rect x="922" y="112" width="636" height="286" rx="10" class="fieldLane"/>
+  <text x="60" y="140" class="laneFieldText">字段级</text>
+  <text x="460" y="140" class="laneFieldText">替换单个字段值</text>
+  <text x="940" y="140" class="laneFieldText">字段权限状态处理</text>
+
+  <rect x="78" y="190" width="268" height="126" rx="9" class="sourceCard"/>
+  <text x="212" y="226" class="titleText">原字段展示位置</text>
+  <text x="212" y="260" class="bodyText">表格、指标卡或详情项中的值</text>
+  <text x="212" y="290" class="smallText">页面其他内容保持原有实现</text>
+
+  <rect x="486" y="186" width="332" height="134" rx="10" class="componentCard"/>
+  <text x="652" y="226" class="codeText">MaskedTooltip</text>
+  <text x="652" y="262" class="bodyText">替换需要权限处理的字段值</text>
+  <text x="652" y="292" class="smallText">未命中脱敏协议时保留原字段</text>
+
+  <rect x="960" y="166" width="560" height="200" rx="10" class="innerCard"/>
+  <text x="1240" y="198" class="titleText">解析字段权限状态</text>
+  <text x="1240" y="225" class="codeText">parseSensitiveFieldState</text>
+  <text x="1240" y="264" class="stateText">需要确认查看　·　缺少协作人　·　缺少数据权限</text>
+  <line x1="1000" y1="286" x2="1480" y2="286" stroke="#c7d0dd" stroke-width="1"/>
+  <text x="1240" y="318" class="bodyText">根据状态选择权限内容和操作入口</text>
+  <text x="1240" y="344" class="smallText">调用方不再分别编写三种状态分支</text>
+
+  <path d="M346 253 H486" class="line"/>
+  <path d="M818 253 H960" class="line"/>
+
+  <!-- 模块级行 -->
+  <rect x="42" y="424" width="340" height="286" rx="10" class="moduleLane"/>
+  <rect x="442" y="424" width="420" height="286" rx="10" class="moduleLane"/>
+  <rect x="922" y="424" width="636" height="286" rx="10" class="moduleLane"/>
+  <text x="60" y="452" class="laneModuleText">模块级</text>
+  <text x="460" y="452" class="laneModuleText">替换整个业务模块</text>
+  <text x="940" y="452" class="laneModuleText">模块权限状态处理</text>
+
+  <rect x="78" y="502" width="268" height="126" rx="9" class="sourceCard"/>
+  <text x="212" y="538" class="titleText">原业务模块</text>
+  <text x="212" y="572" class="bodyText">模块中的图表、卡片和业务内容</text>
+  <text x="212" y="602" class="smallText">模块可查看时继续使用原实现</text>
+
+  <rect x="486" y="498" width="332" height="134" rx="10" class="componentCard"/>
+  <text x="652" y="538" class="codeText">SensitiveNoPermission</text>
+  <text x="652" y="574" class="bodyText">替换需要权限处理的业务模块</text>
+  <text x="652" y="604" class="smallText">模块可查看时保留原业务模块</text>
+
+  <rect x="960" y="478" width="560" height="200" rx="10" class="innerCard"/>
+  <text x="1240" y="510" class="titleText">接收模块权限状态和 fieldKey</text>
+  <text x="1240" y="549" class="stateText">需要确认查看　·　缺少协作人　·　缺少数据权限</text>
+  <line x1="1000" y1="574" x2="1480" y2="574" stroke="#c7d0dd" stroke-width="1"/>
+  <text x="1240" y="608" class="bodyText">根据状态选择权限内容和操作入口</text>
+  <text x="1240" y="634" class="smallText">调用方不再分别编写三种状态分支</text>
+
+  <path d="M346 565 H486" class="line"/>
+  <path d="M818 565 H960" class="line"/>
+
+  <!-- 统一操作入口 -->
+  <rect x="922" y="748" width="636" height="106" rx="10" class="entryCard"/>
+  <text x="1240" y="782" class="titleText">公共组件统一提供权限操作入口</text>
+  <text x="1240" y="822" class="bodyText">确认查看　｜　申请协作人　｜　申请数据权限</text>
+
+  <path d="M1510 266 H1542 V730 H1450 V748" class="guide"/>
+  <path d="M1240 678 V748" class="guide"/>
+</svg>

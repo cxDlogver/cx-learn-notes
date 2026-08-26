@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #273142; }
+      .title { font-size: 36px; font-weight: 600; }
+      .subtitle { font-size: 18px; fill: #667085; }
+      .section { font-size: 18px; font-weight: 600; }
+      .state-code { font-size: 15px; font-weight: 600; letter-spacing: .4px; }
+      .state-title { font-size: 25px; font-weight: 600; }
+      .state-text { font-size: 16px; fill: #475467; }
+      .label { font-size: 15px; fill: #475467; }
+      .small { font-size: 14px; fill: #667085; }
+      .hub-title { font-size: 22px; font-weight: 600; fill: #FFFFFF; }
+      .hub-text { font-size: 15px; fill: #E9DFFF; }
+    </style>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A2B3"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7A5AF8"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3A8D5D"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <text x="80" y="70" class="title">敏感数据权限状态机</text>
+  <text x="80" y="106" class="subtitle">前端只消费统一状态；权限审批、协作关系与有效期变化由后端重新判断</text>
+
+  <!-- protocol input -->
+  <rect x="80" y="138" width="1440" height="126" rx="18" fill="#FFFFFF" stroke="#E4E7EC" stroke-width="2"/>
+  <text x="108" y="170" class="section">协议输入</text>
+  <rect x="108" y="188" width="360" height="54" rx="12" fill="#EAF2FF" stroke="#4C78C2" stroke-width="2"/>
+  <text x="288" y="221" text-anchor="middle" class="section">字段协议：****&lt;front_key&gt;</text>
+  <rect x="500" y="188" width="310" height="54" rx="12" fill="#EAF2FF" stroke="#4C78C2" stroke-width="2"/>
+  <text x="655" y="221" text-anchor="middle" class="section">模块权限字段</text>
+  <path d="M 842 215 L 1012 215" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <rect x="1030" y="177" width="448" height="76" rx="14" fill="#273142"/>
+  <text x="1254" y="209" text-anchor="middle" class="hub-title">后端处理 TCC</text>
+  <text x="1254" y="235" text-anchor="middle" class="hub-text">访问权限平台并返回当前权限状态</text>
+
+  <!-- phase legend -->
+  <rect x="80" y="292" width="196" height="40" rx="20" fill="#EAF2FF" stroke="#4C78C2"/>
+  <circle cx="103" cy="312" r="7" fill="#4C78C2"/>
+  <text x="121" y="318" class="label">一期：基础权限</text>
+  <rect x="290" y="292" width="250" height="40" rx="20" fill="#F3EEFF" stroke="#7A5AF8"/>
+  <circle cx="313" cy="312" r="7" fill="#7A5AF8"/>
+  <text x="331" y="318" class="label">二期：协作与确认查看</text>
+
+  <!-- states -->
+  <rect x="80" y="360" width="390" height="180" rx="20" fill="#FFF8E7" stroke="#B58B22" stroke-width="3"/>
+  <rect x="104" y="382" width="112" height="28" rx="14" fill="#FBE7A5"/>
+  <text x="160" y="402" text-anchor="middle" class="state-code">NOT_COO</text>
+  <rect x="342" y="382" width="98" height="28" rx="14" fill="#F3EEFF"/>
+  <text x="391" y="402" text-anchor="middle" class="small">二期新增</text>
+  <text x="104" y="451" class="state-title">不是协作人</text>
+  <text x="104" y="485" class="state-text">L4 及以上用户先申请成为协作人</text>
+  <text x="104" y="514" class="state-text">申请通过后，由后端重新判断状态</text>
+
+  <rect x="1130" y="360" width="390" height="180" rx="20" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="3"/>
+  <rect x="1154" y="382" width="116" height="28" rx="14" fill="#DDD2FF"/>
+  <text x="1212" y="402" text-anchor="middle" class="state-code">NEED_EYES</text>
+  <rect x="1392" y="382" width="98" height="28" rx="14" fill="#E9DFFF"/>
+  <text x="1441" y="402" text-anchor="middle" class="small">二期新增</text>
+  <text x="1154" y="451" class="state-title">待确认查看</text>
+  <text x="1154" y="485" class="state-text">数据保持脱敏，页面提供眼睛图标</text>
+  <text x="1154" y="514" class="state-text">用户主动确认后才显示真实值</text>
+
+  <rect x="80" y="648" width="390" height="180" rx="20" fill="#FDECEC" stroke="#C65A5A" stroke-width="3"/>
+  <rect x="104" y="670" width="148" height="28" rx="14" fill="#F8CFCF"/>
+  <text x="178" y="690" text-anchor="middle" class="state-code">NO_PERMISSION</text>
+  <rect x="342" y="670" width="98" height="28" rx="14" fill="#EAF2FF"/>
+  <text x="391" y="690" text-anchor="middle" class="small">一期覆盖</text>
+  <text x="104" y="739" class="state-title">无数据权限</text>
+  <text x="104" y="773" class="state-text">页面显示脱敏值并提供权限申请入口</text>
+  <text x="104" y="802" class="state-text">审批通过后，由后端重新判断状态</text>
+
+  <rect x="1130" y="648" width="390" height="180" rx="20" fill="#EAF6EF" stroke="#3A8D5D" stroke-width="3"/>
+  <rect x="1154" y="670" width="94" height="28" rx="14" fill="#CDEBD9"/>
+  <text x="1201" y="690" text-anchor="middle" class="state-code">VISIBLE</text>
+  <rect x="1392" y="670" width="98" height="28" rx="14" fill="#EAF2FF"/>
+  <text x="1441" y="690" text-anchor="middle" class="small">一期覆盖</text>
+  <text x="1154" y="739" class="state-title">可以查看</text>
+  <text x="1154" y="773" class="state-text">页面展示真实值，查看权限有效 7 天</text>
+  <text x="1154" y="802" class="state-text">到期后回到待确认查看状态</text>
+
+  <!-- central re-evaluation hub -->
+  <circle cx="800" cy="594" r="124" fill="#273142"/>
+  <text x="800" y="572" text-anchor="middle" class="hub-title">后端重新判断</text>
+  <text x="800" y="604" text-anchor="middle" class="hub-text">数据权限 · 协作关系</text>
+  <text x="800" y="632" text-anchor="middle" class="hub-text">查看有效期</text>
+
+  <!-- state transitions -->
+  <path d="M 470 460 C 600 460, 620 505, 692 548" fill="none" stroke="#B58B22" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <rect x="490" y="445" width="178" height="30" rx="15" fill="#FFFFFF"/>
+  <text x="579" y="466" text-anchor="middle" class="label">协作人申请通过</text>
+
+  <path d="M 470 736 C 590 736, 625 684, 693 639" fill="none" stroke="#C65A5A" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <rect x="492" y="703" width="178" height="30" rx="15" fill="#FFFFFF"/>
+  <text x="581" y="724" text-anchor="middle" class="label">数据权限审批通过</text>
+
+  <path d="M 909 547 C 980 505, 1016 460, 1130 460" fill="none" stroke="#7A5AF8" stroke-width="3" marker-end="url(#arrow-purple)"/>
+  <path d="M 909 640 C 982 686, 1017 737, 1130 737" fill="none" stroke="#3A8D5D" stroke-width="3" marker-end="url(#arrow-green)"/>
+  <text x="992" y="501" text-anchor="middle" class="small">返回当前状态</text>
+  <text x="992" y="696" text-anchor="middle" class="small">返回当前状态</text>
+
+  <path d="M 1374 540 L 1374 648" fill="none" stroke="#7A5AF8" stroke-width="3" marker-end="url(#arrow-purple)"/>
+  <rect x="1388" y="574" width="122" height="30" rx="15" fill="#FFFFFF"/>
+  <text x="1449" y="595" text-anchor="middle" class="label">点击眼睛图标</text>
+  <path d="M 1278 648 L 1278 540" fill="none" stroke="#98A2B3" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <rect x="1138" y="574" width="126" height="30" rx="15" fill="#FFFFFF"/>
+  <text x="1201" y="595" text-anchor="middle" class="label">7 天有效期结束</text>
+
+  <path d="M 1130 778 C 1035 850, 930 846, 842 708" fill="none" stroke="#C65A5A" stroke-width="3" marker-end="url(#arrow-gray)"/>
+  <rect x="910" y="824" width="242" height="32" rx="16" fill="#FFFFFF"/>
+  <text x="1031" y="846" text-anchor="middle" class="label">权限或协作关系变化，重新判断</text>
+</svg>

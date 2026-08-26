@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f7fbff"/>
+    </linearGradient>
+    <linearGradient id="navyHead" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0b2f70"/>
+      <stop offset="1" stop-color="#1558b0"/>
+    </linearGradient>
+    <linearGradient id="tealHead" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#087a79"/>
+      <stop offset="1" stop-color="#169b9a"/>
+    </linearGradient>
+    <linearGradient id="purpleHead" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5630a3"/>
+      <stop offset="1" stop-color="#7653c7"/>
+    </linearGradient>
+    <linearGradient id="orangeHead" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#bd4b00"/>
+      <stop offset="1" stop-color="#e17b00"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#12346b" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1659b7"/>
+    </marker>
+    <marker id="arrowTeal" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#118b89"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#6a45b8"/>
+    </marker>
+    <style>
+      text { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #0c2b63; }
+      .title { font-size: 34px; font-weight: 700; }
+      .card-title { font-size: 22px; font-weight: 700; fill: #ffffff; }
+      .section-title { font-size: 21px; font-weight: 700; }
+      .node-title { font-size: 18px; font-weight: 700; }
+      .body { font-size: 15px; font-weight: 500; }
+      .small { font-size: 14px; font-weight: 500; }
+      .white { fill: #ffffff; }
+      .teal { fill: #087a79; }
+      .purple { fill: #5d389f; }
+      .orange { fill: #b94a00; }
+      .line-blue { fill: none; stroke: #1659b7; stroke-width: 3; marker-end: url(#arrowBlue); }
+      .line-teal { fill: none; stroke: #118b89; stroke-width: 3; marker-end: url(#arrowTeal); }
+      .line-purple { fill: none; stroke: #6a45b8; stroke-width: 3; marker-end: url(#arrowPurple); }
+    </style>
+  </defs>
+
+  <rect width="1672" height="941" fill="url(#bg)"/>
+  <rect x="7" y="7" width="1658" height="927" rx="15" fill="none" stroke="#0c2f70" stroke-width="4"/>
+  <text x="836" y="55" text-anchor="middle" class="title">Agent 能力管理整体框架</text>
+
+  <!-- Capability sources -->
+  <g filter="url(#shadow)">
+    <rect x="50" y="82" width="490" height="146" rx="14" fill="#ffffff" stroke="#1558b0" stroke-width="3"/>
+    <path d="M64 82 H526 Q540 82 540 96 V126 H50 V96 Q50 82 64 82 Z" fill="url(#navyHead)"/>
+    <text x="295" y="113" text-anchor="middle" class="card-title">本地 Tool</text>
+    <rect x="72" y="142" width="446" height="31" rx="7" fill="#edf5ff" stroke="#78aef2"/>
+    <text x="295" y="163" text-anchor="middle" class="body">Tool 定义：名称 / 描述 / Input Schema</text>
+    <rect x="72" y="183" width="446" height="31" rx="7" fill="#edf5ff" stroke="#78aef2"/>
+    <text x="295" y="204" text-anchor="middle" class="body">执行入口：函数 / API / Runtime Tool</text>
+
+    <rect x="591" y="82" width="490" height="146" rx="14" fill="#ffffff" stroke="#6a45b8" stroke-width="3"/>
+    <path d="M605 82 H1067 Q1081 82 1081 96 V126 H591 V96 Q591 82 605 82 Z" fill="url(#purpleHead)"/>
+    <text x="836" y="113" text-anchor="middle" class="card-title">Skill</text>
+    <rect x="613" y="142" width="446" height="31" rx="7" fill="#f5f0ff" stroke="#aa91dc"/>
+    <text x="836" y="163" text-anchor="middle" class="body">SKILL.md 元数据：name / description</text>
+    <rect x="613" y="183" width="446" height="31" rx="7" fill="#f5f0ff" stroke="#aa91dc"/>
+    <text x="836" y="204" text-anchor="middle" class="body">正文 / scripts / references / assets</text>
+
+    <rect x="1132" y="82" width="490" height="146" rx="14" fill="#ffffff" stroke="#118b89" stroke-width="3"/>
+    <path d="M1146 82 H1608 Q1622 82 1622 96 V126 H1132 V96 Q1132 82 1146 82 Z" fill="url(#tealHead)"/>
+    <text x="1377" y="113" text-anchor="middle" class="card-title">MCP Server</text>
+    <rect x="1154" y="142" width="446" height="31" rx="7" fill="#ecfbfa" stroke="#70c8c5"/>
+    <text x="1377" y="163" text-anchor="middle" class="body">Tools · Resources · Prompts</text>
+    <rect x="1154" y="183" width="446" height="31" rx="7" fill="#ecfbfa" stroke="#70c8c5"/>
+    <text x="1377" y="204" text-anchor="middle" class="body">连接 / 认证 / 能力发现</text>
+  </g>
+
+  <path d="M295 228 V262" class="line-blue"/>
+  <path d="M836 228 V262" class="line-purple"/>
+  <path d="M1377 228 V262" class="line-teal"/>
+
+  <!-- Harness capability management -->
+  <rect x="50" y="268" width="1572" height="185" rx="16" fill="#f8fcff" stroke="#0a7c7a" stroke-width="3"/>
+  <text x="836" y="300" text-anchor="middle" class="section-title teal">Harness｜能力注册与接入</text>
+
+  <rect x="77" y="320" width="465" height="99" rx="11" fill="#ffffff" stroke="#1558b0" stroke-width="2"/>
+  <text x="309" y="348" text-anchor="middle" class="node-title">Tool Registry</text>
+  <text x="309" y="374" text-anchor="middle" class="small">本地 Tool + 适配后的 MCP Tool</text>
+  <text x="309" y="399" text-anchor="middle" class="small">Schema / Executor / Source / Policy</text>
+
+  <rect x="604" y="320" width="465" height="99" rx="11" fill="#ffffff" stroke="#6a45b8" stroke-width="2"/>
+  <text x="836" y="348" text-anchor="middle" class="node-title purple">Skill Registry</text>
+  <text x="836" y="374" text-anchor="middle" class="small">元数据 / Location / Scope / Version</text>
+  <text x="836" y="399" text-anchor="middle" class="small">发布校验后进入 Skill 目录</text>
+
+  <rect x="1131" y="320" width="465" height="99" rx="11" fill="#ffffff" stroke="#118b89" stroke-width="2"/>
+  <text x="1363" y="348" text-anchor="middle" class="node-title teal">MCP Manager</text>
+  <text x="1363" y="374" text-anchor="middle" class="small">连接 / tools/list / 过滤 / 缓存 / 路由</text>
+  <text x="1363" y="399" text-anchor="middle" class="small">Resources、Prompts 进入 Context / 指令链路</text>
+
+  <!-- Exposure filter -->
+  <path d="M836 453 V472" class="line-teal"/>
+  <rect x="50" y="477" width="1572" height="54" rx="12" fill="#eaf7f7" stroke="#118b89" stroke-width="2"/>
+  <text x="836" y="511" text-anchor="middle" class="node-title teal">本轮能力筛选：Agent / Task / Permission / Risk / Availability</text>
+
+  <!-- Model-visible capability surface -->
+  <path d="M515 531 V551" class="line-blue"/>
+  <path d="M887 531 V551" class="line-purple"/>
+  <rect x="90" y="556" width="520" height="92" rx="12" fill="#eef6ff" stroke="#1558b0" stroke-width="2"/>
+  <text x="350" y="586" text-anchor="middle" class="node-title">Tools 接口</text>
+  <text x="350" y="613" text-anchor="middle" class="body">本地 Tool + MCP Tool 的名称、描述与 Schema</text>
+  <text x="350" y="636" text-anchor="middle" class="small">通过模型的工具定义传入</text>
+
+  <rect x="650" y="556" width="520" height="92" rx="12" fill="#f5f0ff" stroke="#6a45b8" stroke-width="2"/>
+  <text x="910" y="586" text-anchor="middle" class="node-title purple">Skill 目录</text>
+  <text x="910" y="613" text-anchor="middle" class="body">当前可用 Skill 的 name + description</text>
+  <text x="910" y="636" text-anchor="middle" class="small">通过指令 Context 或激活工具描述传入</text>
+
+  <rect x="1230" y="556" width="392" height="92" rx="12" fill="#ffffff" stroke="#0c2f70" stroke-width="3" filter="url(#shadow)"/>
+  <rect x="1230" y="556" width="392" height="35" rx="11" fill="url(#navyHead)"/>
+  <rect x="1230" y="579" width="392" height="12" fill="url(#navyHead)"/>
+  <text x="1426" y="581" text-anchor="middle" class="card-title" style="font-size:19px">Model / Agent Loop</text>
+  <text x="1426" y="620" text-anchor="middle" class="body">根据当前任务选择下一步动作</text>
+
+  <path d="M350 556 V542 H1208 V602 H1214" class="line-blue"/>
+  <path d="M1170 626 H1214" class="line-purple"/>
+
+  <!-- Tool execution path -->
+  <rect x="50" y="688" width="1572" height="86" rx="13" fill="#f6faff" stroke="#6c9ddd" stroke-width="2"/>
+  <rect x="50" y="688" width="185" height="86" rx="13" fill="url(#navyHead)"/>
+  <text x="142" y="723" text-anchor="middle" class="card-title" style="font-size:19px">Tool 调用路径</text>
+  <text x="142" y="749" text-anchor="middle" class="small white">执行后返回结果</text>
+
+  <rect x="267" y="705" width="156" height="52" rx="9" fill="#ffffff" stroke="#1558b0" stroke-width="2"/>
+  <text x="345" y="737" text-anchor="middle" class="node-title">Tool Call</text>
+  <rect x="463" y="705" width="230" height="52" rx="9" fill="#ffffff" stroke="#d26415" stroke-width="2"/>
+  <text x="578" y="727" text-anchor="middle" class="body orange">Schema / 权限 / HITL</text>
+  <text x="578" y="747" text-anchor="middle" class="small">通过后才执行</text>
+  <rect x="733" y="705" width="165" height="52" rx="9" fill="#ffffff" stroke="#1558b0" stroke-width="2"/>
+  <text x="815" y="737" text-anchor="middle" class="node-title">执行路由</text>
+  <rect x="938" y="705" width="330" height="52" rx="9" fill="#ffffff" stroke="#118b89" stroke-width="2"/>
+  <text x="1103" y="727" text-anchor="middle" class="body teal">本地 Executor / MCP tools/call</text>
+  <text x="1103" y="747" text-anchor="middle" class="small">Harness 保留工具来源</text>
+  <rect x="1308" y="705" width="262" height="52" rx="9" fill="#ffffff" stroke="#1558b0" stroke-width="2"/>
+  <text x="1439" y="737" text-anchor="middle" class="node-title">Tool Result → Context</text>
+
+  <path d="M423 731 H449" class="line-blue"/>
+  <path d="M693 731 H719" class="line-blue"/>
+  <path d="M898 731 H924" class="line-blue"/>
+  <path d="M1268 731 H1294" class="line-blue"/>
+  <path d="M1426 648 V673 H345 V692" class="line-blue"/>
+  <path d="M1439 705 V663" class="line-blue"/>
+
+  <!-- Skill activation path -->
+  <rect x="50" y="790" width="1572" height="79" rx="13" fill="#faf7ff" stroke="#a48bd5" stroke-width="2"/>
+  <rect x="50" y="790" width="185" height="79" rx="13" fill="url(#purpleHead)"/>
+  <text x="142" y="822" text-anchor="middle" class="card-title" style="font-size:19px">Skill 激活路径</text>
+  <text x="142" y="847" text-anchor="middle" class="small white">按需加载指令</text>
+
+  <rect x="267" y="804" width="208" height="51" rx="9" fill="#ffffff" stroke="#6a45b8" stroke-width="2"/>
+  <text x="371" y="836" text-anchor="middle" class="node-title purple">选择 Skill</text>
+  <rect x="520" y="804" width="260" height="51" rx="9" fill="#ffffff" stroke="#6a45b8" stroke-width="2"/>
+  <text x="650" y="826" text-anchor="middle" class="body purple">读取文件 / activate_skill</text>
+  <text x="650" y="846" text-anchor="middle" class="small">两种激活方式</text>
+  <rect x="825" y="804" width="282" height="51" rx="9" fill="#ffffff" stroke="#6a45b8" stroke-width="2"/>
+  <text x="966" y="826" text-anchor="middle" class="body purple">加载完整 SKILL.md</text>
+  <text x="966" y="846" text-anchor="middle" class="small">资源按需读取</text>
+  <rect x="1152" y="804" width="418" height="51" rx="9" fill="#ffffff" stroke="#6a45b8" stroke-width="2"/>
+  <text x="1361" y="836" text-anchor="middle" class="node-title purple">完整指令 → Context → Model</text>
+
+  <path d="M475 829 H506" class="line-purple"/>
+  <path d="M780 829 H811" class="line-purple"/>
+  <path d="M1107 829 H1138" class="line-purple"/>
+  <path d="M1426 648 V782 H371 V791" class="line-purple"/>
+  <path d="M1361 804 V781 H1584 V648 H1548" class="line-purple"/>
+
+  <!-- Lifecycle -->
+  <rect x="50" y="885" width="1572" height="38" rx="10" fill="#eef3f9" stroke="#7e9bbd" stroke-width="1.5"/>
+  <text x="836" y="910" text-anchor="middle" class="body">能力生命周期：版本 · 启停 · 健康状态 · 缓存更新 · Trace · 灰度 · 下线</text>
+</svg>

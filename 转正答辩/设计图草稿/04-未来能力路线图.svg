@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #273142; }
+      .title { font-size: 36px; font-weight: 600; }
+      .subtitle { font-size: 18px; fill: #667085; }
+      .stage-no { font-size: 15px; font-weight: 600; fill: #FFFFFF; letter-spacing: .8px; }
+      .stage-title { font-size: 27px; font-weight: 600; }
+      .item { font-size: 17px; fill: #475467; }
+      .check-title { font-size: 16px; font-weight: 600; }
+      .check-text { font-size: 16px; fill: #475467; }
+      .outcome-small { font-size: 16px; fill: #D9E5FF; }
+      .outcome-title { font-size: 30px; font-weight: 600; fill: #FFFFFF; }
+      .axis { font-size: 16px; font-weight: 500; fill: #667085; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A2B3"/>
+    </marker>
+    <marker id="arrow-dark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#273142"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <text x="80" y="72" class="title">未来能力路线图</text>
+  <text x="80" y="108" class="subtitle">从前端需求主责出发，逐步扩大技术边界，最终承担业务全链路交付</text>
+
+  <!-- stage 1 -->
+  <rect x="80" y="382" width="390" height="354" rx="24" fill="#FFFFFF" stroke="#4C78C2" stroke-width="3"/>
+  <rect x="80" y="382" width="390" height="84" rx="24" fill="#EAF2FF"/>
+  <rect x="104" y="407" width="86" height="34" rx="17" fill="#4C78C2"/>
+  <text x="147" y="430" text-anchor="middle" class="stage-no">阶段一</text>
+  <text x="214" y="435" class="stage-title">前端需求主责</text>
+  <circle cx="116" cy="507" r="6" fill="#4C78C2"/>
+  <text x="136" y="513" class="item">需求澄清与技术方案评审</text>
+  <circle cx="116" cy="551" r="6" fill="#4C78C2"/>
+  <text x="136" y="557" class="item">组件、状态与测试设计</text>
+  <circle cx="116" cy="595" r="6" fill="#4C78C2"/>
+  <text x="136" y="601" class="item">联调、发布与线上问题跟进</text>
+  <rect x="104" y="642" width="342" height="70" rx="14" fill="#F8FAFC" stroke="#D0D5DD"/>
+  <text x="126" y="670" class="check-title">能力检验</text>
+  <text x="126" y="696" class="check-text">独立完成中小型前端需求交付</text>
+
+  <!-- connector 1 -->
+  <path d="M 470 550 C 520 550, 526 490, 565 490" fill="none" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="518" y="535" text-anchor="middle" class="axis">扩大服务端边界</text>
+
+  <!-- stage 2 -->
+  <rect x="570" y="270" width="390" height="466" rx="24" fill="#FFFFFF" stroke="#7A5AF8" stroke-width="3"/>
+  <rect x="570" y="270" width="390" height="84" rx="24" fill="#F3EEFF"/>
+  <rect x="594" y="295" width="86" height="34" rx="17" fill="#7A5AF8"/>
+  <text x="637" y="318" text-anchor="middle" class="stage-no">阶段二</text>
+  <text x="704" y="323" class="stage-title">全栈研发能力</text>
+  <circle cx="606" cy="398" r="6" fill="#7A5AF8"/>
+  <text x="626" y="404" class="item">接口设计与服务端业务逻辑</text>
+  <circle cx="606" cy="442" r="6" fill="#7A5AF8"/>
+  <text x="626" y="448" class="item">数据处理、任务编排与异常处理</text>
+  <circle cx="606" cy="486" r="6" fill="#7A5AF8"/>
+  <text x="626" y="492" class="item">稳定性、监控与回滚方案</text>
+  <circle cx="606" cy="530" r="6" fill="#7A5AF8"/>
+  <text x="626" y="536" class="item">前后端联调与整体发布</text>
+  <rect x="594" y="642" width="342" height="70" rx="14" fill="#F8FAFC" stroke="#D0D5DD"/>
+  <text x="616" y="670" class="check-title">能力检验</text>
+  <text x="616" y="696" class="check-text">完成一次前后端一体化交付</text>
+
+  <!-- connector 2 -->
+  <path d="M 960 456 C 1010 456, 1016 388, 1055 388" fill="none" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="1008" y="440" text-anchor="middle" class="axis">扩大智能应用边界</text>
+
+  <!-- stage 3 -->
+  <rect x="1060" y="158" width="390" height="578" rx="24" fill="#FFFFFF" stroke="#3A8D5D" stroke-width="3"/>
+  <rect x="1060" y="158" width="390" height="84" rx="24" fill="#EAF6EF"/>
+  <rect x="1084" y="183" width="86" height="34" rx="17" fill="#3A8D5D"/>
+  <text x="1127" y="206" text-anchor="middle" class="stage-no">阶段三</text>
+  <text x="1194" y="211" class="stage-title">Agent 应用开发</text>
+  <circle cx="1096" cy="286" r="6" fill="#3A8D5D"/>
+  <text x="1116" y="292" class="item">Skill、工具与任务编排</text>
+  <circle cx="1096" cy="330" r="6" fill="#3A8D5D"/>
+  <text x="1116" y="336" class="item">上下文、Gate 与证据设计</text>
+  <circle cx="1096" cy="374" r="6" fill="#3A8D5D"/>
+  <text x="1116" y="380" class="item">效果评测与业务结果验证</text>
+  <circle cx="1096" cy="418" r="6" fill="#3A8D5D"/>
+  <text x="1116" y="424" class="item">Agent 稳定性与线上维护</text>
+  <rect x="1084" y="642" width="342" height="70" rx="14" fill="#F8FAFC" stroke="#D0D5DD"/>
+  <text x="1106" y="670" class="check-title">能力检验</text>
+  <text x="1106" y="696" class="check-text">完成一个真实业务 Agent 应用</text>
+
+  <!-- outcome -->
+  <path d="M 1255 736 L 1255 770" fill="none" stroke="#273142" stroke-width="4" marker-end="url(#arrow-dark)"/>
+  <rect x="890" y="788" width="640" height="84" rx="22" fill="#273142"/>
+  <text x="920" y="821" class="outcome-small">目标能力</text>
+  <text x="920" y="853" class="outcome-title">AI 全栈研发 · 业务全链路交付</text>
+
+  <!-- baseline -->
+  <path d="M 100 810 L 800 810" fill="none" stroke="#D0D5DD" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="100" y="786" class="axis">能力边界：页面实现 → 系统交付 → 智能应用</text>
+</svg>

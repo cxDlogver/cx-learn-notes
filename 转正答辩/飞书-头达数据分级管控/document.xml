@@ -1,0 +1,223 @@
+<title>头达数据分级管控：业务介绍与技术方案</title>
+
+<p>本文整理自《实习生转正答辩》3.1.1 业务介绍与 3.1.2 技术方案。业务截图保留原始页面效果；流程图、设计图和框架图使用飞书白板还原。</p>
+
+<h1>3.1.1 业务介绍</h1>
+
+<h2>背景</h2>
+
+<p>一次外部舆情事件中，媒体持续引用和传播平台头部达人的销量、销售额等交易数据。这说明现有链路在查询权限、导出限制和访问记录方面仍不够完善，存在敏感数据被非必要查看、对外传播后又难以追溯的问题。因此，平台启动头达数据分级管控专项，对敏感数据实行分级授权，并补齐查看记录和异常访问预警能力。</p>
+
+<h2>业务目标</h2>
+
+<p>本次管控的目标是限制头达敏感数据的查看范围。运营人员进入页面后，系统按照“是否属于管控范围—是否为 L4+ 数据—是否为作者协作人—是否拥有数据权限—近七天是否确认查看”的顺序完成访问决策。</p>
+
+<p><b>图 1：头达敏感数据访问决策链</b></p>
+<whiteboard type="blank"></whiteboard>
+
+<p>判断结果会直接反映在页面上，分为字段和模块两种粒度。字段粒度只隐藏当前敏感值，保留周边业务信息；模块粒度隐藏整块敏感内容，保留模块位置和下一步操作入口。页面有以下三种受限状态。</p>
+
+<h3>1. 非协作人：L4+ 数据需先申请协作人</h3>
+
+<p>访问 L4+ 数据时，如果当前人员不是该作者的协作人，页面不展示真实数据，并提供“申请协作人”入口。</p>
+
+<p><b>字段粒度：</b>敏感值显示为 <code>****</code>，鼠标移入后说明暂无查看权限，并提供“申请协作人”入口。</p>
+<p><b>业务截图 1：非协作人状态下的字段粒度展示</b></p>
+
+<p><b>模块粒度：</b>整个模块不展示真实内容，页面保留模块区域，并提供“申请协作人”按钮。</p>
+<p><b>业务截图 2：非协作人状态下的模块粒度展示</b></p>
+
+<h3>2. 无数据权限：需先申请对应权限</h3>
+
+<p>当前人员没有对应的数据权限时，页面不展示真实数据，并提供权限申请入口。</p>
+
+<p><b>字段粒度：</b>敏感值显示为 <code>****</code>，鼠标移入后提示该字段为敏感信息，并提供“立即申请”入口。</p>
+<p><b>业务截图 3：无数据权限状态下的字段粒度展示</b></p>
+
+<p><b>模块粒度：</b>整个模块使用无权限页面覆盖，用户可在模块内直接发起权限申请。</p>
+<p><b>业务截图 4：无数据权限状态下的模块粒度展示</b></p>
+
+<h3>3. 已有数据权限：待主动确认查看</h3>
+
+<p>当前人员已有数据权限，但近 7 天没有主动确认过查看时，真实数据仍默认隐藏。确认查看后，页面展示真实数据，并记录本次查看行为。</p>
+
+<p><b>字段粒度：</b>敏感值显示为 <code>****</code>，用户点击小眼睛后查看真实值。</p>
+<p><b>业务截图 5：待主动确认状态下的字段粒度展示</b></p>
+
+<p><b>模块粒度：</b>模块保留原有页面结构，并用遮罩覆盖敏感内容；用户点击“继续查看”后展示真实数据。</p>
+<p><b>业务截图 6：待主动确认状态下的模块粒度展示</b></p>
+
+<h2>项目职能</h2>
+
+<p>前端开发（独立交付）。</p>
+
+<h1>3.1.2 技术方案</h1>
+
+<h2>1. 安全边界：真实数据必须在后端完成保护</h2>
+
+<p><b>核心问题：</b>需要脱敏的数据未通过权限校验时，真实值不能下发到浏览器。如果后端先返回真实数据，再由前端隐藏，仍然可以通过抓包或浏览器调试工具获取，页面上的遮罩无法解决数据泄露风险。因此，<u><b>如何保证真实数据的安全性？</b></u></p>
+
+<p><b>设计方案：</b>后端负责权限校验和字段脱敏。权限校验通过时返回真实数据；未通过时只返回脱敏结果和权限状态。<u><b>前端不接触无权限的真实值，只负责识别返回状态、展示结果并提供后续操作入口。</b></u>安全边界放在后端响应之前，未通过权限校验的真实数据不会进入网络响应，也不会到达浏览器。</p>
+
+<p><b>图 2：后端数据安全边界</b></p>
+<whiteboard type="blank"></whiteboard>
+
+<h2>2. 权限复杂度：字段级权限和模块级权限分开设计</h2>
+
+<p><b>核心问题：</b>权限管控包含两种管控粒度、四种权限状态和多类数据维度。</p>
+
+<ul>
+  <li>字段级权限控制分散在各页面中的单个指标或标签，模块级权限控制整块业务内容。</li>
+  <li>两种粒度都可能出现正常展示、需要点击查看、缺少数据权限和缺少协作人四种状态。</li>
+  <li>缺少数据权限时，还要继续确定对应的数据维度权限。同一个页面可能包含多个数据维度，同一个数据维度也可能分布在多个页面中。</li>
+</ul>
+
+<p>因此，<u><b>确认后端进行权限校验以后，后端返回协议如何设计？</b></u></p>
+
+<p><b>图 3：字段级与模块级权限范围</b></p>
+<whiteboard type="blank"></whiteboard>
+
+<h3>设计方案：字段复用业务接口，模块先查询权限</h3>
+
+<p>字段本身可以承载权限信息，因此继续复用原业务接口。后端在返回前将受控字段转换为正常值或脱敏值，前端直接从字段值中识别状态。模块没有可以承载状态的单一字段，因此在加载业务数据前，先调用 <code>employee_permission</code> 查询模块权限。</p>
+
+<p><b>图 4：字段级与模块级权限协议</b></p>
+<whiteboard type="blank"></whiteboard>
+
+<h3>字段级返回协议</h3>
+
+<p>由于<u><b>一个字段从接口返回到最终展示，会经过多层组件</b></u>。以作者详情页“作者表现趋势”中的“直播支付 GMV”为例：</p>
+
+<pre lang="text"><code>接口数据进入页面后
+  → 作者表现趋势（AuthorDataTrend）
+  → 指标列表（MetricCardList）
+  → 单个指标卡（MetricCardItem）
+  → 权限提示组件（MaskedTooltip）</code></pre>
+
+<p>如果将脱敏值与 <code>front_key</code> 分成两个字段，每层组件都要同时传递两项内容，任何一层漏传都会丢失字段标识：</p>
+
+<pre lang="text"><code>分开传递：value="****"，front_key="live_pay_amt"
+合并传递：value="****live_pay_amt"</code></pre>
+
+<p>因此，字段协议采用<u><b>“固定前缀 + payload”</b></u>的组合。字段经过多个组件时仍只需要传递一个 <code>value</code>，避免字段标识在中间丢失。</p>
+
+<p>固定前缀与原字段类型匹配；payload 为 <code>888</code>、<code>999</code> 时表示权限状态，其他值作为 <code>front_key</code>，标识字段对应的数据维度权限。</p>
+
+<table>
+  <colgroup>
+    <col width="140"/>
+    <col width="180"/>
+    <col width="150"/>
+    <col width="170"/>
+    <col width="150"/>
+  </colgroup>
+  <thead>
+    <tr>
+      <th background-color="light-gray">原字段类型</th>
+      <th background-color="light-gray">缺少数据权限</th>
+      <th background-color="light-gray">缺少协作人</th>
+      <th background-color="light-gray">需要点击查看</th>
+      <th background-color="light-gray">正常展示</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>字符串</td><td><code>****&lt;front_key&gt;</code></td><td><code>****888</code></td><td><code>****999</code></td><td>返回原字符串</td></tr>
+    <tr><td>整数</td><td><code>-99999&lt;front_key&gt;</code></td><td><code>-99999888</code></td><td><code>-99999999</code></td><td>返回原整数</td></tr>
+    <tr><td>浮点数</td><td><code>-99999.&lt;front_key&gt;</code></td><td><code>-99999.888</code></td><td><code>-99999.999</code></td><td>返回原浮点数</td></tr>
+  </tbody>
+</table>
+
+<h3>模块级权限协议</h3>
+
+<p>模块权限控制的是一整块内容，没有单一字段可以承载 <code>****&lt;front_key&gt;</code>，<u><b>因此在业务数据加载前先调用独立的权限查询接口</b></u>。</p>
+
+<pre lang="text"><code>【接口请求】
+
+接口：employee_permission
+
+参数：
+- permission_keys：[permission_code]  // 当前模块对应的权限点
+- author_id：author_id                // 当前作者
+- author_id_for_eye_check：author_id  // 用于判断是否需要点击查看
+
+【接口返回】
+
+- has_permission[permission_code]：true / false  // 当前用户是否拥有该模块的数据权限
+- need_eyes：true / false  // 当前作者的数据是否需要点击查看
+- is_coo：true / false  // 当前用户是否为该作者的协作人</code></pre>
+
+<p>前端根据三个字段的组合确定页面状态，再决定是否加载模块数据。</p>
+
+<table>
+  <colgroup>
+    <col width="290"/>
+    <col width="170"/>
+    <col width="260"/>
+  </colgroup>
+  <thead>
+    <tr>
+      <th background-color="light-gray">接口字段组合</th>
+      <th background-color="light-gray">页面状态</th>
+      <th background-color="light-gray">后续处理</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>has_permission=true</code> 且 <code>need_eyes=false</code></td><td>正常展示</td><td>加载并展示模块业务数据</td></tr>
+    <tr><td><code>has_permission=true</code> 且 <code>need_eyes=true</code></td><td>需要点击查看</td><td>不加载真实模块内容</td></tr>
+    <tr><td><code>has_permission=false</code> 且 <code>is_coo=true</code></td><td>缺少数据权限</td><td>不加载真实模块内容</td></tr>
+    <tr><td><code>has_permission=false</code> 且 <code>is_coo=false</code></td><td>缺少协作人</td><td>不加载真实模块内容</td></tr>
+  </tbody>
+</table>
+
+<p>当模块状态为“缺少数据权限”时，不需要再从接口返回值中解析数据维度。模块在接入时已经约定对应的数据维度权限，例如体裁经营概览对应作者数据维度权限，违规处罚页面对应违规数据维度权限。</p>
+
+<h2>3. 配置维护：权限 code 调整时只修改 TCC 映射</h2>
+
+<p><b>核心问题：</b>页面需要一个标识来确定字段或模块对应的数据权限。如果直接使用权限平台的 code 作为页面标识，code 发生调整后，页面传参、字段协议和权限组件都需要修改，并重新发布代码。因此，<u><b>权限 code 调整后，如何避免需要修改代码？</b></u></p>
+
+<p><b>设计方案：</b>页面和前后端协议统一使用稳定的 <code>front_key</code>。平台 code 不直接写入页面，而是通过 TCC 的 <code>indicator_auth_config</code> 维护与 <code>front_key</code> 的对应关系：</p>
+
+<pre lang="text"><code>接口：apiGetTccValue
+请求：keys = ["indicator_auth_config"]
+返回：data["indicator_auth_config"]
+
+页面传入 front_key
+  → apiGetTccValue 获取 indicator_auth_config
+  → 按 front_key 匹配配置
+  → 申请权限时使用 auth_code
+  → 查询模块权限时使用 permission_code</code></pre>
+
+<table>
+  <colgroup><col width="210"/><col width="430"/></colgroup>
+  <thead>
+    <tr><th background-color="light-gray">配置字段</th><th background-color="light-gray">含义</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>indicator_key</code></td><td>后端处理的业务指标</td></tr>
+    <tr><td><code>front_key</code></td><td>页面和前后端协议使用的稳定标识</td></tr>
+    <tr><td><code>auth_level</code></td><td>数据权限等级</td></tr>
+    <tr><td><code>auth_code</code></td><td>申请数据权限时使用的平台 code</td></tr>
+    <tr><td><code>permission_code</code></td><td>查询模块权限时使用的平台 code</td></tr>
+  </tbody>
+</table>
+
+<p>这样，页面只依赖稳定的 <code>front_key</code>。平台 code 发生变化时，只需要更新 TCC 配置，不需要修改和重新发布前端代码。</p>
+
+<pre lang="text"><code>调整前：front_key → 原平台 code
+调整后：front_key → 新平台 code</code></pre>
+
+<h2>4. 权限操作：四种状态如何逐步进入正常展示</h2>
+
+<p><b>核心问题：</b><u><b>权限状态确定后，前端如何完成后续操作并最终展示真实数据？</b></u></p>
+
+<p><b>设计方案：</b>四种状态按照“缺少协作人—缺少数据权限—需要确认查看—正常展示”的顺序流转。</p>
+
+<ol>
+  <li seq="auto"><b>缺少协作人：</b>运营人员点击申请成为协作人，前端提交作者和申请信息，后端记录申请信息并发起协作人申请。权限平台审批通过后，页面刷新并重新判断权限状态。</li>
+  <li seq="auto"><b>缺少数据权限：</b>运营人员点击申请数据权限，前端提交 <code>front_key</code> 并调用 <code>apiGetTccValue</code>。后端返回 <code>indicator_auth_config</code>，获取对应的 <code>auth_code</code>，前端根据 <code>auth_code</code> 申请数据权限。审批通过后，页面再次刷新并重新判断。</li>
+  <li seq="auto"><b>需要确认查看：</b>运营人员点击小眼睛，前端调用 <code>apiSaveAccessDataLog</code>，后端记录运营人员、作者和查看时间。记录成功后，前端刷新页面并重新请求业务数据。</li>
+  <li seq="auto"><b>正常展示：</b>后端确认当前权限状态后返回真实数据，前端直接展示。</li>
+</ol>
+
+<p><b>图 5：四种权限状态的操作与刷新链路</b></p>
+<whiteboard type="blank"></whiteboard>

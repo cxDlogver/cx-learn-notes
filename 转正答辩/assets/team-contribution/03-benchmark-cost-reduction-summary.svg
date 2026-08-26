@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #273142; }
+      .title { font-size: 36px; font-weight: 600; }
+      .subtitle { font-size: 18px; fill: #667085; }
+      .scenario-title { font-size: 20px; font-weight: 600; }
+      .scenario-text { font-size: 16px; fill: #475467; }
+      .node-title { font-size: 23px; font-weight: 600; }
+      .node-text { font-size: 15px; fill: #475467; }
+      .chip { font-size: 15px; font-weight: 500; }
+      .result-title { font-size: 23px; font-weight: 600; fill: #FFFFFF; }
+      .result-text { font-size: 15px; fill: #E8F0FF; }
+      .guard-title { font-size: 20px; font-weight: 600; }
+      .guard-text { font-size: 16px; fill: #475467; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A2B3"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <text x="70" y="68" class="title">Agent Benchmark 评测降本框架</text>
+  <text x="70" y="104" class="subtitle">按变更范围控制任务执行，按验收内容控制评分投入</text>
+
+  <!-- scenarios -->
+  <rect x="70" y="148" width="1460" height="102" rx="20" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="2"/>
+  <text x="96" y="187" class="scenario-title">Agent 发生变更</text>
+  <rect x="310" y="170" width="280" height="56" rx="14" fill="#EAF2FF"/>
+  <text x="450" y="204" text-anchor="middle" class="scenario-text">局部 Tool / Skill 修改</text>
+  <rect x="660" y="170" width="280" height="56" rx="14" fill="#F3EEFF"/>
+  <text x="800" y="204" text-anchor="middle" class="scenario-text">Prompt / Harness 日常比较</text>
+  <rect x="1010" y="170" width="280" height="56" rx="14" fill="#EAF6EF"/>
+  <text x="1150" y="204" text-anchor="middle" class="scenario-text">换模型 / 正式发布</text>
+
+  <!-- impact -->
+  <rect x="60" y="320" width="240" height="300" rx="20" fill="#EAF2FF" stroke="#4C78C2" stroke-width="3"/>
+  <text x="84" y="366" class="node-title">判断影响范围</text>
+  <text x="84" y="410" class="node-text">变更影响哪些能力</text>
+  <text x="84" y="440" class="node-text">本次结论用于什么决策</text>
+  <text x="84" y="470" class="node-text">是否触及关键任务</text>
+  <rect x="84" y="515" width="192" height="62" rx="14" fill="#DCEAFF"/>
+  <text x="180" y="541" text-anchor="middle" class="chip">避免所有变更都运行</text>
+  <text x="180" y="564" text-anchor="middle" class="chip">完整任务集</text>
+
+  <!-- task routing -->
+  <rect x="360" y="320" width="240" height="300" rx="20" fill="#F3EEFF" stroke="#7A5AF8" stroke-width="3"/>
+  <text x="384" y="366" class="node-title">选择任务范围</text>
+  <rect x="384" y="398" width="192" height="44" rx="12" fill="#E8DFFF"/>
+  <text x="480" y="426" text-anchor="middle" class="chip">Capability</text>
+  <rect x="384" y="452" width="192" height="44" rx="12" fill="#E8DFFF"/>
+  <text x="480" y="480" text-anchor="middle" class="chip">Lite</text>
+  <rect x="384" y="506" width="192" height="44" rx="12" fill="#E8DFFF"/>
+  <text x="480" y="534" text-anchor="middle" class="chip">Full</text>
+  <text x="384" y="588" class="node-text">减少不必要的 rollout</text>
+
+  <!-- harness -->
+  <rect x="660" y="320" width="240" height="300" rx="20" fill="#EAF6EF" stroke="#3A8D5D" stroke-width="3"/>
+  <text x="684" y="366" class="node-title">Harness 执行</text>
+  <text x="684" y="410" class="node-text">统一任务接入</text>
+  <text x="684" y="440" class="node-text">环境隔离与恢复</text>
+  <text x="684" y="470" class="node-text">记录输出、Trace 与终态</text>
+  <text x="684" y="500" class="node-text">支持增量运行和重新评分</text>
+  <rect x="684" y="535" width="192" height="42" rx="12" fill="#D8EFE1"/>
+  <text x="780" y="562" text-anchor="middle" class="chip">减少接入和失败返工</text>
+
+  <!-- grader routing -->
+  <rect x="960" y="320" width="240" height="300" rx="20" fill="#FFF7E0" stroke="#B58B22" stroke-width="3"/>
+  <text x="984" y="366" class="node-title">控制评分投入</text>
+  <rect x="984" y="398" width="192" height="44" rx="12" fill="#FFF0BD"/>
+  <text x="1080" y="426" text-anchor="middle" class="chip">确定性规则</text>
+  <rect x="984" y="452" width="192" height="44" rx="12" fill="#FFF0BD"/>
+  <text x="1080" y="480" text-anchor="middle" class="chip">模型评分</text>
+  <rect x="984" y="506" width="192" height="44" rx="12" fill="#FFF0BD"/>
+  <text x="1080" y="534" text-anchor="middle" class="chip">人工复核</text>
+  <text x="984" y="588" class="node-text">按验收项选择评分方式</text>
+
+  <!-- result -->
+  <rect x="1260" y="320" width="280" height="300" rx="20" fill="#273142"/>
+  <text x="1286" y="366" class="result-title">质量与成本结论</text>
+  <text x="1286" y="414" class="result-text">任务完成与稳定性</text>
+  <text x="1286" y="450" class="result-text">安全与失败类型</text>
+  <text x="1286" y="486" class="result-text">模型与环境成本</text>
+  <text x="1286" y="522" class="result-text">等待时间与人工投入</text>
+  <rect x="1286" y="550" width="228" height="42" rx="12" fill="#3B4759"/>
+  <text x="1400" y="577" text-anchor="middle" class="result-text">支持迭代或发布判断</text>
+
+  <!-- arrows -->
+  <path d="M 300 470 L 350 470" fill="none" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M 600 470 L 650 470" fill="none" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M 900 470 L 950 470" fill="none" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M 1200 470 L 1250 470" fill="none" stroke="#98A2B3" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- guardrails -->
+  <rect x="150" y="700" width="600" height="122" rx="20" fill="#FFF8E7" stroke="#B58B22" stroke-width="2"/>
+  <text x="180" y="741" class="guard-title">完整评测边界</text>
+  <text x="180" y="779" class="guard-text">正式发布或重大变更时，仍需运行 Full Benchmark</text>
+  <rect x="850" y="700" width="600" height="122" rx="20" fill="#FFF2F2" stroke="#C65A5A" stroke-width="2"/>
+  <text x="880" y="741" class="guard-title">人工复核边界</text>
+  <text x="880" y="779" class="guard-text">高风险、低置信度或评分冲突的结果进入人工复核</text>
+</svg>

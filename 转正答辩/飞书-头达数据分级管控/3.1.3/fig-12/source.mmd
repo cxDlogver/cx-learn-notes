@@ -1,0 +1,29 @@
+flowchart TB
+    A["覆盖率 Skill<br/>读取仓库、分支和阈值"] --> B["调用华佗 branch/files<br/>获取变更文件覆盖率"]
+    B --> C["调用 branch/code<br/>获取未覆盖行"]
+    C --> D["生成汇总报告<br/>和逐文件明细"]
+    D --> E{"增量覆盖率达到 90%？"}
+    E -- "是" --> F["覆盖率达标"]
+    E -- "否" --> G{"已完成三轮？"}
+    G -- "是" --> H["记录剩余未覆盖原因"]
+    G -- "否" --> I["按未覆盖行数排序<br/>选择缺口最大的文件"]
+    I --> J["结合验收项<br/>设计页面操作路径"]
+    J --> K{"是否涉及写接口？"}
+    K -- "是" --> L["设置网络层 Mock"]
+    K -- "否" --> M["使用真实查询请求"]
+    L --> N["Chrome DevTools<br/>操作真实页面"]
+    M --> N
+    N --> O["清理临时 Mock<br/>刷新覆盖率报告"]
+    O --> B
+
+    classDef source fill:#EEE8FF,stroke:#6D5CA8,color:#30265A,stroke-width:1.4px;
+    classDef report fill:#EAF2FF,stroke:#4C78C2,color:#173A5E,stroke-width:1.4px;
+    classDef decision fill:#FFF2CC,stroke:#B58B22,color:#5A4100,stroke-width:1.4px;
+    classDef action fill:#FDECEC,stroke:#C65A5A,color:#6A2424,stroke-width:1.4px;
+    classDef result fill:#EAF6EF,stroke:#3F8A5E,color:#1F5135,stroke-width:1.4px;
+
+    class A source;
+    class B,C,D report;
+    class E,G decision;
+    class I,J,K,L,M,N,O action;
+    class F,H result;

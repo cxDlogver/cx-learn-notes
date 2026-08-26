@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600" viewBox="0 0 1600 600">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #243247; }
+      .label { font-size: 21px; font-weight: 650; }
+      .small { font-size: 16px; fill: #667085; }
+      .tiny { font-size: 14px; fill: #667085; }
+      .mono { font-family: "SFMono-Regular", Consolas, monospace; font-size: 14px; fill: #D9E5F5; }
+      .line { fill: none; stroke: #9AA7B8; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <linearGradient id="contractFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2EEFF"/>
+      <stop offset="1" stop-color="#E8E2FF"/>
+    </linearGradient>
+    <linearGradient id="browserFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F3F7FF"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#273142" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7D8CA1"/>
+    </marker>
+    <marker id="repairArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#C45D63"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="600" fill="#FFFFFF"/>
+
+  <!-- Requirement facts: overlapping source documents, not a presentation card. -->
+  <g transform="translate(70 177)">
+    <path d="M24 35 H128 L154 61 V211 H24 Z" fill="#F7F9FC" stroke="#A9B4C3" stroke-width="2"/>
+    <path d="M48 17 H152 L178 43 V193 H48 Z" fill="#FFFFFF" stroke="#8090A5" stroke-width="2.5" filter="url(#shadow)"/>
+    <path d="M152 17 V43 H178" fill="#EAF0F8" stroke="#8090A5" stroke-width="2.5"/>
+    <circle cx="73" cy="72" r="7" fill="#4D7DC7"/>
+    <path d="M90 72 H148" class="line" stroke-width="2.5"/>
+    <circle cx="73" cy="108" r="7" fill="#7C63C8"/>
+    <path d="M90 108 H148" class="line" stroke-width="2.5"/>
+    <circle cx="73" cy="144" r="7" fill="#D39A3D"/>
+    <path d="M90 144 H148" class="line" stroke-width="2.5"/>
+    <text x="100" y="247" text-anchor="middle" class="label">需求事实</text>
+    <text x="100" y="276" text-anchor="middle" class="small">PRD · 设计 · 技术约定</text>
+  </g>
+
+  <!-- Atomic decomposition -->
+  <path d="M260 300 H350" class="line" marker-end="url(#arrow)"/>
+  <g transform="translate(276 226)">
+    <rect x="0" y="0" width="58" height="20" rx="5" fill="#EDF3FB"/>
+    <rect x="10" y="31" width="48" height="20" rx="5" fill="#EDF3FB"/>
+    <rect x="20" y="62" width="38" height="20" rx="5" fill="#EDF3FB"/>
+    <text x="29" y="111" text-anchor="middle" class="tiny">拆解</text>
+  </g>
+
+  <!-- Test Case as the central contract -->
+  <g transform="translate(365 118)" filter="url(#shadow)">
+    <path d="M0 0 H214 L252 38 V328 H0 Z" fill="url(#contractFill)" stroke="#7058B7" stroke-width="3"/>
+    <path d="M214 0 V38 H252" fill="#DCD2FF" stroke="#7058B7" stroke-width="3"/>
+    <text x="126" y="72" text-anchor="middle" class="label" fill="#503C91">Test Case</text>
+    <text x="126" y="101" text-anchor="middle" class="small" fill="#66568F">验收约定</text>
+
+    <circle cx="43" cy="152" r="13" fill="#4D7DC7"/>
+    <path d="M37 152 L42 157 L50 147" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="70" y="158" class="small" fill="#354760">正常路径</text>
+
+    <circle cx="43" cy="207" r="13" fill="#D39A3D"/>
+    <path d="M43 199 V209 M43 215 V216" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+    <text x="70" y="213" class="small" fill="#354760">异常与边界</text>
+
+    <circle cx="43" cy="262" r="13" fill="#C45D63"/>
+    <path d="M37 256 L49 268 M49 256 L37 268" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+    <text x="70" y="268" class="small" fill="#354760">负向约束</text>
+  </g>
+
+  <!-- Implementation: code surface -->
+  <path d="M627 300 H694" class="line" marker-end="url(#arrow)"/>
+  <g transform="translate(710 176)">
+    <path d="M0 0 H205 V216 H0 Z" fill="#17243A" rx="16"/>
+    <rect x="0" y="0" width="205" height="38" rx="16" fill="#243650"/>
+    <rect x="0" y="22" width="205" height="16" fill="#243650"/>
+    <circle cx="22" cy="19" r="5" fill="#EB7A7A"/>
+    <circle cx="41" cy="19" r="5" fill="#E7B65E"/>
+    <circle cx="60" cy="19" r="5" fill="#61B886"/>
+    <text x="23" y="78" class="mono" fill="#AFC8F4">const</text>
+    <text x="72" y="78" class="mono" fill="#FFFFFF">state = build()</text>
+    <text x="23" y="112" class="mono" fill="#AFC8F4">if</text>
+    <text x="48" y="112" class="mono" fill="#FFFFFF">(case.ready) {</text>
+    <text x="42" y="146" class="mono" fill="#D6B7FF">verify()</text>
+    <text x="23" y="180" class="mono" fill="#FFFFFF">}</text>
+    <text x="102" y="252" text-anchor="middle" class="label">AI Coding</text>
+  </g>
+
+  <!-- Browser runtime with Mock plugged into the request line -->
+  <path d="M915 300 H974" class="line" marker-end="url(#arrow)"/>
+  <g transform="translate(986 142)">
+    <rect x="0" y="0" width="254" height="260" rx="18" fill="url(#browserFill)" stroke="#557DB3" stroke-width="3" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="254" height="43" rx="18" fill="#DCE9FA"/>
+    <rect x="0" y="25" width="254" height="18" fill="#DCE9FA"/>
+    <circle cx="22" cy="21" r="5" fill="#7794BD"/>
+    <circle cx="40" cy="21" r="5" fill="#7794BD" opacity=".7"/>
+    <rect x="42" y="72" width="70" height="62" rx="10" fill="#EDF3FB"/>
+    <rect x="125" y="72" width="86" height="13" rx="6" fill="#7A9AC6" opacity=".85"/>
+    <rect x="125" y="98" width="58" height="11" rx="5" fill="#B7C8DE"/>
+    <rect x="42" y="158" width="169" height="13" rx="6" fill="#B7C8DE"/>
+    <rect x="42" y="187" width="126" height="13" rx="6" fill="#D2DCE9"/>
+    <rect x="42" y="216" width="151" height="13" rx="6" fill="#D2DCE9"/>
+    <text x="127" y="301" text-anchor="middle" class="label">真实页面验证</text>
+  </g>
+
+  <g transform="translate(1011 428)">
+    <path d="M92 0 V-18" fill="none" stroke="#7A63C8" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="0" y="0" width="184" height="70" rx="14" fill="#F1EDFF" stroke="#7A63C8" stroke-width="2"/>
+    <path d="M25 21 V49 M42 14 V56 M59 25 V45" stroke="#7A63C8" stroke-width="5" stroke-linecap="round"/>
+    <text x="77" y="29" class="small">受控 Mock</text>
+    <text x="77" y="52" class="tiny">后端未就绪时</text>
+  </g>
+
+  <!-- Evidence is attached to each case, then checked by the gate. -->
+  <path d="M1240 300 H1284" class="line" marker-end="url(#arrow)"/>
+  <g transform="translate(1296 178)">
+    <rect x="14" y="18" width="116" height="160" rx="10" fill="#FFF8E8" stroke="#D1A34D" stroke-width="2"/>
+    <rect x="0" y="0" width="116" height="160" rx="10" fill="#FFFFFF" stroke="#C89335" stroke-width="2.5" filter="url(#shadow)"/>
+    <rect x="20" y="24" width="76" height="58" rx="7" fill="#F3E6C8"/>
+    <path d="M29 68 L47 49 L61 61 L74 43 L89 68" fill="none" stroke="#C89335" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 105 H92 M22 127 H76" stroke="#C6AD79" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="101" cy="145" r="24" fill="#3F8A61"/>
+    <path d="M90 145 L98 153 L113 136" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="65" y="218" text-anchor="middle" class="label">证据对账</text>
+    <text x="65" y="246" text-anchor="middle" class="small">逐 Case 通过 Gate</text>
+  </g>
+
+  <!-- Gate and deliverable -->
+  <path d="M1430 300 H1462" class="line" marker-end="url(#arrow)"/>
+  <g transform="translate(1473 224)">
+    <path d="M0 66 H47" stroke="#49667E" stroke-width="8" stroke-linecap="round"/>
+    <path d="M8 66 V18 M39 66 V18" stroke="#49667E" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-2 18 H49" stroke="#3F8A61" stroke-width="12" stroke-linecap="round"/>
+    <path d="M56 35 L102 61 V112 L56 138 L10 112 V88" fill="#E5F4EA" stroke="#3F8A61" stroke-width="2.5"/>
+    <path d="M56 61 V111 M12 87 L56 111 L100 87" fill="none" stroke="#3F8A61" stroke-width="2.5"/>
+    <path d="M12 62 L56 87 L100 62 L56 37 Z" fill="#F4FBF6" stroke="#3F8A61" stroke-width="2.5"/>
+    <text x="56" y="176" text-anchor="middle" class="label">交付版本</text>
+  </g>
+
+  <!-- Repair loop: a failed case returns to its contract and is verified again. -->
+  <path d="M1360 426 C1360 544 806 548 536 474" fill="none" stroke="#C45D63" stroke-width="3.5" stroke-dasharray="9 8" marker-end="url(#repairArrow)"/>
+  <g transform="translate(650 516)">
+    <path d="M0 0 A18 18 0 1 0 18 18" fill="none" stroke="#C45D63" stroke-width="3"/>
+    <path d="M13 7 L0 0 L3 15" fill="#C45D63"/>
+    <text x="34" y="8" class="small">Repair：定位最早偏差</text>
+    <text x="34" y="33" class="tiny">修正后返回原 Case 复验</text>
+  </g>
+</svg>

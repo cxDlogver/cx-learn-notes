@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">规模化运营模式与运营 Agent 的作用</title>
+  <desc id="desc">上层展示已有的批量运营模式，下层展示运营 Agent 如何按人群使用诊断 Skill、根据触达反馈调整 Skill，并将优秀诊断沉淀为公共经验。</desc>
+  <defs>
+    <marker id="arrow-gray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7B8493"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#4F78C7"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #20242B; }
+      .title { font-size: 34px; font-weight: 600; }
+      .subtitle { font-size: 17px; fill: #667085; }
+      .lane-title { font-size: 21px; font-weight: 600; }
+      .stage { font-size: 14px; fill: #727A88; }
+      .box-title { font-size: 20px; font-weight: 600; }
+      .body { font-size: 16px; fill: #4B5565; }
+      .change { font-size: 14px; font-weight: 600; fill: #345EAC; }
+      .metric-title { font-size: 17px; font-weight: 600; }
+      .metric-body { font-size: 14px; fill: #566071; }
+      .flow-gray { fill: none; stroke: #7B8493; stroke-width: 2; marker-end: url(#arrow-gray); }
+      .flow-blue { fill: none; stroke: #4F78C7; stroke-width: 2.4; marker-end: url(#arrow-blue); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#FFFFFF"/>
+  <text x="42" y="53" class="title">规模化运营模式与运营 Agent 的作用</text>
+  <text x="42" y="82" class="subtitle">按人群定制诊断 Skill，通过触达反馈持续调整，并将优秀诊断沉淀为公共经验</text>
+
+  <rect x="32" y="112" width="1536" height="235" rx="14" fill="#FAFAFB" stroke="#D7DBE2" stroke-width="1.5"/>
+  <rect x="48" y="137" width="88" height="184" rx="10" fill="#EEF0F3"/>
+  <text x="92" y="214" class="lane-title" text-anchor="middle">原有</text>
+  <text x="92" y="244" class="lane-title" text-anchor="middle">模式</text>
+
+  <g>
+    <rect x="160" y="137" width="246" height="184" rx="10" fill="#FFFFFF" stroke="#C7CDD6" stroke-width="1.5"/>
+    <text x="181" y="165" class="stage">01 目标与人群</text>
+    <text x="181" y="204" class="box-title">运营圈选人群</text>
+    <text x="181" y="234" class="body">拆解运营目标和任务</text>
+    <text x="181" y="263" class="body">确定本轮服务对象</text>
+  </g>
+  <g>
+    <rect x="438" y="137" width="246" height="184" rx="10" fill="#FFFFFF" stroke="#C7CDD6" stroke-width="1.5"/>
+    <text x="459" y="165" class="stage">02 数据与诊断</text>
+    <text x="459" y="204" class="box-title">按人群查看数据</text>
+    <text x="459" y="234" class="body">先看整体指标和共性问题</text>
+    <text x="459" y="263" class="body">重点达人再深入分析</text>
+  </g>
+  <g>
+    <rect x="716" y="137" width="246" height="184" rx="10" fill="#FFFFFF" stroke="#C7CDD6" stroke-width="1.5"/>
+    <text x="737" y="165" class="stage">03 策略与建议</text>
+    <text x="737" y="204" class="box-title">按人群制定策略</text>
+    <text x="737" y="234" class="body">统一任务和相近话术</text>
+    <text x="737" y="263" class="body">个别情况由运营调整</text>
+  </g>
+  <g>
+    <rect x="994" y="137" width="246" height="184" rx="10" fill="#FFFFFF" stroke="#C7CDD6" stroke-width="1.5"/>
+    <text x="1015" y="165" class="stage">04 触达与跟进</text>
+    <text x="1015" y="204" class="box-title">BPO / RPA 执行</text>
+    <text x="1015" y="234" class="body">完成批量触达</text>
+    <text x="1015" y="263" class="body">运营继续人工跟进</text>
+  </g>
+  <g>
+    <rect x="1272" y="137" width="264" height="184" rx="10" fill="#FFFFFF" stroke="#C7CDD6" stroke-width="1.5"/>
+    <text x="1293" y="165" class="stage">05 结果与经验</text>
+    <text x="1293" y="204" class="box-title">分散查看结果</text>
+    <text x="1293" y="234" class="body">回复、行动与经营数据分离</text>
+    <text x="1293" y="263" class="body">经验留在个人和文档中</text>
+  </g>
+  <path d="M406 229 H430" class="flow-gray"/>
+  <path d="M684 229 H708" class="flow-gray"/>
+  <path d="M962 229 H986" class="flow-gray"/>
+  <path d="M1240 229 H1264" class="flow-gray"/>
+
+  <g>
+    <path d="M561 328 V404" class="flow-blue"/>
+    <rect x="445" y="349" width="232" height="35" rx="17.5" fill="#FFFFFF" stroke="#AFC3E8"/>
+    <text x="561" y="372" class="change" text-anchor="middle">人工分析 → 人群诊断 Skill</text>
+  </g>
+  <g>
+    <path d="M839 328 V404" class="flow-blue"/>
+    <rect x="733" y="349" width="212" height="35" rx="17.5" fill="#FFFFFF" stroke="#AFC3E8"/>
+    <text x="839" y="372" class="change" text-anchor="middle">相近话术 → 差异化建议</text>
+  </g>
+  <g>
+    <path d="M1117 328 V404" class="flow-blue"/>
+    <rect x="1004" y="349" width="226" height="35" rx="17.5" fill="#FFFFFF" stroke="#AFC3E8"/>
+    <text x="1117" y="372" class="change" text-anchor="middle">触达结果 → 调整诊断 Skill</text>
+  </g>
+  <g>
+    <path d="M1404 328 V404" class="flow-blue"/>
+    <rect x="1281" y="349" width="246" height="35" rx="17.5" fill="#FFFFFF" stroke="#AFC3E8"/>
+    <text x="1404" y="372" class="change" text-anchor="middle">个人经验 → 公共经验</text>
+  </g>
+
+  <rect x="32" y="411" width="1536" height="238" rx="14" fill="#F4F8FF" stroke="#AFC3E8" stroke-width="1.5"/>
+  <rect x="48" y="436" width="88" height="188" rx="10" fill="#DCE9FF"/>
+  <text x="92" y="500" class="lane-title" text-anchor="middle">引入</text>
+  <text x="92" y="530" class="lane-title" text-anchor="middle">运营</text>
+  <text x="92" y="560" class="lane-title" text-anchor="middle">Agent</text>
+
+  <g>
+    <rect x="160" y="436" width="246" height="188" rx="10" fill="#FFF8EE" stroke="#E2B56C" stroke-width="1.5"/>
+    <text x="181" y="464" class="stage">01 运营负责</text>
+    <text x="181" y="503" class="box-title">确定人群与目标</text>
+    <text x="181" y="533" class="body">明确本轮运营重点</text>
+    <text x="181" y="562" class="body">审核结果并处理复杂问题</text>
+  </g>
+  <g>
+    <rect x="438" y="436" width="246" height="188" rx="10" fill="#EAF2FF" stroke="#4F78C7" stroke-width="2"/>
+    <rect x="438" y="436" width="7" height="188" rx="3.5" fill="#4F78C7"/>
+    <text x="459" y="464" class="stage">02 按人群定制</text>
+    <text x="459" y="503" class="box-title">选择对应诊断 Skill</text>
+    <text x="459" y="533" class="body">按照人群特点设置诊断方向</text>
+    <text x="459" y="562" class="body">同类达人使用同一套方法</text>
+  </g>
+  <g>
+    <rect x="716" y="436" width="246" height="188" rx="10" fill="#EAF2FF" stroke="#4F78C7" stroke-width="2"/>
+    <rect x="716" y="436" width="7" height="188" rx="3.5" fill="#4F78C7"/>
+    <text x="737" y="464" class="stage">03 批量执行</text>
+    <text x="737" y="503" class="box-title">生成诊断和建议</text>
+    <text x="737" y="533" class="body">根据每位达人的数据分别生成</text>
+    <text x="737" y="562" class="body">运营抽查确认后再触达</text>
+  </g>
+  <g>
+    <rect x="994" y="436" width="246" height="188" rx="10" fill="#EAF2FF" stroke="#4F78C7" stroke-width="2"/>
+    <rect x="994" y="436" width="7" height="188" rx="3.5" fill="#4F78C7"/>
+    <text x="1015" y="464" class="stage">04 反馈调整</text>
+    <text x="1015" y="503" class="box-title">根据反馈调整 Skill</text>
+    <text x="1015" y="533" class="body">回收回复、采纳和运营反馈</text>
+    <text x="1015" y="562" class="body">继续调整该人群的诊断方法</text>
+  </g>
+  <g>
+    <rect x="1272" y="436" width="264" height="188" rx="10" fill="#ECF7F0" stroke="#4D9667" stroke-width="2"/>
+    <rect x="1272" y="436" width="7" height="188" rx="3.5" fill="#4D9667"/>
+    <text x="1293" y="464" class="stage">05 公共经验</text>
+    <text x="1293" y="503" class="box-title">沉淀优秀诊断</text>
+    <text x="1293" y="533" class="body">保存特征、依据、建议和结果</text>
+    <text x="1293" y="562" class="body">供其他运营和 Agent 助手参考</text>
+  </g>
+  <path d="M406 530 H430" class="flow-blue"/>
+  <path d="M684 530 H708" class="flow-blue"/>
+  <path d="M962 530 H986" class="flow-blue"/>
+  <path d="M1240 530 H1264" class="flow-blue"/>
+
+  <text x="42" y="699" class="lane-title">建设效果与方向指标</text>
+  <line x1="42" y1="711" x2="1558" y2="711" stroke="#D6DBE3" stroke-width="1.5"/>
+
+  <g>
+    <rect x="42" y="737" width="356" height="118" rx="10" fill="#F4F8FF" stroke="#AFC3E8" stroke-width="1.5"/>
+    <text x="66" y="771" class="metric-title">运营效率与覆盖</text>
+    <text x="66" y="802" class="metric-body">服务达人数 · 单个运营服务量</text>
+    <text x="66" y="829" class="metric-body">诊断、整理与跟进的人工时间</text>
+  </g>
+  <g>
+    <rect x="430" y="737" width="356" height="118" rx="10" fill="#F5F1FF" stroke="#B9A7DF" stroke-width="1.5"/>
+    <text x="454" y="771" class="metric-title">经验沉淀质量</text>
+    <text x="454" y="802" class="metric-body">服务记录完整度 · 有效案例覆盖</text>
+    <text x="454" y="829" class="metric-body">运营方法提取准确性</text>
+  </g>
+  <g>
+    <rect x="818" y="737" width="356" height="118" rx="10" fill="#FFF8EE" stroke="#E2B56C" stroke-width="1.5"/>
+    <text x="842" y="771" class="metric-title">策略应用质量</text>
+    <text x="842" y="802" class="metric-body">建议采纳率</text>
+    <text x="842" y="829" class="metric-body">达人动作完成率</text>
+  </g>
+  <g>
+    <rect x="1206" y="737" width="352" height="118" rx="10" fill="#ECF7F0" stroke="#72A985" stroke-width="1.5"/>
+    <text x="1230" y="771" class="metric-title">业务结果</text>
+    <text x="1230" y="802" class="metric-body">动作有效率 · 达人跃迁</text>
+    <text x="1230" y="829" class="metric-body">GMV 增量</text>
+  </g>
+</svg>

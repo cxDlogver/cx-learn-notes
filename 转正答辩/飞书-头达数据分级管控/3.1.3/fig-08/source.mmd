@@ -1,0 +1,22 @@
+flowchart TB
+    A["模块权限结果"] --> B{"hasPermission<br/>是否已返回"}
+    B -- "否" --> C["loading<br/>等待权限结果"]
+    B -- "是" --> D{"hasPermission"}
+
+    D -- "true" --> E{"needEyes"}
+    E -- "false" --> F["viewable<br/>可以查看"]
+    E -- "true" --> G["view_permission_required<br/>需要确认查看"]
+
+    D -- "false" --> H{"isCoo"}
+    H -- "true" --> I["no_data_permission<br/>没有数据权限"]
+    H -- "false" --> J["no_cooperation<br/>不是协作人"]
+
+    classDef source fill:#EAF2FF,stroke:#4C78C2,color:#173A5E,stroke-width:1.3px;
+    classDef process fill:#FFF2CC,stroke:#B58B22,color:#5A4100,stroke-width:1.3px;
+    classDef pending fill:#F4F4F4,stroke:#8A8A8A,color:#424242,stroke-width:1.2px;
+    classDef result fill:#EAF6EF,stroke:#3F8A5E,color:#1F5135,stroke-width:1.3px;
+
+    class A source;
+    class B,D,E,H process;
+    class C pending;
+    class F,G,I,J result;

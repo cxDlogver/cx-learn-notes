@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="1050" viewBox="0 0 1672 1050" role="img" aria-labelledby="title desc">
+  <title id="title">一次 Tool Call 的实际执行时序</title>
+  <desc id="desc">模型发出 Tool Call 后，Runtime 查询工具注册表，执行策略检查，按判断结果拒绝、暂停审批或执行工具，最后处理结果并写入追踪记录。</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-15%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#183153" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#496783"/>
+    </marker>
+    <style>
+      .title { font: 700 34px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #132D4F; }
+      .subtitle { font: 400 17px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #58708B; }
+      .node-title { font: 700 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #173A63; }
+      .node-body { font: 400 14px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #526B84; }
+      .node-code { font: 600 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; fill: #244968; }
+      .white-title { font: 700 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #FFFFFF; }
+      .white-code { font: 500 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; fill: #EAF3FB; }
+      .label { font: 600 14px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #3F5E7B; }
+      .branch { font: 700 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+      .band-title { font: 700 18px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #FFFFFF; }
+      .band-body { font: 400 14px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #EAF3FB; }
+    </style>
+  </defs>
+
+  <rect width="1672" height="1050" fill="#F6F9FC"/>
+  <text class="title" x="56" y="54">一次 Tool Call 的实际执行时序</text>
+  <text class="subtitle" x="56" y="83">从模型提出调用，到 Runtime 检查、暂停、执行和返回结果</text>
+
+  <g filter="url(#shadow)">
+    <rect x="56" y="109" width="1560" height="810" rx="18" fill="#FFFFFF" stroke="#D6E1EC"/>
+  </g>
+
+  <g>
+    <rect x="82" y="147" width="220" height="108" rx="14" fill="#173A63"/>
+    <text class="white-title" x="106" y="181">1. Model</text>
+    <text class="white-code" x="106" y="211">Tool Call</text>
+    <text class="white-code" x="106" y="235">{ name, args }</text>
+
+    <rect x="354" y="147" width="258" height="108" rx="14" fill="#EDF5FD" stroke="#BFD7EE"/>
+    <text class="node-title" x="378" y="181">2. Runtime 接收调用</text>
+    <text class="node-code" x="378" y="211">dispatchToolCall(</text>
+    <text class="node-code" x="378" y="235">  call, runContext)</text>
+
+    <rect x="664" y="147" width="250" height="108" rx="14" fill="#EDF5FD" stroke="#BFD7EE"/>
+    <text class="node-title" x="688" y="181">3. 查询 ToolRegistry</text>
+    <text class="node-code" x="688" y="211">get(call.name)</text>
+    <text class="node-body" x="688" y="235">返回 execute + control</text>
+
+    <rect x="966" y="147" width="305" height="108" rx="14" fill="#F1EEFC" stroke="#D3C7F1"/>
+    <text class="node-title" x="990" y="181">4. 参数与策略检查</text>
+    <text class="node-code" x="990" y="211">schemaValidator.validate()</text>
+    <text class="node-code" x="990" y="235">beforeToolCall() / evaluate()</text>
+
+    <polygon points="1430,134 1570,201 1430,268 1290,201" fill="#FFF4E8" stroke="#E8C28F" stroke-width="1.5"/>
+    <text class="node-title" x="1373" y="188">5. Decision</text>
+    <text class="node-body" x="1352" y="216">ALLOW / DENY /</text>
+    <text class="node-body" x="1350" y="238">APPROVAL / MODIFY</text>
+
+    <line x1="302" y1="201" x2="344" y2="201" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+    <line x1="612" y1="201" x2="654" y2="201" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+    <line x1="914" y1="201" x2="956" y2="201" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+    <line x1="1271" y1="201" x2="1283" y2="201" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+  </g>
+
+  <g>
+    <text class="branch" x="1460" y="306" fill="#297462">ALLOW</text>
+    <path d="M1430 268 V332" fill="none" stroke="#2D806F" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+    <text class="branch" x="930" y="326" fill="#B06B16">REQUIRE_APPROVAL</text>
+    <path d="M1362 252 V314 H920 V332" fill="none" stroke="#B77828" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+    <text class="branch" x="1015" y="284" fill="#775DA6">MODIFY → 更新 args，回到步骤 4</text>
+
+    <text class="branch" x="1534" y="286" fill="#B14C58">DENY</text>
+    <path d="M1500 245 H1580 V790 H1130" fill="none" stroke="#B14C58" stroke-width="2.4" marker-end="url(#arrow)"/>
+  </g>
+
+  <g>
+    <rect x="690" y="340" width="460" height="110" rx="14" fill="#FFF4E8" stroke="#E8C28F"/>
+    <text class="node-title" x="714" y="374">6. 保存状态并暂停</text>
+    <text class="node-code" x="714" y="405">checkpointStore.save(state)</text>
+    <text class="node-code" x="714" y="430">pauseRun({ call, allowedDecisions })</text>
+
+    <rect x="690" y="500" width="460" height="90" rx="14" fill="#FFF9F1" stroke="#E8C28F"/>
+    <text class="node-title" x="714" y="536">人工审查</text>
+    <text class="node-code" x="714" y="565">approve / edit / reject</text>
+    <line x1="920" y1="450" x2="920" y2="492" stroke="#B77828" stroke-width="2.4" marker-end="url(#arrow)"/>
+
+    <rect x="1220" y="340" width="310" height="110" rx="14" fill="#EAF8F6" stroke="#B8E0D9"/>
+    <text class="node-title" x="1244" y="374">7. Executor 执行</text>
+    <text class="node-code" x="1244" y="405">execute(call.args,</text>
+    <text class="node-code" x="1244" y="430">  { sandbox, timeout })</text>
+
+    <path d="M1150 545 H1375 V458" fill="none" stroke="#2D806F" stroke-width="2.4" marker-end="url(#arrow)"/>
+    <text class="label" x="1172" y="486">approve / edit</text>
+    <text class="label" x="1172" y="507">恢复后重新检查</text>
+
+    <path d="M690 545 H648 V772 H710" fill="none" stroke="#B14C58" stroke-width="2.2" marker-end="url(#arrow)"/>
+    <text class="label" x="456" y="627">reject / 审批超时</text>
+  </g>
+
+  <g>
+    <line x1="1375" y1="450" x2="1375" y2="512" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+    <text class="label" x="1389" y="487">ToolResult / Error</text>
+
+    <rect x="1220" y="520" width="310" height="120" rx="14" fill="#FDEEEF" stroke="#EBC5CB"/>
+    <text class="node-title" x="1244" y="556">8. Runtime 处理结果</text>
+    <text class="node-code" x="1244" y="588">afterToolCall(result)</text>
+    <text class="node-code" x="1244" y="614">onToolError(error)</text>
+
+    <rect x="1220" y="710" width="310" height="94" rx="13" fill="#F7F4FD" stroke="#D7CDF1"/>
+    <text class="node-title" x="1244" y="746">失败分流</text>
+    <text class="node-body" x="1244" y="775">retry / reconcile / compensate</text>
+    <text class="node-body" x="1244" y="797">human / fail</text>
+    <line x1="1375" y1="640" x2="1375" y2="702" stroke="#775DA6" stroke-width="2.2" marker-end="url(#arrow)"/>
+    <line x1="1220" y1="757" x2="1130" y2="757" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+
+    <rect x="710" y="710" width="410" height="120" rx="14" fill="#EDF5FD" stroke="#BFD7EE"/>
+    <text class="node-title" x="734" y="746">9. 生成统一 ToolResult</text>
+    <text class="node-code" x="734" y="778">success / rejected / failed / unknown</text>
+    <text class="node-body" x="734" y="805">写入 State，供下一轮模型读取</text>
+    <line x1="1220" y1="580" x2="1142" y2="580" stroke="#496783" stroke-width="2.4"/>
+    <path d="M1142 580 V700 H1080 V702" fill="none" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+
+    <rect x="280" y="710" width="330" height="120" rx="14" fill="#173A63"/>
+    <text class="white-title" x="304" y="746">10. 返回 Model</text>
+    <text class="white-code" x="304" y="778">Tool Result</text>
+    <text class="white-code" x="304" y="805">→ 下一轮判断</text>
+    <line x1="710" y1="770" x2="620" y2="770" stroke="#496783" stroke-width="2.4" marker-end="url(#arrow)"/>
+  </g>
+
+  <rect x="56" y="949" width="1560" height="67" rx="14" fill="#173A63"/>
+  <text class="band-title" x="84" y="990">每一步都发出 Trace / Audit Event</text>
+  <text class="band-body" x="430" y="990">Tool Call · 策略输入与 Decision · 审批结果 · Sandbox 范围 · 执行结果 · 重试与最终状态</text>
+</svg>

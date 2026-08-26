@@ -1,0 +1,18 @@
+flowchart LR
+    A["向 AI 指定<br/>一种权限状态"] --> B["Mock Skill<br/>校验状态并读取接口规则"]
+    B --> C["固定脚本<br/>批量改写本地响应文件"]
+    C --> D["写入 Chrome Local<br/>Overrides 关联目录"]
+    D --> E["浏览器接管<br/>原接口请求"]
+    E --> F["刷新页面<br/>按验收项检查"]
+
+    classDef input fill:#F5F7FA,stroke:#7B8794,color:#273142,stroke-width:1.2px;
+    classDef skill fill:#EEE8FF,stroke:#6D5CA8,color:#30265A,stroke-width:1.4px;
+    classDef rule fill:#FFF2CC,stroke:#B58B22,color:#5A4100,stroke-width:1.4px;
+    classDef browser fill:#EAF2FF,stroke:#4C78C2,color:#173A5E,stroke-width:1.4px;
+    classDef result fill:#EAF6EF,stroke:#3F8A5E,color:#1F5135,stroke-width:1.4px;
+
+    class A input;
+    class B skill;
+    class C rule;
+    class D,E browser;
+    class F result;

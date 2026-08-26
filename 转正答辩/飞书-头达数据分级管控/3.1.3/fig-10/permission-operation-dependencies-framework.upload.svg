@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">三类权限操作依赖框架</title>
+  <desc id="desc">字段级和模块级公共组件根据权限状态，分别进入宿主平台的数据权限申请、页面内的协作人申请，以及写入访问记录后的页面刷新链路。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#64748b"/>
+    </marker>
+    <style>
+      .dataZone { fill:#fff8f0; stroke:#dca565; stroke-width:1.2; }
+      .coopZone { fill:#f2f9f5; stroke:#7fa58d; stroke-width:1.2; }
+      .viewZone { fill:#f3f7ff; stroke:#7598ce; stroke-width:1.2; }
+      .hub { fill:#f7f3ff; stroke:#917cc3; stroke-width:1.4; }
+      .card { fill:#ffffff; stroke:#a6b0bd; stroke-width:1.1; }
+      .dataCard { fill:#fffdf9; stroke:#c99a60; stroke-width:1.05; }
+      .coopCard { fill:#fbfefc; stroke:#79a087; stroke-width:1.05; }
+      .viewCard { fill:#fbfdff; stroke:#7898c6; stroke-width:1.05; }
+      .fallbackCard { fill:#fff7f3; stroke:#c88766; stroke-width:1.05; }
+      .zoneTitle { font-weight:600; font-size:16px; font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#2d394a; }
+      .titleText { font-weight:600; font-size:14px; font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#2c3748; text-anchor:middle; }
+      .bodyText { font-weight:500; font-size:12.5px; font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#3f4a5c; text-anchor:middle; }
+      .smallText { font-weight:400; font-size:10.8px; font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#657084; text-anchor:middle; }
+      .codeText { font-weight:600; font-size:10.7px; font-family:Menlo,Consolas,monospace; fill:#405068; text-anchor:middle; }
+      .hubTitle { font-weight:600; font-size:17px; font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#382e5b; text-anchor:middle; }
+      .line { fill:none; stroke:#64748b; stroke-width:1.55; marker-end:url(#arrow); }
+      .subline { fill:none; stroke:#7b8798; stroke-width:1.25; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"/>
+
+  <!-- 上方：外部平台的数据权限申请 -->
+  <rect x="350" y="28" width="900" height="250" rx="16" class="dataZone"/>
+  <text x="376" y="61" class="zoneTitle">数据权限申请：由宿主平台提供弹窗能力</text>
+
+  <rect x="390" y="92" width="170" height="112" rx="10" class="dataCard"/>
+  <text x="475" y="124" class="titleText">公共申请入口</text>
+  <text x="475" y="153" class="codeText">applySensitivePermission</text>
+  <text x="475" y="181" class="smallText">接收 fieldKey 或 authCode</text>
+
+  <rect x="605" y="92" width="170" height="112" rx="10" class="dataCard"/>
+  <text x="690" y="124" class="titleText">获取平台权限点</text>
+  <text x="690" y="153" class="bodyText">fieldKey → TCC</text>
+  <text x="690" y="181" class="smallText">得到 authCode</text>
+
+  <rect x="820" y="92" width="190" height="112" rx="10" class="dataCard"/>
+  <text x="915" y="124" class="titleText">调用宿主 Bridge</text>
+  <text x="915" y="151" class="codeText"><tspan x="915">GarfishBridge</tspan><tspan x="915" dy="15">showApplyDimensionPopup</tspan></text>
+
+  <rect x="1055" y="92" width="155" height="112" rx="10" class="dataCard"/>
+  <text x="1132" y="124" class="titleText">平台弹窗</text>
+  <text x="1132" y="154" class="bodyText">提交数据权限申请</text>
+  <text x="1132" y="181" class="smallText">页面不管理 visible</text>
+
+  <path d="M560 148 H605" class="subline"/>
+  <path d="M775 148 H820" class="subline"/>
+  <path d="M1010 148 H1055" class="subline"/>
+
+  <!-- 中心：公共组件 -->
+  <rect x="555" y="318" width="490" height="170" rx="20" class="hub"/>
+  <text x="800" y="355" class="hubTitle">公共权限组件根据状态选择操作</text>
+  <rect x="590" y="380" width="190" height="62" rx="9" class="card"/>
+  <text x="685" y="407" class="codeText">MaskedTooltip</text>
+  <text x="685" y="430" class="smallText">字段级入口</text>
+  <rect x="820" y="380" width="190" height="62" rx="9" class="card"/>
+  <text x="915" y="407" class="codeText">SensitiveNoPermission</text>
+  <text x="915" y="430" class="smallText">模块级入口</text>
+  <text x="800" y="470" class="bodyText">数据权限申请　｜　协作人申请　｜　确认查看</text>
+
+  <path d="M800 318 V278" class="line"/>
+
+  <!-- 左下：页面内协作人申请 -->
+  <rect x="34" y="530" width="740" height="342" rx="16" class="coopZone"/>
+  <text x="60" y="563" class="zoneTitle">协作人申请：由当前页面管理申请弹窗</text>
+
+  <rect x="284" y="590" width="240" height="70" rx="10" class="coopCard"/>
+  <text x="404" y="619" class="titleText">公共组件调用 onApply</text>
+  <text x="404" y="644" class="smallText">页面已提前提供打开弹窗的方法</text>
+
+  <rect x="66" y="710" width="290" height="104" rx="10" class="coopCard"/>
+  <text x="211" y="740" class="titleText">作者详情</text>
+  <text x="211" y="766" class="bodyText">协作人申请弹窗组件</text>
+  <text x="211" y="791" class="codeText">ApplyManageModal · visible</text>
+
+  <rect x="452" y="710" width="290" height="104" rx="10" class="coopCard"/>
+  <text x="597" y="740" class="titleText">作者列表</text>
+  <text x="597" y="766" class="bodyText">列表内已有的协作申请弹窗</text>
+  <text x="597" y="791" class="codeText">operationModals · modalProps</text>
+
+  <text x="404" y="846" class="smallText">两种弹窗最终都通过 apiAuthorOperate 提交协作申请</text>
+
+  <path d="M404 660 V684 H211 V710" class="subline"/>
+  <path d="M404 660 V684 H597 V710" class="subline"/>
+  <path d="M640 488 V510 H404 V590" class="line"/>
+
+  <!-- 右下：确认查看与页面刷新 -->
+  <rect x="826" y="530" width="740" height="342" rx="16" class="viewZone"/>
+  <text x="852" y="563" class="zoneTitle">确认查看：记录成功后执行当前页面注册的刷新方法</text>
+
+  <rect x="858" y="590" width="190" height="78" rx="10" class="viewCard"/>
+  <text x="953" y="618" class="titleText">确认查看</text>
+  <text x="953" y="646" class="codeText">requestSensitiveViewPermission</text>
+
+  <rect x="1082" y="590" width="190" height="78" rx="10" class="viewCard"/>
+  <text x="1177" y="618" class="titleText">写入查看记录</text>
+  <text x="1177" y="646" class="codeText">apiSaveAccessDataLog</text>
+
+  <rect x="1306" y="590" width="224" height="78" rx="10" class="viewCard"/>
+  <text x="1418" y="618" class="titleText">执行页面刷新 Handler</text>
+  <text x="1418" y="646" class="smallText">由当前页面在进入时注册</text>
+
+  <path d="M1048 629 H1082" class="subline"/>
+  <path d="M1272 629 H1306" class="subline"/>
+
+  <rect x="852" y="724" width="205" height="102" rx="10" class="viewCard"/>
+  <text x="954" y="752" class="titleText">作者列表</text>
+  <text x="954" y="780" class="codeText">getList(false)</text>
+  <text x="954" y="807" class="smallText">保留当前查询条件</text>
+
+  <rect x="1093" y="724" width="220" height="102" rx="10" class="viewCard"/>
+  <text x="1203" y="752" class="titleText">作者详情</text>
+  <text x="1203" y="780" class="codeText">forceRefreshTab</text>
+  <text x="1203" y="807" class="smallText">重挂载当前 Tab</text>
+
+  <rect x="1349" y="724" width="185" height="102" rx="10" class="fallbackCard"/>
+  <text x="1441" y="752" class="titleText">页面未注册</text>
+  <text x="1441" y="780" class="codeText">window.location.reload</text>
+  <text x="1441" y="807" class="smallText">整页刷新兜底</text>
+
+  <path d="M1418 668 V696 H954 V724" class="subline"/>
+  <path d="M1418 668 V696 H1203 V724" class="subline"/>
+  <path d="M1418 668 V724" class="subline"/>
+  <path d="M960 488 V510 H953 V590" class="line"/>
+</svg>

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="810" viewBox="0 0 1440 810" role="img" aria-labelledby="title desc">
+  <title id="title">Mock Skill 规范图</title>
+  <desc id="desc">指定权限状态后，Skill 读取接口规则，由 AI 批量修改响应文件，覆盖 Chrome Local Overrides 关联目录中的响应，刷新页面检查字段和模块状态。</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#1D2129" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6B82"/>
+    </marker>
+    <style>
+      .title { font: 600 34px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #1D2129; }
+      .subtitle { font: 400 22px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #667085; }
+      .step { font: 600 18px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #FFFFFF; text-anchor: middle; dominant-baseline: central; }
+      .node-title { font: 600 25px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #1D2129; text-anchor: middle; }
+      .node-desc { font: 400 19px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #5C667A; text-anchor: middle; }
+      .arrow { fill: none; stroke: #5B6B82; stroke-width: 3; marker-end: url(#arrow); }
+      .callout { font: 500 22px 'PingFang SC','Microsoft YaHei',sans-serif; fill: #3D3280; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="810" fill="#F7F8FA"/>
+  <text class="title" x="70" y="72">Mock Skill 规范</text>
+  <text class="subtitle" x="70" y="111">按规则统一修改并替换多接口响应</text>
+
+  <path class="arrow" d="M410 247.5 H550"/>
+  <path class="arrow" d="M890 247.5 H1030"/>
+  <path class="arrow" d="M1200 325 V450"/>
+  <path class="arrow" d="M1030 527.5 H890"/>
+  <path class="arrow" d="M550 527.5 H410"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="170" width="340" height="155" rx="18" fill="#FFFFFF" stroke="#D8DEE8" stroke-width="2"/>
+    <circle cx="104" cy="204" r="18" fill="#7B8794"/>
+    <text class="step" x="104" y="204">1</text>
+    <text class="node-title" x="240" y="247">指定权限状态</text>
+    <text class="node-desc" x="240" y="282">正常 / 无权限 / 非协作人</text>
+    <text class="node-desc" x="240" y="310">待确认查看</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="550" y="170" width="340" height="155" rx="18" fill="#F1EEFF" stroke="#8A78D0" stroke-width="2"/>
+    <circle cx="584" cy="204" r="18" fill="#6D5CA8"/>
+    <text class="step" x="584" y="204">2</text>
+    <text class="node-title" x="720" y="247">读取接口改写规则</text>
+    <text class="node-desc" x="720" y="282">定位响应文件</text>
+    <text class="node-desc" x="720" y="310">定位字段与模块路径</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1030" y="170" width="340" height="155" rx="18" fill="#F1EEFF" stroke="#8A78D0" stroke-width="2"/>
+    <circle cx="1064" cy="204" r="18" fill="#6D5CA8"/>
+    <text class="step" x="1064" y="204">3</text>
+    <text class="node-title" x="1200" y="247">AI 批量修改响应</text>
+    <text class="node-desc" x="1200" y="282">按同一状态映射</text>
+    <text class="node-desc" x="1200" y="310">改写多个接口</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1030" y="450" width="340" height="155" rx="18" fill="#FFF6DB" stroke="#D2A63A" stroke-width="2"/>
+    <circle cx="1064" cy="484" r="18" fill="#B58B22"/>
+    <text class="step" x="1064" y="484">4</text>
+    <text class="node-title" x="1200" y="527">替换 Overrides 响应</text>
+    <text class="node-desc" x="1200" y="562">覆盖关联目录中的</text>
+    <text class="node-desc" x="1200" y="590">原响应文件</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="550" y="450" width="340" height="155" rx="18" fill="#EAF2FF" stroke="#6C93D2" stroke-width="2"/>
+    <circle cx="584" cy="484" r="18" fill="#4C78C2"/>
+    <text class="step" x="584" y="484">5</text>
+    <text class="node-title" x="720" y="527">Chrome 加载本地响应</text>
+    <text class="node-desc" x="720" y="562">使用本地文件</text>
+    <text class="node-desc" x="720" y="590">替换原接口返回</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="450" width="340" height="155" rx="18" fill="#EAF6EF" stroke="#62A47B" stroke-width="2"/>
+    <circle cx="104" cy="484" r="18" fill="#3F8A5E"/>
+    <text class="step" x="104" y="484">6</text>
+    <text class="node-title" x="240" y="527">刷新页面检查</text>
+    <text class="node-desc" x="240" y="562">核对字段状态</text>
+    <text class="node-desc" x="240" y="590">核对模块状态</text>
+  </g>
+
+  <rect x="70" y="680" width="1300" height="70" rx="14" fill="#EEE8FF"/>
+  <text class="callout" x="720" y="724">Skill 负责按规则统一修改和替换；Chrome Local Overrides 负责加载响应文件</text>
+</svg>

@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="760" viewBox="0 0 1800 760">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #252B36; }
+      .legend { font-size: 17px; font-weight: 600; fill: #4B5563; }
+      .range { font-size: 16px; font-weight: 650; }
+      .card-title { font-size: 22px; font-weight: 650; }
+      .result { font-size: 17px; fill: #525C6A; }
+      .month { font-size: 15px; fill: #7A8493; }
+      .track-label { font-size: 14px; fill: #7A8493; }
+    </style>
+    <marker id="axisArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#929AA6"/>
+    </marker>
+  </defs>
+
+  <rect width="1800" height="760" fill="#FFFFFF"/>
+
+  <!-- Small legend, not a page title. -->
+  <g transform="translate(90 48)">
+    <line x1="0" y1="0" x2="38" y2="0" stroke="#6F89AF" stroke-width="7" stroke-linecap="round"/>
+    <text x="51" y="6" class="legend">业务交付</text>
+    <line x1="170" y1="0" x2="208" y2="0" stroke="#5E9472" stroke-width="7" stroke-linecap="round"/>
+    <text x="221" y="6" class="legend">技术建设与调研</text>
+    <text x="420" y="6" class="month">2026 年</text>
+  </g>
+
+  <!-- Central calendar axis. The positions are proportional to the dates. -->
+  <line x1="104" y1="388" x2="1738" y2="388" stroke="#A6ADB7" stroke-width="2" stroke-dasharray="3 7" marker-end="url(#axisArrow)"/>
+
+  <g class="month">
+    <line x1="130" y1="378" x2="130" y2="398" stroke="#A6ADB7" stroke-width="1.5"/>
+    <text x="130" y="447" text-anchor="middle">4 月 20 日</text>
+    <line x1="294" y1="378" x2="294" y2="398" stroke="#A6ADB7" stroke-width="1.5"/>
+    <text x="294" y="447" text-anchor="middle">5 月</text>
+    <line x1="758" y1="378" x2="758" y2="398" stroke="#A6ADB7" stroke-width="1.5"/>
+    <text x="758" y="447" text-anchor="middle">6 月</text>
+    <line x1="1207" y1="378" x2="1207" y2="398" stroke="#A6ADB7" stroke-width="1.5"/>
+    <text x="1207" y="447" text-anchor="middle">7 月</text>
+    <line x1="1700" y1="378" x2="1700" y2="398" stroke="#A6ADB7" stroke-width="1.5"/>
+    <text x="1700" y="447" text-anchor="middle">至今</text>
+  </g>
+
+  <!-- Two narrow tracks make overlapping work visible without turning the diagram into a Gantt table. -->
+  <text x="88" y="351" text-anchor="end" class="track-label">业务</text>
+  <text x="88" y="426" text-anchor="end" class="track-label">技术</text>
+
+  <!-- Business delivery durations -->
+  <line x1="130" y1="354" x2="294" y2="354" stroke="#6F89AF" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="130" cy="354" r="6" fill="#FFFFFF" stroke="#6F89AF" stroke-width="3"/>
+  <circle cx="294" cy="354" r="7" fill="#6F89AF"/>
+
+  <line x1="429" y1="354" x2="773" y2="354" stroke="#6F89AF" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="429" cy="354" r="6" fill="#FFFFFF" stroke="#6F89AF" stroke-width="3"/>
+  <circle cx="773" cy="354" r="7" fill="#6F89AF"/>
+
+  <line x1="997" y1="354" x2="1192" y2="354" stroke="#C29A4B" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="997" cy="354" r="6" fill="#FFFFFF" stroke="#C29A4B" stroke-width="3"/>
+  <circle cx="1192" cy="354" r="7" fill="#C29A4B"/>
+
+  <!-- Technical construction and research durations -->
+  <line x1="474" y1="422" x2="1490" y2="422" stroke="#5E9472" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="474" cy="422" r="6" fill="#FFFFFF" stroke="#5E9472" stroke-width="3"/>
+  <circle cx="1490" cy="422" r="7" fill="#5E9472"/>
+
+  <line x1="1520" y1="422" x2="1700" y2="422" stroke="#C36A6A" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="1520" cy="422" r="6" fill="#FFFFFF" stroke="#C36A6A" stroke-width="3"/>
+  <circle cx="1700" cy="422" r="8" fill="#FFFFFF" stroke="#C36A6A" stroke-width="3"/>
+
+  <!-- Result 1: Head-creator data control, phase I -->
+  <line x1="294" y1="354" x2="294" y2="267" stroke="#9CA6B3" stroke-width="1.6" stroke-dasharray="4 5"/>
+  <g transform="translate(82 94)">
+    <rect x="0" y="0" width="286" height="164" rx="9" fill="#FFFFFF" stroke="#4F5661" stroke-width="1.7"/>
+    <path d="M9 0 H277 Q286 0 286 9 V42 H0 V9 Q0 0 9 0 Z" fill="#E2E8F3"/>
+    <text x="18" y="27" class="range">4 月 20 日—5 月 1 日</text>
+    <text x="18" y="82" class="card-title">头达数据分级管控一期</text>
+    <circle cx="24" cy="123" r="6" fill="#6F89AF"/>
+    <text x="40" y="130" class="result">一期上线</text>
+  </g>
+
+  <!-- Result 2: Head-creator data control, phase II -->
+  <line x1="773" y1="422" x2="773" y2="501" stroke="#9CA6B3" stroke-width="1.6" stroke-dasharray="4 5"/>
+  <g transform="translate(618 510)">
+    <rect x="0" y="0" width="310" height="164" rx="9" fill="#FFFFFF" stroke="#4F5661" stroke-width="1.7"/>
+    <path d="M9 0 H301 Q310 0 310 9 V42 H0 V9 Q0 0 9 0 Z" fill="#E2E8F3"/>
+    <text x="18" y="27" class="range">5 月 10 日—6 月 2 日</text>
+    <text x="18" y="82" class="card-title">头达数据分级管控二期</text>
+    <circle cx="24" cy="123" r="6" fill="#6F89AF"/>
+    <text x="40" y="130" class="result">二期上线</text>
+  </g>
+
+  <!-- Result 3: Content incentive -->
+  <line x1="1192" y1="354" x2="1192" y2="266" stroke="#9CA6B3" stroke-width="1.6" stroke-dasharray="4 5"/>
+  <g transform="translate(1050 84)">
+    <rect x="0" y="0" width="284" height="172" rx="9" fill="#FFFFFF" stroke="#4F5661" stroke-width="1.7"/>
+    <path d="M9 0 H275 Q284 0 284 9 V42 H0 V9 Q0 0 9 0 Z" fill="#F2E7CB"/>
+    <text x="18" y="27" class="range">6 月 17 日—6 月 30 日</text>
+    <text x="18" y="82" class="card-title">内容激励需求</text>
+    <circle cx="24" cy="126" r="6" fill="#C29A4B"/>
+    <text x="40" y="133" class="result">需求上线</text>
+  </g>
+
+  <!-- Result 4: AI Coding workflow -->
+  <line x1="1490" y1="422" x2="1490" y2="501" stroke="#9CA6B3" stroke-width="1.6" stroke-dasharray="4 5"/>
+  <g transform="translate(1325 510)">
+    <rect x="0" y="0" width="330" height="164" rx="9" fill="#FFFFFF" stroke="#4F5661" stroke-width="1.7"/>
+    <path d="M9 0 H321 Q330 0 330 9 V42 H0 V9 Q0 0 9 0 Z" fill="#DCECDF"/>
+    <text x="18" y="27" class="range">5 月 13 日—7 月 20 日</text>
+    <text x="18" y="82" class="card-title">AI Coding 工作流</text>
+    <circle cx="24" cy="123" r="6" fill="#5E9472"/>
+    <text x="40" y="130" class="result">完成阶段性建设</text>
+  </g>
+
+  <!-- Result 5: ongoing Agent evaluation research -->
+  <line x1="1700" y1="422" x2="1700" y2="266" stroke="#9CA6B3" stroke-width="1.6" stroke-dasharray="4 5"/>
+  <g transform="translate(1456 94)">
+    <rect x="0" y="0" width="286" height="164" rx="9" fill="#FFFFFF" stroke="#4F5661" stroke-width="1.7"/>
+    <path d="M9 0 H277 Q286 0 286 9 V42 H0 V9 Q0 0 9 0 Z" fill="#F0DADA"/>
+    <text x="18" y="27" class="range">7 月 22 日—至今</text>
+    <text x="18" y="82" class="card-title">Agent 评测调研</text>
+    <circle cx="24" cy="123" r="6" fill="#C36A6A"/>
+    <text x="40" y="130" class="result">形成相关调研结果</text>
+  </g>
+</svg>

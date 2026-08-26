@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">后端数据安全边界</title>
+  <desc id="desc">前端请求业务数据，后端完成权限校验；通过时返回真实数据，未通过时完成字段脱敏并只返回脱敏值和权限状态。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#596273"/>
+    </marker>
+    <marker id="safe-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#3f8a5e"/>
+    </marker>
+    <marker id="mask-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#c47a2c"/>
+    </marker>
+    <style>
+      .panel { stroke:#8f99a7; stroke-width:1.3; }
+      .head { fill:#eef0f3; stroke:#7f8792; stroke-width:1.2; }
+      .head-text { font:600 20px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#273142; text-anchor:middle; }
+      .node { stroke-width:1.5; }
+      .frontend { fill:#eaf2ff; stroke:#4c78c2; }
+      .backend { fill:#f2f4f7; stroke:#657183; }
+      .safe { fill:#edf8f1; stroke:#3f8a5e; }
+      .masked { fill:#fff3e8; stroke:#c47a2c; }
+      .text { font:500 18px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#29313d; text-anchor:middle; }
+      .small { font:400 15px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#414b59; text-anchor:middle; }
+      .arrow { fill:none; stroke:#596273; stroke-width:2; marker-end:url(#arrow); }
+      .safe-line { fill:none; stroke:#3f8a5e; stroke-width:2; marker-end:url(#safe-arrow); }
+      .mask-line { fill:none; stroke:#c47a2c; stroke-width:2; marker-end:url(#mask-arrow); }
+      .label-safe { font:600 15px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#2f754a; }
+      .label-mask { font:600 15px Arial,'PingFang SC','Microsoft YaHei',sans-serif; fill:#a75c1c; }
+    </style>
+  </defs>
+
+  <!-- 三个职责区，不使用额外标题和装饰图标 -->
+  <rect x="30" y="30" width="330" height="840" rx="10" fill="#fbfdff" class="panel"/>
+  <rect x="360" y="30" width="780" height="840" rx="10" fill="#fcfcfd" class="panel"/>
+  <rect x="1140" y="30" width="430" height="840" rx="10" fill="#fbfdff" class="panel"/>
+
+  <rect x="30" y="30" width="330" height="68" class="head"/>
+  <rect x="360" y="30" width="780" height="68" class="head"/>
+  <rect x="1140" y="30" width="430" height="68" class="head"/>
+  <text x="195" y="73" class="head-text">前端请求</text>
+  <text x="750" y="73" class="head-text">后端：数据安全边界</text>
+  <text x="1355" y="73" class="head-text">前端展示</text>
+
+  <rect x="75" y="386" width="240" height="94" rx="10" class="node frontend"/>
+  <text x="195" y="439" class="text">请求业务数据</text>
+
+  <polygon points="540,433 675,330 810,433 675,536" class="node backend"/>
+  <text x="675" y="440" class="text">权限校验</text>
+
+  <rect x="855" y="200" width="240" height="94" rx="10" class="node safe"/>
+  <text x="975" y="241" class="text"><tspan x="975">返回真实数据</tspan><tspan x="975" dy="25" class="small">仅在校验通过时</tspan></text>
+
+  <rect x="855" y="570" width="240" height="112" rx="10" class="node masked"/>
+  <text x="975" y="632" class="text">返回脱敏结果</text>
+
+  <rect x="1200" y="200" width="310" height="94" rx="10" class="node safe"/>
+  <text x="1355" y="241" class="text"><tspan x="1355">识别为正常数据</tspan><tspan x="1355" dy="25" class="small">展示真实数据</tspan></text>
+
+  <rect x="1200" y="570" width="310" height="112" rx="10" class="node frontend"/>
+  <text x="1355" y="610" class="text"><tspan x="1355">识别为脱敏状态</tspan><tspan x="1355" dy="25" class="small">展示 **** 和权限操作入口</tspan></text>
+
+  <path d="M315 433 H540" class="arrow"/>
+  <path d="M730 372 V247 H855" class="safe-line"/>
+  <text x="742" y="324" class="label-safe">通过</text>
+  <path d="M730 494 V626 H855" class="mask-line"/>
+  <text x="742" y="535" class="label-mask">未通过</text>
+  <path d="M1095 247 H1200" class="safe-line"/>
+  <path d="M1095 626 H1200" class="mask-line"/>
+
+</svg>

@@ -1,0 +1,32 @@
+flowchart LR
+    A["字段级与模块级权限协议"] --> F["字段级权限"]
+    A --> M["模块级权限"]
+
+    F --> F1["复用原业务接口"]
+    F1 --> F2["后端在返回前<br/>转换受控字段"]
+    F2 --> F3{"原字段返回值"}
+    F3 -- "正常值" --> F4["正常展示"]
+    F3 -- "脱敏值" --> F5["类型前缀 + payload<br/>字符串：****<br/>整数：-99999<br/>浮点数：-99999."]
+    F5 --> F6{"payload"}
+    F6 -- "888" --> F7["缺少协作人"]
+    F6 -- "999" --> F8["需要点击查看"]
+    F6 -- "普通 front_key" --> F9["缺少数据权限"]
+    F9 --> F10["front_key 标识<br/>对应的数据维度权限"]
+
+    M --> M2["调用 employee_permission<br/>查询模块权限"]
+    M2 --> M3["has_permission<br/>need_eyes<br/>is_coo"]
+    M3 -- "has_permission=true<br/>need_eyes=false" --> M4["正常展示"]
+    M3 -- "has_permission=true<br/>need_eyes=true" --> M5["需要点击查看"]
+    M3 -- "has_permission=false<br/>is_coo=true" --> M6["缺少数据权限"]
+    M6 --> M8["模块提前约定<br/>对应的数据维度权限"]
+    M3 -- "has_permission=false<br/>is_coo=false" --> M7["缺少协作人"]
+
+    classDef root fill:#2F4668,stroke:#20344F,color:#FFFFFF,stroke-width:1.5px;
+    classDef scope fill:#E8EEF7,stroke:#617A9B,color:#22344E,stroke-width:1.4px;
+    classDef process fill:#FFF1D6,stroke:#B98328,color:#60430F,stroke-width:1.2px;
+    classDef result fill:#EAF5EE,stroke:#5E8B6D,color:#294C34,stroke-width:1.2px;
+
+    class A root;
+    class F,M scope;
+    class F1,F2,F3,F5,F6,M2,M3 process;
+    class F4,F7,F8,F9,F10,M4,M5,M6,M7,M8 result;
