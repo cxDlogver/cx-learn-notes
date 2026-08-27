@@ -1,0 +1,98 @@
+{
+  "nodes": [
+    {
+      "angle": 0,
+      "height": 605.28662109375,
+      "id": "d1:1",
+      "image": {
+        "token": "TI5Xbszfio1e9wxEeBrcocgPnmg"
+      },
+      "style": {
+        "border_style": "none"
+      },
+      "type": "image",
+      "width": 931.7333374023438,
+      "x": -1060.975341796875,
+      "y": -137.36358642578125,
+      "z_index": 0
+    },
+    {
+      "angle": 0,
+      "height": 931.7802734375,
+      "id": "d1:2",
+      "image": {
+        "token": "LB4cbOBYGo7oyxxtOmWc78d6nfD"
+      },
+      "style": {
+        "border_style": "none"
+      },
+      "type": "image",
+      "width": 2587.801513671875,
+      "x": 12.739761352539062,
+      "y": -300.6103820800781,
+      "z_index": 1
+    },
+    {
+      "angle": 0,
+      "connector": {
+        "caption_auto_direction": false,
+        "end": {
+          "arrow_style": "triangle_arrow",
+          "attached_object": {
+            "id": "d1:2",
+            "position": {
+              "x": 0,
+              "y": 0.5
+            },
+            "snap_to": "left"
+          }
+        },
+        "end_object": {
+          "id": "d1:2",
+          "position": {
+            "x": 0,
+            "y": 0.5
+          },
+          "snap_to": "left"
+        },
+        "shape": "polyline",
+        "specified_coordinate": true,
+        "start": {
+          "arrow_style": "none",
+          "attached_object": {
+            "id": "d1:1",
+            "position": {
+              "x": 1,
+              "y": 0.5
+            },
+            "snap_to": "right"
+          }
+        },
+        "start_object": {
+          "id": "d1:1",
+          "position": {
+            "x": 1,
+            "y": 0.5
+          },
+          "snap_to": "right"
+        },
+        "turning_points": []
+      },
+      "height": 0,
+      "id": "c1:1",
+      "style": {
+        "border_color": "#000000",
+        "border_color_type": 0,
+        "border_opacity": 100,
+        "border_style": "solid",
+        "border_width": "bold",
+        "theme_border_color_code": -1
+      },
+      "type": "connector",
+      "width": 141.9817352294922,
+      "x": -129.2420196533203,
+      "y": 165.27972412109375,
+      "z_index": 2
+    }
+  ]
+}

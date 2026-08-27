@@ -1,0 +1,120 @@
+{
+  "nodes": [
+    {
+      "angle": 0,
+      "height": 1644,
+      "id": "d1:3",
+      "image": {
+        "token": "HAxgbS5e6o38xRxe7Wqc3KaNnWg"
+      },
+      "style": {
+        "border_style": "none"
+      },
+      "type": "image",
+      "width": 1968,
+      "x": 766.6201171875,
+      "y": -715.4498291015625,
+      "z_index": 0
+    },
+    {
+      "angle": 0,
+      "height": 1666,
+      "id": "d1:4",
+      "image": {
+        "token": "IQ8nbzR0xoytR8xxdrlc0t9FnVg"
+      },
+      "style": {
+        "border_style": "none"
+      },
+      "type": "image",
+      "width": 1874,
+      "x": -1586.8870849609375,
+      "y": -726.4498291015625,
+      "z_index": 1
+    },
+    {
+      "angle": 0,
+      "connector": {
+        "caption_auto_direction": false,
+        "caption_position": 0.4416966140270233,
+        "caption_position_type": 0,
+        "captions": {
+          "data": [
+            {
+              "angle": 0,
+              "font_size": 48,
+              "font_weight": "bold",
+              "horizontal_align": "center",
+              "italic": false,
+              "line_through": false,
+              "text": "单个Case",
+              "text_background_color_type": 0,
+              "text_color": "#1f2329",
+              "text_color_type": 0,
+              "theme_text_background_color_code": -1,
+              "theme_text_color_code": -1,
+              "underline": false,
+              "vertical_align": "mid"
+            }
+          ]
+        },
+        "end": {
+          "arrow_style": "triangle_arrow",
+          "attached_object": {
+            "id": "d1:3",
+            "position": {
+              "x": 0,
+              "y": 0.5
+            },
+            "snap_to": "left"
+          }
+        },
+        "end_object": {
+          "id": "d1:3",
+          "position": {
+            "x": 0,
+            "y": 0.5
+          },
+          "snap_to": "left"
+        },
+        "shape": "polyline",
+        "specified_coordinate": true,
+        "start": {
+          "arrow_style": "none",
+          "attached_object": {
+            "id": "d1:4",
+            "position": {
+              "x": 1,
+              "y": 0.5
+            },
+            "snap_to": "right"
+          }
+        },
+        "start_object": {
+          "id": "d1:4",
+          "position": {
+            "x": 1,
+            "y": 0.5
+          },
+          "snap_to": "right"
+        },
+        "turning_points": []
+      },
+      "height": 0,
+      "id": "c1:2",
+      "style": {
+        "border_color": "#000000",
+        "border_color_type": 0,
+        "border_opacity": 100,
+        "border_style": "solid",
+        "border_width": "bold",
+        "theme_border_color_code": -1
+      },
+      "type": "connector",
+      "width": 479.50732421875,
+      "x": 287.1128234863281,
+      "y": 106.5501480102539,
+      "z_index": 2
+    }
+  ]
+}
