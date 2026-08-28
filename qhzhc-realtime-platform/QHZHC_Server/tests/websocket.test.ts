@@ -2,7 +2,7 @@ import { createServer, type Server } from "node:http";
 import { WebSocket } from "ws";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/server/app.js";
-import { AuthService, SESSION_COOKIE } from "../src/server/auth.js";
+import { AuthService } from "../src/server/auth.js";
 import { AppDatabase } from "../src/server/database.js";
 import { RobotSocketHub } from "../src/server/robot-socket-hub.js";
 import { TelemetrySimulator } from "../src/server/simulator.js";
@@ -18,8 +18,12 @@ describe("RobotSocket WebSocket resume", () => {
 
   beforeEach(async () => {
     database = new AppDatabase(":memory:", 10_000);
-    const auth = new AuthService(database, 60_000);
-    token = auth.login("admin", "Admin@123456").token;
+    const auth = new AuthService(database, {
+      accessTokenTtlMs: 60_000,
+      refreshTokenTtlMs: 7 * 24 * 60 * 60 * 1000,
+      jwtSecret: "test-secret-with-at-least-thirty-two-bytes",
+    });
+    token = (await auth.login("admin", "Admin@123456")).accessToken;
     simulator = new TelemetrySimulator(database);
     const app = createApp({ database, auth, simulator, disconnectClients: () => hub.disconnectAll() });
     server = createServer(app);
@@ -41,13 +45,17 @@ describe("RobotSocket WebSocket resume", () => {
 
   it("replays every stored point after the acknowledged cursor", async () => {
     const messages: ServerMessage[] = [];
-    const socket = new WebSocket(`ws://127.0.0.1:${port}/ws/robots/QH-ZHC-01`, {
-      headers: { Cookie: `${SESSION_COOKIE}=${token}` },
-    });
+    const socket = new WebSocket(`ws://127.0.0.1:${port}/ws/robots/QH-ZHC-01`);
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("websocket replay timeout")), 2_000);
       socket.on("open", () => {
-        socket.send(JSON.stringify({ type: "hello", protocolVersion: 1, robotId: "QH-ZHC-01", lastSequence: 3 }));
+        socket.send(JSON.stringify({
+          type: "authenticate",
+          accessToken: token,
+          protocolVersion: 1,
+          robotId: "QH-ZHC-01",
+          lastSequence: 3,
+        }));
       });
       socket.on("message", (raw) => {
         messages.push(JSON.parse(raw.toString()) as ServerMessage);
@@ -71,13 +79,17 @@ describe("RobotSocket WebSocket resume", () => {
   });
 
   it("broadcasts a newly committed simulator batch to an initialized client", async () => {
-    const socket = new WebSocket(`ws://127.0.0.1:${port}/ws/robots/QH-ZHC-01`, {
-      headers: { Cookie: `${SESSION_COOKIE}=${token}` },
-    });
+    const socket = new WebSocket(`ws://127.0.0.1:${port}/ws/robots/QH-ZHC-01`);
     const liveSequences = await new Promise<number[]>((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("live broadcast timeout")), 2_000);
       socket.on("open", () => {
-        socket.send(JSON.stringify({ type: "hello", protocolVersion: 1, robotId: "QH-ZHC-01", lastSequence: 8 }));
+        socket.send(JSON.stringify({
+          type: "authenticate",
+          accessToken: token,
+          protocolVersion: 1,
+          robotId: "QH-ZHC-01",
+          lastSequence: 8,
+        }));
       });
       socket.on("message", (raw) => {
         const message = JSON.parse(raw.toString()) as ServerMessage;
@@ -93,11 +105,33 @@ describe("RobotSocket WebSocket resume", () => {
     socket.terminate();
   });
 
-  it("rejects an upgrade without a session", async () => {
+  it("accepts the upgrade but rejects a non-authentication first message", async () => {
     const socket = new WebSocket(`ws://127.0.0.1:${port}/ws/robots/QH-ZHC-01`);
-    const status = await new Promise<number>((resolve) => {
-      socket.on("unexpected-response", (_request, response) => resolve(response.statusCode ?? 0));
+    const code = await new Promise<number>((resolve, reject) => {
+      socket.on("open", () => {
+        socket.send(JSON.stringify({ type: "ping", nonce: "early", sentAt: Date.now() }));
+      });
+      socket.on("close", resolve);
+      socket.on("error", reject);
     });
-    expect(status).toBe(401);
+    expect(code).toBe(4100);
+  });
+
+  it("closes with 4001 when the first message carries an invalid access token", async () => {
+    const socket = new WebSocket(`ws://127.0.0.1:${port}/ws/robots/QH-ZHC-01`);
+    const code = await new Promise<number>((resolve, reject) => {
+      socket.on("open", () => {
+        socket.send(JSON.stringify({
+          type: "authenticate",
+          accessToken: "invalid.jwt.token",
+          protocolVersion: 1,
+          robotId: "QH-ZHC-01",
+          lastSequence: 0,
+        }));
+      });
+      socket.on("close", resolve);
+      socket.on("error", reject);
+    });
+    expect(code).toBe(4001);
   });
 });

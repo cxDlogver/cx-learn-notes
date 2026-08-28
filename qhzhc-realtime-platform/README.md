@@ -68,7 +68,9 @@ npm run start
 | `HOST` | `127.0.0.1` | Node.js 监听地址 |
 | `PORT` | `18080` | HTTP 与 WebSocket 端口 |
 | `DATABASE_PATH` | `.data/qhzhc.sqlite` | SQLite 文件，相对服务端工作目录 |
-| `SESSION_TTL_HOURS` | `24` | 登录会话有效期 |
+| `ACCESS_TOKEN_TTL_MINUTES` | `15` | 内存 Access JWT 有效期 |
+| `REFRESH_TOKEN_TTL_DAYS` | `7` | Refresh Token Family 绝对有效期 |
+| `JWT_SECRET` | 仅开发环境提供默认值 | 生产环境必须配置至少 32 字节的随机密钥 |
 | `TELEMETRY_RETENTION` | `100000` | 服务端保留的最新走航点数 |
 | `VUE_APP_API_BASE_URL` | 自动使用 `18080` | 前端 API 地址 |
 

@@ -3,7 +3,7 @@ import type { SimulatorStatus, TelemetryPoint } from "./types.js";
 export const PROTOCOL_VERSION = 1;
 export const WS_CLOSE = {
   NORMAL: 1000,
-  SESSION_EXPIRED: 4001,
+  AUTHENTICATION_EXPIRED: 4001,
   FORBIDDEN: 4003,
   PROTOCOL_ERROR: 4100,
   SERVER_ERROR: 4500,
@@ -11,7 +11,8 @@ export const WS_CLOSE = {
 
 export type ClientMessage =
   | {
-      type: "hello";
+      type: "authenticate";
+      accessToken: string;
       protocolVersion: number;
       robotId: string;
       lastSequence: number;
@@ -46,7 +47,7 @@ export type ServerMessage =
       requestedFrom: number;
       earliestAvailable: number;
       latestSequence: number;
-      action: "http-resync";
+      action: "skip-to-latest";
     }
   | { type: "error"; code: string; message: string; recoverable: boolean };
 
@@ -54,8 +55,10 @@ export function isClientMessage(value: unknown): value is ClientMessage {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Record<string, unknown>;
   switch (candidate.type) {
-    case "hello":
+    case "authenticate":
       return (
+        typeof candidate.accessToken === "string" &&
+        candidate.accessToken.length > 0 &&
         candidate.protocolVersion === PROTOCOL_VERSION &&
         typeof candidate.robotId === "string" &&
         Number.isSafeInteger(candidate.lastSequence) &&

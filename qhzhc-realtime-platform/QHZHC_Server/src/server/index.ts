@@ -9,7 +9,11 @@ import { WeatherService } from "./weather.js";
 
 const config = loadConfig();
 const database = new AppDatabase(config.databasePath, config.telemetryRetention);
-const auth = new AuthService(database, config.sessionTtlMs);
+const auth = new AuthService(database, {
+  accessTokenTtlMs: config.accessTokenTtlMs,
+  refreshTokenTtlMs: config.refreshTokenTtlMs,
+  jwtSecret: config.jwtSecret,
+});
 const simulator = new TelemetrySimulator(database);
 const weather = new WeatherService();
 let socketHub: RobotSocketHub | null = null;
@@ -32,11 +36,14 @@ server.listen(config.port, config.host, () => {
   console.log("Demo account: admin / Admin@123456");
 });
 
-const sessionCleanup = setInterval(() => database.cleanupExpiredSessions(), 60 * 60 * 1000);
+const tokenCleanup = setInterval(() => {
+  database.cleanupExpiredSessions();
+  database.cleanupExpiredRefreshTokens();
+}, 60 * 60 * 1000);
 
 function shutdown(signal: string): void {
   console.log(`Received ${signal}, shutting down...`);
-  clearInterval(sessionCleanup);
+  clearInterval(tokenCleanup);
   simulator.close();
   socketHub?.close();
   server.close(() => {

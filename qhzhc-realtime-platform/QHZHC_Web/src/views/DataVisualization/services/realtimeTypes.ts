@@ -44,7 +44,7 @@ export type ServerMessage =
       requestedFrom: number;
       earliestAvailable: number;
       latestSequence: number;
-      action: "http-resync";
+      action: "skip-to-latest";
     }
   | { type: "simulator_status"; status: unknown }
   | { type: "error"; code: string; message: string; recoverable: boolean };

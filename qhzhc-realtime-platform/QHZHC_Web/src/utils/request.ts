@@ -1,6 +1,10 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from "axios";
 import { Message } from "element-ui";
-import router from "../router";
+import { accessTokenManager } from "@/services/accessToken";
+import {
+  applyAccessToken,
+  createAuthErrorHandler,
+} from "@/services/httpAuth";
 import { resolveApiBaseUrl } from "./apiBaseUrl";
 
 const service = axios.create({
@@ -9,21 +13,36 @@ const service = axios.create({
   timeout: 30_000,
 });
 
-service.interceptors.request.use((config: AxiosRequestConfig) => config);
+service.interceptors.request.use((config: AxiosRequestConfig) =>
+  applyAccessToken(config, accessTokenManager.getAccessToken()),
+);
+
+let unauthenticatedHandler: () => void | Promise<void> = () => undefined;
+
+export function setUnauthenticatedHandler(
+  handler: () => void | Promise<void>,
+): void {
+  unauthenticatedHandler = handler;
+}
+
+export async function handleUnauthenticated(): Promise<void> {
+  sessionStorage.removeItem("qhzhc_authenticated");
+  localStorage.removeItem("user");
+  localStorage.removeItem("userform");
+  await unauthenticatedHandler();
+}
+
+const handleAuthError = createAuthErrorHandler(
+  service,
+  accessTokenManager,
+  handleUnauthenticated,
+);
 
 service.interceptors.response.use(
   (response) => response,
   async (rawError: AxiosError<{ message?: string; detail?: string }>) => {
     if (rawError.response?.status === 401) {
-      sessionStorage.removeItem("qhzhc_authenticated");
-      localStorage.removeItem("user");
-      localStorage.removeItem("userform");
-      if (router.currentRoute.path !== "/login") {
-        await router.replace({
-          path: "/login",
-          query: { redirect: router.currentRoute.fullPath },
-        });
-      }
+      return handleAuthError(rawError);
     } else {
       Message.error(
         rawError.response?.data?.message ||

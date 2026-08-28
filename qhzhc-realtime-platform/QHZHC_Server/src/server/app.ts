@@ -6,13 +6,21 @@ import type {
   TelemetryPoint,
   UserSession,
 } from "../shared/index.js";
-import { AuthError, AuthService, SESSION_COOKIE } from "./auth.js";
+import {
+  AuthError,
+  AuthService,
+  REFRESH_COOKIE,
+  SESSION_COOKIE,
+  parseCookies,
+  type AuthPrincipal,
+  type TokenPair,
+} from "./auth.js";
 import { AppDatabase } from "./database.js";
 import { TelemetrySimulator } from "./simulator.js";
 import { WeatherProviderError, WeatherService } from "./weather.js";
 
 interface AuthenticatedRequest extends Request {
-  user: UserSession;
+  user: AuthPrincipal;
 }
 
 export interface AppServices {
@@ -48,6 +56,34 @@ function publicProfile(user: UserSession): Record<string, unknown> {
     can_visit_realtime: true,
     can_visit_history: true,
   };
+}
+
+function setRefreshCookie(
+  request: Request,
+  response: Response,
+  tokens: TokenPair,
+): void {
+  response.cookie(REFRESH_COOKIE, tokens.refreshToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.secure,
+    expires: new Date(tokens.refreshTokenExpiresAt),
+    path: "/api/auth",
+  });
+}
+
+function authResponse(tokens: TokenPair): Record<string, unknown> {
+  const profile = publicProfile(tokens.user);
+  return {
+    ...profile,
+    user: profile,
+    accessToken: tokens.accessToken,
+    accessTokenExpiresAt: tokens.accessTokenExpiresAt,
+  };
+}
+
+function clearRefreshCookie(response: Response): void {
+  response.clearCookie(REFRESH_COOKIE, { path: "/api/auth" });
 }
 
 function legacyPoint(point: TelemetryPoint): Record<string, unknown> {
@@ -98,7 +134,7 @@ export function createApp(services: AppServices): express.Express {
     ) {
       response.setHeader("Access-Control-Allow-Origin", origin);
       response.setHeader("Access-Control-Allow-Credentials", "true");
-      response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
       response.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
       response.setHeader("Vary", "Origin");
     }
@@ -121,47 +157,56 @@ export function createApp(services: AppServices): express.Express {
 
   app.post(
     "/api/auth/register",
-    asyncSafe((request, response) => {
+    asyncSafe(async (request, response) => {
       const { username, displayName, password } = request.body as Record<string, unknown>;
       services.auth.register(String(username ?? ""), String(displayName ?? ""), String(password ?? ""));
-      const session = services.auth.login(String(username), String(password));
-      response.cookie(SESSION_COOKIE, session.token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: request.secure,
-        expires: new Date(session.expiresAt),
-        path: "/",
-      });
-      const profile = publicProfile(session.user);
-      response.status(201).json({ ...profile, user: profile, message: "注册成功" });
+      const tokens = await services.auth.login(String(username), String(password));
+      setRefreshCookie(request, response, tokens);
+      response.clearCookie(SESSION_COOKIE, { path: "/" });
+      response.status(201).json({ ...authResponse(tokens), message: "注册成功" });
     }),
   );
 
   app.post(
     "/api/auth/login",
-    asyncSafe((request, response) => {
+    asyncSafe(async (request, response) => {
       const { username, password } = request.body as Record<string, unknown>;
-      const session = services.auth.login(String(username ?? ""), String(password ?? ""));
-      response.cookie(SESSION_COOKIE, session.token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: request.secure,
-        expires: new Date(session.expiresAt),
-        path: "/",
-      });
-      const profile = publicProfile(session.user);
-      response.json({ ...profile, user: profile });
+      const tokens = await services.auth.login(String(username ?? ""), String(password ?? ""));
+      setRefreshCookie(request, response, tokens);
+      response.clearCookie(SESSION_COOKIE, { path: "/" });
+      response.json(authResponse(tokens));
     }),
   );
 
-  const requireAuth = (request: Request, response: Response, next: NextFunction): void => {
-    const user = services.auth.sessionFromRequest(request);
-    if (!user) {
-      response.status(401).json({ code: "UNAUTHENTICATED", message: "请先登录" });
-      return;
-    }
-    (request as AuthenticatedRequest).user = user;
-    next();
+  app.post(
+    "/api/auth/refresh",
+    asyncSafe(async (request, response) => {
+      const refreshToken = parseCookies(request.headers.cookie)[REFRESH_COOKIE];
+      if (!refreshToken) {
+        throw new AuthError("缺少刷新凭证", 401, "REFRESH_TOKEN_INVALID");
+      }
+      try {
+        const tokens = await services.auth.refresh(refreshToken);
+        setRefreshCookie(request, response, tokens);
+        response.json({
+          accessToken: tokens.accessToken,
+          accessTokenExpiresAt: tokens.accessTokenExpiresAt,
+        });
+      } catch (error) {
+        if (error instanceof AuthError) clearRefreshCookie(response);
+        throw error;
+      }
+    }),
+  );
+
+  const requireAuth: express.RequestHandler = (request, _response, next) => {
+    services.auth
+      .principalFromRequest(request)
+      .then((principal) => {
+        (request as AuthenticatedRequest).user = principal;
+        next();
+      })
+      .catch(next);
   };
 
   app.get("/api/auth/session", requireAuth, (request, response) => {
@@ -169,7 +214,8 @@ export function createApp(services: AppServices): express.Express {
   });
 
   app.post("/api/auth/logout", requireAuth, (request, response) => {
-    services.auth.logout(request);
+    services.auth.revokeFamily((request as AuthenticatedRequest).user.familyId);
+    clearRefreshCookie(response);
     response.clearCookie(SESSION_COOKIE, { path: "/" });
     response.status(204).end();
   });

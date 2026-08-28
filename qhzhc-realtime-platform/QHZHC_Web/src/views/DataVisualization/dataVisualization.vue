@@ -589,7 +589,8 @@ export default {
       const statusText = {
         connected: "连接成功",
         disconnected: "连接断开，正在重连",
-        error: "连接失败，正在重连",
+        "auth-recovering": "登录凭证更新中",
+        error: "实时连接失败",
         "invalid-packet": "实时数据格式错误",
       };
       this.signalState = statusText[status] || this.signalState;

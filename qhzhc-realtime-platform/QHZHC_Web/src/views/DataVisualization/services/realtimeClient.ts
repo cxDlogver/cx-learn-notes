@@ -1,4 +1,5 @@
-import { resolveApiBaseUrl } from "@/utils/apiBaseUrl";
+import { accessTokenManager } from "@/services/accessToken";
+import { handleUnauthenticated } from "@/utils/request";
 import { FrameTelemetryQueue } from "./FrameTelemetryQueue";
 import { OrderedTelemetryBuffer } from "./OrderedTelemetryBuffer";
 import {
@@ -7,7 +8,12 @@ import {
   type TelemetryPoint,
 } from "./realtimeTypes";
 
-type RealtimeStatus = "connected" | "disconnected" | "error" | "invalid-packet";
+type RealtimeStatus =
+  | "connected"
+  | "disconnected"
+  | "auth-recovering"
+  | "error"
+  | "invalid-packet";
 
 interface RealtimeClientOptions {
   url: string;
@@ -16,6 +22,9 @@ interface RealtimeClientOptions {
   initialSequence?: number;
   WebSocketImpl?: typeof WebSocket;
   random?: () => number;
+  getAccessToken?: () => string | null;
+  refreshAccessToken?: () => Promise<string>;
+  onAuthenticationFailure?: () => void | Promise<void>;
 }
 
 const PROTOCOL_VERSION = 1;
@@ -35,12 +44,22 @@ export default class RealtimeClient {
   private readonly frameQueue: FrameTelemetryQueue;
   private readonly WebSocketImpl: typeof WebSocket;
   private readonly random: () => number;
+  private readonly getAccessToken: () => string | null;
+  private readonly refreshAccessToken: () => Promise<string>;
+  private readonly onAuthenticationFailure: () => void | Promise<void>;
 
   constructor(private readonly options: RealtimeClientOptions) {
     this.lastSequence = Math.max(0, Number(options.initialSequence) || 0);
     this.buffer = new OrderedTelemetryBuffer(this.lastSequence + 1);
     this.WebSocketImpl = options.WebSocketImpl || WebSocket;
     this.random = options.random || Math.random;
+    this.getAccessToken =
+      options.getAccessToken || (() => accessTokenManager.getAccessToken());
+    this.refreshAccessToken =
+      options.refreshAccessToken ||
+      (() => accessTokenManager.refreshAccessToken());
+    this.onAuthenticationFailure =
+      options.onAuthenticationFailure || handleUnauthenticated;
     this.frameQueue = new FrameTelemetryQueue((points) => this.publishFrame(points));
   }
 
@@ -84,8 +103,14 @@ export default class RealtimeClient {
     socket.onopen = () => {
       if (this.socket !== socket || this.stopped) return;
       this.lastSeenAt = Date.now();
+      const accessToken = this.getAccessToken();
+      if (!accessToken) {
+        socket.close(4001, "access token missing");
+        return;
+      }
       socket.send(JSON.stringify({
-        type: "hello",
+        type: "authenticate",
+        accessToken,
         protocolVersion: PROTOCOL_VERSION,
         robotId: ROBOT_ID,
         lastSequence: this.lastSequence,
@@ -100,18 +125,7 @@ export default class RealtimeClient {
       if (!this.stopped) this.options.onStatus("error");
     };
     socket.onclose = (event) => {
-      if (this.socket !== socket) return;
-      this.socket = null;
-      this.clearHeartbeat();
-      if (!this.stopped) {
-        if ([4001, 4003, 4100].includes(event.code)) {
-          this.stopped = true;
-          this.options.onStatus("error");
-          return;
-        }
-        this.options.onStatus("disconnected");
-        this.scheduleReconnect();
-      }
+      void this.handleClose(socket, event);
     };
   }
 
@@ -140,7 +154,7 @@ export default class RealtimeClient {
     }
     if (message.type === "pong") return;
     if (message.type === "gap") {
-      void this.recoverGap(message.earliestAvailable);
+      this.skipGap(message.latestSequence);
       return;
     }
     if (message.type === "error") this.options.onStatus("error");
@@ -169,22 +183,48 @@ export default class RealtimeClient {
     }, 1000);
   }
 
-  private async recoverGap(earliestAvailable: number): Promise<void> {
-    try {
-      const response = await fetch(
-        `${resolveApiBaseUrl()}/api/telemetry/latest?robotId=${ROBOT_ID}&limit=5000`,
-        { credentials: "include" },
-      );
-      if (!response.ok) throw new Error("HTTP resync failed");
-      const payload = (await response.json()) as { points?: TelemetryPoint[] };
-      const points = Array.isArray(payload.points) ? payload.points : [];
-      const first = points[0];
-      this.frameQueue.stop();
-      this.buffer.reset(first?.sequence || earliestAvailable);
-      this.frameQueue.enqueue(this.buffer.ingest(points));
-    } catch (_error) {
-      this.options.onStatus("error");
+  private skipGap(latestSequence: number): void {
+    const resumeSequence = Number.isSafeInteger(latestSequence)
+      ? Math.max(this.lastSequence, latestSequence)
+      : this.lastSequence;
+    this.frameQueue.stop();
+    this.lastResendKey = "";
+    this.lastSequence = resumeSequence;
+    sessionStorage.setItem("qhzhc_last_sequence", String(this.lastSequence));
+    this.buffer.reset(this.lastSequence + 1);
+    this.send({ type: "ack", sequence: this.lastSequence });
+  }
+
+  private async handleClose(socket: WebSocket, event: CloseEvent): Promise<void> {
+    if (this.socket !== socket) return;
+    this.socket = null;
+    this.clearHeartbeat();
+    if (this.stopped) return;
+
+    if (event.code === 4001) {
+      this.options.onStatus("auth-recovering");
+      try {
+        await this.refreshAccessToken();
+        if (!this.stopped) {
+          this.attempt = 0;
+          this.connect();
+        }
+      } catch (_error) {
+        this.stopped = true;
+        this.options.onStatus("error");
+        await this.onAuthenticationFailure();
+      }
+      return;
     }
+
+    if (event.code === 4003 || event.code === 4100) {
+      this.stopped = true;
+      this.options.onStatus("error");
+      return;
+    }
+
+    this.options.onStatus("disconnected");
+    this.scheduleReconnect();
   }
 
   private startHeartbeat(): void {

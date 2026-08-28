@@ -4,6 +4,7 @@ import {
   fetchSessionProfile,
   type SessionProfile,
 } from "@/services/authSession";
+import { setUnauthenticatedHandler } from "@/utils/request";
 
 Vue.use(VueRouter);
 
@@ -49,6 +50,15 @@ const routes: RouteConfig[] = [
 ];
 
 const router = new VueRouter({ routes });
+
+setUnauthenticatedHandler(async () => {
+  if (router.currentRoute.path !== "/login") {
+    await router.replace({
+      path: "/login",
+      query: { redirect: router.currentRoute.fullPath },
+    });
+  }
+});
 
 function clearSessionProfile(): void {
   sessionStorage.removeItem("qhzhc_authenticated");

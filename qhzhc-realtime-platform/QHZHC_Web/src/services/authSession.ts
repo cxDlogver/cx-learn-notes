@@ -1,5 +1,4 @@
-import axios from "axios";
-import { resolveApiBaseUrl } from "@/utils/apiBaseUrl";
+import request from "@/utils/request";
 
 export interface SessionProfile {
   id: number;
@@ -12,13 +11,7 @@ export interface SessionProfile {
   can_visit_history: boolean;
 }
 
-const service = axios.create({
-  baseURL: resolveApiBaseUrl(),
-  withCredentials: true,
-  timeout: 10_000,
-});
-
 export async function fetchSessionProfile(): Promise<SessionProfile> {
-  const response = await service.get<SessionProfile>("/api/auth/session");
+  const response = await request.get<SessionProfile>("/api/auth/session");
   return response.data;
 }

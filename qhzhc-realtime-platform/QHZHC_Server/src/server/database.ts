@@ -16,6 +16,27 @@ interface UserRow {
   role: "admin" | "operator";
 }
 
+interface RefreshTokenRow extends SessionRow {
+  token_hash: string;
+  family_id: string;
+  user_id: number;
+  expires_at: number;
+  consumed_at: number | null;
+  revoked_at: number | null;
+}
+
+export type RefreshRotationResult =
+  | {
+      kind: "rotated";
+      familyId: string;
+      user: UserSession;
+      refreshTokenExpiresAt: number;
+    }
+  | { kind: "invalid" }
+  | { kind: "expired"; familyId: string }
+  | { kind: "revoked"; familyId: string }
+  | { kind: "reused"; familyId: string };
+
 interface SessionRow {
   id: number;
   username: string;
@@ -62,6 +83,17 @@ export class AppDatabase {
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         expires_at INTEGER NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        token_hash TEXT PRIMARY KEY,
+        family_id TEXT NOT NULL,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        parent_token_hash TEXT,
+        replaced_by_hash TEXT,
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL,
+        consumed_at INTEGER,
+        revoked_at INTEGER
+      );
       CREATE TABLE IF NOT EXISTS telemetry (
         sequence INTEGER PRIMARY KEY AUTOINCREMENT,
         robot_id TEXT NOT NULL,
@@ -74,6 +106,10 @@ export class AppDatabase {
         ON telemetry(sampled_at);
       CREATE INDEX IF NOT EXISTS sessions_expires_at
         ON sessions(expires_at);
+      CREATE INDEX IF NOT EXISTS refresh_tokens_family_id
+        ON refresh_tokens(family_id);
+      CREATE INDEX IF NOT EXISTS refresh_tokens_expires_at
+        ON refresh_tokens(expires_at);
     `);
   }
 
@@ -113,6 +149,142 @@ export class AppDatabase {
       .get(username) as unknown as UserRow | undefined;
   }
 
+  findUserById(userId: number): UserSession | null {
+    const row = this.database
+      .prepare(
+        `SELECT id, username, display_name, role
+         FROM users WHERE id = ?`,
+      )
+      .get(userId) as unknown as Omit<UserRow, "password_hash" | "password_salt"> | undefined;
+    if (!row) return null;
+    return {
+      id: row.id,
+      username: row.username,
+      displayName: row.display_name,
+      role: row.role,
+    };
+  }
+
+  createRefreshTokenFamily(
+    token: string,
+    familyId: string,
+    userId: number,
+    expiresAt: number,
+    now = Date.now(),
+  ): void {
+    this.database
+      .prepare(
+        `INSERT INTO refresh_tokens(
+           token_hash, family_id, user_id, parent_token_hash, replaced_by_hash,
+           created_at, expires_at, consumed_at, revoked_at
+         ) VALUES (?, ?, ?, NULL, NULL, ?, ?, NULL, NULL)`,
+      )
+      .run(tokenHash(token), familyId, userId, now, expiresAt);
+  }
+
+  rotateRefreshToken(
+    currentToken: string,
+    nextToken: string,
+    now = Date.now(),
+  ): RefreshRotationResult {
+    const currentHash = tokenHash(currentToken);
+    const nextHash = tokenHash(nextToken);
+    this.database.exec("BEGIN IMMEDIATE");
+    try {
+      const row = this.database
+        .prepare(
+          `SELECT refresh_tokens.token_hash, refresh_tokens.family_id,
+                  refresh_tokens.user_id, refresh_tokens.expires_at,
+                  refresh_tokens.consumed_at, refresh_tokens.revoked_at,
+                  users.id, users.username, users.display_name, users.role
+           FROM refresh_tokens
+           JOIN users ON users.id = refresh_tokens.user_id
+           WHERE refresh_tokens.token_hash = ?`,
+        )
+        .get(currentHash) as unknown as RefreshTokenRow | undefined;
+
+      if (!row) {
+        this.database.exec("COMMIT");
+        return { kind: "invalid" };
+      }
+      if (row.revoked_at !== null) {
+        this.database.exec("COMMIT");
+        return { kind: "revoked", familyId: row.family_id };
+      }
+      if (row.consumed_at !== null) {
+        this.database
+          .prepare(
+            `UPDATE refresh_tokens
+             SET revoked_at = ?
+             WHERE family_id = ? AND revoked_at IS NULL`,
+          )
+          .run(now, row.family_id);
+        this.database.exec("COMMIT");
+        return { kind: "reused", familyId: row.family_id };
+      }
+      if (row.expires_at <= now) {
+        this.database.exec("COMMIT");
+        return { kind: "expired", familyId: row.family_id };
+      }
+
+      this.database
+        .prepare(
+          `UPDATE refresh_tokens
+           SET consumed_at = ?, replaced_by_hash = ?
+           WHERE token_hash = ?`,
+        )
+        .run(now, nextHash, currentHash);
+      this.database
+        .prepare(
+          `INSERT INTO refresh_tokens(
+             token_hash, family_id, user_id, parent_token_hash, replaced_by_hash,
+             created_at, expires_at, consumed_at, revoked_at
+           ) VALUES (?, ?, ?, ?, NULL, ?, ?, NULL, NULL)`,
+        )
+        .run(nextHash, row.family_id, row.user_id, currentHash, now, row.expires_at);
+      this.database.exec("COMMIT");
+      return {
+        kind: "rotated",
+        familyId: row.family_id,
+        refreshTokenExpiresAt: row.expires_at,
+        user: {
+          id: row.id,
+          username: row.username,
+          displayName: row.display_name,
+          role: row.role,
+        },
+      };
+    } catch (error) {
+      this.database.exec("ROLLBACK");
+      throw error;
+    }
+  }
+
+  isTokenFamilyActive(familyId: string, now = Date.now()): boolean {
+    const row = this.database
+      .prepare(
+        `SELECT 1 AS active
+         FROM refresh_tokens
+         WHERE family_id = ?
+           AND consumed_at IS NULL
+           AND revoked_at IS NULL
+           AND expires_at > ?
+         LIMIT 1`,
+      )
+      .get(familyId, now) as unknown as { active: number } | undefined;
+    return row?.active === 1;
+  }
+
+  revokeTokenFamily(familyId: string, now = Date.now()): void {
+    this.database
+      .prepare(
+        `UPDATE refresh_tokens
+         SET revoked_at = ?
+         WHERE family_id = ? AND revoked_at IS NULL`,
+      )
+      .run(now, familyId);
+  }
+
   createSession(token: string, userId: number, expiresAt: number): void {
     this.database
       .prepare("INSERT INTO sessions(token_hash, user_id, expires_at) VALUES (?, ?, ?)")
@@ -146,6 +318,10 @@ export class AppDatabase {
 
   cleanupExpiredSessions(now = Date.now()): void {
     this.database.prepare("DELETE FROM sessions WHERE expires_at <= ?").run(now);
+  }
+
+  cleanupExpiredRefreshTokens(now = Date.now()): void {
+    this.database.prepare("DELETE FROM refresh_tokens WHERE expires_at <= ?").run(now);
   }
 
   insertTelemetry(points: NewTelemetryPoint[]): TelemetryPoint[] {

@@ -20,7 +20,11 @@ describe("server services", () => {
 
   beforeEach(() => {
     database = new AppDatabase(":memory:", 10_000);
-    auth = new AuthService(database, 60_000);
+    auth = new AuthService(database, {
+      accessTokenTtlMs: 60_000,
+      refreshTokenTtlMs: 7 * 24 * 60 * 60 * 1000,
+      jwtSecret: "test-secret-with-at-least-thirty-two-bytes",
+    });
     simulator = new TelemetrySimulator(database);
   });
 
@@ -29,10 +33,14 @@ describe("server services", () => {
     database.close();
   });
 
-  it("seeds the demo account and persists a verifiable session", () => {
-    const session = auth.login("admin", "Admin@123456");
-    expect(database.findSession(session.token)).toMatchObject({ username: "admin", role: "admin" });
-    expect(() => auth.login("admin", "wrong-password")).toThrow(AuthError);
+  it("seeds the demo account and issues verifiable access credentials", async () => {
+    const tokens = await auth.login("admin", "Admin@123456");
+    await expect(auth.verifyAccessToken(tokens.accessToken)).resolves.toMatchObject({
+      username: "admin",
+      role: "admin",
+      familyId: tokens.familyId,
+    });
+    await expect(auth.login("admin", "wrong-password")).rejects.toBeInstanceOf(AuthError);
   });
 
   it("registers validated accounts and rejects duplicates", () => {

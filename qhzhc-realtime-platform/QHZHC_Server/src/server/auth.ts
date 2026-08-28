@@ -1,10 +1,35 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
+import { errors, jwtVerify, SignJWT } from "jose";
 import type { UserSession } from "../shared/index.js";
 import { AppDatabase } from "./database.js";
 import { hashPassword, verifyPassword } from "./password.js";
 
 export const SESSION_COOKIE = "qhzhc_session";
+export const REFRESH_COOKIE = "qhzhc_refresh";
+const ACCESS_TOKEN_ISSUER = "qhzhc-auth";
+const ACCESS_TOKEN_AUDIENCE = "qhzhc-api";
+
+export interface AuthOptions {
+  accessTokenTtlMs: number;
+  refreshTokenTtlMs: number;
+  jwtSecret: string;
+}
+
+export interface AuthPrincipal extends UserSession {
+  familyId: string;
+  tokenId: string;
+  accessTokenExpiresAt: number;
+}
+
+export interface TokenPair {
+  user: UserSession;
+  familyId: string;
+  accessToken: string;
+  accessTokenExpiresAt: number;
+  refreshToken: string;
+  refreshTokenExpiresAt: number;
+}
 
 export class AuthError extends Error {
   constructor(
@@ -34,10 +59,19 @@ export function parseCookies(rawCookie: string | undefined): Record<string, stri
 }
 
 export class AuthService {
+  private readonly options: AuthOptions;
+  private readonly jwtKey: Uint8Array;
+
   constructor(
     private readonly database: AppDatabase,
-    private readonly sessionTtlMs: number,
-  ) {}
+    options: AuthOptions,
+  ) {
+    this.options = options;
+    this.jwtKey = new TextEncoder().encode(this.options.jwtSecret);
+    if (this.jwtKey.byteLength < 32) {
+      throw new Error("JWT secret must contain at least 32 bytes");
+    }
+  }
 
   register(username: string, displayName: string, password: string): UserSession {
     if (!/^[a-zA-Z0-9_]{3,24}$/.test(username)) {
@@ -56,33 +90,142 @@ export class AuthService {
     return this.database.createUser(username, displayName.trim(), hash, salt);
   }
 
-  login(username: string, password: string): { user: UserSession; token: string; expiresAt: number } {
+  async login(username: string, password: string): Promise<TokenPair> {
     const user = this.database.findUserByUsername(username);
     if (!user || !verifyPassword(password, user.password_salt, user.password_hash)) {
       throw new AuthError("账号或密码错误", 401, "INVALID_CREDENTIALS");
     }
-    const token = randomBytes(32).toString("base64url");
-    const expiresAt = Date.now() + this.sessionTtlMs;
-    this.database.createSession(token, user.id, expiresAt);
-    return {
-      user: {
-        id: user.id,
-        username: user.username,
-        displayName: user.display_name,
-        role: user.role,
-      },
-      token,
-      expiresAt,
+    const sessionUser: UserSession = {
+      id: user.id,
+      username: user.username,
+      displayName: user.display_name,
+      role: user.role,
     };
+    const familyId = randomUUID();
+    const refreshToken = randomBytes(32).toString("base64url");
+    const refreshTokenExpiresAt = Date.now() + this.options.refreshTokenTtlMs;
+    this.database.createRefreshTokenFamily(
+      refreshToken,
+      familyId,
+      user.id,
+      refreshTokenExpiresAt,
+    );
+    return this.issueTokenPair(sessionUser, familyId, refreshToken, refreshTokenExpiresAt);
   }
 
-  sessionFromRequest(request: Pick<IncomingMessage, "headers">): UserSession | null {
-    const token = parseCookies(request.headers.cookie)[SESSION_COOKIE];
-    return token ? this.database.findSession(token) : null;
+  async refresh(refreshToken: string): Promise<TokenPair> {
+    const nextRefreshToken = randomBytes(32).toString("base64url");
+    const rotation = this.database.rotateRefreshToken(refreshToken, nextRefreshToken);
+    if (rotation.kind === "invalid") {
+      throw new AuthError("刷新凭证无效", 401, "REFRESH_TOKEN_INVALID");
+    }
+    if (rotation.kind === "expired") {
+      throw new AuthError("刷新凭证已过期", 401, "REFRESH_TOKEN_EXPIRED");
+    }
+    if (rotation.kind === "revoked") {
+      throw new AuthError("登录会话已撤销", 401, "TOKEN_FAMILY_REVOKED");
+    }
+    if (rotation.kind === "reused") {
+      throw new AuthError("检测到刷新凭证重放", 401, "REFRESH_TOKEN_REUSED");
+    }
+    return this.issueTokenPair(
+      rotation.user,
+      rotation.familyId,
+      nextRefreshToken,
+      rotation.refreshTokenExpiresAt,
+    );
   }
 
-  logout(request: Pick<IncomingMessage, "headers">): void {
-    const token = parseCookies(request.headers.cookie)[SESSION_COOKIE];
-    if (token) this.database.deleteSession(token);
+  async verifyAccessToken(accessToken: string): Promise<AuthPrincipal> {
+    try {
+      const verified = await jwtVerify(accessToken, this.jwtKey, {
+        algorithms: ["HS256"],
+        issuer: ACCESS_TOKEN_ISSUER,
+        audience: ACCESS_TOKEN_AUDIENCE,
+      });
+      const userId = Number(verified.payload.sub);
+      const familyId = verified.payload.sid;
+      const tokenId = verified.payload.jti;
+      const expiresAt = Number(verified.payload.exp) * 1000;
+      if (
+        !Number.isSafeInteger(userId) ||
+        userId <= 0 ||
+        typeof familyId !== "string" ||
+        !familyId ||
+        typeof tokenId !== "string" ||
+        !tokenId ||
+        !Number.isFinite(expiresAt)
+      ) {
+        throw new AuthError("访问凭证字段无效", 401, "ACCESS_TOKEN_INVALID");
+      }
+      if (!this.database.isTokenFamilyActive(familyId)) {
+        throw new AuthError("登录会话已撤销", 401, "TOKEN_FAMILY_REVOKED");
+      }
+      const user = this.database.findUserById(userId);
+      if (!user) {
+        throw new AuthError("用户不存在", 401, "ACCESS_TOKEN_INVALID");
+      }
+      return {
+        ...user,
+        familyId,
+        tokenId,
+        accessTokenExpiresAt: expiresAt,
+      };
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      if (error instanceof errors.JWTExpired) {
+        throw new AuthError("访问凭证已过期", 401, "ACCESS_TOKEN_EXPIRED");
+      }
+      throw new AuthError("访问凭证无效", 401, "ACCESS_TOKEN_INVALID");
+    }
+  }
+
+  async principalFromRequest(
+    request: Pick<IncomingMessage, "headers">,
+  ): Promise<AuthPrincipal> {
+    const authorization = request.headers.authorization;
+    const match =
+      typeof authorization === "string"
+        ? /^Bearer\s+(.+)$/i.exec(authorization.trim())
+        : null;
+    if (!match?.[1]) {
+      throw new AuthError("缺少访问凭证", 401, "ACCESS_TOKEN_MISSING");
+    }
+    return this.verifyAccessToken(match[1]);
+  }
+
+  revokeFamily(familyId: string): void {
+    this.database.revokeTokenFamily(familyId);
+  }
+
+  private async issueTokenPair(
+    user: UserSession,
+    familyId: string,
+    refreshToken: string,
+    refreshTokenExpiresAt: number,
+  ): Promise<TokenPair> {
+    const issuedAt = Date.now();
+    const accessTokenExpiresAt = issuedAt + this.options.accessTokenTtlMs;
+    const tokenId = randomUUID();
+    const accessToken = await new SignJWT({
+      sid: familyId,
+      role: user.role,
+    })
+      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+      .setIssuer(ACCESS_TOKEN_ISSUER)
+      .setAudience(ACCESS_TOKEN_AUDIENCE)
+      .setSubject(String(user.id))
+      .setJti(tokenId)
+      .setIssuedAt(Math.floor(issuedAt / 1000))
+      .setExpirationTime(Math.floor(accessTokenExpiresAt / 1000))
+      .sign(this.jwtKey);
+    return {
+      user,
+      familyId,
+      accessToken,
+      accessTokenExpiresAt,
+      refreshToken,
+      refreshTokenExpiresAt,
+    };
   }
 }

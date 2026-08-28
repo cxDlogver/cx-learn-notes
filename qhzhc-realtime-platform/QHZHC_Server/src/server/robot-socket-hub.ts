@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { IncomingMessage, Server } from "node:http";
+import type { Server } from "node:http";
 import { WebSocket, WebSocketServer, type RawData } from "ws";
 import {
   PROTOCOL_VERSION,
@@ -10,9 +10,8 @@ import {
   type ServerMessage,
   type SimulatorStatus,
   type TelemetryPoint,
-  type UserSession,
 } from "../shared/index.js";
-import { AuthService } from "./auth.js";
+import { AuthError, AuthService, type AuthPrincipal } from "./auth.js";
 import { AppDatabase } from "./database.js";
 import { createReplayPlan } from "./replay-plan.js";
 import { TelemetrySimulator } from "./simulator.js";
@@ -25,13 +24,14 @@ const REPLAY_BATCH_SIZE = 250;
 interface ClientContext {
   id: string;
   socket: WebSocket;
-  user: UserSession;
+  principal: AuthPrincipal | null;
+  accessToken: string | null;
   robotId: string;
   initialized: boolean;
+  authenticating: boolean;
   acknowledgedSequence: number;
   lastSeenAt: number;
   protocolAlive: boolean;
-  cookieHeader: string | undefined;
   authTimer: NodeJS.Timeout;
 }
 
@@ -61,19 +61,13 @@ export class RobotSocketHub {
         socket.destroy();
         return;
       }
-      const user = this.auth.sessionFromRequest(request);
-      if (!user) {
-        socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
-        socket.destroy();
-        return;
-      }
       const robotId = match[1];
       if (!robotId) {
         socket.destroy();
         return;
       }
       this.webSocketServer.handleUpgrade(request, socket, head, (webSocket) => {
-        this.accept(webSocket, request, user, robotId);
+        this.accept(webSocket, robotId);
       });
     });
     this.heartbeatTimer = setInterval(() => this.checkHeartbeats(), HEARTBEAT_INTERVAL_MS);
@@ -113,26 +107,31 @@ export class RobotSocketHub {
 
   private accept(
     socket: WebSocket,
-    _request: IncomingMessage,
-    user: UserSession,
     robotId: string,
   ): void {
     const context: ClientContext = {
       id: randomUUID(),
       socket,
-      user,
+      principal: null,
+      accessToken: null,
       robotId,
       initialized: false,
+      authenticating: false,
       acknowledgedSequence: 0,
       lastSeenAt: Date.now(),
       protocolAlive: true,
-      cookieHeader: _request.headers.cookie,
       authTimer: setTimeout(() => {
-        if (!context.initialized) socket.close(WS_CLOSE.PROTOCOL_ERROR, "hello timeout");
+        if (!context.initialized) {
+          socket.close(WS_CLOSE.PROTOCOL_ERROR, "authentication timeout");
+        }
       }, 5_000),
     };
     this.clients.set(socket, context);
-    socket.on("message", (raw) => this.onMessage(context, raw));
+    socket.on("message", (raw) => {
+      void this.onMessage(context, raw).catch(() => {
+        socket.close(WS_CLOSE.SERVER_ERROR, "server error");
+      });
+    });
     socket.on("pong", () => {
       context.protocolAlive = true;
       context.lastSeenAt = Date.now();
@@ -146,7 +145,7 @@ export class RobotSocketHub {
     });
   }
 
-  private onMessage(context: ClientContext, raw: RawData): void {
+  private async onMessage(context: ClientContext, raw: RawData): Promise<void> {
     context.lastSeenAt = Date.now();
     let parsed: unknown;
     try {
@@ -159,17 +158,25 @@ export class RobotSocketHub {
       context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "invalid message");
       return;
     }
-    if (!context.initialized && parsed.type !== "hello") {
-      context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "hello required");
+    if (!context.initialized && parsed.type !== "authenticate") {
+      context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "authentication required");
       return;
     }
-    this.routeMessage(context, parsed);
+    if (!context.initialized && context.authenticating) {
+      context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "authentication in progress");
+      return;
+    }
+    if (context.initialized && parsed.type === "authenticate") {
+      context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "already authenticated");
+      return;
+    }
+    await this.routeMessage(context, parsed);
   }
 
-  private routeMessage(context: ClientContext, message: ClientMessage): void {
+  private async routeMessage(context: ClientContext, message: ClientMessage): Promise<void> {
     switch (message.type) {
-      case "hello":
-        this.handleHello(context, message);
+      case "authenticate":
+        await this.handleAuthenticate(context, message);
         break;
       case "ping":
         this.send(context, {
@@ -188,15 +195,30 @@ export class RobotSocketHub {
     }
   }
 
-  private handleHello(
+  private async handleAuthenticate(
     context: ClientContext,
-    message: Extract<ClientMessage, { type: "hello" }>,
-  ): void {
+    message: Extract<ClientMessage, { type: "authenticate" }>,
+  ): Promise<void> {
     if (context.initialized || message.robotId !== context.robotId) {
-      context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "invalid hello");
+      context.socket.close(WS_CLOSE.PROTOCOL_ERROR, "invalid authentication");
       return;
     }
+    context.authenticating = true;
+    let principal: AuthPrincipal;
+    try {
+      principal = await this.auth.verifyAccessToken(message.accessToken);
+    } catch (error) {
+      clearTimeout(context.authTimer);
+      context.authenticating = false;
+      const reason = error instanceof AuthError ? error.code : "ACCESS_TOKEN_INVALID";
+      context.socket.close(WS_CLOSE.AUTHENTICATION_EXPIRED, reason);
+      return;
+    }
+    if (context.socket.readyState !== WebSocket.OPEN) return;
     clearTimeout(context.authTimer);
+    context.principal = principal;
+    context.accessToken = message.accessToken;
+    context.authenticating = false;
     const replayPlan = createReplayPlan(
       this.database,
       context.robotId,
@@ -260,7 +282,7 @@ export class RobotSocketHub {
       requestedFrom,
       earliestAvailable,
       latestSequence,
-      action: "http-resync",
+      action: "skip-to-latest",
     });
   }
 
@@ -302,16 +324,16 @@ export class RobotSocketHub {
     context.socket.send(serializeServerMessage(message));
   }
 
-  private checkHeartbeats(): void {
+  private async checkHeartbeats(): Promise<void> {
     const now = Date.now();
     for (const context of this.clients.values()) {
-      if (
-        !this.auth.sessionFromRequest({
-          headers: { cookie: context.cookieHeader },
-        } as IncomingMessage)
-      ) {
-        context.socket.close(WS_CLOSE.SESSION_EXPIRED, "session expired");
-        continue;
+      if (context.initialized && context.accessToken) {
+        try {
+          context.principal = await this.auth.verifyAccessToken(context.accessToken);
+        } catch {
+          context.socket.close(WS_CLOSE.AUTHENTICATION_EXPIRED, "access token expired");
+          continue;
+        }
       }
       if (!context.protocolAlive || now - context.lastSeenAt > CLIENT_STALE_AFTER_MS) {
         context.socket.terminate();

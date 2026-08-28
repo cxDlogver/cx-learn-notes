@@ -1,4 +1,5 @@
 import request from "@/utils/request";
+import { accessTokenManager } from "@/services/accessToken";
 import type { SessionProfile } from "@/services/authSession";
 
 export interface LoginPayload {
@@ -10,18 +11,30 @@ export interface RegisterPayload extends LoginPayload {
   displayName: string;
 }
 
+interface AuthResponse extends SessionProfile {
+  accessToken: string;
+  accessTokenExpiresAt: number;
+  user: SessionProfile;
+}
+
 export async function userLogin(payload: LoginPayload): Promise<SessionProfile> {
-  const response = await request.post<SessionProfile>("/api/auth/login", payload);
-  return response.data;
+  const response = await request.post<AuthResponse>("/api/auth/login", payload);
+  accessTokenManager.setAccessToken(response.data.accessToken);
+  return response.data.user || response.data;
 }
 
 export async function userRegister(
   payload: RegisterPayload,
 ): Promise<SessionProfile> {
-  const response = await request.post<SessionProfile>("/api/auth/register", payload);
-  return response.data;
+  const response = await request.post<AuthResponse>("/api/auth/register", payload);
+  accessTokenManager.setAccessToken(response.data.accessToken);
+  return response.data.user || response.data;
 }
 
 export async function userLogout(): Promise<void> {
-  await request.post("/api/auth/logout");
+  try {
+    await request.post("/api/auth/logout");
+  } finally {
+    accessTokenManager.clearAccessToken();
+  }
 }
