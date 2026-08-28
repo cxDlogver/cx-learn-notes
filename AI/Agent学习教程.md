@@ -1,3 +1,66 @@
+## 1. Agent 研发的两种语境
+
+今天讨论“Agent 开发”，经常会混在一起说两件事：一件是把 Agent 用到业务流程里，另一件是开发 Agent 系统本身。两者有关联，但研发对象、要解决的问题和评价方式不同。
+
+这里分的是两种研发语境，不是两种互斥的技术形态。同一个业务流程可以只接入一次模型调用，也可以使用固定编排的 Workflow，还可以接入一个完整的 Agent。
+
+### 第一类：业务流程 Agent 化
+
+这类研发从现有业务出发。通常是在已有的业务 SOP 或工程链路中，引入 Agent 处理依赖语言理解、判断或复杂操作的环节。研发对象仍然是业务流程，Agent 是其中新增的一项能力。
+
+例如：
+
+- 在研发流程中，让 Agent 读取需求、修改代码并执行测试；
+- 在客服流程中，让 Agent 判断问题原因、查询订单或工单，整理证据并生成处理建议；
+- 在运营流程中，让 Agent 分析数据、调用内部工具，生成或执行运营动作。
+
+这类研发主要回答三个问题：Agent 放在哪个业务节点，能够创造什么业务价值，业务边界和风险怎样控制。
+
+它通常有比较明确的流程边界和人工交接点。最终评价也落在业务结果上，例如处理时间是否缩短、解决率或覆盖量是否提高、人力成本是否下降。同时还要检查结果质量、错误率和返工量；如果只是处理得更快，却带来更多问题，就不能算真正提效。
+
+### 第二类：Agent System 开发
+
+这类研发直接以 Agent 本身为对象。Agent 是一套以模型推理为核心、配合工具完成任务的智能体系统。它会根据目标和当前上下文判断下一步，调用工具执行，再根据结果继续处理。[1](https://www.anthropic.com/engineering/building-effective-agents) [2](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf)
+
+| 研发语境          | 研发对象                | 核心问题                                         | 评价重点               |
+| ----------------- | ----------------------- | ------------------------------------------------ | ---------------------- |
+| 业务流程 Agent 化 | 已有业务 SOP 或工程链路 | Agent 应该放在哪里，能解决什么问题，风险如何控制 | 业务价值，以及结果质量 |
+| Agent System 开发 | Agent 系统本身          | 怎样让模型配合工具完成目标                       |                        |
+
+### 2. `Agents in Workflows` -- 在现有业务流程中引入 Agent
+
+### `Agents in Workflows` 的定义
+
+第一类 Agent 研发，可以概括为 **Agents in Workflows（工作流中的 Agent）**：保留已有业务流程作为整体执行框架，在其中需要模型进行复杂理解、推理和动态决策的环节，引入 Agent 作为执行单元。
+
+这是 Microsoft Agent Framework 当前明确使用的官方表述。Microsoft 将 `Agents in workflows` 定义为：
+
+> “Use agents as workflow participants and executors.”
+
+即：**让 Agent 作为工作流中的参与者和执行单元。**
+
+Microsoft 进一步指出，现实生产系统通常不会完全依赖 Agent，也不会完全依赖固定程序，而是把两者组合起来：
+
+> “A workflow defines the high-level process, and individual executors within that workflow use agents for the steps that benefit from LLM reasoning.”
+
+也就是：**Workflow 负责定义高层流程，其中真正需要大模型推理的步骤再交给 Agent。**
+
+明确指出：
+
+> “Most real-world applications live somewhere in the middle.” **即大多数真实系统都会采用这种混合方式。**
+
+因此，这类研发真正关注的不是“如何重新开发一套 Agent Harness”，而是：
+
+> **业务流程里哪些节点值得 Agent 化、为什么需要 Agent、Agent 如何接入现有流程，以及最终如何证明它产生了业务价值。**
+
+
+
+
+
+
+
+
+
 # 企业 Agent 架构学习教程
 
 > 本文讨论的不是某个 Agent 框架怎么用，而是企业怎样把 Agent 做成一套能复用、能运行、能治理的工程体系。文中的三层是责任边界，不是三个互相隔离的技术栈。
