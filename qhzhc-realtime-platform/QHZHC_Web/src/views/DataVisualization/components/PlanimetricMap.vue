@@ -17,6 +17,8 @@
 </template>
 
 <script lang="ts">
+import { performanceMonitor } from '@/services/performance/monitor';
+
 /**
  * 地图组件（OpenLayers + 天地图底图）
  *
@@ -129,6 +131,7 @@ export default {
     }
   },
   beforeDestroy() {
+    if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
     clearInterval(this.timer);
     if (this.mapClickKey) {
       unByKey(this.mapClickKey);
@@ -435,6 +438,13 @@ export default {
     },
 
     redrawRealtimeWindow(gasType, gasName, points = this.mapList) {
+      if(performanceMonitor.context.mapType==='2d' && this.map && performanceMonitor.renderVersion){
+        if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
+        const version=performanceMonitor.renderVersion;
+        this.performanceRenderKey=this.map.once('postrender',()=>performanceMonitor.rendered('map:2d',version));
+      }
+      performanceMonitor.record('mapObjects',this.mapList?.length || 0,'map:2d');
+      return performanceMonitor.measure("mapUpdate", 'map:2d', () => {
       this.gasType = gasType;
       this.gasName = gasName;
       const nextPoints = Array.isArray(points) ? points : [];
@@ -468,6 +478,8 @@ export default {
         this.map.getView().setCenter(latestCenter);
       }
       this.ensureOrUpdateCar(latestCenter);
+
+      });
     },
 
     /* =========================
@@ -482,6 +494,13 @@ export default {
      * - 浓度点：按 gasType 值映射颜色并追加绘制
      */
     drawRealtimePoint() {
+      if(performanceMonitor.context.mapType==='2d' && this.map && performanceMonitor.renderVersion){
+        if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
+        const version=performanceMonitor.renderVersion;
+        this.performanceRenderKey=this.map.once('postrender',()=>performanceMonitor.rendered('map:2d',version));
+      }
+      performanceMonitor.record('mapObjects',this.mapList?.length || 0,'map:2d');
+      return performanceMonitor.measure("mapUpdate", 'map:2d', () => {
       if (!this.points || !this.points[this.index]) return;
 
       // 1) 获取当前区间
@@ -520,6 +539,8 @@ export default {
       this.pruneRealtimeLayers();
 
       this.index++;
+
+      });
     },
 
     pruneRealtimeLayers(maxPoints = 300) {
@@ -710,6 +731,13 @@ export default {
      * - 绑定点击事件：点高亮并回填 detailData
      */
     createCircle(list) {
+      if(performanceMonitor.context.mapType==='2d' && this.map && performanceMonitor.renderVersion){
+        if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
+        const version=performanceMonitor.renderVersion;
+        this.performanceRenderKey=this.map.once('postrender',()=>performanceMonitor.rendered('map:2d',version));
+      }
+      performanceMonitor.record('mapObjects',this.mapList?.length || 0,'map:2d');
+      return performanceMonitor.measure("mapUpdate", 'map:2d', () => {
       if (
         !this.map ||
         !this.routeSource ||
@@ -756,6 +784,8 @@ export default {
         this.pointSource.addFeature(feature);
       });
 
+
+      });
     },
 
     /* =========================

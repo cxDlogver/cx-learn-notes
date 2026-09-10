@@ -1,6 +1,14 @@
 const path = require("node:path");
 
 /*
+ * 开发环境默认把 /api 与 /ws 代理到后端，前端页面与 API 同源，不再产生跨域请求。
+ * 若显式设置了 VUE_APP_API_BASE_URL，代理目标跟随该地址。
+ */
+const backendTarget = (
+  process.env.VUE_APP_API_BASE_URL || "http://127.0.0.1:18080"
+).replace(/\/$/, "");
+
+/*
  * @Author: zhou
  * @Date: 2024-03-18 14:23:03
  * @LastEditors: zhou
@@ -46,19 +54,16 @@ module.exports = {
     client: {
       overlay: false,
     },
-    // proxy: {
-    //   //服务器代理
-    //   "/api": {
-    //     // target: "http://119.45.21.43:5004", // 实际跨域请求的API地址
-    //     target: "",
-    //     secure: false, // https请求则使用true
-    //     ws: true,
-    //     changeOrigin: true, // 跨域
-    //     // 请求地址重写  http://front-end/api/login ⇒ http://api-url/login
-    //     pathRewrite: {
-    //       "^/api": "/",
-    //     },
-    //   },
-    // },
+    proxy: {
+      // 所有 REST API 转发到后端，路径保持不变。
+      // 注意：不要代理 "/ws" —— 它是 webpack-dev-server HMR 自带的 WebSocket 端点，
+      // 一旦转发，热更新连接会被后端按非法 Upgrade 销毁并持续抛出 ECONNRESET。
+      // 业务 WebSocket 不受同源策略限制，由前端直连后端。
+      "/api": {
+        target: backendTarget,
+        secure: false, // https 请求则使用 true
+        changeOrigin: true,
+      },
+    },
   },
 };

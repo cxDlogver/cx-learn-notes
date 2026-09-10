@@ -6,6 +6,8 @@
   </div>
 </template>
 <script lang="ts">
+import { performanceMonitor } from '@/services/performance/monitor';
+
 import * as turf from "@turf/turf";
 
 const MAX_REALTIME_BARS = 300;
@@ -72,6 +74,7 @@ export default {
     this.init();
   },
   beforeDestroy() {
+    if(this.performanceRenderRemove)this.performanceRenderRemove();
     this.destroyScreenSpaceHandler();
     if (this.viewer && !this.viewer.isDestroyed()) {
       this.viewer.destroy();
@@ -372,6 +375,13 @@ export default {
       this.redrawConcentrationByGas(gasType, points);
     },
     renderRealtimeSnapshot(points = this.mapList) {
+      if(this.viewer && !this.viewer.isDestroyed() && performanceMonitor.renderVersion){
+        if(this.performanceRenderRemove)this.performanceRenderRemove();
+        const version=performanceMonitor.renderVersion;
+        this.performanceRenderRemove=this.viewer.scene.postRender.addEventListener(()=>{performanceMonitor.rendered('map:3d',version);if(this.performanceRenderRemove){this.performanceRenderRemove();this.performanceRenderRemove=null;}});
+      }
+      performanceMonitor.record('mapObjects',this.viewer?.entities?.values?.length || 0,'map:3d');
+      return performanceMonitor.measure("mapUpdate", 'map:3d', () => {
       const nextPoints = Array.isArray(points) ? points : [];
       this.dataList = nextPoints;
       if (!this.isViewerReady() || !nextPoints.length) {
@@ -386,8 +396,17 @@ export default {
       }
       this.nowBar(nextPoints[this.index]);
       this.updateRealtimeRoute(nextPoints);
+
+      });
     },
     updateRealtimeRoute(points = this.dataList) {
+      if(this.viewer && !this.viewer.isDestroyed() && performanceMonitor.renderVersion){
+        if(this.performanceRenderRemove)this.performanceRenderRemove();
+        const version=performanceMonitor.renderVersion;
+        this.performanceRenderRemove=this.viewer.scene.postRender.addEventListener(()=>{performanceMonitor.rendered('map:3d',version);if(this.performanceRenderRemove){this.performanceRenderRemove();this.performanceRenderRemove=null;}});
+      }
+      performanceMonitor.record('mapObjects',this.viewer?.entities?.values?.length || 0,'map:3d');
+      return performanceMonitor.measure("mapUpdate", 'map:3d', () => {
       if (!this.isViewerReady()) {
         return;
       }
@@ -435,6 +454,8 @@ export default {
         });
       }
       this.requestRender();
+
+      });
     },
     upsertRealtimeBar(dataPoint, slotIndex, gasType = this.gasType) {
       if (!dataPoint) {
@@ -619,6 +640,13 @@ export default {
     // 历史气体浓度监测
 
     echartsPlay(data) {
+      if(this.viewer && !this.viewer.isDestroyed() && performanceMonitor.renderVersion){
+        if(this.performanceRenderRemove)this.performanceRenderRemove();
+        const version=performanceMonitor.renderVersion;
+        this.performanceRenderRemove=this.viewer.scene.postRender.addEventListener(()=>{performanceMonitor.rendered('map:3d',version);if(this.performanceRenderRemove){this.performanceRenderRemove();this.performanceRenderRemove=null;}});
+      }
+      performanceMonitor.record('mapObjects',this.viewer?.entities?.values?.length || 0,'map:3d');
+      return performanceMonitor.measure("mapUpdate", 'map:3d', () => {
       if (!data || !Array.isArray(data.data) || !this.isViewerReady()) {
         return;
       }
@@ -735,6 +763,8 @@ export default {
         this.requestRender();
       }
 
+
+      });
     },
 
     // 绘制轨迹线

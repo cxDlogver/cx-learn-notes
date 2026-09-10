@@ -1,3 +1,5 @@
+import { performanceRouter } from './performance/routes.js';
+import type { PerformanceService } from './performance/service.js';
 import fs from "node:fs";
 import path from "node:path";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -15,6 +17,7 @@ import {
   type AuthPrincipal,
   type TokenPair,
 } from "./auth.js";
+import { createCorsMiddleware } from "./cors.js";
 import { AppDatabase } from "./database.js";
 import { TelemetrySimulator } from "./simulator.js";
 import { WeatherProviderError, WeatherService } from "./weather.js";
@@ -24,6 +27,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 export interface AppServices {
+  performance?: PerformanceService;
   database: AppDatabase;
   auth: AuthService;
   simulator: TelemetrySimulator;
@@ -125,25 +129,8 @@ export function createApp(services: AppServices): express.Express {
   const app = express();
   const weather = services.weather ?? new WeatherService();
   app.disable("x-powered-by");
+  app.use(createCorsMiddleware());
   app.use(express.json({ limit: "64kb" }));
-  app.use((request, response, next) => {
-    const origin = request.headers.origin;
-    if (
-      origin &&
-      /^http:\/\/(127\.0\.0\.1|localhost):9527$/.test(origin)
-    ) {
-      response.setHeader("Access-Control-Allow-Origin", origin);
-      response.setHeader("Access-Control-Allow-Credentials", "true");
-      response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-      response.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
-      response.setHeader("Vary", "Origin");
-    }
-    if (request.method === "OPTIONS") {
-      response.status(204).end();
-      return;
-    }
-    next();
-  });
   app.use((_request, response, next) => {
     response.setHeader("X-Content-Type-Options", "nosniff");
     response.setHeader("Referrer-Policy", "same-origin");
@@ -227,6 +214,8 @@ export function createApp(services: AppServices): express.Express {
     }
     next();
   };
+
+  app.use("/api", performanceRouter(services.performance, requireAuth, requireAdmin, (request) => (request as AuthenticatedRequest).user.id));
 
   app.use("/api/telemetry", requireAuth);
   app.get("/api/telemetry/latest", (request, response) => {

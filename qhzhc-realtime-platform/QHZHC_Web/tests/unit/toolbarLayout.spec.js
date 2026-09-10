@@ -1,11 +1,12 @@
 /* eslint-env jest, node */
 import fs from "fs";
 import path from "path";
+const readText = (...args) => fs.readFileSync(...args).replace(/\r\n/g, "\n");
 import { parseComponent } from "vue-template-compiler";
 
 describe("data visualization toolbar layout", () => {
   test("preserves the original map component layout", () => {
-    const source = fs.readFileSync(
+    const source = readText(
       path.resolve(
         __dirname,
         "../../src/views/DataVisualization/dataVisualization.vue",
@@ -19,14 +20,14 @@ describe("data visualization toolbar layout", () => {
   });
 
   test("map loading state does not leave an invisible click-blocking mask", () => {
-    const source = fs.readFileSync(
+    const source = readText(
       path.resolve(
         __dirname,
         "../../src/views/DataVisualization/dataVisualization.vue",
       ),
       "utf-8",
     );
-    const mainSource = fs.readFileSync(
+    const mainSource = readText(
       path.resolve(__dirname, "../../src/main.ts"),
       "utf-8",
     );
@@ -43,7 +44,7 @@ describe("data visualization toolbar layout", () => {
     );
     expect(fs.existsSync(runtimeStylePath)).toBe(true);
     const runtimeStyle = fs.existsSync(runtimeStylePath)
-      ? fs.readFileSync(runtimeStylePath, "utf-8")
+      ? readText(runtimeStylePath, "utf-8")
       : "";
     expect(runtimeStyle).toMatch(
       /\.map\s*>\s*\.el-loading-mask\.el-loading-fade-leave-active\s*\{[\s\S]*pointer-events:\s*none;/,
@@ -51,7 +52,7 @@ describe("data visualization toolbar layout", () => {
   });
 
   test("gas selector renders options as a two-column card grid", () => {
-    const source = fs.readFileSync(
+    const source = readText(
       path.resolve(
         __dirname,
         "../../src/views/DataVisualization/dataVisualization.vue",

@@ -1,12 +1,18 @@
-import type {
-  AxiosError,
-  AxiosRequestConfig,
-  AxiosResponse,
-} from "axios";
+import type { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { AccessTokenManager } from "./accessToken";
 
+// A class instance keeps identity through Axios config merges (plain objects are cloned).
+export class LogicalRequestMeasurement {
+  attempts = 0;
+  done = false;
+  constructor(
+    public stamp: { at: number; epoch: number; view: string },
+    public component: string
+  ) {}
+}
 export interface RetriableRequestConfig extends AxiosRequestConfig {
   _authRetry?: boolean;
+  _performance?: LogicalRequestMeasurement;
 }
 
 interface HttpClient {
@@ -30,7 +36,7 @@ function requestPath(url: string | undefined): string {
 
 export function applyAccessToken(
   config: RetriableRequestConfig,
-  accessToken: string | null,
+  accessToken: string | null
 ): RetriableRequestConfig {
   if (!accessToken) return config;
   return {
@@ -46,31 +52,28 @@ export function createAuthErrorHandler(
   client: HttpClient,
   manager: AccessTokenManager,
   onUnauthenticated: () => void | Promise<void>,
+  beforeAuthenticationFailure: (config: RetriableRequestConfig | undefined) => void = () =>
+    undefined
 ): (error: AxiosError) => Promise<AxiosResponse> {
   return async (error) => {
     const config = error.config as RetriableRequestConfig | undefined;
     const path = requestPath(config?.url);
     if (error.response?.status === 401 && config?._authRetry) {
+      beforeAuthenticationFailure(config);
       manager.clearAccessToken();
       await onUnauthenticated();
       return Promise.reject(error);
     }
-    if (
-      error.response?.status !== 401 ||
-      !config ||
-      NON_REFRESHABLE_PATHS.has(path)
-    ) {
+    if (error.response?.status !== 401 || !config || NON_REFRESHABLE_PATHS.has(path)) {
       return Promise.reject(error);
     }
 
     try {
       const accessToken = await manager.refreshAccessToken();
-      const retryConfig = applyAccessToken(
-        { ...config, _authRetry: true },
-        accessToken,
-      );
+      const retryConfig = applyAccessToken({ ...config, _authRetry: true }, accessToken);
       return client.request(retryConfig);
     } catch (refreshError) {
+      beforeAuthenticationFailure(config);
       manager.clearAccessToken();
       await onUnauthenticated();
       return Promise.reject(refreshError);

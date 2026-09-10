@@ -73,6 +73,38 @@ npm run start
 | `JWT_SECRET` | 仅开发环境提供默认值 | 生产环境必须配置至少 32 字节的随机密钥 |
 | `TELEMETRY_RETENTION` | `100000` | 服务端保留的最新走航点数 |
 | `VUE_APP_API_BASE_URL` | 自动使用 `18080` | 前端 API 地址 |
+| `QWEATHER_API_KEY` | 无，缺失时天气接口返回 503 | 和风天气 Web API key，数据可视化页天气预报必填 |
+| `CORS_ALLOWED_ORIGINS` | 开发环境为本机来源，生产仅同源 | 逗号分隔的允许来源，`*` 表示允许全部（此时不返回凭证头） |
+
+## 天气服务
+
+数据可视化页的天气预报由服务端代理 `https://devapi.qweather.com/v7/grid-weather`，必须在服务端配置 `QWEATHER_API_KEY`（和风天气控制台申请的 Web API key），不能放在前端。
+
+把变量写入仓库根目录的 `.env.local`（该文件已被 `.gitignore` 忽略，不会入库）：
+
+```text
+QWEATHER_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+`WeatherService` 在实例化时读取该变量，写入或修改后**必须重启 Node.js 服务**才生效。状态码对应关系：
+
+- `503 天气服务暂不可用`：未读取到 key；
+- `502 天气服务请求失败`：key 无效、免费额度耗尽、网络不通或请求超过 5 秒超时。
+
+## 跨域处理
+
+REST API 不应依赖浏览器放宽同源策略：`QHZHC_Web/vue.config.js` 的 `devServer.proxy` 把 `/api` 转发到后端，`src/utils/apiBaseUrl.ts` 在当前端口为 `9527` 时返回相对地址，页面与 API 保持同源。
+
+WebSocket 握手不受同源策略限制，因此**不由 devServer 代理**，`resolveWebSocketBaseUrl()` 始终直连后端。请勿在 `vue.config.js` 中添加 `/ws` 代理规则：`/ws` 是 webpack-dev-server 用于热更新自带的 WebSocket 端点（见其默认配置 `webSocketServer.options.path = "/ws"`），一旦代理它，HMR 连接会连同业务请求一起被转发到后端并判定为非法 Upgrade 后销毁，表现为持续刷屏的 `Proxy error ... (ECONNRESET)`，同时热更新失效。
+
+直连后端（`http://127.0.0.1:18080`）、通过局域网 IP 打开前端或前后端分离部署时，由 `QHZHC_Server/src/server/cors.ts` 负责响应 CORS 头：
+
+- 开发环境默认放行 `localhost`、`127.0.0.1` 的任意本机端口，并允许携带凭证；
+- 设置 `CORS_ALLOWED_ORIGINS` 后启用显式白名单，例如 `CORS_ALLOWED_ORIGINS=https://qhzhc.test,http://192.168.1.10:9527`；
+- `CORS_ALLOWED_ORIGINS=*` 允许任意来源，此时不返回 `Access-Control-Allow-Credentials`（浏览器不接受通配符下的凭证请求）；
+- 生产环境未配置时仅接受同源访问——静态页面与 API 由同一个 Node.js 进程提供。
+
+未通过白名单的请求不会得到 `Access-Control-Allow-Origin`，由浏览器自行拦截；预检请求统一以 `204` 结束并缓存一天。
 
 ## 模拟后台
 
@@ -107,3 +139,13 @@ npm run test:integration -w QHZHC_Server
 - `browser-simulator-admin.png`
 
 设计细节见 [WebSocket 与高频渲染设计](docs/websocket-and-rendering.md)。
+
+## 性能监控
+
+管理员入口为 `/#/admin/performance`，也可从模拟后台进入。采集范围仅包含登录后的数据可视化页面。
+
+- [性能监控平台设计：完整链路、关键代码与扩展接入](docs/frontend-performance-monitoring-platform-design.md)
+- [实现、指标阈值与使用说明](docs/performance-monitoring-implementation.md)
+- [实际验收记录与开销限制](docs/performance-monitoring-validation.md)
+
+监控使用独立 SQLite Worker，默认数据库为业务数据库同目录的 `performance.sqlite`。前端构建变量 `VUE_APP_PERFORMANCE_ENABLED=false` 可关闭采集；发布时建议设置 `VUE_APP_RELEASE`。本轮开销对照有两项图表更新 P95 小幅超过预算，详见验收记录。

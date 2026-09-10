@@ -8,7 +8,8 @@ export default defineConfig({
       "tests/protocol.test.ts",
       "tests/server-services.test.ts",
       "tests/frontend-realtime.test.ts",
-      "tests/weather.test.ts"
+      "tests/weather.test.ts",
+      "tests/cors-policy.test.ts", "tests/performance.test.ts", "tests/performance-api.test.ts"
     ]
   }
 });

@@ -1,9 +1,11 @@
+import { performanceMonitor } from '@/services/performance/monitor';
 /* eslint-env jest, node */
 import fs from "fs";
 import path from "path";
 import { parseComponent } from "vue-template-compiler";
 
 function loadComponentAt(componentPath, dependencies = {}) {
+  dependencies = { performanceMonitor, ...dependencies };
   const source = fs.readFileSync(componentPath, "utf-8");
   const script = parseComponent(source).script.content;
   const factorySource = script

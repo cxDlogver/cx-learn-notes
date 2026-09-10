@@ -1,3 +1,4 @@
+import { performanceMonitor } from '@/services/performance/monitor';
 import request from "@/utils/request";
 import { accessTokenManager } from "@/services/accessToken";
 import type { SessionProfile } from "@/services/authSession";
@@ -32,6 +33,7 @@ export async function userRegister(
 }
 
 export async function userLogout(): Promise<void> {
+  performanceMonitor.endView();
   try {
     await request.post("/api/auth/logout");
   } finally {

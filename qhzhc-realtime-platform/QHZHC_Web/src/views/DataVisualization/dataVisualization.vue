@@ -389,6 +389,8 @@
   </div>
 </template>
 <script lang="ts">
+import { performanceMonitor } from '@/services/performance/monitor';
+
 import PlanimetricMap from "./components/PlanimetricMap.vue";
 import StereoscopicMap from "./components/StereoscopicMap.vue";
 import Weather from "./components/Weather.vue";
@@ -407,7 +409,7 @@ import {
   normalizeEnvelope,
   validateHistoryRange,
 } from "./utils/visualizationData";
-import { resolveApiBaseUrl } from "@/utils/apiBaseUrl";
+import { resolveWebSocketBaseUrl } from "@/utils/apiBaseUrl";
 export default {
   components: {
     StereoscopicMap,
@@ -555,8 +557,8 @@ export default {
       }
     },
     getWebSocketUrl() {
-      const apiBaseUrl = resolveApiBaseUrl();
-      return `${apiBaseUrl.replace(/^http/, "ws")}/ws/robots/QH-ZHC-01`;
+      const wsBase = resolveWebSocketBaseUrl();
+      return `${wsBase}/ws/robots/QH-ZHC-01`;
     },
     startRealtime(options = {}) {
       if (
@@ -596,6 +598,7 @@ export default {
       this.signalState = statusText[status] || this.signalState;
     },
     handleRealtimePacket(packet) {
+      performanceMonitor.dataAvailable(packet?.data?.length || 0);
       if (this.searchType !== 1) {
         return;
       }
@@ -608,6 +611,7 @@ export default {
             result.data,
           );
           const nextMapPoints = appendRealtimeBatch(this.mapList, result.data);
+          performanceMonitor.dataSize(nextGasPoints.length);
           this.gasdata = { ...result, data: nextGasPoints };
           this.mapList = nextMapPoints;
           this.detailData = point;
@@ -635,6 +639,7 @@ export default {
       if (this.mapType === val) {
         return;
       }
+      performanceMonitor.setContext({mapType:val===2?'3d':'2d'});
       this.mapType = val;
       if (this.searchType === 2) {
         this.renderHistoryResult();
@@ -773,6 +778,7 @@ export default {
         if (!this.isCurrentRealtimeRequest(requestSequence)) {
           return;
         }
+        performanceMonitor.dataFailed();
         this.signalState = error.message || "最新 5 分钟数据加载失败";
         this.$message.warning(this.signalState);
       } finally {
@@ -787,6 +793,9 @@ export default {
       }
     },
     applyRealtimeInitialWindow(result) {
+      performanceMonitor.setContext({mode:'initial'});
+      performanceMonitor.dataAvailable(result.data?.length || 0);
+      performanceMonitor.dataSize(result.data?.length || 0);
       const points = Array.isArray(result.data) ? result.data : [];
       this.gasdata = result;
       this.mapList = points.slice();
@@ -878,6 +887,7 @@ export default {
     },
 
     renderHistoryResult() {
+      performanceMonitor.setContext({mode:'history'});
       if (
         this.searchType !== 2 ||
         !Array.isArray(this.historyData.data) ||

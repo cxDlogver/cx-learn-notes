@@ -1,3 +1,4 @@
+import { performanceMonitor } from '@/services/performance/monitor';
 import { accessTokenManager } from "@/services/accessToken";
 import { handleUnauthenticated } from "@/utils/request";
 import { FrameTelemetryQueue } from "./FrameTelemetryQueue";
@@ -31,6 +32,9 @@ const PROTOCOL_VERSION = 1;
 const ROBOT_ID = "QH-ZHC-01";
 
 export default class RealtimeClient {
+  private arrivals = new WeakMap<TelemetryPoint, { stamp: ReturnType<typeof performanceMonitor.stamp>; queued: number; replay: boolean }>();
+  private pingStamps = new Map<string, ReturnType<typeof performanceMonitor.stamp>>();
+  private disconnectedAt: ReturnType<typeof performanceMonitor.stamp> | null = null;
   private socket: WebSocket | null = null;
   private stopped = true;
   private attempt = 0;
@@ -60,7 +64,7 @@ export default class RealtimeClient {
       (() => accessTokenManager.refreshAccessToken());
     this.onAuthenticationFailure =
       options.onAuthenticationFailure || handleUnauthenticated;
-    this.frameQueue = new FrameTelemetryQueue((points) => this.publishFrame(points));
+    this.frameQueue = new FrameTelemetryQueue((points) => this.publishFrame(points), 300, 5, undefined, (stats) => { performanceMonitor.record('queueTake',stats.takeMs); performanceMonitor.record('queueCallback',stats.callbackMs); performanceMonitor.record('queueLength',stats.pending); performanceMonitor.record('queueOldest',stats.oldestWaitMs); });
   }
 
   start(): void {
@@ -77,6 +81,7 @@ export default class RealtimeClient {
     this.clearReconnect();
     this.clearHeartbeat();
     this.frameQueue.stop();
+    this.pingStamps.clear();
     window.removeEventListener("online", this.handleOnline);
     window.removeEventListener("offline", this.handleOffline);
     document.removeEventListener("visibilitychange", this.handleVisibility);
@@ -130,6 +135,7 @@ export default class RealtimeClient {
   }
 
   private handleMessage(raw: unknown): void {
+    const receivedStamp = performanceMonitor.stamp();
     if (typeof raw !== "string") return;
     let message: ServerMessage;
     try {
@@ -142,18 +148,25 @@ export default class RealtimeClient {
       this.attempt = 0;
       this.heartbeatIntervalMs = message.heartbeatIntervalMs;
       this.options.onStatus("connected");
+      performanceMonitor.event('connected');
+      if(this.disconnectedAt){const elapsed=performanceMonitor.elapsed(this.disconnectedAt);if(elapsed!==null)performanceMonitor.record('reconnect',elapsed);this.disconnectedAt=null;}
       this.startHeartbeat();
       return;
     }
     if (message.type === "telemetry_batch") {
+      performanceMonitor.record('received',message.points.length,'',message.replay?'replay':'realtime');
+      for(const point of message.points)if(!this.arrivals.has(point))this.arrivals.set(point,{stamp:receivedStamp,queued:performance.now(),replay:message.replay});
       const ordered = this.buffer.ingest(message.points);
+      const parseElapsed=performanceMonitor.elapsed(receivedStamp);if(parseElapsed!==null)performanceMonitor.record('parse',parseElapsed);
+      for(const point of ordered){const timing=this.arrivals.get(point);if(timing)timing.queued=performance.now();}
       this.frameQueue.enqueue(ordered);
       const gap = this.buffer.currentGap();
       if (gap) this.requestResend(gap.fromSequence, gap.toSequence);
       return;
     }
-    if (message.type === "pong") return;
+    if (message.type === 'pong') { const stamp=this.pingStamps.get(message.nonce); if(stamp){const elapsed=performanceMonitor.elapsed(stamp);if(elapsed!==null)performanceMonitor.record('wsRtt',elapsed);this.pingStamps.delete(message.nonce);}return; }
     if (message.type === "gap") {
+      performanceMonitor.record('gap',1);
       this.skipGap(message.latestSequence);
       return;
     }
@@ -166,17 +179,25 @@ export default class RealtimeClient {
     this.lastSequence = latest.sequence;
     sessionStorage.setItem("qhzhc_last_sequence", String(this.lastSequence));
     this.send({ type: "ack", sequence: this.lastSequence });
+    const timing=this.arrivals.get(latest);
+    if(timing)performanceMonitor.setContext({mode:timing.replay?'replay':'realtime'});
+    const wait=timing&&performanceMonitor.elapsed(timing.stamp)!==null?performance.now()-timing.queued:null;
+    if(wait!==null)performanceMonitor.record('queueWait',wait);
+    performanceMonitor.record('consumed',points.length);
     this.options.onPacket({
       code: 200,
       message: "ok",
       data: points.map(toLegacyPoint),
     });
+    if(timing){const elapsed=performanceMonitor.elapsed(timing.stamp);if(elapsed!==null)performanceMonitor.record("receiveApply",elapsed);}
+    for(const point of points)this.arrivals.delete(point);
   }
 
   private requestResend(fromSequence: number, toSequence: number): void {
     const key = `${fromSequence}-${toSequence}`;
     if (key === this.lastResendKey) return;
     this.lastResendKey = key;
+    performanceMonitor.record('resend',1);
     this.send({ type: "resend", fromSequence, toSequence });
     window.setTimeout(() => {
       if (this.lastResendKey === key) this.lastResendKey = "";
@@ -224,6 +245,7 @@ export default class RealtimeClient {
     }
 
     this.options.onStatus("disconnected");
+    performanceMonitor.record('disconnect',1);performanceMonitor.event('disconnect');if(!this.disconnectedAt)this.disconnectedAt=performanceMonitor.stamp();
     this.scheduleReconnect();
   }
 
@@ -236,6 +258,8 @@ export default class RealtimeClient {
         return;
       }
       const now = Date.now();
+      if(this.pingStamps.size>=4)this.pingStamps.clear();
+      this.pingStamps.set(String(now),performanceMonitor.stamp());
       this.send({ type: "ping", nonce: String(now), sentAt: now });
     }, this.heartbeatIntervalMs);
   }

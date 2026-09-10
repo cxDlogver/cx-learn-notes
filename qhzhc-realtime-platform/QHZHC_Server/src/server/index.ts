@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { PerformanceWorkerService } from './performance/service.js';
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { AuthService } from "./auth.js";
@@ -8,6 +10,7 @@ import { TelemetrySimulator } from "./simulator.js";
 import { WeatherService } from "./weather.js";
 
 const config = loadConfig();
+const performanceService = new PerformanceWorkerService(process.env.PERFORMANCE_DATABASE_PATH || path.join(path.dirname(config.databasePath), 'performance.sqlite'));
 const database = new AppDatabase(config.databasePath, config.telemetryRetention);
 const auth = new AuthService(database, {
   accessTokenTtlMs: config.accessTokenTtlMs,
@@ -19,6 +22,7 @@ const weather = new WeatherService();
 let socketHub: RobotSocketHub | null = null;
 
 const app = createApp({
+  performance: performanceService,
   database,
   auth,
   simulator,
@@ -48,7 +52,7 @@ function shutdown(signal: string): void {
   socketHub?.close();
   server.close(() => {
     database.close();
-    process.exit(0);
+    void performanceService.close().finally(() => process.exit(0));
   });
   setTimeout(() => process.exit(1), 5_000).unref();
 }

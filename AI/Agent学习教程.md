@@ -4,7 +4,7 @@
 
 这里分的是两种研发语境，不是两种互斥的技术形态。同一个业务流程可以只接入一次模型调用，也可以使用固定编排的 Workflow，还可以接入一个完整的 Agent。
 
-### 第一类：业务流程 Agent 化
+### 【第一类：业务流程 Agent 化】
 
 这类研发从现有业务出发。通常是在已有的业务 SOP 或工程链路中，引入 Agent 处理依赖语言理解、判断或复杂操作的环节。研发对象仍然是业务流程，Agent 是其中新增的一项能力。
 
@@ -18,1136 +18,3889 @@
 
 它通常有比较明确的流程边界和人工交接点。最终评价也落在业务结果上，例如处理时间是否缩短、解决率或覆盖量是否提高、人力成本是否下降。同时还要检查结果质量、错误率和返工量；如果只是处理得更快，却带来更多问题，就不能算真正提效。
 
-### 第二类：Agent System 开发
+### 【第二类：Agent System 开发】
 
-这类研发直接以 Agent 本身为对象。Agent 是一套以模型推理为核心、配合工具完成任务的智能体系统。它会根据目标和当前上下文判断下一步，调用工具执行，再根据结果继续处理。[1](https://www.anthropic.com/engineering/building-effective-agents) [2](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf)
+这类研发直接以 Agent 本身为对象。Agent 是一套以模型推理为核心、配合工具完成任务的智能体系统。它会根据目标和当前上下文判断下一步，调用工具执行，再根据结果继续处理。[[1]](https://www.anthropic.com/engineering/building-effective-agents) [[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
 
 | 研发语境          | 研发对象                | 核心问题                                         | 评价重点               |
 | ----------------- | ----------------------- | ------------------------------------------------ | ---------------------- |
 | 业务流程 Agent 化 | 已有业务 SOP 或工程链路 | Agent 应该放在哪里，能解决什么问题，风险如何控制 | 业务价值，以及结果质量 |
-| Agent System 开发 | Agent 系统本身          | 怎样让模型配合工具完成目标                       |                        |
+| Agent System 开发 | Agent 系统本身          | 怎样让模型配合工具完成目标                       | 任务完成能力           |
 
-### 2. `Agents in Workflows` -- 在现有业务流程中引入 Agent
+## 2. `Agents in Workflows` -- 在现有业务流程中引入 Agent
 
-### `Agents in Workflows` 的定义
+### 【`Agents in Workflows` 的定义】
 
 第一类 Agent 研发，可以概括为 **Agents in Workflows（工作流中的 Agent）**：保留已有业务流程作为整体执行框架，在其中需要模型进行复杂理解、推理和动态决策的环节，引入 Agent 作为执行单元。
 
 这是 Microsoft Agent Framework 当前明确使用的官方表述。Microsoft 将 `Agents in workflows` 定义为：
 
-> “Use agents as workflow participants and executors.”
-
-即：**让 Agent 作为工作流中的参与者和执行单元。**
+> “Use agents as workflow participants and executors.” [[3]](https://learn.microsoft.com/en-us/agent-framework/workflows/)
+>
+> 即：**让 Agent 作为工作流中的参与者和执行单元。**
 
 Microsoft 进一步指出，现实生产系统通常不会完全依赖 Agent，也不会完全依赖固定程序，而是把两者组合起来：
 
-> “A workflow defines the high-level process, and individual executors within that workflow use agents for the steps that benefit from LLM reasoning.”
-
-也就是：**Workflow 负责定义高层流程，其中真正需要大模型推理的步骤再交给 Agent。**
+> “A workflow defines the high-level process, and individual executors within that workflow use agents for the steps that benefit from LLM reasoning.” [[4]](https://learn.microsoft.com/en-us/agent-framework/journey/workflows)
 
 明确指出：
 
-> “Most real-world applications live somewhere in the middle.” **即大多数真实系统都会采用这种混合方式。**
+> “Most real-world applications live somewhere in the middle.” **即大多数真实系统都会采用这种混合方式。** [[4]](https://learn.microsoft.com/en-us/agent-framework/journey/workflows)
 
 因此，这类研发真正关注的不是“如何重新开发一套 Agent Harness”，而是：
 
 > **业务流程里哪些节点值得 Agent 化、为什么需要 Agent、Agent 如何接入现有流程，以及最终如何证明它产生了业务价值。**
 
+---
 
+### 【如何判断一个节点是否值得接入 Agent 能力】
 
+判断一个节点是否值得引入 Agent 的能力，通常分为三步：
 
+1. 是否产生明确的业务价值？
+2. 问题是否真的需要Agent的能力？
+3. 价值能不能被指标验证？
 
+#### <u>1.判断有没有明确的业务价值</u>
 
+一个节点是否应该 Agent 化，第一步不是判断“AI 能不能做”，而是判断：
 
+> **Agent 接入以后，到底改善了什么业务结果？**
 
+通常可以归纳为两类价值。
 
-# 企业 Agent 架构学习教程
+第一类是**效率价值**，例如减少人工投入、缩短任务处理周期、降低单任务成本、提高团队单位时间能够处理的任务数量。
 
-> 本文讨论的不是某个 Agent 框架怎么用，而是企业怎样把 Agent 做成一套能复用、能运行、能治理的工程体系。文中的三层是责任边界，不是三个互相隔离的技术栈。
+例如在研发流程中引入 Coding Agent，如果它能够减少需求分析、代码修改、测试验证等环节中的人工投入，并最终缩短需求从开发到交付的周期，那么它产生的是明确的效率价值。
 
-## 1. 先把三层分清楚
+第二类是**问题解决价值**。有些任务过去无法很好自动化，并不是因为执行速度慢，而是因为其中存在大量人工判断，例如需要综合多个信息源、处理大量异常情况、理解文档或自然语言、根据执行结果不断调整处理方案。Agent 如果能让这些过去依赖人工的工作实现自动化，就产生了新的业务能力。
 
-企业 Agent 体系保留三层：Foundation、Capability、Application。
+因此第一层判断应该是：
 
-![企业 Agent 三层架构](./Agent学习教程.assets/01-three-layers.svg)
+> **这个 Agent 是在降低成本、提升效率，还是解决过去传统系统无法很好解决的问题？**
 
-| 层级 | 回答的问题 | 主要产物 | 不负责什么 |
-| --- | --- | --- | --- |
-| Foundation | Agent 怎样被构建、执行和运营 | 执行环境、状态、权限、观测、发布与治理机制 | 不决定某个业务失败后该走哪条分支 |
-| Capability | 哪些能力可以被多个 Agent 或业务流程复用 | Skill、Tool、数据与知识访问能力、可选的共享长期记忆 | 不编排完整业务流程 |
-| Application | 业务目标怎样落成可交付、可审计的流程 | 面向业务的 Workflow、阶段规则、质量门禁、人工节点、业务产物 | 不重复实现底层运行机制 |
+如果这两个问题都无法明确回答，那么即使技术上可以使用 Agent，也不应该因为“Agent 是新技术”就投入建设。
 
-判断一个模块放在哪一层，可以先问三件事：
+Microsoft 最新的 Agent 价值衡量指南也强调，Agent 的价值最终要落在可观察的业务结果上，例如节省时间、降低成本、减少错误、提高质量，而不是只看调用量或使用人数。 [[5]](https://learn.microsoft.com/en-us/agents/center-of-excellence/measure-report-value)
 
-1. 它是否与具体业务目标无关，却是 Agent 可靠运行所必需的？是，通常属于 Foundation。
-2. 它是否能被多个 Agent 或多个流程直接调用？是，通常属于 Capability。
-3. 它是否表达了某项业务的顺序、判断、责任和交付标准？是，属于 Application。
+#### <u>2.问题是否真的需要 Agent 能力</u>
 
-边界不会永远固定。一个只服务于单个应用的提示词片段，先留在 Application；当它形成稳定输入输出、经过评测并被多个应用采用后，再沉淀为 Capability。
+**有业务价值，不代表一定需要 Agent。**
 
-### 1.1 用一个案例贯穿全文
+这是业务 Agent 研发中非常重要的一层筛选。
 
-后文统一使用“订单重复扣款缺陷 BUG-42”作为例子。它的业务处理过程如下：
+OpenAI 在官方《A Practical Guide to Building Agents》中提出，在判断哪些场景值得建设 Agent 时，应优先关注过去传统自动化比较难处理的三类任务：[[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+
+1. **Complex decision-making（复杂决策）**：存在大量例外情况，需要结合上下文进行判断；
+2. **Difficult-to-maintain rules（难以维护的复杂规则）**：如果使用传统程序，需要维护大量复杂的 `if/else` 或规则；
+3. **Heavy reliance on unstructured data（高度依赖非结构化信息）**：需要理解自然语言、文档、用户表达等信息。
+
+OpenAI 随后给出了一个非常明确的结论：
+
+> “Otherwise, a deterministic solution may suffice.” [[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+>
+> 也就是:
+>
+> **如果问题并不具备这些特点，一个确定性的传统方案可能已经足够。** 
+
+例如：
 
 ```text
-接收缺陷 → 补齐上下文 → 定位原因 → 修改代码 → 运行测试 → 风险审查 → 人工批准 → 发布
+输入 → 字段校验 → 调用固定 API → 数据转换 → 保存结果
 ```
 
-这个过程包含三类东西：
+这种任务即使有十几个步骤，本质上仍然是确定性的。
 
-- Foundation 提供执行、状态、隔离、重试、恢复、权限和追踪机制。
-- Capability 提供代码检索、仓库读写、测试、日志查询、CRI 数据库查询、知识检索等复用能力。
-- Application 定义 BUG-42 要经过哪些阶段、每个阶段调用哪个 Agent、通过标准是什么、失败后去哪。
+使用普通代码、脚本或者 Workflow 通常更加：
 
-后面所有边界问题，都可以放回这个例子里判断。
+- 稳定；可预测；成本更低；更容易测试。
 
-## 2. Foundation：覆盖 Agent 的完整生命周期
+没有必要为了使用 Agent 而使用 Agent。
 
-沿 Agent 生命周期看 Foundation：
+而另一类任务是：
 
 ```text
-构建 Agent → 执行一次 Run → 运营多个 Agent
+给定目标 → 读取当前环境 → 模型判断：现在缺什么信息？ → 选择工具 → 获得结果 → 根据结果重新判断下一步 → 调整方案 → 直到任务完成
 ```
 
-![Foundation 生命周期](./Agent学习教程.assets/02-foundation-lifecycle.svg)
+这种任务才真正体现 Agent 的价值。
 
-构建、执行和运营是一条连续的职责链。身份权限既影响本地工具调用，也影响生产发布；追踪既用于单次 Run 排错，也用于线上质量分析。
+因此第二层可以总结成一句话：
 
-### 2.1 构建 Agent：把模型变成可执行单元
+> **不是复杂任务都需要 Agent；只有复杂性来自“决策和执行路径的不确定性”时，Agent 才真正有必要。**
 
-单次模型调用只完成“输入文本，返回文本”。Agent 还需要一圈工程机制：
+#### <u>3. 判断价值能不能被指标验证</u>
 
-- 模型访问与路由：模型选择、参数、限流、降级和凭证管理。
-- Agent loop：接收目标，决定下一步，调用工具，读取结果，直到完成或退出。
-- 上下文组装：系统指令、当前任务、历史消息、检索结果、工作区状态和预算。
-- 工具调用：工具描述、参数校验、调用权限、结果规范化和错误分类。
-- 执行环境：代码工作区、沙箱、文件系统、网络边界和进程限制。
-- 人工确认：在高风险操作前暂停，并在得到批准后继续。
-- 产物管理：补丁、报告、测试结果、日志和结构化输出。
+第三个条件是：
 
-这套围绕模型的工作外壳通常称为 [Agent Harness](https://docs.langchain.com/oss/python/concepts/products)。它把上下文、工具、工作区、权限和人工确认装在一起，让模型可以在明确边界内完成任务。
+> **在建设 Agent 之前，就应该知道以后用什么数据证明它有效。**
 
-最小的 Agent loop 可以写成：
+不能等上线以后才说：
 
-```ts
-while (!done && budget.remaining()) {
-  const context = await assembleContext(run);
-  const decision = await model.respond(context, availableTools);
+**<u>“感觉好像提效了。”</u>**
 
-  if (decision.type === "tool_call") {
-    const result = await invokeToolWithPolicy(decision.tool, decision.args);
-    run.append(result);
-    continue;
-  }
+Microsoft 最新 Agent 价值衡量指南明确要求，在 Agent 上线之前建立 **Baseline（基准数据，即没有 Agent 时原流程的数据）**。[[5]](https://learn.microsoft.com/en-us/agents/center-of-excellence/measure-report-value)
 
-  done = decision.type === "final";
-}
+例如先记录：
+
+- 原来一次任务平均需要多长时间；
+- 原来需要多少人工时间；
+- 原来的错误率；
+- 原来的处理成本；
+- 原来的任务成功率。
+
+然后才能比较 Agent 上线之后：
+
+```text
+Before Agent → After Agent
 ```
 
-代码看起来简单，生产问题都藏在循环外：进程中断后怎样恢复、工具有没有越权、同一个动作会不会重复执行、结果是否真的达到业务标准。这些才是 Foundation 要解决的部分。
+到底发生了什么变化。
 
-### 2.2 执行一次 Run：可靠地开始、暂停、恢复和结束
+Microsoft 明确指出：**如果没有上线前的基准数据，后续的价值判断基本只能算猜测。** [[5]](https://learn.microsoft.com/en-us/agents/center-of-excellence/measure-report-value)
 
-本文用 Run 表示一次有明确目标和边界的 Agent 执行。承载 Run 的 [Agent Runtime](https://docs.langchain.com/oss/python/langgraph/overview) 接收任务和执行策略，负责保存状态、调度资源，并在暂停或故障后继续运行。Foundation 对 Run 负责的内容包括：
+这里的指标最好分成两层。
 
-| 机制 | 作用 |
-| --- | --- |
-| Run identity | 为一次执行分配稳定标识，并关联外部 Agent 的 thread/session ID |
-| State store | 记录状态、阶段、attempt、输入摘要和产物引用 |
-| Checkpoint | 在可恢复位置保存进度，进程重启后不必从头执行 |
-| Scheduler / queue | 在合适的时间与资源上启动或继续执行 |
-| Heartbeat | 判断执行仍在运行，还是已经失联 |
-| Timeout / cancellation | 到期终止、响应业务取消，并回收资源 |
-| Retry executor | 按上层给定的策略安排下一次 attempt |
-| Isolation | 隔离工作区、进程、网络、密钥和租户数据 |
-| Artifact store | 保存补丁、报告、日志、测试证据等可交付产物 |
-| Event / trace | 记录模型调用、工具调用、状态变化和异常 |
+第一层是**Agent 自己有没有把任务做好**，例如：
 
-Run state 不是长期记忆。`attempt=2`、当前检查点、等待人工批准等信息，是为了让这次执行能够继续；任务完成并超过审计保留期后，它们可以归档或删除。
+- 任务成功率； 验收通过率； 准确率； 错误率； 人工接管率； 重试率。
 
-### 2.3 重试：业务定策略，Foundation 执行策略
+它回答：
 
-Runtime 可以执行重试，但不应自行制定业务策略。这里有两类责任：
+**<u>Agent 能不能完成这件事？</u>**
 
-- Application 决定：哪些错误允许重试、最多几次、间隔多长、用原上下文继续还是新开 Run、最终转人工还是错误分支。
-- Foundation 执行：记录当前是第几次 attempt、设置计时器、调度下一次执行、读取检查点、保证状态一致并留下追踪记录。
+第二层是**它有没有真正改善业务结果**，例如：
 
-![策略与执行机制](./Agent学习教程.assets/03-policy-mechanism.svg)
+- 人工投入减少多少；
+- 交付周期缩短多少；
+- 单任务成本降低多少；
+- 错误率下降多少；
+- 业务问题解决率提高多少。
 
-可以把一次重试写成一份明确的业务策略：
+它回答：
 
-```yaml
-stage: locate_root_cause
-retry:
-  retryable_errors:
-    - PROVIDER_RATE_LIMIT
-    - PROVIDER_TIMEOUT
-    - SANDBOX_LOST
-  max_attempts: 3
-  backoff: exponential
-  initial_delay: 5s
-  jitter: true
-on_exhausted: manual_triage
+**<u>即使 Agent 能做，它是否值得做？</u>**
+
+Microsoft 当前把 Agent 的业务价值主要归纳为四类：Efficiency（效率）、Quality（质量）、Revenue（收入）和 Strategic Value（战略价值），并强调指标最终应该能够对应到业务关心的结果，而不是停留在 Agent 的调用次数上。[[6]](https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact)
+
+---
+
+因此，可以把“一个业务节点是否值得 Agent 化”收敛成三个判断
+
+```
+业务节点
+   ↓
+1. 有没有明确的业务价值？
+   ↓
+提效 / 降本 / 提质 / 解决原来无法自动化的问题
+   ↓
+2. 这个问题真的需要 Agent 吗？
+   ↓
+确定性问题 → 优先代码 / 脚本 / Workflow
+不确定性问题 → 考虑 Agent
+   ↓
+3. 价值能不能量化验证？
+   ↓
+任务质量指标 + 业务结果指标
+   ↓
+三个条件成立
+   ↓
+再进入 Agent 方案设计
 ```
 
-Foundation 不理解 `manual_triage` 的业务含义，只负责在三次尝试用尽后发出 `STAGE_RETRY_EXHAUSTED`。Application 收到事件后，把流程转到“人工排查”。
+## 3. Agentic System 的三类执行与编排形态
 
-错误也不能一律重试：
+今天我们通常会比较宽泛地把“接收一个任务，经过模型推理、工具调用或流程处理，最终返回结果”的系统都称为 Agent。但从系统内部的执行方式来看，它们其实并不相同。
 
-| 错误类型 | 例子 | 合理处理 |
-| --- | --- | --- |
-| 瞬时基础设施错误 | 限流、短暂超时、沙箱失联 | 在次数和退避上限内自动重试 |
-| 可修复的任务错误 | 结构化输出不合规、缺少一项证据 | 带着反馈继续当前会话，或执行一次修复回合 |
-| 质量失败 | 测试失败、风险审查不通过 | 回到实现阶段，输入失败证据；不是盲目重复同一步 |
-| 确定性错误 | 参数非法、权限不足、配置缺失 | 直接失败，先修配置或权限 |
-| 业务歧义或高风险 | 需求冲突、可能影响资金数据 | 转人工判断 |
+Anthropic 在《Building Effective Agents》中明确指出，业界对 Agent 的定义并不统一：有些团队把长期自主运行的系统称为 Agent，也有一些团队会把按照预定义 Workflow 运行的系统称为 Agent。Anthropic 将这些不同实现统一归入更宽泛的 `Agentic Systems（智能体式系统）`。[[1]](https://www.anthropic.com/engineering/building-effective-agents)
 
-自动重试前还要检查幂等性。查询和纯分析通常可以安全重放；支付、发消息、创建工单等有外部副作用的操作，应使用幂等键、去重记录或补偿动作。否则“提高成功率”的重试会制造第二次事故。
+因此，如果我们关注的是：
 
-### 2.4 运营多个 Agent：让系统可发布、可治理
+> **一个任务交给系统以后，从输入到最终输出，中间究竟是怎样执行和编排的？**
 
-当生产环境中同时运行多个 Agent，需要一个统一的 Agent Platform 管理版本、访问边界、运行质量和资源消耗。否则每个团队都会各自保存配置、分发密钥和查看日志，同名 Agent 也可能使用不同的模型、工具或提示词，出了问题很难还原现场。
+可以先从三种常见形态理解：
 
-#### Agent 资产、版本、发布与回滚
-
-Agent 的版本不能只记录一段提示词。一个可发布版本至少要固定系统指令、模型配置、Skill 与 Tool 版本、Adapter、输出 Schema 和权限模板。注册表为它们分配稳定的 `agentId` 和版本号；某次 Run 启动后，还要把实际使用的版本写入执行记录。
-
-新版本先在测试环境跑回归样本，通过质量门槛后再灰度。回滚只改变新 Run 的流量去向，已经开始的 Run 继续使用原版本，除非发布策略要求取消。以 BUG-42 为例，诊断阶段可以锁定 `code-diagnoser@3`，编码阶段锁定 `code-editor@5`；如果 `code-editor@5` 经常修改无关文件，Platform 停止给它分配新任务，并把后续任务切回 `code-editor@4`。
-
-#### 身份、权限、密钥与网络边界
-
-Agent 的有效权限来自多重约束的交集：发起人的身份、Agent 配置、当前 Stage 以及 Tool 或数据源自己的策略。Agent 不应持有长期通用密钥。Runtime 在 Run 启动时申请短期凭证，凭证只允许访问当前阶段所需的资源；沙箱的网络出口也按域名或服务白名单开放。
-
-BUG-42 的诊断阶段可以读取代码、日志和 CRI 数据，但不能改仓库；编码阶段只能写隔离分支，不能访问生产数据库；发布阶段则由另一套服务身份执行。每次 Tool 调用都带上用户、Run 和 Stage 标识。权限不足直接返回明确错误，不进入自动重试。
-
-#### 观测、质量评测与问题定位
-
-观测数据要能从业务实例一路定位到 Stage、Run、模型调用、Tool 调用和最终产物。成功率、耗时、Token、Tool 错误和人工介入率是同一条执行链上的不同信号。只看“Run 成功”没有意义，还要用离线样本、结构化 Gate 和线上抽检判断结果是否合格。
-
-BUG-42 的根因报告必须带代码或日志证据，补丁必须关联独立测试结果。若某版本耗时增加但报告质量没有变化，可以检查模型和工具调用；若 Run 显示成功却频繁过不了 Gate，问题在 Agent 的完成判断或输出契约，而不是 Runtime 稳定性。
-
-#### 配额、成本、审计与责任追溯
-
-Platform 按团队、业务流程和 Agent 设置并发数、最长执行时间、模型调用次数和费用上限。Runtime 在启动 Run、进入新回合或调用高成本 Tool 前检查剩余额度。审计记录则保存发起人、Agent 版本、实际权限、能力调用、产物、人工批准和最终变更。
-
-BUG-42 可以限制诊断阶段最多调用模型 20 次、运行 30 分钟。额度耗尽后，Runtime 返回 `BUDGET_EXCEEDED`，由 Business Workflow 决定转人工还是终止。若补丁上线后出现问题，审计记录能够还原谁发起了流程、哪个 Agent 版本改了哪些文件、测试和审批依据是什么。
-
-## 3. Capability：沉淀可以复用的能力
-
-Capability 不是“Agent 运行需要的所有东西”，而是能被多个 Agent 或多个业务流程复用的资产。
-
-![Capability 复用关系](./Agent学习教程.assets/04-capability-reuse.svg)
-
-一项资产进入 Capability 层前，至少要回答：
-
-- 是否已有两个以上的实际复用方，或很快会有明确的第二个复用方？
-- 输入、输出和错误语义是否稳定？
-- 权限边界、负责人和版本是否清楚？
-- 能否独立测试，升级后能否做回归评测？
-- 调用方是否不需要知道内部实现细节？
-
-如果答案大多是否定的，它仍是某个应用的内部实现，不必急着抽象。
-
-### 3.1 Skill：可复用的任务方法
-
-Skill 描述“怎样完成一类任务”。它通常包含：
-
-- 适用场景和触发条件；
-- 必须遵守的步骤与约束；
-- 可使用的工具和数据；
-- 输出模板或结构化 Schema；
-- 示例、反例和验收标准；
-- 版本与评测样本。
-
-例如“Java 服务根因定位”可以成为一个 Skill：先读取工单和调用链，再检索相关代码，最后输出根因、证据、影响范围和建议修复点。它不绑定 BUG-42，因此可以被其他缺陷流程复用。
-
-Skill 不等于一段长 Prompt。只有经过封装、版本管理和评测，调用方能稳定复用时，它才是一项工程资产。
-
-### 3.2 Tool：Agent 可以调用的确定性动作
-
-Tool 向 Agent 暴露一个明确动作，例如：
-
-- `search_code(query, repo)`
-- `run_tests(target, timeout)`
-- `query_logs(service, time_range, filter)`
-- `query_cri_database(sql_template, parameters)`
-- `create_patch(files, change_request)`
-
-Tool 是面向 Agent 的调用契约。它的实现可以是本地函数、CLI、HTTP API、内部服务或数据库代理。架构设计时先定义输入、输出、权限和错误码，再选择承载方式。
-
-工具错误最好采用可判断的结构，而不是只返回一段文本：
-
-```json
-{
-  "ok": false,
-  "error": {
-    "code": "QUERY_TIMEOUT",
-    "retryable": true,
-    "message": "日志查询在 30 秒后超时"
-  }
-}
+```
+Agentic System
+│
+├─ 1. Workflow
+│    模型 + 工具按照预定义流程执行
+│    流程控制权主要在 Code / Workflow
+│
+├─ 2. Single-Agent
+│    一个 Agent 自主完成任务
+│    模型动态决定 Tool / Action / Stop
+│    核心运行机制 = Agent Loop
+│
+└─ 3. Multi-Agent
+     多个 Agent 共同完成任务
+     每个 Agent 内部运行自己的 Agent Loop
+     Agent 之间通过 Orchestration 协调
 ```
 
-`retryable` 是工具对错误性质的提示，不是最终重试决定。Application 仍要结合阶段风险、剩余时间和 attempt 上限制定策略。
+其中最关键的两条判断标准是：
 
-### 3.3 数据、知识与检索能力
+> **第一，执行路径主要由代码决定，还是由模型动态决定。**
+>
+> **第二，系统里有一个 Agent 决策主体，还是存在多个 Agent 共同完成任务。**
 
-业务数据库、文档库、代码库、搜索服务和 RAG 都可以成为 Capability，前提是它们提供了稳定、受控、可复用的访问能力。重点不是把数据搬到一个新盒子，而是把以下问题处理好：
+### 【Workflow：模型和工具按照预定义流程执行】
 
-- 数据来源、更新时间和负责人；
-- 查询范围与租户隔离；
-- 结果引用和证据定位；
-- 敏感字段过滤；
-- 召回质量与空结果处理；
-- 变更兼容和版本管理。
+第一类是 **Workflow（工作流）**。
 
-知识库偏向经过整理的事实和规则，例如退款制度、服务目录、代码规范。它通常是多人共享、以读取为主、需要来源和版本。
+**<u>注意：这里说的 Workflow 是 Anthropic 2024《Building Effective Agents》中的严格含义。</u>**
 
-### 3.4 MCP：一种复用能力的接入方式
+Anthropic 对 Workflow 的原始定义是：
 
-同一项工具、资源或提示模板可以通过 MCP 暴露给不同 Agent 客户端，从而减少重复适配。架构上不必单独为 MCP 建一层；把它看作 Capability 的一种统一接入方式即可。MCP 的 Host、Client、Server 分工可参考[官方架构说明](https://modelcontextprotocol.io/specification/2025-06-18/architecture)。
+> “LLMs and tools are orchestrated through predefined code paths.” [[1]](https://www.anthropic.com/engineering/building-effective-agents)
+>
+> 也就是：
+>
+> **模型和工具按照开发者预先定义的代码路径进行编排。**
 
-是否采用 MCP，取决于复用范围：只在单进程内使用的函数不一定需要 MCP；需要被 Codex、Claude Code、Trae Agent 等不同客户端共同调用的能力，更适合封装成服务并通过 MCP 或稳定 API 暴露。
+例如：
 
-### 3.5 长期记忆：只在确有复用价值时建设
+```text
+Input → Model → Search Tool → Model → Database Tool → Output
+```
 
-长期记忆与知识库有联系，但不是同一个概念：
+如果开发者已经提前规定：
 
-- 知识库保存经过整理的业务事实、规则和资料，强调来源、版本和可引用性。
-- 长期记忆从交互和执行结果中提炼偏好、历史决策、项目经验等内容，强调写入、合并、更正、过期和作用域。
+```text
+Model 之后一定调用 Search → Search 完成后一定再次调用 Model → 之后一定调用 Database → 最后输出结果
+```
 
-如果记忆只服务于一个应用，例如 BUG-42 会话中的临时偏好，就留在 Application。只有当多种 Agent 都需要按用户、团队或项目复用这些内容，并且已经解决授权、更正、过期和删除问题时，才把它建设为 Capability。
+那么即使整个过程存在：
 
-不必默认像建数据仓库一样建设“企业记忆中心”。先让 Run state、业务记录和知识库各司其职；真实复用需求出现后，再增加独立长期记忆服务。[AWS AgentCore Memory](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory-get-started.html)同样把短期事件与从事件中提炼的长期记录分开处理。
+- 多次模型调用；
+- 多个工具；
+- 条件判断；
+- 循环；
+- 复杂的数据处理；
 
-## 4. Application：按目标或流程构建业务
+它仍然可以只是 Workflow。
 
-Application 有两种常见的构建起点：
+判断它是不是 Agent 的关键，不是：**“有没有使用 LLM？”**而是：**“LLM 有没有获得执行过程的决策权？”**
 
-- 目标导向：先定义要解决的业务问题，再构建运营 Agent、电商 Agent、客服 Agent 等业务助手。
-- 流程导向：先定义稳定的 SOP，再用 Business Workflow 固定阶段、顺序、分支和责任。
+Anthropic 对 Agent 的定义正好形成对应关系：
 
-两者是业务设计的不同面向，不是固定的上下层关系。目标导向的 Agent 可以单独提供服务，也可以被某个业务阶段调用；流程导向的阶段可以使用 Agent，也可以只执行普通代码或工具。
+> “LLMs dynamically direct their own processes and tool usage.” [[1]](https://www.anthropic.com/engineering/building-effective-agents)
+>
+> 即：
+>
+> **模型动态控制自己的执行过程以及工具使用方式。** 
 
-![两种业务构建面向](./Agent学习教程.assets/05-two-workflow-modes.svg)
+因此：
 
-### 4.1 目标导向：围绕业务目标构建 Agent
+```text
+Model → 固定 Search → Model → 固定 Database
+```
 
-目标导向的核心是：业务只给出目标和边界，Agent 根据执行结果决定下一步。
+和：
 
-例如，运营 Agent 收到“找出本周商品转化下降的原因，并给出三项调整建议”后，可以按下面的方式工作：
+```
+Model
+ ↓
+模型自己判断
+├─ Search
+├─ Database
+├─ Read File
+└─ Final
+```
 
-~~~text
-业务目标
-  → 读取经营分析 Skill
-  → 查询商品、流量和订单数据
-  → 根据结果继续选择 Skill 或 MCP Tool
-  → 对比假设与证据
-  → 输出原因、建议和引用数据
-~~~
+虽然表面上都有“模型 + 工具”，但本质不同。
 
-这里的 Skill 和 MCP Tool 是可复用能力。Agentic Workflow 描述的是 Agent 怎样反复判断、调用能力和收敛结果。它通常由 Agent Harness 执行，但不等于 Harness 本身。
+前者：
 
-#### 4.1.1 单 Agent 常用控制模式
+```
+控制权 = Workflow / Code
+```
 
-这些模式描述一个 Agent 怎样完成任务：
+属于 Workflow。
 
-| 模式 | 基本形式 | 适合的任务 |
-| --- | --- | --- |
-| ReAct / Tool Loop | 观察 → 判断 → 调用工具 → 读取结果 → 再判断 | 路径事先不确定，需要边查边做 |
-| Plan-and-Execute | 制定计划 → 分步执行 → 检查进度 → 必要时重排计划 | 步骤较长、前后依赖明确 |
-| Evaluator-Optimizer | 生成结果 → 评价 → 给出修改意见 → 再生成 | 有明确质量标准，需要反复改进 |
+后者：
 
-ReAct、Plan-and-Execute 和 Evaluator-Optimizer 是单 Agent 的执行模式。Router、Supervisor 和 Handoff 解决的是多个执行者之间怎样分工，二者不能放在同一层当作并列规范。
+```
+控制权 = Model
+```
 
-[Anthropic 的 Agent 模式总结](https://www.anthropic.com/engineering/building-effective-agents)也把路由、并行、Orchestrator-Workers 和 Evaluator-Optimizer 分成不同协作结构，而不是一组互斥的 Agent 类型。
+才开始进入 Agent。
 
-### 4.2 流程导向：先定义 Business Workflow
+所以这一类可以概括为：
 
-流程导向适合已经有清楚 SOP 的业务，例如缺陷修复、内容发布、合同审批和营销活动上线。Business Workflow 先固定业务主干：
+> 开发者提前规定任务执行结构，由程序负责控制模型、工具和节点之间如何流转。模型可以在某个节点中进行推理，但并不负责决定整个执行过程中下一步应该做什么。因此，使用了 LLM 和 Tool 并不意味着系统就已经成为 Agent。
 
-~~~text
-收集材料 → 分析 → 执行 → 验证 → 审批 → 发布
-~~~
+### 【Single-Agent：一个 Agent 通过 Agent Loop 自主推进任务】
 
-每个方框都是 Stage。流程定义每个 Stage 的输入、输出、执行者和通过条件；Orchestrator 负责按定义推进实例。
+第二类是真正的 **Single-Agent System（单 Agent 系统）**。
 
-#### 4.2.1 一个 Stage 可以怎样执行
+Single-Agent 的核心特点是：
 
-| 执行方式 | 形式 | 什么时候用 |
-| --- | --- | --- |
-| 普通代码或 Tool | Stage → 函数、API、脚本 | 规则明确，输入输出确定 |
-| Agent + Skill | Stage → 指定 Agent → 读取该阶段 Skill | 需要理解材料，但方法已经沉淀 |
-| 同一 Agent + 不同 Skill | 多个 Stage 调用同一 Agent，每个 Stage 加载不同 Skill | 阶段共享上下文，权限边界相近 |
-| 独立 Agent | Stage 调用单独注册、部署或配置的 Agent | 专业边界、权限、工作区或版本需要隔离 |
+> **整个任务中只有一个 Agent 决策主体，它根据目标、上下文以及环境反馈，持续判断下一步应该做什么。**
 
-例如 BUG-42 可以让同一个编码 Agent 在“根因分析”阶段读取根因分析 Skill，在“修复”阶段读取安全改码 Skill。若风险审查必须独立授权，则再调用只读的风险审查 Agent。
-
-Agent 不是每个 Stage 的必选项。测试、Schema 校验、状态回写等确定性步骤直接用代码更清楚。
-
-#### 4.2.2 Business Workflow 的常用结构
-
-| 结构 | 形式 | BUG-42 中的例子 |
-| --- | --- | --- |
-| 顺序链 | A → B → C | 收集上下文 → 定位根因 → 修改代码 |
-| 条件分支 | A → 条件 → B 或 C | 高风险进人工审批，低风险继续 |
-| 并行汇聚 | A → B、C 并行 → D 汇总 | 单元测试与安全扫描并行，完成后汇总 |
-| 审查回路 | A → 审查失败 → A | 测试失败后回到修改阶段 |
-| 人工门禁 | A → 等待人工决定 → B | 发布前由责任人审批 |
-
-这些结构可以由代码、状态机或持久化 Workflow Engine 实现。Agentic Workflow 只在某个 Stage 需要动态判断时出现，不要求形成“外层 Business Workflow、内层 Agentic Workflow”的固定架构。
-
-### 4.3 Orchestrator、Gate 和 Supervisor 怎样决定下一步
-
-先把四个角色说清楚：
-
-| 名称 | 可以理解成什么 | 只负责什么 |
-| --- | --- | --- |
-| Orchestrator | 业务流程推进器 | 执行流程定义，调用当前阶段，运行门禁，再按规则进入下一阶段 |
-| Gate | 阶段门禁 | 检查当前阶段的产物，返回“通过、不通过或需要人工复核”以及依据 |
-| Router | 一次分流器 | 判断请求属于哪一类，再交给预设的处理者 |
-| Supervisor | 模型调度 Agent | 保留任务上下文，反复选择下一项动作或下一位 Agent |
-
-Orchestrator 不分“确定性 Orchestrator”和“AI Orchestrator”。真正分成两种的是 Gate：确定性 Gate 用规则判断，AI Gate 用模型审查。只要下一阶段仍由预先写好的规则映射，流程控制权就在 Orchestrator。
-
-![Orchestrator、Gate 与 Supervisor 的控制权对比](./Agent学习教程.assets/05-control-patterns.svg)
-
-#### 4.3.1 Orchestrator 怎样经过 Gate 推进流程
-
-Orchestrator 推进一个业务流程时，会依次完成下面这些动作：
-
-| 顺序 | 发生什么 | BUG-42 中的例子 |
-| --- | --- | --- |
-| 1 | 找到当前需要执行的阶段 | 当前是“修改代码” |
-| 2 | 调用该阶段的执行者 | 调用编码 Agent，或者直接调用普通代码和工具 |
-| 3 | 接收阶段产物 | 收到补丁、修改说明和相关证据 |
-| 4 | 调用当前阶段配置的 Gate | 检查补丁是否存在、测试是否通过、风险是否可接受 |
-| 5 | 接收 Gate 的检查结果 | 通过、不通过或需要人工复核，并附带原因 |
-| 6 | 查找检查结果对应的下一阶段 | 通过进入风险审查；不通过回到修改；高风险转人工 |
-| 7 | 保存流程状态并继续 | 记录本次结果，然后推进新的阶段 |
-
-完整控制链是：
-
-> 当前阶段完成 → 形成阶段产物 → Gate 检查 → 返回检查结果和依据 → Orchestrator 查规则映射 → 推送下一阶段
-
-Gate 不直接启动下一阶段。它把判断交回 Orchestrator，Orchestrator 再根据流程定义中的对应关系推进。
-
-以 BUG-42 的测试和风险审查为例：
-
-| Gate 返回的结果 | 预先定义的规则 | Orchestrator 推送到 |
-| --- | --- | --- |
-| 测试通过 | 测试通过后进行风险审查 | 风险审查 |
-| 测试不通过 | 测试失败必须重新修改 | 修改代码 |
-| 风险可接受 | 风险审查通过后等待批准 | 人工批准 |
-| 风险不可接受 | 修改后重新审查 | 修改代码 |
-| 无法确定或风险过高 | 必须由责任人判断 | 人工复核 |
-
-上表中的映射随 Workflow 版本一起发布。运行时只能命中这些规则，不能临时生成一个未经定义的新阶段。
-
-#### 4.3.2 确定性 Gate 和 AI Gate 分别检查什么
-
-两种 Gate 的区别是检查方法，不是控制权。
-
-| Gate 类型 | 怎样检查 | 适合检查什么 | 返回给 Orchestrator 的内容 |
-| --- | --- | --- | --- |
-| 确定性 Gate，也叫 Rule Gate | 使用代码、表达式或策略规则计算 | 测试退出状态、失败用例数、覆盖率、产物是否存在、审批是否完成 | 通过、不通过或人工复核，以及实际数值和失败原因 |
-| AI Gate | 让审查 Agent 或模型阅读材料并给出结构化判断 | 需求是否覆盖、方案是否合理、代码设计是否有明显缺陷、测试是否覆盖关键风险 | 建议通过、不通过或人工复核，以及评分、问题和引用证据 |
-| Human Gate | 由指定责任人查看产物和证据 | 资金、发布、合规或模型无法可靠判断的问题 | 批准、拒绝或要求修改，以及审批意见 |
-
-确定性 Gate 的过程很直接：
-
-1. 读取测试报告和扫描报告。
-2. 检查测试是否全部通过、覆盖率是否达到要求、是否存在严重安全问题。
-3. 返回通过或不通过，并列出没有满足的条件。
-4. Orchestrator 根据固定映射进入下一阶段或回到修改阶段。
-
-AI Gate 处理的是不容易写成简单数值的检查：
-
-1. 读取需求、方案、代码差异和测试说明。
-2. 判断需求是否覆盖、设计是否合理、关键风险是否被测试。
-3. 返回建议结果，同时列出问题、评分和证据位置。
-4. Orchestrator 把建议结果转换成统一的门禁结果，再按固定规则推进。
-
-例如，AI Gate 给出的结论是“退款幂等性没有验证，风险高”。它没有权力直接调用某个 Agent。Orchestrator 看到“风险高”后，按已有规则把流程送到人工复核或修改代码。
-
-这就是 AI Gate 与 Supervisor 的边界：
-
-- AI Gate 用模型检查当前产物。
-- Supervisor 用模型选择下一项动作或下一位执行者。
-- AI Gate 的结果仍由 Orchestrator 映射；Supervisor 的选择本身就是调度决定。
-
-#### 4.3.3 Orchestrator 和 Supervisor 的直接对比
-
-假设当前已经知道：
-
-- 功能测试失败；
-- 日志出现数据库锁等待；
-- 最近发生过数据库结构变更；
-- 接口代码暂时没有明显异常。
-
-Orchestrator 的处理方式：
-
-1. 当前阶段的 Gate 返回“测试不通过”，并附上数据库锁等待的证据。
-2. Orchestrator 查找已经定义的规则。
-3. 如果规则写的是“数据库锁等待进入数据库排查阶段”，流程就进入该阶段。
-4. 数据库排查完成后，再次经过 Gate 和规则映射。
-
-这里可以有分支、循环和回退，但每条路径都提前写在流程定义中。
-
-Supervisor 的处理方式：
-
-1. Supervisor 同时读取任务目标、现有证据和允许调用的 Agent 列表。
-2. 模型判断先调用 Database Agent。
-3. Database Agent 返回结果后，Supervisor 再判断是否调用 Coding Agent。
-4. 如果仍缺信息，Supervisor 可以继续调用日志 Agent，或者并行调用 SRE Agent。
-5. 证据足够后，Supervisor 汇总结果并结束。
-
-调用顺序不是提前写好的固定路径，而是模型根据每次返回结果继续选择。
-
-| 对比项 | Orchestrator | Supervisor |
-| --- | --- | --- |
-| 下一步由谁决定 | 流程规则 | Supervisor 模型 |
-| 可走的业务阶段 | 随 Workflow 版本预先定义 | 可调用对象受权限限制，具体顺序运行时决定 |
-| 是否持续保留任务上下文 | 保存业务阶段和产物状态 | 保存推理所需上下文，并据此继续调度 |
-| 遇到新证据后的处理 | 命中已有条件和路径 | 可以临时调整顺序、补充任务或换一个 Agent |
-| 适合的任务 | SOP、审批、发布、回流和补偿 | 开放式诊断、研究和跨专业协作 |
-| 主要风险 | 规则遗漏导致流程没有合适路径 | 模型选择不稳定，成本和审计更难控制 |
-
-如果把业务阶段列表交给 Supervisor，并允许它直接选择下一阶段，那么业务主干就是模型控制。对于发布、资金和合规流程，这通常不是合适的默认方案。
-
-#### 4.3.4 Router 和 Supervisor 也不是同一种调度
-
-Router 只做一次分类。Supervisor 会在任务执行期间反复作出选择。
-
-| 形式 | 工作过程 | 是否继续调度 |
-| --- | --- | --- |
-| Rule Router | 根据明确条件把请求交给预设处理者 | 否 |
-| Model Router | 模型判断请求类别，代码把类别映射到预设处理者 | 否 |
-| Supervisor | 模型选择执行者，读取结果，再选择下一执行者或结束 | 是 |
-
-例如，Model Router 可以把“数据库锁等待”分类成数据库问题，再由固定映射交给 Database Agent。任务交出去后，Router 的工作结束。
-
-Supervisor 调用 Database Agent 后还会读取结果。如果发现代码也需要修改，它会继续调用 Coding Agent。这种持续判断才是 Supervisor。
-
-#### 4.3.5 有分支不等于需要 Supervisor
-
-条件分支、回流、并行和等待都可以由 Orchestrator 执行。选择方式可以按下面的顺序判断：
-
-| 问题 | 合适的控制方式 |
-| --- | --- |
-| 条件能稳定写成规则吗 | 确定性 Gate + Orchestrator |
-| 需要模型审查材料，但下一阶段仍是固定映射吗 | AI Gate + Orchestrator |
-| 只需要对请求做一次语义分类吗 | Model Router |
-| 需要反复补证据、拆任务和选择不同专家吗 | Supervisor |
-| 最终决定涉及资金、发布或合规责任吗 | Human Gate 收口 |
-
-对已经有 SOP 的业务，可以让 Orchestrator 控制业务阶段，只在某个开放阶段使用 Supervisor：
-
-1. Orchestrator 进入开放式诊断阶段。
-2. Supervisor 在该阶段动态调用多个专业 Agent。
-3. Supervisor 返回一份统一的诊断结果。
-4. Gate 检查这份结果是否完整、证据是否充分。
-5. Orchestrator 根据检查结果继续、回流或转人工。
-
-这是一种常见组合，不是固定架构。开放阶段可以只用一个 Agent，也可以不用 Agent；Supervisor 只在“调度本身需要模型判断”时出现。
-
-### 4.4 多 Agent 协作有哪些常用形式
-
-| 形式 | 控制权在哪里 | 执行形式 | 适合场景 |
-| --- | --- | --- | --- |
-| Router | Router 完成分发后退出或等待汇总 | 分类 → 选择 Agent → 返回结果 | 请求类型清楚，只需一次分流 |
-| Supervisor / Agents as Tools | Supervisor 始终保留控制权 | 主 Agent 调用专业 Agent，取得结果后继续判断 | 需要多轮协调和统一汇总 |
-| Main Agent + Sub-agent | Main Agent 保留控制权 | Main Agent 创建或调用 Sub-agent，Sub-agent 完成限定任务后返回 | 上下文需要隔离，任务可拆成小块 |
-| Handoff | 控制权交给接手的 Agent | 当前 Agent 移交上下文和后续对话 | 专业 Agent 需要直接接管用户或任务 |
-| 并行协作 | 代码编排器或 Supervisor 控制汇聚 | 多个 Agent 同时执行，最后合并 | 子任务相互独立，时间收益明显 |
-
-Supervisor 与 Main Agent + Sub-agent 不是两个完全独立的架构层。Supervisor 是协作职责；Main Agent 调用 Sub-agent 是一种具体实现。
-
-“独立 Agent”描述资产和部署身份：它可以有自己的版本、权限、工作区和服务地址。“Sub-agent”描述一次运行中的角色：它接受 Main Agent 的限定任务，完成后把结果返回。一个独立部署的 Agent 可以在某次调用中充当 Sub-agent。
-
-OpenAI 把“Manager 调用专业 Agent”称为 Agents as Tools，此时 Manager 保留控制权；Handoff 则把当前控制权交给专业 Agent。[OpenAI 多 Agent 文档](https://openai.github.io/openai-agents-python/multi_agent/)和 [LangChain Handoffs 文档](https://docs.langchain.com/oss/python/langchain/multi-agent/handoffs)都采用了这一控制权区分。
-
-[LangChain Subagents 文档](https://docs.langchain.com/oss/python/langchain/multi-agent/subagents)展示了主 Agent 把子 Agent 当工具调用的集中式结构。
-
-Anthropic 文档中的 Orchestrator-Workers 指模型动态拆解任务并分派 Worker，更接近这里的 Supervisor / Manager，不要与按预定义状态图推进的 Business Orchestrator 混为一谈。
-
-选择时看一个问题：谁应该决定下一步？
-
-| 业务需要 | 选择 |
-| --- | --- |
-| 条件稳定、目标固定 | Rule Router 或 Business Orchestrator |
-| 语义分类后只分发一次 | Model Router |
-| 主 Agent 需要多轮调用专业 Agent 并汇总 | Supervisor / Agents as Tools |
-| 专业 Agent 需要接管后续任务 | Handoff |
-| 主任务可拆成边界清楚的小任务 | Main Agent + Sub-agent |
-
-## 5. Business Workflow 怎样接入 Codex、Claude Code 和 Trae Agent
-
-Business Workflow 不直接调用 Codex SDK 或某条 CLI。所有 Agent 阶段都经过同一个 AgentStageExecutor，再由它从 Adapter 注册表中找到具体实现。
-
-![Agent 接入 Business Workflow](./Agent学习教程.assets/06-stage-agent-adapter.svg)
-
-### 5.1 先看懂 Adapter 怎样参与调用
-
-完整调用链只有一条：
-
-> Business Workflow 进入 Agent Stage → AgentStageExecutor 查找 Adapter → 具体 Adapter 调用 Agent 产品 → Adapter 转换原始结果 → 返回 StageResult → Gate 检查
-
-这里有三个不同的对象：
-
-| 对象 | 是什么 | 在哪里真正执行 |
-| --- | --- | --- |
-| StageAgentAdapter | TypeScript 接口，只规定 Adapter 必须提供什么方法、返回什么结果 | 不执行任何调用 |
-| CodexStageAdapter 等具体类 | 接口的实现，内部调用 Codex、Claude Code 或 Trae Agent | 具体类的 run 方法 |
-| AgentStageExecutor | Workflow 的统一入口，根据 provider 从注册表选择具体 Adapter | 每次 Agent Stage 开始时 |
-
-仅仅定义接口没有意义。具体类必须实现接口，执行器也必须通过接口调用这些类。下面的注册表把两端真正连起来。
-
-为什么需要这层接口？因为 Business Workflow 不应该分别理解 Codex 的 `finalResponse`、Claude Code 的 JSON 输出和 Trae Agent 的 trajectory。它只认识一个调用：
-
-> `run(StageSpec) → StageResult`
-
-如果系统永远只调用一种 Agent，也不需要统一接入、切换或测试替身，可以直接调用具体产品，不必强行增加 Adapter。这里保留接口，是因为同一套 Business Workflow 需要接入三种 Agent，而且 Gate 必须检查同一种结果。
-
-#### 5.1.1 Workflow 传入什么，Adapter 返回什么
-
-~~~ts
-type AgentProvider = "codex" | "claude-code" | "trae-agent";
-type AccessMode = "read-only" | "workspace-write";
-
-interface StageSpec {
-  workflowInstanceId: string; // 当前 Business Workflow 实例
-  stageId: string;            // 当前阶段，例如 diagnose
-  attempt: number;            // 本阶段第几次技术执行
-
-  goal: string;               // 当前阶段要完成的任务
-  provider: AgentProvider;     // 选择哪一个具体 Adapter
-  skills: string[];           // Agent 必须读取的 Skill
-
-  workspace: string;          // Agent 可以访问的工作目录
-  access: AccessMode;         // 只读或允许修改工作区
-  allowedCapabilities: string[]; // 允许使用的 Tool、MCP Server 等能力
-
-  inputArtifacts: string[];   // 上一阶段传入的报告、补丁或日志
-  outputSchema: string;       // 成功结果必须符合的结构
-  timeoutMs: number;          // 当前阶段的超时时间
-}
-
-interface StageResult {
-  // 用这三个字段把结果关联回原来的流程、阶段和执行次数。
-  workflowInstanceId: string;
-  stageId: string;
-  attempt: number;
-
-  status: "succeeded" | "failed" | "cancelled";
-  output: unknown | null;     // 成功时是结构化业务结果，失败时为 null
-  artifacts: string[];        // 补丁、报告、日志或 trajectory 地址
-  evidence: string[];         // Gate 可以检查的代码、日志或报告位置
-
-  error?: {
-    code: string;             // 统一错误码
-    retryable: boolean;       // 是否适合按业务策略重试
-    message: string;          // 排错说明
-  };
-}
-~~~
-
-StageSpec 是输入，StageResult 是唯一允许返回给 Workflow 的结果。SDK response、CLI 标准输出和进程退出状态都不能越过 Adapter 边界。
-
-#### 5.1.2 接口和统一执行器怎样连接
-
-~~~ts
-interface StageAgentAdapter {
-  // 每个具体 Adapter 都必须实现这个方法。
-  run(stage: StageSpec, signal: AbortSignal): Promise<StageResult>;
-}
-
-// 注册表的 key 是 StageSpec.provider，value 是一个具体 Adapter。
-type AdapterRegistry =
-  Record<AgentProvider, StageAgentAdapter>;
-
-class AgentStageExecutor {
-  constructor(
-    private readonly adapters: AdapterRegistry,
-  ) {}
-
-  async run(
-    stage: StageSpec,
-    signal: AbortSignal,
-  ): Promise<StageResult> {
-    // 例如 provider=codex 时，取到 CodexStageAdapter。
-    const adapter = this.adapters[stage.provider];
-
-    // Workflow 只调用接口，不关心内部是 SDK 还是 CLI。
-    return adapter.run(stage, signal);
-  }
-}
-~~~
-
-AgentStageExecutor 依赖 StageAgentAdapter，不依赖某个产品类。三个产品实现同一个 run 方法后，才能放进同一份注册表。
-
-#### 5.1.3 为什么所有 Adapter 都用相同的结果构造函数
-
-三个 Adapter 都会遇到两种结果：成功或失败。共用结果构造函数，可以避免某个 Adapter 漏掉 stageId，或者直接返回字符串。
-
-~~~ts
-function successResult(
-  stage: StageSpec,
-  output: unknown,
-  artifacts: string[],
-  evidence: string[],
-): StageResult {
-  return {
-    workflowInstanceId: stage.workflowInstanceId,
-    stageId: stage.stageId,
-    attempt: stage.attempt,
-
-    status: "succeeded",
-    output,
-    artifacts,
-    evidence,
-  };
-}
-
-function failureResult(
-  stage: StageSpec,
-  error: unknown,
-  cancelled = false,
-): StageResult {
-  // 将供应商错误转换成统一的 code、retryable 和 message。
-  const normalized = classifyAgentError(error);
-
-  return {
-    workflowInstanceId: stage.workflowInstanceId,
-    stageId: stage.stageId,
-    attempt: stage.attempt,
-
-    status: cancelled ? "cancelled" : "failed",
-    output: null,
-    artifacts: [],
-    evidence: [],
-    error: normalized,
-  };
-}
-~~~
-
-具体 Adapter 成功时必须调用 successResult，异常或取消时必须调用 failureResult。因此，无论底层接入哪种 Agent，AgentStageExecutor 收到的格式都相同。
-
-Adapter 还会使用下面这些项目辅助函数：
-
-| 函数 | 作用 |
-| --- | --- |
-| renderStagePrompt | 把 StageSpec 转成 Agent 能理解的阶段任务 |
-| loadJsonSchema | 根据 outputSchema 名称加载实际 JSON Schema |
-| parseAndValidateOutput | 解析最终文本，并检查它是否符合 outputSchema |
-| collectWorkspaceArtifacts | 收集本阶段产生的补丁、报告和日志 |
-| extractEvidence | 提取 Gate 可以检查的代码位置、日志位置和报告地址 |
-| classifyAgentError | 把供应商错误转换成统一错误码 |
-| runProcess | 启动 CLI，并记录退出状态、标准输出和标准错误 |
-
-### 5.2 三个具体 Adapter 怎样实现同一个接口
-
-三个类的外部形状相同：
-
-> 接收 StageSpec → 调用具体 Agent → 解析原始结果 → 返回 StageResult
-
-差异只出现在中间的产品调用。
-
-#### CodexStageAdapter
-
-~~~ts
-import { Codex } from "@openai/codex-sdk";
-
-class CodexStageAdapter implements StageAgentAdapter {
-  private readonly codex = new Codex();
-
-  async run(
-    stage: StageSpec,
-    signal: AbortSignal,
-  ): Promise<StageResult> {
-    try {
-      // 把统一阶段约束映射成 Codex 的 Thread 配置。
-      const thread = this.codex.startThread({
-        workingDirectory: stage.workspace,
-        sandboxMode: stage.access,
-        approvalPolicy: "never",
+例如：
+
+```text
+Goal
+ ↓
+Agent
+ ↓
+Model
+ ↓
+判断当前状态
+ ↓
+决定下一步
+├─ Search
+├─ Read File
+├─ Write File
+├─ Run Test
+└─ Final
+```
+
+#### <u>Agent Loop：单 Agent 的核心运行机制</u>
+
+实际执行路径是在任务运行过程中逐步形成的，这种持续执行机制就是：
+
+**<u>Agent Loop（Agent 执行循环）</u>**。
+
+OpenAI Agents SDK 当前官方 Runner 的运行过程就是一个明确的 Agent Loop：
+
+1. 调用当前 Agent 的模型；
+2. 模型产生结果；
+3. 如果结果已经是 Final Output，则结束；
+4. 如果模型产生 Tool Call，则执行工具；
+5. 把 Tool Result 加入输入；
+6. 再次调用模型；
+7. 如果发生 Handoff，则切换当前 Agent并继续循环。[[7]](https://openai.github.io/openai-agents-python/running_agents/)
+
+单 Agent 情况下，可以简化成：
+
+```text
+                 ┌────────────────────┐
+                 ↓                    │
+Goal → Context → Model                 │
+                   ↓                   │
+                Decision               │
+             ┌─────┴─────┐             │
+             ↓           ↓             │
+         Tool Call      Final           │
+             ↓                         │
+        Execute Tool                    │
+             ↓                         │
+       Tool Result                      │
+             ↓                         │
+      Update Context ──────────────────┘
+```
+
+因此 Agent Loop 的核心不是 “存在一个 while 循环。”
+
+而是：
+
+> **每一轮由模型根据当前状态决定下一步动作。**
+
+模型通常需要决定：
+
+```text
+要不要继续？ → 现在应该做什么？ → 调用哪个 Tool？ → Tool 参数是什么？ → 结果是否足够？ → 是否需要调整计划？ → 任务是否已经完成？
+```
+
+这才是 Agent Loop 的关键。它的伪代码可以表述为：
+
+```javascript
+function runAgent(userInput) {
+  let context = [userInput];
+
+  while (true) {
+    // 1. 模型根据当前上下文决定下一步
+    const response = model.generate({
+      context,
+      tools: availableTools
+    });
+
+    // 2. 如果模型认为任务已经完成，则结束
+    if (response.type === "final") {
+      return response.output;
+    }
+
+    // 3. 如果模型决定调用工具
+    if (response.type === "tool_call") {
+      const tool = availableTools[response.toolName];
+
+      // 执行工具
+      const result = tool.execute(response.args);
+
+      // 4. 把工具调用和结果写回上下文
+      context.push({
+        type: "tool_call",
+        name: response.toolName,
+        args: response.args
       });
 
-      // 这里才真正调用 Codex SDK；signal 用于超时或取消。
-      const sdkResult = await thread.run(
-        renderStagePrompt(stage),
-        {
-          outputSchema:
-            loadJsonSchema(stage.outputSchema),
-          signal,
-        },
-      );
+      context.push({
+        type: "tool_result",
+        result
+      });
 
-      // SDK 返回的是 finalResponse，不是 StageResult。
-      const output = parseAndValidateOutput(
-        stage.outputSchema,
-        sdkResult.finalResponse,
-      );
-
-      const artifacts =
-        await collectWorkspaceArtifacts(stage.workspace);
-      const evidence = extractEvidence(output);
-
-      // 通过公共构造函数返回完整 StageResult。
-      return successResult(
-        stage,
-        output,
-        artifacts,
-        evidence,
-      );
-    } catch (error) {
-      return failureResult(stage, error, signal.aborted);
+      // 5. 继续下一轮，让模型根据新结果再次判断
+      continue;
     }
   }
 }
-~~~
+```
 
-CodexStageAdapter 实现了 StageAgentAdapter。AgentStageExecutor 通过接口调用它，不直接接触 Codex 类或 finalResponse。`workingDirectory`、`sandboxMode`、`outputSchema` 和 `signal` 都在这里完成映射。接口形式见 [Codex SDK 官方文档](https://developers.openai.com/codex/sdk/)。
+### 【Multi-Agent：多个 Agent 通过 Orchestration 共同完成任务】
 
-#### ClaudeCodeStageAdapter
+第三类是：
 
-~~~ts
-class ClaudeCodeStageAdapter
-  implements StageAgentAdapter {
+**<u>Multi-Agent System（多 Agent 系统）</u>**。
 
-  async run(
-    stage: StageSpec,
-    signal: AbortSignal,
-  ): Promise<StageResult> {
-    try {
-      const args = [
-        "-p", renderStagePrompt(stage),
-        "--output-format", "json",
-        "--max-turns", "20",
-        // --tools 才是限制本次可见的工具；
-        // --allowedTools 只是让匹配工具执行时不再询问。
-        "--tools",
-        toClaudeTools(stage.allowedCapabilities),
-        "--permission-mode",
-        stage.access === "read-only"
-          ? "plan"
-          : "acceptEdits",
-      ];
+它意味着一个任务不是只由一个 Agent 完成，而是由多个具有不同职责的 Agent 共同完成。
 
-      // 这里才真正启动 Claude Code CLI。
-      const cliResult = await runProcess(
-        "claude",
-        args,
-        {
-          cwd: stage.workspace,
-          signal,
-        },
-      );
+例如：
 
-      if (cliResult.exitCode !== 0) {
+```text
+Research Agent
+Coding Agent
+Testing Agent
+Review Agent
+```
+
+每个 Agent 本身都可以有：
+
+```text
+Model + Instructions + Tools + Agent Loop
+```
+
+但是一旦出现多个 Agent，系统就多了一个单 Agent 没有的问题：
+
+> **这些 Agent 之间到底怎么协作？**
+
+例如：
+
+```text
+谁先执行？ → 谁后执行？ → 是否并行？ → 当前 Agent 的结果给谁？ → 下一个 Agent 是谁？ → 失败以后回到哪个 Agent？ → 什么时候整个任务结束？
+```
+
+解决这个问题的就是：
+
+**<u>Orchestration（编排）</u>**。
+
+OpenAI 对 Agent Orchestration 有非常直接的官方定义：
+
+> “Orchestration refers to the flow of agents in your app.” [[8]](https://openai.github.io/openai-agents-js/guides/multi-agent/)
+
+并进一步提出三个问题：
+
+**<u>哪些 Agent 运行、按照什么顺序运行，以及下一步如何决定。</u>**
+
+因此可以把 Orchestration 简单理解为：
+
+> **Orchestration 是协调多个 Agent 执行关系的机制，它决定哪些 Agent 参与、它们按照什么关系执行以及下一步如何流转。**
+
+这里要区分两个词：
+
+```text
+Orchestration
+= 编排机制 / 控制关系
+
+Orchestrator
+= 承担编排职责的控制主体
+```
+
+因此 Multi-Agent：
+
+> **一定需要 Orchestration。**
+
+但是：
+
+> **不一定需要一个独立的 Orchestrator Agent。**
+
+因为编排职责既可以由程序承担，也可以由模型 Agent 承担。它可以有两种典型实现：
+
+```text
+Orchestrator
+│
+├─ Code / Workflow Engine
+│    → Code Orchestration
+│
+└─ Manager / Supervisor Agent
+     → LLM Orchestration
+```
+
+#### <u>1. Code Orchestration：确定性编排</u>
+
+第一类 Multi-Agent 编排方式是：
+
+> **Code Orchestration（代码编排，即由代码决定 Agent 的执行关系）**。
+
+OpenAI 当前明确把 Agent Orchestration 分成两个主要方向，其中一个就是：
+
+> “Orchestrating via code” [[8]](https://openai.github.io/openai-agents-js/guides/multi-agent/)
+>
+> 即：
+>
+> **通过代码决定 Agent 的执行流。**
+
+例如：
+
+```text
+Analysis Agent → Coding Agent → Testing Agent → Review Agent
+```
+
+开发者已经提前规定：
+
+```text
+Analysis 完成 → Coding；Coding 完成 → Testing；Testing 通过 → Review
+```
+
+或者：
+
+```text
+Testing Agent
+      ↓
+PASS ─────→ Review Agent
+
+FAIL ─────→ Coding Agent
+```
+
+虽然存在多个 Agent，但是：
+
+```text
+PASS → Review
+FAIL → Coding
+```
+
+这种映射关系是在系统设计阶段提前定义的。
+
+因此属于：
+
+> **Code-orchestrated Multi-Agent（代码编排的多 Agent 系统）**。
+
+Microsoft Agent Framework 当前也直接提供了这种模式。例如：
+
+> **Sequential Orchestration（顺序编排）**：多个 Agent 按照定义好的顺序依次执行，每个 Agent 的输出传递给下一个 Agent。[[9]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/sequential)
+
+Microsoft 还提供：
+
+> **Concurrent Orchestration（并行编排）**：多个 Agent 同时独立处理任务，然后收集和汇总它们的结果。[[10]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/concurrent)
+
+因此：
+
+```text
+Agent A → Agent B → Agent C
+```
+
+即使没有 Supervisor，也仍然属于 Multi-Agent。
+
+这说明：
+
+> **Multi-Agent 不等于 Supervisor，也不等于模型动态调度。**
+
+一个最简单的 **Code / Workflow Engine（代码驱动的工作流引擎）** 伪代码可以写成这样：
+
+```js
+function runWorkflow(input) {
+  let state = {
+    data: input,
+    currentStep: "prepare"
+  };
+
+  while (state.currentStep) {
+    switch (state.currentStep) {
+      case "prepare":
+        state.data = prepareData(state.data);
+        state.currentStep = "agent";
+        break;
+
+      case "agent":
+        // 调用一个 Agent 节点
+        const agentResult = runAgent(state.data);
+        state.data = agentResult;
+        state.currentStep = "check";
+        break;
+
+      case "check":
+        // 根据预定义规则决定下一个节点
+        if (state.data.passed) {
+          state.currentStep = "save";
+        } else {
+          state.currentStep = "retry";
+        }
+        break;
+
+      case "retry":
+        state.data = retryProcess(state.data);
+        state.currentStep = "agent";
+        break;
+
+      case "save":
+        saveResult(state.data);
+        state.currentStep = null;
+        break;
+    }
+  }
+
+  return state.data;
+}
+```
+
+它对应的流程是：
+
+```
+Input
+  ↓
+Prepare
+  ↓
+Agent
+  ↓
+Check
+ ├─ PASS → Save → End
+ └─ FAIL → Retry → Agent
+```
+
+这里最关键的是：
+
+> **节点之间怎么流转，是由 Code / Workflow Engine 预先写好的规则决定的。**
+
+#### <u>2. LLM Orchestration：由模型动态决定 Agent 的流转</u>
+
+另一类是：
+
+> **LLM Orchestration（模型编排，即模型根据当前任务状态动态决定下一步由哪个 Agent 执行）**。
+
+OpenAI 对这一方式的定义是：
+
+> 让 LLM 利用自己的智能进行 planning、reasoning，并决定下一步采取什么步骤。[[8]](https://openai.github.io/openai-agents-js/guides/multi-agent/)
+
+例如：
+
+```text
+Current Task
+     ↓
+Manager Agent
+     ↓
+Model 判断当前需要什么能力
+     ↓
+ ┌───────┼────────┐
+ ↓       ↓        ↓
+Research Coding  Review
+ Agent    Agent    Agent
+```
+
+这里 Agent 的调用顺序不一定提前确定。
+
+同一个任务可能是：
+
+```text
+Research → Coding → Review
+```
+
+另一个任务可能变成：
+
+```text
+Research → Research → Review → Coding → Testing
+```
+
+真正决定执行轨迹的是运行时模型。
+
+因此这类系统属于：
+
+**<u>LLM-orchestrated Multi-Agent（模型编排的多 Agent 系统）</u>**。
+
+##### ==模型编排的第一种典型模式：Manager==
+
+OpenAI 当前最常见的一种 Multi-Agent 模式是：
+
+> **Agents as Tools（把其他 Agent 作为工具调用）**。
+
+结构可以表示为：
+
+```text
+Manager Agent → Model 判断 → 调用 Research Agent → Research Agent 执行 → Result → Manager Agent → 继续判断下一步
+```
+
+OpenAI 官方的定义非常清楚：
+
+> “A manager agent keeps control ... and calls specialist agents through `Agent.as_tool()`.” [[11]](https://openai.github.io/openai-agents-python/multi_agent/)
+>
+> 也就是：
+>
+> **Manager Agent 始终保留整个任务的控制权，把其他专业 Agent 作为子任务执行者调用。**
+
+例如：
+
+```text
+                    Manager
+                       │
+          ┌────────────┼───────────┐
+          ↓            ↓           ↓
+      Research      Coding       Review
+       Agent         Agent        Agent
+          ↓            ↓           ↓
+        Result       Result      Result
+          └────────────┼───────────┘
+                       ↓
+                    Manager
+```
+
+因此它的控制关系是：
+
+```text
+Manager → 调用 Specialist → Specialist 完成任务 → 结果返回 Manager → Manager 再决定下一步
+```
+
+关键特点就是：
+
+> **控制权没有转移。**
+
+所以 Manager / Supervisor 可以理解为一种：
+
+**<u>中心化的模型编排方式。</u>**
+
+OpenAI 的 Manager 模式核心 API 是：
+
+```python
+research_agent = Agent(
+    name="Research Agent",
+    instructions="负责完成研究任务"
+)
+
+manager_agent = Agent(
+    name="Manager Agent",
+    instructions="负责拆解任务并调用专业 Agent",
+    tools=[
+        research_agent.as_tool(
+            tool_name="research",
+            tool_description="研究指定主题并返回结果"
+        )
+    ]
+)
+
+result = await Runner.run(
+    manager_agent,
+    input="研究这个问题并给出结论"
+)
+```
+
+这里最关键的是：
+
+这里最关键的是：
+
+```python
+research_agent.as_tool(...)
+```
+
+OpenAI SDK 会把 `Research Agent` 包装成一个 **FunctionTool（函数工具）**，然后放进 Manager 的 `tools` 中。模型看到的仍然是标准 Tool 信息：
+
+```text
+name        = research
+description = 研究指定主题并返回结果
+parameters  = { input: ... }
+```
+
+因此对 Manager Model 来说：
+
+```text
+Research Agent
+```
+
+和：
+
+```text
+Search Tool
+Database Tool
+```
+
+在“选择能力”这一层非常类似。`Agent.as_tool()` 就是把一个 Agent 暴露成其他 Agent 可以调用的 Tool。[[12]](https://openai.github.io/openai-agents-python/zh/tools/)
+
+SDK 内部可以简化理解成
+
+```ts
+while (true) {
+  // Manager 自己的 Agent Loop
+  const response = managerModel.generate(
+    managerContext,
+    managerTools
+  );
+
+  if (response.type === "final") {
+    return response.output;
+  }
+
+  if (response.type === "tool_call") {
+
+    // research 实际对应 researchAgent.as_tool()
+    const tool = toolRegistry[response.toolName];
+
+    const result = await tool.execute(response.args);
+
+    // Agent as Tool 最终仍产生 Tool Result
+    managerContext.add({
+      type: "tool_result",
+      result
+    });
+
+    // Manager 继续下一轮
+  }
+}
+```
+
+重点在 `Agent.as_tool()` 的 `execute()`。
+
+可以进一步简化成：
+
+```ts
+async function executeAgentTool(args) {
+
+  // 1. 把 Manager 生成的参数，
+  //    转成子 Agent 的输入
+  const childInput = buildInput(args);
+
+  // 2. 启动一个新的子 Agent Run
+  const childResult = await Runner.run(
+    researchAgent,
+    childInput
+  );
+
+  // 3. 取得子 Agent 最终结果
+  return childResult.finalOutput;
+}
+```
+
+所以整体控制流是：
+
+```text
+Manager Agent Loop
+        ↓
+Manager Model
+        ↓
+tool_call("research")
+        ↓
+research_agent.as_tool()
+        ↓
+启动 Nested Agent Run
+        ↓
+Research Agent
+        ↓
+Research Agent 自己的 Agent Loop
+Model → Tool → Observation → Model
+        ↓
+Final Result
+        ↓
+包装成 Tool Result
+        ↓
+返回 Manager
+        ↓
+Manager 继续自己的 Agent Loop
+```
+
+这就是为什么：
+
+<u>**Manager 的控制权始终没有真正转移。**</u>
+
+它只是“暂停一下”，调用子 Agent 完成一个子任务，拿回结果以后继续。OpenAI 官方正是这样描述 Manager 模式：Manager 保持控制，并通过 `Agent.as_tool()` 调用专业 Agent。[[11]](https://openai.github.io/openai-agents-python/multi_agent/)
+
+**<u>Manage 子 Agent 默认可以隔离对话 Context</u>**
+
+这也是 `Agent.as_tool()` 很重要的一点。
+
+默认情况下，Parent Manager 的完整 Conversation History **不会自动复制给子 Agent**。OpenAI 官方明确说明：
+
+> `Agent.as_tool()` 启动的是 nested agent run，父级 Run 的 conversation state 不会自动继承。[[12]](https://openai.github.io/openai-agents-python/zh/tools/)
+
+所以默认更像：
+
+```text
+Manager Context
+────────────────────────
+User: 帮我研究 A
+Manager: ...
+Tool Call: research({
+   input: "研究 A 的市场情况"
+})
+────────────────────────
+            ↓
+
+Research Agent Context
+────────────────────────
+"研究 A 的市场情况"
+────────────────────────
+```
+
+而不是：
+
+```text
+Research Agent
+自动获得 Manager 所有历史消息
+```
+
+这给 Specialist Agent 很好的上下文隔离：
+
+- Research Agent 只看到它需要处理的子任务；
+- 不必加载 Manager 的全部历史；
+- Prompt 更聚焦；
+- Token 更少；
+- 不容易被无关历史干扰。
+
+如果确实需要共享对话历史，可以显式给父 Run 和 nested Run 使用同一个 `session`。OpenAI 文档明确提供了这种方式。[[12]](https://openai.github.io/openai-agents-python/zh/tools/)
+
+但是注意，**Application Context（程序运行上下文）默认并没有因此被复制隔离**。例如：
+
+```python
+context = {
+    "user_id": "...",
+    "db": db,
+    "logger": logger
+}
+```
+
+在同一运行体系中，nested `Agent.as_tool()` 可以共享底层 application context；隔离的主要是模型看到的 Conversation Context。[[13]](https://openai.github.io/openai-agents-python/context/)
+
+##### ==模型编排的第二种典型模式：Handoff==
+
+另一种典型模式是：
+
+**<u>Handoff（控制权交接）</u>**。
+
+例如：
+
+```text
+Triage Agent → 判断当前属于退款问题 → Handoff → Refund Agent
+```
+
+OpenAI 当前明确指出：
+
+> Handoff 时，前一个 Agent 将任务路由给 Specialist，而 Specialist 成为新的 active agent。[[11]](https://openai.github.io/openai-agents-python/multi_agent/)
+
+所以 Handoff 不同于 Manager：
+
+```text
+Manager：Agent A → 调用 Agent B → B 完成子任务 → 结果返回 A
+```
+
+而 Handoff：
+
+```text
+Agent A → handoff → Agent B → B 接管后续任务
+```
+
+也就是：
+
+<u>**Manager 是“我让你帮我完成一个子任务”；Handoff 是“这个任务接下来由你负责”。**</u>
+
+Microsoft Agent Framework 对 Handoff 也给出了非常清楚的解释：
+
+> Handoff orchestration 中 Agent 可以把控制权转给另一个 Agent，并且不存在一个中央 Orchestrator 始终控制整个流程。[[14]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/handoff)
+
+这个例子也进一步说明：
+
+> **Multi-Agent 需要 Orchestration，但并不意味着一定存在一个中心 Orchestrator。**
+
+Handoff 的 OpenAI API 不放在：
+
+```python
+tools=[...]
+```
+
+而放在：
+
+```python
+handoffs=[...]
+```
+
+例如：
+
+```python
+refund_agent = Agent(
+    name="Refund Agent",
+    instructions="负责退款问题"
+)
+
+triage_agent = Agent(
+    name="Triage Agent",
+    instructions="判断用户问题应该交给哪个 Agent",
+    handoffs=[
+        refund_agent
+    ]
+)
+
+result = await Runner.run(
+    triage_agent,
+    input="我要申请退款"
+)
+```
+
+也可以显式使用：
+
+```python
+from agents import handoff
+
+triage_agent = Agent(
+    name="Triage Agent",
+    handoffs=[
+        handoff(refund_agent)
+    ]
+)
+```
+
+OpenAI 明确指出：
+
+> **Handoffs are represented as tools to the LLM.** [[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+也就是说，对模型来说，SDK 可能把它转换成类似：
+
+```text
+transfer_to_refund_agent(...)
+```
+
+这样的 Tool。[[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+因此模型侧仍然可以理解成：
+
+```text
+name + description + arguments
+```
+
+与普通 Tool 的选择形式很接近。
+
+SDK Runtime 内部真正不同的地方
+
+可以简化成：
+
+```ts
+while (true) {
+  const response = await currentAgent.model.generate(...);
+
+  if (response.type === "handoff_call") {
+    const handoff = handoffRegistry[response.name];
+
+    // 1. 执行 handoff 自己的回调
+    // 日志、鉴权、预取数据……
+    await handoff.onHandoff(context, response.args);
+
+    // 2. Runner 处理 Handoff 的控制语义
+    const nextAgent = handoff.targetAgent;
+
+    // 3. Runner 处理下一 Agent 要看到的上下文
+    context = applyHandoffInputFilter(
+      context,
+      handoff.inputFilter
+    );
+
+    // 4. 切换 active agent
+    currentAgent = nextAgent;
+
+    continue;
+  }
+}
+```
+
+所以 Handoff 的核心是：
+
+```ts
+currentAgent = refundAgent
+```
+
+也就是：
+
+```text
+Triage Agent
+     ↓
+Model
+     ↓
+调用 transfer_to_refund_agent
+     ↓
+Runtime 识别为 Handoff
+     ↓
+currentAgent =
+Refund Agent
+     ↓
+下一轮 Model Call
+由 Refund Agent 执行
+```
+
+整个 Run 没有结束，也没有启动一个“执行完以后返回 Triage”的 nested run。
+
+OpenAI 明确说明：
+
+> **Handoff stays within a single run.** [[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+Active Agent 发生变化，但仍然是同一个 top-level Run 和 turn loop。[[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+> Handoff 发生后，就像新的 Agent 接管了当前 conversation，因此默认会看到之前的 conversation history。[[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+所以：
+
+```text
+Shared Conversation Context
+────────────────────────────
+User:
+我要退款
+
+Triage Agent:
+我来判断问题类型
+
+Tool:
+查到订单 123
+
+Handoff:
+transfer_to_refund_agent
+────────────────────────────
+             ↓
+
+Refund Agent
+继续看到前面的 Conversation
+```
+
+如果不希望全部共享，OpenAI 提供：
+
+```python
+handoff(
+    refund_agent,
+    input_filter=...
+)
+```
+
+`input_filter` 可以修改真正交给目标 Agent 的历史，例如：
+
+- 去掉 Tool Call；
+- 去掉某些旧消息；
+- 只保留摘要；
+- 重新组织历史。
+
+官方的 `HandoffInputData` 甚至明确区分了 `input_history`、`pre_handoff_items`、`new_items` 等历史组成部分。[[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+##### ==Manager vs Handoff==
+
+```javascript
+                         Agent
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+           tools=[]                 handoffs=[]
+              │                         │
+              ↓                         ↓
+      agent.as_tool()               handoff()
+              │                         │
+              ↓                         ↓
+         FunctionTool                 Handoff
+              │                         │
+模型看到：      │                         │
+          tool-shaped call       tool-shaped call
+              │                         │
+Runtime：      ↓                         ↓
+       Nested Agent Run          Switch Active Agent
+              │                         │
+              ↓                         ↓
+         Final Result           Same Run Continues
+              │                         │
+              ↓                         ↓
+        Tool Result            New Agent takes over
+              │
+              ↓
+        Parent Manager
+```
+
+###### **Handoff：适合“连续接管”的多 Agent 协作**
+
+**Handoff 的核心是：**
+
+> 当前 Agent 判断后续任务应该由另一个 Agent 负责，于是把控制权直接交给它。
+
+比如：
+
+```text
+Incident Agent → 发现问题进入数据库领域 → Handoff → Database Agent → 继续处理
+```
+
+它的优势主要有两个。
+
+第一，**任务流转更直接**。不需要每完成一步都回到 Manager 再重新分配：
+
+```text
+Handoff：A → B → C
+```
+
+而不是：
+
+```text
+Manager：Manager → A → Manager → B → Manager → C
+```
+
+所以对于天然就是串行接力的任务，Handoff 可以减少中央 Agent 的中转。
+
+第二，**很适合上下文连续的任务**。例如故障排查中，Database Agent 需要知道前面已经查了什么、排除了什么、为什么怀疑数据库。这时让它继承前序 Context，可以直接继续，而不是重新收集信息。
+
+它的主要局限是：
+
+> **Handoff 本身不是并行机制。**
+
+一次 Handoff 本质是：
+
+```
+A → B
+```
+
+而不是：
+
+```
+   → B
+A
+   → C
+```
+
+所以如果一个任务需要同时启动多个独立 Agent，Handoff 并不是最自然的模式。
+
+因此，Handoff 更适合：
+
+> **串行、职责明确、前后 Agent 强依赖同一任务上下文的连续协作。**
+
+###### Manager：适合“集中调度”的多 Agent 协作
+
+Manager 模式不同。
+
+它的核心是：
+
+> Manager 始终负责整个任务，其他 Agent 只是被它调用来完成某个子任务，完成以后结果返回 Manager。
+
+它最大的优势是**全局控制比较强**。
+
+Manager 可以统一决定：
+
+- 任务怎么拆；
+- 哪些 Agent 参与；
+- 哪些任务串行；
+- 哪些任务并行；
+- 哪个阶段需要验收；
+- 最终如何汇总。
+
+因此它天然比较适合组织并行任务：
+
+```
+                 Manager
+             ┌─────┼─────┐
+             ↓     ↓     ↓
+             A     B     C
+             │     │     │
+             └─────┼─────┘
+                   ↓
+                 汇总
+```
+
+还有一个很重要的使用场景，就是**阶段验收和审查**。
+
+例如：
+
+```text
+Manager → Implementation Agent → 代码产物 → Manager → Review Agent → PASS / FAIL
+```
+
+这里甚至可以故意让 Implementation Agent 和 Review Agent 的 Context 隔离。
+
+Review Agent 只看到：
+
+```text
+需求 + 验收标准 + 最终代码
+```
+
+而不看到 Implementation Agent 前面的完整分析和自我解释。
+
+这样可以减少前一个 Agent 的判断对 Review Agent 的干扰，更适合做独立验收。
+
+Manager 的主要缺点也很明显：
+
+**<u>容易形成中心瓶颈。</u>**
+
+如果所有 Agent 都不断：
+
+```
+Agent → Manager → Agent → Manager
+```
+
+那么：
+
+- Manager 的 Context 会越来越大；
+- 汇总成本增加；
+- Token 成本增加；
+- 整体吞吐量可能受 Manager 限制。
+
+所以 Manager 更适合：
+
+> **需要集中控制、并行调度、结果汇总、阶段门禁或者独立 Review 的任务。**
+
+### 【Orchestration vs Agent Loop】
+
+Multi-Agent 并不是用 Orchestration 替代 Agent Loop。
+
+实际上，两者处在不同层级。
+
+例如：
+
+```text
+                    Orchestration
+              “哪个 Agent 执行？”
+                       │
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+ Research Agent    Coding Agent   Testing Agent
+        │              │              │
+        ↓              ↓              ↓
+   Agent Loop      Agent Loop      Agent Loop
+        │              │              │
+        ↓              ↓              ↓
+      Tools           Tools           Tools
+```
+
+Orchestration 解决：
+
+> **多个 Agent 之间怎么协作。**
+
+Agent Loop 解决：
+
+> **某一个 Agent 接到任务以后自己怎么完成。**
+
+例如 Orchestrator 决定：
+
+```text
+下一步运行 Coding Agent
+```
+
+随后 Coding Agent 内部可能执行：
+
+```text
+Model → Read File → Model → Edit File → Model → Run Test → 发现失败 → Model Replan → Edit → Run Test → Final
+```
+
+这些过程仍然属于 Coding Agent 自己的 Agent Loop。
+
+所以：
+
+> **Orchestration 管 Agent 之间的关系，Agent Loop 管一个 Agent 内部的执行过程。**
+
+这是这套体系中最重要的边界之一。
+
+### 【整体体系整理】
+
+最终可以把整个框架统一成：
+
+```text
+                    Agentic System
+                          │
+          ┌───────────────┼────────────────┐
+          ↓               ↓                ↓
+      Workflow       Single-Agent      Multi-Agent
+          │               │                │
+          │               │                │
+     Code 控制路径     Model 控制路径    多个 Agent
+          │               │                │
+     Model + Tool       Agent Loop      Orchestration
+     固定编排              │                │
+                          │       ┌────────┴────────┐
+                          │       ↓                 ↓
+                          │ Code Orchestration  LLM Orchestration
+                          │ 代码决定 Agent       模型决定 Agent
+                          │   的流转              的流转
+                          │                         │
+                          │                ┌────────┴────────┐
+                          │                ↓                 ↓
+                          │        Manager / Supervisor   Handoff
+                          │        控制权保留             控制权转移
+                          │
+                          ↓
+                    Tool / Skill / MCP
+```
+
+还可以进一步用“控制权”来理解：
+
+| 系统形态                         | 有几个 Agent | 谁决定下一步    | 核心机制                        |
+| -------------------------------- | -----------: | --------------- | ------------------------------- |
+| Workflow                         |            0 | Code / Workflow | 预定义流程                      |
+| Single-Agent                     |            1 | Model           | Agent Loop                      |
+| Multi-Agent + Code Orchestration |         多个 | Code / Workflow | Orchestration + 多个 Agent Loop |
+| Multi-Agent + LLM Orchestration  |         多个 | Model / Agent   | Orchestration + 多个 Agent Loop |
+
+Microsoft 当前的 Workflow 能力体系也很好地印证了这种组合关系：它既支持 **Agents in workflows（把 Agent 作为 Workflow 执行单元）**，又单独提供 Sequential、Concurrent、Handoff、Group Chat、Magentic 等多 Agent 编排模式。[[3]](https://learn.microsoft.com/en-us/agent-framework/workflows/)
+
+这套知识可以最终收敛为：
+
+> 第一类是 Workflow：模型和工具虽然参与执行，但沿开发者预定义的代码路径运行，模型没有获得整体执行过程的控制权，因此严格来说并不是 Agent。Anthropic 早期对 Workflow 与 Agent 的核心区分就是“预定义代码路径”与“模型动态控制过程和工具使用”。 [[1]](https://www.anthropic.com/engineering/building-effective-agents)
+>
+> 第二类是 Single-Agent：系统只有一个 Agent 决策主体，模型根据目标、上下文和工具返回结果持续判断下一步动作、工具调用和结束条件。这种 Model → Tool → Observation → Model 的持续运行机制就是 Agent Loop。OpenAI Agents SDK 的 Runner 就按照这一循环执行 Agent。 [[7]](https://openai.github.io/openai-agents-python/running_agents/)
+>
+> 第三类是 Multi-Agent：多个 Agent 共同完成一个任务，每个 Agent 内部仍然具有自己的 Agent Loop，而 Agent 之间还需要 Orchestration 来管理执行关系。OpenAI 将 Agent Orchestration 定义为决定哪些 Agent 运行、按照什么顺序运行以及下一步如何决定，并把编排主要分为 Code Orchestration 和 LLM Orchestration。模型编排中又可以采用 Manager / Agents-as-Tools 或 Handoff 等典型方式。 [[8]](https://openai.github.io/openai-agents-js/guides/multi-agent/)
+
+## 4. Workflow 从固定编排到 Agents in Workflows
+
+在 Agent 体系的发展过程中，`Workflow` 这个词的使用范围发生了明显变化。
+
+### 【早期的严格区分：Workflow 和 Agent 是两种不同的执行方式】
+
+Anthropic 在 2024 年发布的《Building Effective Agents》中，对 Workflow 和 Agent 给出了一套影响很大的区分。Anthropic 先指出，业界对 `Agent` 本身并没有完全统一的定义，因此把这些不同形态统一归入更宽泛的 **Agentic Systems（智能体式系统）**，然后再区分 Workflow 和 Agent：[[1]](https://www.anthropic.com/engineering/building-effective-agents)
+
+> “Workflows are systems where LLMs and tools are orchestrated through predefined code paths.”
+>
+> **Workflow 是模型和工具按照预先定义好的代码路径执行任务。**
+
+而 Agent：
+
+> “LLMs dynamically direct their own processes and tool usage.”
+>
+> **Agent 由模型动态决定自己的执行过程以及工具使用方式。**
+
+即：
+
+因此，这套分类真正关注的是：
+
+**<u>谁决定下一步做什么？</u>**
+
+如果是开发者提前通过代码和规则决定：
+
+```text
+Step A
+  ↓
+Step B
+  ↓
+条件判断
+├─→ Step C
+└─→ Step D
+```
+
+那么它属于 Anthropic 当时所说的 Workflow。
+
+即使某个节点里面调用了 LLM：
+
+Code → 调用 LLM → Code 决定下一步
+
+它仍然不是严格意义上的 Agent，因为模型只是完成一个被指定的任务，并没有控制整个任务的执行过程。
+
+OpenAI 现在也给出了非常相近的判断标准：
+
+> “Applications that integrate LLMs but don’t use them to control workflow execution … are not agents.” [[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+
+也就是说：
+
+> **使用了 LLM，并不等于使用了 Agent；关键是模型是否参与了工作流执行过程中的决策。**
+
+相反，如果执行过程是：
+
+```text
+Goal
+  ↓
+Model 判断当前状态
+  ↓
+决定下一步 → Tool / Action → 获得结果
+    ↑                            ↓
+    └─────── Model 再判断 ←──────┘
+                   ↓
+                  ...
+                   ↓
+                 Final
+```
+
+那么执行路径不是开发者事先完全写死，而是由模型根据目标和当前环境动态决定。
+
+这就是 Agent 的基本执行方式，而这个反复进行：**<u>推理 → 行动 → 获得结果 → 再推理</u>**的运行机制，就是我们通常所说的 **Agent Loop（智能体循环）**。
+
+Anthropic 对 Agent 的总结也非常直接：
+
+> Agent 通常就是 LLM 根据环境反馈，在一个循环中不断使用工具。[[1]](https://www.anthropic.com/engineering/building-effective-agents)
+
+所以，在这个最基础的层面，可以先形成一个很简单的判断：
+
+```text
+完成一个任务
+├─ 路径基本确定
+│  └─→ Code / Rule 决定下一步
+│          ↓
+│      Deterministic Execution
+│      确定性执行
+│
+└─ 路径无法提前确定
+   └─→ Model 根据目标和状态决定下一步
+             ↓
+           Agent
+             ↓
+         Agent Loop
+```
+
+OpenAI 也明确建议：如果问题不需要复杂决策、不需要处理难以维护的规则或大量非结构化信息，那么 **“a deterministic solution may suffice”**，即使用确定性的解决方案可能已经足够。
+
+---
+
+### 【Workflow 概念的扩展：从单层流程到 Agents in Workflows】
+
+随着 Agent 开始处理更复杂、更长时间运行的任务，`Workflow（工作流，即完成一个目标所需要经过的一组执行步骤）` 在不同框架中的使用范围逐渐变得更宽。这里需要先明确：**并不是 Agent Harness 的出现重新定义了 Workflow，而是不同厂商开始在不同抽象层使用 Workflow 这个词。** 因此，今天讨论 Workflow 时，需要先明确它描述的是“整个任务的执行结构”，还是某个 Agent 内部的执行过程。
+
+OpenAI 当前对 Workflow 使用了一个非常宽泛的定义：
+
+> “A workflow is a sequence of steps that must be executed to meet the user’s goal.”
+>
+> 也就是：
+>
+> **Workflow 是为了完成用户目标而需要执行的一系列步骤。** [[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+
+这个定义只说明“任务由一系列步骤组成”，并没有规定这些步骤一定由固定代码执行，也没有规定一定由 Agent 动态执行。[[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+
+Microsoft Agent Framework 对 Workflow 的工程定义更加明确：
+
+> “explicit, inspectable execution paths for coordinating code, agents, state, events, and human input.”
+>
+> 也就是：
+>
+> **Workflow 是一条明确、可以检查的执行路径，可以同时协调代码、Agent、状态、事件以及人工输入。** [[16]](https://learn.microsoft.com/en-us/agent-framework/concepts/workflows/)
+
+因此，在当前的工程语境中，更适合把 Workflow 理解成**<u>完成一个任务的外层执行结构</u>**。它的节点既可以由普通代码执行，也可以由 Agent 执行，可以**<u>包括确定性代码，Agent Loop 和多 Agent 之间的编排</u>**。[[16]](https://learn.microsoft.com/en-us/agent-framework/concepts/workflows/)
+
+Microsoft 官方称为 **Agents in Workflows（工作流中的智能体，即让 Agent 成为 Workflow 中的执行节点）**。官方示例就是把多个专业 Agent 接入一个 Workflow，再通过明确的节点关系让它们依次完成内容生成、翻译、Review 等任务。[[17]](https://learn.microsoft.com/en-us/agent-framework/workflows/agents-in-workflows)
+
+#### <u>1. 节点的执行方式</u>
+
+根据 Agent System 的三类执行和编程形态，在 Workflow 中，不同节点面对的任务性质不同，因此不应该统一使用 Agent。更合理的方式是：**<u>先判断这个节点的问题是“规则明确”还是“需要动态判断”，再决定采用代码、单 Agent 或多 Agent。</u>**
+
+Microsoft Agent Framework 对这一点给出了非常清晰的工程判断：对于 Workflow 中的每一步，应该分别决定——**由模型判断下一步，就使用 Agent Executor（智能体执行器）；由代码确定结果，就使用 Deterministic Executor（确定性执行器，即普通业务代码）；如果需要人工判断，则设置 Human-in-the-loop Gate（人工介入门禁）。**
+
+因此，一个节点首先可以按任务性质分成两类：
+
+```text
+当前 Workflow Node
+        ↓
+是否能够通过明确规则稳定执行？
+        │
+   ┌────┴────────┐
+   ↓             ↓
+ 可以           不可以
+   ↓             ↓
+Code / API / Script   Agent
+```
+
+对于**规则明确、输入输出稳定、执行路径可以提前确定**的任务，例如固定的数据转换、调用接口、执行测试命令，直接使用代码或脚本即可。Microsoft 的 Workflow Executor（工作流执行器）本身就同时支持“自定义业务逻辑”和“AI Agent”两种执行单元。
+
+对于**需要结合上下文判断、存在较多例外、需要理解非结构化信息，或者具体执行步骤无法提前写死**的任务，更适合交给 Agent。OpenAI 在《A Practical Guide to Building Agents》中给出的判断标准也基本一致：Agent 更适合复杂决策、难以维护的大量规则，以及高度依赖自然语言、文档等非结构化数据的场景；如果不满足这些条件，**“a deterministic solution may suffice”——确定性的解决方案可能已经足够。** [[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+
+如果一个 Agent 已经能够稳定完成当前节点，就没有必要继续拆分；只有当这个节点进一步涉及**多个独立职责、不同专业能力、并行处理或者独立审查**时，才进一步考虑 Multi-Agent（多智能体协作）。
+
+所以节点的选择可以简单归纳为：
+
+```text
+Business Goal
+  ↓
+Business Workflow（定义高层任务阶段）
+  ↓
+Workflow Node
+  ↓
+判断节点如何执行
+├─ 执行路径明确
+│  └─→ Code / API / Script
+│
+└─ 需要模型动态判断
+   └─→ Agent
+       ├─ 一个 Agent 足够
+       │  └─→ Agent Loop
+       │
+       └─ 需要多个 Agent
+          └─→ Multi-Agent Orchestration
+              ├─ Code Orchestration（代码决定执行关系）
+              └─ LLM Orchestration（模型动态决定）
+                 ├─ Manager
+                 └─ Handoff
+```
+
+核心原则就是：
+
+> Workflow 不要求每个节点都使用 Agent，而是根据每个阶段的问题特点选择最合适的执行方式：确定性的任务尽量交给代码，需要推理的任务才交给 Agent，只有出现真实的多角色协作需求时再引入 Multi-Agent。
+
+#### <u>2. Workflow 的作用</u>
+
+为什么今天 Workflow、Agent Loop、Multi-Agent 会形成这样一种多层结构，一个很重要的推动因素就是**长任务**。
+
+Agent 在处理几分钟的任务时，可以较多依赖当前 Context。
+
+但是任务如果持续：
+
+几个小时甚至几天；跨多个 Context Window；跨多个 Session。
+
+单纯依赖一个 Agent Loop 就会出现很多工程问题：
+
+Context 不断增长 → 需要 Compression（上下文压缩） → 早期细节可能丢失；Session 中断 → 新的 Agent 不知道之前做过什么；执行失败 → 不知道应该从哪里重新开始。
+
+Anthropic 在 2025 年的长任务研究中明确指出：
+
+> 长任务需要跨多个 Context Window 工作，而新的 Session 并不会天然拥有之前 Session 的记忆。[[18]](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+
+因此 Anthropic 使用：
+
+`Feature List（功能清单）`；`Progress File（进度文件）`；`Git History（代码历史）`。
+
+让新的 Agent Session 能快速恢复当前工作状态。[[18]](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+
+到 2026 年，Anthropic 在《Harness design for long-running application development》中进一步总结了两个重要经验：
+
+> 把大型任务拆成可以处理的小块；通过 Structured Artifacts（结构化产物）在不同 Session 之间传递 Context。[[19]](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+
+因此，一个长任务通常会逐渐形成：
+
+Long-running Task → Planning → Task 1 → Artifact + Evaluation → Task 2 → Artifact + Evaluation → Task 3
+
+每个阶段拥有相对明确的：
+
+Goal（目标）；Input（输入）；Output（输出）；Acceptance Criteria（验收标准）。
+
+这样做的意义并不只是“把任务拆小”。
+
+更重要的是，每一个阶段都形成了一个独立的执行和失败边界：
+
+Task 1 已完成 → 保存 Artifact / Checkpoint → Task 2 执行失败
+
+系统可以重新执行 Task 2，而不需要把整个长任务从头执行。
+
+`Checkpoint（检查点，即保存某个阶段已经完成的运行状态）`也已经成为 Microsoft Workflow 的正式能力，用来支持工作流暂停以后继续执行，以及进程重启后的任务恢复。[[20]](https://learn.microsoft.com/en-us/agent-framework/workflows/checkpoints)
+
+因此，对于长任务，更稳定的设计通常是：
+
+```text
+阶段内部
+├─ 使用 Context
+└─ 保证当前任务连续执行
+
+阶段之间
+├─ 使用 Artifact / Structured State
+└─ 保存稳定结果
+
+关键阶段完成
+├─ 保存 Checkpoint
+└─ 保证失败后能够恢复
+```
+
+这可以总结成一句很重要的工程原则：
+
+> Context 更适合保存短期的工作状态；Artifact 和 Checkpoint 更适合保存长期的任务状态。
+
+而在这些执行结构之外，还需要一层负责长期稳定运行的工程能力，例如：
+
+State Management（状态管理）；Checkpoint（中断恢复）；Artifact（产物管理）；Context Management（上下文管理）；Evaluation（结果验收）；Human-in-the-loop（人工介入）；Tracing / Observability（运行追踪和监控）。
+
+这些能力更适合归到 **Agent Harness（智能体运行框架，即围绕模型和 Agent 提供长期运行、状态管理、工具执行、恢复、评测等工程能力的执行层）** 或 Workflow Runtime（工作流运行时）中。Anthropic 当前更常使用 `Harness` 来讨论这些让 Agent 能够长时间、可靠运行的工程机制。[[19]](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+
+> Workflow 已经不适合只理解成“固定代码流程”，它更适合作为任务的执行结构。外层 Workflow 可以定义稳定的业务阶段；每个节点内部再根据任务特点选择确定性代码、Single Agent 或 Multi-Agent。Single Agent 内部通过 Agent Loop 动态完成目标；Multi-Agent 再通过代码编排或模型编排协调多个 Agent。
+>
+> 对于长任务，则进一步通过 Harness 提供任务拆分、Artifact、Checkpoint、Context 管理和恢复能力，从而让整个任务不仅能够完成，而且能够稳定、可检查、可恢复地完成。
+
+#### <u>3. 两种状态管理</u>
+
+无论一个 Workflow 是**<u>复用同一个 Agent 完成多个阶段</u>**，还是为**<u>不同阶段配置多个 Agent</u>**，在阶段之间都需要解决一个共同问题：
+
+> **前一个阶段已经获得的信息、执行结果和当前任务状态，怎样传递给下一个阶段？**
+
+这里主要有两种方式：**共享 Context（上下文共享）**和**Structured Artifact（结构化产物，即把阶段结果以文件、结构化数据或其他可持久化形式保存下来）**。
+
+##### 1）共享 Context：适合强依赖前序执行过程的连续任务
+
+`Context（上下文）`这里主要指模型当前能够看到的任务历史，包括用户输入、前序 Agent 的结果、工具调用结果以及已经完成的判断。
+
+共享 Context 的优势是：
+
+> **后一个阶段可以直接理解前面发生了什么，不需要重新整理和传递信息。**
+
+例如一个线上故障处理任务：
+
+Incident Agent → 检查应用日志 → 确认 CPU 正常 → 发现数据库连接等待异常 → Handoff → Database Agent
+
+Database Agent 不仅需要知道结论“数据库可能有问题”，还需要知道：
+
+为什么怀疑数据库；前面已经检查过什么；哪些可能性已经被排除；工具返回过哪些结果。
+
+这类任务中，**前面的执行过程本身就是后续判断的重要信息**，所以共享 Context 更自然。
+
+OpenAI 的 `Handoff（任务转交）`默认就是这种方式：新的 Agent 接管任务时，可以看到之前的完整 Conversation History（对话历史）；如果不希望全部传递，还可以通过 `input_filter（输入过滤器）`裁剪下一 Agent 能看到的内容。[[15]](https://openai.github.io/openai-agents-python/handoffs/)
+
+因此，共享 Context 更适合：
+
+> **同一个任务连续向后推进，并且后一个阶段强依赖前面执行细节的场景。**
+
+例如故障排查、复杂客服工单、连续诊断等。
+
+它的局限也比较明显：任务越长，Context 就越容易持续增长，最终增加模型处理成本，也会混入越来越多对当前阶段没有价值的信息。
+
+##### 2）结构化产物：适合阶段相对独立、需要稳定交接的任务
+
+另一种方式不是把前一个阶段的完整执行历史交给后一个阶段，而是提前定义每个阶段的：
+
+Input（输入）；Goal（目标）；Output（输出）；Acceptance Criteria（验收标准）。
+
+阶段完成以后，将关键结果沉淀成稳定的产物，再交给下一阶段。
+
+例如研发任务：
+
+```text
+Planning Agent
+  └─→ 输出 spec.md
+             ↓
+Implementation Agent
+  └─→ 输出代码 + implementation_result.json
+                         ↓
+Review Agent
+  └─→ 读取需求 + 代码 + 验收标准
+```
+
+Review Agent 没有必要看到 Implementation Agent 前面几十轮：
+
+搜索过哪些文件；尝试过哪些错误方案；如何一步步修改；怎样解释自己的实现。
+
+它真正需要的是：
+
+> **需求是什么、最终产物是什么、验收标准是什么。**
+
+这种方式最大的优势是：
+
+> **把“执行过程”和“稳定结果”分开。**
+
+每个阶段可以拥有更干净、更独立的 Context，也更容易做到独立 Review、并行处理和失败重试。
+
+OpenAI 的 `Agent.as_tool()` 其实体现了类似思想：当 Manager 调用一个子 Agent 时，父级 Run 的完整 Conversation State **不会自动继承给子 Agent**；子 Agent 默认拿到的是为当前子任务构造的输入。如果确实需要共享历史，则需要显式配置相同的 Session。[[12]](https://openai.github.io/openai-agents-python/zh/tools/)
+
+因此，结构化产物更适合：
+
+> **阶段职责相对独立，只需要传递明确结果，而不需要继承完整执行过程的场景。**
+
+例如：
+
+Planner → Developer → Reviewer；Research Agent → Report Agent；多个并行 Research Agent → Manager 汇总。
+
+##### 3）长任务通常更偏向结构化产物
+
+这一点在 Anthropic 2026 年的长任务 Harness 研究中非常明确。
+
+Anthropic 总结了之前长任务实践中的两个关键经验：
+
+> “decomposing the build into tractable chunks”
+>
+> 即 **把大型任务拆分成可以独立处理的小任务。**
+
+以及：
+
+> “using structured artifacts to hand off context between sessions”
+>
+> 即 **通过结构化产物在不同 Session 之间传递任务状态。** [[19]](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+
+在长任务执行过程中，阶段之间当然可以通过共享 Context（上下文，即模型当前能够看到的任务历史）来传递信息，但**越是长时间、跨阶段、跨 Session（会话）的任务，越应该把关键状态沉淀成 Structured Artifact（结构化产物，即可被后续阶段重新读取、检查和复用的文件或状态数据）**。
+
+Anthropic 在长任务 Harness 的工程实践中明确指出：长任务通常会跨越多个 Context Window（上下文窗口），而新的 Session 并不会天然知道前一个 Session 做过什么。虽然可以通过 Compaction（上下文压缩，即把过长历史压缩成摘要）延长执行时间，但 Anthropic 的结论是：
+
+> **“compaction isn’t sufficient.”** [[18]](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+
+也就是：
+
+> **仅靠上下文压缩不足以可靠完成长任务。**
+
+因此，长任务更常采用：
+
+Task 1 → 沉淀 Artifact → Task 2 → 沉淀 Artifact → Task 3
+
+而不是一直依赖：
+
+Task 1 Context → 继续累积 → Task 2 Context → 继续累积 → 不断压缩
+
+这样做主要有三个目的。
+
+**第一，避免长会话不断压缩导致细节逐渐丢失。**
+
+如果一个任务持续几十轮甚至跨多个 Session，Context 会不断增长。为了不超过上下文窗口，系统通常需要做摘要或压缩，但多次压缩之后，一些早期但重要的细节可能逐渐被省略。
+
+如果把每个阶段的关键结果直接保存下来，例如：
+
+`plan.md`；`requirements.json`；`code/`；`test-result.json`；`review-result.json`；`progress.json`。
+
+后续 Agent 可以重新读取原始产物，而不需要依赖一份已经被多次压缩的对话摘要。
+
+**第二，结构化产物配合 Checkpoint，是长任务可恢复性的基础。**
+
+长任务真正困难的地方，不只是“怎么继续执行”，还包括：
+
+执行几个小时 → 环境异常 → 进程退出 → Agent Session 结束 → 如何继续？
+
+如果当前状态只存在于模型 Context 中，那么一旦 Session 丢失，恢复会非常困难。
+
+更稳定的做法是：
+
+阶段执行完成 → 保存 Artifact → 保存 Checkpoint → 进入下一阶段
+
+`Checkpoint（检查点，即保存某一时刻完整工作流状态）`负责记录“任务执行到哪里”，而 Artifact 负责记录“已经产生了什么结果”。
+
+Microsoft Agent Framework 对 Checkpoint 的定义非常明确：
+
+> **“Checkpoints allow you to save the state of a workflow at specific points during its execution, and resume from those points later.”**
+>
+> 即：**检查点允许系统在工作流执行过程中保存状态，并在以后从该状态继续执行。** [[20]](https://learn.microsoft.com/en-us/agent-framework/workflows/checkpoints)
+
+Microsoft 还明确指出，它特别适合：
+
+长时间运行的 Workflow；发生故障时避免丢失进度；暂停后继续执行；审计和合规；跨环境恢复任务。
+
+因此：
+
+Artifact = 已经完成了什么；Checkpoint = 当前执行到哪里。
+
+两者结合以后：
+
+```text
+Task 1
+  ↓
+Artifact + Checkpoint
+  ↓
+Task 2 ──发生异常──→ Restore Checkpoint
+  ↑                        ↓
+  └──────继续 Task 2 ← 重新读取 Artifact
+```
+
+不需要把完整任务重新执行一遍。
+
+这也是为什么对于长任务来说，**结构化产物不是单纯的信息传递方式，而是整个任务稳定性和可恢复性的重要基础。**
+
+**第三，结构化产物为后续 Review 和人工验收提供稳定依据。**
+
+长任务通常会把一个大目标拆成多个阶段，每个阶段都有相对明确的：
+
+Goal（目标）；Output（输出）；Acceptance Criteria（验收标准）。
+
+那么阶段完成以后，后续的 Reviewer Agent（审查智能体）或者人工审核人员，不需要阅读前一个 Agent 的完整执行历史。
+
+例如：
+
+Implementation Agent → 输出代码 → test-result.json → Review Agent
+
+Review Agent 可以只根据：
+
+需求 + 验收标准 + 最终代码 + 测试结果
+
+进行独立审查。
+
+这种方式比直接把 Implementation Agent 的完整 Context 交给 Review Agent 更稳定，因为 Review Agent 不会被前一个 Agent 的大量解释、尝试过程和自身判断干扰。
+
+Microsoft 当前也把 Checkpoint 用于审计、状态保存和恢复；而 Anthropic 的长任务 Harness 则明确要求 **<u>Agent 在不同 Session 之间留下清晰的产物，使后续 Agent 能够重新理解和继续任务</u>**。
+
+因此，在长任务中可以形成一个比较清晰的原则：
+
+```text
+阶段内部
+├─ Context
+└─ 保存当前执行过程中的临时信息
+
+阶段结束
+├─ Structured Artifact
+└─ 保存当前阶段的稳定结果
+
+关键阶段
+├─ Checkpoint
+└─ 保存整个任务当前的执行状态
+```
+
+例如：
+
+```text
+Planning       → plan.md                           → Checkpoint
+Implementation → code + implementation-result.json → Checkpoint
+Testing        → test-report.json                  → Checkpoint
+Review         → review-result.json
+```
+
+这样即使中间发生：
+
+Context Window 用尽；Session 重启；模型调用失败；环境异常；人工暂停。
+
+后续 Agent 仍然能够重新读取这些状态，从最近一次有效阶段继续。
+
+所以这一点可以最终总结为：
+
+> 长任务中使用结构化产物，首先是为了避免任务长期依赖不断增长和压缩的 Context，从而减少重要细节在多轮压缩中的损失；更重要的是，结构化产物配合 Checkpoint，把任务状态从模型的临时上下文中外部化，使系统能够在发生中断后恢复到最近的有效状态继续执行。同时，这些稳定产物也为后续 Agent 或人工 Review 提供明确的验收依据。因此，结构化产物不仅用于阶段之间传递信息，更是长任务实现稳定执行、可恢复、可审查和可持续迭代的重要基础。
+
+---
+
+### 【Workflow 示例：AI Coding Workflow 伪代码】
+
+完整 TypeScript 示例草案保存在 [ai-coding-workflow.ts](./Agent学习教程.source/ai-coding-workflow.ts)。
+
+```ts
+// TypeScript 风格伪代码：只展示 Workflow 的关键控制点。
+//
+// 三层状态各司其职：
+// - WorkflowState / Checkpoint：记录整个任务执行到哪里；
+// - Structured Artifact：记录每个阶段最终确认了什么；
+// - Agent Session / RunContext：支持当前阶段如何完成任务。
+//
+// runCurrentStage 的六个关键步骤：
+// 1. 恢复阶段上下文；2. 保存运行中 Checkpoint；3. 执行 Agent Loop；
+// 4. 校验结构化输出；5. 保存 Artifact；6. 推进状态并保存 Checkpoint。
+//
+// runWorkflow 的四个关键步骤：
+// 1. 恢复或创建状态；2. 构造 Runtime Context；
+// 3. 调度当前阶段；4. 根据重试次数继续或终止。
+
+// Workflow 只允许在四个稳定阶段之间迁移。
+type StageName =
+  | 'requirement'
+  | 'planning'
+  | 'implementation'
+  | 'testing';
+
+type StageStatus =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'failed';
+
+// 可持久化的 WorkflowState 是恢复依据；
+// 即使 Agent Session 丢失，也能从最近的 Checkpoint 继续。
+interface WorkflowState {
+  runId: string;
+  originalRequirement: string;
+  currentStage: StageName;
+  status: 'running' | 'completed' | 'failed';
+  stageStatus: Record<StageName, StageStatus>;
+  artifacts: Partial<Record<StageName, string>>;
+  retryCount: Partial<Record<StageName, number>>;
+}
+
+// AppContext 保存 Tool 和 Runtime 使用的本地资源；
+// 这些字段不会自动拼接到模型输入中。
+interface AppContext {
+  state: WorkflowState;
+  workspace: string;
+  artifactDir: string;
+}
+
+// 执行一个阶段：
+// 恢复阶段上下文 → 运行 Agent → 校验输出 → 保存 Artifact → 推进状态。
+async function runCurrentStage(
+  appContext: AppContext,
+): Promise<boolean> {
+  const state = appContext.state;
+  const stage = state.currentStage;
+  const agent = AGENTS[stage];
+
+  // 阶段步骤 1/6：恢复当前阶段的执行上下文。
+  // Session 只保存当前阶段的 Conversation；
+  // buildStageInput() 从已确认 Artifact 构造本阶段输入，
+  // 避免下游阶段继承全部上游执行历史。
+  const session = getStageSession(state.runId, stage);
+  const stageInput = await buildStageInput(state);
+
+  // 阶段步骤 2/6：先标记 running 并保存 Checkpoint。
+  // 如果此后中断，Runtime 才知道哪个阶段尚未完成。
+  state.stageStatus[stage] = 'running';
+  await saveCheckpoint(state);
+
+  try {
+    // 阶段步骤 3/6：执行当前节点内部的 Agent Loop。
+    // run() 负责模型推理、工具调用和结果回传；
+    // 外层 Workflow 只提供本地 Context、阶段 Session 和最大轮次。
+    const result = await run(agent, stageInput, {
+      context: appContext,
+      session,
+      maxTurns: 30,
+    });
+
+    // 阶段步骤 4/6：解析结构化输出，并执行业务验收 Gate。
+    // outputType 约束模型输出结构；
+    // Runtime 再用同一 Zod Schema 做一次确定性校验。
+    const artifact =
+      OUTPUT_SCHEMAS[stage].parse(result.finalOutput);
+
+    // Gate 判断结果是否满足当前阶段的业务验收条件；
+    // 未通过时增加重试次数，并把失败状态写入 Checkpoint。
+    if (!validateStage(stage, artifact)) {
+      state.stageStatus[stage] = 'failed';
+      state.retryCount[stage] =
+        (state.retryCount[stage] ?? 0) + 1;
+      await saveCheckpoint(state);
+      return false;
+    }
+
+    // 阶段步骤 5/6：持久化当前阶段的稳定 Artifact。
+    // Gate 通过后先保存产物，再推进阶段状态；
+    // 避免出现“状态已完成，但产物尚未落盘”的不一致。
+    const artifactPath = await saveArtifact(
+      state.runId,
+      stage,
+      artifact,
+    );
+
+    state.stageStatus[stage] = 'completed';
+    state.artifacts[stage] = artifactPath;
+
+    // 阶段步骤 6/6：推进 Workflow 状态，并保存恢复边界。
+    // 当前阶段完成后再决定下一阶段；
+    // 没有下一阶段时，整个 Workflow 才结束。
+    const nextStage = getNextStage(stage);
+    if (nextStage) {
+      state.currentStage = nextStage;
+    } else {
+      state.status = 'completed';
+    }
+
+    // 将 Artifact 路径和最新阶段写入 Checkpoint，
+    // 形成下一次恢复时可以直接读取的稳定边界。
+    await saveCheckpoint(state);
+    return true;
+  } catch (error) {
+    // 异常分支：与 Gate 失败使用同一套失败状态；
+    // 外层 Runtime 统一决定继续重试还是终止。
+    state.stageStatus[stage] = 'failed';
+    state.retryCount[stage] =
+      (state.retryCount[stage] ?? 0) + 1;
+    await saveCheckpoint(state);
+    return false;
+  }
+}
+
+async function runWorkflow(params: {
+  runId: string;
+  requirement: string;
+  workspace: string;
+}) {
+  // Runtime 步骤 1/4：恢复已有状态，或创建首次运行状态。
+  // 启动时优先恢复已有 Checkpoint；
+  // 只有首次运行时才创建初始状态。
+  let state = await loadCheckpoint(params.runId);
+
+  if (!state) {
+    state = createInitialState(
+      params.runId,
+      params.requirement,
+    );
+    await saveCheckpoint(state);
+  }
+
+  // Runtime 步骤 2/4：构造 Tool 和 Workflow 使用的本地 Context。
+  // Runtime Context 供 Tool / Workflow 使用，
+  // 不等于模型能够看到的 Conversation。
+  const appContext: AppContext = {
+    state,
+    workspace: resolveWorkspace(params.workspace),
+    artifactDir: getArtifactDir(params.runId),
+  };
+
+  // Runtime 步骤 3/4：循环调度当前阶段。
+  // Workflow Runtime Loop 只负责阶段调度、重试与终止，
+  // 不接管 Agent 内部的推理和工具调用循环。
+  while (state.status === 'running') {
+    const success = await runCurrentStage(appContext);
+
+    if (!success) {
+      const stage = state.currentStage;
+      const retries = state.retryCount[stage] ?? 0;
+
+      // Runtime 步骤 4/4：根据重试次数决定继续或终止。
+      // 阶段失败可以重试；达到上限后保存终止状态，
+      // 防止同一阶段无限循环。
+      // 生产系统还可以在这里执行 rollback、human review、
+      // 返回上一阶段或修改 Plan。
+      if (retries >= 3) {
+        state.status = 'failed';
+        await saveCheckpoint(state);
         throw new Error(
-          cliResult.stderr || "Claude Code 执行失败",
+          `${stage} 连续失败 ${retries} 次`,
         );
       }
-
-      const claudeOutput =
-        parseClaudeJson(cliResult.stdout);
-
-      const output = parseAndValidateOutput(
-        stage.outputSchema,
-        claudeOutput.finalText,
-      );
-
-      const artifacts =
-        await collectWorkspaceArtifacts(stage.workspace);
-      const evidence = extractEvidence(output);
-
-      return successResult(
-        stage,
-        output,
-        artifacts,
-        evidence,
-      );
-    } catch (error) {
-      return failureResult(stage, error, signal.aborted);
     }
   }
+
+  return state;
 }
-~~~
+```
 
-ClaudeCodeStageAdapter 的 run 方法与 CodexStageAdapter 相同，但内部改为启动 CLI。若要继续上一次执行，可以在 args 中加入 <code>--resume</code> 和保存的 session ID。CLI 参数见 [Claude Code CLI 官方说明](https://docs.anthropic.com/en/docs/claude-code/cli-usage)。
+这段代码里最重要的不是四个 Agent，而是三个不同的状态层次：
 
-#### TraeAgentStageAdapter
+```text
+┌─────────────────────────────────────────┐
+│ WorkflowState / Checkpoint              │
+│ current_stage = implementation          │
+│ planning = completed                    │
+│ retry_count = ...                       │
+│ 回答：整个任务现在执行到哪里？           │
+└─────────────────────────────────────────┘
+                     │
+                     ↓
+┌─────────────────────────────────────────┐
+│ Structured Artifact                     │
+│ requirement.json                        │
+│ planning.json                           │
+│ implementation.json                     │
+│ testing.json                            │
+│ 回答：每个阶段最终确认了什么？           │
+└─────────────────────────────────────────┘
+                     │
+                     ↓
+┌─────────────────────────────────────────┐
+│ MemorySession / Agent Context           │
+│ Tool Call                               │
+│ Tool Result                             │
+│ 当前分析                                │
+│ 最近几轮交互                            │
+│ 回答：当前 Agent 正在怎么完成这个阶段？ │
+└─────────────────────────────────────────┘
+```
 
-~~~ts
-class TraeAgentStageAdapter
-  implements StageAgentAdapter {
+对应到一次真正的运行过程，就是：
 
-  async run(
-    stage: StageSpec,
-    signal: AbortSignal,
-  ): Promise<StageResult> {
-    // trajectory 是 Trae Agent 的过程记录。
-    const trajectory = trajectoryPath(stage);
+```text
+用户需求
+  ↓
+Workflow Runtime
+  │
+  ├─ current_stage = requirement
+  │  └─→ Requirement Agent → Agent Loop → RequirementArtifact
+  │                                    ↓
+  │                         保存 requirement.json
+  │                                    ↓
+  │                         更新 WorkflowState → Checkpoint
+  │
+  ├─ current_stage = planning
+  │  └─→ Planning Agent → 读取 requirement.json
+  │                           ↓
+  │                       Agent Loop
+  │                           ↓
+  │                      PlanArtifact
+  │                           ↓
+  │                  保存 planning.json → Checkpoint
+  │
+  ├─ current_stage = implementation
+  │  └─→ Coding Agent → 读取 requirement + planning
+  │                         ↓
+  │                  自己的 MemorySession
+  │                         ↓
+  │              Read File / Edit File / Run Tests / ...
+  │                         ↓
+  │                ImplementationArtifact
+  │                         ↓
+  │              保存 implementation.json → Checkpoint
+  │
+  └─ Testing Agent
+     ├─ 只读取稳定 Artifact
+     ├─ 而不是 Coding Agent 完整聊天记录
+     └─→ 独立验收 → TestArtifact → Workflow completed
+```
 
-    try {
-      const args = [
-        "run", renderStagePrompt(stage),
-        "--working-dir", stage.workspace,
-        "--trajectory-file", trajectory,
-      ];
+这里 `MemorySession` 是 OpenAI Agents SDK TypeScript 草案中使用的会话历史机制，可以在多次 `run()` 之间持续保存 Conversation；而 `RunContext` 中的本地 Context 不会自动发送给模型。`outputType` 则可以通过 Zod Schema 要求 Agent 直接生成结构化结果。
 
-      if (stage.stageId === "implement") {
-        args.push("--must-patch");
-      }
+所以这套实现最核心的职责边界就是：
 
-      // 这里才真正启动 Trae Agent CLI。
-      const cliResult = await runProcess(
-        "trae-cli",
-        args,
-        { signal },
-      );
+> **Agent Context 管“当前阶段正在怎么做”；Artifact 管“当前阶段最终做成了什么”；WorkflowState / Checkpoint 管“整个需求交付任务现在执行到哪里”。**
 
-      if (cliResult.exitCode !== 0) {
-        throw new Error(
-          cliResult.stderr || "Trae Agent 执行失败",
-        );
-      }
+这三层一旦拆开，即使 Coding Agent 的 Session 被清空、模型切换或者 Runtime 中断，外层 Workflow 仍然可以根据 Checkpoint 和已经沉淀的 Artifact 恢复执行。
 
-      const traeOutput =
-        parseTraeOutput(cliResult.stdout);
+## 5. `Agents in Workflows` —— 业务 Agent 的研发重点
 
-      const output = parseAndValidateOutput(
-        stage.outputSchema,
-        traeOutput.finalText,
-      );
+企业在已有业务流程中引入 Agent 时，研发目标通常不是重新建设一套通用的 Agent System（智能体系统，即模型调用、Agent Loop、工具调用、会话管理、Handoff、Tracing 等底层运行机制），而是**基于成熟的 Agent SDK、Agent Framework 或企业 Agent Platform，完成具体业务智能体的建设**。
 
-      const workspaceArtifacts =
-        await collectWorkspaceArtifacts(stage.workspace);
+OpenAI 当前对 Agents SDK 的定位已经体现了这种分工。官方明确说明：
 
-      const artifacts = [
-        trajectory,
-        ...workspaceArtifacts,
-      ];
-      const evidence = extractEvidence(output);
+> “Use the Agents SDK when you want the runtime to manage turns, tool execution, guardrails, handoffs, or sessions.”
 
-      return successResult(
-        stage,
-        output,
-        artifacts,
-        evidence,
-      );
-    } catch (error) {
-      return failureResult(stage, error, signal.aborted);
-    }
-  }
+即：
+
+> 如果希望 Runtime 帮助管理模型运行轮次、工具执行、安全检查、Agent 转交以及 Session，就可以直接使用 Agents SDK。
+
+相反，只有当开发者希望自己掌控 Agent Loop、Tool Dispatch（工具调度）和 State Handling（状态处理）时，才需要下降到更底层的 Responses API。
+
+因此，在企业业务 Agent 开发中，更合理的研发边界是：
+
+```text
+Agent Framework / Platform   → 提供通用 Agent 运行能力
+              ↓
+Business Capability          → 建设企业自己的业务能力
+              ↓
+Business Workflow            → 把能力组织成完整业务流程
+              ↓
+Runtime & Governance Policy  → 配置运行、恢复、安全和人工治理策略
+```
+
+也就是说，业务团队需要**理解底层 Agent System 的机制和边界，但通常不需要重新实现它**。研发资源应该更多投入到企业真正具有差异化价值的业务能力和业务流程上。
+
+### 【建设 Business Capability，让 Agent 真正具备业务能力】
+
+Agent Framework 解决的是“Agent 怎么运行”，但它并不知道：
+
+- 企业有哪些业务规则；
+- 一个运营任务应该怎么分析；
+- 哪些内部系统可以查询；
+- 怎样修改企业代码；
+- 怎样完成业务审核。
+
+这些才是业务 Agent 最核心的建设内容。
+
+OpenAI 在《A practical guide to building agents》中把 Agent 的基础组成概括为：
+
+> **Model + Tools + Instructions** [[2]](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
+
+但从企业工程建设的角度，还需要进一步把这些基础组成沉淀成可以被不同 Agent 重复使用的业务资产。结合当前 OpenAI Agents SDK、Sandbox Agent、MCP 和 File Search 的能力，可以把 Business Capability 主要整理成下面四类：
+
+```text
+Business Capability
+├─ Skill                  → 一类任务应该怎么做
+├─ Tool / API / SDK / MCP → Agent 可以执行什么动作
+├─ Knowledge Base / RAG   → Agent 从哪里获得业务事实
+└─ Memory                 → 哪些过去的经验需要被后续任务继续使用
+```
+
+这里有一个边界需要先说明：
+
+> **MCP 本身并不是一种新的业务能力，它主要是一种能力接入方式。**
+
+例如“查询订单”是一个业务能力，它可以直接封装成 Function Tool，也可以调用现有 API，还可以通过 MCP Server 暴露给 Agent。
+
+#### <u>1. Tool / API / SDK / MCP —— 给 Agent 提供真正可以执行的动作</u>
+
+`Tool（工具，即 Agent 可以直接调用的确定性动作）`解决的是：
+
+> **“Agent 实际能够做什么？”**
+
+OpenAI 当前对 Tool 的描述是：
+
+> “Tools let an Agent take actions – fetch data, call external APIs, execute code, or even use a computer.”
+>
+> 即：**Tool 让 Agent 能获取数据、调用外部 API、执行代码，甚至操作计算机。**
+
+企业中的 Tool 通常来自已有业务能力：
+
+已有函数 → Function Tool；已有 HTTP API → Function Tool；已有 SDK → Function Tool；已有 MCP Server → MCP Tool。
+
+所以企业通常不需要为了 Agent 重写已有系统，而是把现有系统转换成 Agent 可以调用的能力。
+
+**<u>自己创建的 Tool 怎么接入 Agent</u>**
+
+例如企业已经有一个订单系统：
+
+```ts
+async function queryOrder(orderId: string) {
+  return orderService.getOrder(orderId);
 }
-~~~
+```
 
-Trae Agent 的 Tool 和 MCP Server 由阶段配置提供。trajectory、补丁和日志进入 StageResult.artifacts。命令形式见 [bytedance/trae-agent](https://github.com/bytedance/trae-agent)。
+使用 OpenAI Agents SDK 时，可以通过 `tool()` 把它封装成 Agent Tool：
 
-#### 注册并执行一次 Agent Stage
+```ts
+import {
+  Agent,
+  tool,
+} from '@openai/agents';
 
-定义具体类之后，把实例放进注册表：
+import { z } from 'zod';
 
-~~~ts
-const adapterRegistry: AdapterRegistry = {
-  codex: new CodexStageAdapter(),
-  "claude-code": new ClaudeCodeStageAdapter(),
-  "trae-agent": new TraeAgentStageAdapter(),
-};
+const queryOrderTool = tool({
+  name: 'query_order',
+  description: '根据订单 ID 查询订单信息',
+  parameters: z.object({
+    orderId: z.string(),
+  }),
+  execute: async ({ orderId }) => {
+    // 调用企业已有 API / SDK
+    return orderService.getOrder(orderId);
+  },
+});
+```
 
-const agentStageExecutor =
-  new AgentStageExecutor(adapterRegistry);
-~~~
+然后直接交给 Agent：
 
-Business Workflow 真正执行 Agent Stage 时，只调用 agentStageExecutor：
+```ts
+const agent = new Agent({
+  name: 'Customer Service Agent',
+  instructions: `
+    负责处理订单问题。
+    必要时查询订单信息。
+  `,
+  tools: [queryOrderTool],
+});
+```
 
-~~~ts
-// currentStage 是 Orchestrator 当前要执行的 StageSpec。
-const stageResult = await agentStageExecutor.run(
-  currentStage,
-  signal,
+OpenAI 官方当前的接口就是：
+
+自己的 Function / API / SDK → `tool(...)` → `Agent.tools`
+
+SDK 官方也明确写道：
+
+> “You can turn any function into a tool with the `tool()` helper.”
+>
+> 即：
+>
+> **任何函数都可以通过 `tool()` 封装成 Agent Tool。**
+
+业务团队真正需要建设的是：
+
+`query_order`；`run_tests`；`search_code`；`send_message`；`create_ticket`；`query_author_data`。
+
+这些有稳定输入、输出、权限和错误定义的业务 Tool。
+
+**<u>MCP 怎么接入</u>**
+
+如果一个能力需要被多个不同 Agent、IDE 或 Agent Framework 共同复用，就可以进一步把它暴露成 **MCP Server（Model Context Protocol Server，即通过标准协议统一提供工具和资源的服务）**。
+
+例如企业已经建设：
+
+```text
+CRM MCP Server
+├─ Tools
+│  ├─ query_customer
+│  ├─ query_order
+│  └─ update_customer
+└─ Resources
+   ├─ customer_policy
+   └─ product_information
+```
+
+OpenAI Agents SDK 可以直接连接这个 Server：
+
+```ts
+import {
+  Agent,
+  MCPServerStdio,
+} from '@openai/agents';
+
+const crmServer =
+  new MCPServerStdio({
+    fullCommand:
+      'node ./mcp/crm-server.js',
+  });
+
+await crmServer.connect();
+
+const agent = new Agent({
+  name: 'Operations Agent',
+  instructions:
+    '处理用户和订单相关问题。',
+  mcpServers: [crmServer],
+});
+```
+
+接入关系变成：
+
+企业 CRM / 数据库 / API → MCP Server → OpenAI Agents SDK → Agent
+
+OpenAI 当前官方文档明确支持：
+
+> “You can expose tools via Model Context Protocol (MCP) servers and attach them to an agent.”
+>
+> **即：可以通过 MCP Server 暴露工具，然后直接连接到 Agent。**
+
+因此在企业中可以简单判断：
+
+```text
+能力复用范围
+├─ 只服务当前应用                → Function Tool 往往已经足够
+└─ 多个 Agent / 客户端共同复用   → 可以建设 MCP Server
+```
+
+#### <u>2. Skill —— 沉淀可复用的工作经验</u>
+
+`Skill（技能，即完成某一类任务的可复用方法）`解决的是：
+
+> **“这类任务应该怎么做？”**
+
+例如研发 Agent 中可以沉淀：
+
+`requirement-analysis`（需求分析 Skill）；`code-review`（代码审查 Skill）；`bug-root-cause-analysis`（问题根因分析 Skill）；`frontend-test`（前端测试验收 Skill）。
+
+一个 Skill 通常不是单纯的一句话 Prompt，而应该包含这类任务相对稳定的：
+
+什么时候使用这个 Skill → 任务目标是什么 → 应该按照什么方法执行 → 允许使用哪些 Tool → 需要遵守什么约束 → 最终输出什么 → 怎样判断任务完成
+
+例如：
+
+```text
+code-review Skill
+├─ 目标：检查当前代码修改是否符合需求
+├─ 执行方法
+│  1. 阅读 Requirement Artifact
+│  2. 阅读代码 diff
+│  3. 检查关键业务逻辑
+│  4. 检查异常处理
+│  5. 检查测试覆盖
+├─ 可以使用：read_file / search_code / run_tests
+├─ 输出：review-result.json
+└─ 验收：必须给出结论、问题、风险和证据位置
+```
+
+这样 Skill 沉淀的实际上就是：
+
+> **企业过去依赖人工掌握的 SOP、检查方法和专业经验。**
+
+对于普通的 `Agent`，核心抽象仍然是：
+
+```ts
+new Agent({
+  instructions,
+  tools
+})
+```
+
+也就是说，普通 Agent 当前并没有一个独立的、通用的 `skills: []` 配置项。Skill 可以通过 Instructions、Tool 等方式由应用自己组织。
+
+但 OpenAI 在最新的 **Sandbox Agent（沙盒智能体，目前仍处于 Beta）**中，已经正式加入了 `skills()` Capability（技能能力），用于 Skill 的发现和加载。官方在 [Sandbox Agent concepts](https://openai.github.io/openai-agents-js/guides/sandbox-agents/concepts/) 中将它描述为：
+
+> `skills()` — “You want skill discovery and materialization in the sandbox.”
+
+即：
+
+> **当希望 Agent 能够发现并加载 Skill 时，可以给 SandboxAgent 增加 `skills()` 能力。**
+
+例如我们自己维护：
+
+```text
+skills/
+├─ requirement-analysis/
+│   └─ SKILL.md
+├─ code-review/
+│   └─ SKILL.md
+└─ frontend-testing/
+    └─ SKILL.md
+```
+
+然后把这个 Skill 目录接入 Agent：
+
+```ts
+import {
+  Capabilities,
+  SandboxAgent,
+  skills,
+} from '@openai/agents/sandbox';
+
+import {
+  localDirLazySkillSource,
+} from '@openai/agents/sandbox/local';
+
+const agent = new SandboxAgent({
+  name: 'Coding Agent',
+  model: 'gpt-5.6-sol',
+  instructions: `
+    根据当前任务选择合适的 Skill。
+    进行代码审查时加载 code-review Skill。
+  `,
+
+  capabilities: [
+    ...Capabilities.default(),
+    skills({
+      // 将我们自己维护的 Skill 目录
+      // 接入当前 Agent。
+      lazyFrom: localDirLazySkillSource({
+        src: './skills',
+      }),
+    }),
+  ],
+});
+```
+
+这就是业务团队最需要关注的接入关系：
+
+我们维护的 Skill（SKILL.md）→ Skill Source → `skills(...)` → SandboxAgent → Agent 根据当前任务加载对应 Skill
+
+OpenAI 官方当前的 Sandbox Agent 示例就是通过 `localDirLazySkillSource()` 把本地 Skill 目录接入，再通过 `skills()` 注册到 `SandboxAgent.capabilities` 中。
+
+因此，从企业 Capability 建设角度，可以把 Skill 看成：
+
+> 业务团队负责创建、版本管理和评测 Skill；Agent Framework 负责让 Agent 能发现和加载这些 Skill。
+
+**<u>Skill 也可以做成 Tool</u>**
+
+`load_skill("code-review")`
+
+例如：
+
+```js
+const loadSkillTool = tool({
+  name: "load_skill",
+  description:
+    "根据 Skill 名称读取对应的任务执行规范",
+  parameters: z.object({
+    name: z.string(),
+  }),
+  execute: async ({ name }) => {
+    return loadSkill(
+      `./skills/${name}/SKILL.md`
+    );
+  },
+});
+```
+
+然后：
+
+```ts
+const agent = new Agent({
+  instructions: `
+    当任务需要专业方法时，
+    先通过 load_skill 读取对应 Skill。
+  `,
+  tools: [loadSkillTool, readFileTool, runTestsTool],
+});
+```
+
+这样 Agent 可以：
+
+模型判断需要 Code Review → `load_skill("code-review")` → 返回 SKILL.md 内容 → Agent 按 Skill 执行
+
+这种模式适合：
+
+> **Skill 很多，无法提前全部塞进 Context，需要 Agent 在运行时按需发现和加载。**
+
+这实际上已经非常接近现在 OpenAI `SandboxAgent` 的 `skills()` 能力。
+
+#### <u>3. Knowledge Base / RAG —— 给 Agent 提供可信的业务知识</u>
+
+Tool 解决的是“执行动作”，但很多 Agent 任务首先需要获得企业知识。
+
+例如：
+
+```text
+客服 Agent   → 售后制度 / 商品资料 / 退款规则
+运营 Agent   → 作者规则 / 活动规则 / 经营方法
+Coding Agent → 架构文档 / API 文档 / Coding Guideline
+```
+
+因此还需要建设 **Knowledge Base（知识库，即经过整理、能够被 Agent 查询的企业知识）**。
+
+知识库解决的是：
+
+> **“Agent 做判断时，从哪里获取可信的事实？”**
+
+常见方式是：
+
+企业文档 → 清洗 / 切分 → 建立索引 → Vector Store（向量存储）→ Retrieval（检索）→ Agent
+
+这里通常会使用 **RAG（Retrieval-Augmented Generation，检索增强生成，即先检索相关资料，再让模型基于资料回答）**。
+
+**<u>自己建设的知识库怎么接入 OpenAI Agent</u>**
+
+如果使用 OpenAI 的 Vector Store（向量存储），业务侧首先把自己的资料放入 Vector Store：
+
+```text
+业务规则 / 产品文档 / 技术规范 / FAQ
+                  ↓
+             Vector Store
+                  ↓
+        得到：vs_xxxxxxxxx
+```
+
+然后在 Agents SDK 中只需要把这个 Vector Store 接给 `fileSearchTool()`：
+
+```ts
+import {
+  Agent,
+  fileSearchTool,
+} from '@openai/agents';
+
+const knowledgeSearch =
+  fileSearchTool(
+    'vs_enterprise_knowledge',
+    {
+      maxNumResults: 5,
+    },
+  );
+
+const agent = new Agent({
+  name: 'Operations Agent',
+  instructions: `
+    回答业务问题时，
+    优先查询企业知识库。
+  `,
+  tools: [knowledgeSearch],
+});
+```
+
+OpenAI 当前的 `fileSearchTool` 接口就是：
+
+> ```ts
+> fileSearchTool(vectorStoreIds, options?)
+> ```
+
+它的作用被官方定义为：
+
+> **“Adds file search abilities to your agent.”**
+
+并且底层查询的是 OpenAI 托管的 Vector Store。
+
+所以企业知识库的接入关系很清楚：
+
+企业资料 → 建立 Knowledge Base → Vector Store → 拿到 `vectorStoreId` → `fileSearchTool(vectorStoreId)` → Agent
+
+如果企业已经有自己的 Elasticsearch、向量数据库或者 RAG Service，也不必迁移到 OpenAI Vector Store。
+
+可以直接封装自己的检索接口：
+
+```ts
+const searchKnowledge = tool({
+  name: 'search_knowledge',
+  description: '搜索企业内部知识库',
+  parameters: z.object({
+    query: z.string(),
+  }),
+  execute: async ({ query }) => {
+    return companyRagService.search(
+      query,
+    );
+  },
+});
+```
+
+然后：
+
+```ts
+new Agent({
+  tools: [searchKnowledge],
+});
+```
+
+因此：
+
+> **Knowledge Base 是业务资产，File Search / Tool / MCP 只是把知识库接入 Agent 的方式。**
+
+这一点非常重要。
+
+#### <u>4. Memory —— 沉淀跨任务仍然有价值的经验</u>
+
+最后一类是 `Memory（记忆）`。
+
+这里一定要先区分：
+
+Session ≠ Long-term Memory
+
+OpenAI 当前对 Sessions 的定义是：
+
+> “Sessions give the Agents SDK a persistent memory layer.”
+
+但它保存的主要是：
+
+> **Conversation History（会话历史）**。
+
+Runner 会在下一轮运行前读取历史消息，并在运行结束后继续保存新的输入和输出。
+
+因此 Session 更适合：
+
+```text
+用户第一轮：帮我分析订单
+第二轮：刚才那个订单为什么失败？
+第三轮：帮我申请退款
+```
+
+需要保持同一段 Conversation 连续性的场景。
+
+例如：
+
+```ts
+import {
+  Agent,
+  OpenAIConversationsSession,
+  run,
+} from '@openai/agents';
+
+const session =
+  new OpenAIConversationsSession();
+
+await run(
+  agent,
+  '分析订单 123',
+  { session },
 );
 
-// 这里拿到的一定是 StageResult，底层产品已经不可见。
-await stageResultStore.save(stageResult);
+await run(
+  agent,
+  '继续分析刚才的问题',
+  { session },
+);
+```
 
-// Gate 只检查统一结果，返回通过、不通过或人工复核。
-const gateResult =
-  await currentGate.check(stageResult);
+真正的 **Long-term Memory（长期记忆，即从过去任务中提炼、未来任务仍然值得使用的经验）**解决的则是另一个问题：
 
-// Orchestrator 再用流程规则映射下一阶段。
-await orchestrator.advanceByRules({
-  stageId: currentStage.stageId,
-  stageResult,
-  gateResult,
+例如：
+
+这个项目统一使用 pnpm；这个团队不允许直接修改 generated 文件；这个用户倾向于先给诊断结果再执行修改；过去已经发现，某类测试失败通常与 Mock 配置有关。
+
+这些内容即使新的 Session 开始，也可能仍然有价值。
+
+OpenAI 当前 Sandbox Agent 已经提供了 Beta 的 `memory()` Capability。
+
+官方对它的定义非常明确：
+
+> “Memory lets future sandbox-agent runs learn from prior runs.”
+>
+> 即：**Memory 让未来的 Agent Run 能够从过去的 Run 中学习。**
+
+而且官方特别强调：
+
+> **它和保存 Conversation History 的 Session Memory 是分开的。**
+
+接入方式非常简单：
+
+```ts
+import {
+  SandboxAgent,
+  filesystem,
+  shell,
+  memory,
+} from '@openai/agents/sandbox';
+
+const agent =
+  new SandboxAgent({
+    name: 'Coding Agent',
+    model: 'gpt-5.6-sol',
+    instructions: `
+      完成代码任务。
+      如果过去任务中存在相关经验，
+      优先参考这些经验。
+    `,
+    capabilities: [
+      filesystem(),
+      shell(),
+      // 开启长期 Memory
+      memory(),
+    ],
+  });
+```
+
+OpenAI 当前的 Memory 会把过去 Run 中提炼出的经验保存到 Sandbox Workspace 中，例如：
+
+```text
+memories/
+├─ MEMORY.md
+└─ rollout_summaries/
+```
+
+**<u>可以通过配置告诉 Memory“重点记什么？”</u>**
+
+这正是 OpenAI 当前提供的 `extraPrompt`。
+
+官方示例：
+
+```ts
+import {
+  memory,
+} from "@openai/agents/sandbox";
+
+const memoryCapability = memory({
+  generate: {
+    maxRawMemoriesForConsolidation: 128,
+    phaseOneModel: "gpt-5.4-mini",
+    phaseTwoModel: "gpt-5.4",
+    extraPrompt: `
+      Prioritize workflow corrections,
+      verification commands,
+      and user preferences.
+    `,
+  },
 });
-~~~
+```
 
-到这里，接口、实现和调用方才真正连起来：
+OpenAI 对 `extraPrompt` 的说明非常明确：
 
-1. provider 决定从注册表取哪个 Adapter。
-2. 具体 Adapter 调用对应的 SDK 或 CLI。
-3. 具体 Adapter 把原始结果转换成 StageResult。
-4. AgentStageExecutor 把 StageResult 返回给 Workflow。
-5. Gate 检查结果，Orchestrator 按流程规则推进下一阶段。
+> **“Use `extraPrompt` to tell the memory generator which signals matter most for your use case.”**
 
-## 6. BUG-42：用一条流程看清各部分怎样配合
+即：
 
-![BUG-42 执行结构](./Agent学习教程.assets/07-bug42-execution.svg)
+> **可以通过 `extraPrompt` 告诉 Memory Generator（记忆生成器），对于当前业务来说，哪些信息最值得关注和保存。**
 
-### 6.1 先写 Workflow 定义
+所以企业完全可以定义自己的 Memory Policy（记忆策略）。
 
-~~~yaml
-workflow: defect_fix
-start: collect_context
+例如 Coding Agent：
 
-stages:
-  collect_context:
-    executor: issue_and_repo_loader
-    next: diagnose
+```ts
+const codingMemory = memory({
+  generate: {
+    extraPrompt: `
+只保留未来 Coding 任务仍然具有复用价值的信息。
 
-  diagnose:
-    executor: coding_agent
-    provider: codex
-    skill: java_root_cause_analysis
-    access: read-only
-    gate: root_cause_complete
-    next: implement
+优先提炼：
+1. 用户明确确认过的开发偏好；
+2. 项目长期有效的工程约束；
+3. 已经验证有效的问题定位方法；
+4. 反复出现的测试或构建问题及解决方式；
+5. 用户对 Agent 错误行为的明确纠正。
 
-  implement:
-    executor: coding_agent
-    provider: codex
-    skill: safe_code_change
-    access: workspace-write
-    gate: patch_exists
-    next: verify
+不要保存：
+1. 当前任务临时文件路径；
+2. 一次性的工具调用结果；
+3. 未验证的推测；
+4. 已经被后续结论否定的判断；
+5. 密钥、Token 或其他敏感信息。
+    `,
+  },
+});
+```
 
-  verify:
-    executor: test_runner
-    on_pass: risk_review
-    on_fail: implement
+那么你实际上是在给 Memory 系统定义：
 
-  risk_review:
-    executor: risk_agent
-    skill: payment_change_review
-    access: read-only
-    gate: risk_report_complete
-    next: approve
+什么值得长期记住 + 什么明确不能进入长期记忆
 
-  approve:
-    executor: human
-    on_approve: release
-    on_reject: closed
+这就是企业 Memory 能力中非常重要的一层。
 
-  release:
-    executor: release_tool
-    next: completed
-~~~
+下一次运行开始时，SDK 先给 Agent 一个简短的 Memory Summary（记忆摘要）；如果发现当前任务与过去经验有关，再继续读取更详细的 Memory。
 
-<code>diagnose</code> 和 <code>implement</code> 使用同一个 coding_agent，但加载不同 Skill，并且权限不同。<code>verify</code> 和 <code>release</code> 是确定性步骤，不需要 Agent。
+因此逻辑就是：
 
-### 6.2 代码按四类对象组织
+```text
+首次运行：Run 1 → 执行任务 → 产生经验 → Memory Generation（记忆提炼）→ Memory Store
+                                                                    ↓
+后续运行：下一次 Run → 读取 Memory Summary → 发现相关经验 → 读取具体 Memory → 继续当前任务
+```
 
-~~~text
-defect-fix/
-  workflow.yaml              # Stage、分支和回流
-  orchestrator.ts            # 读取状态并推进流程
-  stages/
-    collect-context.ts       # 普通代码
-    coding-agent.ts          # 通过 Adapter 调用 Agent
-    test-runner.ts           # 独立执行测试
-    risk-agent.ts            # 调用只读审查 Agent
-  skills/
-    java-root-cause-analysis/
-    safe-code-change/
-    payment-change-review/
-  gates/
-    root-cause-complete.ts
-    patch-exists.ts
-    risk-report-complete.ts
-  adapters/
-    codex.ts
-    claude-code.ts
-    trae-agent.ts
-~~~
+这也是比较合理的长期记忆机制：
 
-Orchestrator 不包含根因分析或改码逻辑。它只读取 Workflow 定义，调用执行者，再根据 Gate 结果更新状态。
+> **不是把过去所有 Conversation 永久塞进 Context，而是从历史任务中提炼真正值得复用的信息。**
 
-~~~ts
-async function executeCurrentStage(state: WorkflowState) {
-  const stage = workflow.stages[state.currentStage];
-  const result = await executors[stage.executor].run(stage, state);
+如果企业不用 Sandbox Agent，也可以自己实现同样的结构：
 
-  await artifacts.save(state.instanceId, stage.id, result);
+```text
+Agent Run → 任务结束 → Memory Extractor（提取有长期价值的信息）→ 企业 Memory Store
+                                                                  ↓
+下一次任务 → 根据 user / project / team 检索相关 Memory → 加入 Agent Input
+```
 
-  const transition = await transitionResolver.resolve({
-    stage,
-    result,
-    state,
+例如：
+
+```ts
+const memories =
+  await memoryStore.search({
+    projectId,
+    query: currentTask,
   });
 
-  return stateStore.moveTo(state.instanceId, transition.next);
+await run(
+  agent,
+  `
+当前任务：
+${currentTask}
+
+可能相关的历史经验：
+${JSON.stringify(memories)}
+  `,
+);
+```
+
+所以：
+
+> Memory Store 是业务资产；OpenAI `memory()`、检索 Tool 或自定义 Context 注入，只是把这些记忆提供给 Agent 的方式。
+
+#### <u>5. 整体总结</u>
+
+一个企业业务 Agent 最终看到的能力可以理解成：
+
+```text
+Business Agent
+├─ Skill —— “怎么完成任务”
+│  ├─ SKILL.md
+│  ├─ 业务方法
+│  └─ 工作规范
+├─ Tool —— “可以执行什么”
+│  ├─ Function Tool
+│  ├─ API / SDK
+│  └─ MCP Tool
+├─ Knowledge —— “知道什么”
+│  ├─ Vector Store
+│  ├─ RAG
+│  └─ File Search
+└─ Memory —— “过去学到了什么”
+```
+
+以一个 Coding Agent 为例：
+
+```text
+Coding Agent
+├─ Skill
+│   ├─ requirement-analysis
+│   ├─ safe-code-change
+│   └─ code-review
+├─ Tool
+│   ├─ read_file
+│   ├─ write_file
+│   ├─ search_code
+│   └─ run_tests
+├─ MCP
+│   ├─ GitLab MCP
+│   └─ Jira MCP
+├─ Knowledge
+│   ├─ 项目架构文档
+│   ├─ Coding Guideline
+│   └─ 业务规则
+│
+└─ Memory
+    ├─ 项目历史决策
+    ├─ 用户确认过的偏好
+    └─ 过去任务沉淀出的经验
+```
+
+如果用当前 OpenAI Agents SDK 表达这些能力的接入关系，可以简单记成：
+
+```text
+自己建设的 Capability
+             ↓
+┌─────────────────────────────────┐
+│ Skill                           │
+│ → SandboxAgent + skills()       │
+│ Function / API / SDK            │
+│ → tool() → Agent.tools          │
+│ MCP Server                      │
+│ → Agent.mcpServers              │
+│ Knowledge Base                  │
+│ → fileSearchTool(vectorStoreId) │
+│   或自定义 search Tool           │
+│ Session                         │
+│ → run(..., { session })         │
+│ Long-term Memory                │
+│ → SandboxAgent + memory()       │
+│   或企业自己的 Memory Store      │
+└─────────────────────────────────┘
+```
+
+所以 Business Capability 的核心并不是研究 SDK 内部怎样把 Tool Schema 暴露给模型，而是：
+
+> 企业先把自己的工作方法沉淀成 Skill，把已有系统能力封装成 Tool / API / MCP，把业务资料建设成可检索的 Knowledge Base，再把跨任务真正值得保留的经验沉淀成 Long-term Memory；随后利用 Agent Framework 提供的接入接口，把这些能力组合到不同的业务 Agent 中。
+
+这也正是当前 OpenAI Agents SDK 的发展方向：SDK 本身提供的是 Agent、Tools、MCP、Sessions，以及正在 Beta 中发展的 Sandbox Skills 和 Memory 等通用接入机制；**真正属于企业自身的，是 Skill 内容、Tool 实现、Knowledge 数据和 Memory 内容。**
+
+---
+
+### 【设计 Business Workflow，并配置 Runtime 与治理策略】
+
+Business Capability 解决的是：
+
+> **Agent 有哪些能力可以使用。**
+
+当 Tool、Skill、Memory、Knowledge Base 等能力沉淀完成以后，下一步并不是继续扩充 Agent 本身，而是要回答另一个问题：
+
+> **这些能力怎样围绕一个业务目标，被组织成一条能够稳定执行、失败可恢复、风险可控制的业务流程？**
+
+这部分可以统一理解为 **Business Workflow + Runtime & Governance（业务工作流 + 运行与治理）**。
+
+#### <u>1. Workflow Design —— 把业务目标拆成可以执行和验收的阶段</u>
+
+首先要把一个完整业务目标拆成若干相对稳定的 Stage（阶段）。
+
+例如 AI Coding：
+
+需求分析 → 任务规划 → 代码实现 → 测试验收 → 人工审批
+
+每个 Stage 最好明确四件事情：
+
+`Stage = Input + Executor + Output + Acceptance Criteria`
+
+分别表示：
+
+- **Input（输入）**：当前阶段需要哪些前序信息；
+- **Executor（执行者）**：由代码、Agent 还是人工执行；
+- **Output（输出）**：必须留下什么结构化结果或 Artifact（产物）；
+- **Acceptance Criteria（验收标准）**：达到什么条件才可以进入下一阶段。
+
+例如：
+
+| Stage    | Executor       | Output                     | 验收             |
+| -------- | -------------- | -------------------------- | ---------------- |
+| 需求分析 | Agent          | requirement.json           | 需求和验收项完整 |
+| 代码实现 | Coding Agent   | Code + implementation.json | 计划任务完成     |
+| 测试     | Script / Agent | test-report.json           | 测试通过         |
+| 发布     | Tool + Human   | release record             | 人工批准         |
+
+Microsoft 当前明确建议，对于 Workflow 中的每一步分别判断：
+
+> 如果需要模型判断，就使用 Agent；
+>
+> 如果结果可以由代码确定，就使用确定性执行器；
+>
+> 如果应该由人决定，就使用 Human-in-the-loop。 ([微软学习](https://learn.microsoft.com/en-us/agent-framework/journey/workflows))
+
+所以 Business Workflow 的核心不是“每个节点都 Agent 化”，而是：
+
+> **根据每个阶段的问题特点选择最合适的执行方式。**
+
+#### <u>2. Orchestration —— 决定任务怎样从一个阶段推进到下一个阶段</u>
+
+有了 Stage 以后，需要定义 **Orchestration（编排，即当前阶段完成后怎样决定下一步）**。
+
+对于企业已有 SOP 的流程，更常见的是由 Workflow 明确控制业务主干：
+
+```text
+Implementation
+  ↓
+Testing
+├─ 失败 → 返回实现
+└─ 通过 → Review
+```
+
+这里需要定义：
+
+- 正常情况下进入哪个 Stage；
+- 哪些条件会走分支；
+- 哪些任务可以并行；
+- 质量失败是否返回前一阶段；
+- 什么情况下结束任务；
+- 什么情况下转人工。
+
+这里最好保持一个重要边界：
+
+> **业务流程的主干如果已经明确，就优先由 Workflow Rule（工作流规则）控制；只有某个阶段本身无法提前确定执行路径时，再让 Agent 或 Supervisor 在该阶段内部动态决策。**
+
+Microsoft 当前也把这个区别总结成一个问题：
+
+> **“Who should decide what happens next?”**
+
+如果下一步由 Developer（开发者预定义的规则）决定，就使用 Workflow；如果由 Model（模型）决定，则可以使用 Agents as Tools 等模型驱动方式。 ([微软学习](https://learn.microsoft.com/en-us/agent-framework/journey/workflows))
+
+#### <u>3. Runtime State & Recovery —— 让长任务能够持续执行和恢复</u>
+
+Workflow 定义了“业务应该怎么走”，真正运行时则需要 **Runtime（运行时，即负责实际执行工作流和保存运行状态的系统）**。
+
+Runtime 至少需要知道：
+
+当前执行到哪个 Stage；哪些 Stage 已经完成；当前 Stage 是第几次执行；已经产生了哪些 Artifact；是否正在等待人工批准；下一步应该执行什么。
+
+这些信息应该保存在结构化的 Workflow State 中，而不是依赖模型 Conversation 自己记住。
+
+例如：
+
+```text
+currentStage = testing
+
+requirement      = completed
+planning         = completed
+implementation   = completed
+testing          = running
+```
+
+对于长任务，还需要 **Checkpoint（检查点，即保存某一时刻可恢复的 Workflow 状态）**。
+
+Microsoft 当前的官方定义是：
+
+> “Checkpoints allow you to save the state of a workflow at specific points during its execution, and resume from those points later.”
+
+即：
+
+> **Checkpoint 可以保存 Workflow 在某个位置的状态，并在以后从这个位置继续执行。** ([微软学习](https://learn.microsoft.com/en-us/agent-framework/workflows/checkpoints))
+
+例如：
+
+```text
+Planning ✓ → Implementation ✓ → Checkpoint → Testing → Crash
+                                      │                 ↓
+                                      └─→ Restore Checkpoint
+                                                   ↓
+                                           从 Testing 继续
+```
+
+因此长任务通常形成：
+
+```text
+Context          → 当前 Stage 的临时执行信息
+Artifact         → Stage 已经产生的稳定结果
+Workflow State   → 整个任务执行到哪里
+Checkpoint       → 可以从哪里恢复
+```
+
+OpenAI Agents SDK 当前也提供可序列化的 `RunState`，能够保存暂停状态、审批状态和 Runtime Metadata，并在之后恢复运行。对于需要跨长时间等待、重试或者进程重启的任务，官方还提供 Temporal、Dapr、Restate、DBOS 等 Durable Execution（持久执行）集成。 ([OpenAI GitHub](https://openai.github.io/openai-agents-python/running_agents/))
+
+#### <u>4. Retry 与恢复策略 —— Runtime 提供机制，业务定义规则</u>
+
+这里非常容易把两层责任混在一起。
+
+例如 Runtime 可以提供：
+
+`retry()`；`checkpoint()`；`resume()`；`pause()`。
+
+但它并不知道：
+
+> 测试失败以后应该重新测试，还是应该返回代码实现？
+
+所以需要区分：
+
+Runtime → 提供运行机制；Business Workflow → 定义业务策略。
+
+例如模型 API Timeout：
+
+`MODEL_TIMEOUT` → 最多自动 Retry 3 次
+
+这是技术失败。
+
+但是：
+
+Test Failed → 返回 Implementation → 修改代码 → 再次 Testing
+
+这是业务流程回退，不应该简单理解成一次 Retry。
+
+因此业务侧需要明确：
+
+- 什么错误允许自动重试；
+- 最大重试次数；
+- 重试是否需要等待；
+- 是否继续当前 Context；
+- 是否重新启动 Agent；
+- 质量失败返回哪个 Stage；
+- 超过多少次失败转人工。
+
+Runtime 负责按照这些规则执行，而不是自己决定业务策略。
+
+#### <u>5. Governance —— 控制 Agent 在什么情况下能够做什么</u>
+
+企业 Agent 一旦开始调用真实系统，Workflow 就不能只关心“任务有没有完成”，还必须控制：
+
+> **当前用户、当前 Agent、当前 Stage 到底允许调用哪些能力。**
+
+OpenAI Agents SDK 提供治理机制的执行接口，并不会直接读取企业的一份 YAML/JSON 权限配置然后自动生效。企业通常需要增加一层 Policy（策略）配置，把业务配置映射到 SDK 的 `isEnabled`、Guardrail、`needsApproval` 等接口上。
+
+整体关系可以理解为：
+
+```text
+企业 Governance Config → Policy Resolver（策略解析）
+                           ↓
+          RunContext（当前用户 / Stage / 权限）
+                           ↓
+OpenAI Agents SDK
+├─ isEnabled       → 当前能看到哪些能力
+├─ Guardrails      → 当前调用是否安全
+├─ needsApproval   → 是否需要人工审批
+└─ execute         → 最终真实权限校验
+```
+
+OpenAI 当前 TypeScript Agents SDK 已经直接提供了这些接口：Function Tool 支持 `isEnabled`、`needsApproval`、`inputGuardrails` 和 `outputGuardrails`。
+
+**<u>因此 Governance（治理）通常包括三部分。</u>**
+
+##### 1）Authentication / Authorization（身份认证与权限校验）
+
+例如：
+
+User Identity + Agent + Current Stage + Tool + Target Resource → Authorization → Allow / Deny
+
+Coding Agent 在“分析”阶段可能只能读代码：
+
+`read_file ✓`；`search_code ✓`；`write_file ✗`；`release ✗`。
+
+进入 Implementation：
+
+`read_file ✓`；`write_file ✓`；`run_tests ✓`；`release ✗`。
+
+进入 Release：
+
+`release` → 仍然需要人工批准
+
+所以权限不是简单绑定在 Agent 名称上，而通常需要结合当前业务阶段动态控制。
+
+业务侧可以先维护一份配置：
+
+```ts
+const governanceConfig = {
+  analysis: {
+    tools: {
+      read_file: { enabled: true, approval: "never" },
+      write_file: { enabled: false, approval: "never" },
+      release: { enabled: false, approval: "always" },
+    },
+  },
+
+  implementation: {
+    tools: {
+      read_file: { enabled: true, approval: "never" },
+      write_file: { enabled: true, approval: "never" },
+      release: { enabled: false, approval: "always" },
+    },
+  },
+
+  release: {
+    tools: {
+      read_file: { enabled: true, approval: "never" },
+      write_file: { enabled: false, approval: "never" },
+      release: { enabled: true, approval: "always" },
+    },
+  },
+} as const;
+```
+
+然后把当前 Stage（阶段）和用户身份放进 `RunContext（运行上下文，即程序侧保存的当前任务状态）`：
+
+```ts
+interface AppContext {
+  stage: "analysis" | "implementation" | "release";
+  user: {
+    id: string;
+    roles: string[];
+  };
 }
-~~~
+```
 
-### 6.3 一次正常执行
+Tool 再通过 `isEnabled` 读取当前配置：
 
-| Stage | 执行者 | 读取的输入 | 交付物 | 下一步 |
-| --- | --- | --- | --- | --- |
-| collect_context | 普通代码 | 工单号、仓库、服务名 | 标准化上下文 | diagnose |
-| diagnose | coding_agent + 根因 Skill | 上下文、代码、日志 | 根因报告与证据 | implement |
-| implement | 同一 coding_agent + 改码 Skill | 根因报告、代码 | 补丁与变更说明 | verify |
-| verify | test_runner | 补丁、测试配置 | 测试报告 | 通过则 risk_review |
-| risk_review | 独立只读 Agent + 风险 Skill | 补丁、测试报告、业务规则 | 风险报告 | approve |
-| approve | 人工 | 根因、差异、测试、风险 | 批准或拒绝 | release 或 closed |
-| release | release_tool | 已批准补丁 | 发布记录 | completed |
+```ts
+const writeFileTool = tool({
+  name: "write_file",
+  description: "修改代码文件",
+  parameters: z.object({
+    path: z.string(),
+    content: z.string(),
+  }),
+  isEnabled: ({ runContext }) => {
+    const stage = runContext.context.stage;
+    return governanceConfig[
+      stage
+    ].tools.write_file.enabled;
+  },
 
-### 6.4 两种失败不要混在一起
+  execute: async ({ path, content }, runContext) => {
+    // 真正执行修改
+    return writeFile(path, content);
+  },
+});
+```
 
-模型调用超时属于技术故障。Application 规定哪些错误可以重试；Foundation 负责记录 attempt、等待间隔和重新调度。
+于是同一个 Agent：
 
-~~~ts
-if (error.retryable && state.attempt < 3) {
-  return runtime.scheduleRetry({
-    instanceId: state.instanceId,
-    stageId: state.currentStage,
-    attempt: state.attempt + 1,
-    delayMs: backoff(state.attempt),
+```text
+analysis         → 看不到 write_file
+implementation   → 可以看到 write_file
+release          → 再次看不到 write_file
+```
+
+OpenAI 官方把 `isEnabled` 定义为：
+
+> **“Conditionally expose the tool per run.”**
+>
+> 也就是：
+>
+> **根据当前 Run 的状态，决定这个 Tool 是否向模型暴露。**
+
+它非常适合做 Stage、Role、Environment、Feature Flag 等动态能力控制。
+
+**<u>但 `isEnabled` 不是最终的权限校验</u>**
+
+这一点非常重要。
+
+OpenAI 官方明确指出：
+
+> `isEnabled` **“does not replace authorization”**
+>
+> 即：**`isEnabled` 不能替代真正的 Authorization（授权校验）。**
+
+原因是 `isEnabled` 在模型真正生成 Tool 参数之前就执行了，它只能判断：**<u>“这个 Tool 当前能不能出现。”</u>**但无法完整判断：“这个用户到底有没有权限操作具体这个订单 / 文件 / 数据库资源。” 也就是说，权限可能需要根据当前模型的输出来判断。
+
+所以企业权限最好分成两层：
+
+```text
+权限控制
+├─ 第一层：Capability Visibility
+│  └─ isEnabled → Agent 当前能不能看到这个能力
+└─ 第二层：Authorization
+   └─ execute / Backend API → 当前用户到底有没有权限执行这次具体操作
+```
+
+例如：
+
+```ts
+const deleteOrderTool = tool({
+  name: "delete_order",
+  parameters: z.object({
+    orderId: z.string(),
+  }),
+
+  // 第一层：
+  // 当前 Stage 是否允许出现 delete_order
+  isEnabled: ({ runContext }) => {
+    return runContext.context.stage === "order_admin";
+  },
+  execute: async ({ orderId }, runContext) => {
+    const user =
+      runContext.context.user;
+    // 第二层：
+    // 对这个具体 orderId 做真实权限校验
+    const allowed =
+      await permissionService.canDeleteOrder({
+        userId: user.id,
+        orderId,
+      });
+    if (!allowed) {
+      throw new Error("Permission denied");
+    }
+    return orderService.delete(orderId);
+  },
+});
+```
+
+所以：
+
+> **“模型看不到 Tool”是一种能力限制，“后端拒绝非法调用”才是真正的安全边界。**
+
+对于 MCP 也是一样，OpenAI 官方特别说明：受保护的 MCP 操作仍然应该由 MCP Server 自己完成授权。
+
+OpenAI Agents SDK 当前对 `isEnabled` 的官方说明就是：
+
+> “The runner evaluates the predicate while preparing the model-visible tool set for the current turn.”
+>
+> **Runner 在准备“当前轮模型可见的工具集合”时，会先判断这个 Tool 是否启用。**
+
+如果：
+
+`isEnabled: false`
+
+那么这个 Tool 会从当前轮的 Tool Definitions（工具定义集合）里被过滤掉。官方也明确说：
+
+> **“Disabled tools are hidden from the LLM at runtime.”**
+>
+> **被禁用的 Tool 在运行时对模型隐藏。**
+
+当前这一轮真正发送给模型的 Tool Set 已经没有 `write_file`：
+
+```text
+History：曾经调用过 write_file
+Current Tools：read_file / run_tests
+```
+
+所以正常情况下，模型会根据当前 Tool Set 选择工具。
+
+**<u>模型误调用一个当前不存在的 Tool，Runtime 会不会拦住？</u>**
+
+**会。当前 OpenAI Agents SDK 已经有明确的 `toolNotFoundBehavior` 机制。**
+
+官方定义：
+
+> `toolNotFoundBehavior` “Controls unresolved function tool calls emitted by the model.”
+>
+> 也就是：
+>
+> **控制模型生成了一个 Runtime 无法解析的 Function Tool Call 时应该怎么办。**
+
+当前有两种处理方式。
+
+默认：
+
+`toolNotFoundBehavior: "raise_error"`
+
+如果模型输出：
+
+`call write_file(...)`
+
+但当前 Runtime 的有效 Tool Set 中没有 `write_file`，SDK 会：
+
+Tool Call → Runtime 查找当前可执行 Tool → 找不到 `write_file` → 抛出 `ModelBehaviorError`
+
+也就是：
+
+> **不会因为模型输出了这个名字，就真的找到以前那个 Tool 并执行。**
+
+另一种方式：
+
+```ts
+toolNotFoundBehavior:
+  "return_error_to_model"
+```
+
+这时 Runtime 会把错误重新告诉模型：
+
+```text
+Agent：call write_file(...)
+  ↓
+Runtime：write_file 当前不可用
+  ↓
+Agent：收到错误 → 重新选择 read_file / run_tests
+```
+
+官方说明这种模式会：
+
+> 返回一个 model-visible tool error，并让 Run 继续。
+
+所以完整链路实际上是：
+
+```text
+当前 Stage → 计算 isEnabled → 得到 Current Tool Set
+                         ↓
+发送给 LLM → LLM 产生 Tool Call → Runtime 解析 Tool Name
+                         ↓
+当前 Tool Set 中是否存在？
+├─ 是 → 继续参数校验 / Guardrail / Approval / execute
+└─ 否 → toolNotFoundBehavior
+         ├─ raise_error
+         └─ return_error_to_model
+```
+
+##### 2）Guardrail（安全约束，即在 Agent 输入、输出或 Tool 调用前后做检查）
+
+OpenAI 当前的 Agents SDK 明确区分：
+
+- Input Guardrail：检查输入；
+- Output Guardrail：检查最终输出；
+- Tool Guardrail：检查 Tool 调用前后的输入和结果。 ([OpenAI GitHub](https://openai.github.io/openai-agents-python/guardrails/))
+
+例如：
+
+```text
+用户输入           → Input Guardrail  → Agent
+Agent              → Tool Guardrail   → Tool
+Agent Final Output → Output Guardrail
+```
+
+但 Guardrail 不能代替真正的系统权限。
+
+也就是说：
+
+```text
+安全边界
+├─ Guardrail     → 判断“这个调用是否符合约束”
+└─ Authorization → 判断“这个调用到底有没有权限执行”
+```
+
+两者是不同层次。
+
+**<u>可以定义 Tool Input Guardrail：</u>**
+
+```ts
+const blockSecrets =
+  defineToolInputGuardrail({
+    name: "block_secrets",
+    run: async ({ toolCall }) => {
+      const args =
+        JSON.parse(toolCall.arguments);
+
+      if (
+        String(args.content ?? "")
+          .includes("sk-")
+      ) {
+        return ToolGuardrailFunctionOutputFactory
+          .rejectContent(
+            "禁止发送密钥信息"
+          );
+      }
+      return ToolGuardrailFunctionOutputFactory
+        .allow();
+    },
   });
+```
+
+然后配置到 Tool：
+
+```ts
+const sendMessageTool = tool({
+  name: "send_message",
+  parameters: z.object({
+    content: z.string(),
+  }),
+  inputGuardrails: [blockSecrets],
+  execute: async ({ content }) => {
+    return messageService.send(content);
+  },
+});
+```
+
+于是执行链就是：
+
+```text
+Agent 决定调用 send_message
+             ↓
+Tool Input Guardrail
+├─ Allow  → 执行 Tool
+└─ Reject → 拒绝本次调用
+```
+
+OpenAI 当前 Tool Guardrail 可以返回：
+
+`allow` → 允许执行；`rejectContent` → 拒绝本次 Tool 调用；`throwException` → 直接终止。
+
+并且 Tool Guardrail 会在每次 Function Tool 调用时执行。
+
+##### 3）Human-in-the-loop（HITL，人工介入，即流程暂停等待人工判断）
+
+OpenAI 当前的官方定义是：
+
+> “Use the human-in-the-loop (HITL) flow to pause agent execution until a person approves or rejects sensitive tool calls.”
+>
+> 即：**对于敏感 Tool Call，可以暂停 Agent，等待人工批准或拒绝以后再继续。** ([OpenAI GitHub](https://openai.github.io/openai-agents-python/human_in_the_loop/))
+
+因此企业需要自己定义哪些条件触发人工介入，例如：
+
+```text
+高风险操作       → Human Approval
+连续失败 3 次    → Human Review
+模型无法判断     → Manual Triage
+资金操作         → Human Approval
+生产发布         → Human Approval
+权限修改         → Human Approval
+```
+
+Microsoft Workflow 的 HITL 也采用同样的暂停-响应-恢复模型，而且 Pending Request（待处理请求）可以和 Checkpoint 一起保存，恢复 Workflow 后继续等待或接收人工结果。 ([微软学习](https://learn.microsoft.com/en-us/agent-framework/workflows/human-in-the-loop))
+
+**<u>这是 OpenAI Agents SDK 已经直接支持的正式能力</u>**。最简单的配置：
+
+```ts
+const releaseTool = tool({
+  name: "release",
+  parameters: z.object({
+    environment: z.enum([
+      "test",
+      "production",
+    ]),
+  }),
+  // 所有发布都需要审批
+  needsApproval: true,
+  execute: async ({ environment }) => {
+    return releaseService.release(environment);
+  },
+});
+```
+
+也可以动态判断：
+
+```ts
+needsApproval: async (
+  runContext,
+  { environment },
+) => {
+  return environment === "production";
 }
+```
 
-return stateStore.moveTo(state.instanceId, "manual_triage");
-~~~
+于是：
 
-测试失败属于产物未过 Gate，不是技术重试。流程回到 implement，并增加修复轮次：
+```text
+release
+├─ test       → 自动执行
+└─ production → Pause → Human Approval → Resume
+```
 
-~~~ts
-if (state.currentStage === "verify" && testReport.failedCases > 0) {
-  await artifacts.attach("test-report", testReport.uri);
-  await stateStore.increment("repairRound");
-  return stateStore.moveTo(state.instanceId, "implement");
+OpenAI 官方明确支持 `needsApproval: true`，也支持传入异步函数根据 Tool 参数动态判断。
+
+**<u>`needsApproval` 也可以直接读取企业配置</u>**
+
+比如：
+
+```ts
+const releaseTool = tool({
+  name: "release",
+  parameters: z.object({
+    environment: z.string(),
+  }),
+  isEnabled: ({ runContext }) => {
+    const stage =
+      runContext.context.stage;
+    return governanceConfig[
+      stage
+    ].tools.release.enabled;
+  },
+
+  needsApproval: async (
+    runContext,
+    _args,
+  ) => {
+    const stage =
+      runContext.context.stage;
+    return governanceConfig[
+      stage
+    ].tools.release.approval
+      === "always";
+  },
+
+  execute: async (
+    { environment },
+    runContext,
+  ) => {
+    // 最终依然执行真实权限校验
+    await permissionService.check({
+      user: runContext.context.user,
+      action: "release",
+      resource: environment,
+    });
+    return releaseService.release(
+      environment,
+    );
+  },
+});
+```
+
+这就形成了真正的：
+
+```text
+Governance Config + Current Stage + User
+├─ isEnabled     → 能力可见性
+├─ Guardrails    → 安全检查
+└─ needsApproval → 人工审批
+          ↓
+Tool execute → Backend Authorization
+```
+
+因此可以让同一个 Tool 在不同阶段表现完全不同。
+
+例如：
+
+| Stage          | `write_file` | `release`          |
+| -------------- | ------------ | ------------------ |
+| Analysis       | 禁止         | 禁止               |
+| Implementation | 自动允许     | 禁止               |
+| Review         | 只读         | 禁止               |
+| Release        | 禁止修改     | **人工审批后允许** |
+
+而不需要为四个 Stage 分别重新开发四套 Tool。
+
+人工审批以后，Runtime 怎么继续？
+
+假设 Agent 请求：
+
+`release("production")`
+
+因为 `needsApproval = true`：
+
+```ts
+let result = await run(
+  agent,
+  userInput,
+  { context: appContext },
+);
+```
+
+SDK 不会立即执行 `release`，而是返回：
+
+`result.interruptions`
+
+业务系统可以：
+
+```ts
+for (const interruption of result.interruptions) {
+  // 把审批请求发到企业审批系统
+  const approved =
+    await approvalService.request({
+      tool: interruption.name,
+      arguments: interruption.arguments,
+    });
+  if (approved) {
+    result.state.approve(interruption);
+  } else {
+    result.state.reject(interruption);
+  }
 }
-~~~
+```
 
-<code>attempt</code> 统计同一 Stage 因技术故障被重新执行的次数；<code>repairRound</code> 统计补丁因质量问题被退回修改的次数。分开记录，才能正确判断成本、失败原因和人工介入时机。
+然后：
 
-## 参考资料
+```ts
+result = await run(
+  agent,
+  result.state,
+);
+```
 
-- [LangChain 产品概念](https://docs.langchain.com/oss/python/concepts/products)
-- [LangGraph Overview](https://docs.langchain.com/oss/python/langgraph/overview)
-- [LangGraph Persistence](https://docs.langchain.com/oss/python/langgraph/persistence)
-- [LangGraph Fault Tolerance](https://docs.langchain.com/oss/python/langgraph/fault-tolerance)
-- [Anthropic：Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)
-- [OpenAI Agents SDK：Multi-agent orchestration](https://openai.github.io/openai-agents-python/multi_agent/)
-- [LangChain：Multi-agent](https://docs.langchain.com/oss/python/langchain/multi-agent)
-- [LangChain：Router](https://docs.langchain.com/oss/python/langchain/multi-agent/router)
-- [LangChain：Subagents](https://docs.langchain.com/oss/python/langchain/multi-agent/subagents)
-- [LangChain：Handoffs](https://docs.langchain.com/oss/python/langchain/multi-agent/handoffs)
-- [OpenAI Codex SDK](https://developers.openai.com/codex/sdk/)
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code/cli-usage)
-- [Trae Agent](https://github.com/bytedance/trae-agent)
-- [Model Context Protocol Architecture](https://modelcontextprotocol.io/specification/2025-06-18/architecture)
-- [AWS AgentCore](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/)
-- [AWS AgentCore Memory](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory-get-started.html)
+SDK 会：
+
+```text
+暂停阶段：之前的 Agent Run → 敏感 Tool → Pause → 保存 RunState
+恢复阶段：人工 Approval → 恢复 RunState → 继续 Tool → Agent 继续执行
+```
+
+OpenAI 官方当前就是按照这个流程定义 HITL：`interruptions → state.approve()/reject() → resume RunState`。
+
+而且 `RunState` 可以序列化，所以审批持续几个小时甚至几天，也不需要一直保持当前服务器进程。
+
+#### <u>6. Observability —— 让整个 Workflow 可以被追踪和审查</u>
+
+最后一项是 Observability（可观测性，即知道系统实际执行了什么）。
+
+企业 Workflow 最终至少应该能够回答：
+
+- 谁发起了任务？
+- 使用了哪个 Agent 版本？
+- 执行了哪些 Stage？
+- 调用了哪些 Tool？
+- 每一步耗时多久？
+- 发生过哪些失败？
+- 产生了哪些 Artifact？
+- 谁批准了高风险操作？
+- 最终结果是什么？
+
+Microsoft 当前把 Observability 正式列为 Workflow Capability，并提供 Workflow Span、日志、Metrics（指标）、Events（事件）以及 Delivery Status 等信息，用来监控和调试 Workflow。 ([微软学习](https://learn.microsoft.com/en-us/agent-framework/workflows/))
+
+OpenAI Agents SDK 也把 Tracing（链路追踪）作为内置能力，用于查看 Agent Run、Tool Call、Handoff 和其他执行过程。 ([OpenAI GitHub](https://openai.github.io/openai-agents-python/))
+
+因此可观测性不仅用于排错，也是：
+
+> **质量评估、成本分析、风险审计以及问题追责的基础。**
+
+OpenAI Agents SDK 官方定义是：
+
+> “The Agents SDK includes built-in tracing, collecting a comprehensive record of events during an agent run: LLM generations, tool calls, handoffs, guardrails, and even custom events that occur.”
+>
+> 也就是：
+>
+> **Agents SDK 内置 Tracing，会记录 Agent Run 中的重要事件，包括模型生成、Tool 调用、Handoff、Guardrail，以及业务自己增加的自定义事件。**
+
+它采用两层结构：
+
+Trace = 一次完整任务执行；Span = Trace 中的一次具体操作。
+
+例如一次 Coding Agent：
+
+```text
+Trace: feature-login-001
+├─ Span: Requirement Agent
+├─ Span: LLM Generation
+├─ Span: search_code
+├─ Span: Planning Agent
+├─ Span: Coding Agent
+│   ├─ Span: read_file
+│   ├─ Span: write_file
+│   └─ Span: run_tests
+├─ Span: Review Agent
+└─ Span: Human Approval
+```
+
+`Trace（追踪记录）`代表一次端到端 Workflow 执行；`Span（跨度，即其中一次有开始和结束时间的操作）`记录某个具体步骤。官方 Trace 还带有 `trace_id`、`workflow_name`、`group_id`、metadata 等信息，用于关联一次业务执行。
+
+所以 Tracing 最主要解决：
+
+> **这次 Agent 任务到底经历了什么。**
+
+**<u>Trace 最终保存在哪里？</u>**
+
+OpenAI Agents SDK 默认可以把 Trace 导出到 OpenAI 的 Traces 后端，在 Traces Dashboard 中查看，用于开发和生产环境的调试、可视化和监控。
+
+同时 SDK 提供 `TracingExporter`：
+
+> “Exports traces and spans. For example, could log them or send them to a backend.”
+
+也就是可以把 Trace / Span：
+
+```text
+Agent SDK → TracingExporter
+             ├─ OpenAI Tracing
+             ├─ 企业日志平台
+             ├─ Observability Platform
+             └─ 自建 Audit Backend
+```
+
+导出到自己的系统。
+
+完整链路：
+
+```text
+Business Goal
+  ↓
+① Workflow Design → Stage / Input / Output / Acceptance Criteria
+  ↓
+② Orchestration   → 顺序 / 分支 / 并行 / 回退 / Agent 调度
+  ↓
+③ Runtime         → State / Artifact / Checkpoint / Resume / Retry
+  ↓
+④ Governance      → Authentication / Authorization / Guardrail / HITL
+  ↓
+⑤ Observability   → Trace / Log / Metrics / Audit
+```
+
+如果和前一部分 Business Capability 连起来，整个企业业务 Agent 的研发重点就很清楚：
+
+```text
+Business Capability → Tool / Skill / Memory / Knowledge  → “Agent 可以使用什么能力”
+        ↓
+Business Workflow   → Stage / Gate / Transition          → “这些能力怎样组成业务任务”
+        ↓
+Runtime             → State / Retry / Checkpoint / Resume → “任务怎样稳定运行”
+        ↓
+Governance          → Permission / Guardrail / HITL      → “任务怎样安全可控”
+        ↓
+Observability       → Trace / Audit / Metrics            → “整个过程怎样被检查和运营”
+```
+
+因此这一部分最核心的知识点可以收敛为：
+
+> 沉淀 Business Capability 之后，企业还需要围绕业务目标设计 Business Workflow，把任务拆成明确的 Stage，并为每个 Stage 定义执行者、输入、结构化产物和验收标准；再利用 Agent Framework 或 Workflow Runtime 提供的 State、Retry、Checkpoint、Resume、Human-in-the-loop 和 Observability 等通用机制，配置符合业务要求的调度、失败恢复、权限控制、人工审批和审计策略。Runtime 负责提供“能够怎么运行”的机制，而 Business Workflow 负责定义“业务上什么时候使用这些机制以及下一步应该去哪里”。
+
+**<u>OpenAI SDK 怎么创建自定义 Span</u>**
+
+当前 TypeScript SDK 提供：
+
+> ```ts
+> createCustomSpan()
+> ```
+
+官方定义就是：
+
+> **“A `createCustomSpan()` function is available for tracking custom span information.”**
+
+也就是：
+
+> **通过 `createCustomSpan()` 记录业务自己的 Span 数据。** 
+
+概念上可以写成：
+
+```ts
+import {
+  createCustomSpan,
+} from "@openai/agents";
+
+const span = createCustomSpan({
+  name: "implementation_stage",
+
+  data: {
+    workflowId: "feature-login-001",
+    stage: "implementation",
+    attempt: 1,
+  },
+});
+
+span.start();
+
+try {
+  await executeImplementation();
+
+  span.spanData.data.status = "success";
+
+} catch (error) {
+  span.spanData.data.status = "failed";
+
+  throw error;
+
+} finally {
+  span.end();
+}
+```
+
+这里：
+
+```
+name
+→ 这个 Span 是什么
+
+data
+→ 业务希望附带什么信息
+
+start / end
+→ 操作什么时候开始、什么时候结束
+```
+
+SDK 会自动让它属于当前 Trace，并挂在当前最近的父 Span 下。OpenAI 当前通过 `AsyncLocalStorage` 管理这种父子关系，因此正常异步调用一般不需要手动传 `parent_id`。
+
+## 6. 参考文献
+
+[1] ANTHROPIC. [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)[EB/OL]. 2024-12-19[2026-08-29].
+
+[2] OPENAI. [A practical guide to building agents](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)[EB/OL]. [2026-08-29].
+
+[3] MICROSOFT. [Workflow capabilities](https://learn.microsoft.com/en-us/agent-framework/workflows/)[EB/OL]. 2026-08-25[2026-08-29].
+
+[4] MICROSOFT. [Workflows](https://learn.microsoft.com/en-us/agent-framework/journey/workflows)[EB/OL]. 2026-08-25[2026-08-29].
+
+[5] MICROSOFT. [Monitor, measure, and report value](https://learn.microsoft.com/en-us/agents/center-of-excellence/measure-report-value)[EB/OL]. 2026-07-14[2026-08-29].
+
+[6] MICROSOFT. [Measure the impact of your agents](https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact)[EB/OL]. 2026-06-04[2026-08-29].
+
+[7] OPENAI. [Running agents](https://openai.github.io/openai-agents-python/running_agents/)[EB/OL]. [2026-08-29].
+
+[8] OPENAI. [Agent Orchestration](https://openai.github.io/openai-agents-js/guides/multi-agent/)[EB/OL]. [2026-08-29].
+
+[9] MICROSOFT. [Microsoft Agent Framework Workflows Orchestrations - Sequential](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/sequential)[EB/OL]. 2026-08-25[2026-08-29].
+
+[10] MICROSOFT. [Microsoft Agent Framework Workflows Orchestrations - Concurrent](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/concurrent)[EB/OL]. 2026-08-25[2026-08-29].
+
+[11] OPENAI. [Agent orchestration](https://openai.github.io/openai-agents-python/multi_agent/)[EB/OL]. [2026-08-29].
+
+[12] OPENAI. [工具](https://openai.github.io/openai-agents-python/zh/tools/)[EB/OL]. [2026-08-29].
+
+[13] OPENAI. [Context management](https://openai.github.io/openai-agents-python/context/)[EB/OL]. [2026-08-29].
+
+[14] MICROSOFT. [Microsoft Agent Framework Workflows Orchestrations - Handoff](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/handoff)[EB/OL]. 2026-08-25[2026-08-29].
+
+[15] OPENAI. [Handoffs](https://openai.github.io/openai-agents-python/handoffs/)[EB/OL]. [2026-08-29].
+
+[16] MICROSOFT. [Workflow concepts](https://learn.microsoft.com/en-us/agent-framework/concepts/workflows/)[EB/OL]. 2026-08-25[2026-08-30].
+
+[17] MICROSOFT. [Agents in Workflows](https://learn.microsoft.com/en-us/agent-framework/workflows/agents-in-workflows)[EB/OL]. 2026-08-25[2026-08-30].
+
+[18] ANTHROPIC. [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)[EB/OL]. 2025-11-26[2026-08-30].
+
+[19] ANTHROPIC. [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps)[EB/OL]. 2026-03-24[2026-08-30].
+
+[20] MICROSOFT. [Microsoft Agent Framework Workflows - Checkpoints](https://learn.microsoft.com/en-us/agent-framework/workflows/checkpoints)[EB/OL]. 2026-08-25[2026-08-30].

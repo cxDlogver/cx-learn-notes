@@ -1,3 +1,4 @@
+import { performanceMonitor } from '@/services/performance/monitor';
 import Vue from "vue";
 import VueRouter, { type RouteConfig } from "vue-router";
 import {
@@ -46,6 +47,7 @@ const routes: RouteConfig[] = [
       adminOnly: true,
     },
   },
+  { path: '/admin/performance', component: () => import('@/views/Admin/performanceAdmin.vue'), meta: { title: '性能监控', requireAuth: true, adminOnly: true } },
   { path: "*", redirect: "/index" },
 ];
 
@@ -86,7 +88,9 @@ async function bootstrapSession(): Promise<SessionProfile> {
   return sessionBootstrap;
 }
 
+let performanceNavigationStart = 0;
 router.beforeEach(async (to, _from, next) => {
+  performanceNavigationStart = performance.now();
   document.title = `${String(to.meta?.title || "平台")} | 温室气体监测和计量平台`;
   const requiresAuth = to.matched.some((record) => record.meta.requireAuth);
   const adminOnly = to.matched.some((record) => record.meta.adminOnly);
@@ -115,6 +119,12 @@ router.beforeEach(async (to, _from, next) => {
     clearSessionProfile();
     next({ path: "/login", query: { redirect: to.fullPath } });
   }
+});
+
+router.afterEach((to, from) => {
+  performanceMonitor.noteRoute(to.path);
+  if (from.path === '/dataVisualization' && to.path !== from.path) performanceMonitor.endView();
+  if (to.path === '/dataVisualization' && from.path !== to.path) performanceMonitor.startView(performanceNavigationStart);
 });
 
 export default router;

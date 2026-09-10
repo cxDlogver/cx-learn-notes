@@ -5,6 +5,7 @@
         <p>清华走航车系统</p>
         <h1>数据模拟后台</h1>
       </div>
+      <router-link class="performance-link" to="/admin/performance">性能监控</router-link>
       <button type="button" @click="backToVisualization">返回数据可视化</button>
     </header>
 
