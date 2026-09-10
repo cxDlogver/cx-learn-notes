@@ -1,0 +1,13 @@
+{
+  "name": "knowledge-agent-architecture-contract",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/architecture-contract.test.mjs",
+    "verify": "node scripts/verify-contract.mjs && node --test test/architecture-contract.test.mjs"
+  }
+}
