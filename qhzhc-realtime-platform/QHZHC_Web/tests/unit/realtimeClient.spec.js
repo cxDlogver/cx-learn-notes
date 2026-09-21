@@ -1,4 +1,5 @@
 import RealtimeClient from "@/views/DataVisualization/services/realtimeClient";
+import { REALTIME_CLOSE_CODE } from "@/views/DataVisualization/services/realtimeConnectionPolicy";
 
 class MockSocket {
   static instances = [];
@@ -28,11 +29,13 @@ class MockSocket {
   }
 }
 
-function telemetryPoint(sequence) {
+const BUCKET_START_MS = 1_700_000_000_000;
+
+function telemetryPoint(sequence, sampledAt = BUCKET_START_MS + sequence) {
   return {
     sequence,
     robotId: "QH-ZHC-01",
-    sampledAt: new Date(1_700_000_000_000 + sequence).toISOString(),
+    sampledAt: new Date(sampledAt).toISOString(),
     longitude: 104.81,
     latitude: 28.16,
     altitude: 120,
@@ -89,7 +92,8 @@ describe("RealtimeClient", () => {
     const client = new RealtimeClient({
       url: "ws://example.test/ws/robots/QH-ZHC-01",
       WebSocketImpl: MockSocket,
-      initialSequence: 12,
+      initialBucketStartMs: BUCKET_START_MS,
+      maxPointsPerSecond: 2,
       getAccessToken: () => "access.jwt",
       refreshAccessToken: jest.fn(),
       onPacket: jest.fn(),
@@ -105,29 +109,32 @@ describe("RealtimeClient", () => {
     expect(socket.send).toHaveBeenCalledWith(JSON.stringify({
       type: "authenticate",
       accessToken: "access.jwt",
-      protocolVersion: 1,
+      protocolVersion: 2,
       robotId: "QH-ZHC-01",
-      lastSequence: 12,
+      resumeFromBucketStartMs: BUCKET_START_MS,
+      maxPointsPerSecond: 2,
     }));
 
     socket.receive({
       type: "welcome",
-      protocolVersion: 1,
+      protocolVersion: 2,
       connectionId: "test",
       heartbeatIntervalMs: 8000,
-      latestSequence: 12,
+      latestBucketStartMs: null,
+      resumedFromBucketStartMs: BUCKET_START_MS,
     });
     expect(onStatus).toHaveBeenCalledWith("connected");
 
     client.stop();
-    expect(socket.close).toHaveBeenCalledWith(1000, "page leave");
+    expect(socket.close).toHaveBeenCalledWith(REALTIME_CLOSE_CODE.NORMAL, "page leave");
   });
 
-  test("holds reversed batches until the gap arrives, then renders once in order", () => {
+  test("appends ordered points and renders one point per frame without ACK", () => {
     const onPacket = jest.fn();
     const client = new RealtimeClient({
       url: "ws://example.test/ws/robots/QH-ZHC-01",
       WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
       getAccessToken: () => "access.jwt",
       refreshAccessToken: jest.fn(),
       onPacket,
@@ -137,47 +144,31 @@ describe("RealtimeClient", () => {
     const socket = MockSocket.instances[0];
     socket.open();
     socket.receive({
-      type: "telemetry_batch",
-      firstSequence: 2,
-      lastSequence: 3,
-      points: [telemetryPoint(3), telemetryPoint(2)],
+      type: "telemetry_second",
+      batchId: "bucket-1",
+      bucketStartMs: BUCKET_START_MS,
+      bucketEndMs: BUCKET_START_MS + 1000,
+      status: "live",
+      points: [telemetryPoint(2, BUCKET_START_MS + 200), telemetryPoint(3, BUCKET_START_MS + 300)],
+      sentAt: BUCKET_START_MS + 1000,
       replay: false,
     });
     expect(onPacket).not.toHaveBeenCalled();
-    expect(socket.send).toHaveBeenCalledWith(JSON.stringify({
-      type: "resend",
-      fromSequence: 1,
-      toSequence: 1,
-    }));
-
-    socket.receive({
-      type: "telemetry_batch",
-      firstSequence: 1,
-      lastSequence: 1,
-      points: [telemetryPoint(1)],
-      replay: true,
-    });
     frameCallbacks.shift()?.(0);
+    frameCallbacks.shift()?.(16);
 
-    expect(onPacket).toHaveBeenCalledTimes(1);
-    expect(onPacket.mock.calls[0][0].data.map((point) => point.sequence)).toEqual([
-      1,
-      2,
-      3,
-    ]);
-    expect(socket.send).toHaveBeenCalledWith(JSON.stringify({
-      type: "ack",
-      sequence: 3,
-    }));
+    expect(onPacket).toHaveBeenCalledTimes(2);
+    expect(onPacket.mock.calls.map(([packet]) => packet.data[0].sequence)).toEqual([2, 3]);
+    expect(socket.send.mock.calls.map(([raw]) => JSON.parse(raw).type)).not.toContain("ack");
     client.stop();
   });
 
-  test("skips missing history after a gap and renders the next live point", () => {
+  test("requests replay after three missing buckets and discards future live data", () => {
     const onPacket = jest.fn();
     const client = new RealtimeClient({
       url: "ws://example.test/ws/robots/QH-ZHC-01",
       WebSocketImpl: MockSocket,
-      initialSequence: 12,
+      initialBucketStartMs: BUCKET_START_MS,
       getAccessToken: () => "access.jwt",
       refreshAccessToken: jest.fn(),
       onPacket,
@@ -188,30 +179,89 @@ describe("RealtimeClient", () => {
     const socket = MockSocket.instances[0];
     socket.open();
     socket.receive({
-      type: "gap",
-      requestedFrom: 13,
-      earliestAvailable: 50,
-      latestSequence: 100,
-      action: "skip-to-latest",
+      type: "telemetry_second",
+      batchId: "future",
+      bucketStartMs: BUCKET_START_MS + 3_000,
+      bucketEndMs: BUCKET_START_MS + 4_000,
+      status: "live",
+      points: [telemetryPoint(4, BUCKET_START_MS + 3_100)],
+      sentAt: BUCKET_START_MS + 4_000,
+      replay: false,
     });
 
     expect(onPacket).not.toHaveBeenCalled();
     expect(socket.send).toHaveBeenCalledWith(JSON.stringify({
-      type: "ack",
-      sequence: 100,
+      type: "resend_time_range",
+      fromBucketStartMs: BUCKET_START_MS,
     }));
 
     socket.receive({
-      type: "telemetry_batch",
-      firstSequence: 101,
-      lastSequence: 101,
-      points: [telemetryPoint(101)],
+      type: "telemetry_second",
+      batchId: "later-future",
+      bucketStartMs: BUCKET_START_MS + 4_000,
+      bucketEndMs: BUCKET_START_MS + 5_000,
+      status: "live",
+      points: [telemetryPoint(5, BUCKET_START_MS + 4_100)],
+      sentAt: BUCKET_START_MS + 5_000,
       replay: false,
     });
+    socket.receive({
+      type: "telemetry_second",
+      batchId: "replay",
+      bucketStartMs: BUCKET_START_MS,
+      bucketEndMs: BUCKET_START_MS + 1_000,
+      status: "live",
+      points: [telemetryPoint(1, BUCKET_START_MS + 100)],
+      sentAt: Date.now(),
+      replay: true,
+    });
+    socket.receive({ type: "replay_complete", throughBucketStartMs: BUCKET_START_MS });
     frameCallbacks.shift()?.(0);
 
     expect(onPacket).toHaveBeenCalledTimes(1);
-    expect(onPacket.mock.calls[0][0].data.map((point) => point.sequence)).toEqual([101]);
+    expect(onPacket.mock.calls[0][0].data.map((point) => point.sequence)).toEqual([1]);
+    client.stop();
+  });
+
+  test("advances the reconnect cursor when an empty no-data bucket arrives", () => {
+    const onStatus = jest.fn();
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      random: () => 0,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket: jest.fn(),
+      onStatus,
+    });
+    client.start();
+    const firstSocket = MockSocket.instances[0];
+    firstSocket.open();
+    firstSocket.receive({
+      type: "telemetry_second",
+      batchId: "empty",
+      bucketStartMs: BUCKET_START_MS,
+      bucketEndMs: BUCKET_START_MS + 1_000,
+      status: "no-data",
+      points: [],
+      sentAt: BUCKET_START_MS + 1_000,
+      replay: false,
+    });
+    expect(onStatus).toHaveBeenCalledWith("no-data");
+
+    firstSocket.serverClose(REALTIME_CLOSE_CODE.SERVICE_RESTART);
+    jest.advanceTimersByTime(250);
+    const secondSocket = MockSocket.instances[1];
+    secondSocket.open();
+    expect(secondSocket.send).toHaveBeenCalledWith(JSON.stringify({
+      type: "authenticate",
+      accessToken: "access.jwt",
+      protocolVersion: 2,
+      robotId: "QH-ZHC-01",
+      resumeFromBucketStartMs: BUCKET_START_MS + 1_000,
+      maxPointsPerSecond: 0,
+    }));
     client.stop();
   });
 
@@ -224,7 +274,7 @@ describe("RealtimeClient", () => {
     const client = new RealtimeClient({
       url: "ws://example.test/ws/robots/QH-ZHC-01",
       WebSocketImpl: MockSocket,
-      initialSequence: 12,
+      initialBucketStartMs: BUCKET_START_MS,
       getAccessToken: () => accessToken,
       refreshAccessToken,
       onPacket: jest.fn(),
@@ -234,7 +284,10 @@ describe("RealtimeClient", () => {
     client.start();
     const firstSocket = MockSocket.instances[0];
     firstSocket.open();
-    firstSocket.serverClose(4001, "ACCESS_TOKEN_EXPIRED");
+    firstSocket.serverClose(
+      REALTIME_CLOSE_CODE.AUTHENTICATION_EXPIRED,
+      "ACCESS_TOKEN_EXPIRED",
+    );
     await Promise.resolve();
     await Promise.resolve();
 
@@ -246,9 +299,10 @@ describe("RealtimeClient", () => {
     expect(secondSocket.send).toHaveBeenCalledWith(JSON.stringify({
       type: "authenticate",
       accessToken: "rotated.jwt",
-      protocolVersion: 1,
+      protocolVersion: 2,
       robotId: "QH-ZHC-01",
-      lastSequence: 12,
+      resumeFromBucketStartMs: BUCKET_START_MS,
+      maxPointsPerSecond: 0,
     }));
     client.stop();
   });
@@ -268,7 +322,10 @@ describe("RealtimeClient", () => {
 
     client.start();
     MockSocket.instances[0].open();
-    MockSocket.instances[0].serverClose(4001, "ACCESS_TOKEN_EXPIRED");
+    MockSocket.instances[0].serverClose(
+      REALTIME_CLOSE_CODE.AUTHENTICATION_EXPIRED,
+      "ACCESS_TOKEN_EXPIRED",
+    );
     await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();

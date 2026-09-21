@@ -80,9 +80,7 @@ export default Vue.extend({
           displayName: this.form.displayName,
           password: this.form.password,
         });
-        sessionStorage.setItem("qhzhc_authenticated", "true");
         localStorage.setItem("user", JSON.stringify(profile));
-        localStorage.setItem("userform", JSON.stringify(profile));
         this.$message.success("注册成功");
         await this.$router.push("/dataVisualization");
       } finally {

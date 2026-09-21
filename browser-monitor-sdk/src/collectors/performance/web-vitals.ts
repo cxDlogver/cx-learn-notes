@@ -1,51 +1,31 @@
-import { onCLS, onFCP, onINP, onLCP, type Metric } from 'web-vitals';
-
+import type { MonitorModule } from '../../core/module-registry';
+import type { TelemetryEmitter } from '../../core/pipeline';
 import type {
-  PerformanceCapabilityMap,
   PerformanceMetricName,
-  WebVitalPerformanceMetric,
+  WebVitalPerformancePayload,
 } from '../../protocol/payloads/performance';
+import type { SignalSubscriber, WebVitalSignal } from '../../protocol/signals';
 
-type WebVitalName = Extract<PerformanceMetricName, 'LCP' | 'FCP' | 'INP' | 'CLS'>;
-
-interface WebVitalsOptions {
-  enabled: Readonly<Record<WebVitalName, boolean>>;
-  capabilities: PerformanceCapabilityMap;
-  reportAllChanges: boolean;
-  emit: (metric: WebVitalPerformanceMetric) => void;
-}
-
-function getMetricTimestamp(metric: Metric): number {
-  const lastEntry = metric.entries[metric.entries.length - 1];
-
-  if (
-    lastEntry &&
-    typeof performance !== 'undefined' &&
-    Number.isFinite(performance.timeOrigin) &&
-    Number.isFinite(lastEntry.startTime)
-  ) {
-    return performance.timeOrigin + lastEntry.startTime;
-  }
-
-  return Date.now();
-}
-
-export function normalizeWebVital(metric: Metric): WebVitalPerformanceMetric | undefined {
-  if (metric.name === 'TTFB') return undefined;
-
+// Collector 只接收稳定的 Raw Signal，不把 web-vitals 库对象泄漏进领域协议。
+function toPayload(
+  signal: WebVitalSignal,
+  sequence: number,
+  state: 'provisional' | 'final',
+): WebVitalPerformancePayload {
   const common = {
     type: 'performance' as const,
-    id: metric.id,
-    value: metric.value,
-    delta: metric.delta,
-    rating: metric.rating,
+    sampleId: signal.metricId,
+    sequence,
+    state,
+    value: signal.value,
+    delta: signal.delta,
+    clientRating: signal.rating,
     source: 'web-vitals' as const,
-    timestamp: getMetricTimestamp(metric),
-    navigationType: metric.navigationType,
-    navigationId: metric.navigationId,
+    navigationType: signal.navigationType,
+    navigationId: signal.navigationId,
   };
 
-  switch (metric.name) {
+  switch (signal.name) {
     case 'LCP':
       return { ...common, name: 'LCP', unit: 'ms', kind: 'core-web-vital' };
     case 'FCP':
@@ -57,25 +37,71 @@ export function normalizeWebVital(metric: Metric): WebVitalPerformanceMetric | u
   }
 }
 
-export function startWebVitals(options: WebVitalsOptions): void {
-  const onReport = (metric: Metric): void => {
-    const normalized = normalizeWebVital(metric);
-    if (normalized) options.emit(normalized);
-  };
-  const reportOptions = { reportAllChanges: options.reportAllChanges };
+export class WebVitalsCollector implements MonitorModule {
+  readonly name = 'web-vitals-collector';
+  private readonly unsubscribers: Array<() => void> = [];
+  private readonly sequenceBySample = new Map<string, number>();
+  private readonly latestBySample = new Map<string, WebVitalSignal>();
+  private active = false;
 
-  const register = (name: WebVitalName, callback: () => void): void => {
-    if (!options.enabled[name] || !options.capabilities[name]) return;
+  constructor(
+    private readonly signals: SignalSubscriber,
+    private readonly emitter: TelemetryEmitter,
+    private readonly enabled: Readonly<Record<PerformanceMetricName, boolean>>,
+  ) {}
 
-    try {
-      callback();
-    } catch {
-      // A missing browser API must never affect the monitored application.
-    }
-  };
+  install(): void {
+    if (this.unsubscribers.length > 0) return;
+    this.unsubscribers.push(
+      this.signals.subscribe('performance.web-vital', (signal) => {
+        if (!this.active || !this.enabled[signal.name]) return;
+        this.latestBySample.set(signal.metricId, signal);
+        this.emit(signal, 'provisional', signal.timestamp);
+      }),
+      // This subscriber is installed before ViewCollector. Final snapshots are
+      // therefore still bound to the view that is about to end.
+      this.signals.subscribe('view.route-change', (signal) => {
+        if (this.active) this.finalize(signal.timestamp);
+      }),
+      this.signals.subscribe('page.lifecycle', (signal) => {
+        if (this.active && signal.type === 'pagehide' && !signal.persisted) {
+          this.finalize(signal.timestamp);
+        }
+      }),
+    );
+  }
 
-  register('LCP', () => onLCP(onReport, reportOptions));
-  register('FCP', () => onFCP(onReport, reportOptions));
-  register('INP', () => onINP(onReport, reportOptions));
-  register('CLS', () => onCLS(onReport, reportOptions));
+  start(): void {
+    this.active = true;
+  }
+
+  stop(): void {
+    this.active = false;
+  }
+
+  destroy(): void {
+    this.stop();
+    for (const unsubscribe of this.unsubscribers.splice(0)) unsubscribe();
+    this.latestBySample.clear();
+    this.sequenceBySample.clear();
+  }
+
+  private emit(
+    signal: WebVitalSignal,
+    state: 'provisional' | 'final',
+    timestamp: number,
+  ): void {
+    const sequence = this.sequenceBySample.get(signal.metricId) ?? 0;
+    this.sequenceBySample.set(signal.metricId, sequence + 1);
+    this.emitter.emit({
+      name: signal.name,
+      timestamp,
+      payload: toPayload(signal, sequence, state),
+    });
+  }
+
+  private finalize(timestamp: number): void {
+    for (const signal of this.latestBySample.values()) this.emit(signal, 'final', timestamp);
+    this.latestBySample.clear();
+  }
 }

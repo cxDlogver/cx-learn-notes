@@ -17,8 +17,6 @@
 </template>
 
 <script lang="ts">
-import { performanceMonitor } from '@/services/performance/monitor';
-
 /**
  * 地图组件（OpenLayers + 天地图底图）
  *
@@ -122,7 +120,7 @@ export default {
     this.initMap();
     this.bindClickEvent();
 
-    // 进入页面时，如果已经有历史数据，则先把“之前的点”绘出来（不含最后一个实时点）
+    // 进入页面时，如果已经有历史数据，则先把"之前的点"绘出来（不含最后一个实时点）
     if (Array.isArray(this.mapList) && this.mapList.length > 0) {
       this.index = this.mapList.length - 1;
       const historyPoints = this.mapList.slice(0, this.index);
@@ -131,7 +129,6 @@ export default {
     }
   },
   beforeDestroy() {
-    if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
     clearInterval(this.timer);
     if (this.mapClickKey) {
       unByKey(this.mapClickKey);
@@ -391,7 +388,7 @@ export default {
      * ========================= */
 
     /**
-     * removeTC：清理“实时绘制/历史播放”产生的轨迹、点、车辆
+     * removeTC：清理"实时绘制/历史播放"产生的轨迹、点、车辆
      * - 结束定时器
      * - 清空点、线、车
      * - 兼容你原先 imgLayer 的移除（即使这里未展示 imgLayer 创建逻辑）
@@ -438,13 +435,6 @@ export default {
     },
 
     redrawRealtimeWindow(gasType, gasName, points = this.mapList) {
-      if(performanceMonitor.context.mapType==='2d' && this.map && performanceMonitor.renderVersion){
-        if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
-        const version=performanceMonitor.renderVersion;
-        this.performanceRenderKey=this.map.once('postrender',()=>performanceMonitor.rendered('map:2d',version));
-      }
-      performanceMonitor.record('mapObjects',this.mapList?.length || 0,'map:2d');
-      return performanceMonitor.measure("mapUpdate", 'map:2d', () => {
       this.gasType = gasType;
       this.gasName = gasName;
       const nextPoints = Array.isArray(points) ? points : [];
@@ -478,8 +468,6 @@ export default {
         this.map.getView().setCenter(latestCenter);
       }
       this.ensureOrUpdateCar(latestCenter);
-
-      });
     },
 
     /* =========================
@@ -494,13 +482,6 @@ export default {
      * - 浓度点：按 gasType 值映射颜色并追加绘制
      */
     drawRealtimePoint() {
-      if(performanceMonitor.context.mapType==='2d' && this.map && performanceMonitor.renderVersion){
-        if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
-        const version=performanceMonitor.renderVersion;
-        this.performanceRenderKey=this.map.once('postrender',()=>performanceMonitor.rendered('map:2d',version));
-      }
-      performanceMonitor.record('mapObjects',this.mapList?.length || 0,'map:2d');
-      return performanceMonitor.measure("mapUpdate", 'map:2d', () => {
       if (!this.points || !this.points[this.index]) return;
 
       // 1) 获取当前区间
@@ -536,22 +517,9 @@ export default {
       });
       pointFeature.setId(this.buildFeatureId("realtime-point", current, this.index));
       this.pointSource.addFeature(pointFeature);
-      this.pruneRealtimeLayers();
+      // 轨迹不设保留上限：已绘制的点与线段一直保留到 removeTC() 整体清理为止。
 
       this.index++;
-
-      });
-    },
-
-    pruneRealtimeLayers(maxPoints = 300) {
-      const prune = (source, limit) => {
-        if (!source || typeof source.getFeatures !== "function") return;
-        const features = source.getFeatures();
-        const overflow = Math.max(0, features.length - limit);
-        features.slice(0, overflow).forEach((feature) => source.removeFeature(feature));
-      };
-      prune(this.pointSource, maxPoints);
-      prune(this.routeSource, Math.max(0, maxPoints - 1));
     },
 
     /**
@@ -599,7 +567,7 @@ export default {
     /**
      * drawHistoryPoints（原 moveHistoryCircle）
      * - 给定 list，按 gasType 给每个点上色并绘制
-     * - 用于“进入页面已有数据”或“切换气体后重画历史点”
+     * - 用于"进入页面已有数据"或"切换气体后重画历史点"
      */
     drawHistoryPoints(list) {
       if (!Array.isArray(list) || list.length === 0) return;
@@ -718,7 +686,7 @@ export default {
           // 播放结束
           clearInterval(this.timer);
           this.timer = null;
-          this.iconLayer.getSource().clear(); // 保持你原“结束后清车”
+          this.iconLayer.getSource().clear(); // 保持你原"结束后清车"
         }
       }, 200);
     },
@@ -727,17 +695,10 @@ export default {
      * createCircle（原逻辑：历史查询时绘制点 + 注册点击）
      * - 清空线、车、定时器、点
      * - 居中到首点
-     * - 批量绘制“半径=5”的历史点
+     * - 批量绘制"半径=5"的历史点
      * - 绑定点击事件：点高亮并回填 detailData
      */
     createCircle(list) {
-      if(performanceMonitor.context.mapType==='2d' && this.map && performanceMonitor.renderVersion){
-        if(this.performanceRenderKey)unByKey(this.performanceRenderKey);
-        const version=performanceMonitor.renderVersion;
-        this.performanceRenderKey=this.map.once('postrender',()=>performanceMonitor.rendered('map:2d',version));
-      }
-      performanceMonitor.record('mapObjects',this.mapList?.length || 0,'map:2d');
-      return performanceMonitor.measure("mapUpdate", 'map:2d', () => {
       if (
         !this.map ||
         !this.routeSource ||
@@ -782,9 +743,6 @@ export default {
 
         feature.setId(i);
         this.pointSource.addFeature(feature);
-      });
-
-
       });
     },
 

@@ -15,32 +15,48 @@ const browserFrameScheduler: FrameScheduler = {
 export class FrameTelemetryQueue {
   private queue: TelemetryPoint[] = [];
   private cursor = 0;
-  private queuedAt: number[] = [];
   private frameHandle: number | null = null;
+  private paused = false;
 
   constructor(
     private readonly onFrame: (points: TelemetryPoint[]) => void,
-    private readonly maxPerFrame = 300,
+    private readonly maxPerFrame = 1,
     private readonly budgetMs = 5,
     private readonly scheduler: FrameScheduler = browserFrameScheduler,
-    private readonly onDrain?: (stats: { takeMs: number; callbackMs: number; pending: number; oldestWaitMs: number }) => void,
   ) {}
 
   enqueue(points: TelemetryPoint[]): void {
     if (!points.length) return;
     this.queue.push(...points);
-    if (this.onDrain) { const at = this.scheduler.now(); for (let i=0;i<points.length;i++) this.queuedAt.push(at); }
-    if (this.frameHandle === null) {
-      this.frameHandle = this.scheduler.request(() => this.flush());
-    }
+    this.schedule();
+  }
+
+  peekNext(): TelemetryPoint | null {
+    return this.queue[this.cursor] ?? null;
+  }
+
+  pause(): void {
+    this.paused = true;
+    if (this.frameHandle !== null) this.scheduler.cancel(this.frameHandle);
+    this.frameHandle = null;
+  }
+
+  resume(): void {
+    this.paused = false;
+    this.schedule();
   }
 
   stop(): void {
     if (this.frameHandle !== null) this.scheduler.cancel(this.frameHandle);
     this.frameHandle = null;
     this.queue = [];
-    this.queuedAt = [];
     this.cursor = 0;
+    this.paused = false;
+  }
+
+  private schedule(): void {
+    if (this.paused || this.frameHandle !== null || this.cursor >= this.queue.length) return;
+    this.frameHandle = this.scheduler.request(() => this.flush());
   }
 
   private flush(): void {
@@ -55,19 +71,15 @@ export class FrameTelemetryQueue {
       const point = this.queue[this.cursor++];
       if (point) batch.push(point);
     }
-    const takenAt = this.onDrain ? this.scheduler.now() : 0;
     if (batch.length) this.onFrame(batch);
-    if (this.onDrain) this.onDrain({ takeMs: takenAt-startedAt, callbackMs: this.scheduler.now()-takenAt, pending: this.queue.length-this.cursor, oldestWaitMs: this.queue.length > this.cursor ? this.scheduler.now()-(this.queuedAt[this.cursor] || takenAt) : 0 });
     if (this.cursor > 2_000 && this.cursor * 2 > this.queue.length) {
       this.queue = this.queue.slice(this.cursor);
-      if (this.onDrain) this.queuedAt = this.queuedAt.slice(this.cursor);
       this.cursor = 0;
     }
     if (this.cursor < this.queue.length) {
-      this.frameHandle = this.scheduler.request(() => this.flush());
+      this.schedule();
     } else {
       this.queue = [];
-    this.queuedAt = [];
       this.cursor = 0;
     }
   }

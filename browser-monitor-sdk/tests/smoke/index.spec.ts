@@ -1,15 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
-describe('browser monitor SDK scaffold', () => {
-  it('runs tests in a browser-like environment', () => {
-    expect(window).toBeDefined();
-    expect(document).toBeDefined();
+import { createMonitor } from '../../src';
+
+describe('browser monitor SDK entry', () => {
+  it('exports only the unified monitor factory', async () => {
+    const sdk = await import('../../src');
+
+    expect(sdk.createMonitor).toBeTypeOf('function');
+    expect('createPerformanceMonitor' in sdk).toBe(false);
   });
 
-  it('exposes an importable package entry', async () => {
-    const sdk = await import('../../src/index');
+  it('fails fast for invalid required configuration', () => {
+    expect(() =>
+      createMonitor({
+        app: { name: '', version: '1.0.0', environment: 'test' },
+        transport: { dsn: '/collect' },
+      }),
+    ).toThrow('app.name is required');
 
-    expect(sdk).toBeTypeOf('object');
-    expect(sdk.createPerformanceMonitor).toBeTypeOf('function');
+    expect(() =>
+      createMonitor({
+        app: { name: 'app', version: '1.0.0', environment: 'test' },
+        transport: { dsn: '', batchSize: -1 },
+      }),
+    ).toThrow('transport.dsn is required');
   });
 });

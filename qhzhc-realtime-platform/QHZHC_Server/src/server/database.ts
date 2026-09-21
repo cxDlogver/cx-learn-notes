@@ -104,6 +104,8 @@ export class AppDatabase {
         ON telemetry(robot_id, sequence);
       CREATE INDEX IF NOT EXISTS telemetry_sampled_at
         ON telemetry(sampled_at);
+      CREATE INDEX IF NOT EXISTS telemetry_robot_sampled_at
+        ON telemetry(robot_id, sampled_at);
       CREATE INDEX IF NOT EXISTS sessions_expires_at
         ON sessions(expires_at);
       CREATE INDEX IF NOT EXISTS refresh_tokens_family_id
@@ -381,6 +383,33 @@ export class AppDatabase {
       )
       .all(robotId, fromInclusive, toInclusive, limit) as unknown as TelemetryRow[];
     return rows.map((row) => ({ ...JSON.parse(row.payload), sequence: row.sequence }) as TelemetryPoint);
+  }
+
+  telemetryByTimeBucket(
+    robotId: string,
+    bucketStartMs: number,
+  ): TelemetryPoint[] {
+    const from = new Date(bucketStartMs).toISOString();
+    const to = new Date(bucketStartMs + 1_000).toISOString();
+    const rows = this.database
+      .prepare(
+        `SELECT sequence, payload FROM telemetry
+         WHERE robot_id = ? AND sampled_at >= ? AND sampled_at < ?
+         ORDER BY sampled_at ASC, sequence ASC`,
+      )
+      .all(robotId, from, to) as unknown as TelemetryRow[];
+    return rows.map(
+      (row) => ({ ...JSON.parse(row.payload), sequence: row.sequence }) as TelemetryPoint,
+    );
+  }
+
+  earliestTelemetryBucketStartMs(robotId: string): number | null {
+    const row = this.database
+      .prepare("SELECT MIN(sampled_at) AS value FROM telemetry WHERE robot_id = ?")
+      .get(robotId) as unknown as { value: string | null };
+    if (!row.value) return null;
+    const value = Date.parse(row.value);
+    return Number.isFinite(value) ? Math.floor(value / 1_000) * 1_000 : null;
   }
 
   latestTelemetry(robotId: string, limit = 500): TelemetryPoint[] {

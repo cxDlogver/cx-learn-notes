@@ -2,25 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const webVitalsMock = vi.hoisted(() => {
   type Callback = (metric: unknown) => void;
-
   return {
     callbacks: new Map<string, Callback>(),
-    onCLS: vi.fn((callback: Callback, options?: unknown) => {
-      void options;
-      webVitalsMock.callbacks.set('CLS', callback);
-    }),
-    onFCP: vi.fn((callback: Callback, options?: unknown) => {
-      void options;
-      webVitalsMock.callbacks.set('FCP', callback);
-    }),
-    onINP: vi.fn((callback: Callback, options?: unknown) => {
-      void options;
-      webVitalsMock.callbacks.set('INP', callback);
-    }),
-    onLCP: vi.fn((callback: Callback, options?: unknown) => {
-      void options;
-      webVitalsMock.callbacks.set('LCP', callback);
-    }),
+    onCLS: vi.fn((callback: Callback) => webVitalsMock.callbacks.set('CLS', callback)),
+    onFCP: vi.fn((callback: Callback) => webVitalsMock.callbacks.set('FCP', callback)),
+    onINP: vi.fn((callback: Callback) => webVitalsMock.callbacks.set('INP', callback)),
+    onLCP: vi.fn((callback: Callback) => webVitalsMock.callbacks.set('LCP', callback)),
   };
 });
 
@@ -31,248 +18,237 @@ vi.mock('web-vitals', () => ({
   onLCP: webVitalsMock.onLCP,
 }));
 
-import { createPerformanceMonitor } from '../../src';
-import type { PerformanceMetric } from '../../src';
+import { createMonitorWithDependencies } from '../../src/core/monitor';
+import { FakeSender } from '../helpers/fake-sender';
 
 class MockPerformanceObserver {
-  static supportedEntryTypes: string[] = [];
-  static instances: MockPerformanceObserver[] = [];
+  static supportedEntryTypes = [
+    'largest-contentful-paint',
+    'paint',
+    'event',
+    'layout-shift',
+    'long-animation-frame',
+  ];
 
   readonly observe = vi.fn();
   readonly disconnect = vi.fn();
 
-  constructor(readonly callback: PerformanceObserverCallback) {
-    MockPerformanceObserver.instances.push(this);
-  }
+  constructor(readonly callback: PerformanceObserverCallback) {}
 
   emit(entries: PerformanceEntry[]): void {
-    const list = {
-      getEntries: () => entries,
-    } as PerformanceObserverEntryList;
-    this.callback(list, this as unknown as PerformanceObserver);
+    this.callback(
+      { getEntries: () => entries } as PerformanceObserverEntryList,
+      this as unknown as PerformanceObserver,
+    );
   }
 }
 
-function vital(name: 'LCP' | 'FCP' | 'INP' | 'CLS', value: number): object {
+function metric(name: 'LCP' | 'FCP' | 'INP' | 'CLS', value: number): object {
   return {
     name,
     value,
     rating: 'good',
     delta: value,
-    id: `v6-${name}`,
-    entries: [],
+    id: 'metric-' + name,
+    entries: [{ startTime: value }],
     navigationType: 'navigate',
     navigationId: 0,
-    navigationURL: 'https://example.test/private?token=secret',
+    navigationURL: 'https://secret.test/?token=never-export',
   };
 }
 
-function loafEntry(startTime: number, duration: number): PerformanceEntry {
+function options() {
   return {
-    name: 'long-animation-frame',
-    entryType: 'long-animation-frame',
-    startTime,
-    duration,
-    blockingDuration: Math.max(0, duration - 50),
-    renderStart: startTime + 10,
-    styleAndLayoutStart: startTime + 20,
-    scripts: [],
-  } as unknown as PerformanceEntry;
+    app: {
+      name: 'checkout',
+      version: '1.2.3',
+      environment: 'test',
+    },
+    performance: {
+      metrics: { FPS: false as const },
+    },
+    processing: {
+      rateLimit: { maxEvents: 100, windowMs: 60_000 },
+    },
+    transport: {
+      dsn: '/collect',
+      batchSize: 100,
+      flushIntervalMs: 60_000,
+    },
+  };
 }
 
-describe('createPerformanceMonitor', () => {
+describe('createMonitor performance vertical slice', () => {
   beforeEach(() => {
     webVitalsMock.callbacks.clear();
     webVitalsMock.onCLS.mockClear();
     webVitalsMock.onFCP.mockClear();
     webVitalsMock.onINP.mockClear();
     webVitalsMock.onLCP.mockClear();
-    MockPerformanceObserver.instances = [];
-    MockPerformanceObserver.supportedEntryTypes = [
-      'largest-contentful-paint',
-      'paint',
-      'event',
-      'layout-shift',
-      'long-animation-frame',
-    ];
     vi.stubGlobal('PerformanceObserver', MockPerformanceObserver);
+    class MockPerformanceEventTiming {}
+    Object.defineProperty(MockPerformanceEventTiming.prototype, 'interactionId', {
+      value: 0,
+    });
+    vi.stubGlobal('PerformanceEventTiming', MockPerformanceEventTiming);
     vi.stubGlobal(
       'requestAnimationFrame',
       vi.fn(() => 1),
     );
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    history.replaceState({}, '', '/checkout?token=secret#private');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    history.replaceState({}, '', '/');
   });
 
-  it('starts each enabled Web Vital once with stable-value reporting by default', () => {
-    const monitor = createPerformanceMonitor();
-    monitor.start();
-    monitor.start();
+  it('moves Web Vitals through context, processing, envelope, and transport', async () => {
+    const sender = new FakeSender();
+    const monitor = createMonitorWithDependencies(options(), { sender });
 
-    for (const registration of [
-      webVitalsMock.onLCP,
-      webVitalsMock.onFCP,
-      webVitalsMock.onINP,
-      webVitalsMock.onCLS,
-    ]) {
-      expect(registration).toHaveBeenCalledOnce();
-      expect(registration.mock.calls[0]?.[1]).toEqual({ reportAllChanges: false });
-    }
-
-    expect(monitor.getCapabilities()).toEqual({
-      LCP: true,
-      FCP: true,
-      INP: true,
-      CLS: true,
-      FPS: true,
-      LoAF: true,
+    monitor.setUser({
+      id: 'user-1',
+      properties: { role: 'buyer', token: 'private-value' },
     });
-
-    monitor.stop();
-  });
-
-  it('normalizes Web Vitals without exposing raw entries or navigation URLs', () => {
-    const received: PerformanceMetric[] = [];
-    const monitor = createPerformanceMonitor({ metrics: { FPS: false, LoAF: false } });
-    monitor.subscribe((metric) => received.push(metric));
     monitor.start();
+    webVitalsMock.callbacks.get('LCP')?.(metric('LCP', 1_800));
+    monitor.track('order_submit', { orderType: 'normal', token: 'secret' });
+    await monitor.flush();
 
-    webVitalsMock.callbacks.get('LCP')?.(vital('LCP', 1_800));
-    webVitalsMock.callbacks.get('CLS')?.(vital('CLS', 0.05));
+    const events = sender.events();
+    const lcp = events.find((event) => event.name === 'LCP');
+    const custom = events.find((event) => event.name === 'order_submit');
 
-    expect(received).toHaveLength(2);
-    expect(received[0]).toMatchObject({
-      name: 'LCP',
-      id: 'v6-LCP',
-      value: 1_800,
-      unit: 'ms',
-      kind: 'core-web-vital',
-      source: 'web-vitals',
-      navigationType: 'navigate',
-      navigationId: 0,
-    });
-    expect(received[1]).toMatchObject({ name: 'CLS', unit: 'score' });
-    expect(JSON.stringify(received)).not.toContain('entries');
-    expect(JSON.stringify(received)).not.toContain('navigationURL');
-    expect(JSON.stringify(received)).not.toContain('secret');
-
-    monitor.stop();
-  });
-
-  it('supports metric selection, change reporting, unsubscribe, and listener isolation', () => {
-    const healthyListener = vi.fn();
-    const monitor = createPerformanceMonitor({
-      metrics: { FCP: false, FPS: false, LoAF: false },
-      webVitals: { reportAllChanges: true },
-    });
-    monitor.subscribe(() => {
-      throw new Error('consumer failure');
-    });
-    const unsubscribe = monitor.subscribe(healthyListener);
-    monitor.start();
-
-    expect(webVitalsMock.onFCP).not.toHaveBeenCalled();
-    expect(webVitalsMock.onLCP.mock.calls[0]?.[1]).toEqual({ reportAllChanges: true });
-
-    webVitalsMock.callbacks.get('LCP')?.(vital('LCP', 2_000));
-    expect(healthyListener).toHaveBeenCalledOnce();
-
-    unsubscribe();
-    webVitalsMock.callbacks.get('LCP')?.(vital('LCP', 2_100));
-    expect(healthyListener).toHaveBeenCalledOnce();
-
-    monitor.stop();
-  });
-
-  it('stops owned work and suppresses delayed Web Vital callbacks', () => {
-    const listener = vi.fn();
-    const monitor = createPerformanceMonitor();
-    monitor.subscribe(listener);
-    monitor.start();
-
-    const loafObserver = MockPerformanceObserver.instances[0];
-    window.dispatchEvent(new Event('pagehide'));
-    expect(loafObserver?.disconnect).toHaveBeenCalledOnce();
-
-    const pageShow = new Event('pageshow');
-    Object.defineProperty(pageShow, 'persisted', { value: true });
-    window.dispatchEvent(pageShow);
-    expect(MockPerformanceObserver.instances[1]?.observe).toHaveBeenCalledWith({
-      type: 'long-animation-frame',
-      buffered: false,
-    });
-
-    monitor.stop();
-    monitor.stop();
-    webVitalsMock.callbacks.get('LCP')?.(vital('LCP', 2_200));
-    expect(listener).not.toHaveBeenCalled();
-  });
-
-  it('reports unsupported capabilities and does not register unavailable metrics', () => {
-    MockPerformanceObserver.supportedEntryTypes = [];
-    vi.stubGlobal('requestAnimationFrame', undefined);
-    vi.stubGlobal('cancelAnimationFrame', undefined);
-
-    const monitor = createPerformanceMonitor();
-    monitor.start();
-
-    expect(monitor.getCapabilities()).toEqual({
-      LCP: false,
-      FCP: false,
-      INP: false,
-      CLS: false,
-      FPS: false,
-      LoAF: false,
-    });
-    expect(webVitalsMock.onLCP).not.toHaveBeenCalled();
-    expect(MockPerformanceObserver.instances).toHaveLength(0);
-
-    monitor.stop();
-  });
-
-  it('falls back to safe defaults for invalid LoAF numeric options', () => {
-    const received: PerformanceMetric[] = [];
-    const monitor = createPerformanceMonitor({
-      metrics: { LCP: false, FCP: false, INP: false, CLS: false, FPS: false },
-      loaf: {
-        minDurationMs: Number.NaN,
-        maxEntriesPerVisit: -1,
+    expect(lcp).toMatchObject({
+      protocolVersion: '2.0',
+      type: 'performance',
+      app: {
+        name: 'checkout',
+        version: '1.2.3',
+        environment: 'test',
+      },
+      payload: {
+        type: 'performance',
+        name: 'LCP',
+        value: 1_800,
+        unit: 'ms',
+        source: 'web-vitals',
+        sampleId: 'metric-LCP',
+        sequence: 0,
+        state: 'provisional',
       },
     });
-    monitor.subscribe((metric) => received.push(metric));
-    monitor.start();
+    expect(lcp?.context.sessionId).toBeTruthy();
+    expect(lcp?.context.viewId).toBeTruthy();
+    expect(new URL(lcp!.context.url).pathname).toBe('/checkout');
+    expect(new URL(lcp!.context.url).search).toBe('');
+    expect(lcp?.context.routeName).toBe('/checkout');
+    expect(JSON.stringify(lcp)).not.toContain('navigationURL');
+    expect(JSON.stringify(lcp)).not.toContain('never-export');
 
-    const entries = [
-      loafEntry(1, 49),
-      ...Array.from({ length: 21 }, (_, index) => loafEntry(index + 2, 50 + index)),
-    ];
-    MockPerformanceObserver.instances[0]?.emit(entries);
-
-    expect(received).toHaveLength(20);
-    expect(received[0]?.value).toBe(50);
-    expect(received.at(-1)?.value).toBe(69);
-
-    monitor.stop();
-  });
-
-  it('does not start FPS in a hidden document and samples immediately when visible', () => {
-    let visibilityState: DocumentVisibilityState = 'hidden';
-    vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibilityState);
-    const monitor = createPerformanceMonitor({
-      metrics: { LCP: false, FCP: false, INP: false, CLS: false, LoAF: false },
+    expect(custom?.context.user?.id).toBe('user-1');
+    expect(custom?.payload).toMatchObject({
+      type: 'event',
+      name: 'order_submit',
+      properties: { orderType: 'normal', token: '[REDACTED]' },
     });
 
+    monitor.destroy();
+  });
+
+  it('supports stop and restart without duplicate web-vitals registration', async () => {
+    const sender = new FakeSender();
+    const monitor = createMonitorWithDependencies(options(), { sender });
+
     monitor.start();
-    expect(requestAnimationFrame).not.toHaveBeenCalled();
+    monitor.start();
+    expect(webVitalsMock.onLCP).toHaveBeenCalledOnce();
 
-    visibilityState = 'visible';
-    document.dispatchEvent(new Event('visibilitychange'));
-    expect(requestAnimationFrame).toHaveBeenCalledOnce();
-
+    webVitalsMock.callbacks.get('LCP')?.(metric('LCP', 1_700));
     monitor.stop();
+    webVitalsMock.callbacks.get('LCP')?.(metric('LCP', 1_800));
+
+    monitor.start();
+    expect(webVitalsMock.onLCP).toHaveBeenCalledOnce();
+    webVitalsMock.callbacks.get('LCP')?.(metric('LCP', 1_900));
+    await monitor.flush();
+
+    const values = sender
+      .events()
+      .filter((event) => event.name === 'LCP')
+      .map((event) => (event.payload.type === 'performance' ? event.payload.value : undefined));
+
+    expect(values).toEqual([1_700, 1_900]);
+
+    monitor.destroy();
+    webVitalsMock.callbacks.get('LCP')?.(metric('LCP', 2_000));
+    expect(sender.events().filter((event) => event.name === 'LCP')).toHaveLength(2);
+  });
+
+  it('reports unified capabilities', () => {
+    const monitor = createMonitorWithDependencies(options(), {
+      sender: new FakeSender(),
+    });
+
+    expect(monitor.getCapabilities()).toEqual({
+      performance: {
+        LCP: true,
+        FCP: true,
+        INP: true,
+        CLS: true,
+        FPS: true,
+        LoAF: true,
+      },
+    });
+
+    monitor.destroy();
+  });
+
+  it('binds metrics to the view active at the metric occurrence time', async () => {
+    const sender = new FakeSender();
+    const monitor = createMonitorWithDependencies(options(), { sender });
+
+    monitor.start();
+    const firstMetric = metric('LCP', 100) as {
+      entries: Array<{ startTime: number }>;
+      [key: string]: unknown;
+    };
+    firstMetric.entries = [{ startTime: 0 }];
+    webVitalsMock.callbacks.get('LCP')?.(firstMetric);
+
+    history.pushState({}, '', '/payment');
+    webVitalsMock.callbacks.get('CLS')?.(metric('CLS', 0.05));
+    await monitor.flush();
+
+    const performanceEvents = sender.events().filter((event) => event.type === 'performance');
+    expect(performanceEvents).toHaveLength(3);
+    // Route changes finalize the previous view's latest Web Vital before binding
+    // the next metric to the newly created view.
+    expect(performanceEvents[0]?.context.viewId).toBe(performanceEvents[1]?.context.viewId);
+    expect(performanceEvents[1]?.context.viewId).not.toBe(performanceEvents[2]?.context.viewId);
+    expect(performanceEvents[1]?.payload).toMatchObject({ state: 'final', sequence: 1 });
+
+    monitor.destroy();
+  });
+
+  it('queues final metric and view snapshots before pagehide flushes', async () => {
+    const sender = new FakeSender();
+    const monitor = createMonitorWithDependencies(options(), { sender });
+
+    monitor.start();
+    webVitalsMock.callbacks.get('LCP')?.(metric('LCP', 1_800));
+    window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: false }));
+
+    await vi.waitFor(() => {
+      expect(sender.events().some((event) =>
+        event.payload.type === 'performance' && event.payload.state === 'final',
+      )).toBe(true);
+      expect(sender.events().some((event) => event.name === 'view.end')).toBe(true);
+    });
+
+    monitor.destroy();
   });
 });

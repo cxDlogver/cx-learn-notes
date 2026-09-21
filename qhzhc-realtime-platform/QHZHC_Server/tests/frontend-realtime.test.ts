@@ -3,7 +3,6 @@ import {
   FrameTelemetryQueue,
   type FrameScheduler,
 } from "../../QHZHC_Web/src/views/DataVisualization/services/FrameTelemetryQueue";
-import { OrderedTelemetryBuffer } from "../../QHZHC_Web/src/views/DataVisualization/services/OrderedTelemetryBuffer";
 import type { TelemetryPoint } from "../../QHZHC_Web/src/views/DataVisualization/services/realtimeTypes";
 
 function point(sequence: number): TelemetryPoint {
@@ -34,14 +33,6 @@ function point(sequence: number): TelemetryPoint {
 }
 
 describe("frontend realtime ordering and rendering", () => {
-  it("deduplicates and restores reversed batches before rendering", () => {
-    const buffer = new OrderedTelemetryBuffer(1);
-    expect(buffer.ingest([point(3), point(2), point(3)])).toEqual([]);
-    expect(buffer.currentGap()).toEqual({ fromSequence: 1, toSequence: 1 });
-    expect(buffer.ingest([point(1)])).toEqual([point(1), point(2), point(3)]);
-    expect(buffer.currentGap()).toBeNull();
-  });
-
   it("splits a large socket batch into bounded animation frames without reordering", () => {
     const callbacks: FrameRequestCallback[] = [];
     const scheduler: FrameScheduler = {
@@ -64,5 +55,32 @@ describe("frontend realtime ordering and rendering", () => {
     while (callbacks.length) callbacks.shift()?.(0);
 
     expect(frames).toEqual([[1, 2, 3], [4, 5, 6], [7, 8]]);
+  });
+
+  it("keeps queued points while rendering is paused and resumes from the head", () => {
+    const callbacks: FrameRequestCallback[] = [];
+    const scheduler: FrameScheduler = {
+      request(callback) {
+        callbacks.push(callback);
+        return callbacks.length;
+      },
+      cancel() {},
+      now: () => 0,
+    };
+    const rendered: number[] = [];
+    const queue = new FrameTelemetryQueue(
+      (items) => rendered.push(...items.map((item) => item.sequence)),
+      1,
+      5,
+      scheduler,
+    );
+    queue.pause();
+    queue.enqueue([point(1), point(2)]);
+    expect(callbacks).toHaveLength(0);
+    expect(queue.peekNext()?.sequence).toBe(1);
+
+    queue.resume();
+    while (callbacks.length) callbacks.shift()?.(0);
+    expect(rendered).toEqual([1, 2]);
   });
 });

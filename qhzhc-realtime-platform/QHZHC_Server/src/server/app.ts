@@ -1,5 +1,3 @@
-import { performanceRouter } from './performance/routes.js';
-import type { PerformanceService } from './performance/service.js';
 import fs from "node:fs";
 import path from "node:path";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -27,18 +25,33 @@ interface AuthenticatedRequest extends Request {
 }
 
 export interface AppServices {
-  performance?: PerformanceService;
   database: AppDatabase;
   auth: AuthService;
   simulator: TelemetrySimulator;
   weather?: WeatherService;
+  connectionCount: () => number;
   disconnectClients: () => number;
 }
 
+/** 异步安全处理函数 */
+/**
+ * 把 async 路由处理器包装成 Express 能正确处理错误的中间件。
+ *
+ * Express 4 只用同步 try/catch 调用处理器，而 async 处理器返回的是 Promise：
+ * 内部 `await` 失败或主动 throw 时，错误变成一个没有 catch 的 rejected Promise，
+ * 请求既不会返回响应也不会进错误中间件，最终表现为客户端一直挂着 + 进程 unhandledRejection。
+ *
+ * 这里先 `Promise.resolve(...)` 把「同步返回 / 异步返回」统一成 Promise，再统一 `.catch(next)`，
+ * 让错误交回 Express，由文件末尾的统一错误中间件转成 401 / 409 / 500 响应。
+ *
+ * 补充一点：同步抛出的异常其实不需要这层包装，Express 自己的 try/catch 就能接住；
+ * 这个函数真正兜住的是 async 处理器里的异步失败。
+ */
 function asyncSafe(
   handler: (request: Request, response: Response) => void | Promise<void>,
 ): express.RequestHandler {
   return (request, response, next) => {
+    // 每个路由不必各写一遍 try/catch：失败一律走 next(error) 进统一错误处理。
     Promise.resolve(handler(request, response)).catch(next);
   };
 }
@@ -49,6 +62,7 @@ function validDate(value: unknown): string | null {
   return Number.isFinite(time) ? new Date(time).toISOString() : null;
 }
 
+/** 公共用户信息  */
 function publicProfile(user: UserSession): Record<string, unknown> {
   return {
     id: user.id,
@@ -69,18 +83,20 @@ function setRefreshCookie(
 ): void {
   response.cookie(REFRESH_COOKIE, tokens.refreshToken, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "lax",  /**  */
     secure: request.secure,
     expires: new Date(tokens.refreshTokenExpiresAt),
     path: "/api/auth",
   });
 }
 
+/**
+ * 登录 / 注册的响应体：用户档案统一挂在 user 下，与凭证字段同级。
+ * 早期版本同时把档案字段平铺到根级（`...profile`），两套并存只为兼容旧调用方，现已统一去掉。
+ */
 function authResponse(tokens: TokenPair): Record<string, unknown> {
-  const profile = publicProfile(tokens.user);
   return {
-    ...profile,
-    user: profile,
+    user: publicProfile(tokens.user),
     accessToken: tokens.accessToken,
     accessTokenExpiresAt: tokens.accessTokenExpiresAt,
   };
@@ -128,6 +144,7 @@ function legacyPoint(point: TelemetryPoint): Record<string, unknown> {
 export function createApp(services: AppServices): express.Express {
   const app = express();
   const weather = services.weather ?? new WeatherService();
+  const simulatorStatus = () => services.simulator.getStatus(services.connectionCount());
   app.disable("x-powered-by");
   app.use(createCorsMiddleware());
   app.use(express.json({ limit: "64kb" }));
@@ -214,8 +231,6 @@ export function createApp(services: AppServices): express.Express {
     }
     next();
   };
-
-  app.use("/api", performanceRouter(services.performance, requireAuth, requireAdmin, (request) => (request as AuthenticatedRequest).user.id));
 
   app.use("/api/telemetry", requireAuth);
   app.get("/api/telemetry/latest", (request, response) => {
@@ -308,34 +323,33 @@ export function createApp(services: AppServices): express.Express {
 
   app.use("/api/admin/simulator", requireAuth, requireAdmin);
   app.get("/api/admin/simulator", (_request, response) => {
-    response.json({ status: services.simulator.getStatus() });
+    response.json({ status: simulatorStatus() });
   });
   app.patch(
     "/api/admin/simulator/config",
     asyncSafe((request, response) => {
       const patch = request.body as Partial<SimulatorConfig>;
-      response.json({ status: services.simulator.updateConfig(patch) });
+      services.simulator.updateConfig(patch);
+      response.json({ status: simulatorStatus() });
     }),
   );
   app.post(
     "/api/admin/simulator/action",
     asyncSafe((request, response) => {
-      const { action, count } = request.body as { action?: unknown; count?: unknown };
+      const { action } = request.body as { action?: unknown };
       if (action === "start") {
-        response.json({ status: services.simulator.start() });
+        services.simulator.start();
+        response.json({ status: simulatorStatus() });
         return;
       }
       if (action === "pause") {
-        response.json({ status: services.simulator.pause() });
-        return;
-      }
-      if (action === "burst") {
-        response.json({ status: services.simulator.burst(Number(count) || 100) });
+        services.simulator.pause();
+        response.json({ status: simulatorStatus() });
         return;
       }
       if (action === "disconnect") {
         const disconnected = services.disconnectClients();
-        response.json({ status: services.simulator.getStatus(), disconnected });
+        response.json({ status: simulatorStatus(), disconnected });
         return;
       }
       response.status(400).json({ code: "INVALID_ACTION", message: "不支持的模拟器操作" });

@@ -1,10 +1,11 @@
-import { performanceMonitor } from '@/services/performance/monitor';
 import Vue from "vue";
 import VueRouter, { type RouteConfig } from "vue-router";
 import {
   fetchSessionProfile,
+  isCompleteSessionProfile,
   type SessionProfile,
 } from "@/services/authSession";
+import { accessTokenManager } from "@/services/accessToken";
 import { setUnauthenticatedHandler } from "@/utils/request";
 
 Vue.use(VueRouter);
@@ -47,7 +48,6 @@ const routes: RouteConfig[] = [
       adminOnly: true,
     },
   },
-  { path: '/admin/performance', component: () => import('@/views/Admin/performanceAdmin.vue'), meta: { title: '性能监控', requireAuth: true, adminOnly: true } },
   { path: "*", redirect: "/index" },
 ];
 
@@ -63,7 +63,6 @@ setUnauthenticatedHandler(async () => {
 });
 
 function clearSessionProfile(): void {
-  sessionStorage.removeItem("qhzhc_authenticated");
   localStorage.removeItem("user");
   localStorage.removeItem("userform");
 }
@@ -71,7 +70,8 @@ function clearSessionProfile(): void {
 function cachedProfile(): SessionProfile | null {
   try {
     const raw = localStorage.getItem("user");
-    return raw ? (JSON.parse(raw) as SessionProfile) : null;
+    const profile = raw ? JSON.parse(raw) : null;
+    return isCompleteSessionProfile(profile) ? profile : null;
   } catch (_error) {
     return null;
   }
@@ -88,9 +88,7 @@ async function bootstrapSession(): Promise<SessionProfile> {
   return sessionBootstrap;
 }
 
-let performanceNavigationStart = 0;
 router.beforeEach(async (to, _from, next) => {
-  performanceNavigationStart = performance.now();
   document.title = `${String(to.meta?.title || "平台")} | 温室气体监测和计量平台`;
   const requiresAuth = to.matched.some((record) => record.meta.requireAuth);
   const adminOnly = to.matched.some((record) => record.meta.adminOnly);
@@ -100,13 +98,17 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   try {
+    // Refresh Token 是 HttpOnly Cookie，前端无法读取；刷新请求成功即表示它存在且有效。
+    if (!accessTokenManager.getAccessToken()) {
+      await accessTokenManager.refreshAccessToken();
+    }
+
     let profile = cachedProfile();
-    if (
-      sessionStorage.getItem("qhzhc_authenticated") !== "true" ||
-      !profile
-    ) {
+    if (!profile) {
       profile = await bootstrapSession();
-      sessionStorage.setItem("qhzhc_authenticated", "true");
+      if (!isCompleteSessionProfile(profile)) {
+        throw new Error("会话用户信息不完整");
+      }
       localStorage.setItem("user", JSON.stringify(profile));
       localStorage.setItem("userform", JSON.stringify(profile));
     }
@@ -116,15 +118,10 @@ router.beforeEach(async (to, _from, next) => {
     }
     next();
   } catch (_error) {
+    accessTokenManager.clearAccessToken();
     clearSessionProfile();
     next({ path: "/login", query: { redirect: to.fullPath } });
   }
-});
-
-router.afterEach((to, from) => {
-  performanceMonitor.noteRoute(to.path);
-  if (from.path === '/dataVisualization' && to.path !== from.path) performanceMonitor.endView();
-  if (to.path === '/dataVisualization' && from.path !== to.path) performanceMonitor.startView(performanceNavigationStart);
 });
 
 export default router;

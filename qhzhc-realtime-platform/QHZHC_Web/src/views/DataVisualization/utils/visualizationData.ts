@@ -24,17 +24,21 @@ export function appendRealtimePoint<T extends object>(
   return [...currentPoints, point].slice(-maxPoints);
 }
 
+/**
+ * 实时轨迹追加：只做合并与基础过滤，不再截断点位数量。
+ *
+ * 轨迹按会话全量保留，长度只受运行时长与订阅频率影响，因此 mapList 会随时间持续增长。
+ */
 export function appendRealtimeBatch<T extends object>(
   points: T[] | null | undefined,
   incoming: T[] | null | undefined,
-  maxPoints = 300,
 ): T[] {
   const currentPoints = Array.isArray(points) ? points : [];
   const nextPoints = Array.isArray(incoming)
     ? incoming.filter((point) => point && typeof point === "object")
     : [];
-  if (!nextPoints.length) return currentPoints.slice(-maxPoints);
-  return currentPoints.concat(nextPoints).slice(-maxPoints);
+  if (!nextPoints.length) return currentPoints;
+  return currentPoints.concat(nextPoints);
 }
 
 export function appendRealtimeTimeWindow<

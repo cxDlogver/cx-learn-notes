@@ -2,7 +2,7 @@
 
 这份文档只回答三个问题：Browser Monitor SDK 要解决什么问题；一条监控数据怎样从浏览器行为走到上报出口；为什么仓库要按照现有目录拆分。
 
-仓库当前已经实现第一阶段 Performance 采集内核：使用 `web-vitals` 采集 LCP、FCP、INP、CLS，使用 PerformanceObserver 采集 LoAF，并使用 requestAnimationFrame 周期采样 FPS。它通过订阅回调输出统一 Performance Metric，但尚未接入 Context、Processing 和 Transport。Event、Error、Network 与 View 等领域仍然只有目录占位。本文中的完整链路用于说明长期架构；只有明确标注已经实现的部分可以直接调用。
+仓库使用统一 `createMonitor()` 门面组织监控能力。Performance 数据经过 Web Vitals、PerformanceObserver 和 AnimationFrame Instrumentation 形成 Raw Signal，再由 Collector 转换为 Payload，绑定 App、Session、View 与 Runtime Context，进入统一 Processing 和 Transport。View 与 Custom Event 使用同一 Envelope 和发送链路；Error、Network 和自动 Action 继续沿本文定义的模块边界扩展。
 
 ## 1. Monitor SDK 是什么
 
@@ -134,7 +134,7 @@ Performance 回答“页面加载和交互是否足够快”。浏览器通过 P
 
 Performance Collector 的职责是把 PerformanceEntry 转换为有意义的指标，而不是把浏览器返回的所有对象原样上传。当前实现不会向订阅者暴露原始 Entry、DOM 节点、脚本 URL 或导航 URL。
 
-已实现指标分成三路：LCP、FCP、INP、CLS 复用 `web-vitals` 的标准计算；LoAF 由 PerformanceObserver 捕获并转换成限量的数值摘要；FPS 由 requestAnimationFrame 按可见页面的时间窗口采样。三路最终都转换成统一 Performance Metric。
+性能指标分成三路：Web Vitals Instrumentation 提供 LCP、FCP、INP、CLS 指标事实；PerformanceObserver Instrumentation 提供 LoAF 事实；AnimationFrame Instrumentation 在源头完成帧窗口机械统计。三路 Raw Signal 都由 Performance Collector 转换为统一 Performance Payload，再进入公共 Envelope、Processing 和 Transport。
 
 Resource Timing 同时带有“资源”和“性能”属性，但完整请求记录归 Network。Performance 如果需要分析资源对页面体验的影响，应使用关联关系，而不是再次生成一份相同资源记录。
 
@@ -354,7 +354,7 @@ Protocol 保存跨模块的数据约定，天然带有项目语义；Shared 保�
 
 如果两者都放入 `utils` 或 `types`，任何模块都可以向里面添加内容，依赖方向会逐渐消失。明确拆分后，可以直接判断一段代码是在定义模块协作，还是提供普通基础能力。
 
-## 7. 当前源码目录逐项说明
+## 7. 源码目录逐项说明
 
 ### 【目录总览】
 
@@ -365,7 +365,9 @@ src/
 ├─ instrumentation/
 │  ├─ fetch/
 │  ├─ xhr/
+│  ├─ web-vitals/
 │  ├─ performance-observer/
+│  ├─ animation-frame/
 │  ├─ global-errors/
 │  ├─ dom-events/
 │  ├─ history/
@@ -381,7 +383,9 @@ src/
 ├─ context/
 ├─ processing/
 │  ├─ normalize/
+│  ├─ validate/
 │  ├─ redact/
+│  ├─ filter/
 │  ├─ dedupe/
 │  ├─ sampling/
 │  └─ rate-limit/
@@ -392,6 +396,7 @@ src/
 │  ├─ retry/
 │  └─ flush/
 ├─ protocol/
+│  ├─ signals/
 │  └─ payloads/
 │     ├─ performance/
 │     ├─ event/
@@ -407,7 +412,7 @@ src/
 
 ### 【index.ts：包入口】
 
-`src/index.ts` 是 npm 包唯一入口。它现在导出 `createPerformanceMonitor()`、Monitor 配置与生命周期接口，以及统一 Performance Metric 判别联合类型。
+`src/index.ts` 是 npm 包唯一入口。它导出 `createMonitor()`、统一 Monitor 配置与生命周期接口，以及 Envelope、Context、Correlation 和各类 Payload 协议；内部 Collector、Instrumentation、Processing 和 Transport 实现不作为公共入口导出。
 
 保留单一入口可以防止业务代码直接依赖内部 Collector 或 Instrumentation。只有真正稳定、需要对调用方承诺兼容性的能力，才应从这里导出。
 
@@ -425,13 +430,15 @@ Core 位于入口和各功能模块之间，职责是管理 SDK 的整体运行�
 
 ### 【instrumentation：只捕获浏览器事实】
 
-`instrumentation` 下每个子目录对应一种浏览器事实来源。当前只有 `performance-observer` 已有实现，其余仍为占位：
+`instrumentation` 下每个子目录对应一种浏览器事实来源。Performance 使用 Web Vitals、PerformanceObserver、AnimationFrame、History 和 Page Lifecycle Instrumentation；其他领域继续按照相同规则增加浏览器事实来源：
 
 | 子目录                 | 面对的浏览器能力               | 产生的事实                      |
 | ---------------------- | ------------------------------ | ------------------------------- |
 | `fetch`                | `window.fetch`                 | 请求开始、完成、拒绝            |
 | `xhr`                  | `XMLHttpRequest`               | 请求生命周期和结果              |
-| `performance-observer` | `PerformanceObserver`          | 浏览器性能条目                  |
+| `web-vitals`           | `web-vitals`                   | LCP、FCP、INP、CLS 指标事实     |
+| `performance-observer` | `PerformanceObserver`          | LoAF、Resource 等性能条目       |
+| `animation-frame`      | requestAnimationFrame、Timer   | 帧数和窗口时长                  |
 | `global-errors`        | error、unhandledrejection      | 运行时、资源和 Promise 异常事实 |
 | `dom-events`           | DOM Event                      | 白名单用户操作事实              |
 | `history`              | History、popstate、hashchange  | URL 与路由变化                  |
@@ -445,7 +452,7 @@ Core 位于入口和各功能模块之间，职责是管理 SDK 的整体运行�
 
 `collectors` 按最终要回答的问题拆分：
 
-- `performance` 已实现 LCP、FCP、INP、CLS、FPS 和 LoAF 的采集与协议转换；
+- `performance` 把 WebVital、LoAF 和 FrameWindow Signal 转换为 LCP、FCP、INP、CLS、FPS 和 LoAF Payload；
 - `event/action` 把允许记录的 DOM 操作解释为用户行为；
 - `event/custom` 接收业务明确表达的自定义事件；
 - `error` 把不同异常来源转换为统一错误语义；
@@ -619,9 +626,7 @@ Page Lifecycle 不直接调用 View Collector 或 Sender。它只发布事实，
 
 ### 【源码状态】
 
-`src/index.ts` 已公开 Performance Monitor 工厂和协议类型。Core 已实现 Performance 生命周期编排；PerformanceObserver Instrumentation、Performance Collector 和 Performance Payload Protocol 已落地。Event、Error、Network、View、Context、Processing、Transport 以及其他 Instrumentation 仍为空目录占位，没有事件监听、错误监听、Fetch/XHR 包装或数据发送实现。
-
-因此，本文没有给出可调用 SDK 示例，也没有声明任何已经存在的 API。
+`src/index.ts` 公开统一 `createMonitor()` 门面和协议类型。Core 负责配置、生命周期、模块注册、Signal Hub 和管线编排；Performance、View、Custom Event、Context、Processing 与 Transport 共用一条可执行链路。Error、Network 和自动 Action 仍按照相同协议和依赖方向继续扩展，不建立独立旁路。
 
 ### 【工程能力】
 
@@ -631,7 +636,7 @@ Page Lifecycle 不直接调用 View Collector 或 Sender。它只发布事实，
 
 ### 【文档与源码的关系】
 
-本文中的目标链路用于说明目录为什么这样划分。当前 Performance 章节同时描述已经落地的第一阶段能力；其他章节仍是架构目标，不能视为已经存在的 API。
+本文中的目标链路既约束目录划分，也约束实现方式。已经接入的模块必须遵守统一生命周期、Signal、Envelope、Processing 和 Transport 契约；新增监控类型只能沿相同边界扩展，不能恢复 Performance 专用工厂、订阅出口或终止式 `stop()`。
 
 ## 12. 参考文献
 

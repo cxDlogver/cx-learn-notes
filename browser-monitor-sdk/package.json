@@ -1,6 +1,6 @@
 {
   "name": "cx-browser-monitor-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-agnostic browser telemetry SDK for performance, events, errors, network, and views.",
   "keywords": [
     "browser",
@@ -68,6 +68,7 @@
     "prepublishOnly": "pnpm check"
   },
   "dependencies": {
+    "@browser-monitor/protocol": "workspace:*",
     "web-vitals": "6.2.1"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/server/app.js";
 import { AuthService } from "../src/server/auth.js";
 import { AppDatabase } from "../src/server/database.js";
+import { createTelemetryPoint } from "../src/server/point-factory.js";
 import { TelemetrySimulator } from "../src/server/simulator.js";
 
 describe("HTTP API", () => {
@@ -18,7 +19,13 @@ describe("HTTP API", () => {
       jwtSecret: "test-secret-with-at-least-thirty-two-bytes",
     });
     simulator = new TelemetrySimulator(database);
-    app = createApp({ database, auth, simulator, disconnectClients: () => 3 });
+    app = createApp({
+      database,
+      auth,
+      simulator,
+      connectionCount: () => 3,
+      disconnectClients: () => 3,
+    });
   });
 
   afterEach(() => {
@@ -34,7 +41,9 @@ describe("HTTP API", () => {
       .expect(200);
     expect(login.body.accessToken.split(".")).toHaveLength(3);
     expect(login.headers["set-cookie"]?.[0]).toContain("qhzhc_refresh=");
-    simulator.burst(12);
+    database.insertTelemetry(Array.from({ length: 12 }, (_, index) =>
+      createTelemetryPoint(index, index, "QH-ZHC-01", "route"),
+    ));
     const latest = await request(app)
       .get("/api/telemetry/latest?limit=5")
       .set("Authorization", `Bearer ${login.body.accessToken}`)
@@ -83,7 +92,7 @@ describe("HTTP API", () => {
       .expect(401);
   });
 
-  it("updates simulator failure conditions and supports pause/burst/disconnect", async () => {
+  it("updates simulator sampling settings and supports start, pause and disconnect", async () => {
     const login = await request(app)
       .post("/api/auth/login")
       .send({ username: "admin", password: "Admin@123456" });
@@ -91,14 +100,14 @@ describe("HTTP API", () => {
     const configured = await request(app)
       .patch("/api/admin/simulator/config")
       .set("Authorization", authorization)
-      .send({ pointsPerSecond: 9999, disorder: "jitter", deliveryDropRate: 0.25 })
+      .send({ pointsPerSecond: 9999, pattern: "circle" })
       .expect(200);
     expect(configured.body.status.config).toMatchObject({
-      pointsPerSecond: 2000,
-      disorder: "jitter",
-      deliveryDropRate: 0.25,
+      pointsPerSecond: 20,
+      pattern: "circle",
     });
-    await request(app).post("/api/admin/simulator/action").set("Authorization", authorization).send({ action: "burst", count: 40 }).expect(200);
+    await request(app).post("/api/admin/simulator/action").set("Authorization", authorization).send({ action: "start" }).expect(200);
+    await request(app).post("/api/admin/simulator/action").set("Authorization", authorization).send({ action: "pause" }).expect(200);
     const disconnected = await request(app).post("/api/admin/simulator/action").set("Authorization", authorization).send({ action: "disconnect" }).expect(200);
     expect(disconnected.body.disconnected).toBe(3);
   });

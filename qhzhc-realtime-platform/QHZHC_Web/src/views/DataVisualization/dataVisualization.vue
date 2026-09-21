@@ -84,7 +84,9 @@
         <i class="iconfont icon-zhinanzhen"></i>
       </div>
       <!-- 当前信号状态 -->
-      <div class="state-box" v-if="searchType == 1">{{ signalState }}</div>
+      <div class="state-box" v-if="searchType == 1 && signalState">
+        {{ signalState }}
+      </div>
       <!-- 操作栏 -->
       <div class="btn-box">
         <button
@@ -256,6 +258,22 @@
             </div>
           </div>
           <div class="btn-content" v-if="searchType == 1">
+            <div class="c-title">每秒接收:</div>
+            <el-select
+              v-model="realtimePointLimit"
+              size="mini"
+              style="width: 88px; margin-top: 10px"
+              @change="changeRealtimePointLimit"
+            >
+              <el-option
+                v-for="item in realtimePointLimitOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
+          </div>
+          <div class="btn-content" v-if="searchType == 1">
             <div class="c-title">清除数据:</div>
             <button
               type="button"
@@ -389,8 +407,6 @@
   </div>
 </template>
 <script lang="ts">
-import { performanceMonitor } from '@/services/performance/monitor';
-
 import PlanimetricMap from "./components/PlanimetricMap.vue";
 import StereoscopicMap from "./components/StereoscopicMap.vue";
 import Weather from "./components/Weather.vue";
@@ -409,6 +425,7 @@ import {
   normalizeEnvelope,
   validateHistoryRange,
 } from "./utils/visualizationData";
+import { accessTokenManager } from "@/services/accessToken";
 import { resolveWebSocketBaseUrl } from "@/utils/apiBaseUrl";
 export default {
   components: {
@@ -425,6 +442,15 @@ export default {
       boxShow: true, //工具箱是否显示
       mapType: 1, //1平面地图23d地图
       realtimeClient: null,
+      realtimePointLimit: 0,
+      realtimePointLimitOptions: [
+        { label: "全部", value: 0 },
+        { label: "1 点", value: 1 },
+        { label: "2 点", value: 2 },
+        { label: "5 点", value: 5 },
+        { label: "10 点", value: 10 },
+        { label: "20 点", value: 20 },
+      ],
       sessionProfile: {},
       gasTypeList: [], //气体选择
       gasTypeData: {
@@ -572,9 +598,16 @@ export default {
         url: this.getWebSocketUrl(),
         onPacket: this.handleRealtimePacket,
         onStatus: this.handleRealtimeStatus,
-        initialSequence: Number(options.initialSequence) || 0,
+        initialBucketStartMs: Number(options.initialBucketStartMs),
+        maxPointsPerSecond: this.realtimePointLimit,
+        maxPerFrame: 1,
       });
       this.realtimeClient.start();
+    },
+    changeRealtimePointLimit(value) {
+      if (this.realtimeClient) {
+        this.realtimeClient.setMaxPointsPerSecond(Number(value));
+      }
     },
     stopRealtime() {
       if (this.realtimeClient) {
@@ -583,46 +616,59 @@ export default {
       }
       this.connected = false;
     },
+    /** 处理实时连接状态 */
     handleRealtimeStatus(status) {
       if (this.searchType !== 1) {
         return;
       }
       this.connected = status === "connected";
       const statusText = {
-        connected: "连接成功",
-        disconnected: "连接断开，正在重连",
+        connected: "",
+        "no-data": "无最新采集数据",
+        disconnected: "网络异常",
         "auth-recovering": "登录凭证更新中",
         error: "实时连接失败",
         "invalid-packet": "实时数据格式错误",
       };
       this.signalState = statusText[status] || this.signalState;
     },
+    /**
+     * 消费每一个实时数据包：校验信封 → 增量并入折线图与地图 → 刷新详情卡与天气。
+     *
+     * 注意 WebSocket 关闭有延迟，切到历史模式后仍可能有包飞到回调里，所以入口必须先判 searchType。
+     */
     handleRealtimePacket(packet) {
-      performanceMonitor.dataAvailable(packet?.data?.length || 0);
       if (this.searchType !== 1) {
         return;
       }
       try {
+        // normalizeEnvelope 只保证 code 是数字、data 是数组；点位内部的字段合法性交给下游渲染容错。
         const result = normalizeEnvelope(packet);
         if (result.code === 200 && result.data.length) {
           const point = result.data[result.data.length - 1];
+          // 两条曲线用的是不同的保留策略，所以必须各自增量合并，不能共用一份：
+          // 折线图按时间窗口淘汰（以最新点为基准向前留 REALTIME_CHART_WINDOW_MS），
+          // 地图轨迹不设上限、全量保留，长度只受运行时长与订阅频率影响。
           const nextGasPoints = appendRealtimeTimeWindow(
             this.gasdata.data,
             result.data,
           );
           const nextMapPoints = appendRealtimeBatch(this.mapList, result.data);
-          performanceMonitor.dataSize(nextGasPoints.length);
           this.gasdata = { ...result, data: nextGasPoints };
           this.mapList = nextMapPoints;
+          // 详情卡与天气只关心批次里的最后一个点。
           this.detailData = point;
           this.detailsFlag = true;
           this.weatherLocationUpdate(point);
-          this.signalState = "连接成功";
+          this.signalState = "";
         } else if (result.code === 204) {
+          // 204 = 链路正常但本次无新数据，原样透传服务端文案。
           this.signalState = result.message;
         } else if (result.code === 401) {
+          // 必须先断开再跳转，否则客户端会在登录页后台持续重连、被反复拒绝。
           this.stopRealtime();
-          sessionStorage.removeItem("qhzhc_authenticated");
+          accessTokenManager.clearAccessToken();
+          localStorage.removeItem("user");
           this.$router.replace({
             path: "/login",
             query: { redirect: this.$route.fullPath },
@@ -631,6 +677,7 @@ export default {
           this.signalState = result.message || "实时数据请求失败";
         }
       } catch (error) {
+        // 结构化失败不应中断推送链路，降级成一句状态提示即可。
         this.signalState = "实时数据格式错误";
       }
     },
@@ -639,7 +686,6 @@ export default {
       if (this.mapType === val) {
         return;
       }
-      performanceMonitor.setContext({mapType:val===2?'3d':'2d'});
       this.mapType = val;
       if (this.searchType === 2) {
         this.renderHistoryResult();
@@ -754,7 +800,6 @@ export default {
         return;
       }
       const requestSequence = ++this.realtimeRequestSequence;
-      let requestSocketHistory = true;
       this.dateShow = false;
       this.historyStatus = "idle";
       this.historyError = "";
@@ -773,29 +818,27 @@ export default {
           return;
         }
         this.applyRealtimeInitialWindow(result);
-        requestSocketHistory = false;
       } catch (error) {
         if (!this.isCurrentRealtimeRequest(requestSequence)) {
           return;
         }
-        performanceMonitor.dataFailed();
         this.signalState = error.message || "最新 5 分钟数据加载失败";
         this.$message.warning(this.signalState);
       } finally {
         if (this.isCurrentRealtimeRequest(requestSequence)) {
           this.loading = false;
           const latestPoint = this.mapList[this.mapList.length - 1];
+          const latestPointTime = Date.parse(latestPoint && latestPoint.time);
+          const initialBucketStartMs = Number.isFinite(latestPointTime) // 如果有最新采集数据，则从最新采集数据的下一秒开始推送
+            ? Math.floor(latestPointTime / 1000) * 1000 + 1000
+            : Math.floor(Date.now() / 1000) * 1000 + 1000;
           this.startRealtime({
-            requestInitialHistory: requestSocketHistory,
-            initialSequence: Number(latestPoint && latestPoint.sequence) || 0,
+            initialBucketStartMs,
           });
         }
       }
     },
     applyRealtimeInitialWindow(result) {
-      performanceMonitor.setContext({mode:'initial'});
-      performanceMonitor.dataAvailable(result.data?.length || 0);
-      performanceMonitor.dataSize(result.data?.length || 0);
       const points = Array.isArray(result.data) ? result.data : [];
       this.gasdata = result;
       this.mapList = points.slice();
@@ -805,9 +848,9 @@ export default {
         const latestPoint = points[points.length - 1];
         this.detailData = latestPoint;
         this.weatherLocationUpdate(latestPoint);
-        this.signalState = "已加载最新 5 分钟数据";
+        this.signalState = "";
       } else {
-        this.signalState = result.message || "当前窗口无实时数据";
+        this.signalState = "无最新采集数据";
       }
       this.$nextTick(() => {
         this.redrawRealtimeWindow();
@@ -887,7 +930,6 @@ export default {
     },
 
     renderHistoryResult() {
-      performanceMonitor.setContext({mode:'history'});
       if (
         this.searchType !== 2 ||
         !Array.isArray(this.historyData.data) ||

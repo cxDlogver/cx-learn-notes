@@ -5,7 +5,6 @@
         <p>清华走航车系统</p>
         <h1>数据模拟后台</h1>
       </div>
-      <router-link class="performance-link" to="/admin/performance">性能监控</router-link>
       <button type="button" @click="backToVisualization">返回数据可视化</button>
     </header>
 
@@ -21,21 +20,12 @@
 
       <el-form label-position="top" :model="draft" class="config-form">
         <el-form-item label="每秒插入条数">
-          <el-input-number
-            v-model="draft.pointsPerSecond"
-            :min="1"
-            :max="2000"
-            :step="10"
-            data-testid="points-per-second"
-          />
-        </el-form-item>
-        <el-form-item label="批次间隔（毫秒）">
-          <el-input-number
-            v-model="draft.batchIntervalMs"
-            :min="50"
-            :max="2000"
-            :step="50"
-          />
+          <el-select v-model="draft.pointsPerSecond" data-testid="points-per-second">
+            <el-option :label="'1 点/秒'" :value="1" />
+            <el-option :label="'5 点/秒'" :value="5" />
+            <el-option :label="'10 点/秒'" :value="10" />
+            <el-option :label="'20 点/秒'" :value="20" />
+          </el-select>
         </el-form-item>
         <el-form-item label="车辆轨迹">
           <el-select v-model="draft.pattern">
@@ -43,31 +33,6 @@
             <el-option label="环形走航" value="circle" />
             <el-option label="突发采样" value="burst" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="发送顺序">
-          <el-select v-model="draft.disorder">
-            <el-option label="按序发送" value="none" />
-            <el-option label="批次反序" value="reverse-batch" />
-            <el-option label="随机抖动" value="jitter" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="重复率（0–0.5）">
-          <el-input-number
-            v-model="draft.duplicateRate"
-            :min="0"
-            :max="0.5"
-            :step="0.01"
-            :precision="2"
-          />
-        </el-form-item>
-        <el-form-item label="传输丢包率（0–0.5）">
-          <el-input-number
-            v-model="draft.deliveryDropRate"
-            :min="0"
-            :max="0.5"
-            :step="0.01"
-            :precision="2"
-          />
         </el-form-item>
       </el-form>
 
@@ -78,7 +43,6 @@
         <el-button @click="perform(status.running ? 'pause' : 'start')">
           {{ status.running ? "中断插入" : "开始插入" }}
         </el-button>
-        <el-button @click="perform('burst', 200)">一次插入 200 条</el-button>
         <el-button type="danger" plain @click="perform('disconnect')">
           模拟 WebSocket 断网
         </el-button>
@@ -100,11 +64,7 @@ import {
 const initialConfig = (): SimulatorConfig => ({
   robotId: "QH-ZHC-01",
   pointsPerSecond: 20,
-  batchIntervalMs: 250,
   pattern: "route",
-  disorder: "none",
-  duplicateRate: 0,
-  deliveryDropRate: 0,
 });
 
 const initialStatus = (): SimulatorStatus => ({
@@ -153,11 +113,8 @@ export default Vue.extend({
         this.saving = false;
       }
     },
-    async perform(
-      action: "start" | "pause" | "burst" | "disconnect",
-      count?: number,
-    ): Promise<void> {
-      const result = await runSimulatorAction(action, count);
+    async perform(action: "start" | "pause" | "disconnect"): Promise<void> {
+      const result = await runSimulatorAction(action);
       this.status = result.status;
       if (action === "disconnect") {
         this.$message.success(`已断开 ${result.disconnected || 0} 个连接`);

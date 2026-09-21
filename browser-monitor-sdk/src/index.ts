@@ -1,20 +1,21 @@
-export {
-  createPerformanceMonitor,
-  type PerformanceMetricListener,
-  type PerformanceMonitor,
-  type PerformanceMonitorOptions,
-} from './core/performance-monitor';
+export { createMonitor, type Monitor, type MonitorCapabilities } from './core/monitor';
+export type { MonitorOptions, RouteLocation } from './core/config';
 export type {
-  CLSPerformanceMetric,
-  FCPPerformanceMetric,
-  FPSPerformanceMetric,
-  INPPerformanceMetric,
-  LCPPerformanceMetric,
-  LoAFPerformanceMetric,
+  AppContextData,
+  RuntimeContextData,
+  TelemetryContext,
+  UserContextData,
+} from './protocol/context';
+export type { CorrelationContext } from './protocol/correlation';
+export type { TelemetryEnvelope } from './protocol/envelope';
+export type {
+  CustomEventPayload,
   PerformanceCapabilityMap,
-  PerformanceMetric,
   PerformanceMetricName,
   PerformanceMetricRating,
   PerformanceNavigationType,
-  WebVitalPerformanceMetric,
-} from './protocol/payloads/performance';
+  PerformancePayload,
+  TelemetryPayload,
+  ViewPayload,
+  WebVitalPerformancePayload,
+} from './protocol/payloads';

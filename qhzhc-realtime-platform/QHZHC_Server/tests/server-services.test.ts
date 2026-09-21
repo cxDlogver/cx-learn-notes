@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthError, AuthService } from "../src/server/auth.js";
 import { AppDatabase } from "../src/server/database.js";
 import { createTelemetryPoint } from "../src/server/point-factory.js";
-import { createReplayPlan } from "../src/server/replay-plan.js";
 import { TelemetrySimulator } from "../src/server/simulator.js";
+import { TelemetryStreamService } from "../src/server/telemetry-stream.js";
 
 const ROUTE_OUTBOUND_POINT_COUNT = 1_050;
 const CIRCLE_POINT_COUNT = 600;
@@ -17,6 +17,7 @@ describe("server services", () => {
   let database: AppDatabase;
   let auth: AuthService;
   let simulator: TelemetrySimulator;
+  let telemetryStream: TelemetryStreamService;
 
   beforeEach(() => {
     database = new AppDatabase(":memory:", 10_000);
@@ -26,9 +27,11 @@ describe("server services", () => {
       jwtSecret: "test-secret-with-at-least-thirty-two-bytes",
     });
     simulator = new TelemetrySimulator(database);
+    telemetryStream = new TelemetryStreamService(database);
   });
 
   afterEach(() => {
+    telemetryStream.close();
     simulator.close();
     database.close();
   });
@@ -49,46 +52,90 @@ describe("server services", () => {
     expect(() => auth.register("operator_1", "重复账号", "Passw0rd!")).toThrowError("该账号已存在");
   });
 
-  it("writes a burst atomically and produces a contiguous replay plan", () => {
-    simulator.burst(80);
-    expect(database.latestSequence()).toBe(80);
-    const replay = createReplayPlan(database, "QH-ZHC-01", 73);
-    expect(replay.kind).toBe("replay");
-    if (replay.kind === "replay") {
-      expect(replay.points.map((point) => point.sequence)).toEqual([74, 75, 76, 77, 78, 79, 80]);
+  it("queries one natural-second bucket without mixing the following second", () => {
+    const bucketStartMs = 1_700_000_000_000;
+    database.insertTelemetry([
+      createTelemetryPoint(0, bucketStartMs, "QH-ZHC-01", "route"),
+      createTelemetryPoint(1, bucketStartMs + 950, "QH-ZHC-01", "route"),
+      createTelemetryPoint(2, bucketStartMs + 1_000, "QH-ZHC-01", "route"),
+    ]);
+    expect(
+      database.telemetryByTimeBucket("QH-ZHC-01", bucketStartMs)
+        .map((point) => Date.parse(point.sampledAt)),
+    ).toEqual([bucketStartMs, bucketStartMs + 950]);
+  });
+
+  it("generates uniformly spaced points without publishing them itself", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(1_700_000_000_123);
+      simulator.updateConfig({ pointsPerSecond: 5 });
+      simulator.start();
+
+      vi.advanceTimersByTime(877);
+      expect(
+        database.telemetryByTimeBucket("QH-ZHC-01", 1_700_000_001_000)
+          .map((point) => Date.parse(point.sampledAt)),
+      ).toEqual([
+        1_700_000_001_000,
+        1_700_000_001_200,
+        1_700_000_001_400,
+        1_700_000_001_600,
+        1_700_000_001_800,
+      ]);
+    } finally {
+      vi.useRealTimers();
     }
   });
 
-  it("returns a gap plan when the requested range exceeds the replay budget", () => {
-    simulator.burst(120);
-    expect(createReplayPlan(database, "QH-ZHC-01", 1, 50)).toMatchObject({
-      kind: "gap",
-      requestedFrom: 2,
-      latestSequence: 120,
-    });
+  it("streams live and no-data buckets from the database without depending on the simulator", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(1_700_000_000_123);
+      const published: Array<Parameters<Parameters<TelemetryStreamService["setPublisher"]>[0]>[0]> = [];
+      telemetryStream.setPublisher((bucket) => published.push(bucket));
+      telemetryStream.start();
+
+      database.insertTelemetry([
+        createTelemetryPoint(99, 1_700_000_001_000, "QH-ZHC-01", "route"),
+      ]);
+      vi.advanceTimersByTime(1_877);
+      expect(published[0]).toMatchObject({
+        bucketStartMs: 1_700_000_001_000,
+        bucketEndMs: 1_700_000_002_000,
+        status: "live",
+      });
+      expect(published[0]?.points).toHaveLength(1);
+
+      vi.advanceTimersByTime(1_000);
+      expect(published[1]).toMatchObject({
+        bucketStartMs: 1_700_000_002_000,
+        bucketEndMs: 1_700_000_003_000,
+        status: "no-data",
+        points: [],
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("samples an entire high-volume history range while preserving both ends", () => {
-    simulator.burst(20);
+    database.insertTelemetry(Array.from({ length: 20 }, (_, index) =>
+      createTelemetryPoint(index, index, "QH-ZHC-01", "route"),
+    ));
     const history = database.queryHistory("QH-ZHC-01", null, null, 5);
     expect(history).toMatchObject({ total: 20, truncated: true });
     expect(history.points.map((point) => point.sequence)).toEqual([1, 6, 11, 16, 20]);
   });
 
-  it("clamps unsafe simulator configuration values", () => {
+  it("keeps the supported sampling rate when an invalid value is submitted", () => {
     const status = simulator.updateConfig({
-      pointsPerSecond: 99_999,
-      batchIntervalMs: 1,
-      duplicateRate: 1,
-      deliveryDropRate: -1,
-      disorder: "jitter",
+      pointsPerSecond: 99_999 as 20,
+      pattern: "circle",
     });
     expect(status.config).toMatchObject({
-      pointsPerSecond: 2_000,
-      batchIntervalMs: 50,
-      duplicateRate: 0.5,
-      deliveryDropRate: 0,
-      disorder: "jitter",
+      pointsPerSecond: 20,
+      pattern: "circle",
     });
   });
 

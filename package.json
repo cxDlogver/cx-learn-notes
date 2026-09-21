@@ -1,0 +1,12 @@
+{
+  "name": "cx-learn-notes-monitor-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "monitor:build": "pnpm --filter @browser-monitor/protocol build && pnpm --filter cx-browser-monitor-sdk build && pnpm --filter @browser-monitor/platform build",
+    "monitor:typecheck": "pnpm --filter @browser-monitor/protocol typecheck && pnpm --filter cx-browser-monitor-sdk typecheck && pnpm --filter @browser-monitor/platform typecheck",
+    "monitor:test": "pnpm --filter @browser-monitor/protocol test && pnpm --filter cx-browser-monitor-sdk test && pnpm --filter @browser-monitor/platform test",
+    "monitor:check": "pnpm monitor:typecheck && pnpm monitor:test && pnpm monitor:build"
+  }
+}
+

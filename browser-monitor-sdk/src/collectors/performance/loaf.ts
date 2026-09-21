@@ -1,81 +1,79 @@
-import { observePerformanceEntries } from '../../instrumentation/performance-observer';
-import type { LoAFPerformanceMetric } from '../../protocol/payloads/performance';
-
-interface LongAnimationFrameEntry extends PerformanceEntry {
-  readonly blockingDuration?: number;
-  readonly renderStart?: number;
-  readonly styleAndLayoutStart?: number;
-  readonly scripts?: readonly unknown[];
-}
+import type { MonitorModule } from '../../core/module-registry';
+import type { TelemetryEmitter } from '../../core/pipeline';
+import type { SignalSubscriber } from '../../protocol/signals';
+import { createId } from '../../shared/id';
 
 export interface LoAFCollectorOptions {
   minDurationMs: number;
-  maxEntriesPerVisit: number;
-  emit: (metric: LoAFPerformanceMetric) => void;
+  maxEntriesPerView: number;
 }
 
-function safeTiming(value: number | undefined): number {
-  return value !== undefined && Number.isFinite(value) && value >= 0 ? value : 0;
-}
-
-function getTimeOrigin(): number {
-  return typeof performance !== 'undefined' && Number.isFinite(performance.timeOrigin)
-    ? performance.timeOrigin
-    : Date.now();
-}
-
-export class LoAFCollector {
-  private disconnect: (() => void) | undefined;
+export class LoAFCollector implements MonitorModule {
+  readonly name = 'loaf-collector';
+  private readonly unsubscribers: Array<() => void> = [];
+  private active = false;
   private emittedEntries = 0;
 
-  constructor(private readonly options: LoAFCollectorOptions) {}
+  constructor(
+    private readonly options: LoAFCollectorOptions,
+    private readonly signals: SignalSubscriber,
+    private readonly emitter: TelemetryEmitter,
+  ) {}
 
-  start(buffered: boolean): void {
-    this.disconnect?.();
-    this.disconnect = observePerformanceEntries(
-      'long-animation-frame',
-      (entry) => this.handleEntry(entry as LongAnimationFrameEntry),
-      buffered,
+  install(): void {
+    if (this.unsubscribers.length > 0) return;
+    this.unsubscribers.push(
+      // 上报额度按 View 隔离，避免一个页面的长任务耗尽后续页面的额度。
+      this.signals.subscribe('view.route-change', () => {
+        this.emittedEntries = 0;
+      }),
+      this.signals.subscribe('performance.loaf', (signal) => {
+        if (
+          !this.active ||
+          signal.duration < this.options.minDurationMs ||
+          this.emittedEntries >= this.options.maxEntriesPerView
+        ) {
+          return;
+        }
+
+        // 阈值和每 View 上限属于监控语义，应留在 Collector 而不是浏览器采集层。
+        this.emittedEntries += 1;
+        this.emitter.emit({
+          name: 'LoAF',
+          timestamp: signal.timestamp,
+          payload: {
+            type: 'performance',
+            name: 'LoAF',
+            sampleId: createId('sample'),
+            sequence: 0,
+            state: 'final',
+            value: signal.duration,
+            unit: 'ms',
+            kind: 'diagnostic',
+            source: 'performance-observer',
+            detail: {
+              startTime: signal.startTime,
+              blockingDuration: signal.blockingDuration,
+              renderStart: signal.renderStart,
+              styleAndLayoutStart: signal.styleAndLayoutStart,
+              scriptCount: signal.scriptCount,
+            },
+          },
+        });
+      }),
     );
   }
 
+  start(): void {
+    this.active = true;
+  }
+
   stop(): void {
-    this.disconnect?.();
-    this.disconnect = undefined;
+    this.active = false;
   }
 
-  resetVisit(): void {
-    this.emittedEntries = 0;
-  }
-
-  private handleEntry(entry: LongAnimationFrameEntry): void {
-    if (
-      this.emittedEntries >= this.options.maxEntriesPerVisit ||
-      !Number.isFinite(entry.duration) ||
-      entry.duration < this.options.minDurationMs
-    ) {
-      return;
-    }
-
-    const startTime = safeTiming(entry.startTime);
-    const timeOrigin = getTimeOrigin();
-    this.emittedEntries += 1;
-    this.options.emit({
-      type: 'performance',
-      name: 'LoAF',
-      id: `loaf-${timeOrigin}-${startTime}`,
-      value: entry.duration,
-      unit: 'ms',
-      kind: 'diagnostic',
-      source: 'performance-observer',
-      timestamp: timeOrigin + startTime,
-      detail: {
-        startTime,
-        blockingDuration: safeTiming(entry.blockingDuration),
-        renderStart: safeTiming(entry.renderStart),
-        styleAndLayoutStart: safeTiming(entry.styleAndLayoutStart),
-        scriptCount: Array.isArray(entry.scripts) ? entry.scripts.length : 0,
-      },
-    });
+  destroy(): void {
+    this.stop();
+    for (const unsubscribe of this.unsubscribers.splice(0)) unsubscribe();
   }
 }

@@ -121,9 +121,7 @@ export default Vue.extend({
       try {
         await userLogout();
       } finally {
-        sessionStorage.removeItem("qhzhc_authenticated");
         localStorage.removeItem("user");
-        localStorage.removeItem("userform");
         await this.$router.push("/login");
         this.$message.success("退出成功");
       }

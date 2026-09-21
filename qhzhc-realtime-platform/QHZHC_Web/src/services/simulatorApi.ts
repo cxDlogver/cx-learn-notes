@@ -1,16 +1,11 @@
 import request from "@/utils/request";
 
 export type SimulatorPattern = "route" | "circle" | "burst";
-export type DisorderMode = "none" | "reverse-batch" | "jitter";
 
 export interface SimulatorConfig {
-  pointsPerSecond: number;
-  batchIntervalMs: number;
+  pointsPerSecond: 1 | 5 | 10 | 20;
   robotId: string;
   pattern: SimulatorPattern;
-  disorder: DisorderMode;
-  duplicateRate: number;
-  deliveryDropRate: number;
 }
 
 export interface SimulatorStatus {
@@ -44,12 +39,11 @@ export async function updateSimulatorConfig(
 }
 
 export async function runSimulatorAction(
-  action: "start" | "pause" | "burst" | "disconnect",
-  count?: number,
+  action: "start" | "pause" | "disconnect",
 ): Promise<StatusEnvelope> {
   const response = await request.post<StatusEnvelope>(
     "/api/admin/simulator/action",
-    { action, count },
+    { action },
   );
   return response.data;
 }

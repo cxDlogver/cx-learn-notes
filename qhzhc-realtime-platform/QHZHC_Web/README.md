@@ -10,9 +10,8 @@ npm run build
 
 TypeScript 实时边界位于 `src/views/DataVisualization/services`：
 
-- `realtimeClient.ts`：连接状态机、心跳、指数退避和恢复；
-- `OrderedTelemetryBuffer.ts`：按 sequence 去重、重排和缺口识别；
-- `FrameTelemetryQueue.ts`：每帧数量与时间预算；
+- `realtimeClient.ts`：连接状态机、最新批次时间、缺口补发、心跳和指数退避；
+- `FrameTelemetryQueue.ts`：接收与渲染解耦、暂停恢复、每帧数量与时间预算；
 - `historyApi.ts`：历史查询兼容接口。
 
 原二维和三维组件只更换数据入口，没有重画界面。项目根目录的 `npm run verify:original-ui` 会对模板、样式、`truck.png` 和 `Cesium_Car.glb` 做基线校验。

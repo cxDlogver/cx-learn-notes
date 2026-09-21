@@ -1,6 +1,3 @@
-import { performanceMonitor } from '@/services/performance/monitor';
-import { accessTokenManager } from '@/services/accessToken';
-import { resolveApiBaseUrl } from '@/utils/apiBaseUrl';
 import Vue from "vue";
 import axios from "axios";
 import * as echarts from "echarts";
@@ -22,8 +19,6 @@ Vue.config.productionTip = false;
 Vue.prototype.$axios = axios;
 Vue.prototype.$echarts = echarts;
 Vue.use(ElementUI);
-
-performanceMonitor.configure({url: () => resolveApiBaseUrl() + '/api/performance/batches', token: () => accessTokenManager.getAccessToken(), refresh: () => accessTokenManager.refreshAccessToken()}, process.env.VUE_APP_PERFORMANCE_ENABLED !== 'false');
 
 new Vue({
   router,

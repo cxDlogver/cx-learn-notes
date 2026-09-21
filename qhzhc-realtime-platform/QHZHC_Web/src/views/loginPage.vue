@@ -51,7 +51,6 @@ export default Vue.extend({
       this.submitting = true;
       try {
         const profile = await userLogin(this.user);
-        sessionStorage.setItem("qhzhc_authenticated", "true");
         localStorage.setItem("user", JSON.stringify(profile));
         localStorage.setItem("userform", JSON.stringify(profile));
         this.$message.success("登录成功");

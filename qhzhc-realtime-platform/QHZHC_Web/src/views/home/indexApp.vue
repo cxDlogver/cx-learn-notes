@@ -30,12 +30,13 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { accessTokenManager } from "@/services/accessToken";
 
 export default Vue.extend({
   name: "IndexApp",
   computed: {
     authenticated(): boolean {
-      return sessionStorage.getItem("qhzhc_authenticated") === "true";
+      return Boolean(accessTokenManager.getAccessToken());
     },
   },
 });

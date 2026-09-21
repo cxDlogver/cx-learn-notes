@@ -1,116 +1,57 @@
-import type { FPSPerformanceMetric } from '../../protocol/payloads/performance';
+import type { MonitorModule } from '../../core/module-registry';
+import type { TelemetryEmitter } from '../../core/pipeline';
+import type { SignalSubscriber } from '../../protocol/signals';
+import { createId } from '../../shared/id';
 
-export interface FPSCollectorOptions {
-  sampleWindowMs: number;
-  sampleIntervalMs: number;
-  emit: (metric: FPSPerformanceMetric) => void;
-}
-
-function getTimeOrigin(): number {
-  return typeof performance !== 'undefined' && Number.isFinite(performance.timeOrigin)
-    ? performance.timeOrigin
-    : Date.now();
-}
-
-export class FPSCollector {
+export class FPSCollector implements MonitorModule {
+  readonly name = 'fps-collector';
+  private unsubscribe: (() => void) | undefined;
   private active = false;
-  private sampling = false;
-  private animationFrameId: number | undefined;
-  private intervalTimer: ReturnType<typeof setTimeout> | undefined;
-  private firstFrameTime: number | undefined;
-  private frameCount = 0;
 
-  constructor(private readonly options: FPSCollectorOptions) {}
+  constructor(
+    private readonly signals: SignalSubscriber,
+    private readonly emitter: TelemetryEmitter,
+  ) {}
 
-  start(visible: boolean): void {
-    if (this.active) return;
+  install(): void {
+    if (this.unsubscribe) return;
+    this.unsubscribe = this.signals.subscribe('performance.frame-window', (signal) => {
+      if (!this.active || signal.sampleDurationMs <= 0 || signal.frameCount <= 0) return;
 
+      // frameCount 表示完整帧间隔数，按实际窗口时长换算，避免假设固定采样周期。
+      this.emitter.emit({
+        name: 'FPS',
+        timestamp: signal.timestamp,
+        payload: {
+          type: 'performance',
+          name: 'FPS',
+          sampleId: createId('sample'),
+          sequence: 0,
+          state: 'final',
+          value: (signal.frameCount * 1_000) / signal.sampleDurationMs,
+          unit: 'fps',
+          kind: 'runtime',
+          source: 'request-animation-frame',
+          detail: {
+            frameCount: signal.frameCount,
+            sampleDurationMs: signal.sampleDurationMs,
+          },
+        },
+      });
+    });
+  }
+
+  start(): void {
     this.active = true;
-    if (visible) this.startWindow();
-  }
-
-  pause(): void {
-    this.cancelPendingWork();
-  }
-
-  resume(): void {
-    if (!this.active) return;
-
-    this.cancelPendingWork();
-    this.startWindow();
   }
 
   stop(): void {
     this.active = false;
-    this.cancelPendingWork();
   }
 
-  private startWindow(): void {
-    if (!this.active || this.sampling || typeof requestAnimationFrame !== 'function') return;
-
-    this.sampling = true;
-    this.firstFrameTime = undefined;
-    this.frameCount = 0;
-    this.animationFrameId = requestAnimationFrame(this.collectFrame);
-  }
-
-  private readonly collectFrame: FrameRequestCallback = (now) => {
-    if (!this.active || !this.sampling) return;
-
-    if (this.firstFrameTime === undefined) {
-      this.firstFrameTime = now;
-    } else {
-      this.frameCount += 1;
-    }
-
-    const sampleDurationMs = now - this.firstFrameTime;
-    if (sampleDurationMs >= this.options.sampleWindowMs) {
-      this.sampling = false;
-      this.animationFrameId = undefined;
-
-      if (sampleDurationMs > 0 && this.frameCount > 0) {
-        const timeOrigin = getTimeOrigin();
-        this.options.emit({
-          type: 'performance',
-          name: 'FPS',
-          id: `fps-${timeOrigin}-${now}`,
-          value: (this.frameCount * 1000) / sampleDurationMs,
-          unit: 'fps',
-          kind: 'runtime',
-          source: 'request-animation-frame',
-          timestamp: timeOrigin + now,
-          detail: {
-            frameCount: this.frameCount,
-            sampleDurationMs,
-          },
-        });
-      }
-
-      this.resetWindow();
-      this.intervalTimer = setTimeout(() => {
-        this.intervalTimer = undefined;
-        this.startWindow();
-      }, this.options.sampleIntervalMs);
-      return;
-    }
-
-    this.animationFrameId = requestAnimationFrame(this.collectFrame);
-  };
-
-  private cancelPendingWork(): void {
-    if (this.animationFrameId !== undefined && typeof cancelAnimationFrame === 'function') {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    if (this.intervalTimer !== undefined) clearTimeout(this.intervalTimer);
-
-    this.animationFrameId = undefined;
-    this.intervalTimer = undefined;
-    this.sampling = false;
-    this.resetWindow();
-  }
-
-  private resetWindow(): void {
-    this.firstFrameTime = undefined;
-    this.frameCount = 0;
+  destroy(): void {
+    this.stop();
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
   }
 }

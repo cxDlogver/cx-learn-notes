@@ -1,11 +1,9 @@
-import { performanceMonitor } from '@/services/performance/monitor';
 /* eslint-env jest, node */
 import fs from "fs";
 import path from "path";
 import { parseComponent } from "vue-template-compiler";
 
 function loadComponentAt(componentPath, dependencies = {}) {
-  dependencies = { performanceMonitor, ...dependencies };
   const source = fs.readFileSync(componentPath, "utf-8");
   const script = parseComponent(source).script.content;
   const factorySource = script
@@ -144,7 +142,6 @@ function bindOptionalMapHelpers(component, vm) {
     "drawRouteSegment",
     "drawRouteSegments",
     "drawRealtimePoint",
-    "pruneRealtimeLayers",
     "removeTC",
     "redrawRealtimeWindow",
     "drawHistoryPoints",
@@ -695,26 +692,31 @@ describe("map lifecycle ownership", () => {
     expect(pointSource.getFeatureById).not.toHaveBeenCalled();
   });
 
-  test("2D realtime layers keep a bounded 300-point window", () => {
+  test("2D realtime layers keep every drawn point instead of pruning a window", () => {
     const component = loadPlanimetricComponent();
     const { vm, pointSource, routeSource } = createPlanimetricVm(component);
-    Array.from({ length: 305 }, (_, index) => {
+    Array.from({ length: 5 }, (_, index) => {
       const point = new FakeFeature();
       point.setId(`point-${index}`);
       pointSource.addFeature(point);
-      const route = new FakeFeature();
-      route.setId(`route-${index}`);
-      routeSource.addFeature(route);
     });
+    const route = new FakeFeature();
+    route.setId("route-existing");
+    routeSource.addFeature(route);
+    vm.points = [
+      { geo_location: [104.1, 28.1], pri_ch4: 1.5, time: "2026-07-20 12:59:59" },
+      { geo_location: [104.2, 28.2], pri_ch4: 1.8, time: "2026-07-20 13:00:00" },
+    ];
+    vm.index = 1;
 
-    component.methods.pruneRealtimeLayers.call(vm, 300);
+    component.methods.drawRealtimePoint.call(vm);
 
-    expect(pointSource.getFeatures()).toHaveLength(300);
-    expect(routeSource.getFeatures()).toHaveLength(299);
-    expect(pointSource.getFeatures()[0].getId()).toBe("point-5");
+    expect(component.methods.pruneRealtimeLayers).toBeUndefined();
+    expect(pointSource.getFeatures()).toHaveLength(6);
+    expect(routeSource.getFeatures()).toHaveLength(2);
   });
 
-  test("Cesium realtime entities evict the oldest concentration bar", () => {
+  test("Cesium realtime entities are tracked without evicting older bars", () => {
     const component = loadComponent("StereoscopicMap.vue", {
       turf: {},
       Cesium: {},
@@ -726,10 +728,12 @@ describe("map lifecycle ownership", () => {
     };
 
     component.methods.trackRealtimeEntity.call(vm, "bar-300");
+    component.methods.trackRealtimeEntity.call(vm, "bar-300");
 
-    expect(vm.realtimeEntityIds).toHaveLength(300);
-    expect(vm.realtimeEntityIds[0]).toBe("bar-1");
-    expect(removeById).toHaveBeenCalledWith("bar-0");
+    expect(vm.realtimeEntityIds).toHaveLength(301);
+    expect(vm.realtimeEntityIds[0]).toBe("bar-0");
+    expect(vm.realtimeEntityIds.at(-1)).toBe("bar-300");
+    expect(removeById).not.toHaveBeenCalled();
   });
 
   test("Cesium builds initial realtime bars in fixed slots without moving the camera", () => {

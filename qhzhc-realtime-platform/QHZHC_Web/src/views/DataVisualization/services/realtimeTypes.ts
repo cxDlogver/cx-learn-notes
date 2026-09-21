@@ -23,30 +23,42 @@ export interface TelemetryPoint {
   pressure: number;
 }
 
+export type DeliveryPointLimit = 0 | 1 | 2 | 5 | 10 | 20;
+export type TelemetryBucketStatus = "live" | "no-data";
+
 export type ServerMessage =
   | {
       type: "welcome";
       protocolVersion: number;
       connectionId: string;
       heartbeatIntervalMs: number;
-      latestSequence: number;
+      latestBucketStartMs: number | null;
+      resumedFromBucketStartMs: number;
     }
   | {
-      type: "telemetry_batch";
-      firstSequence: number;
-      lastSequence: number;
+      type: "telemetry_second";
+      batchId: string;
+      bucketStartMs: number;
+      bucketEndMs: number;
+      status: TelemetryBucketStatus;
       points: TelemetryPoint[];
+      sentAt: number;
       replay: boolean;
     }
-  | { type: "pong"; nonce: string; serverTime: number; latestSequence: number }
+  | { type: "replay_complete"; throughBucketStartMs: number }
+  | {
+      type: "pong";
+      nonce: string;
+      serverTime: number;
+      latestBucketStartMs: number | null;
+    }
   | {
       type: "gap";
-      requestedFrom: number;
-      earliestAvailable: number;
-      latestSequence: number;
+      requestedFromBucketStartMs: number;
+      earliestAvailableBucketStartMs: number | null;
+      latestBucketStartMs: number;
       action: "skip-to-latest";
     }
-  | { type: "simulator_status"; status: unknown }
   | { type: "error"; code: string; message: string; recoverable: boolean };
 
 export interface LegacyTelemetryPoint {

@@ -1,6 +1,11 @@
-import type { SimulatorStatus, TelemetryPoint } from "./types.js";
+import {
+  DELIVERY_POINT_LIMITS,
+  type DeliveryPointLimit,
+  type TelemetryBucketStatus,
+  type TelemetryPoint,
+} from "./types.js";
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 export const WS_CLOSE = {
   NORMAL: 1000,
   AUTHENTICATION_EXPIRED: 4001,
@@ -15,11 +20,11 @@ export type ClientMessage =
       accessToken: string;
       protocolVersion: number;
       robotId: string;
-      lastSequence: number;
+      resumeFromBucketStartMs: number;
+      maxPointsPerSecond: DeliveryPointLimit;
     }
   | { type: "ping"; nonce: string; sentAt: number }
-  | { type: "ack"; sequence: number }
-  | { type: "resend"; fromSequence: number; toSequence: number };
+  | { type: "resend_time_range"; fromBucketStartMs: number };
 
 export type ServerMessage =
   | {
@@ -28,25 +33,29 @@ export type ServerMessage =
       connectionId: string;
       robotId: string;
       heartbeatIntervalMs: number;
-      latestSequence: number;
-      resumedFrom: number;
+      latestBucketStartMs: number | null;
+      resumedFromBucketStartMs: number;
     }
   | {
-      type: "telemetry_batch";
+      type: "telemetry_second";
       batchId: string;
-      firstSequence: number;
-      lastSequence: number;
+      bucketStartMs: number;
+      bucketEndMs: number;
+      status: TelemetryBucketStatus;
       points: TelemetryPoint[];
       sentAt: number;
       replay: boolean;
     }
-  | { type: "pong"; nonce: string; serverTime: number; latestSequence: number }
-  | { type: "simulator_status"; status: SimulatorStatus }
+  | {
+      type: "replay_complete";
+      throughBucketStartMs: number;
+    }
+  | { type: "pong"; nonce: string; serverTime: number; latestBucketStartMs: number | null }
   | {
       type: "gap";
-      requestedFrom: number;
-      earliestAvailable: number;
-      latestSequence: number;
+      requestedFromBucketStartMs: number;
+      earliestAvailableBucketStartMs: number | null;
+      latestBucketStartMs: number;
       action: "skip-to-latest";
     }
   | { type: "error"; code: string; message: string; recoverable: boolean };
@@ -61,23 +70,22 @@ export function isClientMessage(value: unknown): value is ClientMessage {
         candidate.accessToken.length > 0 &&
         candidate.protocolVersion === PROTOCOL_VERSION &&
         typeof candidate.robotId === "string" &&
-        Number.isSafeInteger(candidate.lastSequence) &&
-        Number(candidate.lastSequence) >= 0
+        isNaturalSecond(candidate.resumeFromBucketStartMs) &&
+        DELIVERY_POINT_LIMITS.includes(
+          candidate.maxPointsPerSecond as DeliveryPointLimit,
+        )
       );
     case "ping":
       return typeof candidate.nonce === "string" && Number.isFinite(candidate.sentAt);
-    case "ack":
-      return Number.isSafeInteger(candidate.sequence) && Number(candidate.sequence) >= 0;
-    case "resend":
-      return (
-        Number.isSafeInteger(candidate.fromSequence) &&
-        Number.isSafeInteger(candidate.toSequence) &&
-        Number(candidate.fromSequence) > 0 &&
-        Number(candidate.toSequence) >= Number(candidate.fromSequence)
-      );
+    case "resend_time_range":
+      return isNaturalSecond(candidate.fromBucketStartMs);
     default:
       return false;
   }
+}
+
+function isNaturalSecond(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) >= 0 && Number(value) % 1_000 === 0;
 }
 
 export function serializeServerMessage(message: ServerMessage): string {

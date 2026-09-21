@@ -6,11 +6,8 @@
   </div>
 </template>
 <script lang="ts">
-import { performanceMonitor } from '@/services/performance/monitor';
-
 import * as turf from "@turf/turf";
 
-const MAX_REALTIME_BARS = 300;
 const REALTIME_ROUTE_HEIGHT = 2;
 
 export default {
@@ -74,7 +71,6 @@ export default {
     this.init();
   },
   beforeDestroy() {
-    if(this.performanceRenderRemove)this.performanceRenderRemove();
     this.destroyScreenSpaceHandler();
     if (this.viewer && !this.viewer.isDestroyed()) {
       this.viewer.destroy();
@@ -375,13 +371,6 @@ export default {
       this.redrawConcentrationByGas(gasType, points);
     },
     renderRealtimeSnapshot(points = this.mapList) {
-      if(this.viewer && !this.viewer.isDestroyed() && performanceMonitor.renderVersion){
-        if(this.performanceRenderRemove)this.performanceRenderRemove();
-        const version=performanceMonitor.renderVersion;
-        this.performanceRenderRemove=this.viewer.scene.postRender.addEventListener(()=>{performanceMonitor.rendered('map:3d',version);if(this.performanceRenderRemove){this.performanceRenderRemove();this.performanceRenderRemove=null;}});
-      }
-      performanceMonitor.record('mapObjects',this.viewer?.entities?.values?.length || 0,'map:3d');
-      return performanceMonitor.measure("mapUpdate", 'map:3d', () => {
       const nextPoints = Array.isArray(points) ? points : [];
       this.dataList = nextPoints;
       if (!this.isViewerReady() || !nextPoints.length) {
@@ -396,17 +385,8 @@ export default {
       }
       this.nowBar(nextPoints[this.index]);
       this.updateRealtimeRoute(nextPoints);
-
-      });
     },
     updateRealtimeRoute(points = this.dataList) {
-      if(this.viewer && !this.viewer.isDestroyed() && performanceMonitor.renderVersion){
-        if(this.performanceRenderRemove)this.performanceRenderRemove();
-        const version=performanceMonitor.renderVersion;
-        this.performanceRenderRemove=this.viewer.scene.postRender.addEventListener(()=>{performanceMonitor.rendered('map:3d',version);if(this.performanceRenderRemove){this.performanceRenderRemove();this.performanceRenderRemove=null;}});
-      }
-      performanceMonitor.record('mapObjects',this.viewer?.entities?.values?.length || 0,'map:3d');
-      return performanceMonitor.measure("mapUpdate", 'map:3d', () => {
       if (!this.isViewerReady()) {
         return;
       }
@@ -454,8 +434,6 @@ export default {
         });
       }
       this.requestRender();
-
-      });
     },
     upsertRealtimeBar(dataPoint, slotIndex, gasType = this.gasType) {
       if (!dataPoint) {
@@ -555,17 +533,14 @@ export default {
       if (!this.isViewerReady()) {
         return;
       }
-      const flightData = Array.isArray(list)
-        ? list.slice(-MAX_REALTIME_BARS)
-        : [];
+      const flightData = Array.isArray(list) ? list : [];
       if (flightData && flightData.length > 0) {
-        // 绘制之前存储的
+        // 绘制之前存储的（轨迹不截断，每个点各占一个柱体槽位）
         for (let i = 0; i < flightData.length; i++) {
           this.upsertRealtimeBar(flightData[i], i);
         }
 
-        this.realtimeBarCursor =
-          flightData.length % MAX_REALTIME_BARS;
+        this.realtimeBarCursor = flightData.length;
         this.requestRender();
       }
     },
@@ -580,8 +555,8 @@ export default {
           : 0;
       const entityId = this.upsertRealtimeBar(data, slotIndex);
       this.setLatestRealtimeBar(entityId);
-      this.realtimeBarCursor =
-        (slotIndex + 1) % MAX_REALTIME_BARS;
+      // 槽位持续递增，不再回绕复用，因此历史柱体会一直保留
+      this.realtimeBarCursor = slotIndex + 1;
 
       //加入车辆信息
       if (!this.viewer.entities.getById("model")) {
@@ -640,13 +615,6 @@ export default {
     // 历史气体浓度监测
 
     echartsPlay(data) {
-      if(this.viewer && !this.viewer.isDestroyed() && performanceMonitor.renderVersion){
-        if(this.performanceRenderRemove)this.performanceRenderRemove();
-        const version=performanceMonitor.renderVersion;
-        this.performanceRenderRemove=this.viewer.scene.postRender.addEventListener(()=>{performanceMonitor.rendered('map:3d',version);if(this.performanceRenderRemove){this.performanceRenderRemove();this.performanceRenderRemove=null;}});
-      }
-      performanceMonitor.record('mapObjects',this.viewer?.entities?.values?.length || 0,'map:3d');
-      return performanceMonitor.measure("mapUpdate", 'map:3d', () => {
       if (!data || !Array.isArray(data.data) || !this.isViewerReady()) {
         return;
       }
@@ -762,9 +730,6 @@ export default {
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         this.requestRender();
       }
-
-
-      });
     },
 
     // 绘制轨迹线
@@ -914,13 +879,8 @@ export default {
     trackRealtimeEntity(entityId) {
       if (!Array.isArray(this.realtimeEntityIds)) this.realtimeEntityIds = [];
       if (this.realtimeEntityIds.includes(entityId)) return;
+      // 只登记不淘汰：柱体随轨迹一起保留，统一由 removeBar() / removeAll 清理。
       this.realtimeEntityIds.push(entityId);
-      while (this.realtimeEntityIds.length > MAX_REALTIME_BARS) {
-        const staleId = this.realtimeEntityIds.shift();
-        if (staleId && typeof this.viewer.entities.removeById === "function") {
-          this.viewer.entities.removeById(staleId);
-        }
-      }
     },
     destroyScreenSpaceHandler() {
       if (

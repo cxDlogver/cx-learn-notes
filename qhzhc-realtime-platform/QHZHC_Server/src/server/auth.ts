@@ -73,6 +73,7 @@ export class AuthService {
     }
   }
 
+  /** 注册校验逻辑 */
   register(username: string, displayName: string, password: string): UserSession {
     if (!/^[a-zA-Z0-9_]{3,24}$/.test(username)) {
       throw new AuthError("账号需为 3-24 位字母、数字或下划线", 400, "INVALID_USERNAME");
@@ -90,6 +91,7 @@ export class AuthService {
     return this.database.createUser(username, displayName.trim(), hash, salt);
   }
 
+  /** 登录校验逻辑 */
   async login(username: string, password: string): Promise<TokenPair> {
     const user = this.database.findUserByUsername(username);
     if (!user || !verifyPassword(password, user.password_salt, user.password_hash)) {
@@ -180,6 +182,15 @@ export class AuthService {
     }
   }
 
+  /**
+   * 从 HTTP 请求头取出 Bearer 凭证并校验，得到可直接挂到 `request.user` 上的身份主体。
+   *
+   * 这一层只负责「从报文中取出凭证」这一件事：不读 body、不读 Cookie，业务判断一概不做。
+   * Token 的真伪、是否过期、所属 family 是否被撤销，全部交给 verifyAccessToken。
+   *
+   * @param request 只用到 headers，因此入参收窄成 Pick<IncomingMessage, "headers">，测试里可直接构造对象。
+   * @returns 校验通过的身份主体 user；失败抛 AuthError。
+   */
   async principalFromRequest(
     request: Pick<IncomingMessage, "headers">,
   ): Promise<AuthPrincipal> {
@@ -188,6 +199,7 @@ export class AuthService {
       typeof authorization === "string"
         ? /^Bearer\s+(.+)$/i.exec(authorization.trim())
         : null;
+    // 「没有 header」与「格式不对」返回同一个错误码，避免借错误信息探测凭证格式。
     if (!match?.[1]) {
       throw new AuthError("缺少访问凭证", 401, "ACCESS_TOKEN_MISSING");
     }
@@ -198,6 +210,7 @@ export class AuthService {
     this.database.revokeTokenFamily(familyId);
   }
 
+  /** 签发访问和刷新凭证 */
   private async issueTokenPair(
     user: UserSession,
     familyId: string,

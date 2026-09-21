@@ -90,11 +90,3 @@ describe("HTTP access token integration", () => {
     expect(client.request).not.toHaveBeenCalled();
   });
 });
-
-
-test('records failed logical request before authentication redirects away', async () => {
-  const events = [];
-  const handler = createAuthErrorHandler({ request: jest.fn() }, { clearAccessToken: jest.fn(), refreshAccessToken: jest.fn().mockRejectedValue(new Error('expired')) }, () => events.push('redirect'), () => events.push('metric'));
-  await expect(handler({ response: { status: 401 }, config: { url: '/api/telemetry/latest' } })).rejects.toThrow('expired');
-  expect(events).toEqual(['metric', 'redirect']);
-});

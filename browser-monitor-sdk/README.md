@@ -1,138 +1,163 @@
 # cx-browser-monitor-sdk
 
-`cx-browser-monitor-sdk` 是原生 JavaScript Browser Monitor SDK。当前已实现 Performance 采集内核，可以统一采集 LCP、FCP、INP、CLS、FPS 和 LoAF；Event、Error、Network、View、公共处理与发送链路仍处于目录设计阶段。
+`cx-browser-monitor-sdk` 是原生 JavaScript Browser Monitor SDK。所有监控数据都通过同一条链路处理：
 
-目录设计的核心原则是：浏览器 API 由 Instrumentation 统一负责，Collector 独立解释领域语义，公共数据处理与发送机制不归属任何单一 Collector。
+```text
+Instrumentation → Signal Hub → Collector → Context → Envelope
+→ Processing → Transport → Ingestion Endpoint
+```
 
-Performance 内核只负责采集并通过订阅回调输出规范化指标，不会自行发送网络请求。
+Performance 不再通过独立订阅回调输出。LCP、FCP、INP、CLS、FPS 和 LoAF 会转换为协议 2.0 的统一 `TelemetryEventV2`，经过规范化、校验、脱敏、过滤、去重、采样和限流后，由 Transport 批量发送。
 
 ## 快速开始
 
 ```ts
-import { createPerformanceMonitor } from 'cx-browser-monitor-sdk';
+import { createMonitor } from 'cx-browser-monitor-sdk';
 
-const monitor = createPerformanceMonitor();
-
-const unsubscribe = monitor.subscribe((metric) => {
-  // 把指标交给业务自己的处理或上报链路。
-  console.log(metric.name, metric.value, metric.unit);
+const monitor = createMonitor({
+  app: {
+    name: 'checkout-web',
+    version: '1.0.0',
+    environment: 'production',
+  },
+  view: {
+    // 动态路径应映射为稳定业务名称，供服务端按页面聚合。
+    resolveRouteName: ({ pathname }) => pathname,
+  },
+  performance: {
+    enabled: true,
+    metrics: {
+      LCP: true,
+      FCP: true,
+      INP: true,
+      CLS: true,
+      FPS: true,
+      LoAF: true,
+    },
+    webVitals: {
+      reportAllChanges: false,
+      reportSoftNavs: true,
+    },
+    fps: {
+      sampleWindowMs: 5_000,
+      sampleIntervalMs: 30_000,
+    },
+    loaf: {
+      minDurationMs: 50,
+      maxEntriesPerView: 20,
+    },
+  },
+  transport: {
+    dsn: 'https://monitor.example.com/api/v2/ingest/bm_pk_xxx/envelopes',
+    batchSize: 20,
+    flushIntervalMs: 10_000,
+    maxQueueSize: 200,
+  },
 });
 
-// 先订阅再启动，避免错过 buffered 性能数据。
+monitor.setUser({ id: 'user-123' });
+monitor.start();
+monitor.setViewName('checkout-confirm');
+
+monitor.track('order_submit', {
+  orderType: 'normal',
+});
+
+// stop() 只暂停监控，后续可以重新 start()。
+monitor.stop();
 monitor.start();
 
-// 页面或应用彻底销毁时执行。stop() 是终止操作，实例不能再次启动。
-unsubscribe();
-monitor.stop();
+// 页面或应用彻底销毁时永久释放 SDK 自有资源。
+monitor.destroy();
 ```
 
-浏览器直接引用 IIFE 构建时，工厂位于 `CXMonitorSDK.createPerformanceMonitor`。
+浏览器 IIFE 构建中的统一工厂位于 `CXMonitorSDK.createMonitor`。
 
-## 性能指标
+## 公开 API
 
-| 指标 | 数据来源                | 单位  | 语义                         |
-| ---- | ----------------------- | ----- | ---------------------------- |
-| LCP  | `web-vitals`            | ms    | Core Web Vital，加载体验     |
-| FCP  | `web-vitals`            | ms    | 首次内容绘制诊断指标         |
-| INP  | `web-vitals`            | ms    | Core Web Vital，交互响应体验 |
-| CLS  | `web-vitals`            | score | Core Web Vital，布局稳定性   |
-| FPS  | `requestAnimationFrame` | fps   | 页面可见期间的周期帧率样本   |
-| LoAF | `PerformanceObserver`   | ms    | 长动画帧诊断记录             |
+| API                       | 作用                                             |
+| ------------------------- | ------------------------------------------------ |
+| `createMonitor(options)`  | 校验配置并创建统一 Monitor                       |
+| `start()`                 | 安装并启动已启用的监控模块，重复调用不会重复监听 |
+| `stop()`                  | 暂停数据生产并执行受控 Flush，可以再次启动       |
+| `destroy()`               | 永久销毁实例，恢复 SDK 包装的全局 API            |
+| `track(name, properties)` | 记录业务明确表达的自定义事件                     |
+| `setUser(user)`           | 更新白名单用户上下文                             |
+| `setViewName(name)`       | 显式覆盖当前 View 的稳定业务路由名                |
+| `flush()`                 | 主动发送队列中的安全数据                         |
+| `getCapabilities()`       | 查询浏览器实际支持的监控能力                     |
 
-SDK 不会把原始 `PerformanceEntry`、DOM 节点、脚本 URL 或 `navigationURL` 交给订阅者。LoAF 只保留耗时分解和脚本数量等数值摘要。
+缺少 App 信息、采集端点无效或数值配置非法时，`createMonitor()` 会立即抛出配置错误。浏览器不支持某项能力时，对应模块静默降级，不伪造零值。
 
-```ts
-const monitor = createPerformanceMonitor({
-  metrics: {
-    FPS: true,
-    LoAF: true,
-  },
-  webVitals: {
-    reportAllChanges: false,
-  },
-  fps: {
-    sampleWindowMs: 5_000,
-    sampleIntervalMs: 30_000,
-  },
-  loaf: {
-    minDurationMs: 50,
-    maxEntriesPerVisit: 20,
-  },
-});
+## Performance 指标
+
+| 指标 | 事实来源                            | 单位  | 语义                         |
+| ---- | ----------------------------------- | ----- | ---------------------------- |
+| LCP  | Web Vitals Instrumentation          | ms    | Core Web Vital，加载体验     |
+| FCP  | Web Vitals Instrumentation          | ms    | 首次内容绘制诊断指标         |
+| INP  | Web Vitals Instrumentation          | ms    | Core Web Vital，交互响应体验 |
+| CLS  | Web Vitals Instrumentation          | score | Core Web Vital，布局稳定性   |
+| FPS  | Animation Frame Instrumentation     | fps   | 页面可见期间的窗口帧率       |
+| LoAF | PerformanceObserver Instrumentation | ms    | 长动画帧诊断摘要             |
+
+Instrumentation 只管理浏览器资源和源头级机械聚合；Performance Collector 只负责把 Raw Signal 转换为 Performance Payload。原始 `PerformanceEntry`、DOM 节点、脚本 URL 和 `navigationURL` 不会进入 Transport。
+
+## 生命周期
+
+```text
+create → install → start → stop → restart → destroy
 ```
 
-所有指标默认开启。`metrics` 中没有填写的指标继续使用开启状态；只有显式设置为 `false` 才会关闭。
+- `start()`、`stop()` 和 `destroy()` 均具有幂等行为。
+- History、Page Lifecycle、PerformanceObserver、RAF 和 Timer 都有对应释放路径。
+- View Context 完全移除 URL query/fragment，保存稳定 `routeName`，并按照指标真实发生时间解析所属 View。
+- `web-vitals` 只安装一次。该依赖不提供公开的取消句柄，因此 `stop()` 通过状态门暂停发布，`destroy()` 后永久静默；SDK 自己创建的 Observer、监听器和 Timer 仍会完整释放。
 
-### 生命周期与兼容性
+## 数据处理与发送
 
-- 每个 Window 只创建一个 Monitor 实例；重复调用 `start()` 不会重复注册采集器。
-- `stop()` 会断开 LoAF Observer、FPS 回调、定时器和页面生命周期监听，并阻止延迟到达的 Web Vitals 通知。
-- FPS 在页面可见时立即采样 5 秒，完成后等待 30 秒再采下一组；页面隐藏时丢弃未完成窗口，恢复可见时重新采样。
-- bfcache 恢复会建立新的访问边界，重置 LoAF 条数并重新启动 FPS；本版本不按 SPA 软导航拆分指标。
-- 不支持某项浏览器 API 时不会产生伪造的零值。可以使用 `monitor.getCapabilities()` 查询实际能力。
-- LoAF 目前不是全浏览器能力；不支持时 `LoAF` capability 为 `false`，SDK 不会用 Long Task 冒充。
+统一处理顺序为：
 
-## 环境要求
+`Normalize → Validate → Redact → Filter → Dedupe → Sampling → Rate Limit`。
 
-- Node.js 20 或更高版本
-- pnpm 10.28.2 或更高版本
+Transport 使用有界内存队列，按照数量、字节数和时间组成批次。页面隐藏或离开时会尝试受控 Flush；发送失败只对可恢复状态执行有限重试。队列达到容量上限时优先丢弃低优先级旧数据，不使用 IndexedDB 持久化监控数据。
+
+发送体固定为 `TelemetryBatchV2`：外层包含 `protocolVersion: '2.0'`、`sentAt`、SDK 身份和 `events`。Web Vitals 使用稳定 `sampleId` 与递增 `sequence`，普通回调为 `provisional`，View 结束时发送 `final` 快照。FPS 与 LoAF 每个采样窗口都是独立 final 样本。
+
+## 目录边界
+
+| 目录              | 职责                                                       |
+| ----------------- | ---------------------------------------------------------- |
+| `core`            | 配置、生命周期、模块注册、Signal Hub 和链路编排            |
+| `instrumentation` | 管理浏览器 API、监听器、Observer、RAF 与 Timer             |
+| `collectors`      | 将 Raw Signal 转换为 Performance、View 和 Event 语义       |
+| `context`         | 管理 App、User、Session、View 和 Runtime 快照              |
+| `protocol`        | 重新导出 `@browser-monitor/protocol` 的协议 2.0 类型        |
+| `processing`      | 执行数据质量、安全和流量治理                               |
+| `transport`       | 队列、批处理、发送、重试和 Flush                           |
+| `shared`          | 无监控领域语义的基础能力                                   |
+
+更完整的目标、设计思想和目录说明见 [Browser Monitor SDK 项目知识梳理](./docs/Browser-Monitor-SDK-项目知识梳理.md)。
 
 ## 本地开发
 
 ```bash
 pnpm install
-pnpm dev
-```
-
-常用质量命令：
-
-```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm publint
 pnpm check
 ```
+
+`pnpm check` 会依次执行格式检查、Lint、类型检查、测试、构建和发布包检查。
 
 ## 构建产物
 
-执行 `pnpm build` 后生成：
+`pnpm build` 生成：
 
-- `dist/index.js`：供现代构建工具使用的 ESM 入口。
-- `dist/index.global.js`：供浏览器 `<script>` 标签使用的 IIFE 入口，全局名称为 `CXMonitorSDK`。
-- `dist/index.d.ts`：TypeScript 类型声明。
-- 对应的 Source Map 文件。
-
-## 架构边界
-
-| 层级              | 职责                                                          |
-| ----------------- | ------------------------------------------------------------- |
-| `core`            | 组合各模块，管理配置、生命周期和订阅出口                      |
-| `instrumentation` | 统一注册浏览器 Hook；当前实现 PerformanceObserver             |
-| `collectors`      | 将原始信号解释为遥测数据；当前实现 Performance                |
-| `context`         | 在事件发生时生成页面、视图、会话、用户、设备和 SDK 上下文快照 |
-| `processing`      | 依次完成规范化、脱敏、去重、采样和限流                        |
-| `transport`       | 负责队列、批处理、发送、重试和主动刷新                        |
-| `protocol`        | 定义跨模块原始信号、统一信封和各类 Payload 协议               |
-| `shared`          | 保存经过审查、无领域归属且无业务状态的最小共享能力            |
-
-Vue、React 等框架组件适配、Session Replay、Node.js 监控以及服务端存储和告警平台不属于该 Browser SDK 的责任范围。
-
-Monitor SDK 的目标、完整数据链路和现有目录划分原因见 [目标、监控链路与目录设计](./docs/project-specification.md)。
-
-## 发布前检查
-
-```bash
-pnpm check
-pnpm pack --dry-run
-```
-
-发布包仅包含构建产物、README、CHANGELOG、许可证和必要的包元数据。
+- `dist/index.js`：ESM 入口；
+- `dist/index.global.js`：IIFE 入口，全局名称为 `CXMonitorSDK`；
+- `dist/index.d.ts`：TypeScript 类型声明；
+- 对应 Source Map。
 
 ## License
 
 [MIT](./LICENSE)
 
-IIFE 构建内联的第三方依赖及其许可证见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
+IIFE 构建内联的第三方依赖及许可证见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
