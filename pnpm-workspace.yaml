@@ -1,7 +1,7 @@
 packages:
-  - browser-monitor-sdk
-  - browser-monitor-protocol
-  - browser-monitor-platform
-  - browser-monitor-platform/apps/*
-  - browser-monitor-platform/packages/*
-
+  # 监控平台：协议契约（SDK 与服务端共用）
+  - browser-monitor/protocol
+  # 监控平台：浏览器采集 SDK
+  - browser-monitor/sdk
+  # 官网项目（接入 SDK 的业务应用）
+  - official-network
