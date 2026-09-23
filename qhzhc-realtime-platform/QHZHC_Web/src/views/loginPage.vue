@@ -52,7 +52,6 @@ export default Vue.extend({
       try {
         const profile = await userLogin(this.user);
         localStorage.setItem("user", JSON.stringify(profile));
-        localStorage.setItem("userform", JSON.stringify(profile));
         this.$message.success("登录成功");
         const redirect = typeof this.$route.query.redirect === "string"
           ? this.$route.query.redirect

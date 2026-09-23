@@ -1,14 +1,18 @@
 <template>
     <div class="legend">
-        <button
-            type="button"
-            class="button"
-            :aria-expanded="String(legendShow)"
-            aria-controls="visualization-legend-content"
-            @click="legendShow = !legendShow"
-        >
-            图例
-        </button>
+        <!-- 操作行：具名 slot 供宿主注入额外按钮，始终排在「图例」按钮左侧 -->
+        <div class="legend-actions">
+            <slot name="actions"></slot>
+            <button
+                type="button"
+                class="button"
+                :aria-expanded="String(legendShow)"
+                aria-controls="visualization-legend-content"
+                @click="legendShow = !legendShow"
+            >
+                图例
+            </button>
+        </div>
         <div id="visualization-legend-content" class="legend-box" v-show="legendShow">
             <div class="legend-title"><span>浓度阈值区间</span></div>
             <div class="legend-item" v-for="item in legendList" :key="item.color">
@@ -112,15 +116,22 @@ export default {
     height: 240px;
     width: 110px;
     position: absolute;
+    /* 操作行：右边缘与容器对齐，注入的按钮自然排在「图例」按钮左侧 */
+    .legend-actions {
+        position: absolute;
+        top: 208px;
+        right: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
     .button {
         width: 73px;
         height: 34px;
         border-radius: 20px;
         opacity: 1;
         background: #0095FF;
-        position: absolute;
-        top: 208px;
-        right: 0;
         text-align: center;
         line-height: 34px;
         cursor: pointer;

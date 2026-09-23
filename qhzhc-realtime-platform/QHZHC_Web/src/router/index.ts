@@ -110,7 +110,6 @@ router.beforeEach(async (to, _from, next) => {
         throw new Error("会话用户信息不完整");
       }
       localStorage.setItem("user", JSON.stringify(profile));
-      localStorage.setItem("userform", JSON.stringify(profile));
     }
     if (adminOnly && !profile.is_superuser) {
       next("/dataVisualization");

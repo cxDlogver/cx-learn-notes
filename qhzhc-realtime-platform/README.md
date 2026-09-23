@@ -76,6 +76,15 @@ npm run start
 | `QWEATHER_API_KEY` | 无，缺失时天气接口返回 503 | 和风天气 Web API key，数据可视化页天气预报必填 |
 | `CORS_ALLOWED_ORIGINS` | 开发环境为本机来源，生产仅同源 | 逗号分隔的允许来源，`*` 表示允许全部（此时不返回凭证头） |
 
+以下四项为**前端构建变量**（`VUE_APP_` 前缀由 Vue CLI 注入，写在 `QHZHC_Web/.env.local`；该文件已被 `.gitignore` 忽略）：
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `VUE_APP_MONITOR_ENABLED` | 关闭 | 必须严格等于 `true` 才启用采集，其他值都不采集 |
+| `VUE_APP_MONITOR_DSN` | 无 | 监控平台写入地址，工具形如 `http://localhost:8080/api/v3/ingest/<publicKey>/envelopes` |
+| `VUE_APP_MONITOR_APP_NAME` | `qhzhc-web` | 必须与监控平台项目的 appName 完全一致 |
+| `VUE_APP_MONITOR_RELEASE` | `0.1.0` | 应用版本，平台按 `app_version` 维度聚合，发版时更新 |
+
 ## 天气服务
 
 数据可视化页的天气预报由服务端代理 `https://devapi.qweather.com/v7/grid-weather`，必须在服务端配置 `QWEATHER_API_KEY`（和风天气控制台申请的 Web API key），不能放在前端。
@@ -139,10 +148,32 @@ npm run test:integration -w QHZHC_Server
 
 ## 性能监控
 
-管理员入口为 `/#/admin/performance`，也可从模拟后台进入。采集范围仅包含登录后的数据可视化页面。
+前端性能采集通过 [browser-monitor SDK](../../browser-monitor/sdk) 以 Vue 插件形式接入，采集范围仅包含登录后的数据可视化页面（`/#/dataVisualization`），数据直送 browser-monitor 平台，由平台的投影、评分与连续聚合生成看板；**走航车侧不保存监控数据，也不再实现自建的 SQLite 监控后端**。
+
+| 采集能力 | 说明 |
+| --- | --- |
+| Web Vitals | LCP / FCP / INP / CLS |
+| 渲染质量 | FPS 与 LoAF（大屏实时渲染重点关注） |
+| 页面视图 | `view.start` / `view.end`（路由归属与停留时长） |
+
+接入位置与约定：
+
+- 插件：[`QHZHC_Web/src/plugins/monitor.ts`](QHZHC_Web/src/plugins/monitor.ts)，在 `QHZHC_Web/src/main.ts` 通过 `Vue.use` 安装，实例挂在 `Vue.prototype.$monitor`（与 `$axios`、`$echarts` 同一风格）。
+- 依赖以 `workspace:*` 引入，走航车 Web 是仓库根 `pnpm-workspace.yaml` 的成员；安装需先构建 SDK：`pnpm --filter @browser-monitor/protocol build`、`pnpm --filter cx-browser-monitor-sdk build`，再在仓库根执行 `pnpm install`。
+- 上报地址必须使用指向监控平台的绝对地址（如 `http://localhost:8080/api/v3/ingest/<publicKey>/envelopes`），不能用 `/api/...` 相对路径——`vue.config.js` 已把 `/api` 代理到走航车后端 18080。
+- 监控平台项目需先把前端来源加入 `allowed_origins`（开发环境为 `http://127.0.0.1:9527`、`http://localhost:9527`），且项目的 `appName` 必须与 `VUE_APP_MONITOR_APP_NAME` 完全一致，否则上报会被逐条拒绝。
+- 平台需运行协议 3.0 版本（`POST /api/v3/ingest/:publicKey/envelopes`）；若平台仍是旧镜像，上报会返回 `unsupported_protocol`，此时需重建平台 api 与 worker 容器。
+
+### 已知取舍
+
+- **路由名必须由插件显式设置**：SDK 会清洗 URL 的 query 与 hash，hash 路由下 `routeName` 恒为 `/`，插件在启动前与每次 hash 变化后调用 `setViewName` 修正。
+- **软导航保持关闭**：从登录页进入可视化页属于 hash 软导航，开启后「相对软导航起点」的 LCP 会与硬导航 LCP 混进同一分布，污染平台侧的 p75 与良好率。
+- **离开页面时延后一个宏任务再销毁实例**：这样 SDK 能先处理本次 hash 变化以产出完整的 `view.end`（停留时长与样本终态）。代价是会留下一条相邻路由的空 view，已按真实路由命名，可在平台侧按 `routeName` 过滤。
+
+### 与自建设计文档的关系
+
+以下文档保留作设计与口径参考，其中描述的 SQLite Worker、`VUE_APP_PERFORMANCE_ENABLED` 开关与管理端 `/#/admin/performance` 看板属于**已不再实现的方案**，目录 `QHZHC_Web/src/services/performance`、`QHZHC_Server/src/server/performance` 不再承载代码：
 
 - [性能监控平台设计：完整链路、关键代码与扩展接入](docs/frontend-performance-monitoring-platform-design.md)
 - [实现、指标阈值与使用说明](docs/performance-monitoring-implementation.md)
 - [实际验收记录与开销限制](docs/performance-monitoring-validation.md)
-
-监控使用独立 SQLite Worker，默认数据库为业务数据库同目录的 `performance.sqlite`。前端构建变量 `VUE_APP_PERFORMANCE_ENABLED=false` 可关闭采集；发布时建议设置 `VUE_APP_RELEASE`。本轮开销对照有两项图表更新 P95 小幅超过预算，详见验收记录。

@@ -75,6 +75,8 @@ export default class RealtimeClient {
   private recoveringGap = false;
   private lastBucketStatus: "live" | "no-data" = "no-data";
   private maxPointsPerSecond: DeliveryPointLimit;
+  /** 每帧交给渲染层的点数；纯客户端参数，可在运行时调整。 */
+  private maxPerFrame: number;
   private readonly frameQueue: FrameTelemetryQueue;
   private readonly WebSocketImpl: typeof WebSocket;
   private readonly random: () => number;
@@ -98,9 +100,10 @@ export default class RealtimeClient {
       (() => accessTokenManager.refreshAccessToken());
     this.onAuthenticationFailure =
       options.onAuthenticationFailure || handleUnauthenticated;
+    this.maxPerFrame = Math.max(1, Math.floor(options.maxPerFrame ?? 1));
     this.frameQueue = new FrameTelemetryQueue(
       (points) => this.publishFrame(points),
-      Math.max(1, Math.floor(options.maxPerFrame ?? 1)),
+      this.maxPerFrame,
       5,
     );
   }
@@ -131,6 +134,26 @@ export default class RealtimeClient {
     if (socket && socket.readyState < WebSocket.CLOSING) {
       socket.close(REALTIME_CLOSE_CODE.NORMAL, "page leave");
     }
+  }
+
+  /** 帧队列中尚未交给渲染层的点数，供界面展示当前积压量。 */
+  pendingCount(): number {
+    return this.stopped ? 0 : this.frameQueue.pending();
+  }
+
+  /**
+   * 热更新每帧渲染数量。
+   * 这是纯客户端参数，只影响帧队列每帧取几个点，服务端不感知，
+   * 因此不需要像 setMaxPointsPerSecond 那样断开重连。
+   */
+  setMaxPerFrame(value: number): void {
+    this.maxPerFrame = Math.max(1, Math.floor(value));
+    this.frameQueue.setMaxPerFrame(this.maxPerFrame);
+  }
+
+  /** 当前生效的每帧渲染数量，界面回显的唯一数据源。 */
+  maxPerFrameValue(): number {
+    return this.maxPerFrame;
   }
 
   /** 修改单连接订阅上限后重建连接，使新参数从下一次握手开始生效。 */

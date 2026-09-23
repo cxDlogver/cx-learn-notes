@@ -18,12 +18,38 @@ export class FrameTelemetryQueue {
   private frameHandle: number | null = null;
   private paused = false;
 
+  /** 每帧取点上限。运行时可改，用于在大批量补发时加快消费积压。 */
+  private maxPerFrame: number;
+
   constructor(
     private readonly onFrame: (points: TelemetryPoint[]) => void,
-    private readonly maxPerFrame = 1,
+    maxPerFrame = 1,
     private readonly budgetMs = 5,
     private readonly scheduler: FrameScheduler = browserFrameScheduler,
-  ) {}
+  ) {
+    this.maxPerFrame = FrameTelemetryQueue.normalizeLimit(maxPerFrame);
+  }
+
+  private static normalizeLimit(value: number): number {
+    return Math.max(1, Math.floor(value));
+  }
+
+  /**
+   * 热更新每帧取点上限。
+   * 改完主动 schedule() 一次：若上一帧是因时间预算耗尽退出、而队列仍有剩余，
+   * 这里能立刻恢复消费（schedule 内部有 paused / 已有调度 / 队列已空三重短路，重复调用安全）。
+   */
+  setMaxPerFrame(value: number): void {
+    const next = FrameTelemetryQueue.normalizeLimit(value);
+    if (next === this.maxPerFrame) return;
+    this.maxPerFrame = next;
+    this.schedule();
+  }
+
+  /** 当前生效的每帧取点上限，供界面回显。 */
+  maxPerFrameValue(): number {
+    return this.maxPerFrame;
+  }
 
   enqueue(points: TelemetryPoint[]): void {
     if (!points.length) return;
@@ -33,6 +59,11 @@ export class FrameTelemetryQueue {
 
   peekNext(): TelemetryPoint | null {
     return this.queue[this.cursor] ?? null;
+  }
+
+  /** 尚未交给渲染层的点数：队列总长减去已消费游标。 */
+  pending(): number {
+    return Math.max(0, this.queue.length - this.cursor);
   }
 
   pause(): void {

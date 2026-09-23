@@ -274,6 +274,22 @@
             </el-select>
           </div>
           <div class="btn-content" v-if="searchType == 1">
+            <div class="c-title">每帧渲染:</div>
+            <el-select
+              v-model="realtimeFrameLimit"
+              size="mini"
+              style="width: 88px; margin-top: 10px"
+              @change="changeRealtimeFrameLimit"
+            >
+              <el-option
+                v-for="item in realtimeFrameLimitOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
+          </div>
+          <div class="btn-content" v-if="searchType == 1">
             <div class="c-title">清除数据:</div>
             <button
               type="button"
@@ -297,9 +313,52 @@
       <!-- <div class="checkInfo" v-if="searchType == 1">
         <div class="info-item">气体种类：{{ gasName }}</div>
       </div> -->
-      <!-- 图例 -->
+      <!-- 图例（运行指标按钮通过 actions slot 注入，排在「图例」按钮左侧） -->
       <div class="legend-box">
-        <Legend ref="legendChild" :gas-name="gasName"></Legend>
+        <Legend ref="legendChild" :gas-name="gasName">
+          <template v-slot:actions>
+            <div class="stats-anchor" v-if="searchType == 1">
+              <button
+                ref="statsButton"
+                type="button"
+                class="stats-btn"
+                :class="{ active: statsPanelShow }"
+                :aria-expanded="String(statsPanelShow)"
+                aria-controls="visualization-runtime-stats"
+                @click="toggleStatsPanel"
+              >
+                运行指标
+              </button>
+              <div
+                id="visualization-runtime-stats"
+                ref="statsPanel"
+                class="stats-panel"
+                v-show="statsPanelShow"
+              >
+                <div class="stats-title">运行指标</div>
+                <div class="stats-row">
+                  <span class="stats-label">缓存队列</span>
+                  <span
+                    class="stats-value"
+                    :class="{ warn: queuePending > 30 }"
+                  >{{ queuePending }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">每帧渲染</span>
+                  <span class="stats-value">{{ framePerRender }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">渲染帧率</span>
+                  <span class="stats-value">{{ fps }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">每帧耗时</span>
+                  <span class="stats-value">{{ frameTime.toFixed(2) }} ms</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </Legend>
       </div>
       <Details
         v-show="detailsFlag"
@@ -451,6 +510,23 @@ export default {
         { label: "10 点", value: 10 },
         { label: "20 点", value: 20 },
       ],
+      queuePending: 0, // 帧队列中尚未渲染的点数（运行指标面板展示）
+      framePerRender: 1, // 客户端当前生效的每帧渲染数量
+      fps: 0, // 渲染帧率（FPS），运行指标面板展示（仅统计真实数据帧）
+      frameTime: 0, // 每帧渲染耗时（毫秒），取最近一帧实际耗时，不取平均
+      _frameCount: 0, // FPS 计量：当前 1 秒窗口内累计渲染的真实帧数
+      _frameWindowStart: 0, // FPS 计量：当前统计窗口起点（首帧时初始化）
+      statsPanelShow: true, // 运行指标面板默认展开
+      statsPollTimer: null,
+      realtimeFrameLimit: 1,
+      realtimeFrameLimitOptions: [
+        { label: "1 点", value: 1 },
+        { label: "2 点", value: 2 },
+        { label: "5 点", value: 5 },
+        { label: "10 点", value: 10 },
+        { label: "20 点", value: 20 },
+        { label: "50 点", value: 50 },
+      ],
       sessionProfile: {},
       gasTypeList: [], //气体选择
       gasTypeData: {
@@ -572,6 +648,10 @@ export default {
       "GasData",
       JSON.stringify(this.$store.state.gasData),
     );
+    // 先摘掉 document 上的监听，再停连接与轮询，避免销毁后仍有回调触发。
+    document.removeEventListener("click", this.handleDocumentClick);
+    this.stopStatsPolling();
+    this.statsPanelShow = false;
     this.stopRealtime();
   },
   methods: {
@@ -600,13 +680,86 @@ export default {
         onStatus: this.handleRealtimeStatus,
         initialBucketStartMs: Number(options.initialBucketStartMs),
         maxPointsPerSecond: this.realtimePointLimit,
-        maxPerFrame: 1,
+        maxPerFrame: this.realtimeFrameLimit,
       });
       this.realtimeClient.start();
+      // 面板若已展开，新连接建立后继续采样。
+      if (this.statsPanelShow) this.startStatsPolling();
+    },
+    /**
+     * 运行指标面板：只在展开期间每 500ms 采样一次。
+     *
+     * 之所以要定时采样而不是在 onPacket 里更新，是因为队列被消费时并没有回调——
+     * 只有在面板打开时轮询，才能看到"积压正在下降"这一过程；面板关闭后停止，不做空转。
+     */
+    toggleStatsPanel() {
+      this.statsPanelShow = !this.statsPanelShow;
+      if (this.statsPanelShow) {
+        this.startStatsPolling();
+        document.addEventListener("click", this.handleDocumentClick);
+        return;
+      }
+      this.stopStatsPolling();
+      document.removeEventListener("click", this.handleDocumentClick);
+    },
+    startStatsPolling() {
+      this.stopStatsPolling();
+      this.refreshStats();
+      this.statsPollTimer = window.setInterval(() => this.refreshStats(), 500);
+    },
+    stopStatsPolling() {
+      if (this.statsPollTimer !== null) {
+        window.clearInterval(this.statsPollTimer);
+      }
+      this.statsPollTimer = null;
+    },
+    /** 面板数字取自客户端当前生效值，避免下拉绑定值与实现出现两份真相。 */
+    refreshStats() {
+      this.queuePending = this.realtimeClient
+        ? this.realtimeClient.pendingCount()
+        : 0;
+      this.framePerRender = this.realtimeClient
+        ? this.realtimeClient.maxPerFrameValue()
+        : this.realtimeFrameLimit;
+      this.aggregateFps();
+    },
+    /**
+     * 聚合 FPS：每帧在 handleRealtimePacket 里累加 _frameCount；只有“时间满 1 秒且当前队列
+     * 不为空”才把累计帧数提交为 FPS，并清零计数与窗口起点。队列空时不提交、不清零，
+     * FPS 保留最近一次有效值（不会显示 0）。
+     */
+    aggregateFps() {
+      const now = performance.now();
+      if (now - this._frameWindowStart >= 1000 && this.queuePending > 0) {
+        this.fps = this._frameCount;
+        this._frameCount = 0;
+        this._frameWindowStart = now;
+      }
+    },
+    /** 点击面板与按钮之外的任意区域关闭。 */
+    handleDocumentClick(event) {
+      if (!this.statsPanelShow) return;
+      const panel = this.$refs.statsPanel;
+      const button = this.$refs.statsButton;
+      const target = event.target;
+      if (panel && panel.contains(target)) return;
+      if (button && button.contains(target)) return;
+      this.toggleStatsPanel();
     },
     changeRealtimePointLimit(value) {
       if (this.realtimeClient) {
         this.realtimeClient.setMaxPointsPerSecond(Number(value));
+      }
+    },
+    /**
+     * 每帧渲染数量是纯客户端参数，只影响帧队列每帧取几个点，与服务端无关，
+     * 因此直接热更新——不能复用 setMaxPointsPerSecond 的"断开重连"套路，
+     * 否则会白闪一次「网络异常」并触发一次多余补发。
+     */
+    changeRealtimeFrameLimit(value) {
+      if (this.realtimeClient) {
+        this.realtimeClient.setMaxPerFrame(Number(value));
+        this.refreshStats();
       }
     },
     stopRealtime() {
@@ -614,6 +767,9 @@ export default {
         this.realtimeClient.stop();
         this.realtimeClient = null;
       }
+      this.stopStatsPolling();
+      this.queuePending = 0;
+      this.framePerRender = this.realtimeFrameLimit;
       this.connected = false;
     },
     /** 处理实时连接状态 */
@@ -645,6 +801,9 @@ export default {
         // normalizeEnvelope 只保证 code 是数字、data 是数组；点位内部的字段合法性交给下游渲染容错。
         const result = normalizeEnvelope(packet);
         if (result.code === 200 && result.data.length) {
+          // 计时范围就是“真正渲染这一帧数据”的工作：增量并入折线图与地图、刷新详情卡与天气。
+          // 取最近一帧的实际耗时（不取平均），同时累计帧数用于 FPS 统计。
+          const t0 = performance.now();
           const point = result.data[result.data.length - 1];
           // 两条曲线用的是不同的保留策略，所以必须各自增量合并，不能共用一份：
           // 折线图按时间窗口淘汰（以最新点为基准向前留 REALTIME_CHART_WINDOW_MS），
@@ -661,6 +820,10 @@ export default {
           this.detailsFlag = true;
           this.weatherLocationUpdate(point);
           this.signalState = "";
+          this.frameTime = performance.now() - t0;
+          const now = performance.now();
+          if (!this._frameWindowStart) this._frameWindowStart = now;
+          this._frameCount += 1; // 每渲染一帧累加计数
         } else if (result.code === 204) {
           // 204 = 链路正常但本次无新数据，原样透传服务端文案。
           this.signalState = result.message;
@@ -1225,6 +1388,7 @@ export default {
             line-height: 24px;
             font-size: 14px;
           }
+
           .c-body {
             width: 100%;
             display: flex;
@@ -1555,6 +1719,70 @@ export default {
       height: 240px;
       width: 110px;
     }
+    // 运行指标：按钮注入在图例的操作行内，浮层相对按钮定位
+    .stats-anchor {
+      position: relative;
+    }
+    .stats-btn {
+      width: 84px;
+      height: 34px;
+      border-radius: 20px;
+      background: #0095ff;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      color: #fff;
+      font-size: 13px;
+      line-height: 32px;
+      text-align: center;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease,
+        transform 0.2s ease;
+    }
+    .stats-btn:hover {
+      transform: translateY(-1px);
+    }
+    .stats-btn.active {
+      border-color: #0095ff;
+      box-shadow: 0 0 10px rgba(0, 149, 255, 0.45);
+    }
+    .stats-panel {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 0;
+      width: 170px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      background: rgba(18, 35, 54, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(7px);
+      box-shadow: 0px 4px 10px 0px rgba(38, 102, 127, 0.3);
+      z-index: 80;
+      animation: statsFadeIn 0.15s ease-out;
+    }
+    .stats-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #d8f3ff;
+      margin-bottom: 6px;
+    }
+    .stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      line-height: 20px;
+      color: #d8f3ff;
+    }
+    .stats-label {
+      color: #9fd8ff;
+    }
+    .stats-value {
+      color: #d8f3ff;
+      font-variant-numeric: tabular-nums;
+    }
+    .stats-value.warn {
+      color: #ff7b10;
+    }
   }
   .right {
     margin-left: 8px;
@@ -1569,6 +1797,17 @@ export default {
     background-color: rgba(0, 0, 0, 0.5);
   }
 }
+@keyframes statsFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes slideIn {
   0% {
     transform: translate(-200px, 0);
@@ -1615,6 +1854,9 @@ export default {
       width: 80px !important;
       height: 180px !important;
     }
+    .stats-panel {
+      width: 150px;
+    }
     .btn-content1,
     .btn-content2,
     .btn-content3 {
@@ -1647,6 +1889,9 @@ export default {
       width: 60px !important;
       height: 120px !important;
       right: 2vw !important;
+    }
+    .stats-panel {
+      width: 150px;
     }
     .btn-content1,
     .btn-content2,
@@ -1724,6 +1969,9 @@ export default {
       width: 60px !important;
       height: 120px !important;
       right: 2vw !important;
+    }
+    .stats-panel {
+      width: 150px;
     }
     .btn-content1,
     .btn-content2,

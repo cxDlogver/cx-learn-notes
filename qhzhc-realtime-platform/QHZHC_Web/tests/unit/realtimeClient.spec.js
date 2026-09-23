@@ -336,4 +336,61 @@ describe("RealtimeClient", () => {
     expect(onStatus).toHaveBeenCalledWith("error");
     expect(MockSocket.instances).toHaveLength(1);
   });
+
+  test("exposes the configured max per frame", () => {
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      maxPerFrame: 5,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket: jest.fn(),
+      onStatus: jest.fn(),
+    });
+    expect(client.maxPerFrameValue()).toBe(5);
+    client.stop();
+  });
+
+  test("setMaxPerFrame hot-updates without reconnecting", () => {
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      maxPerFrame: 1,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket: jest.fn(),
+      onStatus: jest.fn(),
+    });
+    client.start();
+    const socket = MockSocket.instances[0];
+    socket.open();
+    expect(client.maxPerFrameValue()).toBe(1);
+
+    const socketsBefore = MockSocket.instances.length;
+    client.setMaxPerFrame(20);
+
+    expect(client.maxPerFrameValue()).toBe(20);
+    expect(MockSocket.instances.length).toBe(socketsBefore); // 未新建连接
+    expect(socket.close).not.toHaveBeenCalled(); // 未断开重连
+    client.stop();
+  });
+
+  test("pendingCount is zero before start and after stop", () => {
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket: jest.fn(),
+      onStatus: jest.fn(),
+    });
+    expect(client.pendingCount()).toBe(0);
+    client.start();
+    MockSocket.instances[0].open();
+    client.stop();
+    expect(client.pendingCount()).toBe(0);
+  });
 });
