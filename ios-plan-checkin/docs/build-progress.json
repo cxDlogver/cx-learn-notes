@@ -6,8 +6,25 @@
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
   "integrationCommit": "133ebe99ac802de5a3308848ad85faf9a42326d0",
-  "currentWork": null,
-  "nextTaskId": "APP-05",
+  "currentWork": {
+    "taskId": "APP-05",
+    "phase": "今日与打卡记录六页、统一记录写入接口",
+    "updatedAt": "2026-09-27T19:15:48.287Z",
+    "baseCommit": "53de35c7524e3b1c88e9a28d59abe4441f16c220",
+    "completedSteps": [
+      "已核对六页 Pen 映射、Today 与打卡记录 HTTP 契约及 APP-04 本地数据接口。"
+    ],
+    "nextSteps": [
+      "设计统一记录 Repository：在线 PUT 与离线本地事务状态，并预留 SYNC-01 outbox 消费。",
+      "实现 today-empty/today-active、do/avoid 打卡、修改和补记六页及导航。",
+      "按 Pen 节点校准组件映射，执行 S0/S1/S3 与记录开发自检，提交代码和台账。"
+    ],
+    "uncommittedChanges": [],
+    "knownConstraints": [
+      "iOS 真机视觉、相册与离线恢复互动稍后验证；正式 ATDD 属独立验收阶段。"
+    ]
+  },
+  "nextTaskId": null,
   "tasks": [
     {
       "priority": 1,
@@ -366,10 +383,10 @@
         "S1",
         "S3"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "53de35c7524e3b1c88e9a28d59abe4441f16c220",
       "taskCommit": null,
       "integratedCommit": null
     },
