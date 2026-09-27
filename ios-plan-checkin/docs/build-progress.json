@@ -5,7 +5,7 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "15f6e949e951a1159ddd6b40ce1ab5590d00dadd",
+  "integrationCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
   "tasks": [
     {
       "priority": 1,
@@ -209,12 +209,14 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "BLOCKED",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "22e40e6d86a0bb0245d439096754eaf05545293e",
+      "taskCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
+      "integratedCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
+      "staticPassed": true,
+      "blocker": "计划与分组 CRUD、规则版本、生命周期和权限已通过静态检查与内存 PostgreSQL 自测；真实容器数据库迁移、并发及 API 运行验证待环境就绪。"
     },
     {
       "priority": 12,
