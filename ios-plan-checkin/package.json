@@ -12,8 +12,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json",
     "test:unit": "node --test packages/domain/test/*.test.mjs",
+    "mobile:config:check": "node scripts/mobile-config-check.mjs",
     "security:static": "node scripts/security-static.mjs",
-    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/security-static.mjs"
+    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs && node scripts/security-static.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

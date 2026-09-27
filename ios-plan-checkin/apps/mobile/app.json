@@ -6,9 +6,25 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-dev-client",
+      ["expo-sqlite", { "useSQLCipher": true }],
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "用于给打卡记录添加仅自己可见的照片。",
+          "cameraPermission": "用于拍摄仅自己可见的打卡照片。"
+        }
+      ],
+      "expo-notifications"
+    ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.plancheckin.app"
+      "bundleIdentifier": "com.plancheckin.app",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "用于发送你设置的计划提醒。"
+      }
     }
   }
 }
