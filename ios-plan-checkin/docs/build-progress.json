@@ -6,6 +6,25 @@
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
   "integrationCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
+  "currentWork": {
+    "taskId": "CORE-07",
+    "phase": "需求与数据模型核对",
+    "updatedAt": "2026-09-27T15:42:36Z",
+    "baseCommit": "ceb67a31fa865f8c16b3b46929178f0ead52046d",
+    "completedSteps": [
+      "已读取 CORE-07 的任务完成标准、PRD 打卡规则、技术方案事务规则和现有 checkins/revisions/one_time_resolutions 表结构。"
+    ],
+    "nextSteps": [
+      "实现记录提交、修改、补记与一次性终态纠错 API，事务内校验计划归属、历史规则版本和 revision。",
+      "补充 OpenAPI 契约与开发自测，运行 pnpm check 及相关静态门槛。",
+      "提交代码并更新本台账；容器数据库与 iOS 原生验证按用户要求稍后执行。"
+    ],
+    "uncommittedChanges": [],
+    "knownConstraints": [
+      "Windows 环境当前无可用 Docker Engine；真实 PostgreSQL 并发验证待环境就绪。",
+      "用户已指定先完成静态代码，iOS 原生验证稍后执行。"
+    ]
+  },
   "tasks": [
     {
       "priority": 1,
@@ -231,10 +250,10 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "ceb67a31fa865f8c16b3b46929178f0ead52046d",
       "taskCommit": null,
       "integratedCommit": null
     },
