@@ -5,7 +5,7 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "6ae3ef9035eaaec56ec5cb166aac2bd54c9377f0",
+  "integrationCommit": "15f6e949e951a1159ddd6b40ce1ab5590d00dadd",
   "tasks": [
     {
       "priority": 1,
@@ -186,12 +186,14 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "BLOCKED",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "3aa9c8df7b01e947e9100bd599419175629ff632",
+      "taskCommit": "15f6e949e951a1159ddd6b40ce1ab5590d00dadd",
+      "integratedCommit": "15f6e949e951a1159ddd6b40ce1ab5590d00dadd",
+      "staticPassed": true,
+      "blocker": "资料唯一性、CAS 版本、幂等、旧号与新号双验证码及会话撤销已通过内存 PostgreSQL 自测；真实数据库并发及短信网关仍待验证。"
     },
     {
       "priority": 11,
