@@ -21,15 +21,25 @@
     "infra:up": "docker compose -f infra/compose.yaml up -d --wait",
     "infra:down": "docker compose -f infra/compose.yaml down",
     "infra:check": "node scripts/infra-check.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate:plan": "node scripts/migrate.mjs --plan",
+    "db:static:check": "node scripts/sql-static-check.mjs && node scripts/migrate.mjs --plan",
+    "db:smoke": "node scripts/migrations-smoke.mjs",
     "security:static": "node scripts/security-static.mjs",
-    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/infra-check.mjs && node scripts/security-static.mjs"
+    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/infra-check.mjs && node scripts/sql-static-check.mjs && node scripts/security-static.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^10.0.0",
+    "@types/pg": "^8.23.1",
     "eslint": "^10.0.0",
+    "libpg-query": "^17.7.4",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.0.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
   }
 }

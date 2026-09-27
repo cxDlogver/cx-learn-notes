@@ -1,5 +1,8 @@
 {
   "schemaVersion": "1.0",
-  "nextMigration": "0001",
-  "migrations": []
+  "nextMigration": "0003",
+  "migrations": [
+    { "file": "0001_core.sql", "phase": "expand" },
+    { "file": "0002_social_operations.sql", "phase": "expand" }
+  ]
 }
