@@ -64,8 +64,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
       typeof details.message === "string"
         ? details.message
         : "请求处理失败，请稍后再试";
-    response
-      .status(status)
-      .json({ code, message, requestId: requestId(request) });
+    response.status(status).json({
+      code,
+      message,
+      requestId: requestId(request),
+      ...(details.details && typeof details.details === "object"
+        ? { details: details.details }
+        : {}),
+    });
   }
 }

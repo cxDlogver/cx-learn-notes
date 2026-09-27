@@ -120,6 +120,7 @@ export interface NumericEntry {
 export interface PutCheckinRequest {
   result: CheckinResult;
   note?: string | null;
+  failureReason?: string | null;
   numeric?: NumericEntry | null;
   mediaIds?: Uuid[];
   baseRevision: number;
@@ -134,8 +135,10 @@ export interface CheckinDto {
   businessDate: BusinessDate;
   result: CheckinResult;
   note: string | null;
+  failureReason: string | null;
   numeric: NumericEntry | null;
   mediaIds: Uuid[];
+  mediaAttachFailed?: boolean;
   isBackfilled: boolean;
   isRevised: boolean;
   revision: number;
@@ -155,6 +158,16 @@ export interface OneTimeResolutionRequest {
   baseRevision: number;
   completedAt?: UtcInstant;
   reason?: string;
+}
+export interface OneTimeResolutionDto {
+  planId: Uuid;
+  resolution: OneTimeResolution;
+  resolvedBusinessDate: BusinessDate;
+  resolvedAt: UtcInstant;
+  note: string | null;
+  revision: number;
+  isRevised: boolean;
+  timing: "on_time" | "late" | null;
 }
 export interface SmsChallengeRequest {
   countryCode: "+86";

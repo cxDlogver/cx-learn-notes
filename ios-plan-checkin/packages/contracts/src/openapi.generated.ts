@@ -842,6 +842,7 @@ export interface components {
       /** @enum {unknown} */
       result: "success" | "failure" | "skip";
       note?: string | null;
+      failureReason?: string | null;
       numeric?: components["schemas"]["NumericEntry"] | null;
       mediaIds?: string[];
       baseRevision: number;
@@ -946,8 +947,10 @@ export interface components {
       /** @enum {unknown} */
       result: "success" | "failure" | "skip";
       note?: string | null;
+      failureReason?: string | null;
       numeric?: components["schemas"]["NumericEntry"] | null;
       mediaIds?: string[];
+      mediaAttachFailed?: boolean;
       isBackfilled?: boolean;
       isRevised?: boolean;
       revision: number;
@@ -964,6 +967,21 @@ export interface components {
       }[];
       nextCursor: string;
       hasMore: boolean;
+    };
+    OneTimeResolution: {
+      /** Format: uuid */
+      planId: string;
+      /** @enum {unknown} */
+      resolution: "completed" | "failed" | "cancelled";
+      /** Format: date */
+      resolvedBusinessDate: string;
+      /** Format: date-time */
+      resolvedAt: string;
+      note: string | null;
+      revision: number;
+      isRevised: boolean;
+      /** @enum {unknown} */
+      timing: "on_time" | "late" | null;
     };
     UpdateMeRequest: {
       baseRevision: number;
@@ -2892,7 +2910,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["OneTimeResolution"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -2966,7 +2989,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["OneTimeResolution"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

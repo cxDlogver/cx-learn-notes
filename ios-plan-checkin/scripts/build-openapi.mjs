@@ -173,6 +173,7 @@ const schemas = {
     {
       result: { enum: ["success", "failure", "skip"] },
       note: { oneOf: [str(), { type: "null" }] },
+      failureReason: { oneOf: [str(), { type: "null" }] },
       numeric: { oneOf: [ref("NumericEntry"), { type: "null" }] },
       mediaIds: { type: "array", items: uuid },
       baseRevision: { type: "integer", minimum: 0 },
@@ -297,8 +298,10 @@ Object.assign(schemas, {
       businessDate: date,
       result: { enum: ["success", "failure", "skip"] },
       note: { oneOf: [str(), { type: "null" }] },
+      failureReason: { oneOf: [str(), { type: "null" }] },
       numeric: { oneOf: [ref("NumericEntry"), { type: "null" }] },
       mediaIds: { type: "array", items: uuid },
+      mediaAttachFailed: { type: "boolean" },
       isBackfilled: { type: "boolean" },
       isRevised: { type: "boolean" },
       revision: { type: "integer", minimum: 1 },
@@ -313,6 +316,28 @@ Object.assign(schemas, {
     nextCursor: str(),
     hasMore: { type: "boolean" },
   }),
+  OneTimeResolution: properties(
+    [
+      "planId",
+      "resolution",
+      "resolvedBusinessDate",
+      "resolvedAt",
+      "note",
+      "revision",
+      "isRevised",
+      "timing",
+    ],
+    {
+      planId: uuid,
+      resolution: { enum: ["completed", "failed", "cancelled"] },
+      resolvedBusinessDate: date,
+      resolvedAt: instant,
+      note: { oneOf: [str(), { type: "null" }] },
+      revision: { type: "integer", minimum: 1 },
+      isRevised: { type: "boolean" },
+      timing: { enum: ["on_time", "late", null] },
+    },
+  ),
   UpdateMeRequest: properties(["baseRevision"], {
     baseRevision: { type: "integer", minimum: 1 },
     username: str(),
@@ -369,6 +394,8 @@ const responseData = {
   updateGroup: ref("Group"),
   putCheckin: ref("Checkin"),
   getCheckin: ref("Checkin"),
+  createOneTimeResolution: ref("OneTimeResolution"),
+  reviseOneTimeResolution: ref("OneTimeResolution"),
   getSyncChanges: ref("SyncChanges"),
 };
 

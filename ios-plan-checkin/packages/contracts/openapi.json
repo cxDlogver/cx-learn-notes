@@ -2120,7 +2120,18 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OneTimeResolution"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -2205,7 +2216,18 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OneTimeResolution"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -4602,6 +4624,9 @@
         "properties": {
           "result": { "enum": ["success", "failure", "skip"] },
           "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "failureReason": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          },
           "numeric": {
             "oneOf": [
               { "$ref": "#/components/schemas/NumericEntry" },
@@ -4804,6 +4829,9 @@
           "businessDate": { "type": "string", "format": "date" },
           "result": { "enum": ["success", "failure", "skip"] },
           "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "failureReason": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          },
           "numeric": {
             "oneOf": [
               { "$ref": "#/components/schemas/NumericEntry" },
@@ -4814,6 +4842,7 @@
             "type": "array",
             "items": { "type": "string", "format": "uuid" }
           },
+          "mediaAttachFailed": { "type": "boolean" },
           "isBackfilled": { "type": "boolean" },
           "isRevised": { "type": "boolean" },
           "revision": { "type": "integer", "minimum": 1 },
@@ -4834,6 +4863,30 @@
           },
           "nextCursor": { "type": "string" },
           "hasMore": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "OneTimeResolution": {
+        "type": "object",
+        "required": [
+          "planId",
+          "resolution",
+          "resolvedBusinessDate",
+          "resolvedAt",
+          "note",
+          "revision",
+          "isRevised",
+          "timing"
+        ],
+        "properties": {
+          "planId": { "type": "string", "format": "uuid" },
+          "resolution": { "enum": ["completed", "failed", "cancelled"] },
+          "resolvedBusinessDate": { "type": "string", "format": "date" },
+          "resolvedAt": { "type": "string", "format": "date-time" },
+          "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "revision": { "type": "integer", "minimum": 1 },
+          "isRevised": { "type": "boolean" },
+          "timing": { "enum": ["on_time", "late", null] }
         },
         "additionalProperties": false
       },

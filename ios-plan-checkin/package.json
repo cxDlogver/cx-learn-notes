@@ -29,6 +29,7 @@
     "auth:smoke": "tsc -p apps/api/tsconfig.json && node scripts/auth-smoke.mjs",
     "profile:smoke": "tsc -p apps/api/tsconfig.json && node scripts/profile-smoke.mjs",
     "plans:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/plans-smoke.mjs",
+    "records:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/records-smoke.mjs",
     "progress:check": "node scripts/progress-check.mjs",
     "progress:show": "node scripts/progress-check.mjs --show",
     "security:static": "node scripts/security-static.mjs",

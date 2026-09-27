@@ -576,6 +576,7 @@
       "properties": {
         "result": ["success", "failure", "skip"],
         "note": null,
+        "failureReason": null,
         "numeric": null,
         "mediaIds": null,
         "baseRevision": null,
@@ -700,8 +701,10 @@
         "businessDate": null,
         "result": ["success", "failure", "skip"],
         "note": null,
+        "failureReason": null,
         "numeric": null,
         "mediaIds": null,
+        "mediaAttachFailed": null,
         "isBackfilled": null,
         "isRevised": null,
         "revision": null,
@@ -714,6 +717,28 @@
     "SyncChanges": {
       "required": ["changes", "nextCursor", "hasMore"],
       "properties": { "changes": null, "nextCursor": null, "hasMore": null }
+    },
+    "OneTimeResolution": {
+      "required": [
+        "planId",
+        "resolution",
+        "resolvedBusinessDate",
+        "resolvedAt",
+        "note",
+        "revision",
+        "isRevised",
+        "timing"
+      ],
+      "properties": {
+        "planId": null,
+        "resolution": ["completed", "failed", "cancelled"],
+        "resolvedBusinessDate": null,
+        "resolvedAt": null,
+        "note": null,
+        "revision": null,
+        "isRevised": null,
+        "timing": ["on_time", "late", null]
+      }
     },
     "UpdateMeRequest": {
       "required": ["baseRevision"],
