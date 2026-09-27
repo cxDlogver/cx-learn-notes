@@ -32,7 +32,8 @@ import {
 import type { SessionGateway } from "./session";
 import { SessionManager } from "./session";
 import { deviceId } from "../platform/deviceId";
-import type { LocalCache } from "./localCache";
+import type { CheckinSyncState, LocalCache } from "./localCache";
+import type { OutboxRunner } from "./outboxRunner";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -40,6 +41,7 @@ export class ApiRequestError extends Error {
     readonly code: string,
     message: string,
     readonly requestId: string | null,
+    readonly retryAfterMs: number | null = null,
   ) {
     super(message);
   }
@@ -47,7 +49,12 @@ export class ApiRequestError extends Error {
 
 export type RecordSaveResult =
   | { source: "server"; record: CheckinDto }
-  | { source: "local"; record: CheckinDto; operationId: string };
+  | {
+      source: "local";
+      record: CheckinDto;
+      operationId: string;
+      syncState: CheckinSyncState;
+    };
 
 export interface AppRepository {
   createSmsChallenge(phone: string): Promise<SmsChallengeDto>;
@@ -157,6 +164,14 @@ export class ApiClient implements SessionGateway {
           failure?.code ?? "NETWORK_ERROR",
           failure?.message ?? "请求失败，请稍后重试",
           failure?.requestId ?? null,
+          (() => {
+            const value = response.headers.get("Retry-After");
+            if (!value) return null;
+            const seconds = Number(value);
+            return Number.isFinite(seconds) && seconds >= 0
+              ? seconds * 1000
+              : Math.max(0, Date.parse(value) - Date.now()) || null;
+          })(),
         );
       }
       if (!body || typeof body !== "object" || !("data" in body))
@@ -272,6 +287,7 @@ export class HttpRepository implements AppRepository {
     private readonly api: ApiClient,
     private readonly localCache?: LocalCache,
     private readonly session?: SessionManager,
+    private readonly outbox?: OutboxRunner,
   ) {}
 
   private accountId(): string | null {
@@ -749,7 +765,9 @@ export class HttpRepository implements AppRepository {
     input: PutCheckinRequest,
   ): Promise<RecordSaveResult> {
     const accountId = this.accountId();
-    const saveLocal = async (): Promise<RecordSaveResult> => {
+    const saveLocal = async (
+      allowUnverifiedRule = false,
+    ): Promise<Extract<RecordSaveResult, { source: "local" }>> => {
       if (!accountId || !this.localCache)
         throw new ApiRequestError(0, "NETWORK_ERROR", "离线保存暂不可用", null);
       const { record, operationId } = await this.localCache.savePendingCheckin(
@@ -757,8 +775,9 @@ export class HttpRepository implements AppRepository {
         plan,
         businessDate,
         input,
+        allowUnverifiedRule,
       );
-      return { source: "local", record, operationId };
+      return { source: "local", record, operationId, syncState: "local" };
     };
     if (accountId && this.localCache) {
       const existing = await this.localCache.checkin(
@@ -766,9 +785,37 @@ export class HttpRepository implements AppRepository {
         plan.id,
         businessDate,
       );
-      if (existing?.state === "local") return saveLocal();
       if (existing?.state === "conflict")
         throw new Error("记录存在同步冲突，请先处理冲突");
+      if (this.outbox) {
+        let connected = false;
+        try {
+          const state = await Network.getNetworkStateAsync();
+          connected =
+            state.isConnected === true && state.isInternetReachable !== false;
+        } catch {
+          /* Unknown reachability does not permit skipping the cached rule check. */
+        }
+        const local = await saveLocal(connected);
+        try {
+          if (connected) await this.outbox.trigger();
+        } catch {
+          /* The local record and operation stay durable for the next retry. */
+        }
+        const latest = await this.localCache.checkin(
+          accountId,
+          plan.id,
+          businessDate,
+        );
+        return latest?.state === "synced"
+          ? { source: "server", record: latest.record }
+          : {
+              ...local,
+              record: latest?.record ?? local.record,
+              syncState: latest?.state ?? "local",
+            };
+      }
+      if (existing?.state === "local") return saveLocal();
     }
     try {
       const state = await Network.getNetworkStateAsync();

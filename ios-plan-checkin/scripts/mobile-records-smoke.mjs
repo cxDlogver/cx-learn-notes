@@ -183,6 +183,14 @@ await assert.rejects(
 );
 assert.equal(state.checkins.has("plan-1:2026-09-27"), false);
 assert.equal(state.outbox.size, 1);
+failOutbox = false;
+const uncachedRule = { ...input("op-5", "success"), ruleVersion: 2 };
+await assert.rejects(
+  cache.savePendingCheckin("user", plan, "2026-09-26", uncachedRule),
+  /缺少此日期的规则版本/,
+);
+await cache.savePendingCheckin("user", plan, "2026-09-26", uncachedRule, true);
+assert.equal(state.outbox.size, 2);
 const today = {
   viewDate: "2026-09-28",
   viewTimezone: "Asia/Shanghai",
@@ -229,5 +237,5 @@ assert.equal(session.merge({ ...today, items: [] }).items[0].status, "failure");
 session.clear();
 assert.equal(session.merge(today).items.length, 0);
 process.stdout.write(
-  "Mobile records smoke passed: atomic rollback, same-day coalescing, snapshot invalidation and card retention.\n",
+  "Mobile records smoke passed: atomic rollback, same-day coalescing, online rule fallback, snapshot invalidation and card retention.\n",
 );

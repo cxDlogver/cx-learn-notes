@@ -33,6 +33,14 @@ export interface LocalMediaMetadata {
   remoteId: string | null;
   createdAt: string;
 }
+export interface OutboxOperation {
+  operationId: string;
+  planId: string;
+  businessDate: string;
+  kind: "create" | "update" | "backfill" | "resolve_conflict";
+  payload: PutCheckinRequest;
+  retryCount: number;
+}
 interface PayloadRow {
   payload: string;
 }
@@ -305,6 +313,7 @@ export class LocalCache {
     plan: PlanDto,
     businessDate: string,
     input: PutCheckinRequest,
+    allowUnverifiedRule = false,
   ): Promise<{ record: CheckinDto; operationId: string }> {
     if (plan.kind === "one_time")
       throw new Error("一次性任务请使用完成状态操作");
@@ -326,9 +335,12 @@ export class LocalCache {
         plan.id,
         businessDate,
       );
-      if (!rule || rule.version !== input.ruleVersion)
+      if ((!rule || rule.version !== input.ruleVersion) && !allowUnverifiedRule)
         throw new Error("缺少此日期的规则版本，请联网后再补记");
-      const ruleData = JSON.parse(rule.payload) as RuleSnapshot["rule"];
+      const ruleData =
+        rule?.version === input.ruleVersion
+          ? (JSON.parse(rule.payload) as RuleSnapshot["rule"])
+          : null;
       if (
         ruleData &&
         "weekdays" in ruleData &&
@@ -347,7 +359,8 @@ export class LocalCache {
       );
       const existing = prior ? (JSON.parse(prior.payload) as CheckinDto) : null;
       const pending =
-        prior?.operation_id && prior.sync_state === "local"
+        prior?.operation_id &&
+        (prior.sync_state === "local" || prior.sync_state === "failed")
           ? await database.getFirstAsync<{ payload: string }>(
               "SELECT payload FROM local_outbox WHERE operation_id=? AND status='pending'",
               prior.operation_id,
@@ -416,6 +429,193 @@ export class LocalCache {
           input.clientCreatedAt,
         );
       return { record, operationId };
+    });
+  }
+
+  /** Claim one operation in insertion order; older unresolved writes for the same date block newer ones. */
+  async claimNextOperation(
+    accountId: string,
+    now = new Date(),
+  ): Promise<OutboxOperation | null> {
+    return this.store.transaction(accountId, async (database) => {
+      const stamp = now.toISOString();
+      await database.runAsync(
+        `UPDATE local_outbox SET status='retry', next_attempt_at=NULL,
+           last_error_code='INTERRUPTED', last_error_message='上次同步中断，准备重试'
+         WHERE status='sending' AND next_attempt_at<=?`,
+        stamp,
+      );
+      const row = await database.getFirstAsync<{
+        operation_id: string;
+        plan_id: string;
+        business_date: string;
+        kind: OutboxOperation["kind"];
+        payload: string;
+        retry_count: number;
+      }>(
+        `SELECT o.operation_id,o.plan_id,o.business_date,o.kind,o.payload,o.retry_count
+         FROM local_outbox o WHERE o.status IN ('pending','retry')
+         AND (o.next_attempt_at IS NULL OR o.next_attempt_at<=?)
+         AND NOT EXISTS (SELECT 1 FROM local_outbox prior
+           WHERE prior.plan_id=o.plan_id AND prior.business_date=o.business_date
+           AND prior.rowid<o.rowid AND prior.status IN ('pending','sending','retry','conflict','failed'))
+         ORDER BY o.rowid LIMIT 1`,
+        stamp,
+      );
+      if (!row) return null;
+      await database.runAsync(
+        `UPDATE local_outbox SET status='sending', next_attempt_at=?,
+           last_error_code=NULL,last_error_message=NULL WHERE operation_id=?`,
+        new Date(now.getTime() + 120_000).toISOString(),
+        row.operation_id,
+      );
+      await database.runAsync(
+        "UPDATE local_checkins SET sync_state='syncing' WHERE plan_id=? AND business_date=? AND operation_id=?",
+        row.plan_id,
+        row.business_date,
+        row.operation_id,
+      );
+      return {
+        operationId: row.operation_id,
+        planId: row.plan_id,
+        businessDate: row.business_date,
+        kind: row.kind,
+        payload: JSON.parse(row.payload) as PutCheckinRequest,
+        retryCount: row.retry_count,
+      };
+    });
+  }
+
+  /** A lost HTTP response can be acknowledged by retrying the same operation ID. */
+  async acknowledgeOperation(
+    accountId: string,
+    operation: OutboxOperation,
+    server: CheckinDto,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      const current = await database.getFirstAsync<{ operation_id: string }>(
+        "SELECT operation_id FROM local_outbox WHERE operation_id=?",
+        operation.operationId,
+      );
+      if (!current) return;
+      await database.runAsync(
+        "DELETE FROM local_outbox WHERE operation_id=?",
+        operation.operationId,
+      );
+      const next = await database.getFirstAsync<{
+        operation_id: string;
+        payload: string;
+      }>(
+        "SELECT operation_id,payload FROM local_outbox WHERE plan_id=? AND business_date=? ORDER BY rowid LIMIT 1",
+        operation.planId,
+        operation.businessDate,
+      );
+      if (next) {
+        const payload = JSON.parse(next.payload) as PutCheckinRequest;
+        await database.runAsync(
+          "UPDATE local_outbox SET payload=? WHERE operation_id=?",
+          JSON.stringify({ ...payload, baseRevision: server.revision }),
+          next.operation_id,
+        );
+        const draft = await database.getFirstAsync<{ payload: string }>(
+          "SELECT payload FROM local_checkins WHERE plan_id=? AND business_date=? AND operation_id=?",
+          operation.planId,
+          operation.businessDate,
+          next.operation_id,
+        );
+        if (draft) {
+          await database.runAsync(
+            "UPDATE local_checkins SET revision=?,payload=?,sync_state='local' WHERE plan_id=? AND business_date=? AND operation_id=?",
+            server.revision,
+            JSON.stringify({
+              ...JSON.parse(draft.payload),
+              revision: server.revision,
+              id: server.id,
+            }),
+            operation.planId,
+            operation.businessDate,
+            next.operation_id,
+          );
+        }
+      } else {
+        await database.runAsync(
+          `UPDATE local_checkins SET revision=?,sync_state='synced',payload=?,operation_id=NULL,updated_at=?
+           WHERE plan_id=? AND business_date=? AND operation_id=?`,
+          server.revision,
+          JSON.stringify(server),
+          server.updatedAt,
+          operation.planId,
+          operation.businessDate,
+          operation.operationId,
+        );
+      }
+      await database.runAsync(
+        "DELETE FROM local_sync_cursor WHERE scope LIKE 'calendar:%' OR scope='today:snapshot' OR scope=?",
+        `detail:${operation.planId}`,
+      );
+    });
+  }
+
+  async failOperation(
+    accountId: string,
+    operation: OutboxOperation,
+    status: "retry" | "conflict" | "failed",
+    code: string,
+    message: string,
+    retryAt: Date | null = null,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `UPDATE local_outbox SET status=?,retry_count=retry_count+1,
+           next_attempt_at=?,last_error_code=?,last_error_message=?
+         WHERE operation_id=? AND status='sending'`,
+        status,
+        retryAt?.toISOString() ?? null,
+        code,
+        message,
+        operation.operationId,
+      );
+      await database.runAsync(
+        "UPDATE local_checkins SET sync_state=? WHERE plan_id=? AND business_date=?",
+        status === "conflict" ? "conflict" : "failed",
+        operation.planId,
+        operation.businessDate,
+      );
+    });
+  }
+
+  async nextWakeAt(accountId: string): Promise<Date | null> {
+    return this.store.read(accountId, async (database) => {
+      const row = await database.getFirstAsync<{ wake_at: string | null }>(
+        "SELECT min(next_attempt_at) AS wake_at FROM local_outbox WHERE status IN ('retry','sending') AND next_attempt_at IS NOT NULL",
+      );
+      return row?.wake_at ? new Date(row.wake_at) : null;
+    });
+  }
+
+  async retryFailedOperation(
+    accountId: string,
+    operationId: string,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      const row = await database.getFirstAsync<{
+        plan_id: string;
+        business_date: string;
+      }>(
+        "SELECT plan_id,business_date FROM local_outbox WHERE operation_id=? AND status='failed'",
+        operationId,
+      );
+      if (!row) throw new Error("该操作不可直接重试");
+      await database.runAsync(
+        "UPDATE local_outbox SET status='pending',next_attempt_at=NULL WHERE operation_id=?",
+        operationId,
+      );
+      await database.runAsync(
+        "UPDATE local_checkins SET sync_state='local' WHERE plan_id=? AND business_date=? AND operation_id=?",
+        row.plan_id,
+        row.business_date,
+        operationId,
+      );
     });
   }
 

@@ -76,6 +76,13 @@ CREATE INDEX local_outbox_ready_idx ON local_outbox(status, next_attempt_at, cre
 CREATE INDEX local_media_operation_idx ON local_media(operation_id, status);
 `,
   },
+  {
+    version: 3,
+    sql: `
+ALTER TABLE local_outbox ADD COLUMN last_error_code TEXT;
+ALTER TABLE local_outbox ADD COLUMN last_error_message TEXT;
+`,
+  },
 ] as const;
 
 export const localSchemaVersion = localMigrations.at(-1)!.version;

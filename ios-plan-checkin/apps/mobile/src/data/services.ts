@@ -11,6 +11,8 @@ import { SessionManager } from "./session";
 import { LocalCache } from "./localCache";
 import { localStore, type LocalStore } from "./localStore";
 import { TodaySessionStore } from "./todaySession";
+import { OutboxRunner } from "./outboxRunner";
+import * as Network from "expo-network";
 import {
   MemorySessionStore,
   secureSessionStore,
@@ -24,6 +26,7 @@ export interface AppServices {
   localCache: LocalCache | null;
   localStore: LocalStore | null;
   todaySession: TodaySessionStore;
+  outbox: OutboxRunner | null;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -58,6 +61,7 @@ export function createAppServices(): AppServices {
       localCache: null,
       localStore: null,
       todaySession,
+      outbox: null,
     };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -81,13 +85,43 @@ export function createAppServices(): AppServices {
   );
   api.attachSession(session);
   const localCache = new LocalCache(localStore);
+  const outbox = new OutboxRunner(
+    localCache,
+    () => {
+      const current = session.getSnapshot();
+      return current.phase === "authenticated" ? current.userId : null;
+    },
+    (operation) =>
+      api.put(
+        `/plans/${encodeURIComponent(operation.planId)}/checkins/${operation.businessDate}`,
+        operation.payload,
+        operation.operationId,
+      ),
+    async () => {
+      try {
+        const state = await Network.getNetworkStateAsync();
+        return (
+          state.isConnected !== false && state.isInternetReachable !== false
+        );
+      } catch {
+        return true;
+      }
+    },
+    async () => {
+      await queryClient.invalidateQueries({ queryKey: ["today"] });
+      await queryClient.invalidateQueries({ queryKey: ["calendar"] });
+      await queryClient.invalidateQueries({ queryKey: ["plan-detail"] });
+      await queryClient.invalidateQueries({ queryKey: ["checkin"] });
+    },
+  );
   return {
-    repository: new HttpRepository(api, localCache, session),
+    repository: new HttpRepository(api, localCache, session, outbox),
     session,
     queryClient,
     mockMode,
     localCache,
     localStore,
     todaySession,
+    outbox,
   };
 }

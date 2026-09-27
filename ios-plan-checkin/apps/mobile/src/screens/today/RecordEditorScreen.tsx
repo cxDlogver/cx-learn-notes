@@ -78,7 +78,9 @@ export function RecordEditorScreen({
   const [numberUnit, setNumberUnit] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [savedLocally, setSavedLocally] = useState(false);
+  const [localStatus, setLocalStatus] = useState<
+    "local" | "syncing" | "failed" | "conflict" | null
+  >(null);
   const [onceResult, setOnceResult] = useState<OneTimeResolution | null>(
     resolution ?? null,
   );
@@ -156,10 +158,18 @@ export function RecordEditorScreen({
         queryClient.invalidateQueries({ queryKey: ["plan-detail", planId] }),
       ]);
       if (saved.source === "local") {
-        setSavedLocally(true);
-        Alert.alert("已保存到本机", "记录会在联网后同步。", [
-          { text: "知道了", onPress: onDone },
-        ]);
+        setLocalStatus(
+          saved.syncState === "synced" ? "local" : saved.syncState,
+        );
+        Alert.alert(
+          "已保存到本机",
+          saved.syncState === "conflict"
+            ? "记录存在版本冲突，请稍后选择保留的内容。"
+            : saved.syncState === "failed"
+              ? "同步失败，记录仍保存在本机，可稍后重试。"
+              : "记录会在联网后同步。",
+          [{ text: "知道了", onPress: onDone }],
+        );
       } else onDone();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "保存失败，请重试");
@@ -338,11 +348,21 @@ export function RecordEditorScreen({
               </View>
             </View>
           ) : null}
-          {savedLocally ? (
+          {localStatus ? (
             <StatusNotice
-              kind="pending"
+              kind={
+                localStatus === "failed" || localStatus === "conflict"
+                  ? "failure"
+                  : "pending"
+              }
               testID="record.local-saved"
-              message="已保存到本机，等待联网同步"
+              message={
+                localStatus === "conflict"
+                  ? "已保存到本机，存在版本冲突"
+                  : localStatus === "failed"
+                    ? "已保存到本机，同步失败，可稍后重试"
+                    : "已保存到本机，等待联网同步"
+              }
             />
           ) : null}
           <ErrorText message={error} />
