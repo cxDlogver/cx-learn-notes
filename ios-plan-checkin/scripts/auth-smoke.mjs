@@ -21,7 +21,10 @@ try {
   const adapt = (client) => ({
     query: async (sql, params) => {
       const result = await client.query(sql, params);
-      return { ...result, rowCount: result.rows.length };
+      return {
+        ...result,
+        rowCount: result.rows.length || result.affectedRows || 0,
+      };
     },
   });
   const database = {

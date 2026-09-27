@@ -163,13 +163,21 @@ Object.assign(schemas, {
     },
   ),
   User: properties(
-    ["id", "username", "nickname", "avatarMediaId", "accountStatus"],
+    [
+      "id",
+      "username",
+      "nickname",
+      "avatarMediaId",
+      "accountStatus",
+      "revision",
+    ],
     {
       id: uuid,
       username: { oneOf: [str(), { type: "null" }] },
       nickname: { oneOf: [str(), { type: "null" }] },
       avatarMediaId: { oneOf: [uuid, { type: "null" }] },
       accountStatus: { enum: ["active", "deletion_pending"] },
+      revision: { type: "integer", minimum: 1 },
     },
   ),
   Plan: properties(
@@ -232,6 +240,34 @@ Object.assign(schemas, {
     nextCursor: str(),
     hasMore: { type: "boolean" },
   }),
+  UpdateMeRequest: properties(["baseRevision"], {
+    baseRevision: { type: "integer", minimum: 1 },
+    username: str(),
+    nickname: str(),
+    avatarMediaId: { oneOf: [uuid, { type: "null" }] },
+  }),
+  ChangePhoneChallengeRequest: properties(["countryCode", "phone"], {
+    countryCode: { const: "+86" },
+    phone: { type: "string", pattern: "^1[3-9][0-9]{9}$" },
+  }),
+  ChangePhoneConfirmRequest: properties(["requestId", "oldCode", "newCode"], {
+    requestId: uuid,
+    oldCode: { type: "string", pattern: "^[0-9]{6}$" },
+    newCode: { type: "string", pattern: "^[0-9]{6}$" },
+  }),
+  ChangePhoneChallengeResponse: properties(
+    ["requestId", "oldMasked", "newMasked", "expiresAt"],
+    {
+      requestId: uuid,
+      oldMasked: str(),
+      newMasked: str(),
+      expiresAt: instant,
+    },
+  ),
+  UsernameAvailability: properties(["available", "normalized"], {
+    available: { type: "boolean" },
+    normalized: str(),
+  }),
 });
 
 const successOf = (data) =>
@@ -246,6 +282,8 @@ const responseData = {
   refreshSession: ref("AuthTokens"),
   getMe: ref("User"),
   updateMe: ref("User"),
+  checkUsername: ref("UsernameAvailability"),
+  createChangePhoneChallenge: ref("ChangePhoneChallengeResponse"),
   createPlan: ref("Plan"),
   getPlan: ref("Plan"),
   updatePlan: ref("Plan"),
@@ -259,6 +297,9 @@ const bodies = {
   verifySmsChallenge: "SmsVerifyRequest",
   refreshSession: "RefreshRequest",
   logout: "LogoutRequest",
+  updateMe: "UpdateMeRequest",
+  createChangePhoneChallenge: "ChangePhoneChallengeRequest",
+  confirmChangePhone: "ChangePhoneConfirmRequest",
   createPlan: "CreatePlanRequest",
   putCheckin: "PutCheckinRequest",
   createOneTimeResolution: "OneTimeResolutionRequest",

@@ -411,6 +411,7 @@
           "OTP_RATE_LIMITED",
           "SMS_UNAVAILABLE",
           "USERNAME_TAKEN",
+          "PHONE_TAKEN",
           "PLAN_DATE_INVALID",
           "RULE_CHANGED",
           "CHECKIN_CONFLICT",
@@ -571,14 +572,16 @@
         "username",
         "nickname",
         "avatarMediaId",
-        "accountStatus"
+        "accountStatus",
+        "revision"
       ],
       "properties": {
         "id": null,
         "username": null,
         "nickname": null,
         "avatarMediaId": null,
-        "accountStatus": ["active", "deletion_pending"]
+        "accountStatus": ["active", "deletion_pending"],
+        "revision": null
       }
     },
     "Plan": {
@@ -639,6 +642,36 @@
     "SyncChanges": {
       "required": ["changes", "nextCursor", "hasMore"],
       "properties": { "changes": null, "nextCursor": null, "hasMore": null }
+    },
+    "UpdateMeRequest": {
+      "required": ["baseRevision"],
+      "properties": {
+        "baseRevision": null,
+        "username": null,
+        "nickname": null,
+        "avatarMediaId": null
+      }
+    },
+    "ChangePhoneChallengeRequest": {
+      "required": ["countryCode", "phone"],
+      "properties": { "countryCode": ["+86"], "phone": null }
+    },
+    "ChangePhoneConfirmRequest": {
+      "required": ["requestId", "oldCode", "newCode"],
+      "properties": { "requestId": null, "oldCode": null, "newCode": null }
+    },
+    "ChangePhoneChallengeResponse": {
+      "required": ["requestId", "oldMasked", "newMasked", "expiresAt"],
+      "properties": {
+        "requestId": null,
+        "oldMasked": null,
+        "newMasked": null,
+        "expiresAt": null
+      }
+    },
+    "UsernameAvailability": {
+      "required": ["available", "normalized"],
+      "properties": { "available": null, "normalized": null }
     }
   }
 }

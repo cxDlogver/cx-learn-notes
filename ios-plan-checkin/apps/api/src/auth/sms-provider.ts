@@ -12,7 +12,7 @@ export class SmsProvider {
       const directory = new URL("../../.local/", import.meta.url);
       await mkdir(directory, { recursive: true });
       await writeFile(
-        new URL("sms-outbox.json", directory),
+        new URL(`sms-outbox-${purpose}.json`, directory),
         JSON.stringify({
           phoneE164,
           code,

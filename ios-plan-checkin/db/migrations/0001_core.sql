@@ -6,6 +6,7 @@ CREATE TABLE users (
   username_normalized TEXT GENERATED ALWAYS AS (lower(username)) STORED,
   nickname TEXT,
   avatar_media_id UUID,
+  revision INTEGER NOT NULL DEFAULT 1 CHECK (revision >= 1),
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'deletion_pending', 'deleted')),
   deletion_due_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -33,13 +34,28 @@ CREATE INDEX ix_auth_challenges_requester_created ON auth_challenges (requester_
 
 CREATE TABLE auth_idempotency_keys (
   key UUID PRIMARY KEY,
-  operation TEXT NOT NULL CHECK (operation IN ('sms_challenge', 'sms_verify', 'refresh', 'logout')),
+  operation TEXT NOT NULL CHECK (operation IN ('sms_challenge', 'sms_verify', 'refresh', 'logout', 'change_phone_challenge', 'change_phone_confirm')),
   request_hash BYTEA NOT NULL,
   response_ciphertext BYTEA NOT NULL,
   expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX ix_auth_idempotency_expiry ON auth_idempotency_keys (expires_at);
+
+CREATE TABLE phone_change_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  new_phone_ciphertext BYTEA NOT NULL,
+  new_phone_lookup_hash BYTEA NOT NULL,
+  old_code_hash BYTEA NOT NULL,
+  new_code_hash BYTEA NOT NULL,
+  attempts SMALLINT NOT NULL DEFAULT 0 CHECK (attempts BETWEEN 0 AND 10),
+  expires_at TIMESTAMPTZ NOT NULL,
+  consumed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (expires_at > created_at)
+);
+CREATE INDEX ix_phone_change_user_created ON phone_change_requests (user_id, created_at DESC);
 
 CREATE TABLE sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -38,6 +38,7 @@ const requiredTables = [
   "users",
   "auth_challenges",
   "auth_idempotency_keys",
+  "phone_change_requests",
   "sessions",
   "devices",
   "groups",

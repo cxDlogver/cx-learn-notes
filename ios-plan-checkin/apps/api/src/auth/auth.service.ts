@@ -120,7 +120,13 @@ export class AuthService {
 
   private async idempotent<T>(
     key: string,
-    operation: "sms_challenge" | "sms_verify" | "refresh" | "logout",
+    operation:
+      | "sms_challenge"
+      | "sms_verify"
+      | "refresh"
+      | "logout"
+      | "change_phone_challenge"
+      | "change_phone_confirm",
     request: unknown,
     work: (client: PoolClient) => Promise<T>,
   ): Promise<T> {
@@ -445,6 +451,193 @@ export class AuthService {
         return { loggedOut: true };
       },
     );
+  }
+
+  async createPhoneChange(
+    userId: string,
+    input: { countryCode: string; phone: string },
+    idempotencyKey: string,
+  ): Promise<{
+    requestId: string;
+    oldMasked: string;
+    newMasked: string;
+    expiresAt: string;
+  }> {
+    if (
+      !input ||
+      input.countryCode !== "+86" ||
+      !/^1[3-9]\d{9}$/.test(input.phone)
+    ) {
+      fail("VALIDATION_ERROR", 400, "请输入有效的新手机号");
+    }
+    const newPhone = `+86${input.phone}`;
+    const newHash = this.digest(this.config.phoneLookupKey, newPhone);
+    return this.idempotent(
+      idempotencyKey,
+      "change_phone_challenge",
+      { userId, input },
+      async (client) => {
+        const user = await client.query<{
+          phone_ciphertext: Buffer;
+          phone_lookup_hash: Buffer;
+          status: string;
+        }>(
+          "SELECT phone_ciphertext, phone_lookup_hash, status FROM users WHERE id = $1 FOR UPDATE",
+          [userId],
+        );
+        if (user.rows[0]?.status !== "active")
+          fail("FORBIDDEN", 403, "账号不可使用");
+        if (this.equal(user.rows[0].phone_lookup_hash, newHash)) {
+          fail("VALIDATION_ERROR", 400, "新手机号不能与当前手机号相同");
+        }
+        const taken = await client.query(
+          "SELECT id FROM users WHERE phone_lookup_hash = $1",
+          [newHash],
+        );
+        if (taken.rowCount) fail("PHONE_TAKEN", 409, "该手机号已绑定其他账号");
+        const count = await client.query<{ n: string }>(
+          "SELECT count(*) AS n FROM phone_change_requests WHERE user_id = $1 AND created_at > now() - interval '1 hour'",
+          [userId],
+        );
+        if (Number(count.rows[0]?.n) >= 3)
+          fail("OTP_RATE_LIMITED", 429, "换号验证码请求过于频繁");
+        const oldPhone = this.decryptPhone(user.rows[0].phone_ciphertext);
+        const requestId = randomUUID();
+        const oldCode = randomInt(0, 1_000_000).toString().padStart(6, "0");
+        const newCode = randomInt(0, 1_000_000).toString().padStart(6, "0");
+        await client.query(
+          `INSERT INTO phone_change_requests
+          (id, user_id, new_phone_ciphertext, new_phone_lookup_hash, old_code_hash, new_code_hash, expires_at)
+         VALUES ($1, $2, $3, $4, $5, $6, now() + interval '5 minutes')`,
+          [
+            requestId,
+            userId,
+            this.encryptPhone(newPhone),
+            newHash,
+            this.digest(this.config.otpHashKey, `${requestId}:old:${oldCode}`),
+            this.digest(this.config.otpHashKey, `${requestId}:new:${newCode}`),
+          ],
+        );
+        try {
+          await this.sms.send(oldPhone, oldCode, "change_phone_old");
+          await this.sms.send(newPhone, newCode, "change_phone_new");
+        } catch {
+          fail("SMS_UNAVAILABLE", 503, "短信暂时无法发送，请稍后再试");
+        }
+        const mask = (phone: string) =>
+          `${phone.slice(0, 6)}****${phone.slice(-4)}`;
+        return {
+          requestId,
+          oldMasked: mask(oldPhone),
+          newMasked: mask(newPhone),
+          expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
+        };
+      },
+    );
+  }
+
+  async confirmPhoneChange(
+    userId: string,
+    input: { requestId: string; oldCode: string; newCode: string },
+    idempotencyKey: string,
+  ): Promise<{ changed: true }> {
+    if (
+      !input ||
+      !/^[0-9a-f-]{36}$/i.test(input.requestId) ||
+      !/^[0-9]{6}$/.test(input.oldCode) ||
+      !/^[0-9]{6}$/.test(input.newCode)
+    ) {
+      fail("OTP_INVALID", 400, "验证码不正确");
+    }
+    const outcome = await this.idempotent(
+      idempotencyKey,
+      "change_phone_confirm",
+      { userId, input },
+      async (client) => {
+        const found = await client.query<{
+          id: string;
+          user_id: string;
+          new_phone_ciphertext: Buffer;
+          new_phone_lookup_hash: Buffer;
+          old_code_hash: Buffer;
+          new_code_hash: Buffer;
+          attempts: number;
+          expires_at: Date;
+          consumed_at: Date | null;
+        }>("SELECT * FROM phone_change_requests WHERE id = $1 FOR UPDATE", [
+          input.requestId,
+        ]);
+        const request = found.rows[0];
+        if (
+          !request ||
+          request.user_id !== userId ||
+          request.consumed_at ||
+          request.expires_at.getTime() <= Date.now()
+        ) {
+          return { kind: "expired" } as const;
+        }
+        if (request.attempts >= 5) return { kind: "limited" } as const;
+        const oldValid = this.equal(
+          request.old_code_hash,
+          this.digest(
+            this.config.otpHashKey,
+            `${request.id}:old:${input.oldCode}`,
+          ),
+        );
+        const newValid = this.equal(
+          request.new_code_hash,
+          this.digest(
+            this.config.otpHashKey,
+            `${request.id}:new:${input.newCode}`,
+          ),
+        );
+        if (!oldValid || !newValid) {
+          await client.query(
+            "UPDATE phone_change_requests SET attempts = attempts + 1 WHERE id = $1",
+            [request.id],
+          );
+          return { kind: "invalid" } as const;
+        }
+        const owner = await client.query<{ id: string }>(
+          "SELECT id FROM users WHERE phone_lookup_hash = $1 AND id <> $2",
+          [request.new_phone_lookup_hash, userId],
+        );
+        if (owner.rowCount) return { kind: "taken" } as const;
+        const updated = await client.query(
+          "UPDATE users SET phone_ciphertext = $1, phone_lookup_hash = $2, revision = revision + 1, updated_at = now() WHERE id = $3 AND status = 'active'",
+          [request.new_phone_ciphertext, request.new_phone_lookup_hash, userId],
+        );
+        if (!updated.rowCount) return { kind: "forbidden" } as const;
+        await client.query(
+          "UPDATE sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL",
+          [userId],
+        );
+        await client.query(
+          "UPDATE phone_change_requests SET consumed_at = now() WHERE id = $1",
+          [request.id],
+        );
+        return { kind: "success" } as const;
+      },
+    ).catch((error: unknown) => {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "23505"
+      ) {
+        fail("PHONE_TAKEN", 409, "该手机号已绑定其他账号");
+      }
+      throw error;
+    });
+    if (outcome.kind === "expired")
+      fail("OTP_EXPIRED", 400, "换号验证码已过期");
+    if (outcome.kind === "limited")
+      fail("OTP_RATE_LIMITED", 429, "验证码尝试次数已达上限");
+    if (outcome.kind === "invalid") fail("OTP_INVALID", 400, "验证码不正确");
+    if (outcome.kind === "taken")
+      fail("PHONE_TAKEN", 409, "该手机号已绑定其他账号");
+    if (outcome.kind === "forbidden") fail("FORBIDDEN", 403, "账号不可使用");
+    return { changed: true };
   }
 
   async authenticate(bearer: string): Promise<string> {

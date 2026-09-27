@@ -434,6 +434,14 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateMeRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -513,7 +521,18 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UsernameAvailability"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -579,12 +598,33 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePhoneChallengeRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ChangePhoneChallengeResponse"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -650,6 +690,16 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePhoneConfirmRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -4062,6 +4112,7 @@
               "OTP_RATE_LIMITED",
               "SMS_UNAVAILABLE",
               "USERNAME_TAKEN",
+              "PHONE_TAKEN",
               "PLAN_DATE_INVALID",
               "RULE_CHANGED",
               "CHECKIN_CONFLICT",
@@ -4326,7 +4377,8 @@
           "username",
           "nickname",
           "avatarMediaId",
-          "accountStatus"
+          "accountStatus",
+          "revision"
         ],
         "properties": {
           "id": { "type": "string", "format": "uuid" },
@@ -4338,7 +4390,8 @@
               { "type": "null" }
             ]
           },
-          "accountStatus": { "enum": ["active", "deletion_pending"] }
+          "accountStatus": { "enum": ["active", "deletion_pending"] },
+          "revision": { "type": "integer", "minimum": 1 }
         },
         "additionalProperties": false
       },
@@ -4429,6 +4482,61 @@
           },
           "nextCursor": { "type": "string" },
           "hasMore": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "UpdateMeRequest": {
+        "type": "object",
+        "required": ["baseRevision"],
+        "properties": {
+          "baseRevision": { "type": "integer", "minimum": 1 },
+          "username": { "type": "string" },
+          "nickname": { "type": "string" },
+          "avatarMediaId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChangePhoneChallengeRequest": {
+        "type": "object",
+        "required": ["countryCode", "phone"],
+        "properties": {
+          "countryCode": { "const": "+86" },
+          "phone": { "type": "string", "pattern": "^1[3-9][0-9]{9}$" }
+        },
+        "additionalProperties": false
+      },
+      "ChangePhoneConfirmRequest": {
+        "type": "object",
+        "required": ["requestId", "oldCode", "newCode"],
+        "properties": {
+          "requestId": { "type": "string", "format": "uuid" },
+          "oldCode": { "type": "string", "pattern": "^[0-9]{6}$" },
+          "newCode": { "type": "string", "pattern": "^[0-9]{6}$" }
+        },
+        "additionalProperties": false
+      },
+      "ChangePhoneChallengeResponse": {
+        "type": "object",
+        "required": ["requestId", "oldMasked", "newMasked", "expiresAt"],
+        "properties": {
+          "requestId": { "type": "string", "format": "uuid" },
+          "oldMasked": { "type": "string" },
+          "newMasked": { "type": "string" },
+          "expiresAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "UsernameAvailability": {
+        "type": "object",
+        "required": ["available", "normalized"],
+        "properties": {
+          "available": { "type": "boolean" },
+          "normalized": { "type": "string" }
         },
         "additionalProperties": false
       }

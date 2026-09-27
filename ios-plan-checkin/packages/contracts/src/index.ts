@@ -149,6 +149,22 @@ export interface UserDto {
   nickname: string | null;
   avatarMediaId: Uuid | null;
   accountStatus: "active" | "deletion_pending";
+  revision: number;
+}
+export interface UpdateMeRequest {
+  username?: string;
+  nickname?: string;
+  avatarMediaId?: Uuid | null;
+  baseRevision: number;
+}
+export interface ChangePhoneChallengeRequest {
+  countryCode: "+86";
+  phone: string;
+}
+export interface ChangePhoneConfirmRequest {
+  requestId: Uuid;
+  oldCode: string;
+  newCode: string;
 }
 export interface SyncChange {
   seq: number;

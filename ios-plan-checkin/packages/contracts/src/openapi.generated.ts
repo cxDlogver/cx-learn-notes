@@ -705,6 +705,7 @@ export interface components {
         | "OTP_RATE_LIMITED"
         | "SMS_UNAVAILABLE"
         | "USERNAME_TAKEN"
+        | "PHONE_TAKEN"
         | "PLAN_DATE_INVALID"
         | "RULE_CHANGED"
         | "CHECKIN_CONFLICT"
@@ -854,6 +855,7 @@ export interface components {
       avatarMediaId: string | null;
       /** @enum {unknown} */
       accountStatus: "active" | "deletion_pending";
+      revision: number;
     };
     Plan: {
       /** Format: uuid */
@@ -903,6 +905,35 @@ export interface components {
       }[];
       nextCursor: string;
       hasMore: boolean;
+    };
+    UpdateMeRequest: {
+      baseRevision: number;
+      username?: string;
+      nickname?: string;
+      avatarMediaId?: string | null;
+    };
+    ChangePhoneChallengeRequest: {
+      /** @constant */
+      countryCode: "+86";
+      phone: string;
+    };
+    ChangePhoneConfirmRequest: {
+      /** Format: uuid */
+      requestId: string;
+      oldCode: string;
+      newCode: string;
+    };
+    ChangePhoneChallengeResponse: {
+      /** Format: uuid */
+      requestId: string;
+      oldMasked: string;
+      newMasked: string;
+      /** Format: date-time */
+      expiresAt: string;
+    };
+    UsernameAvailability: {
+      available: boolean;
+      normalized: string;
     };
   };
   responses: never;
@@ -1297,7 +1328,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateMeRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -1377,7 +1412,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["UsernameAvailability"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -1437,7 +1477,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ChangePhoneChallengeRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -1445,7 +1489,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["ChangePhoneChallengeResponse"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -1505,7 +1554,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ChangePhoneConfirmRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
