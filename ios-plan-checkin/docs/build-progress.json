@@ -5,7 +5,7 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "eceb0613792bc0a209a29a46d1e86318e0a4ef65",
+  "integrationCommit": "6ae3ef9035eaaec56ec5cb166aac2bd54c9377f0",
   "tasks": [
     {
       "priority": 1,
@@ -165,12 +165,14 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "BLOCKED",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "6ebd9e8b70c299b2b1ae2607544a86e40f90084a",
+      "taskCommit": "6ae3ef9035eaaec56ec5cb166aac2bd54c9377f0",
+      "integratedCommit": "6ae3ef9035eaaec56ec5cb166aac2bd54c9377f0",
+      "staticPassed": true,
+      "blocker": "验证码、加密幂等、登录、refresh 轮换和登出已通过内存 PostgreSQL 开发自测；真实 PostgreSQL、短信网关及端到端 HTTP 验证待运行环境就绪。"
     },
     {
       "priority": 10,
