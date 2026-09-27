@@ -261,6 +261,177 @@ Object.assign(schemas, {
   }),
   CreateFriendRequestRequest: properties(["receiverId"], { receiverId: uuid }),
   CreateBlockRequest: properties(["blockedId"], { blockedId: uuid }),
+  ShareGrantRequest: properties(["previewToken"], { previewToken: str() }),
+  PlanShare: properties(["planId", "friend", "grantedAt", "revision"], {
+    planId: uuid,
+    friend: ref("SocialUser"),
+    grantedAt: instant,
+    revision: { type: "integer", minimum: 1 },
+  }),
+  SharedPlan: properties(
+    [
+      "id",
+      "owner",
+      "kind",
+      "direction",
+      "title",
+      "timezone",
+      "startDate",
+      "endDate",
+      "dueDate",
+      "lifecycle",
+      "ruleVersion",
+      "rule",
+      "progress",
+    ],
+    {
+      id: uuid,
+      owner: ref("SocialUser"),
+      kind: { enum: ["fixed", "weekly", "one_time"] },
+      direction: { enum: ["do", "avoid"] },
+      title: str(),
+      timezone: str(),
+      startDate: date,
+      endDate: { oneOf: [date, { type: "null" }] },
+      dueDate: { oneOf: [date, { type: "null" }] },
+      lifecycle: { enum: ["active", "paused", "archived"] },
+      ruleVersion: { type: "integer", minimum: 1 },
+      rule: {
+        oneOf: [
+          properties(["weekdays"], {
+            weekdays: {
+              type: "array",
+              items: { type: "integer", minimum: 1, maximum: 7 },
+            },
+          }),
+          properties(["weeklyTarget"], {
+            weeklyTarget: { type: "integer", minimum: 1, maximum: 7 },
+          }),
+          { type: "null" },
+        ],
+      },
+      progress: {
+        oneOf: [
+          properties(
+            ["kind", "successCount", "denominator", "completionRate"],
+            {
+              kind: { const: "fixed" },
+              successCount: { type: "integer", minimum: 0 },
+              denominator: { type: "integer", minimum: 0 },
+              completionRate: {
+                oneOf: [
+                  { type: "number", minimum: 0, maximum: 1 },
+                  { type: "null" },
+                ],
+              },
+            },
+          ),
+          properties(["kind", "weekStartDate", "successes", "target"], {
+            kind: { const: "weekly" },
+            weekStartDate: date,
+            successes: { type: "integer", minimum: 0 },
+            target: {
+              oneOf: [
+                { type: "integer", minimum: 1, maximum: 7 },
+                { type: "null" },
+              ],
+            },
+          }),
+          properties(["kind", "state"], {
+            kind: { const: "one_time" },
+            state: {
+              enum: [
+                "pending",
+                "overdue",
+                "completed",
+                "late_completed",
+                "failed",
+                "cancelled",
+              ],
+            },
+          }),
+        ],
+      },
+    },
+  ),
+  SharedHistoryEntry: properties(
+    [
+      "businessDate",
+      "status",
+      "note",
+      "failureReason",
+      "isBackfilled",
+      "isRevised",
+      "ruleVersion",
+    ],
+    {
+      businessDate: date,
+      status: {
+        enum: [
+          "success",
+          "failure",
+          "skip",
+          "pending",
+          "unrecorded",
+          "future",
+          "due",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled",
+          "not_due",
+        ],
+      },
+      note: { oneOf: [str(), { type: "null" }] },
+      failureReason: { oneOf: [str(), { type: "null" }] },
+      isBackfilled: { type: "boolean" },
+      isRevised: { type: "boolean" },
+      ruleVersion: { type: "integer", minimum: 1 },
+    },
+  ),
+  SharedHistory: properties(
+    [
+      "plan",
+      "month",
+      "entries",
+      "weeklySummaries",
+      "earliestMonth",
+      "latestMonth",
+    ],
+    {
+      plan: ref("SharedPlan"),
+      month: str(),
+      entries: { type: "array", items: ref("SharedHistoryEntry") },
+      weeklySummaries: { type: "array", items: ref("WeeklySummary") },
+      earliestMonth: str(),
+      latestMonth: str(),
+    },
+  ),
+  SharePreview: properties(
+    [
+      "plan",
+      "month",
+      "entries",
+      "weeklySummaries",
+      "earliestMonth",
+      "latestMonth",
+      "friend",
+      "disclosure",
+      "previewToken",
+    ],
+    {
+      plan: ref("SharedPlan"),
+      month: str(),
+      entries: { type: "array", items: ref("SharedHistoryEntry") },
+      weeklySummaries: { type: "array", items: ref("WeeklySummary") },
+      earliestMonth: str(),
+      latestMonth: str(),
+      friend: ref("SocialUser"),
+      disclosure: str(),
+      previewToken: str(),
+    },
+  ),
   Plan: properties(
     [
       "id",
@@ -716,6 +887,12 @@ const responseData = {
   listFriendRequests: ref("FriendRequests"),
   createFriendRequest: ref("FriendRequest"),
   acceptFriendRequest: ref("FriendRequest"),
+  getSharePreview: ref("SharePreview"),
+  listPlanShares: { type: "array", items: ref("PlanShare") },
+  sharePlan: ref("PlanShare"),
+  listSharedPlans: { type: "array", items: ref("SharedPlan") },
+  getSharedPlan: ref("SharedPlan"),
+  listSharedCheckins: ref("SharedHistory"),
 };
 
 const bodies = {
@@ -738,6 +915,7 @@ const bodies = {
   reviseOneTimeResolution: "OneTimeResolutionRequest",
   createFriendRequest: "CreateFriendRequestRequest",
   createBlock: "CreateBlockRequest",
+  sharePlan: "ShareGrantRequest",
 };
 const paths = {};
 for (const [method, suffix, operationId, auth] of apiRoutes) {
@@ -754,6 +932,20 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
       in: "query",
       required: false,
       schema: str(),
+    });
+  if (operationId === "getSharePreview")
+    parameters.push({
+      name: "friendId",
+      in: "query",
+      required: true,
+      schema: uuid,
+    });
+  if (operationId === "getSharePreview" || operationId === "listSharedCheckins")
+    parameters.push({
+      name: "month",
+      in: "query",
+      required: operationId === "getSharePreview",
+      schema: { type: "string", pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$" },
     });
   if (operationId === "getGlobalCalendar" || operationId === "getPlanCalendar")
     parameters.push({

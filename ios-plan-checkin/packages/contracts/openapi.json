@@ -3527,6 +3527,172 @@
         }
       }
     },
+    "/api/v1/plans/{id}/share-preview": {
+      "get": {
+        "operationId": "getSharePreview",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "friendId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/SharePreview" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/shares": {
+      "get": {
+        "operationId": "listPlanShares",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/PlanShare" }
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/plans/{id}/shares/{friendId}": {
       "put": {
         "operationId": "sharePlan",
@@ -3558,12 +3724,29 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ShareGrantRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/PlanShare" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -3709,7 +3892,93 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/SharedPlan" }
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shared-plans/{id}": {
+      "get": {
+        "operationId": "getSharedPlan",
+        "tags": ["shared-plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/SharedPlan" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -3767,6 +4036,15 @@
             "in": "path",
             "required": true,
             "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+            }
           }
         ],
         "responses": {
@@ -3774,7 +4052,16 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/SharedHistory" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5278,6 +5565,250 @@
         "type": "object",
         "required": ["blockedId"],
         "properties": { "blockedId": { "type": "string", "format": "uuid" } },
+        "additionalProperties": false
+      },
+      "ShareGrantRequest": {
+        "type": "object",
+        "required": ["previewToken"],
+        "properties": { "previewToken": { "type": "string" } },
+        "additionalProperties": false
+      },
+      "PlanShare": {
+        "type": "object",
+        "required": ["planId", "friend", "grantedAt", "revision"],
+        "properties": {
+          "planId": { "type": "string", "format": "uuid" },
+          "friend": { "$ref": "#/components/schemas/SocialUser" },
+          "grantedAt": { "type": "string", "format": "date-time" },
+          "revision": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": false
+      },
+      "SharedPlan": {
+        "type": "object",
+        "required": [
+          "id",
+          "owner",
+          "kind",
+          "direction",
+          "title",
+          "timezone",
+          "startDate",
+          "endDate",
+          "dueDate",
+          "lifecycle",
+          "ruleVersion",
+          "rule",
+          "progress"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "owner": { "$ref": "#/components/schemas/SocialUser" },
+          "kind": { "enum": ["fixed", "weekly", "one_time"] },
+          "direction": { "enum": ["do", "avoid"] },
+          "title": { "type": "string" },
+          "timezone": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": {
+            "oneOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ]
+          },
+          "dueDate": {
+            "oneOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ]
+          },
+          "lifecycle": { "enum": ["active", "paused", "archived"] },
+          "ruleVersion": { "type": "integer", "minimum": 1 },
+          "rule": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["weekdays"],
+                "properties": {
+                  "weekdays": {
+                    "type": "array",
+                    "items": { "type": "integer", "minimum": 1, "maximum": 7 }
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": ["weeklyTarget"],
+                "properties": {
+                  "weeklyTarget": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7
+                  }
+                },
+                "additionalProperties": false
+              },
+              { "type": "null" }
+            ]
+          },
+          "progress": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "successCount",
+                  "denominator",
+                  "completionRate"
+                ],
+                "properties": {
+                  "kind": { "const": "fixed" },
+                  "successCount": { "type": "integer", "minimum": 0 },
+                  "denominator": { "type": "integer", "minimum": 0 },
+                  "completionRate": {
+                    "oneOf": [
+                      { "type": "number", "minimum": 0, "maximum": 1 },
+                      { "type": "null" }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": ["kind", "weekStartDate", "successes", "target"],
+                "properties": {
+                  "kind": { "const": "weekly" },
+                  "weekStartDate": { "type": "string", "format": "date" },
+                  "successes": { "type": "integer", "minimum": 0 },
+                  "target": {
+                    "oneOf": [
+                      { "type": "integer", "minimum": 1, "maximum": 7 },
+                      { "type": "null" }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": ["kind", "state"],
+                "properties": {
+                  "kind": { "const": "one_time" },
+                  "state": {
+                    "enum": [
+                      "pending",
+                      "overdue",
+                      "completed",
+                      "late_completed",
+                      "failed",
+                      "cancelled"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "SharedHistoryEntry": {
+        "type": "object",
+        "required": [
+          "businessDate",
+          "status",
+          "note",
+          "failureReason",
+          "isBackfilled",
+          "isRevised",
+          "ruleVersion"
+        ],
+        "properties": {
+          "businessDate": { "type": "string", "format": "date" },
+          "status": {
+            "enum": [
+              "success",
+              "failure",
+              "skip",
+              "pending",
+              "unrecorded",
+              "future",
+              "due",
+              "overdue",
+              "completed",
+              "late_completed",
+              "failed",
+              "cancelled",
+              "not_due"
+            ]
+          },
+          "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "failureReason": {
+            "oneOf": [{ "type": "string" }, { "type": "null" }]
+          },
+          "isBackfilled": { "type": "boolean" },
+          "isRevised": { "type": "boolean" },
+          "ruleVersion": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": false
+      },
+      "SharedHistory": {
+        "type": "object",
+        "required": [
+          "plan",
+          "month",
+          "entries",
+          "weeklySummaries",
+          "earliestMonth",
+          "latestMonth"
+        ],
+        "properties": {
+          "plan": { "$ref": "#/components/schemas/SharedPlan" },
+          "month": { "type": "string" },
+          "entries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SharedHistoryEntry" }
+          },
+          "weeklySummaries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WeeklySummary" }
+          },
+          "earliestMonth": { "type": "string" },
+          "latestMonth": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SharePreview": {
+        "type": "object",
+        "required": [
+          "plan",
+          "month",
+          "entries",
+          "weeklySummaries",
+          "earliestMonth",
+          "latestMonth",
+          "friend",
+          "disclosure",
+          "previewToken"
+        ],
+        "properties": {
+          "plan": { "$ref": "#/components/schemas/SharedPlan" },
+          "month": { "type": "string" },
+          "entries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SharedHistoryEntry" }
+          },
+          "weeklySummaries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WeeklySummary" }
+          },
+          "earliestMonth": { "type": "string" },
+          "latestMonth": { "type": "string" },
+          "friend": { "$ref": "#/components/schemas/SocialUser" },
+          "disclosure": { "type": "string" },
+          "previewToken": { "type": "string" }
+        },
         "additionalProperties": false
       },
       "Plan": {

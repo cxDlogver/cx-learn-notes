@@ -544,6 +544,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/plans/{id}/share-preview": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getSharePreview"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/plans/{id}/shares": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["listPlanShares"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/plans/{id}/shares/{friendId}": {
     parameters: {
       query?: never;
@@ -568,6 +600,22 @@ export interface paths {
       cookie?: never;
     };
     get: operations["listSharedPlans"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shared-plans/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getSharedPlan"];
     put?: never;
     post?: never;
     delete?: never;
@@ -1015,6 +1063,114 @@ export interface components {
     CreateBlockRequest: {
       /** Format: uuid */
       blockedId: string;
+    };
+    ShareGrantRequest: {
+      previewToken: string;
+    };
+    PlanShare: {
+      /** Format: uuid */
+      planId: string;
+      friend: components["schemas"]["SocialUser"];
+      /** Format: date-time */
+      grantedAt: string;
+      revision: number;
+    };
+    SharedPlan: {
+      /** Format: uuid */
+      id: string;
+      owner: components["schemas"]["SocialUser"];
+      /** @enum {unknown} */
+      kind: "fixed" | "weekly" | "one_time";
+      /** @enum {unknown} */
+      direction: "do" | "avoid";
+      title: string;
+      timezone: string;
+      /** Format: date */
+      startDate: string;
+      endDate: string | null;
+      dueDate: string | null;
+      /** @enum {unknown} */
+      lifecycle: "active" | "paused" | "archived";
+      ruleVersion: number;
+      rule:
+        | {
+            weekdays: number[];
+          }
+        | {
+            weeklyTarget: number;
+          }
+        | null;
+      progress:
+        | {
+            /** @constant */
+            kind: "fixed";
+            successCount: number;
+            denominator: number;
+            completionRate: number | null;
+          }
+        | {
+            /** @constant */
+            kind: "weekly";
+            /** Format: date */
+            weekStartDate: string;
+            successes: number;
+            target: number | null;
+          }
+        | {
+            /** @constant */
+            kind: "one_time";
+            /** @enum {unknown} */
+            state:
+              | "pending"
+              | "overdue"
+              | "completed"
+              | "late_completed"
+              | "failed"
+              | "cancelled";
+          };
+    };
+    SharedHistoryEntry: {
+      /** Format: date */
+      businessDate: string;
+      /** @enum {unknown} */
+      status:
+        | "success"
+        | "failure"
+        | "skip"
+        | "pending"
+        | "unrecorded"
+        | "future"
+        | "due"
+        | "overdue"
+        | "completed"
+        | "late_completed"
+        | "failed"
+        | "cancelled"
+        | "not_due";
+      note: string | null;
+      failureReason: string | null;
+      isBackfilled: boolean;
+      isRevised: boolean;
+      ruleVersion: number;
+    };
+    SharedHistory: {
+      plan: components["schemas"]["SharedPlan"];
+      month: string;
+      entries: components["schemas"]["SharedHistoryEntry"][];
+      weeklySummaries: components["schemas"]["WeeklySummary"][];
+      earliestMonth: string;
+      latestMonth: string;
+    };
+    SharePreview: {
+      plan: components["schemas"]["SharedPlan"];
+      month: string;
+      entries: components["schemas"]["SharedHistoryEntry"][];
+      weeklySummaries: components["schemas"]["WeeklySummary"][];
+      earliestMonth: string;
+      latestMonth: string;
+      friend: components["schemas"]["SocialUser"];
+      disclosure: string;
+      previewToken: string;
     };
     Plan: {
       /** Format: uuid */
@@ -4492,6 +4648,153 @@ export interface operations {
       };
     };
   };
+  getSharePreview: {
+    parameters: {
+      query: {
+        friendId: string;
+        month: string;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["SharePreview"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  listPlanShares: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["PlanShare"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
   sharePlan: {
     parameters: {
       query?: never;
@@ -4505,7 +4808,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ShareGrantRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -4513,7 +4820,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["PlanShare"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -4651,7 +4963,84 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["SharedPlan"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  getSharedPlan: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["SharedPlan"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -4703,7 +5092,9 @@ export interface operations {
   };
   listSharedCheckins: {
     parameters: {
-      query?: never;
+      query?: {
+        month?: string;
+      };
       header?: never;
       path: {
         id: string;
@@ -4718,7 +5109,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["SharedHistory"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

@@ -226,6 +226,74 @@ export interface CreateFriendRequestRequest {
 export interface CreateBlockRequest {
   blockedId: Uuid;
 }
+export interface ShareGrantRequest {
+  previewToken: string;
+}
+export interface PlanShareDto {
+  planId: Uuid;
+  friend: SocialUserDto;
+  grantedAt: UtcInstant;
+  revision: number;
+}
+export interface SharedPlanDto {
+  id: Uuid;
+  owner: SocialUserDto;
+  kind: PlanKind;
+  direction: Direction;
+  title: string;
+  timezone: IanaTimezone;
+  startDate: BusinessDate;
+  endDate: BusinessDate | null;
+  dueDate: BusinessDate | null;
+  lifecycle: Exclude<PlanLifecycle, "deleted">;
+  ruleVersion: number;
+  rule: { weekdays: Weekday[] } | { weeklyTarget: number } | null;
+  progress:
+    | {
+        kind: "fixed";
+        successCount: number;
+        denominator: number;
+        completionRate: number | null;
+      }
+    | {
+        kind: "weekly";
+        weekStartDate: BusinessDate;
+        successes: number;
+        target: number | null;
+      }
+    | {
+        kind: "one_time";
+        state:
+          | "pending"
+          | "overdue"
+          | "completed"
+          | "late_completed"
+          | "failed"
+          | "cancelled";
+      };
+}
+export interface SharedHistoryEntryDto {
+  businessDate: BusinessDate;
+  status: CalendarStatus | "not_due";
+  note: string | null;
+  failureReason: string | null;
+  isBackfilled: boolean;
+  isRevised: boolean;
+  ruleVersion: number;
+}
+export interface SharedHistoryDto {
+  plan: SharedPlanDto;
+  month: string;
+  entries: SharedHistoryEntryDto[];
+  weeklySummaries: WeeklySummaryDto[];
+  earliestMonth: string;
+  latestMonth: string;
+}
+export interface SharePreviewDto extends SharedHistoryDto {
+  friend: SocialUserDto;
+  disclosure: string;
+  previewToken: string;
+}
 export interface UpdateMeRequest {
   username?: string;
   nickname?: string;

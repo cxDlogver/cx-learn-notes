@@ -7,6 +7,12 @@ import {
   UserSearchController,
 } from "./social.controller.js";
 import { SocialService } from "./social.service.js";
+import {
+  FriendSharedPlansController,
+  PlanSharesController,
+  SharedPlansController,
+} from "./shares.controller.js";
+import { SharesService } from "./shares.service.js";
 
 @Module({
   imports: [AuthModule],
@@ -15,8 +21,11 @@ import { SocialService } from "./social.service.js";
     FriendRequestsController,
     FriendsController,
     BlocksController,
+    PlanSharesController,
+    FriendSharedPlansController,
+    SharedPlansController,
   ],
-  providers: [SocialService],
-  exports: [SocialService],
+  providers: [SocialService, SharesService],
+  exports: [SocialService, SharesService],
 })
 export class SocialModule {}
