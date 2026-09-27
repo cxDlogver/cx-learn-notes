@@ -5,23 +5,23 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "06a95535de94e3b43018412351041397013fa2c5",
+  "integrationCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
   "currentWork": {
-    "taskId": "APP-06",
-    "phase": "日历与三类计划详情、统计和历史导航",
-    "updatedAt": "2026-09-27T19:39:55.534Z",
-    "baseCommit": "06a95535de94e3b43018412351041397013fa2c5",
+    "taskId": "APP-07",
+    "phase": "主流程共用状态与无障碍",
+    "updatedAt": "2026-09-27T20:11:02.315Z",
+    "baseCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
     "completedSteps": [
-      "APP-05 代码与 Pen 映射已提交；静态检查、记录开发自检和 iOS JS 打包通过。"
+      "APP-06 四页、离线个人快照和历史导航已提交；静态检查与 iOS JS 打包通过。"
     ],
     "nextSteps": [
-      "核对 calendar、三类 plan-detail Pen 画板及日历/详情 API 契约。",
-      "实现日历、计划详情与历史记录导航，按规则版本和统计截止日展示。",
-      "执行 S0/S1/S3 与针对性开发自检，提交代码和台账。"
+      "盘点 APP-02/03/05/06 页面加载、空态、错误、待同步、权限关闭的实际实现并形成状态清单。",
+      "实现共享状态组件与必要的无障碍标识、动态字体和窄屏触控优化。",
+      "执行 S0/S3/S4、开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
-      "iOS 真机视觉、原生能力与正式 ATDD 后续验证。"
+      "VoiceOver、动态字体和真实窄屏视觉需 iOS/macOS 环境后续人工验证；正式 ATDD 留待独立阶段。"
     ]
   },
   "nextTaskId": null,
@@ -404,12 +404,14 @@
         "S1",
         "S3"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "06a95535de94e3b43018412351041397013fa2c5",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
+      "integratedCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
+      "staticPassed": true,
+      "blocker": "全局/单计划日历、固定/周目标/一次性详情四页、统计截止日和计划时区、历史补记导航、在线与本机快照合并已通过 S0/S1/S3、月界/筛选/详情开发自检及 iOS JS 静态打包；真实 iOS 视觉、交互、SQLCipher 与网络切换待 macOS/真机验证。"
     },
     {
       "priority": 20,
@@ -426,10 +428,10 @@
         "S3",
         "S4"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
       "taskCommit": null,
       "integratedCommit": null
     },
