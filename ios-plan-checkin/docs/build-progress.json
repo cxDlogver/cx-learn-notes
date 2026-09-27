@@ -5,19 +5,19 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "50e26a9c8d388a5c64c09c6170ff0f7d817be7e8",
+  "integrationCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
   "currentWork": {
-    "taskId": "SYNC-04",
-    "phase": "私人媒体与清理",
-    "updatedAt": "2026-09-27T21:52:59.000Z",
-    "baseCommit": "50e26a9c8d388a5c64c09c6170ff0f7d817be7e8",
+    "taskId": "SOC-03",
+    "phase": "好友与分享客户端六页",
+    "updatedAt": "2026-09-27T22:28:00.000Z",
+    "baseCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
     "completedSteps": [
-      "SYNC-03 双版本冲突页、同步反馈、用户选择、失败重试/放弃、冲突修订关联审计已提交；S0/S1/S3/S6、SQLite/PGlite 开发自检与 iOS JS 打包通过。"
+      "SYNC-04 私人照片复制与压缩、上传签名、本人短时下载、失败重试和孤儿清理 Worker 已提交；S0/S1/S2/S4/S6、PGlite/SQLite 开发自检和 iOS JS 打包通过。"
     ],
     "nextSteps": [
-      "核对媒体接口契约、现有 media 表、对象存储适配和本机私有目录。",
-      "实现私人照片复制/压缩、上传状态、直传签名与失败重传、孤儿清理 Worker。",
-      "执行 S0/S1/S2/S4/S6 与开发自检，提交代码和台账。"
+      "核对 SOC-03 的六个 Pen 页面节点、现有导航与朋友/分享 API 契约。",
+      "实现朋友列表、主页、只读详情、选人、分享预览和权限管理；保持照片与数值私有。",
+      "执行 S0/S1/S3/S6、客户端开发自检和 iOS JS 打包，提交代码与台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
@@ -566,12 +566,14 @@
         "S4",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "50e26a9c8d388a5c64c09c6170ff0f7d817be7e8",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
+      "integratedCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
+      "staticPassed": true,
+      "blocker": "S0/S1/S2/S4/S6、PGlite 媒体权限/完整性/清理、本地 SQLite 迁移、客户端队列开发自检和 iOS JS 打包通过；真实 MinIO、相册权限、弱网及后台恢复按用户要求稍后验证。"
     },
     {
       "priority": 27,
@@ -588,10 +590,10 @@
         "S3",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
       "taskCommit": null,
       "integratedCommit": null
     },
