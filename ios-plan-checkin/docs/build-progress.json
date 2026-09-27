@@ -5,7 +5,7 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "7eef2d99f98c1d60b23a7dec52cd252388536dba",
+  "integrationCommit": "dd4859c445a5828977e431aa294801ea9c30c6f3",
   "tasks": [
     {
       "priority": 1,
@@ -33,12 +33,14 @@
         "S4",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "BLOCKED",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "935736bfcaaa99a73c3e6f31a56545d876129164",
+      "taskCommit": "dd4859c445a5828977e431aa294801ea9c30c6f3",
+      "integratedCommit": "dd4859c445a5828977e431aa294801ea9c30c6f3",
+      "staticPassed": true,
+      "blocker": "Windows 主机无法执行 iOS 真机 SQLCipher/Keychain/APNs/相册及 Release 构建验证；用户要求先完成静态代码，稍后补验。"
     },
     {
       "priority": 3,
