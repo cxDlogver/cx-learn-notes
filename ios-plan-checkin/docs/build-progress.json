@@ -6,8 +6,26 @@
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
   "integrationCommit": "43152d7d8d23a080852bb56b3ce9d7ba04a97211",
-  "currentWork": null,
-  "nextTaskId": "APP-02",
+  "currentWork": {
+    "taskId": "APP-02",
+    "phase": "手机号登录与首次资料页实现",
+    "updatedAt": "2026-09-27T19:00:00Z",
+    "baseCommit": "ae0b6001d22e116df242b2a616f5a69b5855cbf2",
+    "completedSteps": [
+      "已核对 APP-01 静态通过的代码基线与 APP-02 前置。",
+      "已读取手机号登录、验证码和首次资料页的 Pen 节点树、参考图及服务端契约。"
+    ],
+    "nextSteps": [
+      "实现短信 challenge/verify、设备标识与资料接口 Repository。",
+      "按 Pen 映射落地三页及冷却、错误、自动填充、资料唯一性流程。",
+      "执行 S0/S1/S3/S4/S6 和开发自检，提交代码与台账。"
+    ],
+    "uncommittedChanges": [],
+    "knownConstraints": [
+      "Windows 无法执行 iOS 真机短信自动填充和 Keychain 冒烟；先完成静态代码。"
+    ]
+  },
+  "nextTaskId": null,
   "tasks": [
     {
       "priority": 1,
@@ -301,10 +319,10 @@
         "S4",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "ae0b6001d22e116df242b2a616f5a69b5855cbf2",
       "taskCommit": null,
       "integratedCommit": null
     },
