@@ -24,6 +24,7 @@ const requiredModules = [
   "expo-crypto",
   "react-native-screens",
   "react-native-safe-area-context",
+  "@react-native-community/datetimepicker",
 ];
 
 for (const moduleName of requiredModules) {

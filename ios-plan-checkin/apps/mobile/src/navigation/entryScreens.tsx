@@ -77,27 +77,6 @@ export function CalendarEntry() {
   );
 }
 
-export function PlansEntry() {
-  const { repository } = useAppServices();
-  const query = useQuery({
-    queryKey: ["plans"],
-    queryFn: () => repository.listPlans(),
-  });
-  return (
-    <Shell
-      title="计划"
-      body={
-        query.isPending
-          ? "正在读取计划"
-          : query.isError
-            ? "暂时无法读取计划"
-            : `共 ${query.data.length} 项计划`
-      }
-      retry={query.isError ? () => void query.refetch() : undefined}
-    />
-  );
-}
-
 export function FriendsEntry() {
   return <Shell title="朋友" body="好友功能将在社交模块接入" />;
 }

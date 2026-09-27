@@ -13,7 +13,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
-import type { SmsChallengeDto } from "@plan-checkin/contracts";
+import type { PlanKind, SmsChallengeDto } from "@plan-checkin/contracts";
 import { penColors } from "@plan-checkin/design-tokens";
 import {
   ActivityIndicator,
@@ -27,10 +27,17 @@ import { nativeLinks } from "../platform/links";
 import { PhoneLoginScreen } from "../screens/auth/PhoneLoginScreen";
 import { ProfileSetupScreen } from "../screens/auth/ProfileSetupScreen";
 import { SmsCodeScreen } from "../screens/auth/SmsCodeScreen";
+import { PlanListScreen } from "../screens/plans/PlanListScreen";
+import {
+  EditPlanScreen,
+  PlanFormScreen,
+} from "../screens/plans/PlanFormScreen";
+import { GroupManagementScreen } from "../screens/plans/GroupManagementScreen";
+import { PlanConfirmationsScreen } from "../screens/plans/PlanConfirmationsScreen";
+import type { PlanDraft } from "../screens/plans/planForm";
 import {
   CalendarEntry,
   FriendsEntry,
-  PlansEntry,
   SettingsEntry,
   Shell,
   TodayEntry,
@@ -48,6 +55,10 @@ export type RootStackParamList = {
   PlanDetail: { planId: string };
   Checkin: { planId: string; businessDate: string };
   Settings: undefined;
+  CreatePlan: { kind: PlanKind; draft?: PlanDraft };
+  EditPlan: { planId: string };
+  GroupManagement: undefined;
+  PlanConfirmations: { planId: string };
 };
 export type AuthStackParamList = {
   PhoneLogin: undefined;
@@ -101,7 +112,7 @@ function MainTabs() {
       />
       <Tabs.Screen
         name="Plans"
-        component={PlansEntry}
+        component={PlanListScreen}
         options={{ title: "计划" }}
       />
       <Tabs.Screen
@@ -136,6 +147,40 @@ function MainStack() {
         component={SettingsEntry}
         options={{ title: "个人" }}
       />
+      <RootStack.Screen name="CreatePlan" options={{ title: "创建计划" }}>
+        {({ route, navigation }) => (
+          <PlanFormScreen
+            key={route.params.kind}
+            kind={route.params.kind}
+            initial={route.params.draft}
+            onDone={() => navigation.goBack()}
+          />
+        )}
+      </RootStack.Screen>
+      <RootStack.Screen name="EditPlan" options={{ title: "编辑计划" }}>
+        {({ route, navigation }) => (
+          <EditPlanScreen
+            planId={route.params.planId}
+            onDone={() => navigation.goBack()}
+          />
+        )}
+      </RootStack.Screen>
+      <RootStack.Screen
+        name="GroupManagement"
+        component={GroupManagementScreen}
+        options={{ title: "管理分组" }}
+      />
+      <RootStack.Screen
+        name="PlanConfirmations"
+        options={{ title: "管理计划" }}
+      >
+        {({ route, navigation }) => (
+          <PlanConfirmationsScreen
+            planId={route.params.planId}
+            onDone={() => navigation.goBack()}
+          />
+        )}
+      </RootStack.Screen>
     </RootStack.Navigator>
   );
 }

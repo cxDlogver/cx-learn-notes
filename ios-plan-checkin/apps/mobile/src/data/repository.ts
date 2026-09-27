@@ -3,12 +3,17 @@ import type {
   ApiSuccess,
   AuthTokens,
   CalendarMonthDto,
+  CreateGroupRequest,
+  CreatePlanRequest,
+  GroupDto,
   PlanDetailDto,
   PlanDto,
   SmsChallengeDto,
   UserDto,
   UsernameAvailabilityDto,
   TodayDto,
+  UpdateGroupRequest,
+  UpdatePlanRequest,
 } from "@plan-checkin/contracts";
 import * as Crypto from "expo-crypto";
 import type { SessionGateway } from "./session";
@@ -45,6 +50,18 @@ export interface AppRepository {
   listPlans(): Promise<PlanDto[]>;
   getPlan(id: string): Promise<PlanDto>;
   getPlanDetail(id: string): Promise<PlanDetailDto>;
+  listGroups(): Promise<GroupDto[]>;
+  createGroup(input: CreateGroupRequest): Promise<GroupDto>;
+  updateGroup(id: string, input: UpdateGroupRequest): Promise<GroupDto>;
+  deleteGroup(id: string, baseRevision: number): Promise<void>;
+  createPlan(input: CreatePlanRequest): Promise<PlanDto>;
+  updatePlan(id: string, input: UpdatePlanRequest): Promise<PlanDto>;
+  transitionPlan(
+    id: string,
+    action: "pause" | "resume" | "archive",
+    baseRevision: number,
+  ): Promise<PlanDto>;
+  deletePlan(id: string, baseRevision: number): Promise<void>;
 }
 
 export class ApiClient implements SessionGateway {
@@ -64,17 +81,27 @@ export class ApiClient implements SessionGateway {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15_000);
     try {
-      const response = await fetch(`${this.baseUrl}${path}`, {
-        ...options,
-        signal: controller.signal,
-        headers: {
-          Accept: "application/json",
-          ...(options.body ? { "Content-Type": "application/json" } : {}),
-          "X-Client-Request-Id": Crypto.randomUUID(),
-          ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
-          ...options.headers,
-        },
-      });
+      let response: Response;
+      try {
+        response = await fetch(`${this.baseUrl}${path}`, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            Accept: "application/json",
+            ...(options.body ? { "Content-Type": "application/json" } : {}),
+            "X-Client-Request-Id": Crypto.randomUUID(),
+            ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+            ...options.headers,
+          },
+        });
+      } catch {
+        throw new ApiRequestError(
+          0,
+          "NETWORK_ERROR",
+          "当前无法连接服务器，请联网后重试",
+          null,
+        );
+      }
       const body: unknown = await response.json().catch(() => null);
       if (!response.ok) {
         const failure = body as Partial<ApiError> | null;
@@ -143,11 +170,28 @@ export class ApiClient implements SessionGateway {
   }
 
   async patch<T>(path: string, body: unknown): Promise<T> {
+    return this.authorized<T>(path, "PATCH", body);
+  }
+
+  post<T>(path: string, body: unknown): Promise<T> {
+    return this.authorized<T>(path, "POST", body);
+  }
+
+  delete<T>(path: string, headers: Record<string, string> = {}): Promise<T> {
+    return this.authorized<T>(path, "DELETE", undefined, headers);
+  }
+
+  private async authorized<T>(
+    path: string,
+    method: "PATCH" | "POST" | "DELETE",
+    body?: unknown,
+    headers: Record<string, string> = {},
+  ): Promise<T> {
     if (!this.session) throw new Error("SessionManager 尚未接入");
     const options: RequestInit = {
-      method: "PATCH",
-      body: JSON.stringify(body),
-      headers: { "Idempotency-Key": Crypto.randomUUID() },
+      method,
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      headers: { "Idempotency-Key": Crypto.randomUUID(), ...headers },
     };
     const accessToken = await this.session.accessToken();
     try {
@@ -226,5 +270,40 @@ export class HttpRepository implements AppRepository {
   }
   getPlanDetail(id: string): Promise<PlanDetailDto> {
     return this.api.get(`/plans/${encodeURIComponent(id)}/detail`);
+  }
+  listGroups(): Promise<GroupDto[]> {
+    return this.api.get("/groups");
+  }
+  createGroup(input: CreateGroupRequest): Promise<GroupDto> {
+    return this.api.post("/groups", input);
+  }
+  updateGroup(id: string, input: UpdateGroupRequest): Promise<GroupDto> {
+    return this.api.patch(`/groups/${encodeURIComponent(id)}`, input);
+  }
+  async deleteGroup(id: string, baseRevision: number): Promise<void> {
+    await this.api.delete(
+      `/groups/${encodeURIComponent(id)}?baseRevision=${baseRevision}`,
+    );
+  }
+  createPlan(input: CreatePlanRequest): Promise<PlanDto> {
+    return this.api.post("/plans", input);
+  }
+  updatePlan(id: string, input: UpdatePlanRequest): Promise<PlanDto> {
+    return this.api.patch(`/plans/${encodeURIComponent(id)}`, input);
+  }
+  transitionPlan(
+    id: string,
+    action: "pause" | "resume" | "archive",
+    baseRevision: number,
+  ): Promise<PlanDto> {
+    return this.api.post(`/plans/${encodeURIComponent(id)}/${action}`, {
+      baseRevision,
+    });
+  }
+  async deletePlan(id: string, baseRevision: number): Promise<void> {
+    await this.api.delete(
+      `/plans/${encodeURIComponent(id)}?baseRevision=${baseRevision}`,
+      { "X-Confirm-Delete": "true" },
+    );
   }
 }
