@@ -15,12 +15,16 @@
     "mobile:config:check": "node scripts/mobile-config-check.mjs",
     "design:build": "node scripts/build-design-resources.mjs --write",
     "design:check": "node scripts/build-design-resources.mjs --check",
+    "contracts:build": "node scripts/build-openapi.mjs --write",
+    "contracts:check": "node scripts/build-openapi.mjs --check",
+    "contracts:compat": "node scripts/check-contract-compat.mjs",
     "security:static": "node scripts/security-static.mjs",
-    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs && node scripts/build-design-resources.mjs --check && node scripts/security-static.mjs"
+    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/security-static.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
     "eslint": "^10.0.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.0.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.0.0"

@@ -1,0 +1,626 @@
+{
+  "version": "0.1.0",
+  "operations": {
+    "createSmsChallenge": {
+      "path": "/api/v1/auth/sms/challenges",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "verifySmsChallenge": {
+      "path": "/api/v1/auth/sms/verify",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "refreshSession": {
+      "path": "/api/v1/auth/refresh",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "logout": {
+      "path": "/api/v1/auth/logout",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getMe": {
+      "path": "/api/v1/me",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "updateMe": {
+      "path": "/api/v1/me",
+      "method": "patch",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "checkUsername": {
+      "path": "/api/v1/usernames/availability",
+      "method": "get",
+      "parameters": ["query:username"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createChangePhoneChallenge": {
+      "path": "/api/v1/me/change-phone/challenge",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "confirmChangePhone": {
+      "path": "/api/v1/me/change-phone/confirm",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "listGroups": {
+      "path": "/api/v1/groups",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createGroup": {
+      "path": "/api/v1/groups",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "updateGroup": {
+      "path": "/api/v1/groups/{id}",
+      "method": "patch",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "deleteGroup": {
+      "path": "/api/v1/groups/{id}",
+      "method": "delete",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "listPlans": {
+      "path": "/api/v1/plans",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createPlan": {
+      "path": "/api/v1/plans",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getPlan": {
+      "path": "/api/v1/plans/{id}",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "updatePlan": {
+      "path": "/api/v1/plans/{id}",
+      "method": "patch",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "deletePlan": {
+      "path": "/api/v1/plans/{id}",
+      "method": "delete",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "pausePlan": {
+      "path": "/api/v1/plans/{id}/pause",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "resumePlan": {
+      "path": "/api/v1/plans/{id}/resume",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "archivePlan": {
+      "path": "/api/v1/plans/{id}/archive",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getPlanCalendar": {
+      "path": "/api/v1/plans/{id}/calendar",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "putCheckin": {
+      "path": "/api/v1/plans/{id}/checkins/{businessDate}",
+      "method": "put",
+      "parameters": [
+        "path:id",
+        "path:businessDate",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getCheckin": {
+      "path": "/api/v1/plans/{id}/checkins/{businessDate}",
+      "method": "get",
+      "parameters": ["path:id", "path:businessDate"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getPlanStatistics": {
+      "path": "/api/v1/plans/{id}/statistics",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createOneTimeResolution": {
+      "path": "/api/v1/plans/{id}/one-time-resolution",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "reviseOneTimeResolution": {
+      "path": "/api/v1/plans/{id}/one-time-resolution",
+      "method": "patch",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createUploadIntent": {
+      "path": "/api/v1/media/upload-intents",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "completeMedia": {
+      "path": "/api/v1/media/{id}/complete",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "deleteMedia": {
+      "path": "/api/v1/media/{id}",
+      "method": "delete",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getMediaDownloadUrl": {
+      "path": "/api/v1/media/{id}/download-url",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "searchUsers": {
+      "path": "/api/v1/users/search",
+      "method": "get",
+      "parameters": ["query:username"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createFriendRequest": {
+      "path": "/api/v1/friend-requests",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "listFriendRequests": {
+      "path": "/api/v1/friend-requests",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "acceptFriendRequest": {
+      "path": "/api/v1/friend-requests/{id}/accept",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "deleteFriend": {
+      "path": "/api/v1/friends/{id}",
+      "method": "delete",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createBlock": {
+      "path": "/api/v1/blocks",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "deleteBlock": {
+      "path": "/api/v1/blocks/{id}",
+      "method": "delete",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "sharePlan": {
+      "path": "/api/v1/plans/{id}/shares/{friendId}",
+      "method": "put",
+      "parameters": [
+        "path:id",
+        "path:friendId",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "revokePlanShare": {
+      "path": "/api/v1/plans/{id}/shares/{friendId}",
+      "method": "delete",
+      "parameters": ["path:id", "path:friendId"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "listSharedPlans": {
+      "path": "/api/v1/friends/{id}/shared-plans",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "listSharedCheckins": {
+      "path": "/api/v1/shared-plans/{id}/checkins",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createEncouragement": {
+      "path": "/api/v1/checkins/{id}/encouragements",
+      "method": "post",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "listEncouragements": {
+      "path": "/api/v1/checkins/{id}/encouragements",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getReminder": {
+      "path": "/api/v1/plans/{id}/reminder",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "putReminder": {
+      "path": "/api/v1/plans/{id}/reminder",
+      "method": "put",
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "registerPushToken": {
+      "path": "/api/v1/devices/push-token",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getNotificationPreferences": {
+      "path": "/api/v1/me/notification-preferences",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "updateNotificationPreferences": {
+      "path": "/api/v1/me/notification-preferences",
+      "method": "patch",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getSyncChanges": {
+      "path": "/api/v1/sync/changes",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "ackSync": {
+      "path": "/api/v1/sync/ack",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "createExport": {
+      "path": "/api/v1/me/exports",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getExport": {
+      "path": "/api/v1/me/exports/{id}",
+      "method": "get",
+      "parameters": ["path:id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "requestDeletion": {
+      "path": "/api/v1/me/deletion-request",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "cancelDeletion": {
+      "path": "/api/v1/me/deletion-cancel",
+      "method": "post",
+      "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getDeletionStatus": {
+      "path": "/api/v1/me/deletion-status",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    }
+  },
+  "schemas": {
+    "ApiError": {
+      "required": ["code", "message", "requestId"],
+      "properties": {
+        "code": [
+          "VALIDATION_ERROR",
+          "UNAUTHENTICATED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "RATE_LIMITED",
+          "OTP_EXPIRED",
+          "OTP_INVALID",
+          "OTP_RATE_LIMITED",
+          "USERNAME_TAKEN",
+          "PLAN_DATE_INVALID",
+          "RULE_CHANGED",
+          "CHECKIN_CONFLICT",
+          "PLAN_NOT_ACTIVE",
+          "IDEMPOTENCY_KEY_REUSED",
+          "SHARE_REVOKED",
+          "FRIEND_BLOCKED",
+          "MEDIA_NOT_READY",
+          "CURSOR_EXPIRED",
+          "ACCOUNT_DELETION_PENDING"
+        ],
+        "message": null,
+        "requestId": null,
+        "details": null
+      }
+    },
+    "ApiSuccess": {
+      "required": ["data", "requestId", "serverTime"],
+      "properties": { "data": null, "requestId": null, "serverTime": null }
+    },
+    "NumericEntry": {
+      "required": ["value", "unit"],
+      "properties": { "value": null, "unit": null }
+    },
+    "FixedPlanCreate": {
+      "required": [
+        "kind",
+        "direction",
+        "title",
+        "timezone",
+        "startDate",
+        "rule"
+      ],
+      "properties": {
+        "kind": ["fixed"],
+        "direction": ["do", "avoid"],
+        "title": null,
+        "timezone": null,
+        "startDate": null,
+        "endDate": null,
+        "groupId": null,
+        "rule": null
+      }
+    },
+    "WeeklyPlanCreate": {
+      "required": [
+        "kind",
+        "direction",
+        "title",
+        "timezone",
+        "startDate",
+        "rule"
+      ],
+      "properties": {
+        "kind": ["weekly"],
+        "direction": ["do", "avoid"],
+        "title": null,
+        "timezone": null,
+        "startDate": null,
+        "endDate": null,
+        "groupId": null,
+        "rule": null
+      }
+    },
+    "OneTimePlanCreate": {
+      "required": [
+        "kind",
+        "direction",
+        "title",
+        "timezone",
+        "startDate",
+        "dueDate"
+      ],
+      "properties": {
+        "kind": ["one_time"],
+        "direction": ["do"],
+        "title": null,
+        "timezone": null,
+        "startDate": null,
+        "dueDate": null,
+        "groupId": null
+      }
+    },
+    "CreatePlanRequest": { "required": [], "properties": {} },
+    "PutCheckinRequest": {
+      "required": [
+        "result",
+        "baseRevision",
+        "clientCreatedAt",
+        "clientOperationId",
+        "ruleVersion"
+      ],
+      "properties": {
+        "result": ["success", "failure", "skip"],
+        "note": null,
+        "numeric": null,
+        "mediaIds": null,
+        "baseRevision": null,
+        "clientCreatedAt": null,
+        "clientOperationId": null,
+        "ruleVersion": null,
+        "resolutionOfConflictId": null
+      }
+    },
+    "OneTimeResolutionRequest": {
+      "required": ["resolution", "baseRevision"],
+      "properties": {
+        "resolution": ["completed", "failed", "cancelled"],
+        "baseRevision": null,
+        "completedAt": null,
+        "reason": null
+      }
+    },
+    "SmsChallengeRequest": {
+      "required": ["countryCode", "phone", "purpose"],
+      "properties": {
+        "countryCode": ["+86"],
+        "phone": null,
+        "purpose": ["login", "change_phone", "cancel_deletion"]
+      }
+    },
+    "SmsVerifyRequest": {
+      "required": ["challengeId", "code"],
+      "properties": { "challengeId": null, "code": null }
+    },
+    "AuthTokens": {
+      "required": [
+        "accessToken",
+        "refreshToken",
+        "accessExpiresAt",
+        "userId",
+        "isNewUser"
+      ],
+      "properties": {
+        "accessToken": null,
+        "refreshToken": null,
+        "accessExpiresAt": null,
+        "userId": null,
+        "isNewUser": null
+      }
+    },
+    "User": {
+      "required": [
+        "id",
+        "username",
+        "nickname",
+        "avatarMediaId",
+        "accountStatus"
+      ],
+      "properties": {
+        "id": null,
+        "username": null,
+        "nickname": null,
+        "avatarMediaId": null,
+        "accountStatus": ["active", "deletion_pending"]
+      }
+    },
+    "Plan": {
+      "required": [
+        "id",
+        "ownerId",
+        "kind",
+        "direction",
+        "title",
+        "timezone",
+        "startDate",
+        "lifecycle",
+        "ruleVersion",
+        "revision"
+      ],
+      "properties": {
+        "id": null,
+        "ownerId": null,
+        "kind": ["fixed", "weekly", "one_time"],
+        "direction": ["do", "avoid"],
+        "title": null,
+        "timezone": null,
+        "startDate": null,
+        "endDate": null,
+        "dueDate": null,
+        "lifecycle": ["active", "paused", "archived", "deleted"],
+        "ruleVersion": null,
+        "revision": null
+      }
+    },
+    "Checkin": {
+      "required": [
+        "id",
+        "planId",
+        "businessDate",
+        "result",
+        "revision",
+        "ruleVersion",
+        "syncSequence"
+      ],
+      "properties": {
+        "id": null,
+        "planId": null,
+        "businessDate": null,
+        "result": ["success", "failure", "skip"],
+        "note": null,
+        "numeric": null,
+        "mediaIds": null,
+        "isBackfilled": null,
+        "isRevised": null,
+        "revision": null,
+        "ruleVersion": null,
+        "createdAt": null,
+        "updatedAt": null,
+        "syncSequence": null
+      }
+    },
+    "SyncChanges": {
+      "required": ["changes", "nextCursor", "hasMore"],
+      "properties": { "changes": null, "nextCursor": null, "hasMore": null }
+    }
+  }
+}

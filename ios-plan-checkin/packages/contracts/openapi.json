@@ -1,0 +1,4381 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "计划打卡 API", "version": "0.1.0" },
+  "servers": [{ "url": "/" }],
+  "paths": {
+    "/api/v1/auth/sms/challenges": {
+      "post": {
+        "operationId": "createSmsChallenge",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmsChallengeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sms/verify": {
+      "post": {
+        "operationId": "verifySmsChallenge",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmsVerifyRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AuthTokens" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "refreshSession",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AuthTokens" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "tags": ["auth"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/User" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMe",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/User" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usernames/availability": {
+      "get": {
+        "operationId": "checkUsername",
+        "tags": ["usernames"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/change-phone/challenge": {
+      "post": {
+        "operationId": "createChangePhoneChallenge",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/change-phone/confirm": {
+      "post": {
+        "operationId": "confirmChangePhone",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/groups": {
+      "get": {
+        "operationId": "listGroups",
+        "tags": ["groups"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createGroup",
+        "tags": ["groups"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/groups/{id}": {
+      "patch": {
+        "operationId": "updateGroup",
+        "tags": ["groups"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteGroup",
+        "tags": ["groups"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "operationId": "listPlans",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePlanRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Plan" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}": {
+      "get": {
+        "operationId": "getPlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Plan" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updatePlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Plan" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/pause": {
+      "post": {
+        "operationId": "pausePlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/resume": {
+      "post": {
+        "operationId": "resumePlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/archive": {
+      "post": {
+        "operationId": "archivePlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/calendar": {
+      "get": {
+        "operationId": "getPlanCalendar",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/checkins/{businessDate}": {
+      "put": {
+        "operationId": "putCheckin",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "businessDate",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PutCheckinRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Checkin" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getCheckin",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "businessDate",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Checkin" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/statistics": {
+      "get": {
+        "operationId": "getPlanStatistics",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/one-time-resolution": {
+      "post": {
+        "operationId": "createOneTimeResolution",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OneTimeResolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "reviseOneTimeResolution",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OneTimeResolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/upload-intents": {
+      "post": {
+        "operationId": "createUploadIntent",
+        "tags": ["media"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{id}/complete": {
+      "post": {
+        "operationId": "completeMedia",
+        "tags": ["media"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{id}": {
+      "delete": {
+        "operationId": "deleteMedia",
+        "tags": ["media"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{id}/download-url": {
+      "get": {
+        "operationId": "getMediaDownloadUrl",
+        "tags": ["media"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/search": {
+      "get": {
+        "operationId": "searchUsers",
+        "tags": ["users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/friend-requests": {
+      "post": {
+        "operationId": "createFriendRequest",
+        "tags": ["friend-requests"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listFriendRequests",
+        "tags": ["friend-requests"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/friend-requests/{id}/accept": {
+      "post": {
+        "operationId": "acceptFriendRequest",
+        "tags": ["friend-requests"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/friends/{id}": {
+      "delete": {
+        "operationId": "deleteFriend",
+        "tags": ["friends"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blocks": {
+      "post": {
+        "operationId": "createBlock",
+        "tags": ["blocks"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/blocks/{id}": {
+      "delete": {
+        "operationId": "deleteBlock",
+        "tags": ["blocks"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/shares/{friendId}": {
+      "put": {
+        "operationId": "sharePlan",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "revokePlanShare",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/friends/{id}/shared-plans": {
+      "get": {
+        "operationId": "listSharedPlans",
+        "tags": ["friends"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shared-plans/{id}/checkins": {
+      "get": {
+        "operationId": "listSharedCheckins",
+        "tags": ["shared-plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checkins/{id}/encouragements": {
+      "post": {
+        "operationId": "createEncouragement",
+        "tags": ["checkins"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listEncouragements",
+        "tags": ["checkins"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/reminder": {
+      "get": {
+        "operationId": "getReminder",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putReminder",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/devices/push-token": {
+      "post": {
+        "operationId": "registerPushToken",
+        "tags": ["devices"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/notification-preferences": {
+      "get": {
+        "operationId": "getNotificationPreferences",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateNotificationPreferences",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync/changes": {
+      "get": {
+        "operationId": "getSyncChanges",
+        "tags": ["sync"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/SyncChanges" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync/ack": {
+      "post": {
+        "operationId": "ackSync",
+        "tags": ["sync"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/exports": {
+      "post": {
+        "operationId": "createExport",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/exports/{id}": {
+      "get": {
+        "operationId": "getExport",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/deletion-request": {
+      "post": {
+        "operationId": "requestDeletion",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/deletion-cancel": {
+      "post": {
+        "operationId": "cancelDeletion",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/deletion-status": {
+      "get": {
+        "operationId": "getDeletionStatus",
+        "tags": ["me"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "required": ["code", "message", "requestId"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "VALIDATION_ERROR",
+              "UNAUTHENTICATED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "RATE_LIMITED",
+              "OTP_EXPIRED",
+              "OTP_INVALID",
+              "OTP_RATE_LIMITED",
+              "USERNAME_TAKEN",
+              "PLAN_DATE_INVALID",
+              "RULE_CHANGED",
+              "CHECKIN_CONFLICT",
+              "PLAN_NOT_ACTIVE",
+              "IDEMPOTENCY_KEY_REUSED",
+              "SHARE_REVOKED",
+              "FRIEND_BLOCKED",
+              "MEDIA_NOT_READY",
+              "CURSOR_EXPIRED",
+              "ACCOUNT_DELETION_PENDING"
+            ]
+          },
+          "message": { "type": "string" },
+          "requestId": { "type": "string" },
+          "details": { "type": "object", "additionalProperties": true }
+        },
+        "additionalProperties": false
+      },
+      "ApiSuccess": {
+        "type": "object",
+        "required": ["data", "requestId", "serverTime"],
+        "properties": {
+          "data": { "type": "object", "additionalProperties": true },
+          "requestId": { "type": "string" },
+          "serverTime": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "NumericEntry": {
+        "type": "object",
+        "required": ["value", "unit"],
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+          },
+          "unit": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "FixedPlanCreate": {
+        "type": "object",
+        "required": [
+          "kind",
+          "direction",
+          "title",
+          "timezone",
+          "startDate",
+          "rule"
+        ],
+        "properties": {
+          "kind": { "const": "fixed" },
+          "direction": { "enum": ["do", "avoid"] },
+          "title": { "type": "string" },
+          "timezone": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": {
+            "oneOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ]
+          },
+          "groupId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
+          "rule": {
+            "type": "object",
+            "required": ["weekdays"],
+            "properties": {
+              "weekdays": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 1, "maximum": 7 },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeeklyPlanCreate": {
+        "type": "object",
+        "required": [
+          "kind",
+          "direction",
+          "title",
+          "timezone",
+          "startDate",
+          "rule"
+        ],
+        "properties": {
+          "kind": { "const": "weekly" },
+          "direction": { "enum": ["do", "avoid"] },
+          "title": { "type": "string" },
+          "timezone": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": {
+            "oneOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ]
+          },
+          "groupId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
+          "rule": {
+            "type": "object",
+            "required": ["weeklyTarget"],
+            "properties": {
+              "weeklyTarget": { "type": "integer", "minimum": 1, "maximum": 7 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "OneTimePlanCreate": {
+        "type": "object",
+        "required": [
+          "kind",
+          "direction",
+          "title",
+          "timezone",
+          "startDate",
+          "dueDate"
+        ],
+        "properties": {
+          "kind": { "const": "one_time" },
+          "direction": { "const": "do" },
+          "title": { "type": "string" },
+          "timezone": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "dueDate": { "type": "string", "format": "date" },
+          "groupId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreatePlanRequest": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/FixedPlanCreate" },
+          { "$ref": "#/components/schemas/WeeklyPlanCreate" },
+          { "$ref": "#/components/schemas/OneTimePlanCreate" }
+        ],
+        "discriminator": { "propertyName": "kind" }
+      },
+      "PutCheckinRequest": {
+        "type": "object",
+        "required": [
+          "result",
+          "baseRevision",
+          "clientCreatedAt",
+          "clientOperationId",
+          "ruleVersion"
+        ],
+        "properties": {
+          "result": { "enum": ["success", "failure", "skip"] },
+          "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "numeric": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/NumericEntry" },
+              { "type": "null" }
+            ]
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "baseRevision": { "type": "integer", "minimum": 0 },
+          "clientCreatedAt": { "type": "string", "format": "date-time" },
+          "clientOperationId": { "type": "string", "format": "uuid" },
+          "ruleVersion": { "type": "integer", "minimum": 1 },
+          "resolutionOfConflictId": { "type": "string", "format": "uuid" }
+        },
+        "additionalProperties": false
+      },
+      "OneTimeResolutionRequest": {
+        "type": "object",
+        "required": ["resolution", "baseRevision"],
+        "properties": {
+          "resolution": { "enum": ["completed", "failed", "cancelled"] },
+          "baseRevision": { "type": "integer", "minimum": 0 },
+          "completedAt": { "type": "string", "format": "date-time" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SmsChallengeRequest": {
+        "type": "object",
+        "required": ["countryCode", "phone", "purpose"],
+        "properties": {
+          "countryCode": { "const": "+86" },
+          "phone": { "type": "string", "pattern": "^1[3-9][0-9]{9}$" },
+          "purpose": { "enum": ["login", "change_phone", "cancel_deletion"] }
+        },
+        "additionalProperties": false
+      },
+      "SmsVerifyRequest": {
+        "type": "object",
+        "required": ["challengeId", "code"],
+        "properties": {
+          "challengeId": { "type": "string", "format": "uuid" },
+          "code": { "type": "string", "pattern": "^[0-9]{6}$" }
+        },
+        "additionalProperties": false
+      },
+      "AuthTokens": {
+        "type": "object",
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "accessExpiresAt",
+          "userId",
+          "isNewUser"
+        ],
+        "properties": {
+          "accessToken": { "type": "string" },
+          "refreshToken": { "type": "string" },
+          "accessExpiresAt": { "type": "string", "format": "date-time" },
+          "userId": { "type": "string", "format": "uuid" },
+          "isNewUser": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "nickname",
+          "avatarMediaId",
+          "accountStatus"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "username": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "nickname": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "avatarMediaId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
+          "accountStatus": { "enum": ["active", "deletion_pending"] }
+        },
+        "additionalProperties": false
+      },
+      "Plan": {
+        "type": "object",
+        "required": [
+          "id",
+          "ownerId",
+          "kind",
+          "direction",
+          "title",
+          "timezone",
+          "startDate",
+          "lifecycle",
+          "ruleVersion",
+          "revision"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "ownerId": { "type": "string", "format": "uuid" },
+          "kind": { "enum": ["fixed", "weekly", "one_time"] },
+          "direction": { "enum": ["do", "avoid"] },
+          "title": { "type": "string" },
+          "timezone": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": {
+            "oneOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ]
+          },
+          "dueDate": {
+            "oneOf": [
+              { "type": "string", "format": "date" },
+              { "type": "null" }
+            ]
+          },
+          "lifecycle": { "enum": ["active", "paused", "archived", "deleted"] },
+          "ruleVersion": { "type": "integer", "minimum": 1 },
+          "revision": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": false
+      },
+      "Checkin": {
+        "type": "object",
+        "required": [
+          "id",
+          "planId",
+          "businessDate",
+          "result",
+          "revision",
+          "ruleVersion",
+          "syncSequence"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "planId": { "type": "string", "format": "uuid" },
+          "businessDate": { "type": "string", "format": "date" },
+          "result": { "enum": ["success", "failure", "skip"] },
+          "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "numeric": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/NumericEntry" },
+              { "type": "null" }
+            ]
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "isBackfilled": { "type": "boolean" },
+          "isRevised": { "type": "boolean" },
+          "revision": { "type": "integer", "minimum": 1 },
+          "ruleVersion": { "type": "integer", "minimum": 1 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "syncSequence": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      },
+      "SyncChanges": {
+        "type": "object",
+        "required": ["changes", "nextCursor", "hasMore"],
+        "properties": {
+          "changes": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "nextCursor": { "type": "string" },
+          "hasMore": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
