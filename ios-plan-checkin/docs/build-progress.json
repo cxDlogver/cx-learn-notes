@@ -5,19 +5,19 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
+  "integrationCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
   "currentWork": {
-    "taskId": "SOC-02",
-    "phase": "逐计划授权与撤销契约",
-    "updatedAt": "2026-09-27T20:30:09.000Z",
-    "baseCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
+    "taskId": "SYNC-01",
+    "phase": "本地操作队列与提交重试",
+    "updatedAt": "2026-09-27T20:47:35.000Z",
+    "baseCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
     "completedSteps": [
-      "SOC-01 好友搜索、请求、双向接受、删除、拉黑和分享失效代码已提交；S0/S1/S2/S6 与 PGlite 开发自检通过。"
+      "SOC-02 分享预览、短期预览凭证、逐计划授权、只读字段白名单、撤销 tombstone 和三类计划投影已提交；S0/S1/S2/S6 与 PGlite 自检通过。"
     ],
     "nextSteps": [
-      "核对 SOC-02 分享历史预览、字段白名单、授权和撤销接口契约。",
-      "实现计划×好友授权、撤销、只读投影及每次读取的对象级权限检查。",
-      "执行 S0/S1/S2/S6 与开发自检，提交代码和台账。"
+      "核对 SYNC-01 构建计划与本地 SQLite outbox、客户端仓储、网络重试边界。",
+      "实现可续接的本地操作队列、幂等提交及失败重试协调。",
+      "执行 S0/S1/S4/S6 与开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
@@ -474,12 +474,14 @@
         "S2",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
+      "integratedCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
+      "staticPassed": true,
+      "blocker": "S0/S1/S2/S6、OpenAPI 兼容检查及 PGlite 授权/撤销/三类计划自检通过；真实 PostgreSQL 并发、在线缓存撤销与 iOS 页面联动按用户要求稍后验证。"
     },
     {
       "priority": 23,
@@ -495,10 +497,10 @@
         "S4",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
       "taskCommit": null,
       "integratedCommit": null
     },
