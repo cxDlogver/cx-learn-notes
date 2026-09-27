@@ -5,23 +5,23 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
+  "integrationCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
   "currentWork": {
-    "taskId": "APP-07",
-    "phase": "主流程共用状态与无障碍",
-    "updatedAt": "2026-09-27T20:11:02.315Z",
-    "baseCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
+    "taskId": "SOC-01",
+    "phase": "好友关系模型与 API",
+    "updatedAt": "2026-09-27T20:19:50.345Z",
+    "baseCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
     "completedSteps": [
-      "APP-06 四页、离线个人快照和历史导航已提交；静态检查与 iOS JS 打包通过。"
+      "APP-07 主流程状态和无障碍静态代码已提交，状态清单已落盘。"
     ],
     "nextSteps": [
-      "盘点 APP-02/03/05/06 页面加载、空态、错误、待同步、权限关闭的实际实现并形成状态清单。",
-      "实现共享状态组件与必要的无障碍标识、动态字体和窄屏触控优化。",
-      "执行 S0/S3/S4、开发自检，提交代码和台账。"
+      "核对 SOC-01 PRD/技术契约、现有数据库迁移、OpenAPI 路由和安全边界。",
+      "实现好友搜索、申请、接受、删除、拉黑状态机与对象级授权 API。",
+      "执行 S0/S1/S2/S6 与开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
-      "VoiceOver、动态字体和真实窄屏视觉需 iOS/macOS 环境后续人工验证；正式 ATDD 留待独立阶段。"
+      "Docker/PostgreSQL 真实服务环境稍后验证；正式 ATDD 不在此开发阶段执行。"
     ]
   },
   "nextTaskId": null,
@@ -428,12 +428,14 @@
         "S3",
         "S4"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "2bc5a8b952fa631041c2c8ecea4bfb76f6393c0d",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
+      "integratedCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
+      "staticPassed": true,
+      "blocker": "主流程共用加载/错误/本机状态组件、20 页状态清单、按钮语义/触控区域及记录编辑加载保护已通过 S0/S3/S4、导航/表单/日历自检与 iOS JS 静态打包；真实 VoiceOver、字体放大、窄屏排版及系统权限关闭场景待 macOS/iOS 环境，照片与提醒权限入口由 SYNC-04/SOC-04 接入。"
     },
     {
       "priority": 21,
@@ -449,10 +451,10 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
       "taskCommit": null,
       "integratedCommit": null
     },
