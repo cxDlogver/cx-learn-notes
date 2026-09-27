@@ -5,23 +5,23 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "133ebe99ac802de5a3308848ad85faf9a42326d0",
+  "integrationCommit": "06a95535de94e3b43018412351041397013fa2c5",
   "currentWork": {
-    "taskId": "APP-05",
-    "phase": "今日与打卡记录六页、统一记录写入接口",
-    "updatedAt": "2026-09-27T19:15:48.287Z",
-    "baseCommit": "53de35c7524e3b1c88e9a28d59abe4441f16c220",
+    "taskId": "APP-06",
+    "phase": "日历与三类计划详情、统计和历史导航",
+    "updatedAt": "2026-09-27T19:39:55.534Z",
+    "baseCommit": "06a95535de94e3b43018412351041397013fa2c5",
     "completedSteps": [
-      "已核对六页 Pen 映射、Today 与打卡记录 HTTP 契约及 APP-04 本地数据接口。"
+      "APP-05 代码与 Pen 映射已提交；静态检查、记录开发自检和 iOS JS 打包通过。"
     ],
     "nextSteps": [
-      "设计统一记录 Repository：在线 PUT 与离线本地事务状态，并预留 SYNC-01 outbox 消费。",
-      "实现 today-empty/today-active、do/avoid 打卡、修改和补记六页及导航。",
-      "按 Pen 节点校准组件映射，执行 S0/S1/S3 与记录开发自检，提交代码和台账。"
+      "核对 calendar、三类 plan-detail Pen 画板及日历/详情 API 契约。",
+      "实现日历、计划详情与历史记录导航，按规则版本和统计截止日展示。",
+      "执行 S0/S1/S3 与针对性开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
-      "iOS 真机视觉、相册与离线恢复互动稍后验证；正式 ATDD 属独立验收阶段。"
+      "iOS 真机视觉、原生能力与正式 ATDD 后续验证。"
     ]
   },
   "nextTaskId": null,
@@ -383,12 +383,14 @@
         "S1",
         "S3"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "53de35c7524e3b1c88e9a28d59abe4441f16c220",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "06a95535de94e3b43018412351041397013fa2c5",
+      "integratedCommit": "06a95535de94e3b43018412351041397013fa2c5",
+      "staticPassed": true,
+      "blocker": "今日与六页记录 UI、在线 PUT/离线原子落库、同日待同步覆盖、卡片留位、Pen 映射已通过 S0/S1/S3、仓储与本地事务自检、iOS JS 静态打包；真实 iOS 视觉/交互、SQLCipher 和相册照片链路待 macOS/真机及 SYNC-04 验证。"
     },
     {
       "priority": 19,
@@ -402,10 +404,10 @@
         "S1",
         "S3"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "06a95535de94e3b43018412351041397013fa2c5",
       "taskCommit": null,
       "integratedCommit": null
     },
