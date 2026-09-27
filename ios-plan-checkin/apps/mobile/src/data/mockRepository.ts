@@ -103,6 +103,9 @@ export class MockRepository implements AppRepository {
   async listPlans(): Promise<PlanDto[]> {
     return this.plans;
   }
+  async listPlansWithSource(): Promise<{ items: PlanDto[]; source: "server" }> {
+    return { items: await this.listPlans(), source: "server" };
+  }
   async getPlan(id: string): Promise<PlanDto> {
     const plan = this.plans.find((item) => item.id === id);
     if (!plan) throw new Error("计划不存在");

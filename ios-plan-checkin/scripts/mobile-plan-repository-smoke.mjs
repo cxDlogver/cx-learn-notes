@@ -95,6 +95,52 @@ await assert.rejects(
     error.code === "NETWORK_ERROR" &&
     error.message.includes("联网"),
 );
+const accountId = "00000000-0000-4000-8000-000000000001";
+let snapshotReady = false;
+let cachedWrites = 0;
+const cached = new HttpRepository(
+  api,
+  {
+    upsertPlans: async (_accountId, _plans, completeList) => {
+      cachedWrites++;
+      if (completeList) snapshotReady = true;
+    },
+    hasPlanListSnapshot: async () => snapshotReady,
+    listPlans: async () => [{ id: "cached-plan" }],
+  },
+  { getSnapshot: () => ({ phase: "authenticated", userId: accountId }) },
+);
+await assert.rejects(cached.listPlansWithSource(), /联网/);
+fetchImpl = async () => ({ ok: true, json: async () => ({ data: [] }) });
+assert.deepEqual(await cached.listPlansWithSource(), {
+  items: [],
+  source: "server",
+});
+assert.equal(cachedWrites, 1);
+fetchImpl = async () => {
+  throw new TypeError("offline");
+};
+assert.deepEqual(await cached.listPlansWithSource(), {
+  items: [{ id: "cached-plan" }],
+  source: "local",
+});
+fetchImpl = async () => ({
+  ok: true,
+  json: async () => ({ data: { id: "server-created" } }),
+});
+const uncachedSuccess = new HttpRepository(
+  api,
+  {
+    upsertPlans: async () => {
+      throw new Error("disk full");
+    },
+  },
+  { getSnapshot: () => ({ phase: "authenticated", userId: accountId }) },
+);
+assert.equal(
+  (await uncachedSuccess.createPlan({ title: "新计划" })).id,
+  "server-created",
+);
 process.stdout.write(
-  "Mobile plan repository smoke passed: auth retry, stable idempotency, deletion confirmation, offline error.\n",
+  "Mobile plan repository smoke passed: auth retry, idempotency, deletion confirmation and explicit offline snapshot.\n",
 );

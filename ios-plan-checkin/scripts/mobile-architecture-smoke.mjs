@@ -96,6 +96,28 @@ await invalid.restore();
 assert.equal(invalid.getSnapshot().phase, "unauthenticated");
 assert.equal(await invalidStore.read(), null);
 
+const lifecycleEvents = [];
+const localAware = new SessionManager(
+  memory(),
+  { refresh: async () => tokens() },
+  () => false,
+  {
+    activate: async (userId) => lifecycleEvents.push(`activate:${userId}`),
+    clearCurrent: async () => lifecycleEvents.push("clear"),
+  },
+);
+await localAware.adopt(tokens());
+await localAware.adopt({
+  ...tokens(),
+  userId: "00000000-0000-4000-8000-000000000002",
+});
+await localAware.clear();
+assert.deepEqual(lifecycleEvents, [
+  "activate:00000000-0000-4000-8000-000000000001",
+  "activate:00000000-0000-4000-8000-000000000002",
+  "clear",
+]);
+
 assert.equal(normalizePhone("138 0012 3456"), "13800123456");
 assert.equal(phonePattern.test(normalizePhone("138 0012 3456")), true);
 assert.equal(phonePattern.test("12800123456"), false);

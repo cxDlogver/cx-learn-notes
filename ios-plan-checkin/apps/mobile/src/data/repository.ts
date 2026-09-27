@@ -19,6 +19,7 @@ import * as Crypto from "expo-crypto";
 import type { SessionGateway } from "./session";
 import { SessionManager } from "./session";
 import { deviceId } from "../platform/deviceId";
+import type { LocalCache } from "./localCache";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -48,6 +49,10 @@ export interface AppRepository {
   getToday(): Promise<TodayDto>;
   getCalendar(month: string, groupId?: string): Promise<CalendarMonthDto>;
   listPlans(): Promise<PlanDto[]>;
+  listPlansWithSource(): Promise<{
+    items: PlanDto[];
+    source: "server" | "local";
+  }>;
   getPlan(id: string): Promise<PlanDto>;
   getPlanDetail(id: string): Promise<PlanDetailDto>;
   listGroups(): Promise<GroupDto[]>;
@@ -215,7 +220,30 @@ export class ApiClient implements SessionGateway {
 }
 
 export class HttpRepository implements AppRepository {
-  constructor(private readonly api: ApiClient) {}
+  constructor(
+    private readonly api: ApiClient,
+    private readonly localCache?: LocalCache,
+    private readonly session?: SessionManager,
+  ) {}
+
+  private accountId(): string | null {
+    const snapshot = this.session?.getSnapshot();
+    return snapshot?.phase === "authenticated" ? snapshot.userId : null;
+  }
+
+  private async cachePlans(
+    plans: PlanDto[],
+    completeList = false,
+  ): Promise<void> {
+    const accountId = this.accountId();
+    if (accountId && this.localCache) {
+      try {
+        await this.localCache.upsertPlans(accountId, plans, completeList);
+      } catch {
+        // A successful server write stays successful if the local mirror is unavailable.
+      }
+    }
+  }
 
   createSmsChallenge(phone: string): Promise<SmsChallengeDto> {
     return this.api.postWithoutSession("/auth/sms/challenges", {
@@ -262,11 +290,53 @@ export class HttpRepository implements AppRepository {
     if (groupId) query.set("groupId", groupId);
     return this.api.get(`/calendar?${query.toString()}`);
   }
-  listPlans(): Promise<PlanDto[]> {
-    return this.api.get("/plans");
+  async listPlans(): Promise<PlanDto[]> {
+    return (await this.listPlansWithSource()).items;
   }
-  getPlan(id: string): Promise<PlanDto> {
-    return this.api.get(`/plans/${encodeURIComponent(id)}`);
+  async listPlansWithSource(): Promise<{
+    items: PlanDto[];
+    source: "server" | "local";
+  }> {
+    try {
+      const plans = await this.api.get<PlanDto[]>("/plans");
+      await this.cachePlans(plans, true);
+      return { items: plans, source: "server" };
+    } catch (error) {
+      const accountId = this.accountId();
+      if (
+        error instanceof ApiRequestError &&
+        error.status === 0 &&
+        accountId &&
+        this.localCache &&
+        (await this.localCache.hasPlanListSnapshot(accountId))
+      )
+        return {
+          items: await this.localCache.listPlans(accountId),
+          source: "local",
+        };
+      throw error;
+    }
+  }
+  async getPlan(id: string): Promise<PlanDto> {
+    try {
+      const plan = await this.api.get<PlanDto>(
+        `/plans/${encodeURIComponent(id)}`,
+      );
+      await this.cachePlans([plan]);
+      return plan;
+    } catch (error) {
+      const accountId = this.accountId();
+      if (
+        error instanceof ApiRequestError &&
+        error.status === 0 &&
+        accountId &&
+        this.localCache
+      ) {
+        const plan = await this.localCache.getPlan(accountId, id);
+        if (plan) return plan;
+      }
+      throw error;
+    }
   }
   getPlanDetail(id: string): Promise<PlanDetailDto> {
     return this.api.get(`/plans/${encodeURIComponent(id)}/detail`);
@@ -285,25 +355,45 @@ export class HttpRepository implements AppRepository {
       `/groups/${encodeURIComponent(id)}?baseRevision=${baseRevision}`,
     );
   }
-  createPlan(input: CreatePlanRequest): Promise<PlanDto> {
-    return this.api.post("/plans", input);
+  async createPlan(input: CreatePlanRequest): Promise<PlanDto> {
+    const plan = await this.api.post<PlanDto>("/plans", input);
+    await this.cachePlans([plan]);
+    return plan;
   }
-  updatePlan(id: string, input: UpdatePlanRequest): Promise<PlanDto> {
-    return this.api.patch(`/plans/${encodeURIComponent(id)}`, input);
+  async updatePlan(id: string, input: UpdatePlanRequest): Promise<PlanDto> {
+    const plan = await this.api.patch<PlanDto>(
+      `/plans/${encodeURIComponent(id)}`,
+      input,
+    );
+    await this.cachePlans([plan]);
+    return plan;
   }
-  transitionPlan(
+  async transitionPlan(
     id: string,
     action: "pause" | "resume" | "archive",
     baseRevision: number,
   ): Promise<PlanDto> {
-    return this.api.post(`/plans/${encodeURIComponent(id)}/${action}`, {
-      baseRevision,
-    });
+    const plan = await this.api.post<PlanDto>(
+      `/plans/${encodeURIComponent(id)}/${action}`,
+      {
+        baseRevision,
+      },
+    );
+    await this.cachePlans([plan]);
+    return plan;
   }
   async deletePlan(id: string, baseRevision: number): Promise<void> {
     await this.api.delete(
       `/plans/${encodeURIComponent(id)}?baseRevision=${baseRevision}`,
       { "X-Confirm-Delete": "true" },
     );
+    const accountId = this.accountId();
+    if (accountId && this.localCache) {
+      try {
+        await this.localCache.removePlan(accountId, id);
+      } catch {
+        // The server deletion succeeded; stale local data is hidden after the next full list refresh.
+      }
+    }
   }
 }

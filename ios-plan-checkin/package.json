@@ -34,6 +34,8 @@
     "mobile:architecture:smoke": "tsc -p packages/domain/tsconfig.json && node scripts/mobile-architecture-smoke.mjs",
     "mobile:plans:smoke": "tsc -p packages/domain/tsconfig.json && node scripts/mobile-plans-smoke.mjs",
     "mobile:plan-repository:smoke": "node scripts/mobile-plan-repository-smoke.mjs",
+    "mobile:local-schema:smoke": "node scripts/mobile-local-schema-smoke.mjs",
+    "mobile:local-store:smoke": "node scripts/mobile-local-store-smoke.mjs",
     "mobile:bundle:check": "tsc -p packages/domain/tsconfig.json && tsc -p packages/design-tokens/tsconfig.json && node scripts/mobile-bundle-check.mjs",
     "progress:check": "node scripts/progress-check.mjs",
     "progress:show": "node scripts/progress-check.mjs --show",

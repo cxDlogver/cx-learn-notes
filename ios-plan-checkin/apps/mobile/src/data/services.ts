@@ -8,6 +8,8 @@ import {
 } from "./repository";
 import { MockRepository, MockSessionGateway } from "./mockRepository";
 import { SessionManager } from "./session";
+import { LocalCache } from "./localCache";
+import { localStore, type LocalStore } from "./localStore";
 import {
   MemorySessionStore,
   secureSessionStore,
@@ -18,6 +20,8 @@ export interface AppServices {
   session: SessionManager;
   queryClient: QueryClient;
   mockMode: boolean;
+  localCache: LocalCache | null;
+  localStore: LocalStore | null;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -43,7 +47,14 @@ export function createAppServices(): AppServices {
       new MockSessionGateway(),
       () => false,
     );
-    return { repository: new MockRepository(), session, queryClient, mockMode };
+    return {
+      repository: new MockRepository(),
+      session,
+      queryClient,
+      mockMode,
+      localCache: null,
+      localStore: null,
+    };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (!__DEV__ && (!configured || !configured.startsWith("https://")))
@@ -62,12 +73,16 @@ export function createAppServices(): AppServices {
     secureSessionStore,
     api,
     (error) => error instanceof ApiRequestError && error.status === 401,
+    localStore,
   );
   api.attachSession(session);
+  const localCache = new LocalCache(localStore);
   return {
-    repository: new HttpRepository(api),
+    repository: new HttpRepository(api, localCache, session),
     session,
     queryClient,
     mockMode,
+    localCache,
+    localStore,
   };
 }

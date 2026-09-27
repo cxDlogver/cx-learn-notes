@@ -9,6 +9,10 @@ export interface RefreshTokenStore {
 export interface SessionGateway {
   refresh(refreshToken: string): Promise<AuthTokens>;
 }
+export interface SessionLocalData {
+  activate(userId: string): Promise<void>;
+  clearCurrent(): Promise<void>;
+}
 
 export type SessionSnapshot =
   | { phase: "loading"; userId: null }
@@ -28,6 +32,7 @@ export class SessionManager {
     private readonly store: RefreshTokenStore,
     private readonly gateway: SessionGateway,
     private readonly isInvalidRefresh: (error: unknown) => boolean,
+    private readonly localData?: SessionLocalData,
   ) {}
 
   getSnapshot = (): SessionSnapshot => this.snapshot;
@@ -47,15 +52,18 @@ export class SessionManager {
     try {
       const stored = await this.store.read();
       if (!stored) {
+        await this.localData?.clearCurrent();
         this.setSnapshot({ phase: "unauthenticated", userId: null });
         return;
       }
       await this.refresh(stored);
     } catch (error) {
       if (this.isInvalidRefresh(error)) {
-        await this.store.clear();
-        this.tokens = null;
-        this.setSnapshot({ phase: "unauthenticated", userId: null });
+        try {
+          await this.clear();
+        } catch {
+          this.setSnapshot({ phase: "unavailable", userId: null });
+        }
       } else {
         this.setSnapshot({ phase: "unavailable", userId: null });
       }
@@ -63,6 +71,7 @@ export class SessionManager {
   }
 
   async adopt(tokens: AuthTokens): Promise<void> {
+    await this.localData?.activate(tokens.userId);
     await this.store.write(tokens.refreshToken);
     this.tokens = tokens;
     this.setSnapshot({ phase: "authenticated", userId: tokens.userId });
@@ -70,8 +79,14 @@ export class SessionManager {
 
   async clear(): Promise<void> {
     this.tokens = null;
-    await this.store.clear();
-    this.setSnapshot({ phase: "unauthenticated", userId: null });
+    try {
+      await this.store.clear();
+      await this.localData?.clearCurrent();
+      this.setSnapshot({ phase: "unauthenticated", userId: null });
+    } catch (error) {
+      this.setSnapshot({ phase: "unavailable", userId: null });
+      throw error;
+    }
   }
 
   private async refresh(stored?: string): Promise<AuthTokens> {

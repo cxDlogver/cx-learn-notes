@@ -34,14 +34,15 @@ export function PlanListScreen() {
   const [status, setStatus] = useState<PlanLifecycle>("active");
   const [showKinds, setShowKinds] = useState(false);
   const plans = useQuery({
-    queryKey: ["plans"],
-    queryFn: () => repository.listPlans(),
+    queryKey: ["plans", "with-source"],
+    queryFn: () => repository.listPlansWithSource(),
   });
   const groups = useQuery({
     queryKey: ["groups"],
     queryFn: () => repository.listGroups(),
   });
-  const visible = plans.data?.filter((plan) => plan.lifecycle === status) ?? [];
+  const visible =
+    plans.data?.items.filter((plan) => plan.lifecycle === status) ?? [];
   const grouped = new Map<string | null, PlanDto[]>();
   for (const plan of visible)
     grouped.set(plan.groupId, [...(grouped.get(plan.groupId) ?? []), plan]);
@@ -106,6 +107,11 @@ export function PlanListScreen() {
       >
         {visible.length} 项计划
       </Text>
+      {plans.data?.source === "local" ? (
+        <Text testID="plans.list.offline" style={planStyles.notice}>
+          当前离线，显示本机上次同步的计划。计划修改需联网。
+        </Text>
+      ) : null}
       {plans.isPending ? (
         <Text style={planStyles.subtitle}>正在读取计划…</Text>
       ) : null}
