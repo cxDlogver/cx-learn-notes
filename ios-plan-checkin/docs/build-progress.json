@@ -5,27 +5,9 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "5af4c3243abedc3ae26323e51cb76a2840bd84f9",
-  "currentWork": {
-    "taskId": "APP-01",
-    "phase": "客户端导航与数据边界设计",
-    "updatedAt": "2026-09-27T18:00:00Z",
-    "baseCommit": "d5683279ad8c2cf43aebb1ac169c8a286bba364e",
-    "completedSteps": [
-      "CORE-08 代码和台账已提交；S0/S1/S2 与 PGlite 跨接口开发自检通过。",
-      "已读取 APP-01 任务、移动端原生样板和页面映射。"
-    ],
-    "nextSteps": [
-      "实现四底部入口、受控深链接、未登录重定向及会话恢复。",
-      "建立 Repository、Query 缓存、页面状态和平台服务的可替换边界。",
-      "运行 APP-01 静态门槛并保存任务签出记录。"
-    ],
-    "uncommittedChanges": [],
-    "knownConstraints": [
-      "Windows 无法执行 iOS 真机和 Release 验证；按用户选择先完成静态代码。"
-    ]
-  },
-  "nextTaskId": null,
+  "integrationCommit": "43152d7d8d23a080852bb56b3ce9d7ba04a97211",
+  "currentWork": null,
+  "nextTaskId": "APP-02",
   "tasks": [
     {
       "priority": 1,
@@ -295,12 +277,14 @@
         "S3",
         "S4"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "d5683279ad8c2cf43aebb1ac169c8a286bba364e",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "43152d7d8d23a080852bb56b3ce9d7ba04a97211",
+      "integratedCommit": "43152d7d8d23a080852bb56b3ce9d7ba04a97211",
+      "staticPassed": true,
+      "blocker": "四入口导航、会话恢复、受控深链接、Repository/Query 缓存与平台封装已通过 S0/S1/S3/S4、Expo 依赖检查、架构自检和 iOS JS 静态打包；模拟器/真机启动及导航返回需 macOS/iOS 环境稍后验证。"
     },
     {
       "priority": 15,
