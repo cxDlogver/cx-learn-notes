@@ -194,6 +194,75 @@ assert.deepEqual(await recordRepo.saveCheckin(plan, "2026-09-28", input), {
   operationId: "operation-record",
 });
 assert.equal(calls.length, 1);
+fetchImpl = async () => {
+  throw new TypeError("offline");
+};
+const cachedPlan = { ...plan, title: "阅读", direction: "do", groupId: null };
+const pendingRecord = {
+  ...record,
+  businessDate: "2026-09-28",
+  ruleVersion: 1,
+  isBackfilled: false,
+  isRevised: false,
+};
+const calendarSnapshot = {
+  month: "2026-09",
+  dateSemantics: "plan_business_date",
+  groupId: null,
+  days: [
+    {
+      businessDate: "2026-09-28",
+      counts: { success: 0, failure: 0, skip: 0, unrecorded: 1 },
+      entries: [
+        { planId: plan.id, businessDate: "2026-09-28", status: "unrecorded" },
+      ],
+    },
+  ],
+  weeklySummaries: [],
+};
+const detailSnapshot = {
+  plan: cachedPlan,
+  statistics: { kind: "fixed", statisticsThroughBusinessDate: "2026-09-27" },
+  todayStatus: "not_due",
+  recentRecords: [],
+};
+const historyRepo = new HttpRepository(
+  api,
+  {
+    calendarSnapshot: async () => calendarSnapshot,
+    planDetailSnapshot: async () => detailSnapshot,
+    checkinsForView: async () => [{ record: pendingRecord, state: "local" }],
+    getPlan: async () => cachedPlan,
+  },
+  { getSnapshot: () => ({ phase: "authenticated", userId: accountId }) },
+);
+const offlineCalendar = await historyRepo.getCalendar("2026-09");
+assert.equal(offlineCalendar.source, "local");
+assert.equal(offlineCalendar.days[0].counts.success, 1);
+assert.equal(offlineCalendar.days[0].counts.unrecorded, 0);
+assert.equal(
+  (await historyRepo.getPlanCalendar(plan.id, "2026-09")).pendingCount,
+  1,
+);
+const offlineDetail = await historyRepo.getPlanDetail(plan.id);
+assert.equal(offlineDetail.source, "local");
+assert.equal(offlineDetail.recentRecords[0].status, "success");
+assert.equal(
+  offlineDetail.statistics.statisticsThroughBusinessDate,
+  "2026-09-27",
+);
+const syncedHistory = new HttpRepository(
+  api,
+  {
+    calendarSnapshot: async () => calendarSnapshot,
+    checkinsForView: async () => [{ record: pendingRecord, state: "synced" }],
+    getPlan: async () => cachedPlan,
+  },
+  { getSnapshot: () => ({ phase: "authenticated", userId: accountId }) },
+);
+const reopenedCalendar = await syncedHistory.getCalendar("2026-09");
+assert.equal(reopenedCalendar.days[0].counts.success, 1);
+assert.equal(reopenedCalendar.pendingCount, 0);
 process.stdout.write(
-  "Mobile plan repository smoke passed: auth retry, idempotency, deletion confirmation, offline snapshot and record routing.\n",
+  "Mobile plan repository smoke passed: auth retry, idempotency, offline record routing and cached calendar/detail overlays.\n",
 );

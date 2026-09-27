@@ -26,6 +26,7 @@ export interface RecordEditorProps {
   businessDate: string;
   mode?: RecordMode;
   ruleVersion?: number;
+  resolution?: OneTimeResolution;
   onDone: () => void;
 }
 
@@ -54,6 +55,7 @@ export function RecordEditorScreen({
   businessDate,
   mode = "today",
   ruleVersion,
+  resolution,
   onDone,
 }: RecordEditorProps) {
   const { repository, todaySession } = useAppServices();
@@ -76,7 +78,9 @@ export function RecordEditorScreen({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedLocally, setSavedLocally] = useState(false);
-  const [onceResult, setOnceResult] = useState<OneTimeResolution | null>(null);
+  const [onceResult, setOnceResult] = useState<OneTimeResolution | null>(
+    resolution ?? null,
+  );
   useEffect(() => {
     if (!recordQuery.data) return;
     setResult(recordQuery.data.result);

@@ -1,8 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { penColors } from "@plan-checkin/design-tokens";
-import { businessDateAt } from "@plan-checkin/domain";
 import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
-import { useAppServices } from "../data/services";
 import {
   requestNativeSmokePermissions,
   runNativeCapabilitySmoke,
@@ -27,28 +24,6 @@ export function Shell({
         ) : null}
       </View>
     </SafeAreaView>
-  );
-}
-
-export function CalendarEntry() {
-  const { repository } = useAppServices();
-  const month = businessDateAt(new Date(), "Asia/Shanghai").slice(0, 7);
-  const query = useQuery({
-    queryKey: ["calendar", month],
-    queryFn: () => repository.getCalendar(month),
-  });
-  return (
-    <Shell
-      title="日历"
-      body={
-        query.isPending
-          ? "正在读取日历"
-          : query.isError
-            ? "暂时无法读取日历"
-            : `${query.data.month} 的记录`
-      }
-      retry={query.isError ? () => void query.refetch() : undefined}
-    />
   );
 }
 

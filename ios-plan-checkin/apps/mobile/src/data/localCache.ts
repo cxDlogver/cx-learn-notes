@@ -1,5 +1,7 @@
 import type {
+  CalendarMonthDto,
   CheckinDto,
+  PlanDetailDto,
   PlanDto,
   PutCheckinRequest,
   TodayDto,
@@ -131,6 +133,99 @@ export class LocalCache {
     });
   }
 
+  private async writeSnapshot(
+    accountId: string,
+    scope: string,
+    value: unknown,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `INSERT INTO local_sync_cursor(scope,cursor,updated_at) VALUES(?,?,?)
+         ON CONFLICT(scope) DO UPDATE SET cursor=excluded.cursor,updated_at=excluded.updated_at`,
+        scope,
+        JSON.stringify(value),
+        new Date().toISOString(),
+      );
+    });
+  }
+
+  private async readSnapshot<T>(
+    accountId: string,
+    scope: string,
+  ): Promise<T | null> {
+    return this.store.read(accountId, async (database) => {
+      const row = await database.getFirstAsync<CursorRow>(
+        "SELECT cursor FROM local_sync_cursor WHERE scope=?",
+        scope,
+      );
+      return row?.cursor ? (JSON.parse(row.cursor) as T) : null;
+    });
+  }
+
+  saveCalendarSnapshot(
+    accountId: string,
+    key: string,
+    calendar: CalendarMonthDto,
+  ): Promise<void> {
+    return this.writeSnapshot(accountId, `calendar:${key}`, calendar);
+  }
+  calendarSnapshot(
+    accountId: string,
+    key: string,
+  ): Promise<CalendarMonthDto | null> {
+    return this.readSnapshot<CalendarMonthDto>(accountId, `calendar:${key}`);
+  }
+  savePlanDetailSnapshot(
+    accountId: string,
+    detail: PlanDetailDto,
+  ): Promise<void> {
+    return this.writeSnapshot(accountId, `detail:${detail.plan.id}`, detail);
+  }
+  planDetailSnapshot(
+    accountId: string,
+    planId: string,
+  ): Promise<PlanDetailDto | null> {
+    return this.readSnapshot<PlanDetailDto>(accountId, `detail:${planId}`);
+  }
+  async checkinsForView(
+    accountId: string,
+    datePrefix: string,
+    planId?: string,
+  ): Promise<{ record: CheckinDto; state: CheckinSyncState }[]> {
+    return this.store.read(accountId, async (database) => {
+      const rows = planId
+        ? await database.getAllAsync<
+            PayloadRow & { sync_state: CheckinSyncState }
+          >(
+            "SELECT payload,sync_state FROM local_checkins WHERE plan_id=? AND business_date LIKE ?",
+            planId,
+            `${datePrefix}%`,
+          )
+        : await database.getAllAsync<
+            PayloadRow & { sync_state: CheckinSyncState }
+          >(
+            "SELECT payload,sync_state FROM local_checkins WHERE business_date LIKE ?",
+            `${datePrefix}%`,
+          );
+      return rows.map((row) => ({
+        record: JSON.parse(row.payload) as CheckinDto,
+        state: row.sync_state,
+      }));
+    });
+  }
+
+  async invalidateViewSnapshots(
+    accountId: string,
+    planId: string,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        "DELETE FROM local_sync_cursor WHERE scope LIKE 'calendar:%' OR scope='today:snapshot' OR scope=?",
+        `detail:${planId}`,
+      );
+    });
+  }
+
   async getPlan(accountId: string, planId: string): Promise<PlanDto | null> {
     return this.store.read(accountId, async (database) => {
       const row = await database.getFirstAsync<PayloadRow>(
@@ -152,6 +247,10 @@ export class LocalCache {
         planId,
       );
       await database.runAsync("DELETE FROM local_plans WHERE id=?", planId);
+      await database.runAsync(
+        "DELETE FROM local_sync_cursor WHERE scope LIKE 'calendar:%' OR scope='today:snapshot' OR scope=?",
+        `detail:${planId}`,
+      );
     });
   }
 

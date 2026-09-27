@@ -55,9 +55,11 @@ function database(snapshot) {
       if (sql.includes("FROM local_sync_cursor"))
         return (
           snapshot.cursors.get(
-            sql.includes("today:snapshot")
-              ? "today:snapshot"
-              : "plans:list-fetched",
+            sql.includes("scope=?")
+              ? args[0]
+              : sql.includes("today:snapshot")
+                ? "today:snapshot"
+                : "plans:list-fetched",
           ) ?? null
         );
       return null;
@@ -80,11 +82,22 @@ function database(snapshot) {
         snapshot.outbox.set(args[1], { payload: args[0], status: "pending" });
       else if (sql.includes("INSERT INTO local_sync_cursor"))
         snapshot.cursors.set(
-          sql.includes("today:snapshot")
-            ? "today:snapshot"
-            : "plans:list-fetched",
-          { cursor: args[0] },
+          sql.includes("VALUES(?,?,?)")
+            ? args[0]
+            : sql.includes("today:snapshot")
+              ? "today:snapshot"
+              : "plans:list-fetched",
+          { cursor: sql.includes("VALUES(?,?,?)") ? args[1] : args[0] },
         );
+      else if (sql.includes("DELETE FROM local_sync_cursor")) {
+        for (const key of snapshot.cursors.keys())
+          if (
+            key.startsWith("calendar:") ||
+            key === "today:snapshot" ||
+            key === args[0]
+          )
+            snapshot.cursors.delete(key);
+      }
     },
     async getAllAsync() {
       return [];
@@ -178,6 +191,27 @@ const today = {
 await cache.saveTodaySnapshot("user", today);
 assert.deepEqual(await cache.todaySnapshot("user", "2026-09-28"), today);
 assert.equal(await cache.todaySnapshot("user", "2026-09-29"), null);
+const calendar = {
+  month: "2026-09",
+  days: [],
+  weeklySummaries: [],
+  groupId: null,
+  dateSemantics: "plan_business_date",
+};
+await cache.saveCalendarSnapshot("user", "global:all:2026-09", calendar);
+await cache.savePlanDetailSnapshot("user", {
+  plan,
+  statistics: {},
+  recentRecords: [],
+});
+assert.deepEqual(
+  await cache.calendarSnapshot("user", "global:all:2026-09"),
+  calendar,
+);
+await cache.invalidateViewSnapshots("user", plan.id);
+assert.equal(await cache.todaySnapshot("user", "2026-09-28"), null);
+assert.equal(await cache.calendarSnapshot("user", "global:all:2026-09"), null);
+assert.equal(await cache.planDetailSnapshot("user", plan.id), null);
 
 const { TodaySessionStore } = await load(
   "../apps/mobile/src/data/todaySession.ts",
@@ -195,5 +229,5 @@ assert.equal(session.merge({ ...today, items: [] }).items[0].status, "failure");
 session.clear();
 assert.equal(session.merge(today).items.length, 0);
 process.stdout.write(
-  "Mobile records smoke passed: atomic rollback, same-day coalescing, snapshot and card retention.\n",
+  "Mobile records smoke passed: atomic rollback, same-day coalescing, snapshot invalidation and card retention.\n",
 );

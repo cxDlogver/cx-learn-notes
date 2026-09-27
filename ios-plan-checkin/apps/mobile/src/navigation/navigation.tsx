@@ -13,7 +13,11 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
-import type { PlanKind, SmsChallengeDto } from "@plan-checkin/contracts";
+import type {
+  OneTimeResolution,
+  PlanKind,
+  SmsChallengeDto,
+} from "@plan-checkin/contracts";
 import { penColors } from "@plan-checkin/design-tokens";
 import {
   ActivityIndicator,
@@ -34,18 +38,15 @@ import {
 } from "../screens/plans/PlanFormScreen";
 import { GroupManagementScreen } from "../screens/plans/GroupManagementScreen";
 import { PlanConfirmationsScreen } from "../screens/plans/PlanConfirmationsScreen";
+import { PlanDetailScreen } from "../screens/plans/PlanDetailScreen";
+import { CalendarScreen } from "../screens/calendar/CalendarScreen";
 import { TodayScreen } from "../screens/today/TodayScreen";
 import {
   RecordEditorScreen,
   type RecordMode,
 } from "../screens/today/RecordEditorScreen";
 import type { PlanDraft } from "../screens/plans/planForm";
-import {
-  CalendarEntry,
-  FriendsEntry,
-  SettingsEntry,
-  Shell,
-} from "./entryScreens";
+import { FriendsEntry, SettingsEntry, Shell } from "./entryScreens";
 import { parseAppLink, type AppLink } from "./links";
 
 export type MainTabParamList = {
@@ -57,11 +58,13 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Home: undefined;
   PlanDetail: { planId: string };
+  PlanCalendar: { planId: string };
   Checkin: {
     planId: string;
     businessDate: string;
     mode?: RecordMode;
     ruleVersion?: number;
+    resolution?: OneTimeResolution;
   };
   Settings: undefined;
   CreatePlan: { kind: PlanKind; draft?: PlanDraft };
@@ -116,7 +119,7 @@ function MainTabs() {
       />
       <Tabs.Screen
         name="Calendar"
-        component={CalendarEntry}
+        component={CalendarScreen}
         options={{ title: "日历" }}
       />
       <Tabs.Screen
@@ -142,9 +145,10 @@ function MainStack() {
         options={{ headerShown: false }}
       />
       <RootStack.Screen name="PlanDetail" options={{ title: "计划详情" }}>
-        {({ route }) => (
-          <Shell title="计划详情" body={`计划 ${route.params.planId}`} />
-        )}
+        {({ route }) => <PlanDetailScreen planId={route.params.planId} />}
+      </RootStack.Screen>
+      <RootStack.Screen name="PlanCalendar" options={{ title: "计划日历" }}>
+        {({ route }) => <CalendarScreen planId={route.params.planId} />}
       </RootStack.Screen>
       <RootStack.Screen
         name="Checkin"

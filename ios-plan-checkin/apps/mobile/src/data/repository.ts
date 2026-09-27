@@ -3,6 +3,8 @@ import type {
   ApiSuccess,
   AuthTokens,
   CalendarMonthDto,
+  CalendarDayDto,
+  CalendarEntryDto,
   CheckinDto,
   CreateGroupRequest,
   CreatePlanRequest,
@@ -62,14 +64,29 @@ export interface AppRepository {
     baseRevision: number;
   }): Promise<UserDto>;
   getToday(): Promise<TodayDto & { source?: "server" | "local" }>;
-  getCalendar(month: string, groupId?: string): Promise<CalendarMonthDto>;
+  getCalendar(
+    month: string,
+    groupId?: string,
+  ): Promise<
+    CalendarMonthDto & { source?: "server" | "local"; pendingCount?: number }
+  >;
+  getPlanCalendar(
+    planId: string,
+    month: string,
+  ): Promise<
+    CalendarMonthDto & { source?: "server" | "local"; pendingCount?: number }
+  >;
   listPlans(): Promise<PlanDto[]>;
   listPlansWithSource(): Promise<{
     items: PlanDto[];
     source: "server" | "local";
   }>;
   getPlan(id: string): Promise<PlanDto>;
-  getPlanDetail(id: string): Promise<PlanDetailDto>;
+  getPlanDetail(
+    id: string,
+  ): Promise<
+    PlanDetailDto & { source?: "server" | "local"; pendingCount?: number }
+  >;
   getCheckin(planId: string, businessDate: string): Promise<CheckinDto>;
   saveCheckin(
     plan: PlanDto,
@@ -276,6 +293,17 @@ export class HttpRepository implements AppRepository {
     }
   }
 
+  private async invalidateLocalViews(planId: string): Promise<void> {
+    const accountId = this.accountId();
+    if (accountId && this.localCache) {
+      try {
+        await this.localCache.invalidateViewSnapshots(accountId, planId);
+      } catch {
+        /* A completed server write remains successful. */
+      }
+    }
+  }
+
   createSmsChallenge(phone: string): Promise<SmsChallengeDto> {
     return this.api.postWithoutSession("/auth/sms/challenges", {
       countryCode: "+86",
@@ -416,10 +444,157 @@ export class HttpRepository implements AppRepository {
       };
     }
   }
-  getCalendar(month: string, groupId?: string): Promise<CalendarMonthDto> {
+  private async calendarWithLocal(
+    calendar: CalendarMonthDto,
+    accountId: string,
+    month: string,
+    groupId?: string,
+    planId?: string,
+    includeSynced = false,
+  ): Promise<CalendarMonthDto & { pendingCount: number }> {
+    if (!this.localCache) return { ...calendar, pendingCount: 0 };
+    const localRecords = await this.localCache.checkinsForView(
+      accountId,
+      month,
+      planId,
+    );
+    const days = new Map<string, CalendarDayDto>(
+      calendar.days.map((day) => [
+        day.businessDate,
+        { ...day, entries: [...day.entries] },
+      ]),
+    );
+    let pendingCount = 0;
+    for (const local of localRecords) {
+      if (!includeSynced && local.state === "synced") continue;
+      const record = local.record;
+      const plan = await this.localCache.getPlan(accountId, record.planId);
+      if (!plan || (groupId && plan.groupId !== groupId)) continue;
+      if (local.state !== "synced") pendingCount++;
+      const day = days.get(record.businessDate) ?? {
+        businessDate: record.businessDate,
+        entries: [],
+        counts: { success: 0, failure: 0, skip: 0, unrecorded: 0 },
+      };
+      const entry: CalendarEntryDto = {
+        planId: plan.id,
+        title: plan.title,
+        kind: plan.kind,
+        direction: plan.direction,
+        timezone: plan.timezone,
+        businessDate: record.businessDate,
+        status: record.result,
+        recordId: record.id,
+        ruleVersion: record.ruleVersion,
+        isBackfilled: record.isBackfilled,
+        isRevised: record.isRevised,
+      };
+      day.entries = [
+        ...day.entries.filter((item) => item.planId !== plan.id),
+        entry,
+      ];
+      day.counts = {
+        success: day.entries.filter((item) => item.status === "success").length,
+        failure: day.entries.filter((item) => item.status === "failure").length,
+        skip: day.entries.filter((item) => item.status === "skip").length,
+        unrecorded: day.entries.filter((item) => item.status === "unrecorded")
+          .length,
+      };
+      days.set(record.businessDate, day);
+    }
+    return {
+      ...calendar,
+      days: [...days.values()].sort((a, b) =>
+        a.businessDate.localeCompare(b.businessDate),
+      ),
+      pendingCount,
+    };
+  }
+
+  private async loadCalendar(
+    path: string,
+    key: string,
+    month: string,
+    groupId?: string,
+    planId?: string,
+  ): Promise<
+    CalendarMonthDto & { source: "server" | "local"; pendingCount: number }
+  > {
+    const accountId = this.accountId();
+    let calendar: CalendarMonthDto;
+    let source: "server" | "local";
+    try {
+      calendar = await this.api.get<CalendarMonthDto>(path);
+      source = "server";
+      if (accountId && this.localCache) {
+        try {
+          await this.localCache.saveCalendarSnapshot(accountId, key, calendar);
+        } catch {
+          /* Remote read remains usable. */
+        }
+      }
+    } catch (error) {
+      if (!(
+        error instanceof ApiRequestError &&
+        error.status === 0 &&
+        accountId &&
+        this.localCache
+      ))
+        throw error;
+      const snapshot = await this.localCache.calendarSnapshot(accountId, key);
+      if (!snapshot) throw error;
+      calendar = snapshot;
+      source = "local";
+    }
+    let merged: CalendarMonthDto & { pendingCount: number } = {
+      ...calendar,
+      pendingCount: 0,
+    };
+    if (accountId) {
+      try {
+        merged = await this.calendarWithLocal(
+          calendar,
+          accountId,
+          month,
+          groupId,
+          planId,
+          source === "local",
+        );
+      } catch (error) {
+        if (source === "local") throw error;
+      }
+    }
+    return { ...merged, source };
+  }
+
+  getCalendar(
+    month: string,
+    groupId?: string,
+  ): Promise<
+    CalendarMonthDto & { source: "server" | "local"; pendingCount: number }
+  > {
     const query = new URLSearchParams({ month });
     if (groupId) query.set("groupId", groupId);
-    return this.api.get(`/calendar?${query.toString()}`);
+    return this.loadCalendar(
+      `/calendar?${query.toString()}`,
+      `global:${groupId ?? "all"}:${month}`,
+      month,
+      groupId,
+    );
+  }
+  getPlanCalendar(
+    planId: string,
+    month: string,
+  ): Promise<
+    CalendarMonthDto & { source: "server" | "local"; pendingCount: number }
+  > {
+    return this.loadCalendar(
+      `/plans/${encodeURIComponent(planId)}/calendar?month=${encodeURIComponent(month)}`,
+      `plan:${planId}:${month}`,
+      month,
+      undefined,
+      planId,
+    );
   }
   async listPlans(): Promise<PlanDto[]> {
     return (await this.listPlansWithSource()).items;
@@ -469,8 +644,79 @@ export class HttpRepository implements AppRepository {
       throw error;
     }
   }
-  getPlanDetail(id: string): Promise<PlanDetailDto> {
-    return this.api.get(`/plans/${encodeURIComponent(id)}/detail`);
+  async getPlanDetail(
+    id: string,
+  ): Promise<
+    PlanDetailDto & { source: "server" | "local"; pendingCount: number }
+  > {
+    const accountId = this.accountId();
+    let detail: PlanDetailDto;
+    let source: "server" | "local";
+    try {
+      detail = await this.api.get<PlanDetailDto>(
+        `/plans/${encodeURIComponent(id)}/detail`,
+      );
+      source = "server";
+      if (accountId && this.localCache) {
+        try {
+          await this.localCache.savePlanDetailSnapshot(accountId, detail);
+        } catch {
+          /* Remote read remains usable. */
+        }
+      }
+    } catch (error) {
+      if (!(
+        error instanceof ApiRequestError &&
+        error.status === 0 &&
+        accountId &&
+        this.localCache
+      ))
+        throw error;
+      const snapshot = await this.localCache.planDetailSnapshot(accountId, id);
+      if (!snapshot) throw error;
+      detail = snapshot;
+      source = "local";
+    }
+    if (!accountId || !this.localCache)
+      return { ...detail, source, pendingCount: 0 };
+    let localRecords: {
+      record: CheckinDto;
+      state: "synced" | "local" | "syncing" | "failed" | "conflict";
+    }[] = [];
+    try {
+      localRecords = await this.localCache.checkinsForView(accountId, "", id);
+    } catch (error) {
+      if (source === "local") throw error;
+    }
+    const records = new Map(
+      detail.recentRecords.map((entry) => [entry.businessDate, entry]),
+    );
+    for (const local of localRecords) {
+      if (source === "server" && local.state === "synced") continue;
+      const record = local.record;
+      records.set(record.businessDate, {
+        planId: id,
+        title: detail.plan.title,
+        kind: detail.plan.kind,
+        direction: detail.plan.direction,
+        timezone: detail.plan.timezone,
+        businessDate: record.businessDate,
+        status: record.result,
+        recordId: record.id,
+        ruleVersion: record.ruleVersion,
+        isBackfilled: record.isBackfilled,
+        isRevised: record.isRevised,
+      });
+    }
+    return {
+      ...detail,
+      recentRecords: [...records.values()]
+        .sort((a, b) => b.businessDate.localeCompare(a.businessDate))
+        .slice(0, 30),
+      source,
+      pendingCount: localRecords.filter((item) => item.state !== "synced")
+        .length,
+    };
   }
   async getCheckin(planId: string, businessDate: string): Promise<CheckinDto> {
     const accountId = this.accountId();
@@ -577,6 +823,7 @@ export class HttpRepository implements AppRepository {
   async createPlan(input: CreatePlanRequest): Promise<PlanDto> {
     const plan = await this.api.post<PlanDto>("/plans", input);
     await this.cachePlans([plan]);
+    await this.invalidateLocalViews(plan.id);
     return plan;
   }
   async updatePlan(id: string, input: UpdatePlanRequest): Promise<PlanDto> {
@@ -585,6 +832,7 @@ export class HttpRepository implements AppRepository {
       input,
     );
     await this.cachePlans([plan]);
+    await this.invalidateLocalViews(plan.id);
     return plan;
   }
   async transitionPlan(
@@ -599,6 +847,7 @@ export class HttpRepository implements AppRepository {
       },
     );
     await this.cachePlans([plan]);
+    await this.invalidateLocalViews(plan.id);
     return plan;
   }
   async deletePlan(id: string, baseRevision: number): Promise<void> {

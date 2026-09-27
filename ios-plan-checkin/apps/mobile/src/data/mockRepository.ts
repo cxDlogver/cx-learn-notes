@@ -1,5 +1,7 @@
 import type {
   AuthTokens,
+  CalendarDayDto,
+  CalendarEntryDto,
   CalendarMonthDto,
   CheckinDto,
   CreateGroupRequest,
@@ -21,8 +23,12 @@ import type {
 import * as Crypto from "expo-crypto";
 import {
   businessDateAt,
+  fixedStatistics,
   isoWeekday,
+  oneTimeState,
   parseBusinessDate,
+  weeklyStatistics,
+  type PlanTimeline,
 } from "@plan-checkin/domain";
 import type { AppRepository, RecordSaveResult } from "./repository";
 import type { SessionGateway } from "./session";
@@ -53,6 +59,41 @@ export class MockRepository implements AppRepository {
     revision: 1,
   };
   constructor(private readonly plans: PlanDto[] = []) {}
+
+  private timeline(plan: PlanDto): PlanTimeline {
+    const startDate = parseBusinessDate(plan.startDate);
+    const rule =
+      plan.kind === "fixed" && plan.rule && "weekdays" in plan.rule
+        ? {
+            kind: "fixed" as const,
+            direction: plan.direction,
+            version: 1,
+            effectiveDate: startDate,
+            weekdays: plan.rule.weekdays,
+          }
+        : plan.kind === "weekly" && plan.rule && "weeklyTarget" in plan.rule
+          ? {
+              kind: "weekly" as const,
+              direction: plan.direction,
+              version: 1,
+              effectiveDate: startDate,
+              weeklyTarget: plan.rule.weeklyTarget,
+            }
+          : {
+              kind: "one_time" as const,
+              direction: "do" as const,
+              version: 1,
+              effectiveDate: startDate,
+            };
+    return {
+      timezone: plan.timezone,
+      startDate,
+      endDate: plan.endDate ? parseBusinessDate(plan.endDate) : null,
+      dueDate: plan.dueDate ? parseBusinessDate(plan.dueDate) : null,
+      rules: [rule],
+      lifecycleEvents: [],
+    };
+  }
 
   async createSmsChallenge(_phone: string): Promise<SmsChallengeDto> {
     return {
@@ -163,12 +204,92 @@ export class MockRepository implements AppRepository {
     month: string,
     groupId?: string,
   ): Promise<CalendarMonthDto> {
+    const today = businessDateAt(new Date(), "Asia/Shanghai");
+    const year = Number(month.slice(0, 4));
+    const value = Number(month.slice(5, 7));
+    const daysInMonth = new Date(Date.UTC(year, value, 0)).getUTCDate();
+    const days: CalendarDayDto[] = [];
+    for (let number = 1; number <= daysInMonth; number++) {
+      const date = `${month}-${String(number).padStart(2, "0")}`;
+      const entries: CalendarEntryDto[] = [];
+      for (const plan of this.plans) {
+        if (groupId && plan.groupId !== groupId) continue;
+        if (plan.startDate > date || (plan.endDate && plan.endDate < date))
+          continue;
+        const record = this.records.get(`${plan.id}:${date}`);
+        const due =
+          plan.kind === "fixed" &&
+          plan.rule &&
+          "weekdays" in plan.rule &&
+          plan.rule.weekdays.includes(isoWeekday(parseBusinessDate(date)));
+        if (!record && !due) continue;
+        entries.push({
+          planId: plan.id,
+          title: plan.title,
+          kind: plan.kind,
+          direction: plan.direction,
+          timezone: plan.timezone,
+          businessDate: date,
+          status:
+            record?.result ??
+            (date < today ? "unrecorded" : date === today ? "due" : "future"),
+          recordId: record?.id ?? null,
+          ruleVersion: record?.ruleVersion ?? plan.ruleVersion,
+          isBackfilled: record?.isBackfilled ?? false,
+          isRevised: record?.isRevised ?? false,
+        });
+      }
+      if (entries.length)
+        days.push({
+          businessDate: date,
+          entries,
+          counts: {
+            success: entries.filter((entry) => entry.status === "success")
+              .length,
+            failure: entries.filter((entry) => entry.status === "failure")
+              .length,
+            skip: entries.filter((entry) => entry.status === "skip").length,
+            unrecorded: entries.filter((entry) => entry.status === "unrecorded")
+              .length,
+          },
+        });
+    }
     return {
       month,
       dateSemantics: "plan_business_date",
       groupId: groupId ?? null,
-      days: [],
+      days,
       weeklySummaries: [],
+    };
+  }
+  async getPlanCalendar(
+    planId: string,
+    month: string,
+  ): Promise<CalendarMonthDto> {
+    const calendar = await this.getCalendar(month);
+    return {
+      ...calendar,
+      days: calendar.days
+        .map((day) => {
+          const entries = day.entries.filter(
+            (entry) => entry.planId === planId,
+          );
+          return {
+            ...day,
+            entries,
+            counts: {
+              success: entries.filter((entry) => entry.status === "success")
+                .length,
+              failure: entries.filter((entry) => entry.status === "failure")
+                .length,
+              skip: entries.filter((entry) => entry.status === "skip").length,
+              unrecorded: entries.filter(
+                (entry) => entry.status === "unrecorded",
+              ).length,
+            },
+          };
+        })
+        .filter((day) => day.entries.length > 0),
     };
   }
   async listPlans(): Promise<PlanDto[]> {
@@ -183,8 +304,74 @@ export class MockRepository implements AppRepository {
     return plan;
   }
   async getPlanDetail(id: string): Promise<PlanDetailDto> {
-    await this.getPlan(id);
-    throw new Error("请为此计划提供详情 fixture");
+    const plan = await this.getPlan(id);
+    const now = new Date().toISOString();
+    const today = businessDateAt(new Date(), plan.timezone);
+    const records = [...this.records.values()].filter(
+      (item) => item.planId === id,
+    );
+    const facts = records.map((item) => ({
+      businessDate: parseBusinessDate(item.businessDate),
+      result: item.result,
+      ruleVersion: 1,
+    }));
+    const timeline = this.timeline(plan);
+    const base = {
+      planId: id,
+      timezone: plan.timezone,
+      statisticsThroughBusinessDate: today,
+      ruleVersions: [plan.ruleVersion],
+    };
+    const resolution = this.resolutions.get(id) ?? null;
+    const statistics: PlanDetailDto["statistics"] =
+      plan.kind === "fixed"
+        ? { kind: "fixed", ...base, ...fixedStatistics(timeline, facts, now) }
+        : plan.kind === "weekly"
+          ? {
+              kind: "weekly",
+              ...base,
+              ...weeklyStatistics(timeline, facts, now),
+            }
+          : {
+              kind: "one_time",
+              ...base,
+              dueDate: plan.dueDate!,
+              state: oneTimeState(
+                timeline,
+                resolution
+                  ? {
+                      resolution: resolution.resolution,
+                      resolvedAt: resolution.resolvedAt,
+                      revision: resolution.revision,
+                    }
+                  : null,
+                now,
+              ),
+              resolution,
+            };
+    return {
+      plan,
+      statistics,
+      todayStatus:
+        records.find((item) => item.businessDate === today)?.result ??
+        "not_due",
+      recentRecords: records
+        .sort((a, b) => b.businessDate.localeCompare(a.businessDate))
+        .slice(0, 30)
+        .map((item) => ({
+          planId: id,
+          title: plan.title,
+          kind: plan.kind,
+          direction: plan.direction,
+          timezone: plan.timezone,
+          businessDate: item.businessDate,
+          status: item.result,
+          recordId: item.id,
+          ruleVersion: item.ruleVersion,
+          isBackfilled: item.isBackfilled,
+          isRevised: item.isRevised,
+        })),
+    };
   }
   async getCheckin(planId: string, businessDate: string): Promise<CheckinDto> {
     const record = this.records.get(`${planId}:${businessDate}`);
