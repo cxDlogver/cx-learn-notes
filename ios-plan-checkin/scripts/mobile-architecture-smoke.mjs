@@ -22,6 +22,14 @@ async function load(path) {
 
 const { SessionManager } = await load("apps/mobile/src/data/session.ts");
 const { parseAppLink } = await load("apps/mobile/src/navigation/links.ts");
+const {
+  normalizePhone,
+  phonePattern,
+  maskPhone,
+  validUsername,
+  validNickname,
+  remainingSeconds,
+} = await load("apps/mobile/src/viewmodel/auth.ts");
 const memory = () => {
   let value = null;
   return {
@@ -87,6 +95,16 @@ const invalid = new SessionManager(
 await invalid.restore();
 assert.equal(invalid.getSnapshot().phase, "unauthenticated");
 assert.equal(await invalidStore.read(), null);
+
+assert.equal(normalizePhone("138 0012 3456"), "13800123456");
+assert.equal(phonePattern.test(normalizePhone("138 0012 3456")), true);
+assert.equal(phonePattern.test("12800123456"), false);
+assert.equal(maskPhone("13800123456"), "138****3456");
+assert.equal(validUsername("晨跑者_01"), true);
+assert.equal(validUsername("ab!"), false);
+assert.equal(validNickname("林晓"), true);
+assert.equal(validNickname(" "), false);
+assert.equal(remainingSeconds(1_999, 1_000), 1);
 
 const planId = "01234567-89ab-4def-8abc-0123456789ab";
 assert.deepEqual(parseAppLink(`plancheckin://plan/${planId}`), {

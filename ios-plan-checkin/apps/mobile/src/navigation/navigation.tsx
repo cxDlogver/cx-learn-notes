@@ -12,6 +12,8 @@ import {
   createNavigationContainerRef,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useQuery } from "@tanstack/react-query";
+import type { SmsChallengeDto } from "@plan-checkin/contracts";
 import { penColors } from "@plan-checkin/design-tokens";
 import {
   ActivityIndicator,
@@ -22,10 +24,12 @@ import {
 } from "react-native";
 import { useAppServices } from "../data/services";
 import { nativeLinks } from "../platform/links";
+import { PhoneLoginScreen } from "../screens/auth/PhoneLoginScreen";
+import { ProfileSetupScreen } from "../screens/auth/ProfileSetupScreen";
+import { SmsCodeScreen } from "../screens/auth/SmsCodeScreen";
 import {
   CalendarEntry,
   FriendsEntry,
-  LoginEntry,
   PlansEntry,
   SettingsEntry,
   Shell,
@@ -45,7 +49,11 @@ export type RootStackParamList = {
   Checkin: { planId: string; businessDate: string };
   Settings: undefined;
 };
-type AuthStackParamList = { PhoneLogin: undefined };
+export type AuthStackParamList = {
+  PhoneLogin: undefined;
+  SmsCode: { phone: string; challenge: SmsChallengeDto };
+  ProfileSetup: undefined;
+};
 
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -139,12 +147,23 @@ export function AppNavigation() {
     session.getSnapshot,
     session.getSnapshot,
   );
+  const profile = useQuery({
+    queryKey: ["me", snapshot.userId],
+    queryFn: () => repository.getMe(),
+    enabled: snapshot.phase === "authenticated",
+  });
   const pending = useRef<AppLink | null>(null);
   const opening = useRef(false);
   const cachedUser = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const phase = useRef(snapshot.phase);
   phase.current = snapshot.phase;
+  const profileReady = useRef(
+    Boolean(profile.data?.username && profile.data.nickname),
+  );
+  profileReady.current = Boolean(
+    profile.data?.username && profile.data.nickname,
+  );
 
   const openPending = useCallback(async () => {
     const link = pending.current;
@@ -152,6 +171,7 @@ export function AppNavigation() {
       !link ||
       opening.current ||
       phase.current !== "authenticated" ||
+      !profileReady.current ||
       !ready ||
       !navigationRef.isReady()
     )
@@ -208,7 +228,12 @@ export function AppNavigation() {
   }, []);
   useEffect(() => {
     void openPending();
-  }, [openPending, snapshot.phase]);
+  }, [
+    openPending,
+    snapshot.phase,
+    profile.data?.username,
+    profile.data?.nickname,
+  ]);
   useEffect(() => {
     if (snapshot.phase === "unauthenticated") queryClient.clear();
   }, [queryClient, snapshot.phase]);
@@ -232,6 +257,23 @@ export function AppNavigation() {
         retry={() => void session.restore()}
       />
     );
+  if (snapshot.phase === "authenticated" && profile.isPending)
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ActivityIndicator style={styles.loading} color={penColors.primary} />
+      </SafeAreaView>
+    );
+  if (snapshot.phase === "authenticated" && profile.isError)
+    return (
+      <Shell
+        title="暂时无法读取资料"
+        body="请检查网络后重试。"
+        retry={() => void profile.refetch()}
+      />
+    );
+  const needsProfile =
+    snapshot.phase === "authenticated" &&
+    (!profile.data?.username || !profile.data.nickname);
   return (
     <NavigationContainer
       ref={navigationRef}
@@ -240,14 +282,25 @@ export function AppNavigation() {
         void openPendingRef.current();
       }}
     >
-      {snapshot.phase === "authenticated" ? (
+      {snapshot.phase === "authenticated" && !needsProfile ? (
         <MainStack />
+      ) : snapshot.phase === "authenticated" && profile.data ? (
+        <AuthStack.Navigator>
+          <AuthStack.Screen name="ProfileSetup" options={{ title: "完善资料" }}>
+            {() => <ProfileSetupScreen user={profile.data} />}
+          </AuthStack.Screen>
+        </AuthStack.Navigator>
       ) : (
         <AuthStack.Navigator>
           <AuthStack.Screen
             name="PhoneLogin"
-            component={LoginEntry}
+            component={PhoneLoginScreen}
             options={{ headerShown: false }}
+          />
+          <AuthStack.Screen
+            name="SmsCode"
+            component={SmsCodeScreen}
+            options={{ title: "输入验证码" }}
           />
         </AuthStack.Navigator>
       )}

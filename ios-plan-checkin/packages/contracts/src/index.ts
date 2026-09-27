@@ -178,6 +178,15 @@ export interface SmsVerifyRequest {
   challengeId: Uuid;
   code: string;
 }
+export interface SmsChallengeDto {
+  challengeId: Uuid;
+  expiresAt: UtcInstant;
+  resendAfterSeconds: number;
+}
+export interface UsernameAvailabilityDto {
+  available: boolean;
+  normalized: string;
+}
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

@@ -144,6 +144,17 @@ export class ProfileService {
           "DELETE FROM idempotency_keys WHERE user_id = $1 AND key = $2 AND expires_at <= now()",
           [userId, idempotencyKey],
         );
+        if (username !== undefined) {
+          const current = await client.query<{ username: string | null }>(
+            "SELECT username FROM users WHERE id = $1 FOR UPDATE",
+            [userId],
+          );
+          if (
+            current.rows[0]?.username &&
+            current.rows[0].username !== username
+          )
+            fail("FORBIDDEN", 403, "用户名设置后不可修改");
+        }
         if (input.avatarMediaId) {
           const media = await client.query(
             "SELECT id FROM media WHERE id = $1 AND owner_id = $2 AND status = 'ready'",

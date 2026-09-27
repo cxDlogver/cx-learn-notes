@@ -48,6 +48,14 @@ export function createAppServices(): AppServices {
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (!__DEV__ && (!configured || !configured.startsWith("https://")))
     throw new Error("Release 构建必须设置 HTTPS 的 EXPO_PUBLIC_API_BASE_URL");
+  if (
+    !__DEV__ &&
+    ![
+      process.env.EXPO_PUBLIC_TERMS_URL,
+      process.env.EXPO_PUBLIC_PRIVACY_URL,
+    ].every((url) => url?.startsWith("https://"))
+  )
+    throw new Error("Release 构建必须配置 HTTPS 服务协议与隐私政策地址");
   const baseUrl = configured ?? "http://127.0.0.1:3000/api/v1";
   const api = new ApiClient(baseUrl.replace(/\/$/, ""));
   const session = new SessionManager(

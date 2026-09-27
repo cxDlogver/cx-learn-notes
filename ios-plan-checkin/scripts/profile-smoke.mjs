@@ -75,6 +75,14 @@ try {
   );
   assert.equal(updated.username, "晨跑者");
   assert.equal(updated.revision, 2);
+  await assert.rejects(
+    profile.updateMe(
+      first.userId,
+      { username: "另一个用户名", baseRevision: 2 },
+      randomUUID(),
+    ),
+    /用户名设置后不可修改/,
+  );
   assert.deepEqual(
     await profile.updateMe(
       first.userId,

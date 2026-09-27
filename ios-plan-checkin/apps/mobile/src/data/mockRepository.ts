@@ -3,7 +3,10 @@ import type {
   CalendarMonthDto,
   PlanDetailDto,
   PlanDto,
+  SmsChallengeDto,
   TodayDto,
+  UserDto,
+  UsernameAvailabilityDto,
 } from "@plan-checkin/contracts";
 import type { AppRepository } from "./repository";
 import type { SessionGateway } from "./session";
@@ -22,7 +25,54 @@ export class MockSessionGateway implements SessionGateway {
 }
 
 export class MockRepository implements AppRepository {
+  private user: UserDto = {
+    id: "00000000-0000-4000-8000-000000000001",
+    username: "demo_user",
+    nickname: "演示用户",
+    avatarMediaId: null,
+    accountStatus: "active",
+    revision: 1,
+  };
   constructor(private readonly plans: PlanDto[] = []) {}
+
+  async createSmsChallenge(_phone: string): Promise<SmsChallengeDto> {
+    return {
+      challengeId: "00000000-0000-4000-8000-000000000002",
+      expiresAt: new Date(Date.now() + 300_000).toISOString(),
+      resendAfterSeconds: 60,
+    };
+  }
+  async verifySms(_challengeId: string, code: string): Promise<AuthTokens> {
+    if (code !== "123456") throw new Error("验证码不正确");
+    return {
+      accessToken: "mock-access",
+      refreshToken: "mock-refresh",
+      accessExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+      userId: this.user.id,
+      isNewUser: false,
+    };
+  }
+  async getMe(): Promise<UserDto> {
+    return this.user;
+  }
+  async checkUsername(username: string): Promise<UsernameAvailabilityDto> {
+    return { available: true, normalized: username.trim() };
+  }
+  async updateMe(input: {
+    username: string;
+    nickname: string;
+    baseRevision: number;
+  }): Promise<UserDto> {
+    if (input.baseRevision !== this.user.revision)
+      throw new Error("资料已变化");
+    this.user = {
+      ...this.user,
+      username: input.username,
+      nickname: input.nickname,
+      revision: this.user.revision + 1,
+    };
+    return this.user;
+  }
 
   async getToday(): Promise<TodayDto> {
     return {

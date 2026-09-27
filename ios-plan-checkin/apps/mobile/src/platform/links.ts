@@ -3,6 +3,7 @@ import { Linking } from "react-native";
 export interface LinkSource {
   initialUrl(): Promise<string | null>;
   subscribe(listener: (url: string) => void): () => void;
+  openExternal(url: string): Promise<void>;
 }
 
 export const nativeLinks: LinkSource = {
@@ -13,4 +14,5 @@ export const nativeLinks: LinkSource = {
     );
     return () => subscription.remove();
   },
+  openExternal: (url) => Linking.openURL(url),
 };

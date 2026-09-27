@@ -5,11 +5,15 @@ import type {
   CalendarMonthDto,
   PlanDetailDto,
   PlanDto,
+  SmsChallengeDto,
+  UserDto,
+  UsernameAvailabilityDto,
   TodayDto,
 } from "@plan-checkin/contracts";
 import * as Crypto from "expo-crypto";
 import type { SessionGateway } from "./session";
 import { SessionManager } from "./session";
+import { deviceId } from "../platform/deviceId";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -23,6 +27,19 @@ export class ApiRequestError extends Error {
 }
 
 export interface AppRepository {
+  createSmsChallenge(phone: string): Promise<SmsChallengeDto>;
+  verifySms(
+    challengeId: string,
+    code: string,
+    idempotencyKey: string,
+  ): Promise<AuthTokens>;
+  getMe(): Promise<UserDto>;
+  checkUsername(username: string): Promise<UsernameAvailabilityDto>;
+  updateMe(input: {
+    username: string;
+    nickname: string;
+    baseRevision: number;
+  }): Promise<UserDto>;
   getToday(): Promise<TodayDto>;
   getCalendar(month: string, groupId?: string): Promise<CalendarMonthDto>;
   listPlans(): Promise<PlanDto[]>;
@@ -112,10 +129,86 @@ export class ApiClient implements SessionGateway {
       }
     }
   }
+
+  postWithoutSession<T>(
+    path: string,
+    body: unknown,
+    headers: Record<string, string> = {},
+  ): Promise<T> {
+    return this.send<T>(path, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: { "Idempotency-Key": Crypto.randomUUID(), ...headers },
+    });
+  }
+
+  async patch<T>(path: string, body: unknown): Promise<T> {
+    if (!this.session) throw new Error("SessionManager 尚未接入");
+    const options: RequestInit = {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: { "Idempotency-Key": Crypto.randomUUID() },
+    };
+    const accessToken = await this.session.accessToken();
+    try {
+      return await this.send<T>(path, options, accessToken);
+    } catch (error) {
+      if (!(error instanceof ApiRequestError) || error.status !== 401)
+        throw error;
+      try {
+        return await this.send<T>(
+          path,
+          options,
+          await this.session.accessToken(true),
+        );
+      } catch (retryError) {
+        if (retryError instanceof ApiRequestError && retryError.status === 401)
+          await this.session.clear();
+        throw retryError;
+      }
+    }
+  }
 }
 
 export class HttpRepository implements AppRepository {
   constructor(private readonly api: ApiClient) {}
+
+  createSmsChallenge(phone: string): Promise<SmsChallengeDto> {
+    return this.api.postWithoutSession("/auth/sms/challenges", {
+      countryCode: "+86",
+      phone,
+      purpose: "login",
+    });
+  }
+  async verifySms(
+    challengeId: string,
+    code: string,
+    idempotencyKey: string,
+  ): Promise<AuthTokens> {
+    return this.api.postWithoutSession(
+      "/auth/sms/verify",
+      { challengeId, code },
+      {
+        "X-Device-Id": await deviceId(),
+        "Idempotency-Key": idempotencyKey,
+      },
+    );
+  }
+  getMe(): Promise<UserDto> {
+    return this.api.get("/me");
+  }
+  checkUsername(username: string): Promise<UsernameAvailabilityDto> {
+    return this.api.get(
+      `/usernames/availability?username=${encodeURIComponent(username)}`,
+    );
+  }
+  updateMe(input: {
+    username: string;
+    nickname: string;
+    baseRevision: number;
+  }): Promise<UserDto> {
+    return this.api.patch("/me", input);
+  }
 
   getToday(): Promise<TodayDto> {
     return this.api.get("/today");

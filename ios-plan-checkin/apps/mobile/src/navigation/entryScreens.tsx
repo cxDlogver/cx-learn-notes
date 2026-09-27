@@ -133,34 +133,6 @@ export function SettingsEntry() {
   );
 }
 
-export function LoginEntry() {
-  const { mockMode, session } = useAppServices();
-  return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.content}>
-        <Text style={styles.title}>手机号登录</Text>
-        <Text style={styles.body}>
-          请输入手机号以继续。登录表单将在 APP-02 接入。
-        </Text>
-        {mockMode ? (
-          <Button
-            title="进入导航样板"
-            onPress={() =>
-              void session.adopt({
-                accessToken: "mock-access",
-                refreshToken: "mock-refresh",
-                accessExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-                userId: "00000000-0000-4000-8000-000000000001",
-                isNewUser: false,
-              })
-            }
-          />
-        ) : null}
-      </View>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: penColors.background },
   content: { flex: 1, paddingHorizontal: 24, justifyContent: "center" },
