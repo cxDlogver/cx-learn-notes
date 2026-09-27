@@ -34,3 +34,10 @@
 - 新增 `OBJECT_PUBLIC_ENDPOINT` 用于手机可访问的签名 URL，`OBJECT_ENDPOINT` 用于 API/Worker 内网访问；生产环境两者必须为 HTTPS。新库迁移 `0007_media_cleanup.sql` 增加对象清理时间戳与扫描索引。
 
 开发自检由 `pnpm media:smoke`、`pnpm mobile:local-schema:smoke` 与 `pnpm mobile:bundle:check` 执行；真实 MinIO、iOS 相册权限、弱网和后台恢复留待有设备的阶段验证。
+
+## SOC-03 好友与分享客户端
+
+- 新增 `POST /api/v1/friend-requests/{id}/reject`，仅接收人可拒绝待处理申请。返回既有 `FriendRequestDto`，状态为 `rejected`；重复幂等键返回相同结果，已变化申请返回 `RULE_CHANGED`。
+- 客户端六页使用现有好友、逐计划授权和只读历史接口；开启分享必须先取得绑定当前内容的预览凭证。取消分享和删除/屏蔽好友后清除相关本机查询缓存。好友只读页只消费服务端的 `SharedHistoryDto` 白名单，不请求本人的记录或私人照片接口。
+
+开发自检由 `pnpm social:smoke`、`pnpm shares:smoke` 与 `pnpm mobile:bundle:check` 执行；Pen 截图与 VoiceOver 真机核对留待后续验证。

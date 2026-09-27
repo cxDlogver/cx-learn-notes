@@ -47,8 +47,16 @@ import {
 } from "../screens/today/RecordEditorScreen";
 import { RecordConflictScreen } from "../screens/today/RecordConflictScreen";
 import { SyncFeedbackScreen } from "../screens/today/SyncFeedbackScreen";
+import {
+  FriendsListScreen,
+  FriendProfileScreen,
+  SharedPlanDetailScreen,
+  SelectShareFriendScreen,
+  SharePreviewScreen,
+  SharePermissionsScreen,
+} from "../screens/social/SocialScreens";
 import type { PlanDraft } from "../screens/plans/planForm";
-import { FriendsEntry, SettingsEntry, Shell } from "./entryScreens";
+import { SettingsEntry, Shell } from "./entryScreens";
 import { parseAppLink, type AppLink } from "./links";
 
 export type MainTabParamList = {
@@ -75,6 +83,11 @@ export type RootStackParamList = {
   EditPlan: { planId: string };
   GroupManagement: undefined;
   PlanConfirmations: { planId: string };
+  FriendProfile: { friendId: string };
+  SharedPlanDetail: { planId: string; friendId: string };
+  SelectShareFriend: { planId: string };
+  SharePreview: { planId: string; friendId: string };
+  SharePermissions: { friendId: string };
 };
 export type AuthStackParamList = {
   PhoneLogin: undefined;
@@ -133,7 +146,7 @@ function MainTabs() {
       />
       <Tabs.Screen
         name="Friends"
-        component={FriendsEntry}
+        component={FriendsListScreen}
         options={{ title: "朋友" }}
       />
     </Tabs.Navigator>
@@ -230,6 +243,26 @@ function MainStack() {
             onDone={() => navigation.goBack()}
           />
         )}
+      </RootStack.Screen>
+      <RootStack.Screen name="FriendProfile" options={{ title: "朋友主页" }}>
+        {({ route }) => (
+          <FriendProfileScreen friendId={route.params.friendId} />
+        )}
+      </RootStack.Screen>
+      <RootStack.Screen name="SharedPlanDetail" options={{ title: "好友计划" }}>
+        {({ route }) => <SharedPlanDetailScreen {...route.params} />}
+      </RootStack.Screen>
+      <RootStack.Screen
+        name="SelectShareFriend"
+        options={{ title: "选择好友" }}
+      >
+        {({ route }) => <SelectShareFriendScreen {...route.params} />}
+      </RootStack.Screen>
+      <RootStack.Screen name="SharePreview" options={{ title: "分享预览" }}>
+        {({ route }) => <SharePreviewScreen {...route.params} />}
+      </RootStack.Screen>
+      <RootStack.Screen name="SharePermissions" options={{ title: "分享权限" }}>
+        {({ route }) => <SharePermissionsScreen {...route.params} />}
       </RootStack.Screen>
     </RootStack.Navigator>
   );

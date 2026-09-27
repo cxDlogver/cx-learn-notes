@@ -19,6 +19,13 @@ import type {
   UsernameAvailabilityDto,
   UpdateGroupRequest,
   UpdatePlanRequest,
+  FriendRequestDto,
+  FriendRequestsDto,
+  PlanShareDto,
+  SharePreviewDto,
+  SharedHistoryDto,
+  SharedPlanDto,
+  SocialUserDto,
 } from "@plan-checkin/contracts";
 import * as Crypto from "expo-crypto";
 import {
@@ -50,6 +57,9 @@ export class MockRepository implements AppRepository {
   private groups: GroupDto[] = [];
   private records = new Map<string, CheckinDto>();
   private resolutions = new Map<string, OneTimeResolutionDto>();
+  private friends: SocialUserDto[] = [];
+  private friendRequests: FriendRequestsDto = { incoming: [], outgoing: [] };
+  private shares: PlanShareDto[] = [];
   private user: UserDto = {
     id: "00000000-0000-4000-8000-000000000001",
     username: "demo_user",
@@ -449,6 +459,85 @@ export class MockRepository implements AppRepository {
           ...record,
           mediaIds: record.mediaIds.filter((id) => id !== mediaId),
         });
+  }
+  async searchUsers(_username: string): Promise<SocialUserDto[]> {
+    return [];
+  }
+  async listFriends(): Promise<SocialUserDto[]> {
+    return [...this.friends];
+  }
+  async listFriendRequests(): Promise<FriendRequestsDto> {
+    return this.friendRequests;
+  }
+  async requestFriend(_receiverId: string): Promise<FriendRequestDto> {
+    throw new Error("演示数据没有可申请的用户");
+  }
+  async acceptFriendRequest(requestId: string): Promise<FriendRequestDto> {
+    const item = this.friendRequests.incoming.find(
+      (row) => row.id === requestId,
+    );
+    if (!item) throw new Error("申请不存在");
+    this.friendRequests.incoming = this.friendRequests.incoming.filter(
+      (row) => row.id !== requestId,
+    );
+    this.friends.push(item.sender);
+    return {
+      ...item,
+      status: "accepted",
+      respondedAt: new Date().toISOString(),
+    };
+  }
+  async rejectFriendRequest(requestId: string): Promise<FriendRequestDto> {
+    const item = this.friendRequests.incoming.find(
+      (row) => row.id === requestId,
+    );
+    if (!item) throw new Error("申请不存在");
+    this.friendRequests.incoming = this.friendRequests.incoming.filter(
+      (row) => row.id !== requestId,
+    );
+    return {
+      ...item,
+      status: "rejected",
+      respondedAt: new Date().toISOString(),
+    };
+  }
+  async removeFriend(friendId: string): Promise<void> {
+    this.friends = this.friends.filter((item) => item.id !== friendId);
+    this.shares = this.shares.filter((item) => item.friend.id !== friendId);
+  }
+  async blockFriend(friendId: string): Promise<void> {
+    await this.removeFriend(friendId);
+  }
+  async listFriendPlans(_friendId: string): Promise<SharedPlanDto[]> {
+    return [];
+  }
+  async getSharedHistory(
+    _planId: string,
+    _month?: string,
+  ): Promise<SharedHistoryDto> {
+    throw new Error("演示数据没有好友分享记录");
+  }
+  async getSharePreview(
+    _planId: string,
+    _friendId: string,
+    _month: string,
+  ): Promise<SharePreviewDto> {
+    throw new Error("演示数据不提供分享预览");
+  }
+  async listPlanShares(planId: string): Promise<PlanShareDto[]> {
+    return this.shares.filter((item) => item.planId === planId);
+  }
+  async sharePlan(
+    _planId: string,
+    _friendId: string,
+    _previewToken: string,
+  ): Promise<PlanShareDto> {
+    throw new Error("演示数据不提供分享授权");
+  }
+  async revokePlanShare(planId: string, friendId: string): Promise<void> {
+    this.shares = this.shares.filter(
+      (item) => item.planId !== planId || item.friend.id !== friendId,
+    );
   }
   async listGroups(): Promise<GroupDto[]> {
     return this.groups.slice();

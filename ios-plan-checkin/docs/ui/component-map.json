@@ -1992,8 +1992,8 @@
       "key": "friends-list",
       "frameId": "XD1pp",
       "referenceImage": "uxpilot-export-09-27-26_09.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/social/SocialScreens.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "mFYze",
@@ -2017,8 +2017,8 @@
         },
         {
           "nodeId": "P20Yhb",
-          "component": null,
-          "testID": null
+          "component": "FriendsListScreen",
+          "testID": "friends.title"
         },
         {
           "nodeId": "P0A6k",
@@ -2027,8 +2027,8 @@
         },
         {
           "nodeId": "LOmDU",
-          "component": null,
-          "testID": null
+          "component": "FriendsListScreen",
+          "testID": "friends.search.input"
         },
         {
           "nodeId": "Rgaj9",
@@ -2052,8 +2052,8 @@
         },
         {
           "nodeId": "FHuv9",
-          "component": null,
-          "testID": null
+          "component": "FriendsListScreen",
+          "testID": "friends.incoming.title"
         },
         {
           "nodeId": "w7Wv9r",
@@ -2126,8 +2126,8 @@
       "key": "friend-profile",
       "frameId": "N1euu",
       "referenceImage": "uxpilot-export-09-27-26_19.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/social/SocialScreens.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "M1rh4U",
@@ -2156,8 +2156,8 @@
         },
         {
           "nodeId": "t8IwDo",
-          "component": null,
-          "testID": null
+          "component": "FriendProfileScreen",
+          "testID": "friend-profile.title"
         },
         {
           "nodeId": "yLf5d",
@@ -2196,8 +2196,8 @@
         },
         {
           "nodeId": "uxuGm",
-          "component": null,
-          "testID": null
+          "component": "FriendProfileScreen",
+          "testID": "friend-profile.sent"
         },
         {
           "nodeId": "SfyqS",
@@ -2245,8 +2245,8 @@
       "key": "friend-readonly-detail",
       "frameId": "TeTWC",
       "referenceImage": "uxpilot-export-09-27-26_28.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/social/SocialScreens.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "LYDlm",
@@ -2275,8 +2275,8 @@
         },
         {
           "nodeId": "hax0q",
-          "component": null,
-          "testID": null
+          "component": "SharedPlanDetailScreen",
+          "testID": "shared-detail.title"
         },
         {
           "nodeId": "vg7Bl",
@@ -2285,8 +2285,8 @@
         },
         {
           "nodeId": "w1vDS",
-          "component": null,
-          "testID": null
+          "component": "SharedPlanDetailScreen",
+          "testID": "shared-detail.readonly"
         },
         {
           "nodeId": "o9e35b",
@@ -2359,8 +2359,8 @@
       "key": "select-share-friend",
       "frameId": "GOzpS",
       "referenceImage": "uxpilot-export-09-27-26_05.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/social/SocialScreens.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "d2IeCU",
@@ -2389,8 +2389,8 @@
         },
         {
           "nodeId": "bZtBt",
-          "component": null,
-          "testID": null
+          "component": "SelectShareFriendScreen",
+          "testID": "share-select.title"
         },
         {
           "nodeId": "Bo98E",
@@ -2404,8 +2404,8 @@
         },
         {
           "nodeId": "KVK3i",
-          "component": null,
-          "testID": null
+          "component": "SelectShareFriendScreen",
+          "testID": "share-select.search"
         },
         {
           "nodeId": "FgEOB",
@@ -2429,8 +2429,8 @@
         },
         {
           "nodeId": "Rf6AE",
-          "component": null,
-          "testID": null
+          "component": "SelectShareFriendScreen",
+          "testID": "share-select.next"
         }
       ]
     },
@@ -2438,8 +2438,8 @@
       "key": "share-preview",
       "frameId": "MMIhD",
       "referenceImage": "uxpilot-export-09-27-26_25.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/social/SocialScreens.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "PRoEb",
@@ -2468,8 +2468,8 @@
         },
         {
           "nodeId": "yngBH",
-          "component": null,
-          "testID": null
+          "component": "SharePreviewScreen",
+          "testID": "share-preview.title"
         },
         {
           "nodeId": "mT57K",
@@ -2498,13 +2498,13 @@
         },
         {
           "nodeId": "cCOAS",
-          "component": null,
-          "testID": null
+          "component": "SharePreviewScreen",
+          "testID": "share-preview.private"
         },
         {
           "nodeId": "Z8ftAq",
-          "component": null,
-          "testID": null
+          "component": "SharePreviewScreen",
+          "testID": "share-preview.confirm"
         },
         {
           "nodeId": "pCfUq",
@@ -2517,8 +2517,8 @@
       "key": "share-permissions",
       "frameId": "N7LC5V",
       "referenceImage": "uxpilot-export-09-27-26_16.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/social/SocialScreens.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "os9ZK",
@@ -2547,8 +2547,8 @@
         },
         {
           "nodeId": "JoZRx",
-          "component": null,
-          "testID": null
+          "component": "SharePermissionsScreen",
+          "testID": "share-permissions.title"
         },
         {
           "nodeId": "JYeHD",
@@ -2602,8 +2602,8 @@
         },
         {
           "nodeId": "g0I7A",
-          "component": null,
-          "testID": null
+          "component": "SharePermissionsScreen",
+          "testID": "share-permissions.warning"
         }
       ]
     },

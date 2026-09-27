@@ -101,6 +101,23 @@ export class FriendRequestsController {
       request,
     );
   }
+
+  @Post(":id/reject")
+  async reject(
+    @Headers("authorization") bearer: string,
+    @Headers("idempotency-key") key: string,
+    @Param("id") id: string,
+    @Req() request: RequestLike,
+  ): Promise<ApiSuccess<FriendRequestDto>> {
+    return ok(
+      await this.social.reject(
+        await this.auth.authenticate(bearer ?? ""),
+        id,
+        key,
+      ),
+      request,
+    );
+  }
 }
 
 @Controller("friends")

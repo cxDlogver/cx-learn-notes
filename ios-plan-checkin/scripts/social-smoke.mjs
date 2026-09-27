@@ -123,6 +123,21 @@ try {
   );
   assert.equal((await social.friends(alice)).length, 0);
   assert.equal((await social.search(alice, "bob")).length, 1);
+  const rejectedRequest = await social.request(alice, charlie, randomUUID());
+  await assert.rejects(
+    social.reject(alice, rejectedRequest.id, randomUUID()),
+    /好友申请不存在/,
+  );
+  assert.equal(
+    (await social.reject(charlie, rejectedRequest.id, randomUUID())).status,
+    "rejected",
+  );
+  assert.equal((await social.requests(charlie)).incoming.length, 0);
+  await assert.rejects(
+    social.accept(charlie, rejectedRequest.id, randomUUID()),
+    /好友申请状态已变化/,
+  );
+  assert.equal((await social.friends(charlie)).length, 0);
   process.stdout.write("Social relation smoke passed.\n");
 } finally {
   await pg.close();

@@ -944,6 +944,7 @@ const responseData = {
   listFriendRequests: ref("FriendRequests"),
   createFriendRequest: ref("FriendRequest"),
   acceptFriendRequest: ref("FriendRequest"),
+  rejectFriendRequest: ref("FriendRequest"),
   getSharePreview: ref("SharePreview"),
   listPlanShares: { type: "array", items: ref("PlanShare") },
   sharePlan: ref("PlanShare"),

@@ -505,6 +505,13 @@ export function PlanDetailScreen({ planId }: { planId: string }) {
                 navigation.navigate("PlanConfirmations", { planId })
               }
             />
+            <Choice
+              label="分享给朋友"
+              testID="detail.share"
+              onPress={() =>
+                navigation.navigate("SelectShareFriend", { planId })
+              }
+            />
           </View>
           {plan.kind !== "one_time" ? (
             <>

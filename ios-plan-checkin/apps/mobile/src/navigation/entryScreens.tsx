@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { penColors } from "@plan-checkin/design-tokens";
 import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import {
@@ -25,10 +26,6 @@ export function Shell({
       </View>
     </SafeAreaView>
   );
-}
-
-export function FriendsEntry() {
-  return <Shell title="朋友" body="好友功能将在社交模块接入" />;
 }
 
 export function SettingsEntry() {
@@ -74,4 +71,3 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 });
-import { useState } from "react";

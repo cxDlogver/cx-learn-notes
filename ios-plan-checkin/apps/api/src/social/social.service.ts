@@ -331,6 +331,36 @@ export class SocialService {
     );
   }
 
+  async reject(
+    userId: string,
+    requestId: string,
+    key: string,
+  ): Promise<FriendRequestDto> {
+    requireUuid(requestId);
+    return this.write.run(
+      userId,
+      key,
+      "friend-reject",
+      { requestId },
+      async (client) => {
+        const original = await client.query<RequestRow>(
+          "SELECT * FROM friend_requests WHERE id = $1 AND receiver_id = $2",
+          [requestId, userId],
+        );
+        const item = original.rows[0];
+        if (!item) fail("NOT_FOUND", 404, "好友申请不存在");
+        await this.lockPair(client, item.sender_id, userId);
+        const changed = await client.query<RequestRow>(
+          `UPDATE friend_requests SET status='rejected',responded_at=now()
+           WHERE id=$1 AND receiver_id=$2 AND status='pending' RETURNING *`,
+          [requestId, userId],
+        );
+        if (!changed.rows[0]) fail("RULE_CHANGED", 409, "好友申请状态已变化");
+        return this.requestDto(client, changed.rows[0]);
+      },
+    );
+  }
+
   async remove(
     userId: string,
     friendId: string,

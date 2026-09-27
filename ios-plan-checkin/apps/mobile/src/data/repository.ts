@@ -15,6 +15,13 @@ import type {
   OneTimeResolutionDto,
   OneTimeResolutionRequest,
   MediaDownloadDto,
+  FriendRequestDto,
+  FriendRequestsDto,
+  PlanShareDto,
+  SharePreviewDto,
+  SharedHistoryDto,
+  SharedPlanDto,
+  SocialUserDto,
   PutCheckinRequest,
   SmsChallengeDto,
   UserDto,
@@ -114,6 +121,28 @@ export interface AppRepository {
   ): Promise<OneTimeResolutionDto>;
   getMediaDownloadUrl(mediaId: string): Promise<string>;
   removeMedia(mediaId: string): Promise<void>;
+  searchUsers(username: string): Promise<SocialUserDto[]>;
+  listFriends(): Promise<SocialUserDto[]>;
+  listFriendRequests(): Promise<FriendRequestsDto>;
+  requestFriend(receiverId: string): Promise<FriendRequestDto>;
+  acceptFriendRequest(requestId: string): Promise<FriendRequestDto>;
+  rejectFriendRequest(requestId: string): Promise<FriendRequestDto>;
+  removeFriend(friendId: string): Promise<void>;
+  blockFriend(friendId: string): Promise<void>;
+  listFriendPlans(friendId: string): Promise<SharedPlanDto[]>;
+  getSharedHistory(planId: string, month?: string): Promise<SharedHistoryDto>;
+  getSharePreview(
+    planId: string,
+    friendId: string,
+    month: string,
+  ): Promise<SharePreviewDto>;
+  listPlanShares(planId: string): Promise<PlanShareDto[]>;
+  sharePlan(
+    planId: string,
+    friendId: string,
+    previewToken: string,
+  ): Promise<PlanShareDto>;
+  revokePlanShare(planId: string, friendId: string): Promise<void>;
   listGroups(): Promise<GroupDto[]>;
   createGroup(input: CreateGroupRequest): Promise<GroupDto>;
   updateGroup(id: string, input: UpdateGroupRequest): Promise<GroupDto>;
@@ -943,6 +972,76 @@ export class HttpRepository implements AppRepository {
   }
   async removeMedia(mediaId: string): Promise<void> {
     await this.api.delete(`/media/${encodeURIComponent(mediaId)}`);
+  }
+  searchUsers(username: string): Promise<SocialUserDto[]> {
+    return this.api.get(
+      `/users/search?username=${encodeURIComponent(username)}`,
+    );
+  }
+  listFriends(): Promise<SocialUserDto[]> {
+    return this.api.get("/friends");
+  }
+  listFriendRequests(): Promise<FriendRequestsDto> {
+    return this.api.get("/friend-requests");
+  }
+  requestFriend(receiverId: string): Promise<FriendRequestDto> {
+    return this.api.post("/friend-requests", { receiverId });
+  }
+  acceptFriendRequest(requestId: string): Promise<FriendRequestDto> {
+    return this.api.post(
+      `/friend-requests/${encodeURIComponent(requestId)}/accept`,
+      {},
+    );
+  }
+  rejectFriendRequest(requestId: string): Promise<FriendRequestDto> {
+    return this.api.post(
+      `/friend-requests/${encodeURIComponent(requestId)}/reject`,
+      {},
+    );
+  }
+  async removeFriend(friendId: string): Promise<void> {
+    await this.api.delete(`/friends/${encodeURIComponent(friendId)}`);
+  }
+  async blockFriend(friendId: string): Promise<void> {
+    await this.api.post("/blocks", { blockedId: friendId });
+  }
+  listFriendPlans(friendId: string): Promise<SharedPlanDto[]> {
+    return this.api.get(
+      `/friends/${encodeURIComponent(friendId)}/shared-plans`,
+    );
+  }
+  getSharedHistory(planId: string, month?: string): Promise<SharedHistoryDto> {
+    return this.api.get(
+      `/shared-plans/${encodeURIComponent(planId)}/checkins${month ? `?month=${encodeURIComponent(month)}` : ""}`,
+    );
+  }
+  getSharePreview(
+    planId: string,
+    friendId: string,
+    month: string,
+  ): Promise<SharePreviewDto> {
+    return this.api.get(
+      `/plans/${encodeURIComponent(planId)}/share-preview?friendId=${encodeURIComponent(friendId)}&month=${encodeURIComponent(month)}`,
+    );
+  }
+  listPlanShares(planId: string): Promise<PlanShareDto[]> {
+    return this.api.get(`/plans/${encodeURIComponent(planId)}/shares`);
+  }
+  sharePlan(
+    planId: string,
+    friendId: string,
+    previewToken: string,
+  ): Promise<PlanShareDto> {
+    return this.api.put(
+      `/plans/${encodeURIComponent(planId)}/shares/${encodeURIComponent(friendId)}`,
+      { previewToken },
+      Crypto.randomUUID(),
+    );
+  }
+  async revokePlanShare(planId: string, friendId: string): Promise<void> {
+    await this.api.delete(
+      `/plans/${encodeURIComponent(planId)}/shares/${encodeURIComponent(friendId)}`,
+    );
   }
   listGroups(): Promise<GroupDto[]> {
     return this.api.get("/groups");
