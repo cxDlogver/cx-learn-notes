@@ -140,6 +140,16 @@ const schemas = {
     challengeId: uuid,
     code: { type: "string", pattern: "^[0-9]{6}$" },
   }),
+  RefreshRequest: properties(["refreshToken"], { refreshToken: str() }),
+  LogoutRequest: properties([], { refreshToken: str() }),
+  SmsChallengeResponse: properties(
+    ["challengeId", "expiresAt", "resendAfterSeconds"],
+    {
+      challengeId: uuid,
+      expiresAt: instant,
+      resendAfterSeconds: { type: "integer", minimum: 0 },
+    },
+  ),
 };
 Object.assign(schemas, {
   AuthTokens: properties(
@@ -231,6 +241,7 @@ const successOf = (data) =>
     serverTime: instant,
   });
 const responseData = {
+  createSmsChallenge: ref("SmsChallengeResponse"),
   verifySmsChallenge: ref("AuthTokens"),
   refreshSession: ref("AuthTokens"),
   getMe: ref("User"),
@@ -246,6 +257,8 @@ const responseData = {
 const bodies = {
   createSmsChallenge: "SmsChallengeRequest",
   verifySmsChallenge: "SmsVerifyRequest",
+  refreshSession: "RefreshRequest",
+  logout: "LogoutRequest",
   createPlan: "CreatePlanRequest",
   putCheckin: "PutCheckinRequest",
   createOneTimeResolution: "OneTimeResolutionRequest",
@@ -284,6 +297,14 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
     parameters.push({
       name: "username",
       in: "query",
+      required: true,
+      schema: str(),
+    });
+  }
+  if (operationId === "verifySmsChallenge") {
+    parameters.push({
+      name: "X-Device-Id",
+      in: "header",
       required: true,
       schema: str(),
     });

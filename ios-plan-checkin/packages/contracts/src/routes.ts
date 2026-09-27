@@ -8,6 +8,7 @@ export const errorCodes = [
   "OTP_EXPIRED",
   "OTP_INVALID",
   "OTP_RATE_LIMITED",
+  "SMS_UNAVAILABLE",
   "USERNAME_TAKEN",
   "PLAN_DATE_INVALID",
   "RULE_CHANGED",

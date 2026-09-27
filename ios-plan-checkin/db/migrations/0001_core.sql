@@ -18,6 +18,8 @@ CREATE UNIQUE INDEX ux_users_username_normalized ON users (username_normalized) 
 CREATE TABLE auth_challenges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   phone_lookup_hash BYTEA NOT NULL,
+  phone_ciphertext BYTEA NOT NULL,
+  requester_hash BYTEA NOT NULL,
   code_hash BYTEA NOT NULL,
   purpose TEXT NOT NULL CHECK (purpose IN ('login', 'change_phone', 'cancel_deletion')),
   attempts SMALLINT NOT NULL DEFAULT 0 CHECK (attempts BETWEEN 0 AND 10),
@@ -27,6 +29,17 @@ CREATE TABLE auth_challenges (
   CHECK (expires_at > created_at)
 );
 CREATE INDEX ix_auth_challenges_phone_created ON auth_challenges (phone_lookup_hash, created_at DESC);
+CREATE INDEX ix_auth_challenges_requester_created ON auth_challenges (requester_hash, created_at DESC);
+
+CREATE TABLE auth_idempotency_keys (
+  key UUID PRIMARY KEY,
+  operation TEXT NOT NULL CHECK (operation IN ('sms_challenge', 'sms_verify', 'refresh', 'logout')),
+  request_hash BYTEA NOT NULL,
+  response_ciphertext BYTEA NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_auth_idempotency_expiry ON auth_idempotency_keys (expires_at);
 
 CREATE TABLE sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

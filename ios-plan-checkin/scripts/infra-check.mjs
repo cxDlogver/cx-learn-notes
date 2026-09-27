@@ -29,7 +29,10 @@ const required = [
   "SMS_PROVIDER",
   "PUSH_PROVIDER",
   "ACCESS_TOKEN_SECRET",
-  "REFRESH_TOKEN_SECRET",
+  "PHONE_ENCRYPTION_KEY",
+  "PHONE_LOOKUP_KEY",
+  "OTP_HASH_KEY",
+  "AUTH_IDEMPOTENCY_KEY",
 ];
 for (const key of required) {
   if (!entries[key]) throw new Error(`Missing .env.example key: ${key}`);

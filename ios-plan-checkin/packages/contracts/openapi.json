@@ -34,7 +34,18 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SmsChallengeResponse"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -86,6 +97,12 @@
         "operationId": "verifySmsChallenge",
         "tags": ["auth"],
         "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
           {
             "name": "Idempotency-Key",
             "in": "header",
@@ -186,6 +203,14 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RefreshRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -266,6 +291,14 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LogoutRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -4027,6 +4060,7 @@
               "OTP_EXPIRED",
               "OTP_INVALID",
               "OTP_RATE_LIMITED",
+              "SMS_UNAVAILABLE",
               "USERNAME_TAKEN",
               "PLAN_DATE_INVALID",
               "RULE_CHANGED",
@@ -4242,6 +4276,28 @@
         "properties": {
           "challengeId": { "type": "string", "format": "uuid" },
           "code": { "type": "string", "pattern": "^[0-9]{6}$" }
+        },
+        "additionalProperties": false
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "required": ["refreshToken"],
+        "properties": { "refreshToken": { "type": "string" } },
+        "additionalProperties": false
+      },
+      "LogoutRequest": {
+        "type": "object",
+        "required": [],
+        "properties": { "refreshToken": { "type": "string" } },
+        "additionalProperties": false
+      },
+      "SmsChallengeResponse": {
+        "type": "object",
+        "required": ["challengeId", "expiresAt", "resendAfterSeconds"],
+        "properties": {
+          "challengeId": { "type": "string", "format": "uuid" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "resendAfterSeconds": { "type": "integer", "minimum": 0 }
         },
         "additionalProperties": false
       },

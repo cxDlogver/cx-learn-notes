@@ -703,6 +703,7 @@ export interface components {
         | "OTP_EXPIRED"
         | "OTP_INVALID"
         | "OTP_RATE_LIMITED"
+        | "SMS_UNAVAILABLE"
         | "USERNAME_TAKEN"
         | "PLAN_DATE_INVALID"
         | "RULE_CHANGED"
@@ -823,6 +824,19 @@ export interface components {
       challengeId: string;
       code: string;
     };
+    RefreshRequest: {
+      refreshToken: string;
+    };
+    LogoutRequest: {
+      refreshToken?: string;
+    };
+    SmsChallengeResponse: {
+      /** Format: uuid */
+      challengeId: string;
+      /** Format: date-time */
+      expiresAt: string;
+      resendAfterSeconds: number;
+    };
     AuthTokens: {
       accessToken: string;
       refreshToken: string;
@@ -921,7 +935,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["SmsChallengeResponse"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -975,6 +994,7 @@ export interface operations {
     parameters: {
       query?: never;
       header: {
+        "X-Device-Id": string;
         "Idempotency-Key": string;
         "X-Client-Request-Id": string;
       };
@@ -1058,7 +1078,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RefreshRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -1131,7 +1155,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LogoutRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {

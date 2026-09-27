@@ -37,6 +37,7 @@ for (const migration of manifest.migrations) {
 const requiredTables = [
   "users",
   "auth_challenges",
+  "auth_idempotency_keys",
   "sessions",
   "devices",
   "groups",
