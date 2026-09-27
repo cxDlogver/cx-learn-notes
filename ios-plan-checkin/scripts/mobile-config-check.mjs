@@ -22,6 +22,8 @@ const requiredModules = [
   "expo-image-picker",
   "expo-file-system",
   "expo-crypto",
+  "react-native-screens",
+  "react-native-safe-area-context",
 ];
 
 for (const moduleName of requiredModules) {

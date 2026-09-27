@@ -1,0 +1,112 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import process from "node:process";
+import { URL } from "node:url";
+import ts from "typescript";
+
+const root = new URL("../", import.meta.url);
+async function load(path) {
+  const source = await readFile(new URL(path, root), "utf8");
+  let javascript = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  javascript = javascript.replaceAll(
+    'from "@plan-checkin/domain"',
+    `from "${new URL("packages/domain/dist/index.js", root).href}"`,
+  );
+  return import(`data:text/javascript,${encodeURIComponent(javascript)}`);
+}
+
+const { SessionManager } = await load("apps/mobile/src/data/session.ts");
+const { parseAppLink } = await load("apps/mobile/src/navigation/links.ts");
+const memory = () => {
+  let value = null;
+  return {
+    read: async () => value,
+    write: async (next) => {
+      value = next;
+    },
+    clear: async () => {
+      value = null;
+    },
+  };
+};
+const tokens = (refreshToken = "rotated") => ({
+  accessToken: "access",
+  refreshToken,
+  accessExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+  userId: "00000000-0000-4000-8000-000000000001",
+  isNewUser: false,
+});
+
+const store = memory();
+const session = new SessionManager(
+  store,
+  { refresh: async (value) => tokens(`${value}-new`) },
+  (error) => error?.status === 401,
+);
+await session.restore();
+assert.equal(session.getSnapshot().phase, "unauthenticated");
+await store.write("saved");
+await session.restore();
+assert.equal(session.getSnapshot().phase, "authenticated");
+assert.equal(await store.read(), "saved-new");
+assert.equal(await session.accessToken(), "access");
+await session.clear();
+assert.equal(await store.read(), null);
+
+const transientStore = memory();
+await transientStore.write("still-saved");
+const transient = new SessionManager(
+  transientStore,
+  {
+    refresh: async () => {
+      throw new Error("offline");
+    },
+  },
+  () => false,
+);
+await transient.restore();
+assert.equal(transient.getSnapshot().phase, "unavailable");
+assert.equal(await transientStore.read(), "still-saved");
+
+const invalidStore = memory();
+await invalidStore.write("revoked");
+const invalid = new SessionManager(
+  invalidStore,
+  {
+    refresh: async () => {
+      throw { status: 401 };
+    },
+  },
+  (error) => error?.status === 401,
+);
+await invalid.restore();
+assert.equal(invalid.getSnapshot().phase, "unauthenticated");
+assert.equal(await invalidStore.read(), null);
+
+const planId = "01234567-89ab-4def-8abc-0123456789ab";
+assert.deepEqual(parseAppLink(`plancheckin://plan/${planId}`), {
+  screen: "PlanDetail",
+  planId,
+});
+assert.deepEqual(parseAppLink(`plancheckin://checkin/${planId}/2026-09-28`), {
+  screen: "Checkin",
+  planId,
+  businessDate: "2026-09-28",
+});
+for (const link of [
+  `https://example.com/plan/${planId}`,
+  `plancheckin://plan/${planId}?redirect=https://evil.example`,
+  `plancheckin://plan/${planId}#fragment`,
+  `plancheckin://checkin/${planId}/2026-02-30`,
+  `plancheckin://checkin/${planId}/2026-09-28/extra`,
+  "plancheckin://plan/invalid",
+])
+  assert.equal(parseAppLink(link), null, link);
+process.stdout.write(
+  "Mobile architecture smoke passed: session recovery, rotation and guarded links.\n",
+);
