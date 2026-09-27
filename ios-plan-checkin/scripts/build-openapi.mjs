@@ -238,6 +238,29 @@ Object.assign(schemas, {
       revision: { type: "integer", minimum: 1 },
     },
   ),
+  SocialUser: properties(["id", "username", "nickname", "avatarMediaId"], {
+    id: uuid,
+    username: str(),
+    nickname: { oneOf: [str(), { type: "null" }] },
+    avatarMediaId: { oneOf: [uuid, { type: "null" }] },
+  }),
+  FriendRequest: properties(
+    ["id", "sender", "receiver", "status", "createdAt", "respondedAt"],
+    {
+      id: uuid,
+      sender: ref("SocialUser"),
+      receiver: ref("SocialUser"),
+      status: { enum: ["pending", "accepted", "rejected", "cancelled"] },
+      createdAt: instant,
+      respondedAt: { oneOf: [instant, { type: "null" }] },
+    },
+  ),
+  FriendRequests: properties(["incoming", "outgoing"], {
+    incoming: { type: "array", items: ref("FriendRequest") },
+    outgoing: { type: "array", items: ref("FriendRequest") },
+  }),
+  CreateFriendRequestRequest: properties(["receiverId"], { receiverId: uuid }),
+  CreateBlockRequest: properties(["blockedId"], { blockedId: uuid }),
   Plan: properties(
     [
       "id",
@@ -688,6 +711,11 @@ const responseData = {
   createOneTimeResolution: ref("OneTimeResolution"),
   reviseOneTimeResolution: ref("OneTimeResolution"),
   getSyncChanges: ref("SyncChanges"),
+  searchUsers: { type: "array", items: ref("SocialUser") },
+  listFriends: { type: "array", items: ref("SocialUser") },
+  listFriendRequests: ref("FriendRequests"),
+  createFriendRequest: ref("FriendRequest"),
+  acceptFriendRequest: ref("FriendRequest"),
 };
 
 const bodies = {
@@ -708,6 +736,8 @@ const bodies = {
   putCheckin: "PutCheckinRequest",
   createOneTimeResolution: "OneTimeResolutionRequest",
   reviseOneTimeResolution: "OneTimeResolutionRequest",
+  createFriendRequest: "CreateFriendRequestRequest",
+  createBlock: "CreateBlockRequest",
 };
 const paths = {};
 for (const [method, suffix, operationId, auth] of apiRoutes) {

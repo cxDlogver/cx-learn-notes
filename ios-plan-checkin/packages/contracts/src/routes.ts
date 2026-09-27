@@ -64,6 +64,7 @@ export const apiRoutes = [
   ["POST", "friend-requests", "createFriendRequest", true],
   ["GET", "friend-requests", "listFriendRequests", true],
   ["POST", "friend-requests/{id}/accept", "acceptFriendRequest", true],
+  ["GET", "friends", "listFriends", true],
   ["DELETE", "friends/{id}", "deleteFriend", true],
   ["POST", "blocks", "createBlock", true],
   ["DELETE", "blocks/{id}", "deleteBlock", true],

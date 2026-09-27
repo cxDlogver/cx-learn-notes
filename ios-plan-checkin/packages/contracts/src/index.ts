@@ -202,6 +202,30 @@ export interface UserDto {
   accountStatus: "active" | "deletion_pending";
   revision: number;
 }
+export interface SocialUserDto {
+  id: Uuid;
+  username: string;
+  nickname: string | null;
+  avatarMediaId: Uuid | null;
+}
+export interface FriendRequestDto {
+  id: Uuid;
+  sender: SocialUserDto;
+  receiver: SocialUserDto;
+  status: "pending" | "accepted" | "rejected" | "cancelled";
+  createdAt: UtcInstant;
+  respondedAt: UtcInstant | null;
+}
+export interface FriendRequestsDto {
+  incoming: FriendRequestDto[];
+  outgoing: FriendRequestDto[];
+}
+export interface CreateFriendRequestRequest {
+  receiverId: Uuid;
+}
+export interface CreateBlockRequest {
+  blockedId: Uuid;
+}
 export interface UpdateMeRequest {
   username?: string;
   nickname?: string;

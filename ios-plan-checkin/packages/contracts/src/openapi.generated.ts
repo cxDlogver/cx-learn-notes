@@ -480,6 +480,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/friends": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["listFriends"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/friends/{id}": {
     parameters: {
       query?: never;
@@ -969,6 +985,36 @@ export interface components {
       /** @enum {unknown} */
       accountStatus: "active" | "deletion_pending";
       revision: number;
+    };
+    SocialUser: {
+      /** Format: uuid */
+      id: string;
+      username: string;
+      nickname: string | null;
+      avatarMediaId: string | null;
+    };
+    FriendRequest: {
+      /** Format: uuid */
+      id: string;
+      sender: components["schemas"]["SocialUser"];
+      receiver: components["schemas"]["SocialUser"];
+      /** @enum {unknown} */
+      status: "pending" | "accepted" | "rejected" | "cancelled";
+      /** Format: date-time */
+      createdAt: string;
+      respondedAt: string | null;
+    };
+    FriendRequests: {
+      incoming: components["schemas"]["FriendRequest"][];
+      outgoing: components["schemas"]["FriendRequest"][];
+    };
+    CreateFriendRequestRequest: {
+      /** Format: uuid */
+      receiverId: string;
+    };
+    CreateBlockRequest: {
+      /** Format: uuid */
+      blockedId: string;
     };
     Plan: {
       /** Format: uuid */
@@ -3887,7 +3933,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["SocialUser"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -3952,7 +4003,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["FriendRequests"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -4012,7 +4068,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateFriendRequestRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -4020,7 +4080,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["FriendRequest"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -4090,7 +4155,82 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["FriendRequest"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  listFriends: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["SocialUser"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -4220,7 +4360,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateBlockRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
