@@ -38,6 +38,13 @@ export class ApiConfig {
   readonly smsProvider = required("SMS_PROVIDER");
   readonly smsGatewayUrl = process.env.SMS_GATEWAY_URL;
   readonly smsGatewayToken = process.env.SMS_GATEWAY_TOKEN;
+  readonly objectEndpoint = required("OBJECT_ENDPOINT");
+  readonly objectPublicEndpoint =
+    process.env.OBJECT_PUBLIC_ENDPOINT ?? this.objectEndpoint;
+  readonly objectBucket = required("OBJECT_BUCKET");
+  readonly objectRegion = process.env.OBJECT_REGION ?? "us-east-1";
+  readonly objectAccessKeyId = required("OBJECT_ACCESS_KEY_ID");
+  readonly objectSecretAccessKey = required("OBJECT_SECRET_ACCESS_KEY");
 
   constructor() {
     if (!["development", "staging", "production"].includes(this.environment)) {
@@ -55,5 +62,13 @@ export class ApiConfig {
     if (!["stub", "http"].includes(this.smsProvider)) {
       throw new Error("Unsupported SMS_PROVIDER.");
     }
+    if (
+      this.environment !== "development" &&
+      (!this.objectEndpoint.startsWith("https://") ||
+        !this.objectPublicEndpoint.startsWith("https://"))
+    )
+      throw new Error(
+        "Object storage endpoints must use HTTPS outside development.",
+      );
   }
 }

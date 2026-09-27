@@ -25,3 +25,12 @@
 - 客户端逐页先持久化计划、记录和撤销标记，再提交游标和确认；保留未发送的本地记录草稿。该接口此前仅为契约预留，现补齐实现，不改变已发布客户端行为。
 
 开发自检由 `pnpm sync:smoke`、`pnpm mobile:incremental-sync:smoke` 与 `pnpm mobile:bundle:check` 执行；真实 PostgreSQL 并发、多设备 iOS/SQLCipher 和正式 ATDD 留待后续验证。
+
+## SYNC-04 私人照片
+
+- 实现已预留的 `POST /api/v1/media/upload-intents`、`POST /api/v1/media/{id}/complete`、`GET /api/v1/media/{id}/download-url` 和 `DELETE /api/v1/media/{id}`。上传意图返回 10 分钟 S3 兼容直传签名与必须携带的 `Content-Type`、SHA-256 校验头；下载返回 5 分钟的仅本人可请求的签名地址。
+- 完成关联前服务端重新读取对象，校验长度、SHA-256 和文件头；只允许本人关联自己的打卡或已有结果的一次性任务，单条记录最多 9 张。重复完成同一关联返回同一媒体。好友只读响应继续剔除照片与数值。
+- 照片完成、删除独立于基础记录事务；移动端先将选中图片重新编码为 JPEG 并复制到当前账户私有目录，基础记录同步后才上传。失败独立显示并可重试；孤儿对象由 Worker 扫描和清理。
+- 新增 `OBJECT_PUBLIC_ENDPOINT` 用于手机可访问的签名 URL，`OBJECT_ENDPOINT` 用于 API/Worker 内网访问；生产环境两者必须为 HTTPS。新库迁移 `0007_media_cleanup.sql` 增加对象清理时间戳与扫描索引。
+
+开发自检由 `pnpm media:smoke`、`pnpm mobile:local-schema:smoke` 与 `pnpm mobile:bundle:check` 执行；真实 MinIO、iOS 相册权限、弱网和后台恢复留待有设备的阶段验证。

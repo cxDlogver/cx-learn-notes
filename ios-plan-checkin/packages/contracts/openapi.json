@@ -2637,12 +2637,31 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUploadIntentRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/UploadIntent" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -2714,12 +2733,29 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CompleteMediaRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Media" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -2796,7 +2832,21 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": ["deleted"],
+                      "properties": { "deleted": { "const": true } },
+                      "additionalProperties": false
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -2861,7 +2911,16 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/MediaDownload" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5938,6 +5997,93 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "syncSequence": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      },
+      "CreateUploadIntentRequest": {
+        "type": "object",
+        "required": ["mime", "bytes", "sha256"],
+        "properties": {
+          "mime": {
+            "enum": ["image/jpeg", "image/png", "image/heic", "image/webp"]
+          },
+          "bytes": { "type": "integer", "minimum": 1, "maximum": 20971520 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" }
+        },
+        "additionalProperties": false
+      },
+      "UploadIntent": {
+        "type": "object",
+        "required": ["id", "uploadUrl", "expiresAt", "headers"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "uploadUrl": { "type": "string", "format": "uri" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "headers": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompleteMediaRequest": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["checkinId"],
+            "properties": {
+              "checkinId": { "type": "string", "format": "uuid" }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["oneTimePlanId"],
+            "properties": {
+              "oneTimePlanId": { "type": "string", "format": "uuid" }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Media": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "mime",
+          "bytes",
+          "checkinId",
+          "oneTimePlanId"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "enum": ["ready", "deleted"] },
+          "mime": {
+            "enum": ["image/jpeg", "image/png", "image/heic", "image/webp"]
+          },
+          "bytes": { "type": "integer", "minimum": 1 },
+          "checkinId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
+          "oneTimePlanId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MediaDownload": {
+        "type": "object",
+        "required": ["url", "expiresAt"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "expiresAt": { "type": "string", "format": "date-time" }
         },
         "additionalProperties": false
       },

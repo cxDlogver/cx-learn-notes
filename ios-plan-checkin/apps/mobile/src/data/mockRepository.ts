@@ -439,6 +439,17 @@ export class MockRepository implements AppRepository {
     this.resolutions.set(planId, result);
     return result;
   }
+  async getMediaDownloadUrl(_mediaId: string): Promise<string> {
+    throw new Error("演示数据没有照片文件");
+  }
+  async removeMedia(mediaId: string): Promise<void> {
+    for (const [key, record] of this.records)
+      if (record.mediaIds.includes(mediaId))
+        this.records.set(key, {
+          ...record,
+          mediaIds: record.mediaIds.filter((id) => id !== mediaId),
+        });
+  }
   async listGroups(): Promise<GroupDto[]> {
     return this.groups.slice();
   }

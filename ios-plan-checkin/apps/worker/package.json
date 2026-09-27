@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1141.0",
     "@plan-checkin/contracts": "workspace:*",
-    "@plan-checkin/domain": "workspace:*"
+    "@plan-checkin/domain": "workspace:*",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

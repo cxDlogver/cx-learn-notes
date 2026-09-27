@@ -7,10 +7,14 @@ import type {
   PlanDto,
 } from "@plan-checkin/contracts";
 import { businessDateAt } from "@plan-checkin/domain";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
+import { File } from "expo-file-system";
 import { useNavigation, type NavigationProp } from "@react-navigation/native";
 import type { RootStackParamList } from "../../navigation/navigation";
 import { useAppServices } from "../../data/services";
+import type { AppRepository } from "../../data/repository";
+import type { LocalMediaMetadata } from "../../data/localCache";
+import { choosePrivatePhotos } from "../../platform/privatePhoto";
 import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import {
   Choice,
@@ -53,6 +57,49 @@ function resultLabel(plan: PlanDto, result: CheckinResult): string {
   return results.find((item) => item.key === result)?.label ?? result;
 }
 
+function PrivatePhoto({
+  id,
+  index,
+  repository,
+  onRemove,
+}: {
+  id: string;
+  index: number;
+  repository: AppRepository;
+  onRemove: () => void;
+}) {
+  const image = useQuery({
+    queryKey: ["private-media-url", id],
+    queryFn: () => repository.getMediaDownloadUrl(id),
+    staleTime: 240_000,
+    refetchInterval: 240_000,
+    retry: false,
+  });
+  return (
+    <View style={{ width: 86, marginRight: 8 }}>
+      {image.data ? (
+        <Image
+          source={{ uri: image.data }}
+          accessibilityLabel={`已有照片 ${index + 1}`}
+          style={{ width: 80, height: 80, borderRadius: 10 }}
+        />
+      ) : (
+        <Text style={planStyles.body}>
+          {image.isError ? "照片暂不可见" : "读取照片…"}
+        </Text>
+      )}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`删除已有照片 ${index + 1}`}
+        onPress={onRemove}
+        style={{ minHeight: 44, justifyContent: "center" }}
+      >
+        <Text style={{ color: planPalette.danger }}>删除</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export function RecordEditorScreen({
   planId,
   businessDate,
@@ -61,7 +108,14 @@ export function RecordEditorScreen({
   resolution,
   onDone,
 }: RecordEditorProps) {
-  const { repository, todaySession, localCache, session } = useAppServices();
+  const {
+    repository,
+    todaySession,
+    localCache,
+    localStore,
+    mediaRunner,
+    session,
+  } = useAppServices();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
   const snapshot = session.getSnapshot();
@@ -88,6 +142,15 @@ export function RecordEditorScreen({
   const [numberValue, setNumberValue] = useState("");
   const [numberUnit, setNumberUnit] = useState("");
   const [pending, setPending] = useState(false);
+  const [choosingPhoto, setChoosingPhoto] = useState(false);
+  const [operationId] = useState(() => Crypto.randomUUID());
+  const [photos, setPhotos] = useState<LocalMediaMetadata[]>([]);
+  const [removedRemoteMediaIds, setRemovedRemoteMediaIds] = useState<string[]>(
+    [],
+  );
+  const existingPhotoIds = (recordQuery.data?.mediaIds ?? []).filter(
+    (id) => !removedRemoteMediaIds.includes(id),
+  );
   const [error, setError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<
     "local" | "syncing" | "failed" | "conflict" | null
@@ -128,6 +191,69 @@ export function RecordEditorScreen({
     if (numberUnit.length > 30) return "单位最多 30 字";
     return null;
   };
+  const addPhotos = async () => {
+    if (!accountId || !localCache || !localStore) {
+      setError("当前无法在本机保存照片");
+      return;
+    }
+    setChoosingPhoto(true);
+    setError(null);
+    try {
+      const chosen = await choosePrivatePhotos(
+        accountId,
+        operationId,
+        9 - existingPhotoIds.length - photos.length,
+        localStore,
+        localCache,
+      );
+      setPhotos((current) => [...current, ...chosen]);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "无法添加照片");
+    } finally {
+      setChoosingPhoto(false);
+    }
+  };
+  const removePhoto = async (photo: LocalMediaMetadata) => {
+    if (!accountId || !localCache) return;
+    try {
+      await localCache.removeStagedMedia(accountId, photo.id);
+      const file = new File(photo.fileUri);
+      if (file.exists) file.delete();
+      setPhotos((current) => current.filter((item) => item.id !== photo.id));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "无法移除照片");
+    }
+  };
+  const cancel = () => {
+    void (async () => {
+      for (const photo of photos) await removePhoto(photo);
+      onDone();
+    })().catch(() => onDone());
+  };
+  const removeRemotePhoto = (id: string) => {
+    Alert.alert("删除这张照片？", "删除后照片将从云端移除，此操作立即生效。", [
+      { text: "取消", style: "cancel" },
+      {
+        text: "删除照片",
+        style: "destructive",
+        onPress: () => {
+          void (async () => {
+            try {
+              await repository.removeMedia(id);
+              setRemovedRemoteMediaIds((current) => [...current, id]);
+              await recordQuery.refetch();
+            } catch (cause) {
+              setError(
+                cause instanceof Error
+                  ? cause.message
+                  : "删除照片失败，请联网后重试",
+              );
+            }
+          })();
+        },
+      },
+    ]);
+  };
   const save = async () => {
     const problem = validate();
     if (problem) {
@@ -146,10 +272,10 @@ export function RecordEditorScreen({
         numeric: numberValue
           ? { value: numberValue, unit: numberUnit.trim() }
           : null,
-        mediaIds: recordQuery.data?.mediaIds ?? [],
+        mediaIds: existingPhotoIds,
         baseRevision: recordQuery.data?.revision ?? 0,
         clientCreatedAt: new Date().toISOString(),
-        clientOperationId: Crypto.randomUUID(),
+        clientOperationId: operationId,
         ruleVersion:
           recordQuery.data?.ruleVersion ?? ruleVersion ?? plan.ruleVersion,
       });
@@ -162,6 +288,7 @@ export function RecordEditorScreen({
           candidate.planBusinessDate === businessDate,
       );
       if (item) todaySession.hold(item, saved.record);
+      void mediaRunner?.trigger().catch(() => {});
       queryClient.setQueryData(["checkin", planId, businessDate], saved.record);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["today"] }),
@@ -215,6 +342,10 @@ export function RecordEditorScreen({
           onceResult === "completed" ? new Date().toISOString() : undefined,
         reason: note.trim() || undefined,
       });
+      if (accountId && localCache && photos.length) {
+        await localCache.linkOneTimeMedia(accountId, operationId, plan.id);
+        void mediaRunner?.trigger().catch(() => {});
+      }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["today"] }),
         queryClient.invalidateQueries({ queryKey: ["plan-detail", planId] }),
@@ -235,7 +366,7 @@ export function RecordEditorScreen({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="取消记录"
-          onPress={onDone}
+          onPress={cancel}
           style={{ minWidth: 44, minHeight: 44, justifyContent: "center" }}
         >
           <Text style={{ color: planPalette.secondary }}>取消</Text>
@@ -371,6 +502,60 @@ export function RecordEditorScreen({
               </View>
             </View>
           ) : null}
+          <View testID="record.photos" style={{ marginTop: 24 }}>
+            <Text style={planStyles.cardTitle}>照片（可选）</Text>
+            <Text style={[planStyles.subtitle, { marginTop: 6 }]}>
+              最多 9 张。照片单独上传，失败不会影响记录保存。
+            </Text>
+            {existingPhotoIds.length || photos.length ? (
+              <View style={[planStyles.wrap, { marginTop: 12 }]}>
+                {existingPhotoIds.map((id, index) => (
+                  <PrivatePhoto
+                    key={id}
+                    id={id}
+                    index={index}
+                    repository={repository}
+                    onRemove={() => removeRemotePhoto(id)}
+                  />
+                ))}
+                {photos.map((photo, index) => (
+                  <View key={photo.id} style={{ width: 86, marginRight: 8 }}>
+                    <Image
+                      source={{ uri: photo.fileUri }}
+                      accessibilityLabel={`待上传照片 ${index + 1}`}
+                      style={{ width: 80, height: 80, borderRadius: 10 }}
+                    />
+                    <Pressable
+                      testID={`record.photo.remove.${photo.id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`移除待上传照片 ${index + 1}`}
+                      onPress={() => void removePhoto(photo)}
+                      style={{ minHeight: 44, justifyContent: "center" }}
+                    >
+                      <Text style={{ color: planPalette.danger }}>移除</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            <Pressable
+              testID="record.photo.add"
+              accessibilityRole="button"
+              accessibilityLabel="添加照片"
+              accessibilityState={{
+                disabled:
+                  choosingPhoto ||
+                  pending ||
+                  existingPhotoIds.length + photos.length >= 9,
+              }}
+              onPress={() => void addPhotos()}
+              style={{ minHeight: 44, justifyContent: "center" }}
+            >
+              <Text style={{ color: planPalette.primary, fontWeight: "600" }}>
+                {choosingPhoto ? "正在处理照片…" : "添加照片"}
+              </Text>
+            </Pressable>
+          </View>
           {localStatus ? (
             <StatusNotice
               kind={
@@ -420,6 +605,7 @@ export function RecordEditorScreen({
               planQuery.isError ||
               recordQuery.isError ||
               invalidDate ||
+              choosingPhoto ||
               localRecord.data?.state === "conflict",
             )}
           />

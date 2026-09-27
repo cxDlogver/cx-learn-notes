@@ -14,6 +14,7 @@ import type {
   PlanDto,
   OneTimeResolutionDto,
   OneTimeResolutionRequest,
+  MediaDownloadDto,
   PutCheckinRequest,
   SmsChallengeDto,
   UserDto,
@@ -111,6 +112,8 @@ export interface AppRepository {
     planId: string,
     input: OneTimeResolutionRequest,
   ): Promise<OneTimeResolutionDto>;
+  getMediaDownloadUrl(mediaId: string): Promise<string>;
+  removeMedia(mediaId: string): Promise<void>;
   listGroups(): Promise<GroupDto[]>;
   createGroup(input: CreateGroupRequest): Promise<GroupDto>;
   updateGroup(id: string, input: UpdateGroupRequest): Promise<GroupDto>;
@@ -931,6 +934,15 @@ export class HttpRepository implements AppRepository {
       `/plans/${encodeURIComponent(planId)}/one-time-resolution`,
       input,
     );
+  }
+  async getMediaDownloadUrl(mediaId: string): Promise<string> {
+    const result = await this.api.get<MediaDownloadDto>(
+      `/media/${encodeURIComponent(mediaId)}/download-url`,
+    );
+    return result.url;
+  }
+  async removeMedia(mediaId: string): Promise<void> {
+    await this.api.delete(`/media/${encodeURIComponent(mediaId)}`);
   }
   listGroups(): Promise<GroupDto[]> {
     return this.api.get("/groups");

@@ -35,6 +35,11 @@ export interface LocalMediaMetadata {
   remoteId: string | null;
   createdAt: string;
 }
+export interface LocalMediaUpload extends LocalMediaMetadata {
+  checkinId: string | null;
+  oneTimePlanId: string | null;
+  retryCount: number;
+}
 export interface OutboxOperation {
   operationId: string;
   planId: string;
@@ -517,6 +522,11 @@ export class LocalCache {
         "DELETE FROM local_outbox WHERE operation_id=?",
         operation.operationId,
       );
+      await database.runAsync(
+        "UPDATE local_media SET checkin_id=? WHERE operation_id=? AND checkin_id IS NULL",
+        server.id,
+        operation.operationId,
+      );
       const next = await database.getFirstAsync<{
         operation_id: string;
         payload: string;
@@ -787,8 +797,11 @@ export class LocalCache {
     newOperationId: string,
   ): Promise<void> {
     await this.store.transaction(accountId, async (database) => {
-      const conflict = await database.getFirstAsync<{ details_json: string }>(
-        `SELECT details_json FROM local_checkin_conflicts
+      const conflict = await database.getFirstAsync<{
+        details_json: string;
+        operation_id: string;
+      }>(
+        `SELECT details_json,operation_id FROM local_checkin_conflicts
          WHERE plan_id=? AND business_date=? ORDER BY created_at DESC LIMIT 1`,
         planId,
         businessDate,
@@ -805,6 +818,12 @@ export class LocalCache {
       if (currentServer.revision !== details.currentRevision)
         throw new Error("云端记录已再次修改，请重新比较两个版本");
       const local = JSON.parse(draft.payload) as CheckinDto;
+      if (choice === "local")
+        await database.runAsync(
+          "UPDATE local_media SET operation_id=? WHERE operation_id=? AND status<>'uploaded'",
+          newOperationId,
+          conflict.operation_id,
+        );
       await database.runAsync(
         "DELETE FROM local_outbox WHERE plan_id=? AND business_date=?",
         planId,
@@ -920,6 +939,160 @@ export class LocalCache {
         remoteId: row.remote_id,
         createdAt: row.created_at,
       }));
+    });
+  }
+
+  async removeStagedMedia(accountId: string, id: string): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        "DELETE FROM local_media WHERE id=? AND status='staged' AND checkin_id IS NULL AND one_time_plan_id IS NULL",
+        id,
+      );
+    });
+  }
+
+  async linkOneTimeMedia(
+    accountId: string,
+    operationId: string,
+    planId: string,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        "UPDATE local_media SET one_time_plan_id=? WHERE operation_id=?",
+        planId,
+        operationId,
+      );
+    });
+  }
+
+  async claimMediaUpload(
+    accountId: string,
+    now = new Date(),
+  ): Promise<LocalMediaUpload | null> {
+    return this.store.transaction(accountId, async (database) => {
+      const stamp = now.toISOString();
+      await database.runAsync(
+        `UPDATE local_media SET status='failed',next_attempt_at=?,
+           last_error_code='INTERRUPTED'
+         WHERE status='uploading' AND next_attempt_at<=?`,
+        stamp,
+        stamp,
+      );
+      const row = await database.getFirstAsync<{
+        id: string;
+        operation_id: string | null;
+        file_uri: string;
+        mime_type: string;
+        byte_size: number;
+        sha256: string;
+        status: LocalMediaMetadata["status"];
+        remote_id: string | null;
+        created_at: string;
+        checkin_id: string | null;
+        one_time_plan_id: string | null;
+        retry_count: number;
+      }>(
+        `SELECT * FROM local_media
+         WHERE (checkin_id IS NOT NULL OR one_time_plan_id IS NOT NULL)
+           AND (status='staged' OR
+             (status='failed' AND next_attempt_at<=?))
+         ORDER BY created_at,id LIMIT 1`,
+        stamp,
+      );
+      if (!row) return null;
+      await database.runAsync(
+        "UPDATE local_media SET status='uploading',next_attempt_at=?,last_error_code=NULL WHERE id=?",
+        new Date(now.getTime() + 120_000).toISOString(),
+        row.id,
+      );
+      return {
+        id: row.id,
+        operationId: row.operation_id,
+        fileUri: row.file_uri,
+        mimeType: row.mime_type,
+        byteSize: row.byte_size,
+        sha256: row.sha256,
+        status: "uploading",
+        remoteId: row.remote_id,
+        createdAt: row.created_at,
+        checkinId: row.checkin_id,
+        oneTimePlanId: row.one_time_plan_id,
+        retryCount: row.retry_count,
+      };
+    });
+  }
+
+  async uploadedMedia(
+    accountId: string,
+    localId: string,
+    remoteId: string,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `UPDATE local_media SET status='uploaded',remote_id=?,next_attempt_at=NULL,
+           last_error_code=NULL WHERE id=?`,
+        remoteId,
+        localId,
+      );
+    });
+  }
+
+  async failedMedia(
+    accountId: string,
+    localId: string,
+    code: string,
+    retryAt: Date | null,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `UPDATE local_media SET status='failed',retry_count=retry_count+1,
+           next_attempt_at=?,last_error_code=? WHERE id=?`,
+        retryAt?.toISOString() ?? null,
+        code,
+        localId,
+      );
+    });
+  }
+
+  async retryMedia(accountId: string, localId: string): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `UPDATE local_media SET status='staged',next_attempt_at=NULL,last_error_code=NULL
+         WHERE id=? AND status='failed'`,
+        localId,
+      );
+    });
+  }
+
+  async pendingMedia(accountId: string): Promise<
+    {
+      id: string;
+      status: LocalMediaMetadata["status"];
+      errorCode: string | null;
+    }[]
+  > {
+    return this.store.read(accountId, async (database) => {
+      const rows = await database.getAllAsync<{
+        id: string;
+        status: LocalMediaMetadata["status"];
+        last_error_code: string | null;
+      }>(
+        "SELECT id,status,last_error_code FROM local_media WHERE status<>'uploaded' ORDER BY created_at",
+      );
+      return rows.map((row) => ({
+        id: row.id,
+        status: row.status,
+        errorCode: row.last_error_code,
+      }));
+    });
+  }
+
+  async nextMediaWakeAt(accountId: string): Promise<Date | null> {
+    return this.store.read(accountId, async (database) => {
+      const row = await database.getFirstAsync<{ next_at: string | null }>(
+        "SELECT min(next_attempt_at) AS next_at FROM local_media WHERE status IN ('failed','uploading') AND next_attempt_at IS NOT NULL",
+      );
+      return row?.next_at ? new Date(row.next_at) : null;
     });
   }
 

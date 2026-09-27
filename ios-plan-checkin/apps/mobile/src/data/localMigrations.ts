@@ -96,6 +96,17 @@ CREATE TABLE local_checkin_conflicts (
 CREATE INDEX local_conflicts_record_idx ON local_checkin_conflicts(plan_id,business_date);
 `,
   },
+  {
+    version: 5,
+    sql: `
+ALTER TABLE local_media ADD COLUMN checkin_id TEXT;
+ALTER TABLE local_media ADD COLUMN one_time_plan_id TEXT;
+ALTER TABLE local_media ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE local_media ADD COLUMN next_attempt_at TEXT;
+ALTER TABLE local_media ADD COLUMN last_error_code TEXT;
+CREATE INDEX local_media_upload_ready_idx ON local_media(status,next_attempt_at,created_at);
+`,
+  },
 ] as const;
 
 export const localSchemaVersion = localMigrations.at(-1)!.version;

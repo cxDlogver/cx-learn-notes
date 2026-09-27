@@ -20,8 +20,14 @@ export function SyncFeedbackScreen({
   onConflict: (planId: string, businessDate: string) => void;
   onEdit: (planId: string, businessDate: string) => void;
 }) {
-  const { localCache, outbox, incrementalSync, session, todaySession } =
-    useAppServices();
+  const {
+    localCache,
+    outbox,
+    incrementalSync,
+    mediaRunner,
+    session,
+    todaySession,
+  } = useAppServices();
   const snapshot = session.getSnapshot();
   const accountId = snapshot.phase === "authenticated" ? snapshot.userId : null;
   const queryClient = useQueryClient();
@@ -37,6 +43,12 @@ export function SyncFeedbackScreen({
     queryKey: ["sync-plan-labels", accountId],
     queryFn: () => localCache!.listPlans(accountId!),
     enabled: Boolean(accountId && localCache),
+  });
+  const media = useQuery({
+    queryKey: ["sync-media", accountId],
+    queryFn: () => localCache!.pendingMedia(accountId!),
+    enabled: Boolean(accountId && localCache),
+    refetchInterval: 3000,
   });
   const names = new Map(plans.data?.map((plan) => [plan.id, plan.title]));
   const retry = async (operationId: string) => {
@@ -96,6 +108,21 @@ export function SyncFeedbackScreen({
     );
   };
   const rows = queue.data ?? [];
+  const mediaRows = media.data ?? [];
+  const retryPhoto = async (id: string) => {
+    if (!accountId || !localCache) return;
+    setBusy(id);
+    setError(null);
+    try {
+      await localCache.retryMedia(accountId, id);
+      await mediaRunner?.trigger();
+      await media.refetch();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "照片重试失败");
+    } finally {
+      setBusy(null);
+    }
+  };
   return (
     <PlanScreen>
       <Text testID="sync.title" style={planStyles.title}>
@@ -126,7 +153,10 @@ export function SyncFeedbackScreen({
           message={error}
         />
       ) : null}
-      {!queue.isPending && !queue.isError && rows.length === 0 ? (
+      {!queue.isPending &&
+      !queue.isError &&
+      rows.length === 0 &&
+      mediaRows.length === 0 ? (
         <ScreenState
           kind="empty"
           testID="sync.empty"
@@ -205,10 +235,47 @@ export function SyncFeedbackScreen({
           ) : null}
         </View>
       ))}
+      {mediaRows.map((item, index) => (
+        <View
+          key={item.id}
+          testID={`sync.media.${item.id}`}
+          style={planStyles.card}
+        >
+          <Text style={planStyles.cardTitle}>照片 {index + 1}</Text>
+          <Text style={[planStyles.body, { marginTop: 8 }]}>
+            {item.status === "failed"
+              ? "上传失败 · 记录已保存"
+              : item.status === "uploading"
+                ? "照片上传中"
+                : "等待记录同步后上传照片"}
+          </Text>
+          {item.errorCode ? (
+            <Text style={[planStyles.body, { marginTop: 4 }]}>
+              错误代码：{item.errorCode}
+            </Text>
+          ) : null}
+          {item.status === "failed" ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="重试上传照片"
+              accessibilityState={{ disabled: busy === item.id }}
+              onPress={() => void retryPhoto(item.id)}
+              style={{ minHeight: 44, justifyContent: "center" }}
+            >
+              <Text style={{ color: planPalette.primary, fontWeight: "600" }}>
+                {busy === item.id ? "正在重试…" : "重试照片上传"}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ))}
       <Pressable
         testID="sync.refresh"
         accessibilityRole="button"
-        onPress={() => void queue.refetch()}
+        onPress={() => {
+          void queue.refetch();
+          void media.refetch();
+        }}
         style={{
           minHeight: 44,
           marginTop: 18,

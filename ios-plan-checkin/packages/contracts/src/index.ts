@@ -153,6 +153,33 @@ export interface CheckinConflictDetails {
   serverRecord: CheckinDto;
   submittedSummary: Pick<PutCheckinRequest, "result" | "clientCreatedAt">;
 }
+export interface CreateUploadIntentRequest {
+  mime: "image/jpeg" | "image/png" | "image/heic" | "image/webp";
+  bytes: number;
+  sha256: string;
+}
+export interface UploadIntentDto {
+  id: Uuid;
+  uploadUrl: string;
+  expiresAt: UtcInstant;
+  headers: Record<string, string>;
+}
+export interface CompleteMediaRequest {
+  checkinId?: Uuid;
+  oneTimePlanId?: Uuid;
+}
+export interface MediaDto {
+  id: Uuid;
+  status: "ready" | "deleted";
+  mime: CreateUploadIntentRequest["mime"];
+  bytes: number;
+  checkinId: Uuid | null;
+  oneTimePlanId: Uuid | null;
+}
+export interface MediaDownloadDto {
+  url: string;
+  expiresAt: UtcInstant;
+}
 export interface OneTimeResolutionRequest {
   resolution: OneTimeResolution;
   baseRevision: number;

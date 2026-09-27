@@ -13,6 +13,7 @@ import { localStore, type LocalStore } from "./localStore";
 import { TodaySessionStore } from "./todaySession";
 import { OutboxRunner } from "./outboxRunner";
 import { IncrementalSync } from "./incrementalSync";
+import { MediaRunner } from "./mediaRunner";
 import { deviceId } from "../platform/deviceId";
 import * as Network from "expo-network";
 import {
@@ -30,6 +31,7 @@ export interface AppServices {
   todaySession: TodaySessionStore;
   outbox: OutboxRunner | null;
   incrementalSync: IncrementalSync | null;
+  mediaRunner: MediaRunner | null;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -66,6 +68,7 @@ export function createAppServices(): AppServices {
       todaySession,
       outbox: null,
       incrementalSync: null,
+      mediaRunner: null,
     };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -89,12 +92,18 @@ export function createAppServices(): AppServices {
   );
   api.attachSession(session);
   const localCache = new LocalCache(localStore);
+  const accountId = () => {
+    const current = session.getSnapshot();
+    return current.phase === "authenticated" ? current.userId : null;
+  };
+  const mediaRunner = new MediaRunner(api, localCache, accountId, async () => {
+    await queryClient.invalidateQueries({ queryKey: ["sync-media"] });
+    await queryClient.invalidateQueries({ queryKey: ["checkin"] });
+    await queryClient.invalidateQueries({ queryKey: ["plan-detail"] });
+  });
   const outbox = new OutboxRunner(
     localCache,
-    () => {
-      const current = session.getSnapshot();
-      return current.phase === "authenticated" ? current.userId : null;
-    },
+    accountId,
     (operation) =>
       api.put(
         `/plans/${encodeURIComponent(operation.planId)}/checkins/${operation.businessDate}`,
@@ -117,15 +126,13 @@ export function createAppServices(): AppServices {
       await queryClient.invalidateQueries({ queryKey: ["calendar"] });
       await queryClient.invalidateQueries({ queryKey: ["plan-detail"] });
       await queryClient.invalidateQueries({ queryKey: ["checkin"] });
+      void mediaRunner.trigger().catch(() => {});
     },
   );
   const incrementalSync = new IncrementalSync(
     api,
     localCache,
-    () => {
-      const current = session.getSnapshot();
-      return current.phase === "authenticated" ? current.userId : null;
-    },
+    accountId,
     deviceId,
     async (changes) => {
       if (
@@ -166,5 +173,6 @@ export function createAppServices(): AppServices {
     todaySession,
     outbox,
     incrementalSync,
+    mediaRunner,
   };
 }

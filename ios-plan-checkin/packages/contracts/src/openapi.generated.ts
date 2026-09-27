@@ -1227,6 +1227,49 @@ export interface components {
       updatedAt?: string;
       syncSequence: number;
     };
+    CreateUploadIntentRequest: {
+      /** @enum {unknown} */
+      mime: "image/jpeg" | "image/png" | "image/heic" | "image/webp";
+      bytes: number;
+      sha256: string;
+    };
+    UploadIntent: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uri */
+      uploadUrl: string;
+      /** Format: date-time */
+      expiresAt: string;
+      headers: {
+        [key: string]: string;
+      };
+    };
+    CompleteMediaRequest:
+      | {
+          /** Format: uuid */
+          checkinId: string;
+        }
+      | {
+          /** Format: uuid */
+          oneTimePlanId: string;
+        };
+    Media: {
+      /** Format: uuid */
+      id: string;
+      /** @enum {unknown} */
+      status: "ready" | "deleted";
+      /** @enum {unknown} */
+      mime: "image/jpeg" | "image/png" | "image/heic" | "image/webp";
+      bytes: number;
+      checkinId: string | null;
+      oneTimePlanId: string | null;
+    };
+    MediaDownload: {
+      /** Format: uri */
+      url: string;
+      /** Format: date-time */
+      expiresAt: string;
+    };
     SyncChange: {
       seq: number;
       /** @enum {unknown} */
@@ -3827,7 +3870,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateUploadIntentRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -3835,7 +3882,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["UploadIntent"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -3897,7 +3949,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CompleteMediaRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -3905,7 +3961,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Media"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -3975,7 +4036,15 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: {
+              /** @constant */
+              deleted: true;
+            };
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -4042,7 +4111,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["MediaDownload"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

@@ -5,6 +5,7 @@ import { PlansModule } from "./plans/plans.module.js";
 import { RecordsModule } from "./records/records.module.js";
 import { SocialModule } from "./social/social.module.js";
 import { SyncModule } from "./sync/sync.module.js";
+import { MediaModule } from "./media/media.module.js";
 import { ViewsModule } from "./views/views.module.js";
 
 @Controller("health")
@@ -24,6 +25,7 @@ class HealthController {
     ViewsModule,
     SocialModule,
     SyncModule,
+    MediaModule,
   ],
   controllers: [HealthController],
 })

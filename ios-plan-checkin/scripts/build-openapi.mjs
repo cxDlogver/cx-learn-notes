@@ -505,6 +505,38 @@ Object.assign(schemas, {
       syncSequence: { type: "integer", minimum: 0 },
     },
   ),
+  CreateUploadIntentRequest: properties(["mime", "bytes", "sha256"], {
+    mime: { enum: ["image/jpeg", "image/png", "image/heic", "image/webp"] },
+    bytes: { type: "integer", minimum: 1, maximum: 20 * 1024 * 1024 },
+    sha256: { type: "string", pattern: "^[0-9a-fA-F]{64}$" },
+  }),
+  UploadIntent: properties(["id", "uploadUrl", "expiresAt", "headers"], {
+    id: uuid,
+    uploadUrl: str("uri"),
+    expiresAt: instant,
+    headers: { type: "object", additionalProperties: str() },
+  }),
+  CompleteMediaRequest: {
+    oneOf: [
+      properties(["checkinId"], { checkinId: uuid }),
+      properties(["oneTimePlanId"], { oneTimePlanId: uuid }),
+    ],
+  },
+  Media: properties(
+    ["id", "status", "mime", "bytes", "checkinId", "oneTimePlanId"],
+    {
+      id: uuid,
+      status: { enum: ["ready", "deleted"] },
+      mime: { enum: ["image/jpeg", "image/png", "image/heic", "image/webp"] },
+      bytes: { type: "integer", minimum: 1 },
+      checkinId: { oneOf: [uuid, { type: "null" }] },
+      oneTimePlanId: { oneOf: [uuid, { type: "null" }] },
+    },
+  ),
+  MediaDownload: properties(["url", "expiresAt"], {
+    url: str("uri"),
+    expiresAt: instant,
+  }),
   SyncChange: properties(
     ["seq", "entityType", "entityId", "operation", "changedAt"],
     {
@@ -899,6 +931,10 @@ const responseData = {
   updateGroup: ref("Group"),
   putCheckin: ref("Checkin"),
   getCheckin: ref("Checkin"),
+  createUploadIntent: ref("UploadIntent"),
+  completeMedia: ref("Media"),
+  deleteMedia: properties(["deleted"], { deleted: { const: true } }),
+  getMediaDownloadUrl: ref("MediaDownload"),
   createOneTimeResolution: ref("OneTimeResolution"),
   reviseOneTimeResolution: ref("OneTimeResolution"),
   getSyncChanges: ref("SyncChanges"),
@@ -932,6 +968,8 @@ const bodies = {
   resumePlan: "LifecycleRequest",
   archivePlan: "LifecycleRequest",
   putCheckin: "PutCheckinRequest",
+  createUploadIntent: "CreateUploadIntentRequest",
+  completeMedia: "CompleteMediaRequest",
   createOneTimeResolution: "OneTimeResolutionRequest",
   reviseOneTimeResolution: "OneTimeResolutionRequest",
   createFriendRequest: "CreateFriendRequestRequest",

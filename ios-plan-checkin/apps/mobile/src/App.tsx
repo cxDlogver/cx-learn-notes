@@ -9,10 +9,12 @@ export default function App() {
   const [services] = useState(createAppServices);
   useEffect(() => {
     services.outbox?.start();
+    services.mediaRunner?.start();
     const wake = () => {
       void (async () => {
         await services.outbox?.trigger().catch(() => {});
         await services.incrementalSync?.trigger().catch(() => {});
+        await services.mediaRunner?.trigger().catch(() => {});
       })();
     };
     void services.session.restore().then(wake);
@@ -30,6 +32,7 @@ export default function App() {
       networkSubscription.remove();
       appSubscription.remove();
       services.outbox?.stop();
+      services.mediaRunner?.stop();
     };
   }, [services]);
   return (

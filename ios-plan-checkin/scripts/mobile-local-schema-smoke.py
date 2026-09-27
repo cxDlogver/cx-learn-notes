@@ -28,7 +28,7 @@ def apply(connection, migrations):
 
 def main():
     migrations = json.load(sys.stdin)
-    assert [entry["version"] for entry in migrations] == [1, 2, 3, 4]
+    assert [entry["version"] for entry in migrations] == [1, 2, 3, 4, 5]
     with tempfile.TemporaryDirectory(prefix="plan-checkin-local-") as directory:
         first = Path(directory) / "account-a.db"
         second = Path(directory) / "account-b.db"
@@ -46,17 +46,17 @@ def main():
             recovered.execute("PRAGMA foreign_keys = ON")
             apply(recovered, migrations)
             assert recovered.execute("SELECT count(*) FROM local_outbox").fetchone()[0] == 1
-            assert recovered.execute("PRAGMA user_version").fetchone()[0] == 4
+            assert recovered.execute("PRAGMA user_version").fetchone()[0] == 5
             assert recovered.execute("SELECT details_json FROM local_checkin_conflicts WHERE operation_id='operation-a'").fetchone()[0] == '{"conflictId":"conflict-a"}'
             assert recovered.execute("SELECT status FROM local_outbox WHERE operation_id='operation-a'").fetchone()[0] == "sending"
             recovered.execute("UPDATE local_outbox SET status='retry',next_attempt_at=NULL,last_error_code='INTERRUPTED' WHERE status='sending' AND next_attempt_at<='2026-09-28T00:03:00Z'")
             assert recovered.execute("SELECT status,last_error_code FROM local_outbox WHERE operation_id='operation-a'").fetchone() == ("retry", "INTERRUPTED")
             try:
-                apply(recovered, [{"version": 5, "sql": "CREATE TABLE should_rollback(id INTEGER); INVALID SQL"}])
+                apply(recovered, [{"version": 6, "sql": "CREATE TABLE should_rollback(id INTEGER); INVALID SQL"}])
                 raise AssertionError("broken migration unexpectedly succeeded")
             except sqlite3.OperationalError:
                 pass
-            assert recovered.execute("PRAGMA user_version").fetchone()[0] == 4
+            assert recovered.execute("PRAGMA user_version").fetchone()[0] == 5
             assert "should_rollback" not in {row[0] for row in recovered.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             assert recovered.execute("SELECT count(*) FROM local_checkins").fetchone()[0] == 1
         with closing(sqlite3.connect(second, isolation_level=None)) as isolated:
