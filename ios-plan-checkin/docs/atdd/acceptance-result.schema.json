@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:plan-checkin:atdd:acceptance-result:v1",
+  "title": "计划打卡 iOS V1 ATDD 验收结果",
+  "description": "每个用例与参数变体独立保存一个 result.json；证据路径相对当前用例目录。",
+  "type": "object",
+  "additionalProperties": false,
+  "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+  "then": {
+    "properties": {
+      "assertions": {
+        "properties": {
+          "functional": { "properties": { "status": { "const": "PASS" } } },
+          "visual": { "properties": { "status": { "enum": ["PASS", "N_A"] } } },
+          "negative": { "properties": { "status": { "const": "PASS" } } }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "enum": ["PASS", "FAIL", "BLOCKED"] } }, "required": ["status"] },
+      "then": { "properties": { "evidence": { "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "status": { "const": "BLOCKED" } }, "required": ["status"] },
+      "then": { "required": ["blocker"], "properties": { "blocker": { "type": "string", "minLength": 1 } } }
+    }
+  ],
+  "required": [
+    "caseId",
+    "variant",
+    "runId",
+    "status",
+    "sourceRefs",
+    "build",
+    "environment",
+    "fixtureId",
+    "startedAt",
+    "endedAt",
+    "assertions",
+    "evidence",
+    "reviewer"
+  ],
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "pattern": "^(AUTH|PLAN|CHECK|STAT|SYNC|SOCIAL|NOTIFY|DATA|UI|SEC)-[0-9]{2}$"
+    },
+    "variant": { "type": "string", "minLength": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"] },
+    "sourceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "pageKey": { "type": ["string", "null"] },
+    "penNodeId": { "type": ["string", "null"] },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appVersion", "gitCommit", "sourceDigest"],
+      "properties": {
+        "appVersion": { "type": "string", "minLength": 1 },
+        "gitCommit": { "type": "string", "minLength": 7 },
+        "sourceDigest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prd", "uiux", "technical", "pageMap", "visualTree", "pen"],
+          "properties": {
+            "prd": { "$ref": "#/$defs/sha256" },
+            "uiux": { "$ref": "#/$defs/sha256" },
+            "technical": { "$ref": "#/$defs/sha256" },
+            "pageMap": { "$ref": "#/$defs/sha256" },
+            "visualTree": { "$ref": "#/$defs/sha256" },
+            "pen": { "$ref": "#/$defs/sha256" }
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "planTimezone", "serverNowUtc", "network"],
+      "if": { "properties": { "kind": { "enum": ["simulator", "device"] } }, "required": ["kind"] },
+      "then": { "required": ["device", "osVersion", "screenScale", "fontScale"] },
+      "properties": {
+        "kind": { "enum": ["simulator", "device", "api"] },
+        "device": { "type": "string", "minLength": 1 },
+        "osVersion": { "type": "string", "minLength": 1 },
+        "screenScale": { "type": "number", "exclusiveMinimum": 0 },
+        "fontScale": { "type": "number", "exclusiveMinimum": 0 },
+        "planTimezone": { "type": "string", "minLength": 1 },
+        "businessDate": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "serverNowUtc": { "type": "string", "format": "date-time" },
+        "network": { "enum": ["online", "offline", "flaky", "mixed"] }
+      }
+    },
+    "fixtureId": { "type": "string", "minLength": 1 },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["functional", "visual", "negative"],
+      "properties": {
+        "functional": { "$ref": "#/$defs/requiredAssertion" },
+        "visual": { "$ref": "#/$defs/assertion" },
+        "negative": { "$ref": "#/$defs/requiredAssertion" }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceFile" }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "reviewedAt", "reason"],
+      "properties": {
+        "kind": { "enum": ["human", "ai"] },
+        "name": { "type": "string", "minLength": 1 },
+        "modelVersion": { "type": ["string", "null"] },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "blocker": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "requiredAssertion": {
+      "allOf": [
+        { "$ref": "#/$defs/assertion" },
+        { "properties": { "status": { "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"] } } }
+      ]
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "if": { "properties": { "status": { "enum": ["PASS", "FAIL", "BLOCKED"] } }, "required": ["status"] },
+      "then": { "properties": { "evidencePaths": { "minItems": 1 } } },
+      "required": ["expected", "actual", "status", "evidencePaths"],
+      "properties": {
+        "expected": { "type": "string", "minLength": 1 },
+        "actual": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN", "N_A"] },
+        "evidencePaths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        }
+      }
+    },
+    "evidenceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "path", "sha256", "mimeType"],
+      "properties": {
+        "code": { "enum": ["S", "H", "V", "A", "D", "L", "N", "F", "T"] },
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mimeType": { "type": "string", "minLength": 3 }
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\.\\.)[^\\\\]+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    }
+  }
+}

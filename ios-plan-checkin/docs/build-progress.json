@@ -1,0 +1,754 @@
+{
+  "schemaVersion": "1.0",
+  "planPath": "docs/构建计划-计划打卡-iOS-v1.md",
+  "planSha256": "ccbbda3659a4a7b7057fc5c7d95a16455e58f03e571ac1a1d9cd76e443a7d04c",
+  "projectSubtree": "ios-plan-checkin",
+  "integrationBranch": "codex/ios-plan-checkin-build",
+  "projectBaseCommit": null,
+  "integrationCommit": null,
+  "tasks": [
+    {
+      "priority": 1,
+      "id": "FND-01",
+      "dependsOn": [],
+      "staticGates": [
+        "S0",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 2,
+      "id": "FND-02",
+      "dependsOn": [
+        "FND-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 3,
+      "id": "FND-03",
+      "dependsOn": [
+        "FND-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S3"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 4,
+      "id": "FND-04",
+      "dependsOn": [
+        "FND-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S1"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 5,
+      "id": "FND-05",
+      "dependsOn": [
+        "FND-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S2",
+        "S5",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 6,
+      "id": "CORE-01",
+      "dependsOn": [
+        "FND-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S1"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 7,
+      "id": "CORE-02",
+      "dependsOn": [
+        "CORE-01"
+      ],
+      "staticGates": [
+        "S0"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 8,
+      "id": "CORE-03",
+      "dependsOn": [
+        "FND-05",
+        "CORE-01",
+        "CORE-02"
+      ],
+      "staticGates": [
+        "S0",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 9,
+      "id": "CORE-04",
+      "dependsOn": [
+        "FND-04",
+        "CORE-03"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 10,
+      "id": "CORE-05",
+      "dependsOn": [
+        "CORE-04"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 11,
+      "id": "CORE-06",
+      "dependsOn": [
+        "CORE-02",
+        "CORE-03",
+        "FND-04"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 12,
+      "id": "CORE-07",
+      "dependsOn": [
+        "CORE-06",
+        "CORE-03"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 13,
+      "id": "CORE-08",
+      "dependsOn": [
+        "CORE-07",
+        "CORE-02"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 14,
+      "id": "APP-01",
+      "dependsOn": [
+        "FND-02",
+        "FND-03",
+        "FND-04"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 15,
+      "id": "APP-02",
+      "dependsOn": [
+        "APP-01",
+        "CORE-04",
+        "CORE-05"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 16,
+      "id": "APP-03",
+      "dependsOn": [
+        "APP-01",
+        "CORE-06"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 17,
+      "id": "APP-04",
+      "dependsOn": [
+        "FND-02",
+        "APP-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 18,
+      "id": "APP-05",
+      "dependsOn": [
+        "APP-03",
+        "APP-04",
+        "CORE-07",
+        "CORE-08"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 19,
+      "id": "APP-06",
+      "dependsOn": [
+        "APP-05",
+        "CORE-08"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 20,
+      "id": "APP-07",
+      "dependsOn": [
+        "APP-02",
+        "APP-03",
+        "APP-05",
+        "APP-06",
+        "FND-03"
+      ],
+      "staticGates": [
+        "S0",
+        "S3",
+        "S4"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 21,
+      "id": "SOC-01",
+      "dependsOn": [
+        "CORE-03",
+        "CORE-04",
+        "FND-04"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 22,
+      "id": "SOC-02",
+      "dependsOn": [
+        "SOC-01",
+        "CORE-06",
+        "CORE-07"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 23,
+      "id": "SYNC-01",
+      "dependsOn": [
+        "APP-04",
+        "APP-05",
+        "CORE-07"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 24,
+      "id": "SYNC-02",
+      "dependsOn": [
+        "SYNC-01",
+        "CORE-08",
+        "SOC-02"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 25,
+      "id": "SYNC-03",
+      "dependsOn": [
+        "SYNC-02",
+        "CORE-07"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 26,
+      "id": "SYNC-04",
+      "dependsOn": [
+        "APP-04",
+        "CORE-07",
+        "SYNC-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 27,
+      "id": "SOC-03",
+      "dependsOn": [
+        "APP-01",
+        "SOC-01",
+        "SOC-02",
+        "FND-03"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 28,
+      "id": "SOC-04",
+      "dependsOn": [
+        "CORE-06",
+        "CORE-08",
+        "APP-01",
+        "FND-02"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 29,
+      "id": "SOC-05",
+      "dependsOn": [
+        "SOC-02",
+        "SOC-03",
+        "SOC-04",
+        "FND-05"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 30,
+      "id": "OPS-01",
+      "dependsOn": [
+        "APP-02",
+        "CORE-05"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S3",
+        "S4",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 31,
+      "id": "OPS-02",
+      "dependsOn": [
+        "CORE-08",
+        "SOC-02",
+        "SYNC-04",
+        "OPS-01"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S5",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 32,
+      "id": "OPS-03",
+      "dependsOn": [
+        "CORE-06",
+        "SOC-02",
+        "SYNC-04",
+        "OPS-02"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 33,
+      "id": "OPS-04",
+      "dependsOn": [
+        "FND-05",
+        "CORE-04",
+        "CORE-07",
+        "SYNC-02",
+        "SOC-05"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S5",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 34,
+      "id": "OPS-05",
+      "dependsOn": [
+        "OPS-03",
+        "OPS-04",
+        "FND-05"
+      ],
+      "staticGates": [
+        "S0",
+        "S2",
+        "S5",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    },
+    {
+      "priority": 35,
+      "id": "OPS-06",
+      "dependsOn": [
+        "FND-01",
+        "FND-02",
+        "FND-03",
+        "FND-04",
+        "FND-05",
+        "CORE-01",
+        "CORE-02",
+        "CORE-03",
+        "CORE-04",
+        "CORE-05",
+        "CORE-06",
+        "CORE-07",
+        "CORE-08",
+        "APP-01",
+        "APP-02",
+        "APP-03",
+        "APP-04",
+        "APP-05",
+        "APP-06",
+        "APP-07",
+        "SOC-01",
+        "SOC-02",
+        "SYNC-01",
+        "SYNC-02",
+        "SYNC-03",
+        "SYNC-04",
+        "SOC-03",
+        "SOC-04",
+        "SOC-05",
+        "OPS-01",
+        "OPS-02",
+        "OPS-03",
+        "OPS-04",
+        "OPS-05"
+      ],
+      "staticGates": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6"
+      ],
+      "status": "NOT_STARTED",
+      "branch": null,
+      "worktreePath": null,
+      "baseCommit": null,
+      "taskCommit": null,
+      "integratedCommit": null
+    }
+  ]
+}

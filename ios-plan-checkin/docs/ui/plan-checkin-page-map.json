@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "title": "计划打卡 iOS v1 · 页面结构与画板顺序",
+  "designFile": "plan-checkin.pen",
+  "specification": "../UIUX-计划打卡-iOS-v1.md",
+  "referenceImagePattern": "uxpilot-export-09-27-26_{imageNo:02}.png",
+  "canvas": {
+    "screenWidth": 393,
+    "screenHeight": 852,
+    "columnStep": 450,
+    "rowStep": 1050,
+    "sectionHeaderHeight": 62,
+    "screenTopOffset": 80
+  },
+  "groups": [
+    {
+      "id": "onboarding",
+      "order": 1,
+      "name": "登录与首次使用",
+      "entry": "phone-login",
+      "screens": [
+        { "key": "phone-login", "order": 1, "imageNo": 13, "title": "手机号登录", "purpose": "输入手机号并获取短信验证码", "next": ["sms-code"] },
+        { "key": "sms-code", "order": 2, "imageNo": 3, "title": "验证码输入", "purpose": "验证短信验证码；新用户进入资料设置，老用户进入今日", "next": ["profile-setup", "today-active"] },
+        { "key": "profile-setup", "order": 3, "imageNo": 29, "title": "设置昵称与头像", "purpose": "新用户完成首次资料设置", "next": ["today-empty", "today-active"] }
+      ]
+    },
+    {
+      "id": "today-records",
+      "order": 2,
+      "name": "今日与打卡记录",
+      "entry": "today-active",
+      "screens": [
+        { "key": "today-empty", "order": 4, "imageNo": 8, "title": "今日空状态", "purpose": "尚无待处理计划时引导创建", "next": ["plan-list", "create-fixed"] },
+        { "key": "today-active", "order": 5, "imageNo": 27, "title": "今日待处理", "purpose": "展示待处理、每周可记录与截止事项", "next": ["checkin-do", "checkin-avoid", "plan-detail-one-time"] },
+        { "key": "checkin-do", "order": 6, "imageNo": 11, "title": "要做打卡", "purpose": "选择完成、未完成或跳过并填写可选内容", "next": ["edit-record", "today-active"] },
+        { "key": "checkin-avoid", "order": 7, "imageNo": 4, "title": "不要做打卡", "purpose": "选择做到了或发生了并填写可选内容", "next": ["today-active"] },
+        { "key": "edit-record", "order": 8, "imageNo": 12, "title": "修改记录", "purpose": "修改已提交的当日结果、备注与照片", "next": ["today-active", "record-conflict"] },
+        { "key": "backfill-record", "order": 9, "imageNo": 26, "title": "补记历史日期", "purpose": "为允许补记的过去日期提交结果", "next": ["calendar"] },
+        { "key": "record-conflict", "order": 10, "imageNo": 31, "title": "记录冲突处理", "purpose": "选择两台设备中要保留的记录版本", "next": ["today-active"] },
+        { "key": "sync-feedback", "order": 11, "imageNo": 30, "title": "离线与同步反馈", "purpose": "展示本地保存、同步失败及照片重传状态", "next": ["today-active"] }
+      ]
+    },
+    {
+      "id": "calendar",
+      "order": 3,
+      "name": "日历与日期回顾",
+      "entry": "calendar",
+      "screens": [
+        { "key": "calendar", "order": 12, "imageNo": 20, "title": "全局日历", "purpose": "按日期查看各计划结果，并进入补记或详情", "next": ["backfill-record", "edit-record", "plan-detail-fixed"] }
+      ]
+    },
+    {
+      "id": "plan-management",
+      "order": 4,
+      "name": "计划创建与管理",
+      "entry": "plan-list",
+      "screens": [
+        { "key": "plan-list", "order": 13, "imageNo": 18, "title": "计划列表", "purpose": "按状态和分组浏览计划", "next": ["create-fixed", "create-weekly", "create-one-time", "plan-detail-fixed", "group-management"] },
+        { "key": "create-fixed", "order": 14, "imageNo": 6, "title": "新建固定日期计划", "purpose": "设置要做方向、星期和起止日期", "next": ["plan-list", "reminders"] },
+        { "key": "create-weekly", "order": 15, "imageNo": 23, "title": "新建每周目标计划", "purpose": "设置每周目标天数与周期规则", "next": ["plan-list", "reminders"] },
+        { "key": "create-one-time", "order": 16, "imageNo": 1, "title": "新建一次性任务", "purpose": "设置一次性任务截止日期与可选提醒", "next": ["plan-list", "reminders"] },
+        { "key": "edit-plan", "order": 17, "imageNo": 17, "title": "编辑计划", "purpose": "修改计划规则并说明对历史记录的影响", "next": ["plan-detail-fixed"] },
+        { "key": "group-management", "order": 18, "imageNo": 21, "title": "分组管理", "purpose": "新建、编辑、排序分组", "next": ["plan-list"] },
+        { "key": "plan-confirmations", "order": 19, "imageNo": 2, "title": "计划状态确认弹窗", "purpose": "暂停、恢复、归档、删除的操作确认", "next": ["plan-list"] }
+      ]
+    },
+    {
+      "id": "plan-details",
+      "order": 5,
+      "name": "计划详情与统计",
+      "entry": "plan-detail-fixed",
+      "screens": [
+        { "key": "plan-detail-fixed", "order": 20, "imageNo": 15, "title": "固定日期计划详情", "purpose": "查看完成率、状态分布与历史记录", "next": ["edit-plan", "select-share-friend"] },
+        { "key": "plan-detail-weekly", "order": 21, "imageNo": 32, "title": "每周目标计划详情", "purpose": "查看本周进度、历史达标周与记录", "next": ["edit-plan", "select-share-friend"] },
+        { "key": "plan-detail-one-time", "order": 22, "imageNo": 14, "title": "一次性任务详情", "purpose": "查看逾期状态、处理操作与任务时间线", "next": ["edit-plan", "plan-confirmations"] }
+      ]
+    },
+    {
+      "id": "friends-sharing",
+      "order": 6,
+      "name": "朋友与计划分享",
+      "entry": "friends-list",
+      "screens": [
+        { "key": "friends-list", "order": 23, "imageNo": 9, "title": "朋友列表", "purpose": "浏览好友、处理申请并进入好友主页", "next": ["friend-profile"] },
+        { "key": "friend-profile", "order": 24, "imageNo": 19, "title": "朋友主页", "purpose": "查看双方分享关系与已分享计划", "next": ["share-permissions", "friend-readonly-detail"] },
+        { "key": "friend-readonly-detail", "order": 25, "imageNo": 28, "title": "好友计划只读详情", "purpose": "查看被授权计划的进度与历史", "next": ["friend-profile"] },
+        { "key": "select-share-friend", "order": 26, "imageNo": 5, "title": "选择分享好友", "purpose": "从好友中选择计划授权对象", "next": ["share-preview"] },
+        { "key": "share-preview", "order": 27, "imageNo": 25, "title": "分享预览", "purpose": "确认对方可见内容与隐私边界", "next": ["share-permissions", "plan-detail-fixed"] },
+        { "key": "share-permissions", "order": 28, "imageNo": 16, "title": "分享权限设置", "purpose": "逐个计划开启或撤销好友访问权限", "next": ["friend-profile"] }
+      ]
+    },
+    {
+      "id": "settings-data",
+      "order": 7,
+      "name": "设置、提醒与数据",
+      "entry": "settings-home",
+      "screens": [
+        { "key": "settings-home", "order": 29, "imageNo": 10, "title": "设置首页", "purpose": "进入账号、通知、数据与关于页面", "next": ["reminders", "export-data", "delete-account"] },
+        { "key": "reminders", "order": 30, "imageNo": 24, "title": "提醒设置", "purpose": "分别设置固定日期、每周目标与一次性任务提醒", "next": ["settings-home"] },
+        { "key": "export-data", "order": 31, "imageNo": 22, "title": "导出数据", "purpose": "配置并生成包含记录、照片和关系数据的 ZIP", "next": ["settings-home", "delete-account"] },
+        { "key": "delete-account", "order": 32, "imageNo": 7, "title": "删除账号", "purpose": "明确永久删除后果并二次确认", "next": ["settings-home"] }
+      ]
+    }
+  ]
+}

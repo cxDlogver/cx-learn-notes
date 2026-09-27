@@ -1,0 +1,3902 @@
+{
+  "schemaVersion": "1.0",
+  "title": "计划打卡 iOS V1 ATDD/BDD 用例索引",
+  "normativeMatrix": "docs/ATDD-BDD-计划打卡-iOS-v1-验收矩阵.md",
+  "matrixSha256": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
+  "sourceDigest": {
+    "prd": "b59c6806f7354d23accb3377d8310c5822814df550173e0ca67c6d42d8700b35",
+    "uiux": "bb0c7b9f8ec12fa834cf876fd88cee1498d14cfaa7e3dbb0d11794eacca62e67",
+    "technical": "5dee92d692b5926d4e147e744000a4a0365c1bb51f95bb7b781c162187e6b9ad",
+    "pageMap": "e5196ef7aea577c4d166dcb6c91a1eaf63dad5d98f111d6e77bf5f3795d7acd5",
+    "visualTree": "ad7e18c57940ec0aa0afcb5b665d396f9d56ff0e4257dddcf76d720e3b6d8087",
+    "pen": "eb586ed8eefc166a11cf1dc84ebe7638a67981d7fe8adcb38522154b28d31e09"
+  },
+  "caseCount": 197,
+  "screenCount": 32,
+  "screens": [
+    {
+      "key": "phone-login",
+      "order": 1,
+      "title": "手机号登录",
+      "frameId": "W4Wk7k",
+      "referenceImage": "uxpilot-export-09-27-26_13.png"
+    },
+    {
+      "key": "sms-code",
+      "order": 2,
+      "title": "验证码输入",
+      "frameId": "m10O6",
+      "referenceImage": "uxpilot-export-09-27-26_03.png"
+    },
+    {
+      "key": "profile-setup",
+      "order": 3,
+      "title": "设置昵称与头像",
+      "frameId": "y1XyY",
+      "referenceImage": "uxpilot-export-09-27-26_29.png"
+    },
+    {
+      "key": "today-empty",
+      "order": 4,
+      "title": "今日空状态",
+      "frameId": "q68dDE",
+      "referenceImage": "uxpilot-export-09-27-26_08.png"
+    },
+    {
+      "key": "today-active",
+      "order": 5,
+      "title": "今日待处理",
+      "frameId": "C96GrU",
+      "referenceImage": "uxpilot-export-09-27-26_27.png"
+    },
+    {
+      "key": "checkin-do",
+      "order": 6,
+      "title": "要做打卡",
+      "frameId": "QaMP6",
+      "referenceImage": "uxpilot-export-09-27-26_11.png"
+    },
+    {
+      "key": "checkin-avoid",
+      "order": 7,
+      "title": "不要做打卡",
+      "frameId": "GzZMT",
+      "referenceImage": "uxpilot-export-09-27-26_04.png"
+    },
+    {
+      "key": "edit-record",
+      "order": 8,
+      "title": "修改记录",
+      "frameId": "USxd0",
+      "referenceImage": "uxpilot-export-09-27-26_12.png"
+    },
+    {
+      "key": "backfill-record",
+      "order": 9,
+      "title": "补记历史日期",
+      "frameId": "wGcr0",
+      "referenceImage": "uxpilot-export-09-27-26_26.png"
+    },
+    {
+      "key": "record-conflict",
+      "order": 10,
+      "title": "记录冲突处理",
+      "frameId": "Mzx7h",
+      "referenceImage": "uxpilot-export-09-27-26_31.png"
+    },
+    {
+      "key": "sync-feedback",
+      "order": 11,
+      "title": "离线与同步反馈",
+      "frameId": "bXcUR",
+      "referenceImage": "uxpilot-export-09-27-26_30.png"
+    },
+    {
+      "key": "calendar",
+      "order": 12,
+      "title": "全局日历",
+      "frameId": "H6M9O1",
+      "referenceImage": "uxpilot-export-09-27-26_20.png"
+    },
+    {
+      "key": "plan-list",
+      "order": 13,
+      "title": "计划列表",
+      "frameId": "jPino",
+      "referenceImage": "uxpilot-export-09-27-26_18.png"
+    },
+    {
+      "key": "create-fixed",
+      "order": 14,
+      "title": "新建固定日期计划",
+      "frameId": "z94rpw",
+      "referenceImage": "uxpilot-export-09-27-26_06.png"
+    },
+    {
+      "key": "create-weekly",
+      "order": 15,
+      "title": "新建每周目标计划",
+      "frameId": "DrlJo",
+      "referenceImage": "uxpilot-export-09-27-26_23.png"
+    },
+    {
+      "key": "create-one-time",
+      "order": 16,
+      "title": "新建一次性任务",
+      "frameId": "vsuII",
+      "referenceImage": "uxpilot-export-09-27-26_01.png"
+    },
+    {
+      "key": "edit-plan",
+      "order": 17,
+      "title": "编辑计划",
+      "frameId": "Qg1pJ",
+      "referenceImage": "uxpilot-export-09-27-26_17.png"
+    },
+    {
+      "key": "group-management",
+      "order": 18,
+      "title": "分组管理",
+      "frameId": "lPKOC",
+      "referenceImage": "uxpilot-export-09-27-26_21.png"
+    },
+    {
+      "key": "plan-confirmations",
+      "order": 19,
+      "title": "计划状态确认弹窗",
+      "frameId": "t56VJZ",
+      "referenceImage": "uxpilot-export-09-27-26_02.png"
+    },
+    {
+      "key": "plan-detail-fixed",
+      "order": 20,
+      "title": "固定日期计划详情",
+      "frameId": "mlcGv",
+      "referenceImage": "uxpilot-export-09-27-26_15.png"
+    },
+    {
+      "key": "plan-detail-weekly",
+      "order": 21,
+      "title": "每周目标计划详情",
+      "frameId": "IMmyc",
+      "referenceImage": "uxpilot-export-09-27-26_32.png"
+    },
+    {
+      "key": "plan-detail-one-time",
+      "order": 22,
+      "title": "一次性任务详情",
+      "frameId": "tZuml",
+      "referenceImage": "uxpilot-export-09-27-26_14.png"
+    },
+    {
+      "key": "friends-list",
+      "order": 23,
+      "title": "朋友列表",
+      "frameId": "XD1pp",
+      "referenceImage": "uxpilot-export-09-27-26_09.png"
+    },
+    {
+      "key": "friend-profile",
+      "order": 24,
+      "title": "朋友主页",
+      "frameId": "N1euu",
+      "referenceImage": "uxpilot-export-09-27-26_19.png"
+    },
+    {
+      "key": "friend-readonly-detail",
+      "order": 25,
+      "title": "好友计划只读详情",
+      "frameId": "TeTWC",
+      "referenceImage": "uxpilot-export-09-27-26_28.png"
+    },
+    {
+      "key": "select-share-friend",
+      "order": 26,
+      "title": "选择分享好友",
+      "frameId": "GOzpS",
+      "referenceImage": "uxpilot-export-09-27-26_05.png"
+    },
+    {
+      "key": "share-preview",
+      "order": 27,
+      "title": "分享预览",
+      "frameId": "MMIhD",
+      "referenceImage": "uxpilot-export-09-27-26_25.png"
+    },
+    {
+      "key": "share-permissions",
+      "order": 28,
+      "title": "分享权限设置",
+      "frameId": "N7LC5V",
+      "referenceImage": "uxpilot-export-09-27-26_16.png"
+    },
+    {
+      "key": "settings-home",
+      "order": 29,
+      "title": "设置首页",
+      "frameId": "ZLkv2",
+      "referenceImage": "uxpilot-export-09-27-26_10.png"
+    },
+    {
+      "key": "reminders",
+      "order": 30,
+      "title": "提醒设置",
+      "frameId": "CtzVR",
+      "referenceImage": "uxpilot-export-09-27-26_24.png"
+    },
+    {
+      "key": "export-data",
+      "order": 31,
+      "title": "导出数据",
+      "frameId": "X9rXl",
+      "referenceImage": "uxpilot-export-09-27-26_22.png"
+    },
+    {
+      "key": "delete-account",
+      "order": 32,
+      "title": "删除账号",
+      "frameId": "Ytizk",
+      "referenceImage": "uxpilot-export-09-27-26_07.png"
+    }
+  ],
+  "cases": [
+    {
+      "id": "AUTH-01",
+      "given": "未登录，大陆有效手机号，短信桩可发送",
+      "when": "输入号码并请求验证码",
+      "then": {
+        "functional": "返回 challengeId、冷却时间；进入验证码步骤",
+        "visual": "手机号页、验证码页、倒计时与设计对应；输入焦点清楚",
+        "negative": "不展示完整手机号给旁观列表/日志；未创建会话"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 83
+    },
+    {
+      "id": "AUTH-02",
+      "given": "未登录，手机号为空、位数错误、非法前缀的参数组",
+      "when": "请求验证码",
+      "then": {
+        "functional": "表单阻止或 API 返回稳定输入错误",
+        "visual": "错误信息贴近输入框、按钮状态正确",
+        "negative": "不调用短信供应商，不生成 challenge"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 84
+    },
+    {
+      "id": "AUTH-03",
+      "given": "challenge 有效、验证码正确，手机号已有账户",
+      "when": "提交验证码",
+      "then": {
+        "functional": "登录成功、进入本人首页、会话续期可用",
+        "visual": "加载态到首页无跳闪/遮挡",
+        "negative": "不进入新用户资料页，不泄露其他账户数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 85
+    },
+    {
+      "id": "AUTH-04",
+      "given": "challenge 有效，手机号为新用户",
+      "when": "验证并设置唯一用户名/昵称",
+      "then": {
+        "functional": "完成账户创建，用户名可用于搜索",
+        "visual": "首次资料页字段、提交反馈和首页对应设计",
+        "negative": "不允许跳过必填用户名；不产生第二账户"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 86
+    },
+    {
+      "id": "AUTH-05",
+      "given": "验证码错误、过期、已使用的参数组",
+      "when": "提交验证码",
+      "then": {
+        "functional": "返回相应稳定错误码，可按规则重发",
+        "visual": "错误文案与焦点可读，输入内容按设计保留",
+        "negative": "不登录、不创建会话、不消费错误码以外的验证码"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 87
+    },
+    {
+      "id": "AUTH-06",
+      "given": "同手机号/设备/IP 超过发送或校验阈值",
+      "when": "再次请求/提交",
+      "then": {
+        "functional": "返回限流及可重试时间",
+        "visual": "倒计时与禁用态一致",
+        "negative": "不再向短信通道发送；不泄漏账户是否存在"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 88
+    },
+    {
+      "id": "AUTH-07",
+      "given": "A 已登录，用户名与现有用户重名",
+      "when": "修改用户名并保存",
+      "then": {
+        "functional": "返回 `USERNAME_TAKEN`；原用户名不变",
+        "visual": "字段错误、焦点、保存状态正确",
+        "negative": "不覆盖他人用户名，不产生重复唯一值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 89
+    },
+    {
+      "id": "AUTH-08",
+      "given": "A 已登录，access token 过期、refresh 有效",
+      "when": "打开计划列表",
+      "then": {
+        "functional": "透明续期后获取本人数据",
+        "visual": "仅短暂加载，不弹无因登录页",
+        "negative": "不重复写计划/打卡；旧 refresh 轮换失效"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L",
+        "D"
+      ],
+      "matrixLine": 90
+    },
+    {
+      "id": "AUTH-09",
+      "given": "A 已登录于两设备",
+      "when": "在 A1 登出或撤销全部会话",
+      "then": {
+        "functional": "对应会话不可再访问；A2 按动作范围保留/撤销",
+        "visual": "返回登录页，私有内容从视图消失",
+        "negative": "Keychain/本地缓存不继续展示 A1 的旧私有内容"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 91
+    },
+    {
+      "id": "AUTH-10",
+      "given": "A 的验证码/姓名/笔记被输入",
+      "when": "查看客户端与服务端日志、崩溃上报",
+      "then": {
+        "functional": "仅存在脱敏标识和 requestId",
+        "visual": "N/A",
+        "negative": "不出现短信码、完整手机号、token、笔记正文或照片 URL"
+      },
+      "evidenceCodes": [
+        "L",
+        "A"
+      ],
+      "matrixLine": 92
+    },
+    {
+      "id": "AUTH-11",
+      "given": "验证码页已打开，倒计时未结束/已结束",
+      "when": "自动填充验证码、修改号码、重发的参数组",
+      "then": {
+        "functional": "自动填充可提交；修改号码回退；倒计时后重发成功",
+        "visual": "脱敏号码、倒计时与重发状态清楚",
+        "negative": "未到时不重复发短信；发送失败不清空号码"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 93
+    },
+    {
+      "id": "AUTH-12",
+      "given": "A 已登录并已验证当前身份",
+      "when": "输入新手机号并通过新号码验证码",
+      "then": {
+        "functional": "手机号变更且旧会话按策略撤销，新手机号可恢复账户",
+        "visual": "换号确认与等待时间可读",
+        "negative": "不允许未经旧身份/新号码验证直接改号"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 94
+    },
+    {
+      "id": "AUTH-13",
+      "given": "新用户首次登录成功",
+      "when": "进入今日空态并观察系统权限",
+      "then": {
+        "functional": "显示创建计划入口，核心流程可继续",
+        "visual": "空态文案与设计一致",
+        "negative": "不在此时强制索取通知/相册/相机权限，不强迫先加好友"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "N",
+        "L"
+      ],
+      "matrixLine": 95
+    },
+    {
+      "id": "AUTH-14",
+      "given": "A 已在旧设备同步计划、分组、记录、好友和分享",
+      "when": "在全新设备以同手机号登录",
+      "then": {
+        "functional": "恢复所有云端范围数据，进度与旧设备一致",
+        "visual": "首次恢复加载与完成状态清楚",
+        "negative": "不恢复旧设备尚未同步的本地草稿，不把旧设备 Keychain token 复制过来"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 96
+    },
+    {
+      "id": "PLAN-01",
+      "given": "A 已登录，创建固定计划",
+      "when": "填名称、起始日、周一/三/五并保存",
+      "then": {
+        "functional": "计划和规则 V1 创建；仅指定周几生成应打卡",
+        "visual": "创建表单、选择态、计划详情与设计对应",
+        "negative": "不在其他周几生成待办"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 102
+    },
+    {
+      "id": "PLAN-02",
+      "given": "固定计划未选周几",
+      "when": "点击保存或直接调 API",
+      "then": {
+        "functional": "客户端提示至少选一天，服务端拒绝空数组",
+        "visual": "错误靠近周几选择区、保存态可识别",
+        "negative": "不创建无效计划"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 103
+    },
+    {
+      "id": "PLAN-03",
+      "given": "每日固定计划",
+      "when": "选择每日并保存",
+      "then": {
+        "functional": "规则等价于七天全选，连续统计按自然天展示",
+        "visual": "每日选项与周几控件状态一致",
+        "negative": "不出现“连续应打卡次数”误称为间隔天数"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 104
+    },
+    {
+      "id": "PLAN-04",
+      "given": "固定计划选择开始/结束日",
+      "when": "设结束日在开始日前，或开始/结束同日",
+      "then": {
+        "functional": "前者拒绝；同日若是选中周几则允许并仅生成该日",
+        "visual": "日期错误与边界日期展示正确",
+        "negative": "不自动交换日期或扩展区间"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 105
+    },
+    {
+      "id": "PLAN-05",
+      "given": "每周目标计划，N=1、7 的边界组",
+      "when": "保存并查看周视图",
+      "then": {
+        "functional": "两个边界值均合法，周目标正确",
+        "visual": "目标控件、周进度标注对应设计",
+        "negative": "不被固定计划周几规则误限"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 106
+    },
+    {
+      "id": "PLAN-06",
+      "given": "每周目标 N=0、8、非整数的参数组",
+      "when": "保存或直接调 API",
+      "then": {
+        "functional": "稳定校验错误",
+        "visual": "数值输入和错误态清楚",
+        "negative": "不创建计划、不隐式钳制为 1 或 7"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 107
+    },
+    {
+      "id": "PLAN-07",
+      "given": "新建一次性任务，截止日为计划时区今天/未来",
+      "when": "保存",
+      "then": {
+        "functional": "创建成功，初态待办；提醒默认关闭",
+        "visual": "截止日、待办状态、关闭开关与设计对应",
+        "negative": "不自动调度提醒或生成每日打卡项"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 108
+    },
+    {
+      "id": "PLAN-08",
+      "given": "新建一次性任务，截止日为计划时区昨天",
+      "when": "保存或直接调 API",
+      "then": {
+        "functional": "返回日期错误",
+        "visual": "错误文案定位截止日",
+        "negative": "不创建历史到期任务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 109
+    },
+    {
+      "id": "PLAN-09",
+      "given": "设备位于时区 Z1，新计划创建",
+      "when": "保存后将设备切到 Z2",
+      "then": {
+        "functional": "计划持有 Z1 IANA 时区，详情提示以 Z1 计算",
+        "visual": "时区提示可见且不遮挡日期",
+        "negative": "历史业务日期和到期日不迁移到 Z2"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 110
+    },
+    {
+      "id": "PLAN-10",
+      "given": "已创建计划，尝试编辑所属时区",
+      "when": "用 UI/篡改 PATCH 请求变更时区",
+      "then": {
+        "functional": "UI 不提供变更；API 拒绝/忽略并保持原值",
+        "visual": "详情时区标识保持原样",
+        "negative": "不重算历史记录、不生成第二套日期"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 111
+    },
+    {
+      "id": "PLAN-11",
+      "given": "固定计划已有历史打卡",
+      "when": "修改周几/结束日等影响义务的规则",
+      "then": {
+        "functional": "新版本从下一个计划业务日生效",
+        "visual": "详情提示生效日期；当前日仍按旧规则显示",
+        "negative": "历史记录/统计不按新版本重写"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 112
+    },
+    {
+      "id": "PLAN-12",
+      "given": "每周目标已有本周记录",
+      "when": "修改 N，跨同一自然周",
+      "then": {
+        "functional": "下一业务日生效；本周因规则版本跨周而标为不完整周",
+        "visual": "周统计明确“本周不计最终达成”的解释",
+        "negative": "不把旧 N 作用于已记录日期；本周不计连续周"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 113
+    },
+    {
+      "id": "PLAN-13",
+      "given": "同一计划只改标题/分组",
+      "when": "保存",
+      "then": {
+        "functional": "非统计字段立即更新",
+        "visual": "列表/详情标题和分组同步",
+        "negative": "不新增规则版本、不改变统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 114
+    },
+    {
+      "id": "PLAN-14",
+      "given": "A 有多个分组和计划",
+      "when": "新建、重命名、排序分组",
+      "then": {
+        "functional": "分组列表与计划归属更新",
+        "visual": "分组页空态、排序、标签位置与设计对应",
+        "negative": "不改变计划时区/打卡记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 115
+    },
+    {
+      "id": "PLAN-15",
+      "given": "分组内含计划",
+      "when": "删除该分组",
+      "then": {
+        "functional": "计划转入默认分组，计划与历史仍可见",
+        "visual": "分组消失、计划在默认组正确显示",
+        "negative": "不删除计划或历史记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 116
+    },
+    {
+      "id": "PLAN-16",
+      "given": "活跃固定计划今天尚未提交",
+      "when": "今天暂停",
+      "then": {
+        "functional": "当天待打卡立即取消，今日提醒撤销；以后不生成义务",
+        "visual": "计划显示暂停，今日卡片不再显示待打卡",
+        "negative": "今天日终不记未记录；不删除过去记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "T"
+      ],
+      "matrixLine": 117
+    },
+    {
+      "id": "PLAN-17",
+      "given": "活跃计划今天已经提交",
+      "when": "今天暂停/归档",
+      "then": {
+        "functional": "已提交记录保留，生命周期立即改变",
+        "visual": "暂停/归档标记与历史结果同时可见",
+        "negative": "不回滚今日成功，不重复计算统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 118
+    },
+    {
+      "id": "PLAN-18",
+      "given": "今天暂停且未提交，随后同日恢复",
+      "when": "重新打开计划",
+      "then": {
+        "functional": "新义务最早从下一业务日开始",
+        "visual": "今日卡片不重新出现待打卡",
+        "negative": "不补出今天的义务、缺卡或通知"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "T"
+      ],
+      "matrixLine": 119
+    },
+    {
+      "id": "PLAN-19",
+      "given": "计划暂停跨越选定日",
+      "when": "暂停期间打开日历并尝试打卡",
+      "then": {
+        "functional": "该日期不合法，恢复后仅新有效日期可打卡",
+        "visual": "暂停日期的日历状态与设计相符",
+        "negative": "不产生暂停期缺卡或可补记日期"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 120
+    },
+    {
+      "id": "PLAN-20",
+      "given": "计划归档，有既有记录",
+      "when": "查看归档列表，再恢复",
+      "then": {
+        "functional": "归档保留历史；显式恢复后按规则重新使用",
+        "visual": "归档入口、空态/详情与设计对应",
+        "negative": "归档期间不提醒、不接受新记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 121
+    },
+    {
+      "id": "PLAN-21",
+      "given": "活跃计划有历史/照片/分享",
+      "when": "执行删除并二次确认",
+      "then": {
+        "functional": "计划立即不可读；后台清理记录、照片、数值、分享",
+        "visual": "不可逆提示含影响范围；删除后列表消失",
+        "negative": "不把删除当归档；朋友不能再读旧历史/照片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 122
+    },
+    {
+      "id": "PLAN-22",
+      "given": "删除确认弹层打开",
+      "when": "取消或关闭弹层",
+      "then": {
+        "functional": "保留计划与全部数据",
+        "visual": "返回原界面且滚动位置合理",
+        "negative": "不发 DELETE，不撤销分享"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 123
+    },
+    {
+      "id": "PLAN-23",
+      "given": "断网且有本地计划镜像",
+      "when": "新建/改规则/分享相关写入",
+      "then": {
+        "functional": "明确提示需联网，已有计划仍可读",
+        "visual": "离线提示与禁用态可识别",
+        "negative": "不把这些操作加入打卡 outbox，不产生伪成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "L",
+        "D"
+      ],
+      "matrixLine": 124
+    },
+    {
+      "id": "PLAN-24",
+      "given": "创建一次性任务，方向选择“不要做”",
+      "when": "通过 UI/篡改 API 提交",
+      "then": {
+        "functional": "UI 固定“要做”并解释；服务端拒绝非法方向",
+        "visual": "方向说明不含反义示例",
+        "negative": "不创建“不要做”的一次性任务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 125
+    },
+    {
+      "id": "PLAN-25",
+      "given": "创建计划表单未填名称，或有未保存更改",
+      "when": "保存/离开页面",
+      "then": {
+        "functional": "空名就地报错；有改动离开需选择继续编辑或放弃",
+        "visual": "错误、离开保护弹层与设计对应",
+        "negative": "不静默丢失表单，也不创建空名计划"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 126
+    },
+    {
+      "id": "PLAN-26",
+      "given": "创建表单全部合法，但 API 保存失败/响应慢",
+      "when": "保存、重试",
+      "then": {
+        "functional": "保留全部字段；成功仅产生一项计划",
+        "visual": "保存中、失败重试、成功反馈准确",
+        "negative": "不因重复点击/重试创建多个计划"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 127
+    },
+    {
+      "id": "PLAN-27",
+      "given": "创建开始日在未来的循环计划",
+      "when": "保存并返回今日",
+      "then": {
+        "functional": "创建成功，说明未来生效日期；详情可查看",
+        "visual": "“已创建，X 日开始”提示正确",
+        "negative": "开始前不在今日产生待处理或可打卡入口"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 128
+    },
+    {
+      "id": "PLAN-28",
+      "given": "某计划属于分组 G1 且有历史记录",
+      "when": "移到 G2/未分组",
+      "then": {
+        "functional": "归属更新，历史与统计不变",
+        "visual": "列表分组位置正确",
+        "negative": "不复制/删除记录或改变分享授权"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 129
+    },
+    {
+      "id": "PLAN-29",
+      "given": "有运行中、暂停、归档、已结束一次性任务",
+      "when": "进入计划列表切换筛选",
+      "then": {
+        "functional": "各状态在对应筛选可见，默认先显示运行中",
+        "visual": "筛选选中态与卡片状态匹配",
+        "negative": "不把归档误列为运行中或删除"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 130
+    },
+    {
+      "id": "PLAN-30",
+      "given": "创建页选择不同类型和方向",
+      "when": "逐项切换并查看保存前摘要",
+      "then": {
+        "functional": "渐进显示正确字段；摘要表达规则和方向",
+        "visual": "单列滚动表单、固定保存按钮、摘要与设计一致",
+        "negative": "切换类型不提交旧字段组合；不要做摘要无反义病句"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 131
+    },
+    {
+      "id": "PLAN-31",
+      "given": "计划已在分组 G1，用户改选 G2",
+      "when": "保存并刷新各组列表",
+      "then": {
+        "functional": "计划只属于 G2，未分组是合法独立位置",
+        "visual": "G1 卡片消失，G2 卡片出现",
+        "negative": "不同时归属于两个分组，不复制打卡历史"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 132
+    },
+    {
+      "id": "CHECK-01",
+      "given": "固定计划在选定日，今天未提交",
+      "when": "打开并选择成功",
+      "then": {
+        "functional": "产生一条当前有效记录，状态成功",
+        "visual": "今日待打卡→成功，成功反馈与设计一致",
+        "negative": "不生成第二条记录，不把今天保留为待打卡"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 138
+    },
+    {
+      "id": "CHECK-02",
+      "given": "固定计划在选定日",
+      "when": "选择失败并填写原因",
+      "then": {
+        "functional": "保存失败与原因；统计按失败处理",
+        "visual": "失败状态、原因区域和错误反馈清晰",
+        "negative": "不自动转成功/跳过；原因不出现在锁屏通知"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 139
+    },
+    {
+      "id": "CHECK-03",
+      "given": "固定计划在选定日",
+      "when": "选择跳过",
+      "then": {
+        "functional": "保存显式跳过，统计分母排除",
+        "visual": "跳过状态与未记录有可辨识文案",
+        "negative": "不把跳过计成功或未记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 140
+    },
+    {
+      "id": "CHECK-04",
+      "given": "固定计划今天未做任何操作",
+      "when": "当天结束后刷新日历",
+      "then": {
+        "functional": "昨天成为未记录，今天是新待打卡",
+        "visual": "未记录状态在日历/详情清楚",
+        "negative": "不自动写失败/跳过记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 141
+    },
+    {
+      "id": "CHECK-05",
+      "given": "固定计划在非选定周几",
+      "when": "点击日期/直接 PUT",
+      "then": {
+        "functional": "UI 禁止提交，API 返回日期不合法",
+        "visual": "日期禁用态明显",
+        "negative": "不生成记录或提醒，不影响连续计算"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 142
+    },
+    {
+      "id": "CHECK-06",
+      "given": "每周目标计划，本周任意有效业务日",
+      "when": "记录成功/失败/跳过各一次",
+      "then": {
+        "functional": "每个日期各有一条有效记录，周成功数只加成功",
+        "visual": "周视图和三种状态正确",
+        "negative": "空白日期不显示待打卡或未记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 143
+    },
+    {
+      "id": "CHECK-07",
+      "given": "每周目标 N=3 已成功 3 次",
+      "when": "第 4 个有效日继续成功",
+      "then": {
+        "functional": "允许继续记录，成功数为 4",
+        "visual": "进度达到目标后仍有可用记录入口",
+        "negative": "不因达标禁止打卡；达成率不超 100%"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 144
+    },
+    {
+      "id": "CHECK-08",
+      "given": "一次性任务未到期",
+      "when": "选择完成",
+      "then": {
+        "functional": "终态为按时完成，记录实际完成时刻",
+        "visual": "完成状态和日期正确",
+        "negative": "不再生成提醒/待办，不产生逐日记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 145
+    },
+    {
+      "id": "CHECK-09",
+      "given": "一次性任务已过截止日",
+      "when": "选择完成",
+      "then": {
+        "functional": "终态为迟完成，显示实际完成日期",
+        "visual": "逾期→迟完成变化清楚",
+        "negative": "不回写到截止日假装按时完成"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 146
+    },
+    {
+      "id": "CHECK-10",
+      "given": "一次性任务未终态",
+      "when": "选择失败或取消的参数组",
+      "then": {
+        "functional": "进入对应终态",
+        "visual": "失败/取消标识清楚、确认层符合设计",
+        "negative": "不可再完成，不继续提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 147
+    },
+    {
+      "id": "CHECK-11",
+      "given": "一次性任务已经终态",
+      "when": "通过新建式终态入口再次提交/重复请求",
+      "then": {
+        "functional": "重复幂等返回原结果；新建式提交被拒绝",
+        "visual": "详情不出现“再次完成”入口",
+        "negative": "不产生第二个终态；纠错必须走原记录修正"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 148
+    },
+    {
+      "id": "CHECK-12",
+      "given": "固定计划过去某选定且有效日期未记录",
+      "when": "通过补记入口提交",
+      "then": {
+        "functional": "保存历史业务日期和真实提交时刻，`isBackfilled=true`",
+        "visual": "日期选择与“补记”标记可见",
+        "negative": "不把提交日当业务日，不改其他日期"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 149
+    },
+    {
+      "id": "CHECK-13",
+      "given": "过去日期属于非选定日/暂停期/开始前/结束后的参数组",
+      "when": "尝试补记",
+      "then": {
+        "functional": "返回日期不合法",
+        "visual": "日期禁用与解释正确",
+        "negative": "不产生任何有效记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 150
+    },
+    {
+      "id": "CHECK-14",
+      "given": "日期为今天或未来",
+      "when": "从补记入口选日期，并从今日入口提交今天",
+      "then": {
+        "functional": "补记只允许严格过去；今天可通过正常入口提交，未来拒绝",
+        "visual": "日期选择边界与入口文案清楚",
+        "negative": "不产生未来记录、不把今天标为补记"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 151
+    },
+    {
+      "id": "CHECK-15",
+      "given": "既有正常记录，revision=1",
+      "when": "修改结果/文字并保存",
+      "then": {
+        "functional": "原记录变 revision=2，`isRevised=true`，历史版本可追溯",
+        "visual": "修改后显示“已修改”与最新内容",
+        "negative": "不新增同日第二条有效记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 152
+    },
+    {
+      "id": "CHECK-16",
+      "given": "已补记的历史记录",
+      "when": "再次修改",
+      "then": {
+        "functional": "`isBackfilled` 与 `isRevised` 都为真",
+        "visual": "两个标记都可见且不互相覆盖",
+        "negative": "不抹掉原补记日期/创建时间"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 153
+    },
+    {
+      "id": "CHECK-17",
+      "given": "同一计划同一天重复点击提交",
+      "when": "连续提交同一操作",
+      "then": {
+        "functional": "幂等只产生一条有效记录",
+        "visual": "按钮防连击、结果状态稳定",
+        "negative": "不出现双提示/双统计/双照片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 154
+    },
+    {
+      "id": "CHECK-18",
+      "given": "记录包含数值，单位已配置",
+      "when": "输入合法十进制值并保存",
+      "then": {
+        "functional": "原值和单位按十进制持久化，统计精度正确",
+        "visual": "数值格式/单位与设计一致",
+        "negative": "不出现二进制浮点尾数；数值不自动决定成功，也不暴露给朋友"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 155
+    },
+    {
+      "id": "CHECK-19",
+      "given": "数值为空、非法格式、超出配置边界的参数组",
+      "when": "保存",
+      "then": {
+        "functional": "按产品配置允许空或返回稳定校验错误",
+        "visual": "输入错误态可读，不截断文字",
+        "negative": "不静默钳制/四舍五入原始值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 156
+    },
+    {
+      "id": "CHECK-20",
+      "given": "记录可加私人照片，相册权限已开",
+      "when": "选择并上传合规图片",
+      "then": {
+        "functional": "基础记录和照片分别成功，图片可由主人预览",
+        "visual": "缩略图、上传进度、完成态与设计一致",
+        "negative": "不上传原图 EXIF 位置信息；朋友不可访问"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "D"
+      ],
+      "matrixLine": 157
+    },
+    {
+      "id": "CHECK-21",
+      "given": "相册权限拒绝/图片格式或大小无效",
+      "when": "选择图片或直接上传",
+      "then": {
+        "functional": "提示权限设置/格式错误，基础记录仍可提交",
+        "visual": "权限与错误弹层无遮挡",
+        "negative": "不留下可公开的孤儿对象，不回滚已保存记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 158
+    },
+    {
+      "id": "CHECK-22",
+      "given": "记录含长文字、失败原因、照片/数值",
+      "when": "打开详情并编辑",
+      "then": {
+        "functional": "全部本人可见字段可读，编辑后及时更新",
+        "visual": "长文换行/滚动/安全区与设计一致",
+        "negative": "不裁切关键按钮，不把私人字段放入分享 DTO"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 159
+    },
+    {
+      "id": "CHECK-23",
+      "given": "“不要做”固定/每周计划，名称“不吸烟”",
+      "when": "主动选择成功并保存",
+      "then": {
+        "functional": "记录 success，业务含义为当天未吸烟",
+        "visual": "按钮/结果写“今天做到了，没有吸烟”或等价正确表述",
+        "negative": "不出现“已完成吸烟”或把未打开 App 当成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 160
+    },
+    {
+      "id": "CHECK-24",
+      "given": "“不要做”计划，用户发生原本要克制的行为",
+      "when": "主动选择失败并保存",
+      "then": {
+        "functional": "记录 failure，失败原因可填写",
+        "visual": "按钮/结果写“今天发生了吸烟”等正确方向文案",
+        "negative": "不将发生行为解释为成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 161
+    },
+    {
+      "id": "CHECK-25",
+      "given": "“不要做”每日计划昨天未打开 App",
+      "when": "今天查看昨天",
+      "then": {
+        "functional": "昨天为派生“未记录”",
+        "visual": "日历/详情用未记录图文",
+        "negative": "不自动判定成功，不生成打卡记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 162
+    },
+    {
+      "id": "CHECK-26",
+      "given": "“不要做”计划今天先报成功，后来发生该行为",
+      "when": "修改今天结果为失败",
+      "then": {
+        "functional": "原记录修订，`isRevised=true`、最近修改时间更新",
+        "visual": "已修正标签与失败文案同屏正确",
+        "negative": "不保留成功统计/双记录；好友不误认原始状态"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 163
+    },
+    {
+      "id": "CHECK-27",
+      "given": "“不要做”计划名称无法自然拼接成句",
+      "when": "打开结果页",
+      "then": {
+        "functional": "仍可选择成功/失败/跳过",
+        "visual": "使用中性文案“今天做到了/今天没有做到”，副标题保留计划名",
+        "negative": "不机械拼接产生反义或病句"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 164
+    },
+    {
+      "id": "CHECK-28",
+      "given": "合法日期，尚未选择结果，附件均为空",
+      "when": "点结果选项但不保存；再仅保存结果",
+      "then": {
+        "functional": "选择阶段不写记录；只填结果可提交",
+        "visual": "三种结果同等可见，保存按钮状态明确",
+        "negative": "不要求照片/数值/备注，不把点击选项当提交"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 165
+    },
+    {
+      "id": "CHECK-29",
+      "given": "同日已有一条有效记录",
+      "when": "再从今日卡片进入",
+      "then": {
+        "functional": "进入“修改 X 日的记录”，预填原结果/备注/照片/数值",
+        "visual": "标题/按钮为“保存修改”",
+        "negative": "不出现新建式提交，不累计第二成功天数"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 166
+    },
+    {
+      "id": "CHECK-30",
+      "given": "一次性任务结果页",
+      "when": "查看选项并尝试跳过",
+      "then": {
+        "functional": "仅完成/失败/取消有效",
+        "visual": "三个操作可辨识",
+        "negative": "不出现跳过，不接受一次性 `skip` API"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 167
+    },
+    {
+      "id": "CHECK-31",
+      "given": "非法日期或归档后旧深链接进入结果页",
+      "when": "打开旧链接并尝试提交",
+      "then": {
+        "functional": "显示原因与返回；API 拒绝",
+        "visual": "错误页非空白、返回入口可达",
+        "negative": "不绕过日期/生命周期校验写入"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 168
+    },
+    {
+      "id": "CHECK-32",
+      "given": "一次性任务因误操作被标失败/取消，已有原终态记录",
+      "when": "从原记录进入修正并保存正确结果",
+      "then": {
+        "functional": "原终态记录修订，时间与结果按纠错规则更新且留审计",
+        "visual": "“修正原记录”入口、已修正标记和时间线明确",
+        "negative": "不以第二次新建式完成绕过终态、不创建第二结果"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 169
+    },
+    {
+      "id": "CHECK-33",
+      "given": "打卡页可从相机添加私人照片，尚未授予相机权限",
+      "when": "首次使用相机并分别同意/拒绝",
+      "then": {
+        "functional": "同意后可拍照暂存；拒绝后仍可纯结果提交",
+        "visual": "权限解释先于系统弹窗，拒绝后有设置入口",
+        "negative": "不在登录时索相机权限，不因拒绝取消基本记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 170
+    },
+    {
+      "id": "CHECK-34",
+      "given": "A 的固定计划历史记录失败，已分享给 B",
+      "when": "A 把失败修订为成功，随后查看今日/历史、日历、详情、统计、B 只读页",
+      "then": {
+        "functional": "五处均显示同一成功状态，完成率与连续数重算，B 看见“已修正”",
+        "visual": "五处状态图文一致",
+        "negative": "不出现某页仍失败、旧统计缓存或 B 看到私人附件"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 171
+    },
+    {
+      "id": "STAT-01",
+      "given": "固定计划今日尚未提交，过去 4 个应打卡日成功 2、失败 1、未记录 1",
+      "when": "查看完成率",
+      "then": {
+        "functional": "`2/4=50%`，今日不进分母，统计截止日可见",
+        "visual": "完成率、截止日期与状态说明对齐",
+        "negative": "不显示 2/5 或把今日算失败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 179
+    },
+    {
+      "id": "STAT-02",
+      "given": "STAT-01 同一数据",
+      "when": "今天提交成功",
+      "then": {
+        "functional": "`3/5=60%`，今天立即计入",
+        "visual": "数字与环形/进度组件同步更新",
+        "negative": "不等到明天才计入；无双计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 180
+    },
+    {
+      "id": "STAT-03",
+      "given": "固定计划结束的 3 个应打卡日：成功、跳过、失败",
+      "when": "查看统计",
+      "then": {
+        "functional": "分母为 2、分子 1，完成率 50%",
+        "visual": "跳过与失败颜色/文案有区分",
+        "negative": "不把跳过算失败或成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 181
+    },
+    {
+      "id": "STAT-04",
+      "given": "统计窗口只有跳过或没有任何闭合义务",
+      "when": "查看统计",
+      "then": {
+        "functional": "分母 0，返回不可计算状态",
+        "visual": "显示“暂无可计算数据”及解释",
+        "negative": "不显示 0%/NaN/100%"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 182
+    },
+    {
+      "id": "STAT-05",
+      "given": "固定周一/三/五连续三次成功",
+      "when": "查看连续指标",
+      "then": {
+        "functional": "连续应打卡次数为 3",
+        "visual": "指标标题不误写“连续 3 天”",
+        "negative": "不把间隔的周二/四当中断"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 183
+    },
+    {
+      "id": "STAT-06",
+      "given": "每日计划连续成功后遇失败/跳过/未记录的参数组",
+      "when": "查看连续天数",
+      "then": {
+        "functional": "三种情形均从下一次成功重新计",
+        "visual": "连续天数与日历状态一致",
+        "negative": "不把未记录自动变失败记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 184
+    },
+    {
+      "id": "STAT-07",
+      "given": "固定计划非选定日跨周末",
+      "when": "查看连续",
+      "then": {
+        "functional": "连续序列只看相邻应打卡日",
+        "visual": "日历空白与成功序列一致",
+        "negative": "非应打卡日不虚增/中断连续"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 185
+    },
+    {
+      "id": "STAT-08",
+      "given": "本周周一～周日完整，每周目标 N=3，成功 2",
+      "when": "周日结束后查看",
+      "then": {
+        "functional": "周状态未达成，达成率 `2/3`",
+        "visual": "未达成状态与进度文案对应",
+        "negative": "周六查看时不能提前判失败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 186
+    },
+    {
+      "id": "STAT-09",
+      "given": "完整周 N=3，成功 3、4、7 的参数组",
+      "when": "查看周达成",
+      "then": {
+        "functional": "全部显示 100% 且达成",
+        "visual": "进度封顶，不溢出组件",
+        "negative": "不显示 133%/233%"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 187
+    },
+    {
+      "id": "STAT-10",
+      "given": "每周目标本周有空白日期、失败、跳过",
+      "when": "查看周日历/统计",
+      "then": {
+        "functional": "空白保持中性，成功数独立计算",
+        "visual": "空白格不使用“未记录”视觉",
+        "negative": "不把空白/跳过计失败的逐日义务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 188
+    },
+    {
+      "id": "STAT-11",
+      "given": "周三创建、周五结束、周中暂停或恢复的参数组",
+      "when": "周日查看",
+      "then": {
+        "functional": "该周为不完整周，只展示记录，排除达成率与连续周数",
+        "visual": "“不完整周”解释可见",
+        "negative": "不把该周算达成/失败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 189
+    },
+    {
+      "id": "STAT-12",
+      "given": "同一周内目标 N 改变，次日生效",
+      "when": "查看历史与本周",
+      "then": {
+        "functional": "本周因混合版本不完整；前周用旧 N，后续完整周用新 N",
+        "visual": "当前周说明与历史数字不冲突",
+        "negative": "不重新计算旧周目标"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 190
+    },
+    {
+      "id": "STAT-13",
+      "given": "连续 2 个完整周达成，中间一个完整周未达成",
+      "when": "查看连续周数",
+      "then": {
+        "functional": "连续周数按最后一段完整达成周计算",
+        "visual": "标题明确“连续达成周”",
+        "negative": "不让不完整周充当达成周/失败周"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 191
+    },
+    {
+      "id": "STAT-14",
+      "given": "已达成本周 N=3，修订一条成功为失败，使成功数变 2",
+      "when": "刷新周统计",
+      "then": {
+        "functional": "本周进度变 2/3，提醒重新评估",
+        "visual": "已达成标识撤回，周卡无残影",
+        "negative": "不保留错误的 100% 缓存"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "L"
+      ],
+      "matrixLine": 192
+    },
+    {
+      "id": "STAT-15",
+      "given": "一次性任务截止日末未完成",
+      "when": "跨过计划时区下一日 00:00",
+      "then": {
+        "functional": "待办→逾期，显示已逾期",
+        "visual": "逾期文案/颜色/日期符合设计",
+        "negative": "不生成每日未记录或固定计划连续指标"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 193
+    },
+    {
+      "id": "STAT-16",
+      "given": "一次性任务逾期后完成",
+      "when": "查看任务和统计",
+      "then": {
+        "functional": "显示迟完成及实际完成日期",
+        "visual": "迟完成标签与终态一致",
+        "negative": "不算按时完成率或自动改截止日"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 194
+    },
+    {
+      "id": "STAT-17",
+      "given": "计划时区与设备时区不同，设备日历先跨日",
+      "when": "查看今日/统计",
+      "then": {
+        "functional": "仍按计划时区日界线计算",
+        "visual": "时区提示、业务日期可见",
+        "negative": "不用设备日期提前改变待打卡/完成率"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 195
+    },
+    {
+      "id": "STAT-18",
+      "given": "IANA 夏令时跳变日及闰年 2 月 29 日种子",
+      "when": "跨业务日/周并查看",
+      "then": {
+        "functional": "日期闭合按时区日界线，周仍周一至周日",
+        "visual": "日期文案不重复/跳日",
+        "negative": "不以固定 24 小时或设备 UTC 偏移计算"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 196
+    },
+    {
+      "id": "SYNC-01",
+      "given": "A 已缓存计划规则，设备完全断网",
+      "when": "新增今日打卡并重启应用",
+      "then": {
+        "functional": "本地记录和 outbox 持久；重新打开仍可见",
+        "visual": "显示“已保存在本机”而非“已同步”",
+        "negative": "服务器此时无该记录；不丢稿"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 204
+    },
+    {
+      "id": "SYNC-02",
+      "given": "SYNC-01 本地待同步",
+      "when": "恢复网络",
+      "then": {
+        "functional": "状态依次同步中→已同步；服务器一条有效记录",
+        "visual": "同步图标/文案依次变化且不闪错误",
+        "negative": "不重复写入/统计，不永久停留同步中"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 205
+    },
+    {
+      "id": "SYNC-03",
+      "given": "网络在服务器提交后、客户端收响应前断开",
+      "when": "用同幂等键重试",
+      "then": {
+        "functional": "返回首次结果，客户端取得服务端 revision",
+        "visual": "状态最终已同步",
+        "negative": "不生成第二条有效记录/第二次提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 206
+    },
+    {
+      "id": "SYNC-04",
+      "given": "A 断网，已有同日记录 revision=1",
+      "when": "本地修改结果/文字，联网",
+      "then": {
+        "functional": "服务器修订为 revision=2、保留旧版",
+        "visual": "本机先显示待同步，再显示已同步/已修改",
+        "negative": "不以新增记录方式写入"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 207
+    },
+    {
+      "id": "SYNC-05",
+      "given": "A 断网，过去合法日期未记录",
+      "when": "补记并重启后联网",
+      "then": {
+        "functional": "以原业务日期提交，`isBackfilled=true`",
+        "visual": "补记与同步标签同时可见",
+        "negative": "不把联网日当业务日期"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 208
+    },
+    {
+      "id": "SYNC-06",
+      "given": "A1、A2 都缓存同记录 revision=1，均离线修改",
+      "when": "A1 同步成功，再同步 A2",
+      "then": {
+        "functional": "A2 收 409，显示本机版/云端版和两版时间",
+        "visual": "冲突界面完整、两个选择按钮明确",
+        "negative": "不默默按最后上传覆盖 A1"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 209
+    },
+    {
+      "id": "SYNC-07",
+      "given": "SYNC-06 冲突界面",
+      "when": "选择保留云端",
+      "then": {
+        "functional": "A2 更新为云端版并清理该 outbox 项",
+        "visual": "详情显示云端结果，冲突提示消失",
+        "negative": "不把被舍弃本机版写到服务器"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 210
+    },
+    {
+      "id": "SYNC-08",
+      "given": "SYNC-06 冲突界面",
+      "when": "选择使用本机版",
+      "then": {
+        "functional": "以最新 baseRevision 生成显式新修订，历史可追溯",
+        "visual": "详情显示所选本机版及“已修改”",
+        "negative": "不产生第二有效记录，不绕过当前计划合法性"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 211
+    },
+    {
+      "id": "SYNC-09",
+      "given": "A 离线录入结果和照片，恢复网络时对象存储故障",
+      "when": "执行同步",
+      "then": {
+        "functional": "基础结果先同步；照片保持失败可重试",
+        "visual": "显示记录已同步、附件失败两个独立状态",
+        "negative": "不回滚基础打卡，不把失败照片标为已上传"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "F",
+        "T"
+      ],
+      "matrixLine": 212
+    },
+    {
+      "id": "SYNC-10",
+      "given": "同一计划连续离线修改同一日期两次",
+      "when": "联网同步队列",
+      "then": {
+        "functional": "按本地顺序合并为正确最终版本，审计可追溯",
+        "visual": "页面最终内容与最后本机选择一致",
+        "negative": "不乱序造成旧内容反盖新内容"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 213
+    },
+    {
+      "id": "SYNC-11",
+      "given": "outbox 因服务端 429/5xx 暂时失败",
+      "when": "等待重试/手动重试",
+      "then": {
+        "functional": "有界退避；可恢复后最终成功",
+        "visual": "显示失败和重试入口，不误标已同步",
+        "negative": "不无间隔重复轰炸接口，不丢本地稿"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L",
+        "T"
+      ],
+      "matrixLine": 214
+    },
+    {
+      "id": "SYNC-12",
+      "given": "增量同步 cursor 已过期，设备仍有未同步记录",
+      "when": "拉取变更",
+      "then": {
+        "functional": "先保留 outbox/附件，再重建远端镜像并重放可提交操作",
+        "visual": "无重复/闪烁的旧分享内容",
+        "negative": "不清空本机待同步稿，不跳过撤销 tombstone"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 215
+    },
+    {
+      "id": "SYNC-13",
+      "given": "用户在另一设备撤销分享/删除计划，本机离线",
+      "when": "本机联网并拉增量",
+      "then": {
+        "functional": "应用 tombstone、清缓存并退出受限页",
+        "visual": "旧详情不再可交互",
+        "negative": "不再发起旧权限数据/照片读取；离线阶段不虚称远端已清除"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 216
+    },
+    {
+      "id": "SYNC-14",
+      "given": "A 断网跨过计划时区日界线",
+      "when": "以旧“今天”保存并在新日联网",
+      "then": {
+        "functional": "服务端按合法历史补记判定或返回可解释错误，本机稿可复制/重试",
+        "visual": "错误状态说明具体日期原因",
+        "negative": "不把客户端时钟当权威，不静默丢稿"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 217
+    },
+    {
+      "id": "SYNC-15",
+      "given": "A 曾在线同步多个计划、日历与本人记录，现完全断网",
+      "when": "打开今日、计划、日历、详情",
+      "then": {
+        "functional": "已缓存的本人数据可读；写入仅限记录相关动作",
+        "visual": "离线状态清楚、旧数据不会伪装实时",
+        "negative": "不把好友搜索/新授权显示为可离线成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 218
+    },
+    {
+      "id": "SOCIAL-01",
+      "given": "A 有唯一用户名，B 搜索",
+      "when": "输入用户名/昵称查询",
+      "then": {
+        "functional": "仅按产品规定的用户名路径找到 A，返回用户名、昵称、可选头像",
+        "visual": "搜索结果/空态、头像占位与设计对应",
+        "negative": "不返回手机号、计划、统计或匹配隐私字段"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 226
+    },
+    {
+      "id": "SOCIAL-02",
+      "given": "B 用不存在/模糊手机号搜索",
+      "when": "提交搜索",
+      "then": {
+        "functional": "返回空结果或稳定参数错误",
+        "visual": "空态与错误态清晰",
+        "negative": "不支持按手机号反查用户"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 227
+    },
+    {
+      "id": "SOCIAL-03",
+      "given": "A、B 非好友",
+      "when": "B 发请求，A 接受",
+      "then": {
+        "functional": "建立一对好友关系，请求状态更新",
+        "visual": "请求通知/列表/接受反馈与设计对应",
+        "negative": "不因成为好友自动分享任何计划"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 228
+    },
+    {
+      "id": "SOCIAL-04",
+      "given": "已有待处理/已接受好友请求",
+      "when": "再发送相同或反向请求",
+      "then": {
+        "functional": "返回既有关系/稳定错误，不重复建关系",
+        "visual": "按钮状态正确",
+        "negative": "不产生两条好友关系或双通知"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 229
+    },
+    {
+      "id": "SOCIAL-05",
+      "given": "A 拒绝/撤销好友请求",
+      "when": "B 再查看",
+      "then": {
+        "functional": "请求状态按动作变化",
+        "visual": "列表项消失或变更与设计一致",
+        "negative": "不建立好友、不授计划权限"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 230
+    },
+    {
+      "id": "SOCIAL-06",
+      "given": "A、B 已是好友，A 有多计划，未授权",
+      "when": "B 查看好友计划列表/直接请求计划 ID",
+      "then": {
+        "functional": "返回空列表/无权限",
+        "visual": "好友页显示“尚未分享”而非错误计划卡",
+        "negative": "不暴露计划标题、历史、私人统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 231
+    },
+    {
+      "id": "SOCIAL-07",
+      "given": "A 准备分享某计划，历史含成功/失败/跳过/未记录和文字/失败原因",
+      "when": "A 打开分享确认",
+      "then": {
+        "functional": "预览明确显示将暴露的既有历史与文字范围",
+        "visual": "预览层级、警示、确认/取消按钮与设计一致",
+        "negative": "不将照片、数值、分组、其他计划、个人统计列入预览"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 232
+    },
+    {
+      "id": "SOCIAL-08",
+      "given": "SOCIAL-07 预览打开",
+      "when": "A 取消",
+      "then": {
+        "functional": "授权表无变化",
+        "visual": "返回原页面、开关回滚",
+        "negative": "B 不获得任何历史/新记录权限"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 233
+    },
+    {
+      "id": "SOCIAL-09",
+      "given": "A、B 为好友，A 对计划 F 授权 B",
+      "when": "B 打开共享列表和历史详情",
+      "then": {
+        "functional": "B 可见 F 既有及以后授权内状态、文字和失败原因；补记/修订标记可见",
+        "visual": "共享卡和历史标签符合设计",
+        "negative": "B 不见私人照片、数值、其他计划及个人统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 234
+    },
+    {
+      "id": "SOCIAL-10",
+      "given": "A 只分享 F，另有 W/O 和私有分组",
+      "when": "B 访问共享列表与猜测资源 ID",
+      "then": {
+        "functional": "仅 F 可读",
+        "visual": "页面无 W/O 卡片",
+        "negative": "W/O 详情、日历、统计 API 均拒绝"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 235
+    },
+    {
+      "id": "SOCIAL-11",
+      "given": "B 已看到 F 旧历史",
+      "when": "A 撤销 F 分享",
+      "then": {
+        "functional": "新读取立即拒绝；在线 B 清缓存并退出详情",
+        "visual": "分享开关与 B 页面状态即时更新",
+        "negative": "旧历史直链、旧 cursor 不再返回；不再允许鼓励"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 236
+    },
+    {
+      "id": "SOCIAL-12",
+      "given": "A、B 已分享 F",
+      "when": "A 删除好友",
+      "then": {
+        "functional": "好友关系与相关读取权限失效",
+        "visual": "双方好友/分享列表更新",
+        "negative": "B 无法读取 F 当前和历史，不能用旧 token/链接绕过"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 237
+    },
+    {
+      "id": "SOCIAL-13",
+      "given": "A 拉黑 B 或 B 拉黑 A",
+      "when": "任一方读共享计划/发请求/鼓励",
+      "then": {
+        "functional": "关系权限立即失效",
+        "visual": "拉黑状态与屏蔽入口明确",
+        "negative": "不再发送好友/鼓励通知，不暴露历史"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "L"
+      ],
+      "matrixLine": 238
+    },
+    {
+      "id": "SOCIAL-14",
+      "given": "分享授权有效，B 看见 A 的打卡",
+      "when": "B 发一条鼓励",
+      "then": {
+        "functional": "A 收到，B 在自己发送记录可见",
+        "visual": "鼓励输入、成功反馈和列表与设计一致",
+        "negative": "C 看不到，鼓励不写成公开评论"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 239
+    },
+    {
+      "id": "SOCIAL-15",
+      "given": "B 已发鼓励，A 后续撤销分享",
+      "when": "A 和 B 分别打开消息",
+      "then": {
+        "functional": "A 保留已收鼓励；B 因授权撤销失去该消息访问",
+        "visual": "A 消息仍可读、B 不再显示入口",
+        "negative": "不让 B 通过旧 URL/API 查看旧鼓励"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 240
+    },
+    {
+      "id": "SOCIAL-16",
+      "given": "A 在 F 上已分享 B，C 为陌生人",
+      "when": "C 直接调用分享/鼓励/照片 API",
+      "then": {
+        "functional": "403 或 404，不暴露资源内容",
+        "visual": "C 页面无共享入口",
+        "negative": "不借由错误文案泄露计划存在、笔记和照片 key"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 241
+    },
+    {
+      "id": "SOCIAL-17",
+      "given": "B 看到的历史记录有失败原因和修订",
+      "when": "A 再次修改文字",
+      "then": {
+        "functional": "B 在线同步后看到最新授权字段与修订标记",
+        "visual": "文字换行/标记更新",
+        "negative": "不把修订历史的私有快照或数值发给 B"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 242
+    },
+    {
+      "id": "SOCIAL-18",
+      "given": "B 有授权，A 的计划被归档/删除/账号待注销的参数组",
+      "when": "A 查看归档历史，B 尝试旧链接",
+      "then": {
+        "functional": "归档保留 A 的历史；删除或待注销使 B 立即不可读",
+        "visual": "A 的归档状态、B 的退出/空态明确",
+        "negative": "删除/注销后不保留历史接口访问；归档不能误触发删除"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 243
+    },
+    {
+      "id": "SOCIAL-19",
+      "given": "B 的共享详情已打开，设备临时离线",
+      "when": "A 在线撤销授权，随后 B 恢复网络",
+      "then": {
+        "functional": "B 下次同步清缓存；服务端自撤销提交起拒绝读取",
+        "visual": "离线标识与恢复后的退出提示准确",
+        "negative": "不承诺离线设备能被实时擦除；恢复后不继续渲染旧内容"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 244
+    },
+    {
+      "id": "SOCIAL-20",
+      "given": "B 对 A 的 F 有只读授权",
+      "when": "B 尝试打卡、修改记录、修改计划",
+      "then": {
+        "functional": "所有写入均拒绝",
+        "visual": "朋友页只出现只读与鼓励入口",
+        "negative": "不因获分享权限取得主人写权限"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 245
+    },
+    {
+      "id": "SOCIAL-21",
+      "given": "B 被授权查看 A 的一条记录",
+      "when": "B 发送 Emoji 回应与简短鼓励的参数组",
+      "then": {
+        "functional": "A 与 B 可见各自互动",
+        "visual": "Emoji/留言输入与发送反馈匹配设计",
+        "negative": "不自动成为公开评论，不允许无限长留言"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 246
+    },
+    {
+      "id": "SOCIAL-22",
+      "given": "A 同一计划分享给 B、C，B 发鼓励",
+      "when": "A、B、C 分别读鼓励",
+      "then": {
+        "functional": "A 与 B 可见，C 不可见",
+        "visual": "C 只读页无 B 留言占位",
+        "negative": "不因同被授权而开放他人私聊内容"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 247
+    },
+    {
+      "id": "SOCIAL-23",
+      "given": "B 查看获授权计划，主人记录含私人照片/数值",
+      "when": "打开只读详情并遍历无障碍树",
+      "then": {
+        "functional": "只返回白名单字段",
+        "visual": "不渲染“隐藏照片”空占位",
+        "negative": "响应、缓存、无障碍树均不含私人附件/数值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 248
+    },
+    {
+      "id": "NOTIFY-01",
+      "given": "固定计划周一/三/五，提醒开启、权限允许",
+      "when": "查看下一周待发并跨周二",
+      "then": {
+        "functional": "仅三个选定周几按计划时区调度",
+        "visual": "提醒设置显示正确时间/周几",
+        "negative": "周二/四/周末无该计划提醒 ID"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "T"
+      ],
+      "matrixLine": 256
+    },
+    {
+      "id": "NOTIFY-02",
+      "given": "固定计划今天应打卡、提醒未发",
+      "when": "今天提交任一显式结果",
+      "then": {
+        "functional": "取消今日待发提醒",
+        "visual": "今日状态与提醒设置一致",
+        "negative": "不再为今天重复调度"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "L"
+      ],
+      "matrixLine": 257
+    },
+    {
+      "id": "NOTIFY-03",
+      "given": "每周目标 N=3，设置周一/三/五提醒",
+      "when": "本周成功达到 3 次",
+      "then": {
+        "functional": "剩余本周提醒取消",
+        "visual": "周进度显示已达标",
+        "negative": "不在周五发“尚需打卡”的提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "D",
+        "T"
+      ],
+      "matrixLine": 258
+    },
+    {
+      "id": "NOTIFY-04",
+      "given": "每周目标已达标",
+      "when": "修订历史成功为失败，成功数降到 2",
+      "then": {
+        "functional": "重算剩余本周合法提醒",
+        "visual": "进度从已达标回退到未达标",
+        "negative": "不保持已取消的错误状态/不补发过去时刻"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "D",
+        "T"
+      ],
+      "matrixLine": 259
+    },
+    {
+      "id": "NOTIFY-05",
+      "given": "新建一次性任务",
+      "when": "不改提醒设置并保存",
+      "then": {
+        "functional": "提醒默认关闭、待发清单为空",
+        "visual": "默认关闭状态与设计一致",
+        "negative": "不自动发到期提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N"
+      ],
+      "matrixLine": 260
+    },
+    {
+      "id": "NOTIFY-06",
+      "given": "一次性任务开启提醒，选择 0/1/3 天提前的参数组",
+      "when": "设置提醒时间并保存",
+      "then": {
+        "functional": "仅有效未来时刻各按配置调度",
+        "visual": "到期日、提前量和时间可读",
+        "negative": "不补发创建前已过去的提醒时刻"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "T"
+      ],
+      "matrixLine": 261
+    },
+    {
+      "id": "NOTIFY-07",
+      "given": "一次性任务已完成/迟完成/失败/取消的参数组",
+      "when": "查看待发通知",
+      "then": {
+        "functional": "该任务提醒全部取消",
+        "visual": "终态页面无待提醒误导",
+        "negative": "不再发送/保留该任务提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "D"
+      ],
+      "matrixLine": 262
+    },
+    {
+      "id": "NOTIFY-08",
+      "given": "固定/每周/一次性计划存在待发提醒",
+      "when": "暂停或归档当日",
+      "then": {
+        "functional": "今日及暂停期间待发立即取消，恢复后重算合法未来项",
+        "visual": "暂停/归档状态和提醒控件一致",
+        "negative": "不保留暂停当日旧提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "D",
+        "T"
+      ],
+      "matrixLine": 263
+    },
+    {
+      "id": "NOTIFY-09",
+      "given": "系统通知权限拒绝/稍后开启的参数组",
+      "when": "创建计划并进入设置",
+      "then": {
+        "functional": "核心打卡可用；设置页说明如何开启",
+        "visual": "权限状态和引导可读",
+        "negative": "不循环弹授权、不把未获权限显示为已开启投递"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "N",
+        "L"
+      ],
+      "matrixLine": 264
+    },
+    {
+      "id": "NOTIFY-10",
+      "given": "B 向 A 发好友请求，A 开启该类社交通知",
+      "when": "触发事件",
+      "then": {
+        "functional": "A 的测试设备收到对应 APNs 或服务端有成功受理回执",
+        "visual": "通知文案只含必要信息，点击导航正确",
+        "negative": "不含手机号/失败原因/私人照片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "L"
+      ],
+      "matrixLine": 265
+    },
+    {
+      "id": "NOTIFY-11",
+      "given": "A 独立关闭好友请求/分享动态/鼓励三个开关中的一个",
+      "when": "分别触发三类事件",
+      "then": {
+        "functional": "关闭类别不发送，其他开启类别正常发送",
+        "visual": "三个开关彼此独立且状态持久",
+        "negative": "不因一个开关关闭而全关或全开"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "D",
+        "L"
+      ],
+      "matrixLine": 266
+    },
+    {
+      "id": "NOTIFY-12",
+      "given": "分享已撤销或双方已拉黑",
+      "when": "触发旧队列中的社交事件",
+      "then": {
+        "functional": "Worker 发前重新查权限并丢弃无效消息",
+        "visual": "N/A",
+        "negative": "不向无权用户发送旧计划动态/鼓励推送"
+      },
+      "evidenceCodes": [
+        "A",
+        "N",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 267
+    },
+    {
+      "id": "NOTIFY-13",
+      "given": "A 在设备 A1 打卡成功，A2 长期离线且有本地提醒",
+      "when": "到提醒时刻后让 A2 联网同步",
+      "then": {
+        "functional": "联网后 A2 清除旧待发项；跨设备限制有记录",
+        "visual": "A2 离线标识/联网状态清楚",
+        "negative": "不宣称离线 A2 必能实时取消或系统必投递；联网后不再保留旧提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "L",
+        "T"
+      ],
+      "matrixLine": 268
+    },
+    {
+      "id": "NOTIFY-14",
+      "given": "新用户未曾被请求通知权限",
+      "when": "首次开启任一提醒后同意/拒绝系统权限",
+      "then": {
+        "functional": "先解释用途再请求一次；拒绝时保存 App 内规则并给系统设置入口",
+        "visual": "解释页、系统权限返回后的状态准确",
+        "negative": "不在首次登录索权、不反复弹窗、不把计划提醒与社交开关合并"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "L"
+      ],
+      "matrixLine": 269
+    },
+    {
+      "id": "DATA-01",
+      "given": "A 有分组、三类计划、记录、修订、数值、照片、好友/分享/鼓励",
+      "when": "发起完整 ZIP 导出",
+      "then": {
+        "functional": "作业完成，ZIP 含 UTF-8 CSV、JSON、私人照片、关系数据和 manifest",
+        "visual": "导出进度/完成入口与设计对应",
+        "negative": "不漏照片/关系，不包含短信码/token/他人手机号"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 277
+    },
+    {
+      "id": "DATA-02",
+      "given": "DATA-01 ZIP 已生成",
+      "when": "解压并校验 schema、行数、SHA-256",
+      "then": {
+        "functional": "manifest 文件数、校验和与实际一致，CSV/JSON 可解析",
+        "visual": "下载完成状态明确",
+        "negative": "不产生损坏 ZIP、路径穿越或同名覆盖"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 278
+    },
+    {
+      "id": "DATA-03",
+      "given": "A 的导出文件存在，B/C 或过期链接尝试下载",
+      "when": "请求下载 URL",
+      "then": {
+        "functional": "未授权/过期访问拒绝",
+        "visual": "错误提示可读",
+        "negative": "不通过猜测对象 key 读取 ZIP"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 279
+    },
+    {
+      "id": "DATA-04",
+      "given": "导出作业运行中发生对象存储故障",
+      "when": "重试/恢复 Worker",
+      "then": {
+        "functional": "作业可重试或明确失败，用户可重新发起",
+        "visual": "失败/重试状态不假称完成",
+        "negative": "不交付部分 ZIP，不无限占用存储"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 280
+    },
+    {
+      "id": "DATA-05",
+      "given": "A 归档含历史/照片/数值的计划",
+      "when": "打开归档",
+      "then": {
+        "functional": "记录与私人照片/数值保留并可由 A 查看",
+        "visual": "归档状态/历史浏览正常",
+        "negative": "不物理删除历史、不生成新待办/提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "N"
+      ],
+      "matrixLine": 281
+    },
+    {
+      "id": "DATA-06",
+      "given": "A 删除含历史/照片/分享的计划",
+      "when": "确认不可逆删除",
+      "then": {
+        "functional": "立即撤销读取，清理作业完成后数据和对象消失",
+        "visual": "二次确认列明后果，列表项消失",
+        "negative": "不保留好友旧历史访问/私人照片 URL 新签发"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 282
+    },
+    {
+      "id": "DATA-07",
+      "given": "A 点击删除计划但取消确认",
+      "when": "返回计划",
+      "then": {
+        "functional": "所有数据、分享和提醒保持原状",
+        "visual": "弹层关闭/原页面恢复",
+        "negative": "不生成删除作业或 tombstone"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 283
+    },
+    {
+      "id": "DATA-08",
+      "given": "A 发起注销且仍有好友分享/多设备会话",
+      "when": "确认注销",
+      "then": {
+        "functional": "账号进入等待删除，所有会话及分享立即失效，提醒停止",
+        "visual": "注销后展示 30 天可撤销说明/登录限制",
+        "negative": "不再允许常规业务 API、好友读历史或发送推送"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "L",
+        "T"
+      ],
+      "matrixLine": 284
+    },
+    {
+      "id": "DATA-09",
+      "given": "A 处于 30 天可撤销期",
+      "when": "用同手机号完成专用短信验证并撤销",
+      "then": {
+        "functional": "账户恢复，重新登录后本人数据仍在",
+        "visual": "撤销流程与结果说明清晰",
+        "negative": "旧已撤销 token 不复活；不自动重授已撤销分享"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 285
+    },
+    {
+      "id": "DATA-10",
+      "given": "A 处于等待删除第 29 天/第 30 天的边界组",
+      "when": "推进服务端测试时钟并运行清理",
+      "then": {
+        "functional": "未到期不删；到期后业务数据、照片、关系和设备 token 清理",
+        "visual": "用户访问得到明确账户不存在/删除完成状态",
+        "negative": "不提前删除、不在到期后继续服务或推送"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L",
+        "T"
+      ],
+      "matrixLine": 286
+    },
+    {
+      "id": "DATA-11",
+      "given": "删除 Worker 在数据库提交/对象删除之间失败",
+      "when": "重启并重试作业",
+      "then": {
+        "functional": "幂等完成清理，留可审计完成记录",
+        "visual": "N/A",
+        "negative": "不出现“账号已删但照片可新签名读取”"
+      },
+      "evidenceCodes": [
+        "A",
+        "D",
+        "F",
+        "L",
+        "T"
+      ],
+      "matrixLine": 287
+    },
+    {
+      "id": "DATA-12",
+      "given": "备份恢复到包含已注销账号的较早时间点",
+      "when": "重放删除墓碑并验收",
+      "then": {
+        "functional": "已删除数据不重新开放访问，备份生命周期按配置",
+        "visual": "N/A",
+        "negative": "不因恢复备份而复活账号/分享"
+      },
+      "evidenceCodes": [
+        "A",
+        "D",
+        "F",
+        "L",
+        "T"
+      ],
+      "matrixLine": 288
+    },
+    {
+      "id": "DATA-13",
+      "given": "导出作业已完成，用户仍已登录",
+      "when": "在导出页点击保存/分享 ZIP",
+      "then": {
+        "functional": "系统分享面板打开，可保存 ZIP；失败可在页内重试",
+        "visual": "进度→完成→分享面板衔接正确",
+        "negative": "不把 ZIP 链接发到社交页，不自动分享给好友"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 289
+    },
+    {
+      "id": "UI-01",
+      "given": "页面映射中任一 pageId/默认种子，按 32 个页面展开",
+      "when": "从规定入口导航到页面并截图",
+      "then": {
+        "functional": "路由、标题、主动作与页面映射一致",
+        "visual": "层级、文案、关键节点 bounds/token、截图差异满足 §1.2",
+        "negative": "无缺页、空白页、占位图、错误跳转"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 297
+    },
+    {
+      "id": "UI-02",
+      "given": "任一页面有加载/空/错误/成功状态",
+      "when": "注入相应响应与延迟",
+      "then": {
+        "functional": "状态切换、重试入口和数据保留正确",
+        "visual": "每个状态按设计呈现，骨架/空态/错误文案可读",
+        "negative": "不无限转圈、不以成功页掩盖错误"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 298
+    },
+    {
+      "id": "UI-03",
+      "given": "主导航及返回路径",
+      "when": "依页面映射遍历一级/二级页面和弹层",
+      "then": {
+        "functional": "返回到正确上级，状态/滚动位置按设计保留",
+        "visual": "Tab 选中、导航栏、弹层层级一致",
+        "negative": "无死路、重复堆栈、返回后闪旧私有内容"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "L"
+      ],
+      "matrixLine": 299
+    },
+    {
+      "id": "UI-04",
+      "given": "设计基准画板匹配的模拟器",
+      "when": "截默认、成功、失败、跳过、逾期、暂停关键状态",
+      "then": {
+        "functional": "页面状态与数据一致",
+        "visual": "基准节点偏差 ≤4 pt，非动态差异面积 ≤3%，关键文字/按钮零缺失",
+        "negative": "不用过度遮罩掩盖真实布局差异"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 300
+    },
+    {
+      "id": "UI-05",
+      "given": "窄屏、标准屏、大屏 iPhone 参数组",
+      "when": "展示表单、日历、统计和长列表",
+      "then": {
+        "functional": "所有操作可达、可滚动",
+        "visual": "安全区、底部栏、卡片和长文适配",
+        "negative": "无裁切、横向溢出、按钮被 Home 指示条遮挡"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 301
+    },
+    {
+      "id": "UI-06",
+      "given": "系统动态字体调到较大档位",
+      "when": "走登录、计划创建、打卡、冲突选择",
+      "then": {
+        "functional": "核心操作可完成",
+        "visual": "文本可换行、控件高度增长、阅读顺序合理",
+        "negative": "不截断关键信息、不让操作按钮离屏不可达"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 302
+    },
+    {
+      "id": "UI-07",
+      "given": "VoiceOver 开启",
+      "when": "遍历主流程的输入、按钮、状态、弹层",
+      "then": {
+        "functional": "标签、值、启用态、操作提示能表达真实功能",
+        "visual": "无障碍树顺序与视觉阅读顺序一致",
+        "negative": "不只靠颜色表达成功/失败/跳过/同步状态"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 303
+    },
+    {
+      "id": "UI-08",
+      "given": "键盘打开，表单含较多字段或错误文案",
+      "when": "输入到末项并提交",
+      "then": {
+        "functional": "焦点正确，提交可触达",
+        "visual": "键盘避让、滚动和错误定位符合设计",
+        "negative": "不遮挡关键字段/按钮，不丢输入值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 304
+    },
+    {
+      "id": "UI-09",
+      "given": "计划标题、昵称、备注含长文/Emoji/中英文混排",
+      "when": "展示列表和详情",
+      "then": {
+        "functional": "文案完整或可按设计展开",
+        "visual": "换行、截断、省略规则一致",
+        "negative": "不挤压状态标签/覆盖卡片操作"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 305
+    },
+    {
+      "id": "UI-10",
+      "given": "慢网、断网、同步失败、冲突四种参数组",
+      "when": "进行打卡主流程",
+      "then": {
+        "functional": "每种状态有明确可恢复操作",
+        "visual": "本机保存、同步中、同步失败、冲突标签区别明显",
+        "negative": "不把本地保存误称云端成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "L",
+        "T"
+      ],
+      "matrixLine": 306
+    },
+    {
+      "id": "UI-11",
+      "given": "系统浅色/深色、透明度与高对比设置",
+      "when": "打开主页面",
+      "then": {
+        "functional": "设计定义的主题策略被遵守",
+        "visual": "文本、背景、边框和状态对比足以阅读",
+        "negative": "不出现系统自动反色造成不可见文字"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 307
+    },
+    {
+      "id": "UI-12",
+      "given": "设备旋转、后台恢复、系统中断",
+      "when": "返回计划/打卡页面",
+      "then": {
+        "functional": "草稿/滚动/弹层按设计恢复或安全重建",
+        "visual": "布局无残影、遮罩无错位",
+        "negative": "不丢未同步稿，不重复提交"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "D",
+        "L"
+      ],
+      "matrixLine": 308
+    },
+    {
+      "id": "UI-13",
+      "given": "图片、头像、图标加载失败",
+      "when": "打开相关页面",
+      "then": {
+        "functional": "使用可辨识占位与重试策略",
+        "visual": "占位尺寸与布局稳定",
+        "negative": "不显示破图、跨账户缓存图片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 309
+    },
+    {
+      "id": "UI-14",
+      "given": "用设计节点树抽取字体、颜色、间距、圆角 token",
+      "when": "检查各屏对应组件",
+      "then": {
+        "functional": "共享组件复用同一 token",
+        "visual": "同类卡片/按钮/标签视觉一致；差异有设计依据",
+        "negative": "不同页面不出现漂移的同名组件样式"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 310
+    },
+    {
+      "id": "UI-15",
+      "given": "今日页固定计划刚提交成功/失败/跳过",
+      "when": "在当前会话观察卡片，再重新进入今日",
+      "then": {
+        "functional": "本会话原位更新；下次进入按区块重排",
+        "visual": "卡片状态在原位置平滑变化，反馈约 150–250 ms",
+        "negative": "不在提交瞬间消失，不让用户误认未保存"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "T"
+      ],
+      "matrixLine": 311
+    },
+    {
+      "id": "UI-16",
+      "given": "今日同时有固定待办、周目标、截止事项及逾期一次性任务",
+      "when": "打开今日",
+      "then": {
+        "functional": "区块顺序和卡片状态正确；逾期在截止区顶部",
+        "visual": "“需要处理/本周可记录/截止事项/今日已记录”层级清楚",
+        "negative": "不把一次性提前日期写“今天必须完成”，达标周目标不催促"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 312
+    },
+    {
+      "id": "UI-17",
+      "given": "今日有多个固定待处理项，部分设置提醒时间",
+      "when": "打开今日",
+      "then": {
+        "functional": "固定项按提醒时间，未设提醒按名称排序",
+        "visual": "顺序稳定、无分组干扰",
+        "negative": "不按随机更新时间重排刚提交卡片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 313
+    },
+    {
+      "id": "UI-18",
+      "given": "全局日历有多计划同日：成功 3、失败 1、跳过 1、未记录 2",
+      "when": "选择该日",
+      "then": {
+        "functional": "聚合计数与明细匹配，可进记录详情",
+        "visual": "日期格只保留摘要，详情图文分明；VoiceOver 读完整摘要",
+        "negative": "不只靠彩点，不把周目标空白日计未记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 314
+    },
+    {
+      "id": "UI-19",
+      "given": "全局日历有多个分组，月份前后各有记录",
+      "when": "切月、按组筛选、返回页面",
+      "then": {
+        "functional": "当前视图按筛选更新；重新进入默认全部分组",
+        "visual": "月份、筛选选中态、星期一为周首正确",
+        "negative": "筛选不改持久记录或统计，不在非法日期显示全局补记"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 315
+    },
+    {
+      "id": "UI-20",
+      "given": "无计划、今日无固定待办、日历无记录、搜索无好友四种状态",
+      "when": "逐一打开对应页面",
+      "then": {
+        "functional": "各空态给出对应下一步",
+        "visual": "文案分别说明原因，主按钮清楚",
+        "negative": "不把首次加载短暂渲染为“今天无事”"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 316
+    },
+    {
+      "id": "UI-21",
+      "given": "控件分布在登录、日期、删除、周按钮、滑动菜单",
+      "when": "用 VoiceOver/Switch Control/点击边界遍历",
+      "then": {
+        "functional": "全部交互可触达，可见入口覆盖滑动操作",
+        "visual": "命中区 ≥44×44 pt，选中状态可读",
+        "negative": "不依赖隐藏手势或颜色区分危险操作"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 317
+    },
+    {
+      "id": "UI-22",
+      "given": "减少动态效果、系统粗体、降低透明度开启",
+      "when": "执行打卡和打开弹层",
+      "then": {
+        "functional": "关键文字反馈仍出现，操作成功",
+        "visual": "非必要位移动画取消；文本/边框对比保持",
+        "negative": "不仅靠动画表达保存成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 318
+    },
+    {
+      "id": "UI-23",
+      "given": "浅色和深色两种系统主题",
+      "when": "检查七组页面关键状态",
+      "then": {
+        "functional": "语义状态一致",
+        "visual": "设计浅/深 token 对应；正文、辅助文案、按钮和分隔线均可读",
+        "negative": "不机械反转导致成功/失败/跳过/未记录混淆"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V"
+      ],
+      "matrixLine": 319
+    },
+    {
+      "id": "UI-24",
+      "given": "首页底部四入口与业务日期跨设备时区",
+      "when": "依次切今日/日历/计划/朋友，查看日期",
+      "then": {
+        "functional": "四入口正确，日期只在计划时区语义成立时用“今天/昨天”",
+        "visual": "Tab 标签/选中态与设计对应；绝对日期替代歧义相对词",
+        "negative": "不出现第五个隐含主入口或错误时区日期"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "T"
+      ],
+      "matrixLine": 320
+    },
+    {
+      "id": "SEC-01",
+      "given": "未登录或 token 过期且无法刷新",
+      "when": "调本人/好友/媒体/导出 API",
+      "then": {
+        "functional": "返回 401，客户端引导重新登录",
+        "visual": "登录提示清楚",
+        "negative": "不返回任何私有字段或可用对象 URL"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 326
+    },
+    {
+      "id": "SEC-02",
+      "given": "B 有自己的账户但不拥有 A 的计划",
+      "when": "猜测 A 的计划/记录/统计 ID 调接口",
+      "then": {
+        "functional": "返回 403/404，行为一致",
+        "visual": "B 端不显示 A 私有内容",
+        "negative": "不因 ID 存在与否泄露不同的敏感细节"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 327
+    },
+    {
+      "id": "SEC-03",
+      "given": "B 曾有分享但已撤销",
+      "when": "用旧 cursor、旧详情链接、并发请求重试",
+      "then": {
+        "functional": "服务端按**当前**权限全部拒绝",
+        "visual": "旧页关闭/空态正确",
+        "negative": "不从缓存或分页漏出历史文本"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 328
+    },
+    {
+      "id": "SEC-04",
+      "given": "修改请求伪造 ownerId、businessDate、ruleVersion、baseRevision",
+      "when": "直接调 API",
+      "then": {
+        "functional": "服务端独立校验并拒绝非法组合",
+        "visual": "可恢复错误文案正确",
+        "negative": "不信任客户端可编辑字段、不写脏数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 329
+    },
+    {
+      "id": "SEC-05",
+      "given": "同计划同日期 20 个并发请求",
+      "when": "同时提交",
+      "then": {
+        "functional": "唯一约束维持一条当前有效记录，冲突/幂等结果稳定",
+        "visual": "UI 只出现一个最终状态",
+        "negative": "不出现双统计、重复鼓励/通知"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 330
+    },
+    {
+      "id": "SEC-06",
+      "given": "上传非图片内容但伪装 MIME、超限大小、错误对象 key",
+      "when": "申请/完成媒体上传",
+      "then": {
+        "functional": "服务端拒绝或清理无效对象",
+        "visual": "错误反馈不影响基础记录",
+        "negative": "不生成可公开/可被他人下载的对象"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 331
+    },
+    {
+      "id": "SEC-07",
+      "given": "A 的资料/照片/笔记已缓存，随后登出或切换 B",
+      "when": "打开应用与系统任务切换器",
+      "then": {
+        "functional": "B 仅见自己的数据，A 缓存和通知按规则清理",
+        "visual": "不出现 A 页面快照/头像闪现",
+        "negative": "本地库/Keychain 不把 A 会话迁给 B"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 332
+    },
+    {
+      "id": "SEC-08",
+      "given": "服务器 5xx、数据库短暂不可用",
+      "when": "提交打卡/刷新",
+      "then": {
+        "functional": "线上写失败可重试；本地打卡仍保存",
+        "visual": "失败与本机保存标签准确",
+        "negative": "不向用户宣称已同步、不丢稿/重复记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 333
+    },
+    {
+      "id": "SEC-09",
+      "given": "新旧客户端版本并存，数据库已执行兼容迁移",
+      "when": "旧版读写支持期内资源",
+      "then": {
+        "functional": "旧版可按契约工作或收到明确升级要求",
+        "visual": "升级提示可理解",
+        "negative": "不因迁移让旧版写出不合法记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 334
+    },
+    {
+      "id": "SEC-10",
+      "given": "API/Worker/数据库发生区域内实例故障",
+      "when": "切换实例并恢复作业",
+      "then": {
+        "functional": "请求有明确失败/重试，已提交数据可恢复，删除/导出任务可重试",
+        "visual": "客户端恢复反馈合理",
+        "negative": "不丢已确认打卡、不重复产生有效记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L",
+        "T"
+      ],
+      "matrixLine": 335
+    },
+    {
+      "id": "SEC-11",
+      "given": "A/B 共用一台设备，A 先离线保存草稿后退出，B 登录",
+      "when": "检查 B 的本地库、页面、通知及同步请求",
+      "then": {
+        "functional": "B 只使用 B 的本地数据与会话；A 草稿按账户隔离策略保留/导出",
+        "visual": "切换期间无 A 信息闪现",
+        "negative": "A 的草稿不以 B 身份上云，B 不见 A 私人照片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 336
+    }
+  ]
+}
