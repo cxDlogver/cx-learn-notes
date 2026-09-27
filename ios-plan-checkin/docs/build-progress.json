@@ -5,23 +5,23 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "f919308e33b5e6f3075386037b51dbff2d22f61f",
+  "integrationCommit": "d4f0fc86186d9cd0c9318b9ad641f67640829cb8",
   "currentWork": {
-    "taskId": "SOC-04",
-    "phase": "计划提醒与本地调度",
-    "updatedAt": "2026-09-27T23:02:00.000Z",
-    "baseCommit": "f919308e33b5e6f3075386037b51dbff2d22f61f",
+    "taskId": "SOC-05",
+    "phase": "鼓励留言、社交通知 Worker 与 APNs",
+    "updatedAt": "2026-09-27T23:27:14.000Z",
+    "baseCommit": "d4f0fc86186d9cd0c9318b9ad641f67640829cb8",
     "completedSteps": [
-      "SOC-03 好友列表、主页、只读详情、选人、预览和权限设置六页已提交；拒绝好友申请路由、S0/S1/S3/S6、社交/分享开发自检和 iOS JS 打包通过。"
+      "SOC-04 三类计划提醒 API、提醒设置页、本地有限窗口通知调度、通知点按权限复核已提交；S0/S1/S3/S4、领域测试和 PGlite 提醒开发自检通过。"
     ],
     "nextSteps": [
-      "核对提醒 PRD、Pen reminders 页面、既有提醒契约与通知权限配置。",
-      "实现固定日期、每周目标与一次性任务的本地通知重排/取消和提醒配置页。",
-      "执行 S0/S1/S3/S4 以及相关开发自检，提交代码与台账。"
+      "核对鼓励留言、通知偏好、APNs 与 Worker 的 PRD/技术契约及既有表结构。",
+      "实现鼓励留言、社交通知任务、幂等重试、隐私过滤和客户端交互。",
+      "执行 S0/S1/S2/S4/S6 与开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
-      "Docker/PostgreSQL 真实服务环境稍后验证；正式 ATDD 不在此开发阶段执行。"
+      "Docker/PostgreSQL 真实服务、APNs 沙箱、iOS 真机和正式 ATDD 稍后验证。"
     ]
   },
   "nextTaskId": null,
@@ -614,12 +614,14 @@
         "S3",
         "S4"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "f919308e33b5e6f3075386037b51dbff2d22f61f",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "d4f0fc86186d9cd0c9318b9ad641f67640829cb8",
+      "integratedCommit": "d4f0fc86186d9cd0c9318b9ad641f67640829cb8",
+      "staticPassed": true,
+      "blocker": "Windows 主机无法验证 iOS 本地通知、权限弹窗、时区变化和 Pen 截图/VoiceOver；用户要求先完成静态代码，稍后补验。"
     },
     {
       "priority": 29,
@@ -637,10 +639,10 @@
         "S4",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "d4f0fc86186d9cd0c9318b9ad641f67640829cb8",
       "taskCommit": null,
       "integratedCommit": null
     },
