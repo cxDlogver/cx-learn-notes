@@ -5,7 +5,7 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "cfee55385ccf55de083cff39f884259aa52787b5",
+  "integrationCommit": "917978ce228b288cd78b421553a6ba2ef52f68a2",
   "tasks": [
     {
       "priority": 1,
@@ -88,12 +88,14 @@
         "S5",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "BLOCKED",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "ec6bf28461b3cfc6b27d50c54977db545bd872c3",
+      "taskCommit": "917978ce228b288cd78b421553a6ba2ef52f68a2",
+      "integratedCommit": "917978ce228b288cd78b421553a6ba2ef52f68a2",
+      "staticPassed": true,
+      "blocker": "Docker Compose 配置静态校验通过，但本机 Docker Desktop Linux 引擎未启动，无法验证本地依赖启动、空库迁移和健康检查。"
     },
     {
       "priority": 6,
