@@ -5,27 +5,9 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "e094a97c8d3f0c0aeffcf7100175c2b3e7c03d87",
-  "currentWork": {
-    "taskId": "CORE-08",
-    "phase": "统计与视图聚合设计",
-    "updatedAt": "2026-09-27T17:24:01Z",
-    "baseCommit": "5416cffee0325a85ab1e8823116256f8e9f0fcf0",
-    "completedSteps": [
-      "已核对工作树干净、CORE-07 静态通过的代码基线和 CORE-08 任务完成标准。",
-      "已读取既有 fixedStatistics、weeklyStatistics、oneTimeState 领域函数及统计截止日口径。"
-    ],
-    "nextSteps": [
-      "确定 Today、全局日历、计划详情与统计响应契约以及服务端读取范围。",
-      "实现聚合 API 并保证三视图调用同一领域统计口径。",
-      "补充跨接口一致性开发自测，运行静态门槛，提交代码和更新台账。"
-    ],
-    "uncommittedChanges": [],
-    "knownConstraints": [
-      "真实 Docker PostgreSQL 验证按用户要求稍后执行；当前用内存 PostgreSQL 做开发自测。"
-    ]
-  },
-  "nextTaskId": null,
+  "integrationCommit": "5af4c3243abedc3ae26323e51cb76a2840bd84f9",
+  "currentWork": null,
+  "nextTaskId": "APP-01",
   "tasks": [
     {
       "priority": 1,
@@ -272,12 +254,14 @@
         "S1",
         "S2"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "5416cffee0325a85ab1e8823116256f8e9f0fcf0",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "5af4c3243abedc3ae26323e51cb76a2840bd84f9",
+      "integratedCommit": "5af4c3243abedc3ae26323e51cb76a2840bd84f9",
+      "staticPassed": true,
+      "blocker": "Today、日历、详情和统计 API 已通过 S0/S1/S2、领域单测与 PGlite 跨接口/查询索引开发自检；真实 PostgreSQL 查询计划和运行时验证按用户要求稍后执行。"
     },
     {
       "priority": 14,
