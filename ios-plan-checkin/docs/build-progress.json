@@ -5,18 +5,18 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
+  "integrationCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
   "currentWork": {
-    "taskId": "SOC-01",
-    "phase": "好友关系模型与 API",
-    "updatedAt": "2026-09-27T20:19:50.345Z",
-    "baseCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
+    "taskId": "SOC-02",
+    "phase": "逐计划授权与撤销契约",
+    "updatedAt": "2026-09-27T20:30:09.000Z",
+    "baseCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
     "completedSteps": [
-      "APP-07 主流程状态和无障碍静态代码已提交，状态清单已落盘。"
+      "SOC-01 好友搜索、请求、双向接受、删除、拉黑和分享失效代码已提交；S0/S1/S2/S6 与 PGlite 开发自检通过。"
     ],
     "nextSteps": [
-      "核对 SOC-01 PRD/技术契约、现有数据库迁移、OpenAPI 路由和安全边界。",
-      "实现好友搜索、申请、接受、删除、拉黑状态机与对象级授权 API。",
+      "核对 SOC-02 分享历史预览、字段白名单、授权和撤销接口契约。",
+      "实现计划×好友授权、撤销、只读投影及每次读取的对象级权限检查。",
       "执行 S0/S1/S2/S6 与开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
@@ -451,12 +451,14 @@
         "S2",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "67986786e322cce06a8f24edffcd8c62f32b9630",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
+      "integratedCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
+      "staticPassed": true,
+      "blocker": "S0/S1/S2/S6、OpenAPI 兼容检查和 PGlite 好友关系自检通过；真实 PostgreSQL 并发与部署环境验证按用户要求稍后执行。"
     },
     {
       "priority": 22,
@@ -472,10 +474,10 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "97e80c5611dc79511ec4d4d197f6f196c31a45e4",
       "taskCommit": null,
       "integratedCommit": null
     },
