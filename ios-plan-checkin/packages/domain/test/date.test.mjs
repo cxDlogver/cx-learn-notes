@@ -11,6 +11,7 @@ import {
   mondayOfWeek,
   nextRuleEffectiveDate,
   parseBusinessDate,
+  ruleForDate,
   startOfBusinessDate,
   validateOneTimeDueDate,
   validatePlanTimeline,
@@ -129,4 +130,40 @@ test("one-time due date cannot be in the past in the plan timezone", () => {
       "2026-09-27T08:00:00Z",
     ),
   );
+});
+
+test("multiple rule edits for tomorrow preserve versions and latest rule wins", () => {
+  const plan = {
+    timezone: "Asia/Shanghai",
+    startDate: "2026-09-21",
+    endDate: null,
+    dueDate: null,
+    rules: [
+      {
+        kind: "weekly",
+        direction: "do",
+        version: 1,
+        effectiveDate: "2026-09-21",
+        weeklyTarget: 3,
+      },
+      {
+        kind: "weekly",
+        direction: "do",
+        version: 2,
+        effectiveDate: "2026-09-28",
+        weeklyTarget: 4,
+      },
+      {
+        kind: "weekly",
+        direction: "do",
+        version: 3,
+        effectiveDate: "2026-09-28",
+        weeklyTarget: 5,
+      },
+    ],
+    lifecycleEvents: [],
+  };
+  validatePlanTimeline(plan);
+  assert.equal(ruleForDate(plan, "2026-09-27").weeklyTarget, 3);
+  assert.equal(ruleForDate(plan, "2026-09-28").weeklyTarget, 5);
 });

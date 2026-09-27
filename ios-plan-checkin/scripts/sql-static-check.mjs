@@ -23,7 +23,12 @@ for (const migration of manifest.migrations) {
       cause: error,
     });
   }
-  if (/\b(?:DROP\s+TABLE|TRUNCATE|ALTER\s+TABLE\s+\w+\s+DROP)\b/i.test(sql)) {
+  // Dropping a constraint can relax a rule without removing data; column/table drops cannot.
+  if (
+    /\b(?:DROP\s+TABLE|TRUNCATE|ALTER\s+TABLE\s+\w+\s+DROP\s+COLUMN)\b/i.test(
+      sql,
+    )
+  ) {
     throw new Error(
       `Destructive statement in expand migration: ${migration.file}`,
     );

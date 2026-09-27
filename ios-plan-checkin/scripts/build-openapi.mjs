@@ -50,16 +50,28 @@ const schemas = {
     serverTime: instant,
   }),
   NumericEntry: properties(["value", "unit"], { value: decimal, unit: str() }),
+  ReminderConfig: properties(["enabled"], {
+    enabled: { type: "boolean" },
+    timeLocal: { type: "string", pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+    weekdays: {
+      type: "array",
+      items: { type: "integer", minimum: 1, maximum: 7 },
+      uniqueItems: true,
+    },
+    daysBeforeDue: { enum: [0, 1, 3] },
+  }),
   FixedPlanCreate: properties(
     ["kind", "direction", "title", "timezone", "startDate", "rule"],
     {
       kind: { const: "fixed" },
       direction: { enum: ["do", "avoid"] },
       title: str(),
+      description: { oneOf: [str(), { type: "null" }] },
       timezone: str(),
       startDate: date,
       endDate: { oneOf: [date, { type: "null" }] },
       groupId: { oneOf: [uuid, { type: "null" }] },
+      reminder: ref("ReminderConfig"),
       rule: properties(["weekdays"], {
         weekdays: {
           type: "array",
@@ -76,25 +88,29 @@ const schemas = {
       kind: { const: "weekly" },
       direction: { enum: ["do", "avoid"] },
       title: str(),
+      description: { oneOf: [str(), { type: "null" }] },
       timezone: str(),
       startDate: date,
       endDate: { oneOf: [date, { type: "null" }] },
       groupId: { oneOf: [uuid, { type: "null" }] },
+      reminder: ref("ReminderConfig"),
       rule: properties(["weeklyTarget"], {
         weeklyTarget: { type: "integer", minimum: 1, maximum: 7 },
       }),
     },
   ),
   OneTimePlanCreate: properties(
-    ["kind", "direction", "title", "timezone", "startDate", "dueDate"],
+    ["kind", "direction", "title", "timezone", "dueDate"],
     {
       kind: { const: "one_time" },
       direction: { const: "do" },
       title: str(),
+      description: { oneOf: [str(), { type: "null" }] },
       timezone: str(),
       startDate: date,
       dueDate: date,
       groupId: { oneOf: [uuid, { type: "null" }] },
+      reminder: ref("ReminderConfig"),
     },
   ),
   CreatePlanRequest: {
@@ -105,6 +121,47 @@ const schemas = {
     ],
     discriminator: { propertyName: "kind" },
   },
+  UpdatePlanRequest: properties(["baseRevision"], {
+    baseRevision: { type: "integer", minimum: 1 },
+    title: str(),
+    description: { oneOf: [str(), { type: "null" }] },
+    groupId: { oneOf: [uuid, { type: "null" }] },
+    endDate: { oneOf: [date, { type: "null" }] },
+    dueDate: date,
+    rule: {
+      oneOf: [
+        properties(["weekdays"], {
+          weekdays: {
+            type: "array",
+            items: { type: "integer", minimum: 1, maximum: 7 },
+            minItems: 1,
+            uniqueItems: true,
+          },
+        }),
+        properties(["weeklyTarget"], {
+          weeklyTarget: { type: "integer", minimum: 1, maximum: 7 },
+        }),
+      ],
+    },
+  }),
+  Group: properties(["id", "name", "sortOrder", "revision"], {
+    id: uuid,
+    name: str(),
+    sortOrder: { type: "integer" },
+    revision: { type: "integer", minimum: 1 },
+  }),
+  CreateGroupRequest: properties(["name"], {
+    name: str(),
+    sortOrder: { type: "integer" },
+  }),
+  UpdateGroupRequest: properties(["baseRevision"], {
+    baseRevision: { type: "integer", minimum: 1 },
+    name: str(),
+    sortOrder: { type: "integer" },
+  }),
+  LifecycleRequest: properties(["baseRevision"], {
+    baseRevision: { type: "integer", minimum: 1 },
+  }),
   PutCheckinRequest: properties(
     [
       "result",
@@ -199,8 +256,24 @@ Object.assign(schemas, {
       kind: { enum: ["fixed", "weekly", "one_time"] },
       direction: { enum: ["do", "avoid"] },
       title: str(),
+      description: { oneOf: [str(), { type: "null" }] },
       timezone: str(),
       startDate: date,
+      ruleEffectiveDate: date,
+      rule: {
+        oneOf: [
+          properties(["weekdays"], {
+            weekdays: {
+              type: "array",
+              items: { type: "integer", minimum: 1, maximum: 7 },
+            },
+          }),
+          properties(["weeklyTarget"], {
+            weeklyTarget: { type: "integer", minimum: 1, maximum: 7 },
+          }),
+          { type: "null" },
+        ],
+      },
       endDate: { oneOf: [date, { type: "null" }] },
       dueDate: { oneOf: [date, { type: "null" }] },
       lifecycle: { enum: ["active", "paused", "archived", "deleted"] },
@@ -285,8 +358,15 @@ const responseData = {
   checkUsername: ref("UsernameAvailability"),
   createChangePhoneChallenge: ref("ChangePhoneChallengeResponse"),
   createPlan: ref("Plan"),
+  listPlans: { type: "array", items: ref("Plan") },
   getPlan: ref("Plan"),
   updatePlan: ref("Plan"),
+  pausePlan: ref("Plan"),
+  resumePlan: ref("Plan"),
+  archivePlan: ref("Plan"),
+  listGroups: { type: "array", items: ref("Group") },
+  createGroup: ref("Group"),
+  updateGroup: ref("Group"),
   putCheckin: ref("Checkin"),
   getCheckin: ref("Checkin"),
   getSyncChanges: ref("SyncChanges"),
@@ -301,6 +381,12 @@ const bodies = {
   createChangePhoneChallenge: "ChangePhoneChallengeRequest",
   confirmChangePhone: "ChangePhoneConfirmRequest",
   createPlan: "CreatePlanRequest",
+  updatePlan: "UpdatePlanRequest",
+  createGroup: "CreateGroupRequest",
+  updateGroup: "UpdateGroupRequest",
+  pausePlan: "LifecycleRequest",
+  resumePlan: "LifecycleRequest",
+  archivePlan: "LifecycleRequest",
   putCheckin: "PutCheckinRequest",
   createOneTimeResolution: "OneTimeResolutionRequest",
   reviseOneTimeResolution: "OneTimeResolutionRequest",
@@ -342,6 +428,22 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
       schema: str(),
     });
   }
+  if (operationId === "deletePlan" || operationId === "deleteGroup") {
+    parameters.push({
+      name: "baseRevision",
+      in: "query",
+      required: true,
+      schema: { type: "integer", minimum: 1 },
+    });
+  }
+  if (operationId === "deletePlan") {
+    parameters.push({
+      name: "X-Confirm-Delete",
+      in: "header",
+      required: true,
+      schema: { const: "true" },
+    });
+  }
   if (operationId === "verifySmsChallenge") {
     parameters.push({
       name: "X-Device-Id",
@@ -350,7 +452,7 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
       schema: str(),
     });
   }
-  if (method !== "GET" && method !== "DELETE") {
+  if (method !== "GET") {
     parameters.push({
       name: "Idempotency-Key",
       in: "header",

@@ -734,6 +734,13 @@ export interface components {
       value: string;
       unit: string;
     };
+    ReminderConfig: {
+      enabled: boolean;
+      timeLocal?: string;
+      weekdays?: number[];
+      /** @enum {unknown} */
+      daysBeforeDue?: 0 | 1 | 3;
+    };
     FixedPlanCreate: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -743,11 +750,13 @@ export interface components {
       /** @enum {unknown} */
       direction: "do" | "avoid";
       title: string;
+      description?: string | null;
       timezone: string;
       /** Format: date */
       startDate: string;
       endDate?: string | null;
       groupId?: string | null;
+      reminder?: components["schemas"]["ReminderConfig"];
       rule: {
         weekdays: number[];
       };
@@ -761,11 +770,13 @@ export interface components {
       /** @enum {unknown} */
       direction: "do" | "avoid";
       title: string;
+      description?: string | null;
       timezone: string;
       /** Format: date */
       startDate: string;
       endDate?: string | null;
       groupId?: string | null;
+      reminder?: components["schemas"]["ReminderConfig"];
       rule: {
         weeklyTarget: number;
       };
@@ -779,17 +790,54 @@ export interface components {
       /** @constant */
       direction: "do";
       title: string;
+      description?: string | null;
       timezone: string;
       /** Format: date */
-      startDate: string;
+      startDate?: string;
       /** Format: date */
       dueDate: string;
       groupId?: string | null;
+      reminder?: components["schemas"]["ReminderConfig"];
     };
     CreatePlanRequest:
       | components["schemas"]["FixedPlanCreate"]
       | components["schemas"]["WeeklyPlanCreate"]
       | components["schemas"]["OneTimePlanCreate"];
+    UpdatePlanRequest: {
+      baseRevision: number;
+      title?: string;
+      description?: string | null;
+      groupId?: string | null;
+      endDate?: string | null;
+      /** Format: date */
+      dueDate?: string;
+      rule?:
+        | {
+            weekdays: number[];
+          }
+        | {
+            weeklyTarget: number;
+          };
+    };
+    Group: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      sortOrder: number;
+      revision: number;
+    };
+    CreateGroupRequest: {
+      name: string;
+      sortOrder?: number;
+    };
+    UpdateGroupRequest: {
+      baseRevision: number;
+      name?: string;
+      sortOrder?: number;
+    };
+    LifecycleRequest: {
+      baseRevision: number;
+    };
     PutCheckinRequest: {
       /** @enum {unknown} */
       result: "success" | "failure" | "skip";
@@ -867,9 +915,20 @@ export interface components {
       /** @enum {unknown} */
       direction: "do" | "avoid";
       title: string;
+      description?: string | null;
       timezone: string;
       /** Format: date */
       startDate: string;
+      /** Format: date */
+      ruleEffectiveDate?: string;
+      rule?:
+        | {
+            weekdays: number[];
+          }
+        | {
+            weeklyTarget: number;
+          }
+        | null;
       endDate?: string | null;
       dueDate?: string | null;
       /** @enum {unknown} */
@@ -1631,7 +1690,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Group"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -1691,7 +1755,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateGroupRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -1699,7 +1767,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Group"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -1751,8 +1824,13 @@ export interface operations {
   };
   deleteGroup: {
     parameters: {
-      query?: never;
-      header?: never;
+      query: {
+        baseRevision: number;
+      };
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
       path: {
         id: string;
       };
@@ -1828,7 +1906,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateGroupRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -1836,7 +1918,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Group"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -1901,7 +1988,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Plan"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -2102,8 +2194,14 @@ export interface operations {
   };
   deletePlan: {
     parameters: {
-      query?: never;
-      header?: never;
+      query: {
+        baseRevision: number;
+      };
+      header: {
+        "X-Confirm-Delete": "true";
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
       path: {
         id: string;
       };
@@ -2179,7 +2277,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdatePlanRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -2254,7 +2356,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LifecycleRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -2262,7 +2368,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Plan"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -2324,7 +2435,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LifecycleRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -2332,7 +2447,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Plan"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -2394,7 +2514,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LifecycleRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -2402,7 +2526,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Plan"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -3028,7 +3157,10 @@ export interface operations {
   deleteMedia: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
       path: {
         id: string;
       };
@@ -3432,7 +3564,10 @@ export interface operations {
   deleteFriend: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
       path: {
         id: string;
       };
@@ -3567,7 +3702,10 @@ export interface operations {
   deleteBlock: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
       path: {
         id: string;
       };
@@ -3705,7 +3843,10 @@ export interface operations {
   revokePlanShare: {
     parameters: {
       query?: never;
-      header?: never;
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
       path: {
         id: string;
         friendId: string;

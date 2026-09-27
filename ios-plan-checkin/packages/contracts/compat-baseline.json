@@ -84,7 +84,12 @@
     "deleteGroup": {
       "path": "/api/v1/groups/{id}",
       "method": "delete",
-      "parameters": ["path:id"],
+      "parameters": [
+        "path:id",
+        "query:baseRevision",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "listPlans": {
@@ -118,7 +123,13 @@
     "deletePlan": {
       "path": "/api/v1/plans/{id}",
       "method": "delete",
-      "parameters": ["path:id"],
+      "parameters": [
+        "path:id",
+        "query:baseRevision",
+        "header:X-Confirm-Delete",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "pausePlan": {
@@ -219,7 +230,11 @@
     "deleteMedia": {
       "path": "/api/v1/media/{id}",
       "method": "delete",
-      "parameters": ["path:id"],
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "getMediaDownloadUrl": {
@@ -259,7 +274,11 @@
     "deleteFriend": {
       "path": "/api/v1/friends/{id}",
       "method": "delete",
-      "parameters": ["path:id"],
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "createBlock": {
@@ -271,7 +290,11 @@
     "deleteBlock": {
       "path": "/api/v1/blocks/{id}",
       "method": "delete",
-      "parameters": ["path:id"],
+      "parameters": [
+        "path:id",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "sharePlan": {
@@ -288,7 +311,12 @@
     "revokePlanShare": {
       "path": "/api/v1/plans/{id}/shares/{friendId}",
       "method": "delete",
-      "parameters": ["path:id", "path:friendId"],
+      "parameters": [
+        "path:id",
+        "path:friendId",
+        "header:Idempotency-Key",
+        "header:X-Client-Request-Id"
+      ],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "listSharedPlans": {
@@ -436,6 +464,15 @@
       "required": ["value", "unit"],
       "properties": { "value": null, "unit": null }
     },
+    "ReminderConfig": {
+      "required": ["enabled"],
+      "properties": {
+        "enabled": null,
+        "timeLocal": null,
+        "weekdays": null,
+        "daysBeforeDue": [0, 1, 3]
+      }
+    },
     "FixedPlanCreate": {
       "required": [
         "kind",
@@ -449,10 +486,12 @@
         "kind": ["fixed"],
         "direction": ["do", "avoid"],
         "title": null,
+        "description": null,
         "timezone": null,
         "startDate": null,
         "endDate": null,
         "groupId": null,
+        "reminder": null,
         "rule": null
       }
     },
@@ -469,33 +508,63 @@
         "kind": ["weekly"],
         "direction": ["do", "avoid"],
         "title": null,
+        "description": null,
         "timezone": null,
         "startDate": null,
         "endDate": null,
         "groupId": null,
+        "reminder": null,
         "rule": null
       }
     },
     "OneTimePlanCreate": {
-      "required": [
-        "kind",
-        "direction",
-        "title",
-        "timezone",
-        "startDate",
-        "dueDate"
-      ],
+      "required": ["kind", "direction", "title", "timezone", "dueDate"],
       "properties": {
         "kind": ["one_time"],
         "direction": ["do"],
         "title": null,
+        "description": null,
         "timezone": null,
         "startDate": null,
         "dueDate": null,
-        "groupId": null
+        "groupId": null,
+        "reminder": null
       }
     },
     "CreatePlanRequest": { "required": [], "properties": {} },
+    "UpdatePlanRequest": {
+      "required": ["baseRevision"],
+      "properties": {
+        "baseRevision": null,
+        "title": null,
+        "description": null,
+        "groupId": null,
+        "endDate": null,
+        "dueDate": null,
+        "rule": null
+      }
+    },
+    "Group": {
+      "required": ["id", "name", "sortOrder", "revision"],
+      "properties": {
+        "id": null,
+        "name": null,
+        "sortOrder": null,
+        "revision": null
+      }
+    },
+    "CreateGroupRequest": {
+      "required": ["name"],
+      "properties": { "name": null, "sortOrder": null }
+    },
+    "UpdateGroupRequest": {
+      "required": ["baseRevision"],
+      "properties": { "baseRevision": null, "name": null, "sortOrder": null }
+    },
+    "LifecycleRequest": {
+      "required": ["baseRevision"],
+      "properties": { "baseRevision": null }
+    },
     "PutCheckinRequest": {
       "required": [
         "result",
@@ -603,8 +672,11 @@
         "kind": ["fixed", "weekly", "one_time"],
         "direction": ["do", "avoid"],
         "title": null,
+        "description": null,
         "timezone": null,
         "startDate": null,
+        "ruleEffectiveDate": null,
+        "rule": null,
         "endDate": null,
         "dueDate": null,
         "lifecycle": ["active", "paused", "archived", "deleted"],

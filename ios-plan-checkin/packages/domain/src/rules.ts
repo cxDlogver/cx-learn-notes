@@ -69,9 +69,9 @@ export function validatePlanTimeline(plan: PlanTimeline): void {
       compareBusinessDates(
         rule.effectiveDate,
         plan.rules[index - 1]!.effectiveDate,
-      ) <= 0
+      ) < 0
     ) {
-      throw new RangeError("Rule effective dates must increase.");
+      throw new RangeError("Rule effective dates cannot move backward.");
     }
     if (rule.kind === "fixed") {
       if (

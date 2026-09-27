@@ -40,9 +40,10 @@ export interface ReminderConfig {
 }
 interface PlanCreateBase {
   title: string;
+  description?: string | null;
   timezone: IanaTimezone;
   startDate: BusinessDate;
-  endDate: BusinessDate | null;
+  endDate?: BusinessDate | null;
   groupId?: Uuid | null;
   reminder?: ReminderConfig;
 }
@@ -59,9 +60,10 @@ export type CreatePlanRequest =
       rule: { weeklyTarget: number };
       dueDate?: never;
     })
-  | (Omit<PlanCreateBase, "endDate"> & {
+  | (Omit<PlanCreateBase, "endDate" | "startDate"> & {
       kind: "one_time";
       direction: "do";
+      startDate?: BusinessDate;
       dueDate: BusinessDate;
       endDate?: never;
       rule?: never;
@@ -73,6 +75,7 @@ export interface PlanDto {
   kind: PlanKind;
   direction: Direction;
   title: string;
+  description: string | null;
   timezone: IanaTimezone;
   startDate: BusinessDate;
   endDate: BusinessDate | null;
@@ -80,9 +83,35 @@ export interface PlanDto {
   groupId: Uuid | null;
   lifecycle: PlanLifecycle;
   ruleVersion: number;
+  ruleEffectiveDate: BusinessDate;
+  rule: { weekdays: Weekday[] } | { weeklyTarget: number } | null;
   revision: number;
   createdAt: UtcInstant;
   updatedAt: UtcInstant;
+}
+export interface UpdatePlanRequest {
+  title?: string;
+  description?: string | null;
+  groupId?: Uuid | null;
+  endDate?: BusinessDate | null;
+  dueDate?: BusinessDate;
+  rule?: { weekdays: Weekday[] } | { weeklyTarget: number };
+  baseRevision: number;
+}
+export interface GroupDto {
+  id: Uuid;
+  name: string;
+  sortOrder: number;
+  revision: number;
+}
+export interface CreateGroupRequest {
+  name: string;
+  sortOrder?: number;
+}
+export interface UpdateGroupRequest {
+  name?: string;
+  sortOrder?: number;
+  baseRevision: number;
 }
 export interface NumericEntry {
   value: DecimalString;

@@ -28,6 +28,7 @@
     "db:smoke": "node scripts/migrations-smoke.mjs",
     "auth:smoke": "tsc -p apps/api/tsconfig.json && node scripts/auth-smoke.mjs",
     "profile:smoke": "tsc -p apps/api/tsconfig.json && node scripts/profile-smoke.mjs",
+    "plans:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/plans-smoke.mjs",
     "security:static": "node scripts/security-static.mjs",
     "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/infra-check.mjs && node scripts/sql-static-check.mjs && node scripts/security-static.mjs"
   },
