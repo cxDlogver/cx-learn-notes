@@ -5,19 +5,19 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
+  "integrationCommit": "388c9dae5d557801f69030c51e2d7a94d390b3fe",
   "currentWork": {
-    "taskId": "SYNC-01",
-    "phase": "本地操作队列与提交重试",
-    "updatedAt": "2026-09-27T20:47:35.000Z",
-    "baseCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
+    "taskId": "SYNC-02",
+    "phase": "增量同步与撤销 tombstone",
+    "updatedAt": "2026-09-27T21:06:33.000Z",
+    "baseCommit": "388c9dae5d557801f69030c51e2d7a94d390b3fe",
     "completedSteps": [
-      "SOC-02 分享预览、短期预览凭证、逐计划授权、只读字段白名单、撤销 tombstone 和三类计划投影已提交；S0/S1/S2/S6 与 PGlite 自检通过。"
+      "SYNC-01 本地记录/outbox 原子写入、稳定幂等键、领取重试、冲突阻断、在线/重启触发及状态提示已提交；S0/S1/S4/S6 与开发自检通过。"
     ],
     "nextSteps": [
-      "核对 SYNC-01 构建计划与本地 SQLite outbox、客户端仓储、网络重试边界。",
-      "实现可续接的本地操作队列、幂等提交及失败重试协调。",
-      "执行 S0/S1/S4/S6 与开发自检，提交代码和台账。"
+      "核对 SYNC-02 服务端 change_log、客户端 cursor、权限撤销和缓存策略。",
+      "实现增量拉取、原子落库和 cursor 推进、权限 tombstone 与网络恢复协调。",
+      "执行 S0/S1/S2/S6 与开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
@@ -497,12 +497,14 @@
         "S4",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "b16089e84892d785507c71d74f58a20834e03b3b",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "388c9dae5d557801f69030c51e2d7a94d390b3fe",
+      "integratedCommit": "388c9dae5d557801f69030c51e2d7a94d390b3fe",
+      "staticPassed": true,
+      "blocker": "S0/S1/S4/S6、SQLite 迁移/断点恢复/队列重试开发自检与 iOS JS 打包通过；SQLCipher 真机、杀进程弱网和多设备实际链路按用户要求稍后验证。"
     },
     {
       "priority": 24,
@@ -518,10 +520,10 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "388c9dae5d557801f69030c51e2d7a94d390b3fe",
       "taskCommit": null,
       "integratedCommit": null
     },
