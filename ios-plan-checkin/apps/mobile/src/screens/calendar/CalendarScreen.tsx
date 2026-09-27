@@ -6,14 +6,9 @@ import type { CalendarEntryDto } from "@plan-checkin/contracts";
 import { businessDateAt } from "@plan-checkin/domain";
 import { Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
-import {
-  Choice,
-  ErrorText,
-  PlanScreen,
-  planPalette,
-  planStyles,
-} from "../plans/ui";
+import { Choice, PlanScreen, planPalette, planStyles } from "../plans/ui";
 import { dayState, monthCells, shiftMonth } from "./calendarModel";
 
 const weekdays = ["一", "二", "三", "四", "五", "六", "日"];
@@ -102,7 +97,12 @@ export function CalendarScreen({ planId }: { planId?: string }) {
           accessibilityRole="button"
           accessibilityLabel="上个月"
           onPress={() => changeMonth(-1)}
-          style={{ padding: 9 }}
+          style={{
+            minWidth: 44,
+            minHeight: 44,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <Ionicons name="chevron-back" size={20} color={planPalette.text} />
         </Pressable>
@@ -112,7 +112,12 @@ export function CalendarScreen({ planId }: { planId?: string }) {
           accessibilityRole="button"
           accessibilityLabel="下个月"
           onPress={() => changeMonth(1)}
-          style={{ padding: 9 }}
+          style={{
+            minWidth: 44,
+            minHeight: 44,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <Ionicons name="chevron-forward" size={20} color={planPalette.text} />
         </Pressable>
@@ -120,11 +125,18 @@ export function CalendarScreen({ planId }: { planId?: string }) {
       <Pressable
         testID="calendar.today"
         accessibilityRole="button"
+        accessibilityLabel="回到今天"
         onPress={() => {
           setMonth(today.slice(0, 7));
           setDate(today);
         }}
-        style={{ alignSelf: "center", marginTop: 7 }}
+        style={{
+          alignSelf: "center",
+          marginTop: 7,
+          minHeight: 44,
+          justifyContent: "center",
+          paddingHorizontal: 12,
+        }}
       >
         <Text style={{ color: planPalette.primary }}>今天</Text>
       </Pressable>
@@ -151,14 +163,18 @@ export function CalendarScreen({ planId }: { planId?: string }) {
         </View>
       ) : null}
       {calendar.data?.source === "local" ? (
-        <Text testID="calendar.offline" style={planStyles.notice}>
-          当前离线，显示上次同步的日历和本机待同步记录。
-        </Text>
+        <StatusNotice
+          kind="offline"
+          testID="calendar.offline"
+          message="当前离线，显示上次同步的日历和本机待同步记录。"
+        />
       ) : null}
       {calendar.data?.pendingCount ? (
-        <Text testID="calendar.pending" style={planStyles.notice}>
-          {calendar.data.pendingCount} 条记录已保存到本机，等待同步。
-        </Text>
+        <StatusNotice
+          kind="pending"
+          testID="calendar.pending"
+          message={`${calendar.data.pendingCount} 条记录已保存到本机，等待同步。`}
+        />
       ) : null}
       <View
         testID="calendar.grid"
@@ -194,7 +210,7 @@ export function CalendarScreen({ planId }: { planId?: string }) {
                   accessibilityState={{ selected: cell === date }}
                   onPress={() => setDate(cell)}
                   style={{
-                    width: 39,
+                    width: 44,
                     height: 48,
                     alignItems: "center",
                     justifyContent: "center",
@@ -259,19 +275,19 @@ export function CalendarScreen({ planId }: { planId?: string }) {
         ))}
       </View>
       {calendar.isPending ? (
-        <Text style={[planStyles.subtitle, { marginTop: 20 }]}>
-          正在读取日历…
-        </Text>
+        <ScreenState
+          kind="loading"
+          testID="calendar.loading"
+          message="正在读取日历…"
+        />
       ) : null}
       {calendar.isError ? (
-        <>
-          <ErrorText message="暂时无法读取日历，请检查网络" />
-          <Choice
-            label="重试"
-            testID="calendar.retry"
-            onPress={() => void calendar.refetch()}
-          />
-        </>
+        <ScreenState
+          kind="error"
+          testID="calendar.error"
+          message="暂时无法读取日历，请检查网络"
+          onRetry={() => void calendar.refetch()}
+        />
       ) : null}
       <Text
         testID="calendar.selected-date"

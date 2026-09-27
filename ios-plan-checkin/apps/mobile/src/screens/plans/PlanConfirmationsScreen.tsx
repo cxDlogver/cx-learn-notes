@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState } from "../../components/ScreenState";
 import { Choice, ErrorText, PlanScreen, planStyles, Submit } from "./ui";
 
 type Action = "pause" | "resume" | "archive" | "delete";
@@ -83,16 +84,20 @@ export function PlanConfirmationsScreen({
       <Text testID="plans.confirm.title" style={planStyles.title}>
         管理计划
       </Text>
-      {plan.isPending ? <Text>正在读取计划…</Text> : null}
+      {plan.isPending ? (
+        <ScreenState
+          kind="loading"
+          testID="plans.confirm.loading"
+          message="正在读取计划…"
+        />
+      ) : null}
       {plan.isError ? (
-        <>
-          <ErrorText message="无法读取计划，请联网重试" />
-          <Choice
-            testID="plans.confirm.retry"
-            label="重试"
-            onPress={() => void plan.refetch()}
-          />
-        </>
+        <ScreenState
+          kind="error"
+          testID="plans.confirm.error"
+          message="无法读取计划，请联网重试"
+          onRetry={() => void plan.refetch()}
+        />
       ) : null}
       {plan.data ? (
         <>

@@ -9,6 +9,7 @@ import type {
 import { businessDateAt } from "@plan-checkin/domain";
 import { Alert, Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import {
   Choice,
   ErrorText,
@@ -198,7 +199,12 @@ export function RecordEditorScreen({
         testID="record.editor.header"
         style={[planStyles.row, { justifyContent: "space-between" }]}
       >
-        <Pressable accessibilityRole="button" onPress={onDone}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="取消记录"
+          onPress={onDone}
+          style={{ minWidth: 44, minHeight: 44, justifyContent: "center" }}
+        >
           <Text style={{ color: planPalette.secondary }}>取消</Text>
         </Pressable>
         <Text style={planStyles.cardTitle}>
@@ -211,14 +217,25 @@ export function RecordEditorScreen({
         <View style={{ width: 32 }} />
       </View>
       {planQuery.isPending || (mode === "edit" && recordQuery.isPending) ? (
-        <Text style={[planStyles.subtitle, { marginTop: 25 }]}>
-          正在读取记录…
-        </Text>
+        <ScreenState
+          kind="loading"
+          testID="record.loading"
+          message="正在读取记录…"
+        />
       ) : null}
       {planQuery.isError || recordQuery.isError ? (
-        <ErrorText message="暂时无法读取计划或记录，请返回后重试" />
+        <ScreenState
+          kind="error"
+          testID="record.load-error"
+          message="暂时无法读取计划或记录，请检查网络"
+          onRetry={() =>
+            void (planQuery.isError
+              ? planQuery.refetch()
+              : recordQuery.refetch())
+          }
+        />
       ) : null}
-      {plan ? (
+      {plan && (mode !== "edit" || recordQuery.isSuccess) ? (
         <>
           <Text
             testID="record.editor.plan"
@@ -322,9 +339,11 @@ export function RecordEditorScreen({
             </View>
           ) : null}
           {savedLocally ? (
-            <Text testID="record.local-saved" style={planStyles.notice}>
-              已保存到本机，等待联网同步
-            </Text>
+            <StatusNotice
+              kind="pending"
+              testID="record.local-saved"
+              message="已保存到本机，等待联网同步"
+            />
           ) : null}
           <ErrorText message={error} />
           <Submit

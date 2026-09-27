@@ -118,6 +118,7 @@ export function PhoneLoginScreen({ navigation }: Props) {
               <Pressable
                 accessibilityRole="link"
                 accessibilityLabel="服务协议"
+                style={{ minHeight: 44, justifyContent: "center" }}
                 onPress={() =>
                   void openPolicy(process.env.EXPO_PUBLIC_TERMS_URL, "服务协议")
                 }
@@ -128,6 +129,7 @@ export function PhoneLoginScreen({ navigation }: Props) {
               <Pressable
                 accessibilityRole="link"
                 accessibilityLabel="隐私政策"
+                style={{ minHeight: 44, justifyContent: "center" }}
                 onPress={() =>
                   void openPolicy(
                     process.env.EXPO_PUBLIC_PRIVACY_URL,

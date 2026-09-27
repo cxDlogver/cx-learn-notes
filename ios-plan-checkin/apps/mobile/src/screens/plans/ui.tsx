@@ -156,7 +156,8 @@ export function Choice({
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      accessibilityState={{ selected: Boolean(selected) }}
+      accessibilityLabel={label}
+      accessibilityState={{ selected: Boolean(selected), disabled }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -167,6 +168,8 @@ export function Choice({
           backgroundColor: selected ? planPalette.pale : planPalette.surface,
           paddingHorizontal: 13,
           paddingVertical: 11,
+          minHeight: 44,
+          justifyContent: "center",
           opacity: disabled ? 0.55 : pressed ? 0.72 : 1,
         },
       ]}

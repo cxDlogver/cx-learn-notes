@@ -108,7 +108,9 @@ export function SmsCodeScreen({ navigation, route }: Props) {
             </Text>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="重新编辑手机号"
               onPress={() => navigation.goBack()}
+              style={{ minHeight: 44, justifyContent: "center" }}
             >
               <Text style={styles.edit}>重新编辑手机号</Text>
             </Pressable>
@@ -156,8 +158,12 @@ export function SmsCodeScreen({ navigation, route }: Props) {
           {error && code.length === 6 && !expired ? (
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="重新验证"
               onPress={() => void verify(code)}
-              style={styles.retry}
+              style={[
+                styles.retry,
+                { minHeight: 44, justifyContent: "center" },
+              ]}
             >
               <Text style={styles.edit}>重新验证</Text>
             </Pressable>
@@ -165,10 +171,15 @@ export function SmsCodeScreen({ navigation, route }: Props) {
           <Pressable
             testID="auth.sms.resend"
             accessibilityRole="button"
+            accessibilityLabel={
+              remaining > 0
+                ? `${remaining} 秒后可重新发送验证码`
+                : "重新发送验证码"
+            }
             accessibilityState={{ disabled: remaining > 0 || resending }}
             disabled={remaining > 0 || resending}
             onPress={() => void resend()}
-            style={styles.resend}
+            style={[styles.resend, { minHeight: 44, justifyContent: "center" }]}
           >
             <Text style={remaining > 0 ? styles.waiting : styles.edit}>
               {resending

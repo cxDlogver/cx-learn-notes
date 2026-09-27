@@ -5,8 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import type { TodayItemDto } from "@plan-checkin/contracts";
 import { Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
-import { ErrorText, PlanScreen, planPalette, planStyles } from "../plans/ui";
+import { PlanScreen, planPalette, planStyles } from "../plans/ui";
 
 const dateLabel = (date: string): string => {
   const [year, month, day] = date.split("-");
@@ -139,27 +140,26 @@ export function TodayScreen() {
         />
       </View>
       {query.data?.source === "local" ? (
-        <Text testID="today.offline" style={planStyles.notice}>
-          当前离线，显示本机计划和记录。新记录会保存到本机，联网后同步。
-        </Text>
+        <StatusNotice
+          kind="offline"
+          testID="today.offline"
+          message="当前离线，显示本机计划和记录。新记录会保存到本机，联网后同步。"
+        />
       ) : null}
       {query.isPending ? (
-        <Text style={[planStyles.subtitle, { marginTop: 24 }]}>
-          正在读取今日计划…
-        </Text>
+        <ScreenState
+          kind="loading"
+          testID="today.loading"
+          message="正在读取今日计划…"
+        />
       ) : null}
       {query.isError ? (
-        <>
-          <ErrorText message="暂时无法读取今日计划，请检查网络" />
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => void query.refetch()}
-          >
-            <Text style={{ color: planPalette.primary, marginTop: 12 }}>
-              重试
-            </Text>
-          </Pressable>
-        </>
+        <ScreenState
+          kind="error"
+          testID="today.error"
+          message="暂时无法读取今日计划，请检查网络"
+          onRetry={() => void query.refetch()}
+        />
       ) : null}
       {today && items.length === 0 ? (
         <View

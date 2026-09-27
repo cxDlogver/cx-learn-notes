@@ -4,6 +4,7 @@ import type { GroupDto } from "@plan-checkin/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
 import {
   Choice,
@@ -37,6 +38,8 @@ export function GroupManagementScreen() {
         <Pressable
           testID="plans.groups.new"
           accessibilityRole="button"
+          accessibilityLabel="新建分组"
+          hitSlop={10}
           onPress={() => {
             setEditing(null);
             setName("");
@@ -160,17 +163,19 @@ export function GroupManagementScreen() {
         把相关计划放在一起。删除分组不会删除其中的计划。
       </Text>
       {groups.isPending ? (
-        <Text style={planStyles.subtitle}>正在读取分组…</Text>
+        <ScreenState
+          kind="loading"
+          testID="plans.groups.loading"
+          message="正在读取分组…"
+        />
       ) : null}
       {groups.isError ? (
-        <>
-          <ErrorText message="分组读取失败" />
-          <Choice
-            testID="plans.groups.retry"
-            label="重试"
-            onPress={() => void groups.refetch()}
-          />
-        </>
+        <ScreenState
+          kind="error"
+          testID="plans.groups.error"
+          message="分组读取失败"
+          onRetry={() => void groups.refetch()}
+        />
       ) : null}
       {[...(groups.data ?? [])]
         .sort((a, b) => a.sortOrder - b.sortOrder)

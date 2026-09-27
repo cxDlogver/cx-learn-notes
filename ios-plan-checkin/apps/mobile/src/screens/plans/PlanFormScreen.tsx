@@ -5,6 +5,7 @@ import type { PlanDto, PlanKind, Weekday } from "@plan-checkin/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { Platform, Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
 import {
   Choice,
@@ -385,17 +386,21 @@ export function EditPlanScreen({
   if (query.isPending)
     return (
       <PlanScreen>
-        <Text>正在读取计划…</Text>
+        <ScreenState
+          kind="loading"
+          testID="plans.edit.loading"
+          message="正在读取计划…"
+        />
       </PlanScreen>
     );
   if (query.isError)
     return (
       <PlanScreen>
-        <ErrorText message="无法读取计划，请检查网络" />
-        <Choice
-          label="重试"
-          testID="plans.edit.retry"
-          onPress={() => void query.refetch()}
+        <ScreenState
+          kind="error"
+          testID="plans.edit.error"
+          message="无法读取计划，请检查网络"
+          onRetry={() => void query.refetch()}
         />
       </PlanScreen>
     );

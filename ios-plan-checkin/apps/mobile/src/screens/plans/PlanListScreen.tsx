@@ -6,8 +6,9 @@ import { useQuery } from "@tanstack/react-query";
 import type { PlanDto, PlanKind, PlanLifecycle } from "@plan-checkin/contracts";
 import { Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
-import { Choice, ErrorText, PlanScreen, planPalette, planStyles } from "./ui";
+import { Choice, PlanScreen, planPalette, planStyles } from "./ui";
 import { kindLabels } from "./planForm";
 
 const tabs: { status: PlanLifecycle; label: string }[] = [
@@ -63,6 +64,7 @@ export function PlanListScreen() {
           testID="plans.list.add"
           accessibilityRole="button"
           accessibilityLabel="创建计划"
+          hitSlop={8}
           onPress={() => setShowKinds(!showKinds)}
         >
           <Ionicons name="add-circle" size={29} color={planPalette.primary} />
@@ -108,22 +110,26 @@ export function PlanListScreen() {
         {visible.length} 项计划
       </Text>
       {plans.data?.source === "local" ? (
-        <Text testID="plans.list.offline" style={planStyles.notice}>
-          当前离线，显示本机上次同步的计划。计划修改需联网。
-        </Text>
+        <StatusNotice
+          kind="offline"
+          testID="plans.list.offline"
+          message="当前离线，显示本机上次同步的计划。计划修改需联网。"
+        />
       ) : null}
       {plans.isPending ? (
-        <Text style={planStyles.subtitle}>正在读取计划…</Text>
+        <ScreenState
+          kind="loading"
+          testID="plans.list.loading"
+          message="正在读取计划…"
+        />
       ) : null}
       {plans.isError ? (
-        <>
-          <ErrorText message="暂时无法读取计划，请检查网络" />
-          <Choice
-            testID="plans.list.retry"
-            label="重试"
-            onPress={() => void plans.refetch()}
-          />
-        </>
+        <ScreenState
+          kind="error"
+          testID="plans.list.error"
+          message="暂时无法读取计划，请检查网络"
+          onRetry={() => void plans.refetch()}
+        />
       ) : null}
       {!plans.isPending && !plans.isError && visible.length === 0 ? (
         <View testID="plans.list.empty" style={planStyles.card}>

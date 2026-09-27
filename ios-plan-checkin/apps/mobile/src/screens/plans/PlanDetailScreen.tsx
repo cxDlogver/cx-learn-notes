@@ -8,8 +8,9 @@ import type {
 import { businessDateAt } from "@plan-checkin/domain";
 import { Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
+import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
-import { Choice, ErrorText, PlanScreen, planPalette, planStyles } from "./ui";
+import { Choice, PlanScreen, planPalette, planStyles } from "./ui";
 
 const statusCopy: Record<string, string> = {
   success: "已记录成功",
@@ -327,30 +328,35 @@ export function PlanDetailScreen({ planId }: { planId: string }) {
   return (
     <PlanScreen>
       {detail.isPending ? (
-        <Text style={planStyles.subtitle}>正在读取计划详情…</Text>
+        <ScreenState
+          kind="loading"
+          testID="detail.loading"
+          message="正在读取计划详情…"
+        />
       ) : null}
       {detail.isError ? (
-        <>
-          <ErrorText message="暂时无法读取计划详情，请检查网络" />
-          <Choice
-            label="重试"
-            testID="detail.retry"
-            onPress={() => void detail.refetch()}
-          />
-        </>
+        <ScreenState
+          kind="error"
+          testID="detail.error"
+          message="暂时无法读取计划详情，请检查网络"
+          onRetry={() => void detail.refetch()}
+        />
       ) : null}
       {data && plan ? (
         <>
           {detail.data?.source === "local" ? (
-            <Text testID="detail.offline" style={planStyles.notice}>
-              当前离线，显示上次同步的计划统计。本机新记录暂未计入统计。
-            </Text>
+            <StatusNotice
+              kind="offline"
+              testID="detail.offline"
+              message="当前离线，显示上次同步的计划统计。本机新记录暂未计入统计。"
+            />
           ) : null}
           {detail.data?.pendingCount ? (
-            <Text testID="detail.pending" style={planStyles.notice}>
-              {detail.data.pendingCount}{" "}
-              条本机记录等待同步，统计以云端截止日为准。
-            </Text>
+            <StatusNotice
+              kind="pending"
+              testID="detail.pending"
+              message={`${detail.data.pendingCount} 条本机记录等待同步，统计以云端截止日为准。`}
+            />
           ) : null}
           <View style={[planStyles.row, { justifyContent: "space-between" }]}>
             <Text testID="detail.title" style={planStyles.title}>
@@ -359,7 +365,14 @@ export function PlanDetailScreen({ planId }: { planId: string }) {
             <Pressable
               testID="detail.edit"
               accessibilityRole="button"
+              accessibilityLabel="编辑计划"
               onPress={() => navigation.navigate("EditPlan", { planId })}
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                alignItems: "flex-end",
+                justifyContent: "center",
+              }}
             >
               <Text style={{ color: planPalette.primary }}>编辑</Text>
             </Pressable>
