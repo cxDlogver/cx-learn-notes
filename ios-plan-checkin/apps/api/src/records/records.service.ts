@@ -493,8 +493,8 @@ export class RecordsService {
           mediaAttachFailed,
         );
         await client.query(
-          `INSERT INTO checkin_revisions (checkin_id, revision, before_snapshot, after_snapshot, actor_id, reason)
-           VALUES ($1,$2,$3,$4,$5,$6)`,
+          `INSERT INTO checkin_revisions (checkin_id, revision, before_snapshot, after_snapshot, actor_id, reason, resolution_of_conflict_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
           [
             row.id,
             row.revision,
@@ -506,6 +506,7 @@ export class RecordsService {
               : existing
                 ? "edit"
                 : "create",
+            input.resolutionOfConflictId ?? null,
           ],
         );
         if (input.resolutionOfConflictId)

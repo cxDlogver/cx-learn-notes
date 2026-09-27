@@ -79,6 +79,7 @@ const requiredConstraints = [
   /PRIMARY KEY\s*\(user_id,\s*seq\)/i,
   /CHECK\s*\(result IN \('success', 'failure', 'skip'\)\)/i,
   /tr_plan_timezone_immutable/i,
+  /resolution_of_conflict_id UUID REFERENCES checkin_conflicts\(id\)/i,
 ];
 for (const constraint of requiredConstraints) {
   if (!constraint.test(allSql))

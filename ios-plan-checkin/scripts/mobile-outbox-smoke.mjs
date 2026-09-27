@@ -55,12 +55,26 @@ const cache = {
       1,
     );
   },
-  async failOperation(_account, operation, status, code, _message, retryAt) {
+  async failOperation(
+    _account,
+    operation,
+    status,
+    code,
+    _message,
+    retryAt,
+    details,
+  ) {
     const row = rows.find((item) => item.operationId === operation.operationId);
     row.status = status;
     row.retryCount++;
     row.nextAttempt = retryAt?.getTime() ?? null;
-    failures.push([operation.operationId, status, code, row.nextAttempt]);
+    failures.push([
+      operation.operationId,
+      status,
+      code,
+      row.nextAttempt,
+      details,
+    ]);
   },
   async nextWakeAt() {
     return null;
@@ -127,6 +141,15 @@ const conflictRunner = new OutboxRunner(
         status: 409,
         code: "CHECKIN_CONFLICT",
         message: "different versions",
+        details: {
+          conflictId: "conflict-id",
+          currentRevision: 2,
+          serverRecord: {
+            planId: "plan-c",
+            businessDate: "2026-09-28",
+            revision: 2,
+          },
+        },
       };
     return { id: operation.operationId };
   },
@@ -137,6 +160,7 @@ assert.equal(
   rows.find((row) => row.operationId === "conflict").status,
   "conflict",
 );
+assert.equal(failures.at(-1)[4].conflictId, "conflict-id");
 assert.equal(
   rows.find((row) => row.operationId === "blocked").status,
   "pending",

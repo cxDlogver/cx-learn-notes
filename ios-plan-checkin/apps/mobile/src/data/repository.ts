@@ -6,6 +6,7 @@ import type {
   CalendarDayDto,
   CalendarEntryDto,
   CheckinDto,
+  CheckinConflictDetails,
   CreateGroupRequest,
   CreatePlanRequest,
   GroupDto,
@@ -42,6 +43,7 @@ export class ApiRequestError extends Error {
     message: string,
     readonly requestId: string | null,
     readonly retryAfterMs: number | null = null,
+    readonly details: Record<string, unknown> | null = null,
   ) {
     super(message);
   }
@@ -95,6 +97,11 @@ export interface AppRepository {
     PlanDetailDto & { source?: "server" | "local"; pendingCount?: number }
   >;
   getCheckin(planId: string, businessDate: string): Promise<CheckinDto>;
+  resolveCheckinConflict(
+    planId: string,
+    businessDate: string,
+    choice: "server" | "local",
+  ): Promise<CheckinDto>;
   saveCheckin(
     plan: PlanDto,
     businessDate: string,
@@ -172,6 +179,7 @@ export class ApiClient implements SessionGateway {
               ? seconds * 1000
               : Math.max(0, Date.parse(value) - Date.now()) || null;
           })(),
+          failure?.details ?? null,
         );
       }
       if (!body || typeof body !== "object" || !("data" in body))
@@ -758,6 +766,77 @@ export class HttpRepository implements AppRepository {
         return local.record;
       throw error;
     }
+  }
+  async resolveCheckinConflict(
+    planId: string,
+    businessDate: string,
+    choice: "server" | "local",
+  ): Promise<CheckinDto> {
+    const accountId = this.accountId();
+    if (!accountId || !this.localCache)
+      throw new Error("当前账户没有可处理的本机冲突");
+    const server = await this.api.get<CheckinDto>(
+      `/plans/${encodeURIComponent(planId)}/checkins/${businessDate}`,
+    );
+    const conflict = await this.localCache.conflict(
+      accountId,
+      planId,
+      businessDate,
+    );
+    if (!conflict) throw new Error("冲突已处理，请刷新页面");
+    if (server.revision !== conflict.details.currentRevision) {
+      const probeId = Crypto.randomUUID();
+      try {
+        await this.api.put<CheckinDto>(
+          `/plans/${encodeURIComponent(planId)}/checkins/${businessDate}`,
+          {
+            result: conflict.localRecord.result,
+            note: conflict.localRecord.note,
+            failureReason: conflict.localRecord.failureReason,
+            numeric: conflict.localRecord.numeric,
+            mediaIds: conflict.localRecord.mediaIds,
+            baseRevision: conflict.details.currentRevision,
+            clientCreatedAt: new Date().toISOString(),
+            clientOperationId: probeId,
+            ruleVersion: conflict.localRecord.ruleVersion,
+          } satisfies PutCheckinRequest,
+          probeId,
+        );
+      } catch (cause) {
+        if (
+          cause instanceof ApiRequestError &&
+          cause.code === "CHECKIN_CONFLICT" &&
+          cause.details &&
+          typeof cause.details.conflictId === "string" &&
+          typeof cause.details.currentRevision === "number" &&
+          cause.details.serverRecord
+        ) {
+          await this.localCache.updateConflictDetails(
+            accountId,
+            conflict.operationId,
+            cause.details as unknown as CheckinConflictDetails,
+          );
+          throw new Error("云端版本已更新，请重新查看两版内容并选择", {
+            cause,
+          });
+        }
+        throw cause;
+      }
+      throw new Error("云端版本已更新，请重新打开记录");
+    }
+    await this.localCache.resolveConflict(
+      accountId,
+      planId,
+      businessDate,
+      choice,
+      server,
+      Crypto.randomUUID(),
+    );
+    if (choice === "local") await this.outbox?.trigger();
+    return (
+      (await this.localCache.checkin(accountId, planId, businessDate))
+        ?.record ?? server
+    );
   }
   async saveCheckin(
     plan: PlanDto,

@@ -45,6 +45,8 @@ import {
   RecordEditorScreen,
   type RecordMode,
 } from "../screens/today/RecordEditorScreen";
+import { RecordConflictScreen } from "../screens/today/RecordConflictScreen";
+import { SyncFeedbackScreen } from "../screens/today/SyncFeedbackScreen";
 import type { PlanDraft } from "../screens/plans/planForm";
 import { FriendsEntry, SettingsEntry, Shell } from "./entryScreens";
 import { parseAppLink, type AppLink } from "./links";
@@ -66,6 +68,8 @@ export type RootStackParamList = {
     ruleVersion?: number;
     resolution?: OneTimeResolution;
   };
+  RecordConflict: { planId: string; businessDate: string };
+  SyncFeedback: undefined;
   Settings: undefined;
   CreatePlan: { kind: PlanKind; draft?: PlanDraft };
   EditPlan: { planId: string };
@@ -158,6 +162,33 @@ function MainStack() {
           <RecordEditorScreen
             {...route.params}
             onDone={() => navigation.goBack()}
+          />
+        )}
+      </RootStack.Screen>
+      <RootStack.Screen
+        name="RecordConflict"
+        options={{ headerShown: false, presentation: "modal" }}
+      >
+        {({ route, navigation }) => (
+          <RecordConflictScreen
+            {...route.params}
+            onDone={() => navigation.goBack()}
+          />
+        )}
+      </RootStack.Screen>
+      <RootStack.Screen name="SyncFeedback" options={{ title: "同步状态" }}>
+        {({ navigation }) => (
+          <SyncFeedbackScreen
+            onConflict={(planId, businessDate) =>
+              navigation.navigate("RecordConflict", { planId, businessDate })
+            }
+            onEdit={(planId, businessDate) =>
+              navigation.navigate("Checkin", {
+                planId,
+                businessDate,
+                mode: "edit",
+              })
+            }
           />
         )}
       </RootStack.Screen>

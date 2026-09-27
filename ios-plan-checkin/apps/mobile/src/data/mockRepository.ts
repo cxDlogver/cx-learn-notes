@@ -378,6 +378,13 @@ export class MockRepository implements AppRepository {
     if (!record) throw new Error("当天没有记录");
     return record;
   }
+  async resolveCheckinConflict(
+    planId: string,
+    businessDate: string,
+    _choice: "server" | "local",
+  ): Promise<CheckinDto> {
+    return this.getCheckin(planId, businessDate);
+  }
   async saveCheckin(
     plan: PlanDto,
     businessDate: string,

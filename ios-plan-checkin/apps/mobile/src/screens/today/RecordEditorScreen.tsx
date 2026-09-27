@@ -8,6 +8,8 @@ import type {
 } from "@plan-checkin/contracts";
 import { businessDateAt } from "@plan-checkin/domain";
 import { Alert, Pressable, Text, View } from "react-native";
+import { useNavigation, type NavigationProp } from "@react-navigation/native";
+import type { RootStackParamList } from "../../navigation/navigation";
 import { useAppServices } from "../../data/services";
 import { ScreenState, StatusNotice } from "../../components/ScreenState";
 import {
@@ -59,8 +61,17 @@ export function RecordEditorScreen({
   resolution,
   onDone,
 }: RecordEditorProps) {
-  const { repository, todaySession } = useAppServices();
+  const { repository, todaySession, localCache, session } = useAppServices();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
+  const snapshot = session.getSnapshot();
+  const accountId = snapshot.phase === "authenticated" ? snapshot.userId : null;
+  const localRecord = useQuery({
+    queryKey: ["local-checkin", accountId, planId, businessDate],
+    queryFn: () => localCache!.checkin(accountId!, planId, businessDate),
+    enabled: Boolean(accountId && localCache),
+    refetchInterval: 3000,
+  });
   const planQuery = useQuery({
     queryKey: ["plan", planId],
     queryFn: () => repository.getPlan(planId),
@@ -168,7 +179,19 @@ export function RecordEditorScreen({
             : saved.syncState === "failed"
               ? "同步失败，记录仍保存在本机，可稍后重试。"
               : "记录会在联网后同步。",
-          [{ text: "知道了", onPress: onDone }],
+          saved.syncState === "conflict"
+            ? [
+                { text: "稍后处理", onPress: onDone },
+                {
+                  text: "选择版本",
+                  onPress: () =>
+                    navigation.navigate("RecordConflict", {
+                      planId,
+                      businessDate,
+                    }),
+                },
+              ]
+            : [{ text: "知道了", onPress: onDone }],
         );
       } else onDone();
     } catch (cause) {
@@ -365,6 +388,26 @@ export function RecordEditorScreen({
               }
             />
           ) : null}
+          {localRecord.data?.state === "conflict" ? (
+            <StatusNotice
+              kind="failure"
+              testID="record.conflict-action"
+              message="这条记录在另一台设备上也发生了修改。请选择要保留的版本。"
+              actionLabel="查看两个版本"
+              onAction={() =>
+                navigation.navigate("RecordConflict", { planId, businessDate })
+              }
+            />
+          ) : null}
+          {localRecord.data?.state === "failed" ? (
+            <StatusNotice
+              kind="failure"
+              testID="record.retry-action"
+              message="本机记录尚未同步成功，可在同步状态中查看原因并重试。"
+              actionLabel="查看同步状态"
+              onAction={() => navigation.navigate("SyncFeedback")}
+            />
+          ) : null}
           <ErrorText message={error} />
           <Submit
             testID="record.save"
@@ -374,7 +417,10 @@ export function RecordEditorScreen({
             }
             pending={pending}
             disabled={Boolean(
-              planQuery.isError || recordQuery.isError || invalidDate,
+              planQuery.isError ||
+              recordQuery.isError ||
+              invalidDate ||
+              localRecord.data?.state === "conflict",
             )}
           />
         </>

@@ -83,6 +83,19 @@ ALTER TABLE local_outbox ADD COLUMN last_error_code TEXT;
 ALTER TABLE local_outbox ADD COLUMN last_error_message TEXT;
 `,
   },
+  {
+    version: 4,
+    sql: `
+CREATE TABLE local_checkin_conflicts (
+  operation_id TEXT PRIMARY KEY REFERENCES local_outbox(operation_id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL,
+  business_date TEXT NOT NULL,
+  details_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX local_conflicts_record_idx ON local_checkin_conflicts(plan_id,business_date);
+`,
+  },
 ] as const;
 
 export const localSchemaVersion = localMigrations.at(-1)!.version;

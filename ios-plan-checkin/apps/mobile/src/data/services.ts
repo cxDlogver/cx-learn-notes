@@ -112,6 +112,7 @@ export function createAppServices(): AppServices {
       }
     },
     async () => {
+      await queryClient.invalidateQueries({ queryKey: ["sync-feedback"] });
       await queryClient.invalidateQueries({ queryKey: ["today"] });
       await queryClient.invalidateQueries({ queryKey: ["calendar"] });
       await queryClient.invalidateQueries({ queryKey: ["plan-detail"] });

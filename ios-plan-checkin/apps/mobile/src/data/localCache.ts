@@ -1,6 +1,7 @@
 import type {
   CalendarMonthDto,
   CheckinDto,
+  CheckinConflictDetails,
   PlanDetailDto,
   PlanDto,
   PutCheckinRequest,
@@ -41,6 +42,13 @@ export interface OutboxOperation {
   kind: "create" | "update" | "backfill" | "resolve_conflict";
   payload: PutCheckinRequest;
   retryCount: number;
+}
+export interface LocalCheckinConflict {
+  operationId: string;
+  planId: string;
+  businessDate: string;
+  localRecord: CheckinDto;
+  details: CheckinConflictDetails;
 }
 interface PayloadRow {
   payload: string;
@@ -367,6 +375,12 @@ export class LocalCache {
               prior.operation_id,
             )
           : null;
+      if (prior?.sync_state === "failed" && !pending)
+        await database.runAsync(
+          "DELETE FROM local_outbox WHERE plan_id=? AND business_date=? AND status='failed'",
+          plan.id,
+          businessDate,
+        );
       const operationId =
         pending && prior?.operation_id
           ? prior.operation_id
@@ -564,6 +578,7 @@ export class LocalCache {
     code: string,
     message: string,
     retryAt: Date | null = null,
+    details: CheckinConflictDetails | null = null,
   ): Promise<void> {
     await this.store.transaction(accountId, async (database) => {
       await database.runAsync(
@@ -582,6 +597,17 @@ export class LocalCache {
         operation.planId,
         operation.businessDate,
       );
+      if (status === "conflict" && details)
+        await database.runAsync(
+          `INSERT INTO local_checkin_conflicts(operation_id,plan_id,business_date,details_json,created_at)
+           VALUES(?,?,?,?,?) ON CONFLICT(operation_id) DO UPDATE SET
+             details_json=excluded.details_json,created_at=excluded.created_at`,
+          operation.operationId,
+          operation.planId,
+          operation.businessDate,
+          JSON.stringify(details),
+          new Date().toISOString(),
+        );
     });
   }
 
@@ -620,6 +646,36 @@ export class LocalCache {
     });
   }
 
+  async discardFailedRecord(
+    accountId: string,
+    planId: string,
+    businessDate: string,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      const failed = await database.getFirstAsync<{ operation_id: string }>(
+        `SELECT operation_id FROM local_outbox
+         WHERE plan_id=? AND business_date=? AND status='failed' LIMIT 1`,
+        planId,
+        businessDate,
+      );
+      if (!failed) throw new Error("该记录没有可放弃的失败操作");
+      await database.runAsync(
+        "DELETE FROM local_outbox WHERE plan_id=? AND business_date=?",
+        planId,
+        businessDate,
+      );
+      await database.runAsync(
+        "DELETE FROM local_checkins WHERE plan_id=? AND business_date=? AND sync_state<>'synced'",
+        planId,
+        businessDate,
+      );
+      await database.runAsync(
+        "DELETE FROM local_sync_cursor WHERE scope LIKE 'calendar:%' OR scope='today:snapshot' OR scope=?",
+        `detail:${planId}`,
+      );
+    });
+  }
+
   async checkin(
     accountId: string,
     planId: string,
@@ -639,6 +695,174 @@ export class LocalCache {
             state: row.sync_state,
           }
         : null;
+    });
+  }
+
+  async conflict(
+    accountId: string,
+    planId: string,
+    businessDate: string,
+  ): Promise<LocalCheckinConflict | null> {
+    return this.store.read(accountId, async (database) => {
+      const row = await database.getFirstAsync<{
+        operation_id: string;
+        details_json: string;
+        payload: string;
+      }>(
+        `SELECT c.operation_id,c.details_json,r.payload FROM local_checkin_conflicts c
+         JOIN local_checkins r ON r.plan_id=c.plan_id AND r.business_date=c.business_date
+         WHERE c.plan_id=? AND c.business_date=? ORDER BY c.created_at DESC LIMIT 1`,
+        planId,
+        businessDate,
+      );
+      return row
+        ? {
+            operationId: row.operation_id,
+            planId,
+            businessDate,
+            localRecord: JSON.parse(row.payload) as CheckinDto,
+            details: JSON.parse(row.details_json) as CheckinConflictDetails,
+          }
+        : null;
+    });
+  }
+
+  async pendingOperations(accountId: string): Promise<
+    {
+      operationId: string;
+      planId: string;
+      businessDate: string;
+      status: "pending" | "sending" | "retry" | "conflict" | "failed";
+      errorCode: string | null;
+    }[]
+  > {
+    return this.store.read(accountId, async (database) => {
+      const rows = await database.getAllAsync<{
+        operation_id: string;
+        plan_id: string;
+        business_date: string;
+        status: "pending" | "sending" | "retry" | "conflict" | "failed";
+        last_error_code: string | null;
+      }>(
+        `SELECT operation_id,plan_id,business_date,status,last_error_code
+         FROM local_outbox ORDER BY rowid`,
+      );
+      const firstByRecord = new Map<string, (typeof rows)[number]>();
+      for (const row of rows) {
+        const key = `${row.plan_id}:${row.business_date}`;
+        if (!firstByRecord.has(key)) firstByRecord.set(key, row);
+      }
+      return [...firstByRecord.values()].map((row) => ({
+        operationId: row.operation_id,
+        planId: row.plan_id,
+        businessDate: row.business_date,
+        status: row.status,
+        errorCode: row.last_error_code,
+      }));
+    });
+  }
+
+  async updateConflictDetails(
+    accountId: string,
+    operationId: string,
+    details: CheckinConflictDetails,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `UPDATE local_checkin_conflicts SET details_json=?,created_at=?
+         WHERE operation_id=?`,
+        JSON.stringify(details),
+        new Date().toISOString(),
+        operationId,
+      );
+    });
+  }
+
+  async resolveConflict(
+    accountId: string,
+    planId: string,
+    businessDate: string,
+    choice: "server" | "local",
+    currentServer: CheckinDto,
+    newOperationId: string,
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      const conflict = await database.getFirstAsync<{ details_json: string }>(
+        `SELECT details_json FROM local_checkin_conflicts
+         WHERE plan_id=? AND business_date=? ORDER BY created_at DESC LIMIT 1`,
+        planId,
+        businessDate,
+      );
+      const draft = await database.getFirstAsync<{ payload: string }>(
+        "SELECT payload FROM local_checkins WHERE plan_id=? AND business_date=?",
+        planId,
+        businessDate,
+      );
+      if (!conflict || !draft) throw new Error("冲突内容已变化，请重新打开");
+      const details = JSON.parse(
+        conflict.details_json,
+      ) as CheckinConflictDetails;
+      if (currentServer.revision !== details.currentRevision)
+        throw new Error("云端记录已再次修改，请重新比较两个版本");
+      const local = JSON.parse(draft.payload) as CheckinDto;
+      await database.runAsync(
+        "DELETE FROM local_outbox WHERE plan_id=? AND business_date=?",
+        planId,
+        businessDate,
+      );
+      if (choice === "server") {
+        await database.runAsync(
+          `UPDATE local_checkins SET revision=?,sync_state='synced',payload=?,operation_id=NULL,updated_at=?
+           WHERE plan_id=? AND business_date=?`,
+          currentServer.revision,
+          JSON.stringify(currentServer),
+          currentServer.updatedAt,
+          planId,
+          businessDate,
+        );
+      } else {
+        const now = new Date().toISOString();
+        const input: PutCheckinRequest = {
+          result: local.result,
+          note: local.note,
+          failureReason: local.failureReason,
+          numeric: local.numeric,
+          mediaIds: local.mediaIds,
+          baseRevision: currentServer.revision,
+          clientCreatedAt: now,
+          clientOperationId: newOperationId,
+          ruleVersion: local.ruleVersion,
+          resolutionOfConflictId: details.conflictId,
+        };
+        await database.runAsync(
+          `INSERT INTO local_outbox(operation_id,plan_id,business_date,kind,status,payload,created_at)
+           VALUES(?,?,?,'resolve_conflict','pending',?,?)`,
+          newOperationId,
+          planId,
+          businessDate,
+          JSON.stringify(input),
+          now,
+        );
+        await database.runAsync(
+          `UPDATE local_checkins SET revision=?,sync_state='local',payload=?,operation_id=?,updated_at=?
+           WHERE plan_id=? AND business_date=?`,
+          currentServer.revision,
+          JSON.stringify({
+            ...local,
+            id: currentServer.id,
+            revision: currentServer.revision,
+            updatedAt: now,
+          }),
+          newOperationId,
+          now,
+          planId,
+          businessDate,
+        );
+      }
+      await database.runAsync(
+        "DELETE FROM local_sync_cursor WHERE scope LIKE 'calendar:%' OR scope='today:snapshot' OR scope=?",
+        `detail:${planId}`,
+      );
     });
   }
 

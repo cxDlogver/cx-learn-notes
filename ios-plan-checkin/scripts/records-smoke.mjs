@@ -121,7 +121,7 @@ try {
   assert.equal(revised.failureReason, "吸烟了");
   const audit = (
     await pg.query(
-      "SELECT revision, reason, before_snapshot, after_snapshot FROM checkin_revisions WHERE checkin_id = $1 ORDER BY revision",
+      "SELECT revision, reason, before_snapshot, after_snapshot, resolution_of_conflict_id FROM checkin_revisions WHERE checkin_id = $1 ORDER BY revision",
       [first.id],
     )
   ).rows;
@@ -131,6 +131,7 @@ try {
   );
   assert.equal(audit[1].before_snapshot.result, "success");
   assert.equal(audit[1].after_snapshot.result, "failure");
+  assert.equal(audit[1].resolution_of_conflict_id, conflict.conflictId);
   const backfill = await records.put(
     owner,
     plan.id,

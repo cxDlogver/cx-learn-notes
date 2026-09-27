@@ -93,8 +93,16 @@ function TodayCard({
 }
 
 export function TodayScreen() {
-  const { repository, todaySession } = useAppServices();
+  const { repository, todaySession, localCache, session } = useAppServices();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const snapshot = session.getSnapshot();
+  const accountId = snapshot.phase === "authenticated" ? snapshot.userId : null;
+  const queue = useQuery({
+    queryKey: ["sync-feedback", accountId],
+    queryFn: () => localCache!.pendingOperations(accountId!),
+    enabled: Boolean(localCache && accountId),
+    refetchInterval: 5000,
+  });
   useSyncExternalStore(
     todaySession.subscribe,
     todaySession.getSnapshot,
@@ -144,6 +152,21 @@ export function TodayScreen() {
           kind="offline"
           testID="today.offline"
           message="当前离线，显示本机计划和记录。新记录会保存到本机，联网后同步。"
+        />
+      ) : null}
+      {queue.data?.length ? (
+        <StatusNotice
+          kind={
+            queue.data.some(
+              (item) => item.status === "conflict" || item.status === "failed",
+            )
+              ? "failure"
+              : "pending"
+          }
+          testID="today.sync-feedback"
+          message={`${queue.data.length} 条记录等待处理或同步`}
+          actionLabel="查看同步状态"
+          onAction={() => navigation.navigate("SyncFeedback")}
         />
       ) : null}
       {query.isPending ? (

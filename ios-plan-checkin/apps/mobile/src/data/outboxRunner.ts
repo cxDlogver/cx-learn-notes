@@ -1,4 +1,7 @@
-import type { CheckinDto } from "@plan-checkin/contracts";
+import type {
+  CheckinConflictDetails,
+  CheckinDto,
+} from "@plan-checkin/contracts";
 import type { LocalCache, OutboxOperation } from "./localCache";
 
 interface TransportError {
@@ -6,6 +9,7 @@ interface TransportError {
   code: string;
   message: string;
   retryAfterMs?: number | null;
+  details?: Record<string, unknown> | null;
 }
 function transportError(error: unknown): TransportError {
   if (
@@ -20,9 +24,31 @@ function transportError(error: unknown): TransportError {
       code: candidate.code,
       message: candidate.message,
       retryAfterMs: candidate.retryAfterMs,
+      details: candidate.details,
     };
   }
   return { status: 0, code: "NETWORK_ERROR", message: "同步暂时不可用" };
+}
+function conflictDetails(
+  details: Record<string, unknown> | null | undefined,
+): CheckinConflictDetails | null {
+  if (
+    !details ||
+    typeof details.conflictId !== "string" ||
+    !Number.isInteger(details.currentRevision) ||
+    !details.serverRecord ||
+    typeof details.serverRecord !== "object"
+  )
+    return null;
+  const record = details.serverRecord as Partial<CheckinDto>;
+  if (
+    typeof record.planId !== "string" ||
+    typeof record.businessDate !== "string" ||
+    typeof record.revision !== "number" ||
+    record.revision !== details.currentRevision
+  )
+    return null;
+  return details as unknown as CheckinConflictDetails;
 }
 
 /** The queue is durable in LocalCache; this runner only coordinates attempts while the app is active. */
@@ -109,12 +135,15 @@ export class OutboxRunner {
         if (this.accountId() !== accountId) return;
         const failure = transportError(error);
         if (failure.status === 409 && failure.code === "CHECKIN_CONFLICT") {
+          const details = conflictDetails(failure.details);
           await this.cache.failOperation(
             accountId,
             operation,
-            "conflict",
+            details ? "conflict" : "failed",
             failure.code,
             failure.message,
+            null,
+            details,
           );
         } else if (
           failure.status === 0 ||
