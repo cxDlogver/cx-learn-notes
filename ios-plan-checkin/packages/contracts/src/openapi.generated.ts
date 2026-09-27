@@ -885,6 +885,25 @@ export interface components {
       /** @enum {unknown} */
       daysBeforeDue?: 0 | 1 | 3;
     };
+    PutReminderRequest: {
+      enabled: boolean;
+      baseRevision: number;
+      timeLocal?: string;
+      weekdays?: number[];
+      /** @enum {unknown} */
+      daysBeforeDue?: 0 | 1 | 3;
+    };
+    Reminder: {
+      /** Format: uuid */
+      planId: string;
+      enabled: boolean;
+      timeLocal: string | null;
+      weekdays: number[];
+      /** @enum {unknown} */
+      daysBeforeDue: 0 | 1 | 3 | null;
+      revision: number;
+      updatedAt: string | null;
+    };
     FixedPlanCreate: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -5503,7 +5522,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Reminder"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -5565,7 +5589,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PutReminderRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -5573,7 +5601,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Reminder"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

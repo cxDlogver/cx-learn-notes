@@ -377,6 +377,15 @@ export function PlanDetailScreen({ planId }: { planId: string }) {
               <Text style={{ color: planPalette.primary }}>编辑</Text>
             </Pressable>
           </View>
+          <Pressable
+            testID="detail.reminders"
+            accessibilityRole="button"
+            accessibilityLabel="设置此计划提醒"
+            onPress={() => navigation.navigate("Reminders", { planId })}
+            style={{ minHeight: 44, justifyContent: "center" }}
+          >
+            <Text style={{ color: planPalette.primary }}>提醒设置 ›</Text>
+          </Pressable>
           <Text style={[planStyles.subtitle, { marginTop: 10 }]}>
             {plan.kind === "fixed"
               ? "固定日期"

@@ -26,6 +26,8 @@ import type {
   SharedHistoryDto,
   SharedPlanDto,
   SocialUserDto,
+  ReminderDto,
+  PutReminderRequest,
 } from "@plan-checkin/contracts";
 import * as Crypto from "expo-crypto";
 import {
@@ -60,6 +62,7 @@ export class MockRepository implements AppRepository {
   private friends: SocialUserDto[] = [];
   private friendRequests: FriendRequestsDto = { incoming: [], outgoing: [] };
   private shares: PlanShareDto[] = [];
+  private reminders = new Map<string, ReminderDto>();
   private user: UserDto = {
     id: "00000000-0000-4000-8000-000000000001",
     username: "demo_user",
@@ -538,6 +541,42 @@ export class MockRepository implements AppRepository {
     this.shares = this.shares.filter(
       (item) => item.planId !== planId || item.friend.id !== friendId,
     );
+  }
+  async getReminder(planId: string): Promise<ReminderDto> {
+    const plan = await this.getPlan(planId);
+    return (
+      this.reminders.get(planId) ?? {
+        planId,
+        enabled: false,
+        timeLocal: null,
+        weekdays:
+          plan.kind === "fixed" && plan.rule && "weekdays" in plan.rule
+            ? plan.rule.weekdays
+            : [],
+        daysBeforeDue: null,
+        revision: 0,
+        updatedAt: null,
+      }
+    );
+  }
+  async putReminder(
+    planId: string,
+    input: PutReminderRequest,
+  ): Promise<ReminderDto> {
+    const current = await this.getReminder(planId);
+    if (current.revision !== input.baseRevision)
+      throw new Error("提醒设置已变化，请刷新后重试");
+    const next: ReminderDto = {
+      ...current,
+      enabled: input.enabled,
+      timeLocal: input.timeLocal ?? current.timeLocal,
+      weekdays: input.weekdays ?? current.weekdays,
+      daysBeforeDue: input.daysBeforeDue ?? current.daysBeforeDue,
+      revision: current.revision + 1,
+      updatedAt: new Date().toISOString(),
+    };
+    this.reminders.set(planId, next);
+    return next;
   }
   async listGroups(): Promise<GroupDto[]> {
     return this.groups.slice();

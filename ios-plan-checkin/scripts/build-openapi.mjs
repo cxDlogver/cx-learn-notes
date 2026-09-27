@@ -60,6 +60,40 @@ const schemas = {
     },
     daysBeforeDue: { enum: [0, 1, 3] },
   }),
+  PutReminderRequest: properties(["enabled", "baseRevision"], {
+    enabled: { type: "boolean" },
+    baseRevision: { type: "integer", minimum: 0 },
+    timeLocal: { type: "string", pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+    weekdays: {
+      type: "array",
+      items: { type: "integer", minimum: 1, maximum: 7 },
+      uniqueItems: true,
+    },
+    daysBeforeDue: { enum: [0, 1, 3] },
+  }),
+  Reminder: properties(
+    [
+      "planId",
+      "enabled",
+      "timeLocal",
+      "weekdays",
+      "daysBeforeDue",
+      "revision",
+      "updatedAt",
+    ],
+    {
+      planId: uuid,
+      enabled: { type: "boolean" },
+      timeLocal: { oneOf: [str(), { type: "null" }] },
+      weekdays: {
+        type: "array",
+        items: { type: "integer", minimum: 1, maximum: 7 },
+      },
+      daysBeforeDue: { enum: [0, 1, 3, null] },
+      revision: { type: "integer", minimum: 0 },
+      updatedAt: { oneOf: [instant, { type: "null" }] },
+    },
+  ),
   FixedPlanCreate: properties(
     ["kind", "direction", "title", "timezone", "startDate", "rule"],
     {
@@ -945,6 +979,8 @@ const responseData = {
   createFriendRequest: ref("FriendRequest"),
   acceptFriendRequest: ref("FriendRequest"),
   rejectFriendRequest: ref("FriendRequest"),
+  getReminder: ref("Reminder"),
+  putReminder: ref("Reminder"),
   getSharePreview: ref("SharePreview"),
   listPlanShares: { type: "array", items: ref("PlanShare") },
   sharePlan: ref("PlanShare"),
@@ -977,6 +1013,7 @@ const bodies = {
   createBlock: "CreateBlockRequest",
   sharePlan: "ShareGrantRequest",
   ackSync: "SyncAckRequest",
+  putReminder: "PutReminderRequest",
 };
 const paths = {};
 for (const [method, suffix, operationId, auth] of apiRoutes) {

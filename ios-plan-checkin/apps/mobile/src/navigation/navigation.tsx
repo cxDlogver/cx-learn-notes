@@ -6,6 +6,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
@@ -25,6 +26,7 @@ import {
   Button,
   SafeAreaView,
   StyleSheet,
+  Text,
 } from "react-native";
 import { useAppServices } from "../data/services";
 import { nativeLinks } from "../platform/links";
@@ -39,6 +41,7 @@ import {
 import { GroupManagementScreen } from "../screens/plans/GroupManagementScreen";
 import { PlanConfirmationsScreen } from "../screens/plans/PlanConfirmationsScreen";
 import { PlanDetailScreen } from "../screens/plans/PlanDetailScreen";
+import { RemindersScreen } from "../screens/plans/RemindersScreen";
 import { CalendarScreen } from "../screens/calendar/CalendarScreen";
 import { TodayScreen } from "../screens/today/TodayScreen";
 import {
@@ -79,6 +82,7 @@ export type RootStackParamList = {
   RecordConflict: { planId: string; businessDate: string };
   SyncFeedback: undefined;
   Settings: undefined;
+  Reminders: { planId?: string } | undefined;
   CreatePlan: { kind: PlanKind; draft?: PlanDraft };
   EditPlan: { planId: string };
   GroupManagement: undefined;
@@ -210,6 +214,21 @@ function MainStack() {
         component={SettingsEntry}
         options={{ title: "个人" }}
       />
+      <RootStack.Screen
+        name="Reminders"
+        options={{
+          headerTitle: () => (
+            <Text
+              testID="reminders.title"
+              style={{ color: penColors.text, fontSize: 18, fontWeight: "600" }}
+            >
+              提醒设置
+            </Text>
+          ),
+        }}
+      >
+        {({ route }) => <RemindersScreen planId={route.params?.planId} />}
+      </RootStack.Screen>
       <RootStack.Screen name="CreatePlan" options={{ title: "创建计划" }}>
         {({ route, navigation }) => (
           <PlanFormScreen
@@ -281,6 +300,10 @@ export function AppNavigation() {
     enabled: snapshot.phase === "authenticated",
   });
   const pending = useRef<AppLink | null>(null);
+  const pendingNotification = useRef<{
+    accountId: string;
+    planId: string;
+  } | null>(null);
   const opening = useRef(false);
   const cachedUser = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -354,6 +377,42 @@ export function AppNavigation() {
     });
     return nativeLinks.subscribe(accept);
   }, []);
+  useEffect(() => {
+    const accept = (response: Notifications.NotificationResponse) => {
+      const data = response.notification.request.content.data;
+      if (
+        data?.kind !== "plan-checkin-reminder-v1" ||
+        typeof data.accountId !== "string" ||
+        typeof data.planId !== "string"
+      )
+        return;
+      const current = session.getSnapshot();
+      if (current.phase === "authenticated") {
+        if (current.userId !== data.accountId) return;
+        pending.current = { screen: "PlanDetail", planId: data.planId };
+        void openPendingRef.current();
+      } else
+        pendingNotification.current = {
+          accountId: data.accountId,
+          planId: data.planId,
+        };
+      void Notifications.clearLastNotificationResponseAsync();
+    };
+    const subscription =
+      Notifications.addNotificationResponseReceivedListener(accept);
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) accept(response);
+    });
+    return () => subscription.remove();
+  }, [session]);
+  useEffect(() => {
+    const notification = pendingNotification.current;
+    if (!notification || snapshot.phase !== "authenticated") return;
+    pendingNotification.current = null;
+    if (notification.accountId !== snapshot.userId) return;
+    pending.current = { screen: "PlanDetail", planId: notification.planId };
+    void openPendingRef.current();
+  }, [snapshot.phase, snapshot.userId]);
   useEffect(() => {
     void openPending();
   }, [

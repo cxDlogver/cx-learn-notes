@@ -567,6 +567,18 @@ function validateReminder(value: unknown, kind: PlanRow["kind"]): void {
   )
     fail("VALIDATION_ERROR", 400, "提醒星期不正确");
   if (
+    kind === "weekly" &&
+    value.enabled &&
+    (!Array.isArray(value.weekdays) || value.weekdays.length === 0)
+  )
+    fail("VALIDATION_ERROR", 400, "请选择提醒星期");
+  if (
+    kind === "one_time" &&
+    value.enabled &&
+    ![0, 1, 3].includes(Number(value.daysBeforeDue))
+  )
+    fail("VALIDATION_ERROR", 400, "请选择一次性任务提醒时机");
+  if (
     (kind === "one_time" && value.weekdays !== undefined) ||
     (kind !== "one_time" && value.daysBeforeDue !== undefined) ||
     (value.daysBeforeDue !== undefined &&

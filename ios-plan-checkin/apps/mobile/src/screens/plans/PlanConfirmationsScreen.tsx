@@ -40,7 +40,7 @@ export function PlanConfirmationsScreen({
   planId: string;
   onDone: () => void;
 }) {
-  const { repository, queryClient } = useAppServices();
+  const { repository, queryClient, reminders } = useAppServices();
   const plan = useQuery({
     queryKey: ["plan", planId],
     queryFn: () => repository.getPlan(planId),
@@ -63,6 +63,9 @@ export function PlanConfirmationsScreen({
       if (action === "delete")
         await repository.deletePlan(planId, plan.data.revision);
       else await repository.transitionPlan(planId, action, plan.data.revision);
+      if (action !== "resume")
+        await reminders?.cancelPlan(planId).catch(() => {});
+      void reminders?.trigger().catch(() => {});
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["plans"] }),
         queryClient.invalidateQueries({ queryKey: ["today"] }),

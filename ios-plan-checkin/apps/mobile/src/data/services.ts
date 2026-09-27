@@ -14,6 +14,7 @@ import { TodaySessionStore } from "./todaySession";
 import { OutboxRunner } from "./outboxRunner";
 import { IncrementalSync } from "./incrementalSync";
 import { MediaRunner } from "./mediaRunner";
+import { ReminderCoordinator } from "./reminderCoordinator";
 import { deviceId } from "../platform/deviceId";
 import * as Network from "expo-network";
 import {
@@ -32,6 +33,7 @@ export interface AppServices {
   outbox: OutboxRunner | null;
   incrementalSync: IncrementalSync | null;
   mediaRunner: MediaRunner | null;
+  reminders: ReminderCoordinator | null;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -69,6 +71,7 @@ export function createAppServices(): AppServices {
       outbox: null,
       incrementalSync: null,
       mediaRunner: null,
+      reminders: null,
     };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -163,8 +166,10 @@ export function createAppServices(): AppServices {
         await queryClient.invalidateQueries({ queryKey: ["me"] });
     },
   );
+  const repository = new HttpRepository(api, localCache, session, outbox);
+  const reminders = new ReminderCoordinator(repository, localCache, accountId);
   return {
-    repository: new HttpRepository(api, localCache, session, outbox),
+    repository,
     session,
     queryClient,
     mockMode,
@@ -174,5 +179,6 @@ export function createAppServices(): AppServices {
     outbox,
     incrementalSync,
     mediaRunner,
+    reminders,
   };
 }

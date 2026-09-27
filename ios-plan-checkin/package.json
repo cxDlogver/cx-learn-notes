@@ -35,6 +35,7 @@
     "shares:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/shares-smoke.mjs",
     "sync:smoke": "tsc -p apps/api/tsconfig.json && node scripts/sync-smoke.mjs",
     "media:smoke": "tsc -p apps/api/tsconfig.json && tsc -p apps/worker/tsconfig.json && node scripts/media-smoke.mjs",
+    "reminders:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/reminders-smoke.mjs",
     "mobile:architecture:smoke": "tsc -p packages/domain/tsconfig.json && node scripts/mobile-architecture-smoke.mjs",
     "mobile:plans:smoke": "tsc -p packages/domain/tsconfig.json && node scripts/mobile-plans-smoke.mjs",
     "mobile:plan-repository:smoke": "node scripts/mobile-plan-repository-smoke.mjs",

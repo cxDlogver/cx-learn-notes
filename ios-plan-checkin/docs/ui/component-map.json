@@ -2720,8 +2720,8 @@
       "key": "reminders",
       "frameId": "CtzVR",
       "referenceImage": "uxpilot-export-09-27-26_24.png",
-      "componentPath": null,
-      "implementationStatus": "planned",
+      "componentPath": "apps/mobile/src/screens/plans/RemindersScreen.tsx",
+      "implementationStatus": "implemented",
       "keyNodes": [
         {
           "nodeId": "kwAFB",
@@ -2745,58 +2745,58 @@
         },
         {
           "nodeId": "Trg8F",
-          "component": null,
+          "component": "iOS navigation header",
           "testID": null
         },
         {
           "nodeId": "vpVnF",
-          "component": null,
-          "testID": null
+          "component": "iOS navigation header",
+          "testID": "reminders.title"
         },
         {
           "nodeId": "IaGBl",
-          "component": null,
+          "component": "iOS navigation header",
           "testID": null
         },
         {
           "nodeId": "oKhkl",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.card"
         },
         {
           "nodeId": "w751eQ",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.enabled"
         },
         {
           "nodeId": "B8DmQM",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.summary"
         },
         {
           "nodeId": "R1uhaQ",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.card"
         },
         {
           "nodeId": "W2H6Zh",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.enabled"
         },
         {
           "nodeId": "Oede1",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.summary"
         },
         {
           "nodeId": "G2nUh4",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.card"
         },
         {
           "nodeId": "wiXKg",
-          "component": null,
-          "testID": null
+          "component": "ReminderCard",
+          "testID": "reminders.{planId}.enabled"
         }
       ]
     },

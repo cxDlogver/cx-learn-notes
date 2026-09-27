@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigation, type NavigationProp } from "@react-navigation/native";
 import { penColors } from "@plan-checkin/design-tokens";
 import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import {
   requestNativeSmokePermissions,
   runNativeCapabilitySmoke,
 } from "../platform/nativeSmoke";
+import type { RootStackParamList } from "./navigation";
 
 export function Shell({
   title,
@@ -29,6 +31,7 @@ export function Shell({
 }
 
 export function SettingsEntry() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [status, setStatus] = useState("尚未运行原生能力检查");
   const run = async () => {
     try {
@@ -45,7 +48,11 @@ export function SettingsEntry() {
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
         <Text style={styles.title}>个人</Text>
-        <Text style={styles.body}>设置入口将在账号模块接入</Text>
+        <Button
+          title="提醒设置"
+          onPress={() => navigation.navigate("Reminders")}
+          color={penColors.primary}
+        />
         {__DEV__ ? (
           <Button
             title="运行 iOS 能力检查"

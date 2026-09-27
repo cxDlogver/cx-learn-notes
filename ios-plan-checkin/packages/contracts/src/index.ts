@@ -38,6 +38,18 @@ export interface ReminderConfig {
   weekdays?: Weekday[];
   daysBeforeDue?: 0 | 1 | 3;
 }
+export interface PutReminderRequest extends ReminderConfig {
+  baseRevision: number;
+}
+export interface ReminderDto {
+  planId: Uuid;
+  enabled: boolean;
+  timeLocal: string | null;
+  weekdays: Weekday[];
+  daysBeforeDue: 0 | 1 | 3 | null;
+  revision: number;
+  updatedAt: UtcInstant | null;
+}
 interface PlanCreateBase {
   title: string;
   description?: string | null;

@@ -114,6 +114,7 @@ export function RecordEditorScreen({
     localCache,
     localStore,
     mediaRunner,
+    reminders,
     session,
   } = useAppServices();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -288,6 +289,8 @@ export function RecordEditorScreen({
           candidate.planBusinessDate === businessDate,
       );
       if (item) todaySession.hold(item, saved.record);
+      await reminders?.cancelForDate(planId, businessDate).catch(() => {});
+      void reminders?.trigger().catch(() => {});
       void mediaRunner?.trigger().catch(() => {});
       queryClient.setQueryData(["checkin", planId, businessDate], saved.record);
       await Promise.all([
@@ -342,6 +345,7 @@ export function RecordEditorScreen({
           onceResult === "completed" ? new Date().toISOString() : undefined,
         reason: note.trim() || undefined,
       });
+      await reminders?.cancelPlan(plan.id).catch(() => {});
       if (accountId && localCache && photos.length) {
         await localCache.linkOneTimeMedia(accountId, operationId, plan.id);
         void mediaRunner?.trigger().catch(() => {});

@@ -22,6 +22,8 @@ import type {
   SharedHistoryDto,
   SharedPlanDto,
   SocialUserDto,
+  ReminderDto,
+  PutReminderRequest,
   PutCheckinRequest,
   SmsChallengeDto,
   UserDto,
@@ -143,6 +145,8 @@ export interface AppRepository {
     previewToken: string,
   ): Promise<PlanShareDto>;
   revokePlanShare(planId: string, friendId: string): Promise<void>;
+  getReminder(planId: string): Promise<ReminderDto>;
+  putReminder(planId: string, input: PutReminderRequest): Promise<ReminderDto>;
   listGroups(): Promise<GroupDto[]>;
   createGroup(input: CreateGroupRequest): Promise<GroupDto>;
   updateGroup(id: string, input: UpdateGroupRequest): Promise<GroupDto>;
@@ -1041,6 +1045,16 @@ export class HttpRepository implements AppRepository {
   async revokePlanShare(planId: string, friendId: string): Promise<void> {
     await this.api.delete(
       `/plans/${encodeURIComponent(planId)}/shares/${encodeURIComponent(friendId)}`,
+    );
+  }
+  getReminder(planId: string): Promise<ReminderDto> {
+    return this.api.get(`/plans/${encodeURIComponent(planId)}/reminder`);
+  }
+  putReminder(planId: string, input: PutReminderRequest): Promise<ReminderDto> {
+    return this.api.put(
+      `/plans/${encodeURIComponent(planId)}/reminder`,
+      input,
+      Crypto.randomUUID(),
     );
   }
   listGroups(): Promise<GroupDto[]> {

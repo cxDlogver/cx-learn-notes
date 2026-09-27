@@ -1,9 +1,10 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigation, type NavigationProp } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Notifications from "expo-notifications";
 import type { PlanDto, PlanKind, Weekday } from "@plan-checkin/contracts";
 import { useQuery } from "@tanstack/react-query";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
 import { useAppServices } from "../../data/services";
 import { ScreenState } from "../../components/ScreenState";
 import type { RootStackParamList } from "../../navigation/navigation";
@@ -37,7 +38,7 @@ type FormProps = {
 };
 export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { repository, queryClient } = useAppServices();
+  const { repository, queryClient, reminders } = useAppServices();
   const [draft, setDraft] = useState<PlanDraft>(
     () => initial ?? initialDraft(kind, existing),
   );
@@ -46,6 +47,8 @@ export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
   >(null);
   const [reminder, setReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState("20:00");
+  const [reminderWeekdays, setReminderWeekdays] = useState<Weekday[]>([]);
+  const [daysBeforeDue, setDaysBeforeDue] = useState<0 | 1 | 3>(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const zone = existing?.timezone ?? planTimezone();
@@ -65,6 +68,8 @@ export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
     if (invalid) return setError(invalid);
     if (reminder && !/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime))
       return setError("提醒时间格式应为 HH:mm");
+    if (reminder && kind === "weekly" && reminderWeekdays.length === 0)
+      return setError("请至少选择一个提醒星期");
     if (groups.isError) return setError("无法确认分组是否可用，请联网后重试");
     const changes = existing ? updateRequest(existing, draft) : null;
     if (changes && Object.keys(changes).length === 1)
@@ -83,6 +88,10 @@ export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
                     enabled: true,
                     timeLocal: reminderTime,
                     ...(kind === "fixed" ? { weekdays: draft.weekdays } : {}),
+                    ...(kind === "weekly"
+                      ? { weekdays: reminderWeekdays }
+                      : {}),
+                    ...(kind === "one_time" ? { daysBeforeDue } : {}),
                   },
                 }
               : {}),
@@ -93,6 +102,16 @@ export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
         queryClient.invalidateQueries({ queryKey: ["calendar"] }),
       ]);
       queryClient.setQueryData(["plan", plan.id], plan);
+      if (reminder) {
+        try {
+          const permission = await Notifications.getPermissionsAsync();
+          if (!permission.granted && permission.canAskAgain)
+            await Notifications.requestPermissionsAsync();
+        } catch {
+          // The plan is saved even if the system permission prompt is unavailable.
+        }
+      }
+      void reminders?.trigger().catch(() => {});
       onDone(plan);
     } catch (cause) {
       setError(
@@ -339,15 +358,60 @@ export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
             testID="plans.form.reminder"
             label={reminder ? "已开启提醒" : "不开启提醒"}
             selected={reminder}
-            onPress={() => setReminder(!reminder)}
+            onPress={() =>
+              reminder
+                ? setReminder(false)
+                : Alert.alert(
+                    "开启打卡提醒",
+                    "应用会在你选择的时间发送本地通知。保存计划时会请求系统通知权限。",
+                    [
+                      { text: "取消", style: "cancel" },
+                      { text: "继续", onPress: () => setReminder(true) },
+                    ],
+                  )
+            }
           />
           {reminder ? (
-            <PlanInput
-              testID="plans.form.reminder-time"
-              value={reminderTime}
-              onChangeText={setReminderTime}
-              placeholder="提醒时间 HH:mm"
-            />
+            <View>
+              {kind === "weekly" ? (
+                <View style={[planStyles.wrap, { marginTop: 10 }]}>
+                  {weekdays.map((day) => (
+                    <Choice
+                      key={day.value}
+                      testID={`plans.form.reminder-day-${day.value}`}
+                      label={day.label}
+                      selected={reminderWeekdays.includes(day.value)}
+                      onPress={() =>
+                        setReminderWeekdays((current) =>
+                          current.includes(day.value)
+                            ? current.filter((value) => value !== day.value)
+                            : [...current, day.value].sort((a, b) => a - b),
+                        )
+                      }
+                    />
+                  ))}
+                </View>
+              ) : null}
+              {kind === "one_time" ? (
+                <View style={[planStyles.wrap, { marginTop: 10 }]}>
+                  {([0, 1, 3] as const).map((days) => (
+                    <Choice
+                      key={days}
+                      testID={`plans.form.reminder-lead-${days}`}
+                      label={days === 0 ? "截止当天" : `提前${days}天`}
+                      selected={daysBeforeDue === days}
+                      onPress={() => setDaysBeforeDue(days)}
+                    />
+                  ))}
+                </View>
+              ) : null}
+              <PlanInput
+                testID="plans.form.reminder-time"
+                value={reminderTime}
+                onChangeText={setReminderTime}
+                placeholder="提醒时间 HH:mm"
+              />
+            </View>
           ) : null}
         </FormField>
       ) : null}
