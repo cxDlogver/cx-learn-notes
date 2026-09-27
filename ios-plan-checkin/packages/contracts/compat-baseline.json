@@ -104,6 +104,24 @@
       "parameters": ["header:Idempotency-Key", "header:X-Client-Request-Id"],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
+    "getToday": {
+      "path": "/api/v1/today",
+      "method": "get",
+      "parameters": [],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getGlobalCalendar": {
+      "path": "/api/v1/calendar",
+      "method": "get",
+      "parameters": ["query:month"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getCalendarDay": {
+      "path": "/api/v1/calendar/{businessDate}",
+      "method": "get",
+      "parameters": ["path:businessDate"],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
     "getPlan": {
       "path": "/api/v1/plans/{id}",
       "method": "get",
@@ -130,6 +148,12 @@
         "header:Idempotency-Key",
         "header:X-Client-Request-Id"
       ],
+      "responses": ["200", "400", "401", "403", "409", "429"]
+    },
+    "getPlanDetail": {
+      "path": "/api/v1/plans/{id}/detail",
+      "method": "get",
+      "parameters": ["path:id"],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "pausePlan": {
@@ -165,7 +189,7 @@
     "getPlanCalendar": {
       "path": "/api/v1/plans/{id}/calendar",
       "method": "get",
-      "parameters": ["path:id"],
+      "parameters": ["path:id", "query:month"],
       "responses": ["200", "400", "401", "403", "409", "429"]
     },
     "putCheckin": {
@@ -769,6 +793,202 @@
     "UsernameAvailability": {
       "required": ["available", "normalized"],
       "properties": { "available": null, "normalized": null }
+    },
+    "CalendarEntry": {
+      "required": [
+        "planId",
+        "title",
+        "kind",
+        "direction",
+        "timezone",
+        "businessDate",
+        "status",
+        "recordId",
+        "ruleVersion",
+        "isBackfilled",
+        "isRevised"
+      ],
+      "properties": {
+        "planId": null,
+        "title": null,
+        "kind": ["fixed", "weekly", "one_time"],
+        "direction": ["do", "avoid"],
+        "timezone": null,
+        "businessDate": null,
+        "status": [
+          "success",
+          "failure",
+          "skip",
+          "pending",
+          "unrecorded",
+          "future",
+          "due",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled"
+        ],
+        "recordId": null,
+        "ruleVersion": null,
+        "isBackfilled": null,
+        "isRevised": null
+      }
+    },
+    "CalendarDay": {
+      "required": ["businessDate", "counts", "entries"],
+      "properties": { "businessDate": null, "counts": null, "entries": null }
+    },
+    "WeeklySummary": {
+      "required": [
+        "weekStartDate",
+        "ruleVersion",
+        "target",
+        "successes",
+        "completeWeek",
+        "attained",
+        "progressRate"
+      ],
+      "properties": {
+        "weekStartDate": null,
+        "ruleVersion": null,
+        "target": null,
+        "successes": null,
+        "completeWeek": null,
+        "attained": null,
+        "progressRate": null
+      }
+    },
+    "CalendarMonth": {
+      "required": [
+        "month",
+        "dateSemantics",
+        "groupId",
+        "days",
+        "weeklySummaries"
+      ],
+      "properties": {
+        "month": null,
+        "dateSemantics": ["plan_business_date"],
+        "groupId": null,
+        "days": null,
+        "weeklySummaries": null
+      }
+    },
+    "Today": {
+      "required": ["viewTimezone", "viewDate", "items"],
+      "properties": { "viewTimezone": null, "viewDate": null, "items": null }
+    },
+    "FixedStatistics": {
+      "required": [
+        "kind",
+        "planId",
+        "timezone",
+        "statisticsThroughBusinessDate",
+        "ruleVersions",
+        "successCount",
+        "failureCount",
+        "skipCount",
+        "unrecordedCount",
+        "denominator",
+        "completionRate",
+        "consecutiveDueSuccesses"
+      ],
+      "properties": {
+        "kind": ["fixed"],
+        "planId": null,
+        "timezone": null,
+        "statisticsThroughBusinessDate": null,
+        "ruleVersions": null,
+        "successCount": null,
+        "failureCount": null,
+        "skipCount": null,
+        "unrecordedCount": null,
+        "denominator": null,
+        "completionRate": null,
+        "consecutiveDueSuccesses": null
+      }
+    },
+    "WeeklyStatistics": {
+      "required": [
+        "kind",
+        "planId",
+        "timezone",
+        "statisticsThroughBusinessDate",
+        "ruleVersions",
+        "completeWeekCount",
+        "attainedWeekCount",
+        "attainmentRate",
+        "consecutiveAttainedWeeks",
+        "currentWeek",
+        "completedWeeks"
+      ],
+      "properties": {
+        "kind": ["weekly"],
+        "planId": null,
+        "timezone": null,
+        "statisticsThroughBusinessDate": null,
+        "ruleVersions": null,
+        "completeWeekCount": null,
+        "attainedWeekCount": null,
+        "attainmentRate": null,
+        "consecutiveAttainedWeeks": null,
+        "currentWeek": null,
+        "completedWeeks": null
+      }
+    },
+    "OneTimeStatistics": {
+      "required": [
+        "kind",
+        "planId",
+        "timezone",
+        "statisticsThroughBusinessDate",
+        "ruleVersions",
+        "dueDate",
+        "state",
+        "resolution"
+      ],
+      "properties": {
+        "kind": ["one_time"],
+        "planId": null,
+        "timezone": null,
+        "statisticsThroughBusinessDate": null,
+        "ruleVersions": null,
+        "dueDate": null,
+        "state": [
+          "pending",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled"
+        ],
+        "resolution": null
+      }
+    },
+    "PlanDetail": {
+      "required": ["plan", "statistics", "todayStatus", "recentRecords"],
+      "properties": {
+        "plan": null,
+        "statistics": null,
+        "todayStatus": [
+          "success",
+          "failure",
+          "skip",
+          "pending",
+          "unrecorded",
+          "future",
+          "due",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled",
+          "goal_met",
+          "not_due"
+        ],
+        "recentRecords": null
+      }
     }
   }
 }

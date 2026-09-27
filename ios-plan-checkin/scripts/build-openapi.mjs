@@ -366,6 +366,285 @@ Object.assign(schemas, {
     available: { type: "boolean" },
     normalized: str(),
   }),
+  CalendarEntry: properties(
+    [
+      "planId",
+      "title",
+      "kind",
+      "direction",
+      "timezone",
+      "businessDate",
+      "status",
+      "recordId",
+      "ruleVersion",
+      "isBackfilled",
+      "isRevised",
+    ],
+    {
+      planId: uuid,
+      title: str(),
+      kind: { enum: ["fixed", "weekly", "one_time"] },
+      direction: { enum: ["do", "avoid"] },
+      timezone: str(),
+      businessDate: date,
+      status: {
+        enum: [
+          "success",
+          "failure",
+          "skip",
+          "pending",
+          "unrecorded",
+          "future",
+          "due",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled",
+        ],
+      },
+      recordId: { oneOf: [uuid, { type: "null" }] },
+      ruleVersion: { type: "integer", minimum: 1 },
+      isBackfilled: { type: "boolean" },
+      isRevised: { type: "boolean" },
+    },
+  ),
+  CalendarDay: properties(["businessDate", "counts", "entries"], {
+    businessDate: date,
+    counts: properties(["success", "failure", "skip", "unrecorded"], {
+      success: { type: "integer", minimum: 0 },
+      failure: { type: "integer", minimum: 0 },
+      skip: { type: "integer", minimum: 0 },
+      unrecorded: { type: "integer", minimum: 0 },
+    }),
+    entries: { type: "array", items: ref("CalendarEntry") },
+  }),
+  WeeklySummary: properties(
+    [
+      "weekStartDate",
+      "ruleVersion",
+      "target",
+      "successes",
+      "completeWeek",
+      "attained",
+      "progressRate",
+    ],
+    {
+      weekStartDate: date,
+      ruleVersion: {
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }],
+      },
+      target: { oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }] },
+      successes: { type: "integer", minimum: 0 },
+      completeWeek: { type: "boolean" },
+      attained: { oneOf: [{ type: "boolean" }, { type: "null" }] },
+      progressRate: {
+        oneOf: [{ type: "number", minimum: 0 }, { type: "null" }],
+      },
+    },
+  ),
+  CalendarMonth: properties(
+    ["month", "dateSemantics", "groupId", "days", "weeklySummaries"],
+    {
+      month: { type: "string", pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$" },
+      dateSemantics: { const: "plan_business_date" },
+      groupId: { oneOf: [uuid, { type: "null" }] },
+      days: { type: "array", items: ref("CalendarDay") },
+      weeklySummaries: {
+        type: "array",
+        items: properties(["planId", "title", "timezone", "summary"], {
+          planId: uuid,
+          title: str(),
+          timezone: str(),
+          summary: ref("WeeklySummary"),
+        }),
+      },
+    },
+  ),
+  Today: properties(["viewTimezone", "viewDate", "items"], {
+    viewTimezone: str(),
+    viewDate: date,
+    items: {
+      type: "array",
+      items: properties(
+        [
+          "plan",
+          "planBusinessDate",
+          "status",
+          "activeRuleVersion",
+          "record",
+          "weeklyProgress",
+          "canCheckIn",
+          "reminderTimeLocal",
+        ],
+        {
+          plan: ref("Plan"),
+          planBusinessDate: date,
+          status: {
+            enum: [
+              "success",
+              "failure",
+              "skip",
+              "pending",
+              "unrecorded",
+              "future",
+              "due",
+              "overdue",
+              "completed",
+              "late_completed",
+              "failed",
+              "cancelled",
+              "goal_met",
+            ],
+          },
+          activeRuleVersion: { type: "integer", minimum: 1 },
+          record: {
+            oneOf: [
+              properties(
+                ["id", "result", "revision", "isBackfilled", "isRevised"],
+                {
+                  id: uuid,
+                  result: { enum: ["success", "failure", "skip"] },
+                  revision: { type: "integer", minimum: 1 },
+                  isBackfilled: { type: "boolean" },
+                  isRevised: { type: "boolean" },
+                },
+              ),
+              { type: "null" },
+            ],
+          },
+          weeklyProgress: { oneOf: [ref("WeeklySummary"), { type: "null" }] },
+          canCheckIn: { type: "boolean" },
+          reminderTimeLocal: { oneOf: [str(), { type: "null" }] },
+        },
+      ),
+    },
+  }),
+  FixedStatistics: properties(
+    [
+      "kind",
+      "planId",
+      "timezone",
+      "statisticsThroughBusinessDate",
+      "ruleVersions",
+      "successCount",
+      "failureCount",
+      "skipCount",
+      "unrecordedCount",
+      "denominator",
+      "completionRate",
+      "consecutiveDueSuccesses",
+    ],
+    {
+      kind: { const: "fixed" },
+      planId: uuid,
+      timezone: str(),
+      statisticsThroughBusinessDate: date,
+      ruleVersions: { type: "array", items: { type: "integer", minimum: 1 } },
+      successCount: { type: "integer", minimum: 0 },
+      failureCount: { type: "integer", minimum: 0 },
+      skipCount: { type: "integer", minimum: 0 },
+      unrecordedCount: { type: "integer", minimum: 0 },
+      denominator: { type: "integer", minimum: 0 },
+      completionRate: {
+        oneOf: [{ type: "number", minimum: 0, maximum: 1 }, { type: "null" }],
+      },
+      consecutiveDueSuccesses: { type: "integer", minimum: 0 },
+    },
+  ),
+  WeeklyStatistics: properties(
+    [
+      "kind",
+      "planId",
+      "timezone",
+      "statisticsThroughBusinessDate",
+      "ruleVersions",
+      "completeWeekCount",
+      "attainedWeekCount",
+      "attainmentRate",
+      "consecutiveAttainedWeeks",
+      "currentWeek",
+      "completedWeeks",
+    ],
+    {
+      kind: { const: "weekly" },
+      planId: uuid,
+      timezone: str(),
+      statisticsThroughBusinessDate: date,
+      ruleVersions: { type: "array", items: { type: "integer", minimum: 1 } },
+      completeWeekCount: { type: "integer", minimum: 0 },
+      attainedWeekCount: { type: "integer", minimum: 0 },
+      attainmentRate: {
+        oneOf: [{ type: "number", minimum: 0, maximum: 1 }, { type: "null" }],
+      },
+      consecutiveAttainedWeeks: { type: "integer", minimum: 0 },
+      currentWeek: ref("WeeklySummary"),
+      completedWeeks: { type: "array", items: ref("WeeklySummary") },
+    },
+  ),
+  OneTimeStatistics: properties(
+    [
+      "kind",
+      "planId",
+      "timezone",
+      "statisticsThroughBusinessDate",
+      "ruleVersions",
+      "dueDate",
+      "state",
+      "resolution",
+    ],
+    {
+      kind: { const: "one_time" },
+      planId: uuid,
+      timezone: str(),
+      statisticsThroughBusinessDate: date,
+      ruleVersions: { type: "array", items: { type: "integer", minimum: 1 } },
+      dueDate: date,
+      state: {
+        enum: [
+          "pending",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled",
+        ],
+      },
+      resolution: { oneOf: [ref("OneTimeResolution"), { type: "null" }] },
+    },
+  ),
+  PlanDetail: properties(
+    ["plan", "statistics", "todayStatus", "recentRecords"],
+    {
+      plan: ref("Plan"),
+      statistics: {
+        oneOf: [
+          ref("FixedStatistics"),
+          ref("WeeklyStatistics"),
+          ref("OneTimeStatistics"),
+        ],
+      },
+      todayStatus: {
+        enum: [
+          "success",
+          "failure",
+          "skip",
+          "pending",
+          "unrecorded",
+          "future",
+          "due",
+          "overdue",
+          "completed",
+          "late_completed",
+          "failed",
+          "cancelled",
+          "goal_met",
+          "not_due",
+        ],
+      },
+      recentRecords: { type: "array", items: ref("CalendarEntry") },
+    },
+  ),
 });
 
 const successOf = (data) =>
@@ -375,6 +654,18 @@ const successOf = (data) =>
     serverTime: instant,
   });
 const responseData = {
+  getToday: ref("Today"),
+  getGlobalCalendar: ref("CalendarMonth"),
+  getCalendarDay: ref("CalendarDay"),
+  getPlanDetail: ref("PlanDetail"),
+  getPlanStatistics: {
+    oneOf: [
+      ref("FixedStatistics"),
+      ref("WeeklyStatistics"),
+      ref("OneTimeStatistics"),
+    ],
+  },
+  getPlanCalendar: ref("CalendarMonth"),
   createSmsChallenge: ref("SmsChallengeResponse"),
   verifySmsChallenge: ref("AuthTokens"),
   refreshSession: ref("AuthTokens"),
@@ -427,6 +718,27 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
     required: true,
     schema: match[1] === "businessDate" ? date : uuid,
   }));
+  if (operationId === "getToday")
+    parameters.push({
+      name: "timezone",
+      in: "query",
+      required: false,
+      schema: str(),
+    });
+  if (operationId === "getGlobalCalendar" || operationId === "getPlanCalendar")
+    parameters.push({
+      name: "month",
+      in: "query",
+      required: true,
+      schema: { type: "string", pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$" },
+    });
+  if (operationId === "getGlobalCalendar" || operationId === "getCalendarDay")
+    parameters.push({
+      name: "groupId",
+      in: "query",
+      required: false,
+      schema: uuid,
+    });
   if (operationId === "getSyncChanges") {
     parameters.push({
       name: "cursor",

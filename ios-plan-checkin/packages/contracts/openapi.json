@@ -1237,6 +1237,243 @@
         }
       }
     },
+    "/api/v1/today": {
+      "get": {
+        "operationId": "getToday",
+        "tags": ["today"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Today" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calendar": {
+      "get": {
+        "operationId": "getGlobalCalendar",
+        "tags": ["calendar"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+            }
+          },
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CalendarMonth" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calendar/{businessDate}": {
+      "get": {
+        "operationId": "getCalendarDay",
+        "tags": ["calendar"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "businessDate",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CalendarDay" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/plans/{id}": {
       "get": {
         "operationId": "getPlan",
@@ -1444,6 +1681,80 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{id}/detail": {
+      "get": {
+        "operationId": "getPlanDetail",
+        "tags": ["plans"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/PlanDetail" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -1783,6 +2094,15 @@
             "in": "path",
             "required": true,
             "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+            }
           }
         ],
         "responses": {
@@ -1790,7 +2110,16 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/CalendarMonth" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -2033,7 +2362,22 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        { "$ref": "#/components/schemas/FixedStatistics" },
+                        { "$ref": "#/components/schemas/WeeklyStatistics" },
+                        { "$ref": "#/components/schemas/OneTimeStatistics" }
+                      ]
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -4942,6 +5286,398 @@
         "properties": {
           "available": { "type": "boolean" },
           "normalized": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "CalendarEntry": {
+        "type": "object",
+        "required": [
+          "planId",
+          "title",
+          "kind",
+          "direction",
+          "timezone",
+          "businessDate",
+          "status",
+          "recordId",
+          "ruleVersion",
+          "isBackfilled",
+          "isRevised"
+        ],
+        "properties": {
+          "planId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "kind": { "enum": ["fixed", "weekly", "one_time"] },
+          "direction": { "enum": ["do", "avoid"] },
+          "timezone": { "type": "string" },
+          "businessDate": { "type": "string", "format": "date" },
+          "status": {
+            "enum": [
+              "success",
+              "failure",
+              "skip",
+              "pending",
+              "unrecorded",
+              "future",
+              "due",
+              "overdue",
+              "completed",
+              "late_completed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "recordId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
+          "ruleVersion": { "type": "integer", "minimum": 1 },
+          "isBackfilled": { "type": "boolean" },
+          "isRevised": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "CalendarDay": {
+        "type": "object",
+        "required": ["businessDate", "counts", "entries"],
+        "properties": {
+          "businessDate": { "type": "string", "format": "date" },
+          "counts": {
+            "type": "object",
+            "required": ["success", "failure", "skip", "unrecorded"],
+            "properties": {
+              "success": { "type": "integer", "minimum": 0 },
+              "failure": { "type": "integer", "minimum": 0 },
+              "skip": { "type": "integer", "minimum": 0 },
+              "unrecorded": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          },
+          "entries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CalendarEntry" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeeklySummary": {
+        "type": "object",
+        "required": [
+          "weekStartDate",
+          "ruleVersion",
+          "target",
+          "successes",
+          "completeWeek",
+          "attained",
+          "progressRate"
+        ],
+        "properties": {
+          "weekStartDate": { "type": "string", "format": "date" },
+          "ruleVersion": {
+            "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+          },
+          "target": {
+            "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+          },
+          "successes": { "type": "integer", "minimum": 0 },
+          "completeWeek": { "type": "boolean" },
+          "attained": { "oneOf": [{ "type": "boolean" }, { "type": "null" }] },
+          "progressRate": {
+            "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CalendarMonth": {
+        "type": "object",
+        "required": [
+          "month",
+          "dateSemantics",
+          "groupId",
+          "days",
+          "weeklySummaries"
+        ],
+        "properties": {
+          "month": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+          },
+          "dateSemantics": { "const": "plan_business_date" },
+          "groupId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
+          "days": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CalendarDay" }
+          },
+          "weeklySummaries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["planId", "title", "timezone", "summary"],
+              "properties": {
+                "planId": { "type": "string", "format": "uuid" },
+                "title": { "type": "string" },
+                "timezone": { "type": "string" },
+                "summary": { "$ref": "#/components/schemas/WeeklySummary" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Today": {
+        "type": "object",
+        "required": ["viewTimezone", "viewDate", "items"],
+        "properties": {
+          "viewTimezone": { "type": "string" },
+          "viewDate": { "type": "string", "format": "date" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "plan",
+                "planBusinessDate",
+                "status",
+                "activeRuleVersion",
+                "record",
+                "weeklyProgress",
+                "canCheckIn",
+                "reminderTimeLocal"
+              ],
+              "properties": {
+                "plan": { "$ref": "#/components/schemas/Plan" },
+                "planBusinessDate": { "type": "string", "format": "date" },
+                "status": {
+                  "enum": [
+                    "success",
+                    "failure",
+                    "skip",
+                    "pending",
+                    "unrecorded",
+                    "future",
+                    "due",
+                    "overdue",
+                    "completed",
+                    "late_completed",
+                    "failed",
+                    "cancelled",
+                    "goal_met"
+                  ]
+                },
+                "activeRuleVersion": { "type": "integer", "minimum": 1 },
+                "record": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "result",
+                        "revision",
+                        "isBackfilled",
+                        "isRevised"
+                      ],
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "result": { "enum": ["success", "failure", "skip"] },
+                        "revision": { "type": "integer", "minimum": 1 },
+                        "isBackfilled": { "type": "boolean" },
+                        "isRevised": { "type": "boolean" }
+                      },
+                      "additionalProperties": false
+                    },
+                    { "type": "null" }
+                  ]
+                },
+                "weeklyProgress": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/WeeklySummary" },
+                    { "type": "null" }
+                  ]
+                },
+                "canCheckIn": { "type": "boolean" },
+                "reminderTimeLocal": {
+                  "oneOf": [{ "type": "string" }, { "type": "null" }]
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "FixedStatistics": {
+        "type": "object",
+        "required": [
+          "kind",
+          "planId",
+          "timezone",
+          "statisticsThroughBusinessDate",
+          "ruleVersions",
+          "successCount",
+          "failureCount",
+          "skipCount",
+          "unrecordedCount",
+          "denominator",
+          "completionRate",
+          "consecutiveDueSuccesses"
+        ],
+        "properties": {
+          "kind": { "const": "fixed" },
+          "planId": { "type": "string", "format": "uuid" },
+          "timezone": { "type": "string" },
+          "statisticsThroughBusinessDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "ruleVersions": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 }
+          },
+          "successCount": { "type": "integer", "minimum": 0 },
+          "failureCount": { "type": "integer", "minimum": 0 },
+          "skipCount": { "type": "integer", "minimum": 0 },
+          "unrecordedCount": { "type": "integer", "minimum": 0 },
+          "denominator": { "type": "integer", "minimum": 0 },
+          "completionRate": {
+            "oneOf": [
+              { "type": "number", "minimum": 0, "maximum": 1 },
+              { "type": "null" }
+            ]
+          },
+          "consecutiveDueSuccesses": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      },
+      "WeeklyStatistics": {
+        "type": "object",
+        "required": [
+          "kind",
+          "planId",
+          "timezone",
+          "statisticsThroughBusinessDate",
+          "ruleVersions",
+          "completeWeekCount",
+          "attainedWeekCount",
+          "attainmentRate",
+          "consecutiveAttainedWeeks",
+          "currentWeek",
+          "completedWeeks"
+        ],
+        "properties": {
+          "kind": { "const": "weekly" },
+          "planId": { "type": "string", "format": "uuid" },
+          "timezone": { "type": "string" },
+          "statisticsThroughBusinessDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "ruleVersions": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 }
+          },
+          "completeWeekCount": { "type": "integer", "minimum": 0 },
+          "attainedWeekCount": { "type": "integer", "minimum": 0 },
+          "attainmentRate": {
+            "oneOf": [
+              { "type": "number", "minimum": 0, "maximum": 1 },
+              { "type": "null" }
+            ]
+          },
+          "consecutiveAttainedWeeks": { "type": "integer", "minimum": 0 },
+          "currentWeek": { "$ref": "#/components/schemas/WeeklySummary" },
+          "completedWeeks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WeeklySummary" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "OneTimeStatistics": {
+        "type": "object",
+        "required": [
+          "kind",
+          "planId",
+          "timezone",
+          "statisticsThroughBusinessDate",
+          "ruleVersions",
+          "dueDate",
+          "state",
+          "resolution"
+        ],
+        "properties": {
+          "kind": { "const": "one_time" },
+          "planId": { "type": "string", "format": "uuid" },
+          "timezone": { "type": "string" },
+          "statisticsThroughBusinessDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "ruleVersions": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 }
+          },
+          "dueDate": { "type": "string", "format": "date" },
+          "state": {
+            "enum": [
+              "pending",
+              "overdue",
+              "completed",
+              "late_completed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "resolution": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/OneTimeResolution" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlanDetail": {
+        "type": "object",
+        "required": ["plan", "statistics", "todayStatus", "recentRecords"],
+        "properties": {
+          "plan": { "$ref": "#/components/schemas/Plan" },
+          "statistics": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/FixedStatistics" },
+              { "$ref": "#/components/schemas/WeeklyStatistics" },
+              { "$ref": "#/components/schemas/OneTimeStatistics" }
+            ]
+          },
+          "todayStatus": {
+            "enum": [
+              "success",
+              "failure",
+              "skip",
+              "pending",
+              "unrecorded",
+              "future",
+              "due",
+              "overdue",
+              "completed",
+              "late_completed",
+              "failed",
+              "cancelled",
+              "goal_met",
+              "not_due"
+            ]
+          },
+          "recentRecords": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CalendarEntry" }
+          }
         },
         "additionalProperties": false
       }

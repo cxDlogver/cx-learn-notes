@@ -226,6 +226,131 @@ export interface StatisticsMetadata {
   throughDate: BusinessDate;
   ruleVersion: number;
 }
+export type CalendarStatus =
+  | CheckinResult
+  | "pending"
+  | "unrecorded"
+  | "future"
+  | "due"
+  | "overdue"
+  | "completed"
+  | "late_completed"
+  | "failed"
+  | "cancelled";
+export interface CalendarEntryDto {
+  planId: Uuid;
+  title: string;
+  kind: PlanKind;
+  direction: Direction;
+  timezone: IanaTimezone;
+  businessDate: BusinessDate;
+  status: CalendarStatus;
+  recordId: Uuid | null;
+  ruleVersion: number;
+  isBackfilled: boolean;
+  isRevised: boolean;
+}
+export interface CalendarDayDto {
+  businessDate: BusinessDate;
+  counts: {
+    success: number;
+    failure: number;
+    skip: number;
+    unrecorded: number;
+  };
+  entries: CalendarEntryDto[];
+}
+export interface WeeklySummaryDto {
+  weekStartDate: BusinessDate;
+  ruleVersion: number | null;
+  target: number | null;
+  successes: number;
+  completeWeek: boolean;
+  attained: boolean | null;
+  progressRate: number | null;
+}
+export interface CalendarWeekDto {
+  planId: Uuid;
+  title: string;
+  timezone: IanaTimezone;
+  summary: WeeklySummaryDto;
+}
+export interface CalendarMonthDto {
+  month: string;
+  dateSemantics: "plan_business_date";
+  groupId: Uuid | null;
+  days: CalendarDayDto[];
+  weeklySummaries: CalendarWeekDto[];
+}
+export interface TodayItemDto {
+  plan: PlanDto;
+  planBusinessDate: BusinessDate;
+  status: CalendarStatus | "goal_met";
+  activeRuleVersion: number;
+  record: Pick<
+    CheckinDto,
+    "id" | "result" | "revision" | "isBackfilled" | "isRevised"
+  > | null;
+  weeklyProgress: WeeklySummaryDto | null;
+  canCheckIn: boolean;
+  reminderTimeLocal: string | null;
+}
+export interface TodayDto {
+  viewTimezone: IanaTimezone;
+  viewDate: BusinessDate;
+  items: TodayItemDto[];
+}
+export interface FixedStatisticsDto {
+  kind: "fixed";
+  planId: Uuid;
+  timezone: IanaTimezone;
+  statisticsThroughBusinessDate: BusinessDate;
+  ruleVersions: number[];
+  successCount: number;
+  failureCount: number;
+  skipCount: number;
+  unrecordedCount: number;
+  denominator: number;
+  completionRate: number | null;
+  consecutiveDueSuccesses: number;
+}
+export interface WeeklyStatisticsDto {
+  kind: "weekly";
+  planId: Uuid;
+  timezone: IanaTimezone;
+  statisticsThroughBusinessDate: BusinessDate;
+  ruleVersions: number[];
+  completeWeekCount: number;
+  attainedWeekCount: number;
+  attainmentRate: number | null;
+  consecutiveAttainedWeeks: number;
+  currentWeek: WeeklySummaryDto;
+  completedWeeks: WeeklySummaryDto[];
+}
+export interface OneTimeStatisticsDto {
+  kind: "one_time";
+  planId: Uuid;
+  timezone: IanaTimezone;
+  statisticsThroughBusinessDate: BusinessDate;
+  ruleVersions: number[];
+  dueDate: BusinessDate;
+  state:
+    | "pending"
+    | "overdue"
+    | "completed"
+    | "late_completed"
+    | "failed"
+    | "cancelled";
+  resolution: OneTimeResolutionDto | null;
+}
+export type PlanStatisticsDto =
+  FixedStatisticsDto | WeeklyStatisticsDto | OneTimeStatisticsDto;
+export interface PlanDetailDto {
+  plan: PlanDto;
+  statistics: PlanStatisticsDto;
+  todayStatus: CalendarStatus | "goal_met" | "not_due";
+  recentRecords: CalendarEntryDto[];
+}
 export type {
   paths as ApiPaths,
   operations as ApiOperations,

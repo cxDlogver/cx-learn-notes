@@ -176,6 +176,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/today": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getToday"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/calendar": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getGlobalCalendar"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/calendar/{businessDate}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getCalendarDay"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/plans/{id}": {
     parameters: {
       query?: never;
@@ -190,6 +238,22 @@ export interface paths {
     options?: never;
     head?: never;
     patch: operations["updatePlan"];
+    trace?: never;
+  };
+  "/api/v1/plans/{id}/detail": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["getPlanDetail"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   "/api/v1/plans/{id}/pause": {
@@ -1011,6 +1075,187 @@ export interface components {
     UsernameAvailability: {
       available: boolean;
       normalized: string;
+    };
+    CalendarEntry: {
+      /** Format: uuid */
+      planId: string;
+      title: string;
+      /** @enum {unknown} */
+      kind: "fixed" | "weekly" | "one_time";
+      /** @enum {unknown} */
+      direction: "do" | "avoid";
+      timezone: string;
+      /** Format: date */
+      businessDate: string;
+      /** @enum {unknown} */
+      status:
+        | "success"
+        | "failure"
+        | "skip"
+        | "pending"
+        | "unrecorded"
+        | "future"
+        | "due"
+        | "overdue"
+        | "completed"
+        | "late_completed"
+        | "failed"
+        | "cancelled";
+      recordId: string | null;
+      ruleVersion: number;
+      isBackfilled: boolean;
+      isRevised: boolean;
+    };
+    CalendarDay: {
+      /** Format: date */
+      businessDate: string;
+      counts: {
+        success: number;
+        failure: number;
+        skip: number;
+        unrecorded: number;
+      };
+      entries: components["schemas"]["CalendarEntry"][];
+    };
+    WeeklySummary: {
+      /** Format: date */
+      weekStartDate: string;
+      ruleVersion: number | null;
+      target: number | null;
+      successes: number;
+      completeWeek: boolean;
+      attained: boolean | null;
+      progressRate: number | null;
+    };
+    CalendarMonth: {
+      month: string;
+      /** @constant */
+      dateSemantics: "plan_business_date";
+      groupId: string | null;
+      days: components["schemas"]["CalendarDay"][];
+      weeklySummaries: {
+        /** Format: uuid */
+        planId: string;
+        title: string;
+        timezone: string;
+        summary: components["schemas"]["WeeklySummary"];
+      }[];
+    };
+    Today: {
+      viewTimezone: string;
+      /** Format: date */
+      viewDate: string;
+      items: {
+        plan: components["schemas"]["Plan"];
+        /** Format: date */
+        planBusinessDate: string;
+        /** @enum {unknown} */
+        status:
+          | "success"
+          | "failure"
+          | "skip"
+          | "pending"
+          | "unrecorded"
+          | "future"
+          | "due"
+          | "overdue"
+          | "completed"
+          | "late_completed"
+          | "failed"
+          | "cancelled"
+          | "goal_met";
+        activeRuleVersion: number;
+        record: {
+          /** Format: uuid */
+          id: string;
+          /** @enum {unknown} */
+          result: "success" | "failure" | "skip";
+          revision: number;
+          isBackfilled: boolean;
+          isRevised: boolean;
+        } | null;
+        weeklyProgress: components["schemas"]["WeeklySummary"] | null;
+        canCheckIn: boolean;
+        reminderTimeLocal: string | null;
+      }[];
+    };
+    FixedStatistics: {
+      /** @constant */
+      kind: "fixed";
+      /** Format: uuid */
+      planId: string;
+      timezone: string;
+      /** Format: date */
+      statisticsThroughBusinessDate: string;
+      ruleVersions: number[];
+      successCount: number;
+      failureCount: number;
+      skipCount: number;
+      unrecordedCount: number;
+      denominator: number;
+      completionRate: number | null;
+      consecutiveDueSuccesses: number;
+    };
+    WeeklyStatistics: {
+      /** @constant */
+      kind: "weekly";
+      /** Format: uuid */
+      planId: string;
+      timezone: string;
+      /** Format: date */
+      statisticsThroughBusinessDate: string;
+      ruleVersions: number[];
+      completeWeekCount: number;
+      attainedWeekCount: number;
+      attainmentRate: number | null;
+      consecutiveAttainedWeeks: number;
+      currentWeek: components["schemas"]["WeeklySummary"];
+      completedWeeks: components["schemas"]["WeeklySummary"][];
+    };
+    OneTimeStatistics: {
+      /** @constant */
+      kind: "one_time";
+      /** Format: uuid */
+      planId: string;
+      timezone: string;
+      /** Format: date */
+      statisticsThroughBusinessDate: string;
+      ruleVersions: number[];
+      /** Format: date */
+      dueDate: string;
+      /** @enum {unknown} */
+      state:
+        | "pending"
+        | "overdue"
+        | "completed"
+        | "late_completed"
+        | "failed"
+        | "cancelled";
+      resolution: components["schemas"]["OneTimeResolution"] | null;
+    };
+    PlanDetail: {
+      plan: components["schemas"]["Plan"];
+      statistics:
+        | components["schemas"]["FixedStatistics"]
+        | components["schemas"]["WeeklyStatistics"]
+        | components["schemas"]["OneTimeStatistics"];
+      /** @enum {unknown} */
+      todayStatus:
+        | "success"
+        | "failure"
+        | "skip"
+        | "pending"
+        | "unrecorded"
+        | "future"
+        | "due"
+        | "overdue"
+        | "completed"
+        | "late_completed"
+        | "failed"
+        | "cancelled"
+        | "goal_met"
+        | "not_due";
+      recentRecords: components["schemas"]["CalendarEntry"][];
     };
   };
   responses: never;
@@ -2138,6 +2383,225 @@ export interface operations {
       };
     };
   };
+  getToday: {
+    parameters: {
+      query?: {
+        timezone?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["Today"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  getGlobalCalendar: {
+    parameters: {
+      query: {
+        month: string;
+        groupId?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["CalendarMonth"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  getCalendarDay: {
+    parameters: {
+      query?: {
+        groupId?: string;
+      };
+      header?: never;
+      path: {
+        businessDate: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["CalendarDay"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
   getPlan: {
     parameters: {
       query?: never;
@@ -2309,6 +2773,78 @@ export interface operations {
         content: {
           "application/json": {
             data: components["schemas"]["Plan"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  getPlanDetail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["PlanDetail"];
             requestId: string;
             /** Format: date-time */
             serverTime: string;
@@ -2601,7 +3137,9 @@ export interface operations {
   };
   getPlanCalendar: {
     parameters: {
-      query?: never;
+      query: {
+        month: string;
+      };
       header?: never;
       path: {
         id: string;
@@ -2616,7 +3154,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["CalendarMonth"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -2836,7 +3379,15 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data:
+              | components["schemas"]["FixedStatistics"]
+              | components["schemas"]["WeeklyStatistics"]
+              | components["schemas"]["OneTimeStatistics"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

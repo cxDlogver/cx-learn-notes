@@ -56,8 +56,8 @@ export function fixedDateStatus(
 ): "not_due" | "future" | "pending" | "unrecorded" | CheckinResult {
   const today = businessDateAt(serverNow, plan.timezone);
   if (record) return record.result;
-  if (date > today) return "future";
   if (!isFixedDueDate(plan, date)) return "not_due";
+  if (date > today) return "future";
   return date === today ? "pending" : "unrecorded";
 }
 

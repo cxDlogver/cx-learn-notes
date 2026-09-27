@@ -27,7 +27,7 @@ import {
   revision,
 } from "./write.js";
 
-interface PlanRow {
+export interface PlanRow {
   id: string;
   owner_id: string;
   group_id: string | null;
@@ -48,14 +48,14 @@ interface PlanRow {
   weekly_target: number | null;
   effective_date: string;
 }
-const planColumns = `p.id, p.owner_id, p.group_id, p.kind, p.direction, p.title, p.description,
+export const planColumns = `p.id, p.owner_id, p.group_id, p.kind, p.direction, p.title, p.description,
   p.timezone, p.start_date::text, p.end_date::text, p.due_date::text, p.status,
   p.revision, p.current_rule_version, p.created_at, p.updated_at,
   r.weekdays, r.weekly_target, r.effective_date::text`;
-const fromPlan = `FROM plans p JOIN plan_rule_versions r
+export const fromPlan = `FROM plans p JOIN plan_rule_versions r
   ON r.plan_id = p.id AND r.version = p.current_rule_version`;
 const instant = (value: Date | string): string => new Date(value).toISOString();
-function toDto(row: PlanRow): PlanDto {
+export function toDto(row: PlanRow): PlanDto {
   return {
     id: row.id,
     ownerId: row.owner_id,

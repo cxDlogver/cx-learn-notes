@@ -50,6 +50,11 @@ test("fixed plan excludes unsubmitted today and never auto-succeeds an avoid pla
   assert.equal(after.completionRate, 0.5);
 });
 
+test("future unselected weekdays remain absent from calendar obligations", () => {
+  assert.equal(fixedDateStatus(fixed, "2026-09-28", now), "not_due");
+  assert.equal(fixedDateStatus(fixed, "2026-10-02", now), "future");
+});
+
 test("past unrecorded date stays in denominator while skipped date does not", () => {
   const result = fixedStatistics(
     fixed,
