@@ -5,26 +5,9 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
-  "currentWork": {
-    "taskId": "CORE-07",
-    "phase": "需求与数据模型核对",
-    "updatedAt": "2026-09-27T15:42:36Z",
-    "baseCommit": "ceb67a31fa865f8c16b3b46929178f0ead52046d",
-    "completedSteps": [
-      "已读取 CORE-07 的任务完成标准、PRD 打卡规则、技术方案事务规则和现有 checkins/revisions/one_time_resolutions 表结构。"
-    ],
-    "nextSteps": [
-      "实现记录提交、修改、补记与一次性终态纠错 API，事务内校验计划归属、历史规则版本和 revision。",
-      "补充 OpenAPI 契约与开发自测，运行 pnpm check 及相关静态门槛。",
-      "提交代码并更新本台账；容器数据库与 iOS 原生验证按用户要求稍后执行。"
-    ],
-    "uncommittedChanges": [],
-    "knownConstraints": [
-      "Windows 环境当前无可用 Docker Engine；真实 PostgreSQL 并发验证待环境就绪。",
-      "用户已指定先完成静态代码，iOS 原生验证稍后执行。"
-    ]
-  },
+  "integrationCommit": "e094a97c8d3f0c0aeffcf7100175c2b3e7c03d87",
+  "currentWork": null,
+  "nextTaskId": "CORE-08",
   "tasks": [
     {
       "priority": 1,
@@ -250,12 +233,14 @@
         "S2",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": "ceb67a31fa865f8c16b3b46929178f0ead52046d",
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "fa83c7fdee6d1e1f816ef26117931aad5e60e948",
+      "taskCommit": "e094a97c8d3f0c0aeffcf7100175c2b3e7c03d87",
+      "integratedCommit": "e094a97c8d3f0c0aeffcf7100175c2b3e7c03d87",
+      "staticPassed": true,
+      "blocker": "同日唯一、补记/修订审计、冲突选择、一次性终态纠错及附件失败保留基础记录已通过静态检查和内存 PostgreSQL 自测；真实容器数据库并发和 API 运行验证待环境就绪。"
     },
     {
       "priority": 13,

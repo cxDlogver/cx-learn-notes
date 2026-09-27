@@ -61,6 +61,13 @@ if (
   ledger.currentWork !== undefined
 )
   problems.push("currentWork exists without an active task.");
+if (ledger.nextTaskId !== null && ledger.nextTaskId !== undefined) {
+  const next = (ledger.tasks ?? []).find(
+    (task) => task.id === ledger.nextTaskId,
+  );
+  if (!next || next.status !== "NOT_STARTED")
+    problems.push("nextTaskId must point to an unstarted task.");
+}
 if (ledger.currentWork) {
   if (
     !Array.isArray(ledger.currentWork.nextSteps) ||
@@ -89,6 +96,10 @@ if (problems.length) {
       `当前 ${ledger.currentWork.taskId} · ${ledger.currentWork.phase}\n`,
     );
     process.stdout.write(`下一步：${ledger.currentWork.nextSteps[0]}\n`);
+  } else if (ledger.nextTaskId) {
+    process.stdout.write(
+      `续接任务 ${ledger.nextTaskId}：先核对来源与依赖，再建立 currentWork 检查点。\n`,
+    );
   }
 } else {
   process.stdout.write(
