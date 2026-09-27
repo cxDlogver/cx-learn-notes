@@ -6,8 +6,26 @@
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
   "integrationCommit": "a5565569e94869c8466936ce3c7645a4a178953b",
-  "currentWork": null,
-  "nextTaskId": "APP-04",
+  "currentWork": {
+    "taskId": "APP-04",
+    "phase": "账户隔离加密本地库与迁移设计",
+    "updatedAt": "2026-09-27T18:54:05.479Z",
+    "baseCommit": "692f285abc361044fe34efb098712c88d1759b7e",
+    "completedSteps": [
+      "APP-03 代码与静态复检已提交，已核对 APP-04 任务标准和现有会话/Expo 原生封装。",
+      "确认本地数据库需涵盖计划、规则、打卡、outbox、媒体、游标与权限墓碑七类数据。"
+    ],
+    "nextSteps": [
+      "实现 SQLCipher 密钥与每账户数据库生命周期、迁移和事务接口。",
+      "建立本地缓存模型及账户切换/注销清理，并接入会话生命周期。",
+      "执行静态门槛与迁移/账户切换开发自检，提交代码和台账。"
+    ],
+    "uncommittedChanges": [],
+    "knownConstraints": [
+      "Windows 无 iOS SQLCipher 真机和杀进程恢复环境；先完成静态代码。"
+    ]
+  },
+  "nextTaskId": null,
   "tasks": [
     {
       "priority": 1,
@@ -343,10 +361,10 @@
         "S4",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "692f285abc361044fe34efb098712c88d1759b7e",
       "taskCommit": null,
       "integratedCommit": null
     },
