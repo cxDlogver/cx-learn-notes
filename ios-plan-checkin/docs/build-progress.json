@@ -5,7 +5,7 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "a1761211a1768b0fb929551424918cba07d40ac0",
+  "integrationCommit": "eceb0613792bc0a209a29a46d1e86318e0a4ef65",
   "tasks": [
     {
       "priority": 1,
@@ -143,12 +143,14 @@
         "S2",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "BLOCKED",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
-      "taskCommit": null,
-      "integratedCommit": null
+      "baseCommit": "2ecba23124fc7817489a1ed726f1be5bcb7ddcad",
+      "taskCommit": "eceb0613792bc0a209a29a46d1e86318e0a4ef65",
+      "integratedCommit": "eceb0613792bc0a209a29a46d1e86318e0a4ef65",
+      "staticPassed": true,
+      "blocker": "PostgreSQL 17 语法解析、27 表内存 PostgreSQL 迁移及关键约束自测通过；Docker 引擎未运行，真实 PostgreSQL 空库/升级库迁移与并发事务证据待补。"
     },
     {
       "priority": 9,
