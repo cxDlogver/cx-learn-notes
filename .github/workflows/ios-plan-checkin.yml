@@ -1,0 +1,31 @@
+name: iOS plan checkin static checks
+
+on:
+  push:
+    paths:
+      - 'ios-plan-checkin/**'
+      - '.github/workflows/ios-plan-checkin.yml'
+  pull_request:
+    paths:
+      - 'ios-plan-checkin/**'
+      - '.github/workflows/ios-plan-checkin.yml'
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ios-plan-checkin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: ios-plan-checkin/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
