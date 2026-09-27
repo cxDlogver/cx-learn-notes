@@ -505,10 +505,30 @@ Object.assign(schemas, {
       syncSequence: { type: "integer", minimum: 0 },
     },
   ),
+  SyncChange: properties(
+    ["seq", "entityType", "entityId", "operation", "changedAt"],
+    {
+      seq: { type: "integer", minimum: 1 },
+      entityType: {
+        enum: ["plan", "checkin", "group", "share", "friend", "user"],
+      },
+      entityId: uuid,
+      operation: { enum: ["upsert", "delete", "revoke"] },
+      payload: object,
+      changedAt: instant,
+    },
+  ),
   SyncChanges: properties(["changes", "nextCursor", "hasMore"], {
-    changes: { type: "array", items: object },
+    changes: { type: "array", items: ref("SyncChange") },
     nextCursor: str(),
     hasMore: { type: "boolean" },
+  }),
+  SyncAckRequest: properties(["cursor", "deviceId"], {
+    cursor: str(),
+    deviceId: uuid,
+  }),
+  SyncAck: properties(["acknowledgedSeq"], {
+    acknowledgedSeq: { type: "integer", minimum: 0 },
   }),
   OneTimeResolution: properties(
     [
@@ -882,6 +902,7 @@ const responseData = {
   createOneTimeResolution: ref("OneTimeResolution"),
   reviseOneTimeResolution: ref("OneTimeResolution"),
   getSyncChanges: ref("SyncChanges"),
+  ackSync: ref("SyncAck"),
   searchUsers: { type: "array", items: ref("SocialUser") },
   listFriends: { type: "array", items: ref("SocialUser") },
   listFriendRequests: ref("FriendRequests"),
@@ -916,6 +937,7 @@ const bodies = {
   createFriendRequest: "CreateFriendRequestRequest",
   createBlock: "CreateBlockRequest",
   sharePlan: "ShareGrantRequest",
+  ackSync: "SyncAckRequest",
 };
 const paths = {};
 for (const [method, suffix, operationId, auth] of apiRoutes) {

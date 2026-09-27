@@ -4,6 +4,7 @@ import type { UserDto } from "@plan-checkin/contracts";
 import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
 import { fail } from "../http.js";
+import { appendUserChange } from "../sync/change-log.js";
 
 interface UserRow {
   id: string;
@@ -186,6 +187,9 @@ export class ProfileService {
         if (!updated.rows[0])
           fail("RULE_CHANGED", 409, "资料已在其他设备更新，请刷新后重试");
         const result = toDto(updated.rows[0]);
+        await appendUserChange(client, userId, "user", userId, "upsert", {
+          revision: result.revision,
+        });
         await client.query(
           `INSERT INTO idempotency_keys (user_id, key, request_hash, status_code, response_json, expires_at)
            VALUES ($1, $2, $3, 200, $4, now() + interval '1 day')`,

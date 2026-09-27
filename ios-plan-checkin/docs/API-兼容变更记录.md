@@ -16,3 +16,12 @@
 - 既有好友分享列表与撤销路由补齐实时关系校验。撤销后新请求返回 `SHARE_REVOKED`，并写同步撤销事件；好友关系本身不授权计划读取。
 
 开发自检由 `pnpm social:smoke` 与 `pnpm shares:smoke` 执行；真实 PostgreSQL 并发、iOS 客户端和正式 ATDD 留待对应阶段。
+
+## SYNC-02 增量同步
+
+- 实现既有 `GET /api/v1/sync/changes`：按用户递增序号分页，`limit` 为 1–200，返回变更、签名游标和 `hasMore`。游标绑定账号，有效期 90 天；无效或过期返回 `CURSOR_EXPIRED`，客户端清空游标后重拉。当前不清理 `change_log`，因此重拉可从序号 0 重放。
+- 实现既有 `POST /api/v1/sync/ack`：必填 `deviceId` 和非空 `cursor`，按设备单调记录已应用序号；重复或较旧确认不回退服务端水位。确认只用于同步状态，不改变打卡结果。
+- 计划、分组、记录和资料写入账号变更序列；好友及分享事件继续使用既有变更序列。读取时对计划、记录、好友、分享重新校验当前可见性，已删除或撤销的数据返回相应 tombstone。
+- 客户端逐页先持久化计划、记录和撤销标记，再提交游标和确认；保留未发送的本地记录草稿。该接口此前仅为契约预留，现补齐实现，不改变已发布客户端行为。
+
+开发自检由 `pnpm sync:smoke`、`pnpm mobile:incremental-sync:smoke` 与 `pnpm mobile:bundle:check` 执行；真实 PostgreSQL 并发、多设备 iOS/SQLCipher 和正式 ATDD 留待后续验证。

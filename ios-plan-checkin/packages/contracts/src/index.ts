@@ -322,6 +322,13 @@ export interface SyncChangesDto {
   nextCursor: string;
   hasMore: boolean;
 }
+export interface SyncAckRequest {
+  cursor: string;
+  deviceId: Uuid;
+}
+export interface SyncAckDto {
+  acknowledgedSeq: number;
+}
 export interface StatisticsMetadata {
   timezone: IanaTimezone;
   throughDate: BusinessDate;

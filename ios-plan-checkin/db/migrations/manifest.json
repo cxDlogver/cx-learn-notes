@@ -1,10 +1,11 @@
 {
   "schemaVersion": "1.0",
-  "nextMigration": "0005",
+  "nextMigration": "0006",
   "migrations": [
     { "file": "0001_core.sql", "phase": "expand" },
     { "file": "0002_social_operations.sql", "phase": "expand" },
     { "file": "0003_plan_management.sql", "phase": "expand" },
-    { "file": "0004_record_conflicts.sql", "phase": "expand" }
+    { "file": "0004_record_conflicts.sql", "phase": "expand" },
+    { "file": "0005_incremental_sync.sql", "phase": "expand" }
   ]
 }

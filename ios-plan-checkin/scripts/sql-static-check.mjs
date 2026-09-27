@@ -64,6 +64,7 @@ const requiredTables = [
   "idempotency_keys",
   "change_log",
   "user_sync_counters",
+  "sync_acknowledgements",
   "worker_jobs",
   "export_jobs",
   "deletion_jobs",

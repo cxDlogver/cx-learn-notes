@@ -1227,12 +1227,32 @@ export interface components {
       updatedAt?: string;
       syncSequence: number;
     };
-    SyncChanges: {
-      changes: {
+    SyncChange: {
+      seq: number;
+      /** @enum {unknown} */
+      entityType: "plan" | "checkin" | "group" | "share" | "friend" | "user";
+      /** Format: uuid */
+      entityId: string;
+      /** @enum {unknown} */
+      operation: "upsert" | "delete" | "revoke";
+      payload?: {
         [key: string]: unknown;
-      }[];
+      };
+      /** Format: date-time */
+      changedAt: string;
+    };
+    SyncChanges: {
+      changes: components["schemas"]["SyncChange"][];
       nextCursor: string;
       hasMore: boolean;
+    };
+    SyncAckRequest: {
+      cursor: string;
+      /** Format: uuid */
+      deviceId: string;
+    };
+    SyncAck: {
+      acknowledgedSeq: number;
     };
     OneTimeResolution: {
       /** Format: uuid */
@@ -5722,7 +5742,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SyncAckRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -5730,7 +5754,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["SyncAck"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

@@ -4684,12 +4684,29 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SyncAckRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/SyncAck" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5924,16 +5941,48 @@
         },
         "additionalProperties": false
       },
+      "SyncChange": {
+        "type": "object",
+        "required": ["seq", "entityType", "entityId", "operation", "changedAt"],
+        "properties": {
+          "seq": { "type": "integer", "minimum": 1 },
+          "entityType": {
+            "enum": ["plan", "checkin", "group", "share", "friend", "user"]
+          },
+          "entityId": { "type": "string", "format": "uuid" },
+          "operation": { "enum": ["upsert", "delete", "revoke"] },
+          "payload": { "type": "object", "additionalProperties": true },
+          "changedAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
       "SyncChanges": {
         "type": "object",
         "required": ["changes", "nextCursor", "hasMore"],
         "properties": {
           "changes": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": { "$ref": "#/components/schemas/SyncChange" }
           },
           "nextCursor": { "type": "string" },
           "hasMore": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "SyncAckRequest": {
+        "type": "object",
+        "required": ["cursor", "deviceId"],
+        "properties": {
+          "cursor": { "type": "string" },
+          "deviceId": { "type": "string", "format": "uuid" }
+        },
+        "additionalProperties": false
+      },
+      "SyncAck": {
+        "type": "object",
+        "required": ["acknowledgedSeq"],
+        "properties": {
+          "acknowledgedSeq": { "type": "integer", "minimum": 0 }
         },
         "additionalProperties": false
       },

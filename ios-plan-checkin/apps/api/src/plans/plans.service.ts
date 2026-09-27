@@ -19,6 +19,7 @@ import type { PoolClient } from "pg";
 import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
 import { fail } from "../http.js";
+import { appendUserChange } from "../sync/change-log.js";
 import {
   cleanText,
   guardFields,
@@ -333,7 +334,11 @@ export class PlansService {
           [id, startDate, weekdays, weeklyTarget],
         );
         if (reminder) await saveReminder(client, id, reminder);
-        return toDto(await this.locked(client, userId, id));
+        const result = toDto(await this.locked(client, userId, id));
+        await appendUserChange(client, userId, "plan", id, "upsert", {
+          revision: result.revision,
+        });
+        return result;
       },
     );
   }
@@ -451,7 +456,11 @@ export class PlansService {
             input.rule === undefined ? 0 : 1,
           ],
         );
-        return toDto(await this.locked(client, userId, id));
+        const result = toDto(await this.locked(client, userId, id));
+        await appendUserChange(client, userId, "plan", id, "upsert", {
+          revision: result.revision,
+        });
+        return result;
       },
     );
   }
@@ -511,12 +520,26 @@ export class PlansService {
           ],
         );
         if (action === "delete") {
-          await client.query("DELETE FROM plan_shares WHERE plan_id = $1", [
-            id,
-          ]);
+          const revoked = await client.query<{ friend_id: string }>(
+            "UPDATE plan_shares SET revoked_at=now(),revision=revision+1 WHERE plan_id=$1 AND revoked_at IS NULL RETURNING friend_id",
+            [id],
+          );
+          for (const share of revoked.rows)
+            await appendUserChange(
+              client,
+              share.friend_id,
+              "share",
+              id,
+              "revoke",
+            );
+          await appendUserChange(client, userId, "plan", id, "delete");
           return { deleted: true as const };
         }
-        return toDto(await this.locked(client, userId, id));
+        const result = toDto(await this.locked(client, userId, id));
+        await appendUserChange(client, userId, "plan", id, "upsert", {
+          revision: result.revision,
+        });
+        return result;
       },
     );
   }

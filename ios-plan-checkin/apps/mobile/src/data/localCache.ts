@@ -4,6 +4,7 @@ import type {
   PlanDetailDto,
   PlanDto,
   PutCheckinRequest,
+  SyncChangesDto,
   TodayDto,
   Weekday,
 } from "@plan-checkin/contracts";
@@ -722,6 +723,104 @@ export class LocalCache {
          ON CONFLICT(scope) DO UPDATE SET cursor=excluded.cursor,updated_at=excluded.updated_at`,
         scope,
         cursor,
+        new Date().toISOString(),
+      );
+    });
+  }
+
+  /** Apply a complete page before advancing its opaque cursor; replay is safe after a crash. */
+  async applyRemoteSyncPage(
+    accountId: string,
+    page: SyncChangesDto,
+    plans: PlanDto[] | null,
+    records: CheckinDto[],
+  ): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      if (plans) {
+        for (const plan of plans) {
+          await database.runAsync(
+            `INSERT INTO local_plans(id,revision,lifecycle,payload,updated_at) VALUES(?,?,?,?,?)
+             ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,lifecycle=excluded.lifecycle,
+               payload=excluded.payload,updated_at=excluded.updated_at
+             WHERE excluded.revision >= local_plans.revision`,
+            plan.id,
+            plan.revision,
+            plan.lifecycle,
+            JSON.stringify(plan),
+            plan.updatedAt,
+          );
+          await database.runAsync(
+            `INSERT INTO local_rule_versions(plan_id,version,effective_date,payload) VALUES(?,?,?,?)
+             ON CONFLICT(plan_id,version) DO UPDATE SET effective_date=excluded.effective_date,payload=excluded.payload`,
+            plan.id,
+            plan.ruleVersion,
+            plan.ruleEffectiveDate,
+            JSON.stringify(plan.rule),
+          );
+        }
+        if (plans.length) {
+          await database.runAsync(
+            `UPDATE local_plans SET lifecycle='deleted' WHERE id NOT IN (${plans.map(() => "?").join(",")})`,
+            ...plans.map((plan) => plan.id),
+          );
+        } else
+          await database.runAsync("UPDATE local_plans SET lifecycle='deleted'");
+        await database.runAsync(
+          `INSERT INTO local_sync_cursor(scope,cursor,updated_at) VALUES('plans:list-fetched',?,?)
+           ON CONFLICT(scope) DO UPDATE SET cursor=excluded.cursor,updated_at=excluded.updated_at`,
+          new Date().toISOString(),
+          new Date().toISOString(),
+        );
+      }
+      for (const record of records) {
+        await database.runAsync(
+          `INSERT INTO local_checkins(plan_id,business_date,revision,sync_state,payload,operation_id,updated_at)
+           VALUES(?,?,?,'synced',?,NULL,?)
+           ON CONFLICT(plan_id,business_date) DO UPDATE SET
+             revision=excluded.revision,sync_state='synced',payload=excluded.payload,
+             operation_id=NULL,updated_at=excluded.updated_at
+           WHERE local_checkins.sync_state='synced' AND excluded.revision >= local_checkins.revision`,
+          record.planId,
+          record.businessDate,
+          record.revision,
+          JSON.stringify(record),
+          record.updatedAt,
+        );
+      }
+      for (const change of page.changes) {
+        if (change.entityType === "plan" && change.operation === "delete")
+          await database.runAsync(
+            "UPDATE local_plans SET lifecycle='deleted' WHERE id=?",
+            change.entityId,
+          );
+        if (change.entityType === "share" && change.operation === "revoke")
+          await database.runAsync(
+            `INSERT INTO local_permission_tombstones(plan_id,sequence,updated_at) VALUES(?,?,?)
+             ON CONFLICT(plan_id) DO UPDATE SET sequence=excluded.sequence,updated_at=excluded.updated_at
+             WHERE excluded.sequence > local_permission_tombstones.sequence`,
+            change.entityId,
+            change.seq,
+            new Date().toISOString(),
+          );
+        if (change.entityType === "share" && change.operation === "upsert")
+          await database.runAsync(
+            "DELETE FROM local_permission_tombstones WHERE plan_id=? AND sequence<?",
+            change.entityId,
+            change.seq,
+          );
+      }
+      if (
+        plans ||
+        records.length ||
+        page.changes.some((change) => change.operation !== "upsert")
+      )
+        await database.runAsync(
+          "DELETE FROM local_sync_cursor WHERE scope LIKE 'calendar:%' OR scope='today:snapshot' OR scope LIKE 'detail:%'",
+        );
+      await database.runAsync(
+        `INSERT INTO local_sync_cursor(scope,cursor,updated_at) VALUES('self',?,?)
+         ON CONFLICT(scope) DO UPDATE SET cursor=excluded.cursor,updated_at=excluded.updated_at`,
+        page.nextCursor,
         new Date().toISOString(),
       );
     });

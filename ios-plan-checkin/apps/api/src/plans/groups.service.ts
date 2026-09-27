@@ -7,6 +7,7 @@ import type {
 import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
 import { fail } from "../http.js";
+import { appendUserChange } from "../sync/change-log.js";
 import {
   cleanText,
   guardFields,
@@ -67,7 +68,11 @@ export class GroupsService {
             `INSERT INTO groups (owner_id, name, sort_order) VALUES ($1, $2, $3) RETURNING ${columns}`,
             [userId, name, sortOrder],
           );
-          return dto(result.rows[0]!);
+          const group = dto(result.rows[0]!);
+          await appendUserChange(client, userId, "group", group.id, "upsert", {
+            revision: group.revision,
+          });
+          return group;
         },
       );
     } catch (error) {
@@ -125,7 +130,11 @@ export class GroupsService {
               sortOrder ?? found.rows[0].sort_order,
             ],
           );
-          return dto(changed.rows[0]!);
+          const group = dto(changed.rows[0]!);
+          await appendUserChange(client, userId, "group", group.id, "upsert", {
+            revision: group.revision,
+          });
+          return group;
         },
       );
     } catch (error) {
@@ -161,14 +170,19 @@ export class GroupsService {
         if (!found.rows[0]) fail("NOT_FOUND", 404, "分组不存在");
         if (found.rows[0].revision !== baseRevision)
           fail("RULE_CHANGED", 409, "分组已在其他设备修改");
-        await client.query(
-          "UPDATE plans SET group_id = NULL, revision = revision + 1, updated_at = now() WHERE owner_id = $1 AND group_id = $2",
+        const detached = await client.query<{ id: string; revision: number }>(
+          "UPDATE plans SET group_id = NULL, revision = revision + 1, updated_at = now() WHERE owner_id = $1 AND group_id = $2 RETURNING id,revision",
           [userId, id],
         );
+        for (const plan of detached.rows)
+          await appendUserChange(client, userId, "plan", plan.id, "upsert", {
+            revision: plan.revision,
+          });
         await client.query(
           "DELETE FROM groups WHERE id = $1 AND owner_id = $2",
           [id, userId],
         );
+        await appendUserChange(client, userId, "group", id, "delete");
         return { deleted: true as const };
       },
     );

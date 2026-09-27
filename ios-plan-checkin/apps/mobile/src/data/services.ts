@@ -12,6 +12,8 @@ import { LocalCache } from "./localCache";
 import { localStore, type LocalStore } from "./localStore";
 import { TodaySessionStore } from "./todaySession";
 import { OutboxRunner } from "./outboxRunner";
+import { IncrementalSync } from "./incrementalSync";
+import { deviceId } from "../platform/deviceId";
 import * as Network from "expo-network";
 import {
   MemorySessionStore,
@@ -27,6 +29,7 @@ export interface AppServices {
   localStore: LocalStore | null;
   todaySession: TodaySessionStore;
   outbox: OutboxRunner | null;
+  incrementalSync: IncrementalSync | null;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -62,6 +65,7 @@ export function createAppServices(): AppServices {
       localStore: null,
       todaySession,
       outbox: null,
+      incrementalSync: null,
     };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -114,6 +118,43 @@ export function createAppServices(): AppServices {
       await queryClient.invalidateQueries({ queryKey: ["checkin"] });
     },
   );
+  const incrementalSync = new IncrementalSync(
+    api,
+    localCache,
+    () => {
+      const current = session.getSnapshot();
+      return current.phase === "authenticated" ? current.userId : null;
+    },
+    deviceId,
+    async (changes) => {
+      if (
+        changes.some(
+          (item) => item.entityType === "share" || item.entityType === "friend",
+        )
+      ) {
+        queryClient.removeQueries({ queryKey: ["friends"] });
+        queryClient.removeQueries({ queryKey: ["shared-plan"] });
+        queryClient.removeQueries({ queryKey: ["share-preview"] });
+        queryClient.removeQueries({ queryKey: ["plan-shares"] });
+      }
+      if (
+        changes.some(
+          (item) => item.entityType === "plan" || item.entityType === "checkin",
+        )
+      ) {
+        todaySession.clear();
+        await queryClient.invalidateQueries({ queryKey: ["today"] });
+        await queryClient.invalidateQueries({ queryKey: ["calendar"] });
+        await queryClient.invalidateQueries({ queryKey: ["plan-detail"] });
+        await queryClient.invalidateQueries({ queryKey: ["checkin"] });
+        await queryClient.invalidateQueries({ queryKey: ["plans"] });
+      }
+      if (changes.some((item) => item.entityType === "group"))
+        await queryClient.invalidateQueries({ queryKey: ["groups"] });
+      if (changes.some((item) => item.entityType === "user"))
+        await queryClient.invalidateQueries({ queryKey: ["me"] });
+    },
+  );
   return {
     repository: new HttpRepository(api, localCache, session, outbox),
     session,
@@ -123,5 +164,6 @@ export function createAppServices(): AppServices {
     localStore,
     todaySession,
     outbox,
+    incrementalSync,
   };
 }

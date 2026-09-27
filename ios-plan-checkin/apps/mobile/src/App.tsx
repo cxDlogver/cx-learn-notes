@@ -10,7 +10,10 @@ export default function App() {
   useEffect(() => {
     services.outbox?.start();
     const wake = () => {
-      void services.outbox?.trigger().catch(() => {});
+      void (async () => {
+        await services.outbox?.trigger().catch(() => {});
+        await services.incrementalSync?.trigger().catch(() => {});
+      })();
     };
     void services.session.restore().then(wake);
     const sessionSubscription = services.session.subscribe(() => {
