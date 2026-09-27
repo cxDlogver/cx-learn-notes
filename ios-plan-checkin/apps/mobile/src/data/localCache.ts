@@ -1,4 +1,15 @@
-import type { CheckinDto, PlanDto, Weekday } from "@plan-checkin/contracts";
+import type {
+  CheckinDto,
+  PlanDto,
+  PutCheckinRequest,
+  TodayDto,
+  Weekday,
+} from "@plan-checkin/contracts";
+import {
+  businessDateAt,
+  isoWeekday,
+  parseBusinessDate,
+} from "@plan-checkin/domain";
 import { LocalStore } from "./localStore";
 
 export type CheckinSyncState =
@@ -95,6 +106,31 @@ export class LocalCache {
     });
   }
 
+  async saveTodaySnapshot(accountId: string, today: TodayDto): Promise<void> {
+    await this.store.transaction(accountId, async (database) => {
+      await database.runAsync(
+        `INSERT INTO local_sync_cursor(scope,cursor,updated_at) VALUES('today:snapshot',?,?)
+         ON CONFLICT(scope) DO UPDATE SET cursor=excluded.cursor,updated_at=excluded.updated_at`,
+        JSON.stringify(today),
+        new Date().toISOString(),
+      );
+    });
+  }
+
+  async todaySnapshot(
+    accountId: string,
+    viewDate: string,
+  ): Promise<TodayDto | null> {
+    return this.store.read(accountId, async (database) => {
+      const row = await database.getFirstAsync<CursorRow>(
+        "SELECT cursor FROM local_sync_cursor WHERE scope='today:snapshot'",
+      );
+      if (!row?.cursor) return null;
+      const today = JSON.parse(row.cursor) as TodayDto;
+      return today.viewDate === viewDate ? today : null;
+    });
+  }
+
   async getPlan(accountId: string, planId: string): Promise<PlanDto | null> {
     return this.store.read(accountId, async (database) => {
       const row = await database.getFirstAsync<PayloadRow>(
@@ -161,6 +197,126 @@ export class LocalCache {
           record.updatedAt,
         );
       }
+    });
+  }
+
+  /** Record and outbox are committed together; a failed transaction leaves neither visible. */
+  async savePendingCheckin(
+    accountId: string,
+    plan: PlanDto,
+    businessDate: string,
+    input: PutCheckinRequest,
+  ): Promise<{ record: CheckinDto; operationId: string }> {
+    if (plan.kind === "one_time")
+      throw new Error("一次性任务请使用完成状态操作");
+    if (plan.lifecycle !== "active")
+      throw new Error("当前计划已暂停或归档，不能离线记录");
+    if (
+      businessDate > businessDateAt(new Date(), plan.timezone) ||
+      businessDate < plan.startDate ||
+      (plan.endDate && businessDate > plan.endDate)
+    )
+      throw new Error("该日期不在可记录范围");
+    await this.upsertPlans(accountId, [plan]);
+    return this.store.transaction(accountId, async (database) => {
+      const rule = await database.getFirstAsync<{
+        version: number;
+        payload: string;
+      }>(
+        "SELECT version,payload FROM local_rule_versions WHERE plan_id=? AND effective_date<=? ORDER BY effective_date DESC,version DESC LIMIT 1",
+        plan.id,
+        businessDate,
+      );
+      if (!rule || rule.version !== input.ruleVersion)
+        throw new Error("缺少此日期的规则版本，请联网后再补记");
+      const ruleData = JSON.parse(rule.payload) as RuleSnapshot["rule"];
+      if (
+        ruleData &&
+        "weekdays" in ruleData &&
+        !ruleData.weekdays.includes(isoWeekday(parseBusinessDate(businessDate)))
+      )
+        throw new Error("固定日期计划在该星期不能打卡");
+      const prior = await database.getFirstAsync<
+        PayloadRow & {
+          operation_id: string | null;
+          sync_state: CheckinSyncState;
+        }
+      >(
+        "SELECT payload,operation_id,sync_state FROM local_checkins WHERE plan_id=? AND business_date=?",
+        plan.id,
+        businessDate,
+      );
+      const existing = prior ? (JSON.parse(prior.payload) as CheckinDto) : null;
+      const pending =
+        prior?.operation_id && prior.sync_state === "local"
+          ? await database.getFirstAsync<{ payload: string }>(
+              "SELECT payload FROM local_outbox WHERE operation_id=? AND status='pending'",
+              prior.operation_id,
+            )
+          : null;
+      const operationId =
+        pending && prior?.operation_id
+          ? prior.operation_id
+          : input.clientOperationId;
+      const queuedInput: PutCheckinRequest = pending
+        ? {
+            ...input,
+            baseRevision: (JSON.parse(pending.payload) as PutCheckinRequest)
+              .baseRevision,
+            clientOperationId: operationId,
+          }
+        : input;
+      const record: CheckinDto = {
+        id: existing?.id ?? operationId,
+        planId: plan.id,
+        businessDate,
+        result: input.result,
+        note: input.note?.trim() || null,
+        failureReason: input.failureReason?.trim() || null,
+        numeric: input.numeric ?? null,
+        mediaIds: input.mediaIds ?? [],
+        isBackfilled: businessDate < businessDateAt(new Date(), plan.timezone),
+        isRevised: Boolean(existing),
+        revision: queuedInput.baseRevision,
+        ruleVersion: input.ruleVersion,
+        createdAt: existing?.createdAt ?? input.clientCreatedAt,
+        updatedAt: input.clientCreatedAt,
+        syncSequence: existing?.syncSequence ?? 0,
+      };
+      await database.runAsync(
+        `INSERT INTO local_checkins(plan_id,business_date,revision,sync_state,payload,operation_id,updated_at)
+         VALUES(?,?,?,'local',?,?,?) ON CONFLICT(plan_id,business_date) DO UPDATE SET
+           revision=excluded.revision,sync_state='local',payload=excluded.payload,
+           operation_id=excluded.operation_id,updated_at=excluded.updated_at`,
+        plan.id,
+        businessDate,
+        queuedInput.baseRevision,
+        JSON.stringify(record),
+        operationId,
+        input.clientCreatedAt,
+      );
+      if (pending) {
+        await database.runAsync(
+          "UPDATE local_outbox SET payload=? WHERE operation_id=? AND status='pending'",
+          JSON.stringify(queuedInput),
+          operationId,
+        );
+      } else
+        await database.runAsync(
+          `INSERT INTO local_outbox(operation_id,plan_id,business_date,kind,status,payload,created_at)
+         VALUES(?,?,?,?,'pending',?,?)`,
+          operationId,
+          plan.id,
+          businessDate,
+          existing
+            ? "update"
+            : businessDate < businessDateAt(new Date(), plan.timezone)
+              ? "backfill"
+              : "create",
+          JSON.stringify(queuedInput),
+          input.clientCreatedAt,
+        );
+      return { record, operationId };
     });
   }
 

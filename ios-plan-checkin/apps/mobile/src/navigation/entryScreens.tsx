@@ -7,7 +7,6 @@ import {
   requestNativeSmokePermissions,
   runNativeCapabilitySmoke,
 } from "../platform/nativeSmoke";
-import { pageState } from "../viewmodel/pageState";
 
 export function Shell({
   title,
@@ -28,30 +27,6 @@ export function Shell({
         ) : null}
       </View>
     </SafeAreaView>
-  );
-}
-
-export function TodayEntry() {
-  const { repository } = useAppServices();
-  const query = useQuery({
-    queryKey: ["today"],
-    queryFn: () => repository.getToday(),
-  });
-  const state = pageState(query, (data) => data.items.length === 0);
-  return (
-    <Shell
-      title="今日"
-      body={
-        state.kind === "loading"
-          ? "正在读取计划"
-          : state.kind === "error"
-            ? "暂时无法读取今日计划"
-            : state.kind === "empty"
-              ? "今天暂无需要处理的计划"
-              : `今天有 ${state.data.items.length} 项计划`
-      }
-      retry={state.kind === "error" ? () => void query.refetch() : undefined}
-    />
   );
 }
 

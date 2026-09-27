@@ -34,13 +34,17 @@ import {
 } from "../screens/plans/PlanFormScreen";
 import { GroupManagementScreen } from "../screens/plans/GroupManagementScreen";
 import { PlanConfirmationsScreen } from "../screens/plans/PlanConfirmationsScreen";
+import { TodayScreen } from "../screens/today/TodayScreen";
+import {
+  RecordEditorScreen,
+  type RecordMode,
+} from "../screens/today/RecordEditorScreen";
 import type { PlanDraft } from "../screens/plans/planForm";
 import {
   CalendarEntry,
   FriendsEntry,
   SettingsEntry,
   Shell,
-  TodayEntry,
 } from "./entryScreens";
 import { parseAppLink, type AppLink } from "./links";
 
@@ -53,7 +57,12 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Home: undefined;
   PlanDetail: { planId: string };
-  Checkin: { planId: string; businessDate: string };
+  Checkin: {
+    planId: string;
+    businessDate: string;
+    mode?: RecordMode;
+    ruleVersion?: number;
+  };
   Settings: undefined;
   CreatePlan: { kind: PlanKind; draft?: PlanDraft };
   EditPlan: { planId: string };
@@ -93,7 +102,7 @@ function MainTabs() {
     >
       <Tabs.Screen
         name="Today"
-        component={TodayEntry}
+        component={TodayScreen}
         options={{
           title: "今日",
           headerRight: () => (
@@ -137,9 +146,15 @@ function MainStack() {
           <Shell title="计划详情" body={`计划 ${route.params.planId}`} />
         )}
       </RootStack.Screen>
-      <RootStack.Screen name="Checkin" options={{ title: "打卡" }}>
-        {({ route }) => (
-          <Shell title="打卡" body={`业务日期 ${route.params.businessDate}`} />
+      <RootStack.Screen
+        name="Checkin"
+        options={{ headerShown: false, presentation: "modal" }}
+      >
+        {({ route, navigation }) => (
+          <RecordEditorScreen
+            {...route.params}
+            onDone={() => navigation.goBack()}
+          />
         )}
       </RootStack.Screen>
       <RootStack.Screen
@@ -186,7 +201,7 @@ function MainStack() {
 }
 
 export function AppNavigation() {
-  const { session, repository, queryClient } = useAppServices();
+  const { session, repository, queryClient, todaySession } = useAppServices();
   const snapshot = useSyncExternalStore(
     session.subscribe,
     session.getSnapshot,
@@ -280,13 +295,18 @@ export function AppNavigation() {
     profile.data?.nickname,
   ]);
   useEffect(() => {
-    if (snapshot.phase === "unauthenticated") queryClient.clear();
-  }, [queryClient, snapshot.phase]);
-  useEffect(() => {
-    if (cachedUser.current && cachedUser.current !== snapshot.userId)
+    if (snapshot.phase === "unauthenticated") {
       queryClient.clear();
+      todaySession.clear();
+    }
+  }, [queryClient, snapshot.phase, todaySession]);
+  useEffect(() => {
+    if (cachedUser.current && cachedUser.current !== snapshot.userId) {
+      queryClient.clear();
+      todaySession.clear();
+    }
     cachedUser.current = snapshot.userId;
-  }, [queryClient, snapshot.userId]);
+  }, [queryClient, snapshot.userId, todaySession]);
 
   if (snapshot.phase === "loading")
     return (

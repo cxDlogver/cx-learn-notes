@@ -10,6 +10,7 @@ import { MockRepository, MockSessionGateway } from "./mockRepository";
 import { SessionManager } from "./session";
 import { LocalCache } from "./localCache";
 import { localStore, type LocalStore } from "./localStore";
+import { TodaySessionStore } from "./todaySession";
 import {
   MemorySessionStore,
   secureSessionStore,
@@ -22,6 +23,7 @@ export interface AppServices {
   mockMode: boolean;
   localCache: LocalCache | null;
   localStore: LocalStore | null;
+  todaySession: TodaySessionStore;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -41,6 +43,7 @@ export function createAppServices(): AppServices {
       mutations: { retry: false },
     },
   });
+  const todaySession = new TodaySessionStore();
   if (mockMode) {
     const session = new SessionManager(
       new MemorySessionStore(),
@@ -54,6 +57,7 @@ export function createAppServices(): AppServices {
       mockMode,
       localCache: null,
       localStore: null,
+      todaySession,
     };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -84,5 +88,6 @@ export function createAppServices(): AppServices {
     mockMode,
     localCache,
     localStore,
+    todaySession,
   };
 }

@@ -16,11 +16,25 @@ const javascript = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 let sequence = 0;
+let networkConnected = true;
 const localRequire = (name) => {
   if (name === "expo-crypto")
     return {
       randomUUID: () =>
         `00000000-0000-4000-8000-${String(++sequence).padStart(12, "0")}`,
+    };
+  if (name === "expo-network")
+    return {
+      getNetworkStateAsync: async () => ({
+        isConnected: networkConnected,
+        isInternetReachable: networkConnected,
+      }),
+    };
+  if (name === "@plan-checkin/domain")
+    return {
+      businessDateAt: () => "2026-09-28",
+      parseBusinessDate: (date) => new Date(`${date}T12:00:00Z`),
+      isoWeekday: (date) => date.getUTCDay() || 7,
     };
   if (name.endsWith("/deviceId"))
     return { deviceId: async () => "test-device" };
@@ -141,6 +155,45 @@ assert.equal(
   (await uncachedSuccess.createPlan({ title: "新计划" })).id,
   "server-created",
 );
+const plan = { id: "plan-record", timezone: "Asia/Shanghai", kind: "weekly" };
+const input = {
+  result: "success",
+  baseRevision: 0,
+  ruleVersion: 1,
+  clientCreatedAt: "2026-09-28T01:00:00Z",
+  clientOperationId: "operation-record",
+};
+const record = { id: "record-1", planId: plan.id, result: "success" };
+const recordRepo = new HttpRepository(
+  api,
+  {
+    checkin: async () => null,
+    savePendingCheckin: async () => ({
+      record,
+      operationId: "operation-record",
+    }),
+    upsertServerCheckins: async () => {},
+  },
+  { getSnapshot: () => ({ phase: "authenticated", userId: accountId }) },
+);
+calls.length = 0;
+fetchImpl = async (url, options) => {
+  calls.push({ url, options });
+  return { ok: true, json: async () => ({ data: record }) };
+};
+assert.equal(
+  (await recordRepo.saveCheckin(plan, "2026-09-28", input)).source,
+  "server",
+);
+assert.equal(calls[0].options.method, "PUT");
+assert.equal(calls[0].options.headers["Idempotency-Key"], "operation-record");
+networkConnected = false;
+assert.deepEqual(await recordRepo.saveCheckin(plan, "2026-09-28", input), {
+  source: "local",
+  record,
+  operationId: "operation-record",
+});
+assert.equal(calls.length, 1);
 process.stdout.write(
-  "Mobile plan repository smoke passed: auth retry, idempotency, deletion confirmation and explicit offline snapshot.\n",
+  "Mobile plan repository smoke passed: auth retry, idempotency, deletion confirmation, offline snapshot and record routing.\n",
 );

@@ -3,19 +3,30 @@ import type {
   ApiSuccess,
   AuthTokens,
   CalendarMonthDto,
+  CheckinDto,
   CreateGroupRequest,
   CreatePlanRequest,
   GroupDto,
   PlanDetailDto,
   PlanDto,
+  OneTimeResolutionDto,
+  OneTimeResolutionRequest,
+  PutCheckinRequest,
   SmsChallengeDto,
   UserDto,
   UsernameAvailabilityDto,
   TodayDto,
+  TodayItemDto,
   UpdateGroupRequest,
   UpdatePlanRequest,
 } from "@plan-checkin/contracts";
 import * as Crypto from "expo-crypto";
+import * as Network from "expo-network";
+import {
+  businessDateAt,
+  isoWeekday,
+  parseBusinessDate,
+} from "@plan-checkin/domain";
 import type { SessionGateway } from "./session";
 import { SessionManager } from "./session";
 import { deviceId } from "../platform/deviceId";
@@ -32,6 +43,10 @@ export class ApiRequestError extends Error {
   }
 }
 
+export type RecordSaveResult =
+  | { source: "server"; record: CheckinDto }
+  | { source: "local"; record: CheckinDto; operationId: string };
+
 export interface AppRepository {
   createSmsChallenge(phone: string): Promise<SmsChallengeDto>;
   verifySms(
@@ -46,7 +61,7 @@ export interface AppRepository {
     nickname: string;
     baseRevision: number;
   }): Promise<UserDto>;
-  getToday(): Promise<TodayDto>;
+  getToday(): Promise<TodayDto & { source?: "server" | "local" }>;
   getCalendar(month: string, groupId?: string): Promise<CalendarMonthDto>;
   listPlans(): Promise<PlanDto[]>;
   listPlansWithSource(): Promise<{
@@ -55,6 +70,16 @@ export interface AppRepository {
   }>;
   getPlan(id: string): Promise<PlanDto>;
   getPlanDetail(id: string): Promise<PlanDetailDto>;
+  getCheckin(planId: string, businessDate: string): Promise<CheckinDto>;
+  saveCheckin(
+    plan: PlanDto,
+    businessDate: string,
+    input: PutCheckinRequest,
+  ): Promise<RecordSaveResult>;
+  resolveOneTime(
+    planId: string,
+    input: OneTimeResolutionRequest,
+  ): Promise<OneTimeResolutionDto>;
   listGroups(): Promise<GroupDto[]>;
   createGroup(input: CreateGroupRequest): Promise<GroupDto>;
   updateGroup(id: string, input: UpdateGroupRequest): Promise<GroupDto>;
@@ -188,7 +213,7 @@ export class ApiClient implements SessionGateway {
 
   private async authorized<T>(
     path: string,
-    method: "PATCH" | "POST" | "DELETE",
+    method: "PATCH" | "POST" | "PUT" | "DELETE",
     body?: unknown,
     headers: Record<string, string> = {},
   ): Promise<T> {
@@ -216,6 +241,12 @@ export class ApiClient implements SessionGateway {
         throw retryError;
       }
     }
+  }
+
+  put<T>(path: string, body: unknown, idempotencyKey: string): Promise<T> {
+    return this.authorized<T>(path, "PUT", body, {
+      "Idempotency-Key": idempotencyKey,
+    });
   }
 }
 
@@ -282,8 +313,108 @@ export class HttpRepository implements AppRepository {
     return this.api.patch("/me", input);
   }
 
-  getToday(): Promise<TodayDto> {
-    return this.api.get("/today");
+  async getToday(): Promise<TodayDto & { source?: "server" | "local" }> {
+    try {
+      const today = await this.api.get<TodayDto>("/today");
+      await this.cachePlans(today.items.map((item) => item.plan));
+      const accountId = this.accountId();
+      if (accountId && this.localCache) {
+        try {
+          await this.localCache.saveTodaySnapshot(accountId, today);
+        } catch {
+          /* Remote response remains usable. */
+        }
+      }
+      return { ...today, source: "server" };
+    } catch (error) {
+      const accountId = this.accountId();
+      if (!(
+        error instanceof ApiRequestError &&
+        error.status === 0 &&
+        accountId &&
+        this.localCache
+      ))
+        throw error;
+      const viewDate = businessDateAt(new Date(), "Asia/Shanghai");
+      const snapshot = await this.localCache.todaySnapshot(accountId, viewDate);
+      if (snapshot) {
+        const items = await Promise.all(
+          snapshot.items.map(async (item) => {
+            const stored = await this.localCache!.checkin(
+              accountId,
+              item.plan.id,
+              item.planBusinessDate,
+            );
+            if (!stored) return item;
+            const record = stored.record;
+            return {
+              ...item,
+              status: record.result,
+              record: {
+                id: record.id,
+                result: record.result,
+                revision: record.revision,
+                isBackfilled: record.isBackfilled,
+                isRevised: record.isRevised,
+              },
+            };
+          }),
+        );
+        return { ...snapshot, items, source: "local" };
+      }
+      if (!(await this.localCache.hasPlanListSnapshot(accountId))) throw error;
+      const plans = await this.localCache.listPlans(accountId);
+      const eligible = plans.filter((plan) => {
+        const day = businessDateAt(new Date(), plan.timezone);
+        if (
+          plan.lifecycle !== "active" ||
+          plan.startDate > day ||
+          (plan.endDate && plan.endDate < day)
+        )
+          return false;
+        if (plan.kind === "fixed" && plan.rule && "weekdays" in plan.rule)
+          return plan.rule.weekdays.includes(
+            isoWeekday(parseBusinessDate(day)),
+          );
+        return true;
+      });
+      const items: TodayItemDto[] = await Promise.all(
+        eligible.map(async (plan) => {
+          const planBusinessDate = businessDateAt(new Date(), plan.timezone);
+          const stored = await this.localCache!.checkin(
+            accountId,
+            plan.id,
+            planBusinessDate,
+          );
+          const record = stored?.record;
+          return {
+            plan,
+            planBusinessDate,
+            status:
+              record?.result ?? (plan.kind === "one_time" ? "pending" : "due"),
+            activeRuleVersion: plan.ruleVersion,
+            record: record
+              ? {
+                  id: record.id,
+                  result: record.result,
+                  revision: record.revision,
+                  isBackfilled: record.isBackfilled,
+                  isRevised: record.isRevised,
+                }
+              : null,
+            weeklyProgress: null,
+            canCheckIn: plan.kind !== "one_time",
+            reminderTimeLocal: null,
+          };
+        }),
+      );
+      return {
+        viewDate,
+        viewTimezone: "Asia/Shanghai",
+        items,
+        source: "local",
+      };
+    }
   }
   getCalendar(month: string, groupId?: string): Promise<CalendarMonthDto> {
     const query = new URLSearchParams({ month });
@@ -340,6 +471,94 @@ export class HttpRepository implements AppRepository {
   }
   getPlanDetail(id: string): Promise<PlanDetailDto> {
     return this.api.get(`/plans/${encodeURIComponent(id)}/detail`);
+  }
+  async getCheckin(planId: string, businessDate: string): Promise<CheckinDto> {
+    const accountId = this.accountId();
+    const local =
+      accountId && this.localCache
+        ? await this.localCache.checkin(accountId, planId, businessDate)
+        : null;
+    if (local && local.state !== "synced") return local.record;
+    try {
+      const record = await this.api.get<CheckinDto>(
+        `/plans/${encodeURIComponent(planId)}/checkins/${businessDate}`,
+      );
+      if (accountId && this.localCache) {
+        try {
+          await this.localCache.upsertServerCheckins(accountId, [record]);
+        } catch {
+          /* Remote read remains usable. */
+        }
+      }
+      return record;
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.status === 0 && local)
+        return local.record;
+      throw error;
+    }
+  }
+  async saveCheckin(
+    plan: PlanDto,
+    businessDate: string,
+    input: PutCheckinRequest,
+  ): Promise<RecordSaveResult> {
+    const accountId = this.accountId();
+    const saveLocal = async (): Promise<RecordSaveResult> => {
+      if (!accountId || !this.localCache)
+        throw new ApiRequestError(0, "NETWORK_ERROR", "离线保存暂不可用", null);
+      const { record, operationId } = await this.localCache.savePendingCheckin(
+        accountId,
+        plan,
+        businessDate,
+        input,
+      );
+      return { source: "local", record, operationId };
+    };
+    if (accountId && this.localCache) {
+      const existing = await this.localCache.checkin(
+        accountId,
+        plan.id,
+        businessDate,
+      );
+      if (existing?.state === "local") return saveLocal();
+      if (existing?.state === "conflict")
+        throw new Error("记录存在同步冲突，请先处理冲突");
+    }
+    try {
+      const state = await Network.getNetworkStateAsync();
+      if (state.isConnected === false || state.isInternetReachable === false)
+        return saveLocal();
+    } catch {
+      /* Reachability unknown: try the API, then fall back only on transport failure. */
+    }
+    try {
+      const record = await this.api.put<CheckinDto>(
+        `/plans/${encodeURIComponent(plan.id)}/checkins/${businessDate}`,
+        input,
+        input.clientOperationId,
+      );
+      if (accountId && this.localCache) {
+        try {
+          await this.localCache.upsertServerCheckins(accountId, [record]);
+        } catch {
+          /* Server success must not become a duplicate retry. */
+        }
+      }
+      return { source: "server", record };
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.status === 0)
+        return saveLocal();
+      throw error;
+    }
+  }
+  resolveOneTime(
+    planId: string,
+    input: OneTimeResolutionRequest,
+  ): Promise<OneTimeResolutionDto> {
+    return this.api.post(
+      `/plans/${encodeURIComponent(planId)}/one-time-resolution`,
+      input,
+    );
   }
   listGroups(): Promise<GroupDto[]> {
     return this.api.get("/groups");
