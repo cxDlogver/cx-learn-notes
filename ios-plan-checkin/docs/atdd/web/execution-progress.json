@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
   "verificationBuildCommit": null,
-  "updatedAt": "2026-09-28T14:49:00Z",
+  "updatedAt": "2026-09-28T15:11:00Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -1214,33 +1214,149 @@
       ],
       "scope": "依赖：WEB-03、WEB-04、WEB-06。补充社交事件持久收件箱、账号级已读、分页、授权撤销后的逐条校验，复用好友/分享 API 并确保越权拒绝。关联：SOCIAL、NOTIFY、SEC。完成证据：A/B/C/D 账号的 API/DB/日志、重复事件去重和撤销后拒绝记录。",
       "ownedCaseIds": [],
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "startedAt": "2026-09-28T14:55:00Z",
-      "completedAt": null,
+      "completedAt": "2026-09-28T15:11:00Z",
       "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
-        "commit": null,
-        "checks": [],
-        "evidence": []
+        "summary": "社交事务按业务事件键写去重收件箱；新增 HMAC 账号游标分页、未读数、幂等已读与逐条权限复核，失权消息隐藏目标及对方。",
+        "changedPaths": [
+          "apps/api/src/social/notification-jobs.ts",
+          "apps/api/src/social/social.service.ts",
+          "apps/api/src/social/inbox.service.ts",
+          "apps/api/src/social/inbox.controller.ts",
+          "apps/api/src/social/social.module.ts",
+          "apps/api/src/records/records.service.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs",
+          "scripts/web-inbox-smoke.mjs",
+          "scripts/web-inbox-http-smoke.mjs",
+          "scripts/run-web-inbox-http-smoke.ps1",
+          "docs/atdd/web/WEB-13-社交消息服务端.md"
+        ],
+        "commit": "7efa40880b48be7f6f37d3daa05d85ce06f7381f",
+        "checks": [
+          {
+            "command": "node node_modules/typescript/bin/tsc --noEmit -p packages/contracts/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/contracts-typecheck.txt",
+            "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/api-build.txt",
+            "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+          },
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/openapi.txt",
+            "sha256": "115a7f58892c557658facd337845cbbfeb8a354fe4a64f0a3de0f401c88cd8e5"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/compat.txt",
+            "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+          },
+          {
+            "command": "node scripts/social-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/social-smoke.txt",
+            "sha256": "460bbe7c737dc1c6c891ade13c0bbe868e03e22901d728c48f29227e970c9834"
+          },
+          {
+            "command": "node scripts/shares-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/shares-smoke.txt",
+            "sha256": "81216480230bba17cea6d3618e942a30aa217453cb18b747d3ae5a26ffe90550"
+          },
+          {
+            "command": "node scripts/social-notifications-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/social-notifications-smoke.txt",
+            "sha256": "597d1e3f747adecb9edc988c69aee81cace6c7b12312854e535444f23fa4ce64"
+          },
+          {
+            "command": "node scripts/records-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/records-smoke.txt",
+            "sha256": "f003cf460a8d7af036e8bdbe865e133b60a2f174a2d35b06a5aaaf58a5993ef0"
+          },
+          {
+            "command": "node scripts/web-inbox-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/web-inbox-smoke.txt",
+            "sha256": "cb83b81d9ad8094225cf62751acaf74e3fdef35a6d4895ffb7e40734cf7736b7"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-inbox-http-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/inbox-http.txt",
+            "sha256": "793c9609c6c038a1229ea938d0017587473ae4bfdda6968a88fea7f7e60776c8"
+          },
+          {
+            "command": "node scripts/security-static.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/security-static.txt",
+            "sha256": "0aa6f2f509cf5a44d2741db7003eb2c94915c5833d4bf34299d9118386c2449a"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js apps/api/src/social/notification-jobs.ts apps/api/src/social/social.service.ts apps/api/src/social/inbox.service.ts apps/api/src/social/inbox.controller.ts apps/api/src/social/social.module.ts apps/api/src/records/records.service.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/web-inbox-smoke.mjs scripts/web-inbox-http-smoke.mjs scripts/web-13-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/lint.txt",
+            "sha256": "a7285367fb2819088e558b8d7a21422e1d787deda5e4972bf7be0d825ca2df59"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check apps/api/src/social/notification-jobs.ts apps/api/src/social/social.service.ts apps/api/src/social/inbox.service.ts apps/api/src/social/inbox.controller.ts apps/api/src/social/social.module.ts apps/api/src/records/records.service.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/web-inbox-smoke.mjs scripts/web-inbox-http-smoke.mjs scripts/web-13-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/format.txt",
+            "sha256": "da8ed092dbc92a61a04a9ebfe981498acd841d385a7d16525153a76fdd7e574d"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/progress-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-13/checks.json",
+          "docs/atdd/web/WEB-13-社交消息服务端.md",
+          "docs/API-兼容变更记录.md"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "14 项检查通过，证据 SHA-256 与 Git blob 14/14 一致；四账号及 B 两独立 Web 会话的 PGlite/真实 HTTP 验证事件去重、分页、跨会话已读、越权拒绝与撤销后隐藏。产品浏览器 F/V/N 未执行，136 项仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-13/inbox-http.txt",
+          "docs/atdd/web/evidence/WEB-13/web-inbox-smoke.txt",
+          "docs/atdd/web/evidence/WEB-13/security-static.txt"
+        ]
       },
       "review": {
-        "reviewer": null,
-        "reviewedAt": null,
-        "decision": null
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T15:11:00Z",
+        "decision": "WEB-13 服务端事件、账号级已读、分页、失权复核、兼容和真实多账号 API/DB 证据齐备；页面及浏览器验收归 WEB-14/16/21。"
       },
       "history": [
         {
           "at": "2026-09-28T14:55:00Z",
           "type": "STARTED",
           "summary": "社交事务收件箱去重、逐条权限复核、游标分页与账号级已读；真实多账号取证后判定完成。"
+        },
+        {
+          "at": "2026-09-28T15:11:00Z",
+          "type": "DONE",
+          "summary": "14 项检查和提交后 SHA 复核通过，WEB-13 checklist 勾选；136 项浏览器业务用例未执行。",
+          "commit": "7efa40880b48be7f6f37d3daa05d85ce06f7381f",
+          "evidencePath": "docs/atdd/web/evidence/WEB-13/checks.json"
         }
       ]
     },
