@@ -1,0 +1,53 @@
+{
+  "taskId": "WEB-02",
+  "increment": "stale-propagation",
+  "generatedAt": "2026-09-28T14:23:04.504Z",
+  "checks": [
+    {
+      "name": "stale-tests",
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "docs/atdd/web",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/stale-tests.txt",
+      "bytes": 1569,
+      "sha256": "ece9ac1fd01ea677179f003887b68de892138e78d8618297a0596f2d81658891"
+    },
+    {
+      "name": "stale-dry-run",
+      "command": [
+        "python",
+        "docs/atdd/web/mark_stale.py",
+        "--commit",
+        "51cdc1ea07c8abc3eb531a8dfb0209088a38a96c",
+        "--reason",
+        "tool-selftest",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/stale-dry-run.txt",
+      "bytes": 236,
+      "sha256": "79ba0ae1505fa0236ec20cf83e6e6bada387944c1814a3dcea805bf8e2475108"
+    },
+    {
+      "name": "stale-ledger",
+      "command": [
+        "python",
+        "docs/atdd/web/check_execution_progress.py"
+      ],
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/stale-ledger.txt",
+      "bytes": 132,
+      "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+    }
+  ],
+  "browserAcceptance": "NOT_RUN"
+}

@@ -2,6 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
+  "verificationBuildCommit": null,
   "updatedAt": "2026-09-28T13:22:42Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
@@ -153,7 +154,7 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "校验、人工结果同步、Chrome/Edge 交互采集和本地 SHA 归档已实现；CI 工具校验已配置。隔离业务种子、固定时钟、外部桩、非 Chromium 矩阵与外部 artifact 保留仍待完成，上传被自动审批拒绝。 隔离 A/B/C/D、六独立 Web 会话、F/FD/W/O 种子/清理与 Node/Chrome 同 UTC 冻结探针已实现；外部依赖与 CI 保留仍缺。",
+        "summary": "校验、人工结果同步、Chrome/Edge 交互采集和本地 SHA 归档已实现；CI 工具校验已配置。隔离业务种子、固定时钟、外部桩、非 Chromium 矩阵与外部 artifact 保留仍待完成，上传被自动审批拒绝。 隔离 A/B/C/D、六独立 Web 会话、F/FD/W/O 种子/清理与 Node/Chrome 同 UTC 冻结探针已实现；外部依赖与 CI 保留仍缺。 候选构建变化会把旧 PASS 当前指针标 STALE，保留原始证据并重新打开已完成的所属及下游任务。",
         "changedPaths": [
           "docs/atdd/web/validate_result.py",
           "docs/atdd/web/test_validate_result.py",
@@ -173,7 +174,10 @@
           "scripts/run-web-atdd-fixture-smoke.ps1",
           "scripts/web-atdd-clock.mjs",
           "scripts/web-atdd-clock-selftest.mjs",
-          "scripts/web-02-seed-evidence.mjs"
+          "scripts/web-02-seed-evidence.mjs",
+          "docs/atdd/web/mark_stale.py",
+          "docs/atdd/web/test_mark_stale.py",
+          "scripts/web-02-stale-evidence.mjs"
         ],
         "commit": null,
         "checks": [
@@ -254,6 +258,24 @@
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-02/seed-ledger.txt",
             "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          },
+          {
+            "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/stale-tests.txt",
+            "sha256": "ece9ac1fd01ea677179f003887b68de892138e78d8618297a0596f2d81658891"
+          },
+          {
+            "command": "python docs/atdd/web/mark_stale.py --commit 51cdc1ea07c8abc3eb531a8dfb0209088a38a96c --reason tool-selftest --dry-run",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/stale-dry-run.txt",
+            "sha256": "79ba0ae1505fa0236ec20cf83e6e6bada387944c1814a3dcea805bf8e2475108"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/stale-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
           }
         ],
         "evidence": [
@@ -264,11 +286,12 @@
           "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
           "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
           "docs/atdd/web/evidence/WEB-02/seed-checks.json",
-          "docs/atdd/web/evidence/WEB-02/clock-selftest.json"
+          "docs/atdd/web/evidence/WEB-02/clock-selftest.json",
+          "docs/atdd/web/evidence/WEB-02/stale-checks.json"
         ]
       },
       "verification": {
-        "summary": "12 项合成工具自测、Chrome/Edge 探针、Chrome 交互及本地 ZIP 77 文件逐项哈希通过；0 个业务结果，136 项 NOT_RUN；CI 外部证据上传未获自动审批。 临时 PostgreSQL 17 两次种子/清理、六会话真实 HTTP 和隔离 Node/Chrome 冻结时钟探针通过；仍仅为工具/测试数据证明。",
+        "summary": "12 项合成工具自测、Chrome/Edge 探针、Chrome 交互及本地 ZIP 77 文件逐项哈希通过；0 个业务结果，136 项 NOT_RUN；CI 外部证据上传未获自动审批。 临时 PostgreSQL 17 两次种子/清理、六会话真实 HTTP 和隔离 Node/Chrome 冻结时钟探针通过；仍仅为工具/测试数据证明。 15 项合成 STALE/结果写入/证据校验工具测试与候选只读预览通过；当前没有业务 PASS。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
@@ -283,7 +306,9 @@
           "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
           "docs/atdd/web/evidence/WEB-02/fixture-selftest.txt",
           "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/timeline.json",
-          "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/screen-after.png"
+          "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/stale-tests.txt",
+          "docs/atdd/web/evidence/WEB-02/stale-dry-run.txt"
         ]
       },
       "review": {
@@ -331,6 +356,12 @@
           "type": "ISOLATED_FIXTURE_AND_CLOCK_CHECKED",
           "summary": "两轮 A/B/C/D 种子/清理、六 Cookie 真实会话与 Node/Chrome 同时钟探针通过；13 个原始文件哈希匹配，业务验收未执行。",
           "evidencePath": "docs/atdd/web/evidence/WEB-02/seed-checks.json"
+        },
+        {
+          "at": "2026-09-28T14:23:00Z",
+          "type": "STALE_PROPAGATION_CHECKED",
+          "summary": "15 项合成工具测试及候选只读预览通过；PASS 失效会重开任务并保留原证据，136 项业务仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/stale-checks.json"
         }
       ]
     },

@@ -31,6 +31,8 @@ def record(observation_path: Path) -> Path:
     entry = next(item for item in ledger["caseLedger"] if item["caseId"] == case["id"])
     if observation["status"] == "PASS" and entry["implementationStatus"] != "IMPLEMENTED":
         raise ValueError("PASS requires an implemented case with code paths and commit in the ledger")
+    if observation["status"] == "PASS" and observation["build"]["gitCommit"] != ledger.get("verificationBuildCommit"):
+        raise ValueError("PASS requires the locked candidate commit; run mark_stale.py first")
 
     result_dir = ROOT / "evidence" / observation["runId"] / case["id"] / observation["variant"]
     result_path = result_dir / "result.json"

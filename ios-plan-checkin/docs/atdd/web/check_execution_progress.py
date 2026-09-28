@@ -7,6 +7,7 @@ No dependency is needed until PASS results exist; validating those requires json
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 from pathlib import Path
 
@@ -51,6 +52,10 @@ def main() -> None:
         raise ValueError("Markdown checklist differs from JSON task IDs")
     if progress["sourceDigest"] != manifest["sourceDigest"]:
         raise ValueError("source digest changed: review affected cases and update the ledger")
+    for key, relative in manifest["sourcePaths"].items():
+        actual = hashlib.sha256((DOCS / relative).read_bytes()).hexdigest()
+        if actual != manifest["sourceDigest"][key]:
+            raise ValueError(f"acceptance source changed without regenerating cases: {key}")
 
     owner_by_domain = {
         "AUTH": "WEB-05", "PLAN": "WEB-07", "CHECK": "WEB-10", "STAT": "WEB-11",
@@ -122,6 +127,8 @@ def main() -> None:
                 raise ValueError(f"{case_id}: non-PASS or missing result path in a passing case")
             result_path = safe_path(variant["resultPath"])
             result = validate_result(result_path)
+            if result["build"]["gitCommit"] != progress.get("verificationBuildCommit"):
+                raise ValueError(f"{case_id}: PASS build differs from locked candidate commit")
             if result["caseId"] != case_id or result["variant"] != variant.get("variant"):
                 raise ValueError(f"{case_id}: result identity differs from ledger")
             if result["runId"] != variant.get("runId") or result["status"] != "PASS":

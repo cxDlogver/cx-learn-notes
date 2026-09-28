@@ -49,9 +49,15 @@
 - `scripts/web-atdd-clock.mjs` 是只供本机隔离服务进程加载的冻结时钟预载入器；拒绝生产环境或非测试库。浏览器采集器的 `--frozen-now` 只允许合成页或 loopback 页面，在导航前注入相同 UTC 时钟，并用 `--timezone` 设置 IANA 浏览器时区；`timeline.json` 保存真实采集时间、页面时间、浏览器时区与动作顺序。Chrome 合成页在 `America/Los_Angeles` 下观察到与服务端相同的 `2026-09-28T13:00:00.000Z`，生产环境注入被拒绝。见[时钟自测](./evidence/WEB-02/clock-selftest.json)及[浏览器时间线](./evidence/WEB-02/browser-clock-selftest/timeline.json)。
 - 限制：数据库的 `now()` 仍是隔离容器实时时钟；涉及 OTP/刷新到期的跨日场景必须连同数据库时间字段设计专用种子，不能仅依赖 Node/页面冻结。当前探针是合成页面，不是产品 Web 交互或正式跨浏览器验收。业务 136 项继续 `NOT_RUN`。
 
+## 构建和验收基线变更后的 STALE 传播
+
+`mark_stale.py --commit <候选源码提交> --reason <单行原因>` 在候选构建改变时，将当前用例指针中的旧 `PASS` 变为 `STALE`，保留原 `result.json`、截图及哈希；若所属任务已勾选，则同步撤销 Markdown 勾选和 JSON `DONE`，并递归打开已完成的下游任务。每个受影响用例与任务保留时间线，执行日志追加候选 commit、原因和需要复验的 ID。`--dry-run` 可先预览，不写文件。
+
+`record_result.py` 仅接受与台账 `verificationBuildCommit` 一致的 `PASS`；`check_execution_progress.py` 校验当前来源文件 SHA，且通过用例的构建提交必须等于锁定候选。来源 PRD/技术/ATDD 变更而未重新生成并评审基线时直接失败。合成测试证明旧结果路径不被删除、同一构建不误标、无效提交拒绝、WEB-05 及下游 WEB-07 同时重开；现有结果校验与写入测试一起共 15 项通过。原始输出及哈希见 [STALE 增量检查](./evidence/WEB-02/stale-checks.json)。目前没有真实 PASS，故真实台账中没有被标为 `STALE` 的业务用例。
+
 ## 后续必须完成
 
 1. 将可审计短信、对象存储与 Web Push 供应端桩及 Worker 接入真实测试链路；补数据库时间字段的到期边界种子。
 2. 将本机 Chrome/Edge 运行器接入实际 Web 测试环境，补全手机 Safari/Chrome、桌面 Safari/Firefox 与版本记录，并从正式浏览器读取每个真实用例的环境和步骤。
-3. CI 校验已接入；外部 artifact 保留因自动审批拒绝尚缺。需批准明确的证据目的地、访问控制和保存期限后再接入；同时定义改动触发的 `STALE` 传播和复验责任。
+3. CI 校验已接入；外部 artifact 保留因自动审批拒绝尚缺。需批准明确的证据目的地、访问控制和保存期限后再接入。候选构建变化已可传播 `STALE`，仍需将该命令接入正式运行流程并由责任人复验。
 4. 生成一个合法但不计业务验收的结果样本，验证写入器与台账的完整闭环。完成这些之前 WEB-02 checklist 不勾选，后续依赖任务不能以本次合成自测解锁。
