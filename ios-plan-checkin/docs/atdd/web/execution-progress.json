@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T12:42:58Z",
+  "updatedAt": "2026-09-28T12:46:05Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -272,9 +272,9 @@
       ],
       "scope": "依赖：WEB-01。为渠道通知偏好、社交收件箱/已读、Web Push 订阅、数值配置版本和一次性结果附件补充向前兼容的 schema/SQL，保留移动端原有字段语义。产物：`db/migrations`、数据字典、回填和回滚说明。关联：PLAN、CHECK、SOCIAL、NOTIFY、DATA。完成证据：空库及旧库迁移/回滚、约束与历史值核对、SQL/DB 记录。",
       "ownedCaseIds": [],
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "startedAt": "2026-09-28T12:31:22Z",
-      "completedAt": null,
+      "completedAt": "2026-09-28T12:46:05Z",
       "owner": "Codex",
       "implementation": {
         "summary": "0012 向前兼容迁移及约束已编码；PGlite 空库/旧库、PostgreSQL 17 旧库事务回滚和备份恢复均通过；新 API/Worker 由后续任务接入。",
@@ -287,7 +287,7 @@
           "package.json",
           "docs/atdd/web/WEB-03-数据迁移与回滚.md"
         ],
-        "commit": null,
+        "commit": "f83bd068b928e8f86948c40aba69bbd847d49ae4",
         "checks": [
           {
             "command": "node scripts/sql-static-check.mjs",
@@ -327,7 +327,7 @@
         ]
       },
       "verification": {
-        "summary": "PGlite 41 表空库/旧库验证及隔离 PostgreSQL 17 旧库、事务回滚、113814 字节备份与恢复通过；原库/恢复库 41|2|1|1|1|1|1 一致。业务浏览器用例仍 NOT_RUN。",
+        "summary": "PGlite 空库/旧库与隔离 PostgreSQL 17 旧库迁移、事务回滚、备份/恢复及约束均通过；原库/恢复库 41|2|1|1|1|1|1 一致。本数据迁移任务不主拥有浏览器用例，136 项仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
@@ -339,9 +339,9 @@
         ]
       },
       "review": {
-        "reviewer": null,
-        "reviewedAt": null,
-        "decision": null
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T12:46:05Z",
+        "decision": "WEB-03 数据结构、旧行回填、事务回滚、隔离 PostgreSQL 备份恢复与证据核对通过；API/Worker 和浏览器业务验收留给后续任务。"
       },
       "history": [
         {
@@ -360,6 +360,13 @@
           "type": "POSTGRES_RESTORE_CHECKED",
           "summary": "隔离 PostgreSQL 17 旧库迁移/回滚/备份/恢复均通过，原库和恢复库七项汇总相同；未执行浏览器业务用例。",
           "evidencePath": "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        },
+        {
+          "at": "2026-09-28T12:46:05Z",
+          "type": "DONE",
+          "summary": "代码与数据库证据已提交，WEB-03 checklist 勾选；业务用例未执行。",
+          "commit": "f83bd068b928e8f86948c40aba69bbd847d49ae4",
+          "evidencePath": "docs/atdd/web/evidence/WEB-03/checks.json"
         }
       ]
     },
