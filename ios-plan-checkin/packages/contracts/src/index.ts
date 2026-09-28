@@ -58,6 +58,18 @@ interface PlanCreateBase {
   endDate?: BusinessDate | null;
   groupId?: Uuid | null;
   reminder?: ReminderConfig;
+  numericItem?: NumericItemInput;
+}
+export interface NumericItemInput {
+  label: string;
+  unit: string;
+}
+export interface NumericItemDto extends NumericItemInput {
+  version: number;
+  effectiveFrom: BusinessDate;
+}
+export interface NumericConfigRequest extends NumericItemInput {
+  baseRevision: number;
 }
 export type CreatePlanRequest =
   | (PlanCreateBase & {
@@ -97,6 +109,7 @@ export interface PlanDto {
   ruleVersion: number;
   ruleEffectiveDate: BusinessDate;
   rule: { weekdays: Weekday[] } | { weeklyTarget: number } | null;
+  numericItem?: NumericItemDto | null;
   revision: number;
   createdAt: UtcInstant;
   updatedAt: UtcInstant;

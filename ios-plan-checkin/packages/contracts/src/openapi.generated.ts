@@ -368,6 +368,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/plans/{id}/numeric-config": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["createPlanNumericConfig"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch: operations["updatePlanNumericConfig"];
+    trace?: never;
+  };
   "/api/v1/plans/{id}/pause": {
     parameters: {
       query?: never;
@@ -1007,6 +1023,22 @@ export interface components {
       value: string;
       unit: string;
     };
+    NumericItemInput: {
+      label: string;
+      unit: string;
+    };
+    NumericItem: {
+      label: string;
+      unit: string;
+      version: number;
+      /** Format: date */
+      effectiveFrom: string;
+    };
+    NumericConfigRequest: {
+      label: string;
+      unit: string;
+      baseRevision: number;
+    };
     ReminderConfig: {
       enabled: boolean;
       timeLocal?: string;
@@ -1123,6 +1155,7 @@ export interface components {
       endDate?: string | null;
       groupId?: string | null;
       reminder?: components["schemas"]["ReminderConfig"];
+      numericItem?: components["schemas"]["NumericItemInput"];
       rule: {
         weekdays: number[];
       };
@@ -1143,6 +1176,7 @@ export interface components {
       endDate?: string | null;
       groupId?: string | null;
       reminder?: components["schemas"]["ReminderConfig"];
+      numericItem?: components["schemas"]["NumericItemInput"];
       rule: {
         weeklyTarget: number;
       };
@@ -1164,6 +1198,7 @@ export interface components {
       dueDate: string;
       groupId?: string | null;
       reminder?: components["schemas"]["ReminderConfig"];
+      numericItem?: components["schemas"]["NumericItemInput"];
     };
     CreatePlanRequest:
       | components["schemas"]["FixedPlanCreate"]
@@ -1449,6 +1484,7 @@ export interface components {
       /** @enum {unknown} */
       lifecycle: "active" | "paused" | "archived" | "deleted";
       ruleVersion: number;
+      numericItem?: components["schemas"]["NumericItem"] | null;
       revision: number;
     };
     Checkin: {
@@ -3939,6 +3975,164 @@ export interface operations {
         content: {
           "application/json": {
             data: components["schemas"]["PlanDetail"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  createPlanNumericConfig: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["NumericConfigRequest"];
+      };
+    };
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["Plan"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
+        };
+      };
+      /** @description Invalid request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+      /** @description Rate limited */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiError"];
+        };
+      };
+    };
+  };
+  updatePlanNumericConfig: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+        "X-Client-Request-Id": string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["NumericConfigRequest"];
+      };
+    };
+    responses: {
+      /** @description Success */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            data: components["schemas"]["Plan"];
             requestId: string;
             /** Format: date-time */
             serverTime: string;

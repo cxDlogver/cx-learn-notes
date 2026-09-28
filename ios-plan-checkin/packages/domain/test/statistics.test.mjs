@@ -153,6 +153,73 @@ test("a partial week from rule change is not a failed week", () => {
   assert.equal(stats.attainmentRate, null);
 });
 
+test("midweek start, end, pause and resume retain records without attainment credit", () => {
+  const base = {
+    timezone: "Asia/Shanghai",
+    startDate: "2026-09-21",
+    endDate: null,
+    dueDate: null,
+    rules: [
+      {
+        kind: "weekly",
+        direction: "do",
+        version: 1,
+        effectiveDate: "2026-09-21",
+        weeklyTarget: 2,
+      },
+    ],
+    lifecycleEvents: [],
+  };
+  const records = [
+    { businessDate: "2026-09-23", result: "success", ruleVersion: 1 },
+    { businessDate: "2026-09-25", result: "success", ruleVersion: 1 },
+  ];
+  const variants = [
+    {
+      ...base,
+      startDate: "2026-09-23",
+      rules: [{ ...base.rules[0], effectiveDate: "2026-09-23" }],
+    },
+    { ...base, endDate: "2026-09-25" },
+    {
+      ...base,
+      lifecycleEvents: [
+        {
+          sequence: 1,
+          action: "pause",
+          businessDate: "2026-09-24",
+          occurredAt: "2026-09-24T08:00:00Z",
+        },
+      ],
+    },
+    {
+      ...base,
+      lifecycleEvents: [
+        {
+          sequence: 1,
+          action: "pause",
+          businessDate: "2026-09-22",
+          occurredAt: "2026-09-22T08:00:00Z",
+        },
+        {
+          sequence: 2,
+          action: "resume",
+          businessDate: "2026-09-24",
+          occurredAt: "2026-09-24T08:00:00Z",
+        },
+      ],
+    },
+  ];
+  for (const plan of variants) {
+    const stats = weeklyStatistics(plan, records, "2026-09-29T08:00:00Z");
+    assert.equal(stats.completedWeeks.length, 0);
+    assert.equal(stats.completeWeekCount, 0);
+    assert.equal(stats.attainmentRate, null);
+    assert.equal(stats.consecutiveAttainedWeeks, 0);
+    assert.equal(stats.currentWeek.successes, 0);
+  }
+});
+
 test("one-time status is based on actual completion instant in plan timezone", () => {
   const plan = {
     timezone: "Asia/Shanghai",

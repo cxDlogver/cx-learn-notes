@@ -50,6 +50,21 @@ const schemas = {
     serverTime: instant,
   }),
   NumericEntry: properties(["value", "unit"], { value: decimal, unit: str() }),
+  NumericItemInput: properties(["label", "unit"], {
+    label: { type: "string", minLength: 1, maxLength: 40 },
+    unit: { type: "string", minLength: 1, maxLength: 20 },
+  }),
+  NumericItem: properties(["label", "unit", "version", "effectiveFrom"], {
+    label: { type: "string", minLength: 1, maxLength: 40 },
+    unit: { type: "string", minLength: 1, maxLength: 20 },
+    version: { type: "integer", minimum: 1 },
+    effectiveFrom: date,
+  }),
+  NumericConfigRequest: properties(["label", "unit", "baseRevision"], {
+    label: { type: "string", minLength: 1, maxLength: 40 },
+    unit: { type: "string", minLength: 1, maxLength: 20 },
+    baseRevision: { type: "integer", minimum: 1 },
+  }),
   ReminderConfig: properties(["enabled"], {
     enabled: { type: "boolean" },
     timeLocal: { type: "string", pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
@@ -196,6 +211,7 @@ const schemas = {
       endDate: { oneOf: [date, { type: "null" }] },
       groupId: { oneOf: [uuid, { type: "null" }] },
       reminder: ref("ReminderConfig"),
+      numericItem: ref("NumericItemInput"),
       rule: properties(["weekdays"], {
         weekdays: {
           type: "array",
@@ -218,6 +234,7 @@ const schemas = {
       endDate: { oneOf: [date, { type: "null" }] },
       groupId: { oneOf: [uuid, { type: "null" }] },
       reminder: ref("ReminderConfig"),
+      numericItem: ref("NumericItemInput"),
       rule: properties(["weeklyTarget"], {
         weeklyTarget: { type: "integer", minimum: 1, maximum: 7 },
       }),
@@ -235,6 +252,7 @@ const schemas = {
       dueDate: date,
       groupId: { oneOf: [uuid, { type: "null" }] },
       reminder: ref("ReminderConfig"),
+      numericItem: ref("NumericItemInput"),
     },
   ),
   CreatePlanRequest: {
@@ -609,6 +627,7 @@ Object.assign(schemas, {
       dueDate: { oneOf: [date, { type: "null" }] },
       lifecycle: { enum: ["active", "paused", "archived", "deleted"] },
       ruleVersion: { type: "integer", minimum: 1 },
+      numericItem: { oneOf: [ref("NumericItem"), { type: "null" }] },
       revision: { type: "integer", minimum: 1 },
     },
   ),
@@ -1062,6 +1081,8 @@ const responseData = {
   listPlans: { type: "array", items: ref("Plan") },
   getPlan: ref("Plan"),
   updatePlan: ref("Plan"),
+  createPlanNumericConfig: ref("Plan"),
+  updatePlanNumericConfig: ref("Plan"),
   pausePlan: ref("Plan"),
   resumePlan: ref("Plan"),
   archivePlan: ref("Plan"),
@@ -1117,6 +1138,8 @@ const bodies = {
   confirmChangePhone: "ChangePhoneConfirmRequest",
   createPlan: "CreatePlanRequest",
   updatePlan: "UpdatePlanRequest",
+  createPlanNumericConfig: "NumericConfigRequest",
+  updatePlanNumericConfig: "NumericConfigRequest",
   createGroup: "CreateGroupRequest",
   updateGroup: "UpdateGroupRequest",
   pausePlan: "LifecycleRequest",

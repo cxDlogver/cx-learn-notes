@@ -15,6 +15,7 @@ import type {
   CreateGroupRequest,
   CreatePlanRequest,
   GroupDto,
+  NumericConfigRequest,
   PlanDto,
   UpdateGroupRequest,
   UpdatePlanRequest,
@@ -137,6 +138,44 @@ export class PlansController {
   ): Promise<ApiSuccess<PlanDto>> {
     return ok(
       await this.plans.update(await this.user(bearer), id, body, key),
+      request,
+    );
+  }
+  @Post(":id/numeric-config")
+  async createNumericConfig(
+    @Headers("authorization") bearer: string,
+    @Headers("idempotency-key") key: string,
+    @Param("id") id: string,
+    @Body() body: NumericConfigRequest,
+    @Req() request: RequestLike,
+  ): Promise<ApiSuccess<PlanDto>> {
+    return ok(
+      await this.plans.setNumericItem(
+        await this.user(bearer),
+        id,
+        body,
+        key,
+        "create",
+      ),
+      request,
+    );
+  }
+  @Patch(":id/numeric-config")
+  async updateNumericConfig(
+    @Headers("authorization") bearer: string,
+    @Headers("idempotency-key") key: string,
+    @Param("id") id: string,
+    @Body() body: NumericConfigRequest,
+    @Req() request: RequestLike,
+  ): Promise<ApiSuccess<PlanDto>> {
+    return ok(
+      await this.plans.setNumericItem(
+        await this.user(bearer),
+        id,
+        body,
+        key,
+        "edit",
+      ),
       request,
     );
   }

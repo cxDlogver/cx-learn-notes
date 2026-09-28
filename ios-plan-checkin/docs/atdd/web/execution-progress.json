@@ -628,10 +628,10 @@
       ],
       "scope": "依赖：WEB-01、WEB-03、WEB-04。完成三类计划、规则版本、计划时区、部分周口径、暂停/归档/删除、每计划最多一个数值项及历史单位快照，更新领域包/契约/API。关联：PLAN、STAT。完成证据：领域与数据库边界测试、历史规则/单位未被重写的前后快照和 API 证据。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T13:29:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
         "summary": null,
         "changedPaths": [],
@@ -650,7 +650,13 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T13:29:00Z",
+          "type": "STARTED",
+          "summary": "计划服务数值项版本接入与部分周口径核验开始；浏览器业务用例尚未执行。"
+        }
+      ]
     },
     {
       "id": "WEB-07",

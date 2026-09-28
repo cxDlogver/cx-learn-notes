@@ -184,6 +184,139 @@ try {
     randomUUID(),
   );
   assert.equal(oneTime.startDate, today);
+  const numericInput = {
+    ...input,
+    title: "数值项历史",
+    groupId: null,
+    numericItem: { label: "距离", unit: "公里" },
+  };
+  const numericPlan = await plans.create(owner, numericInput, randomUUID());
+  assert.deepEqual(numericPlan.numericItem, {
+    label: "距离",
+    unit: "公里",
+    version: 1,
+    effectiveFrom: startDate,
+  });
+  const firstConfig = (
+    await pg.query(
+      "SELECT id FROM plan_numeric_config_versions WHERE plan_id=$1 AND version=1",
+      [numericPlan.id],
+    )
+  ).rows[0].id;
+  const firstRule = (
+    await pg.query(
+      "SELECT id FROM plan_rule_versions WHERE plan_id=$1 AND version=1",
+      [numericPlan.id],
+    )
+  ).rows[0].id;
+  await pg.query(
+    `INSERT INTO checkins (plan_id,owner_id,business_date,result,numeric_value,numeric_unit,numeric_label,
+      numeric_config_version_id,rule_version_id)
+     VALUES ($1,$2,$3,'success',4.25,'公里','距离',$4,$5)`,
+    [numericPlan.id, owner, startDate, firstConfig, firstRule],
+  );
+  const historicalBefore = (
+    await pg.query(
+      `SELECT numeric_value::text,numeric_unit,numeric_label,numeric_config_version_id
+       FROM checkins WHERE plan_id=$1`,
+      [numericPlan.id],
+    )
+  ).rows[0];
+  const numericEditKey = randomUUID();
+  const numericEditRequest = {
+    label: "用时",
+    unit: "分钟",
+    baseRevision: numericPlan.revision,
+  };
+  const editedNumeric = await plans.setNumericItem(
+    owner,
+    numericPlan.id,
+    numericEditRequest,
+    numericEditKey,
+    "edit",
+  );
+  assert.deepEqual(
+    await plans.setNumericItem(
+      owner,
+      numericPlan.id,
+      numericEditRequest,
+      numericEditKey,
+      "edit",
+    ),
+    editedNumeric,
+  );
+  assert.deepEqual(editedNumeric.numericItem, {
+    label: "用时",
+    unit: "分钟",
+    version: 2,
+    effectiveFrom: addCalendarDays(today, 1),
+  });
+  const historicalAfter = (
+    await pg.query(
+      `SELECT numeric_value::text,numeric_unit,numeric_label,numeric_config_version_id
+       FROM checkins WHERE plan_id=$1`,
+      [numericPlan.id],
+    )
+  ).rows[0];
+  assert.deepEqual(historicalAfter, historicalBefore);
+  assert.equal((await plans.get(owner, numericPlan.id)).numericItem.version, 2);
+  await assert.rejects(
+    plans.setNumericItem(
+      owner,
+      numericPlan.id,
+      { label: "时间", unit: "小时", baseRevision: editedNumeric.revision },
+      randomUUID(),
+      "edit",
+    ),
+    /已有待生效的数值项配置/,
+  );
+  await assert.rejects(
+    plans.setNumericItem(
+      owner,
+      numericPlan.id,
+      {
+        label: "x".repeat(41),
+        unit: "分钟",
+        baseRevision: editedNumeric.revision,
+      },
+      randomUUID(),
+      "edit",
+    ),
+    /文字字段长度/,
+  );
+  await assert.rejects(
+    pg.query("UPDATE plan_numeric_config_versions SET unit='米' WHERE id=$1", [
+      firstConfig,
+    ]),
+    /append-only/,
+  );
+  const weeklyNumeric = await plans.create(
+    owner,
+    {
+      kind: "weekly",
+      direction: "do",
+      title: "运动",
+      timezone: "Asia/Shanghai",
+      startDate,
+      rule: { weeklyTarget: 3 },
+      numericItem: { label: "时长", unit: "分钟" },
+    },
+    randomUUID(),
+  );
+  assert.equal(weeklyNumeric.numericItem.unit, "分钟");
+  const oneTimeNumeric = await plans.create(
+    owner,
+    {
+      kind: "one_time",
+      direction: "do",
+      title: "体检",
+      timezone: "Asia/Shanghai",
+      dueDate: today,
+      numericItem: { label: "体重", unit: "千克" },
+    },
+    randomUUID(),
+  );
+  assert.equal(oneTimeNumeric.numericItem.version, 1);
   await assert.rejects(
     plans.create(
       owner,
@@ -216,8 +349,24 @@ try {
     ).rows[0].n,
     3,
   );
+  const numericVersions = (
+    await pg.query(
+      `SELECT version,effective_from::text,label,unit FROM plan_numeric_config_versions
+       WHERE plan_id=$1 ORDER BY version`,
+      [numericPlan.id],
+    )
+  ).rows;
   process.stdout.write(
-    "Plans smoke passed: ownership, idempotency, grouped CRUD, rule versions, lifecycle and soft delete.\n",
+    `${JSON.stringify({
+      numericVersions,
+      historicalBefore,
+      historicalAfter,
+      weeklyNumericItem: weeklyNumeric.numericItem,
+      oneTimeNumericItem: oneTimeNumeric.numericItem,
+    })}\n`,
+  );
+  process.stdout.write(
+    "Plans smoke passed: ownership, idempotency, grouped CRUD, rule versions, lifecycle, numeric version history across all plan kinds and soft delete.\n",
   );
 } finally {
   await pg.close();

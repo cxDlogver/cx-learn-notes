@@ -84,3 +84,10 @@
 - 新迁移 `0008_social_notifications.sql` 增加鼓励类型、事件去重索引与逐设备投递表。开发态可使用 APNs stub；预发和生产必须注入真实 APNs 与 token 加密密钥。
 
 开发自检由 `pnpm social-notifications:smoke`、`pnpm social:smoke`、`pnpm shares:smoke` 与 `pnpm mobile:bundle:check` 执行。真实 APNs 沙箱、设备 token、后台投递、权限弹窗和正式 ATDD 留待有 iOS 环境时验证。APNs 接受与设备展示之间没有端到端强保证；进程在 APNs 接受后、投递表落库前崩溃时可能重发，折叠 ID 可减少可见重复。
+
+## WEB-06 计划数值项版本
+
+- `POST /api/v1/plans` 增加**可选** `numericItem:{label,unit}`，固定、每周目标和一次性计划均可使用。旧请求不变；计划响应增加可忽略的 `numericItem`，未配置为 `null`。
+- 新增 `POST/PATCH /api/v1/plans/{id}/numeric-config`，请求为 `{label,unit,baseRevision}`，均需 Bearer 与幂等键。POST 只用于尚无配置的计划，PATCH 只修改已有配置；旧修订号、待生效重复配置返回 `RULE_CHANGED`。
+- 数值项新增版本从计划时区的下一业务日生效，创建计划时的初版从计划开始日生效；旧打卡的原始数值、名称、单位及版本引用不重写。计划响应的 `numericItem` 表示最新已设置版本，可能尚待生效；记录写入时须按业务日期选择版本。
+- 增量响应字段没有提高旧请求必填要求。OpenAPI 77 个操作、兼容基线、PGlite 服务/历史快照、隔离 PostgreSQL 真实 HTTP 和部分周领域测试的原始证据见 [WEB-06 记录](./atdd/web/WEB-06-计划数值项与部分周.md)。浏览器 F/V/N 仍待 Web 页面和正式验收环境。

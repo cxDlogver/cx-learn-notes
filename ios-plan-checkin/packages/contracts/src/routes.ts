@@ -55,6 +55,8 @@ export const apiRoutes = [
   ["GET", "plans/{id}", "getPlan", true],
   ["GET", "plans/{id}/detail", "getPlanDetail", true],
   ["PATCH", "plans/{id}", "updatePlan", true],
+  ["POST", "plans/{id}/numeric-config", "createPlanNumericConfig", true],
+  ["PATCH", "plans/{id}/numeric-config", "updatePlanNumericConfig", true],
   ["POST", "plans/{id}/pause", "pausePlan", true],
   ["POST", "plans/{id}/resume", "resumePlan", true],
   ["POST", "plans/{id}/archive", "archivePlan", true],

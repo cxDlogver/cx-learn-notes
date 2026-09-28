@@ -1,0 +1,7 @@
+command: node scripts/plans-smoke.mjs
+exitCode: 0
+stdout:
+{"numericVersions":[{"version":1,"effective_from":"2026-09-21","label":"距离","unit":"公里"},{"version":2,"effective_from":"2026-09-29","label":"用时","unit":"分钟"}],"historicalBefore":{"numeric_value":"4.250000","numeric_unit":"公里","numeric_label":"距离","numeric_config_version_id":"5ef5aa31-ffab-4a41-bff4-24e2793f30c5"},"historicalAfter":{"numeric_value":"4.250000","numeric_unit":"公里","numeric_label":"距离","numeric_config_version_id":"5ef5aa31-ffab-4a41-bff4-24e2793f30c5"},"weeklyNumericItem":{"label":"时长","unit":"分钟","version":1,"effectiveFrom":"2026-09-21"},"oneTimeNumericItem":{"label":"体重","unit":"千克","version":1,"effectiveFrom":"2026-09-28"}}
+Plans smoke passed: ownership, idempotency, grouped CRUD, rule versions, lifecycle, numeric version history across all plan kinds and soft delete.
+
+stderr:

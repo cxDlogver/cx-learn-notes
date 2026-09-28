@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import type {
   CreatePlanRequest,
+  NumericConfigRequest,
+  NumericItemInput,
   PlanDto,
   UpdatePlanRequest,
   Weekday,
@@ -48,13 +50,24 @@ export interface PlanRow {
   weekdays: number[] | null;
   weekly_target: number | null;
   effective_date: string;
+  numeric_version: number | null;
+  numeric_label: string | null;
+  numeric_unit: string | null;
+  numeric_effective_from: string | null;
 }
 export const planColumns = `p.id, p.owner_id, p.group_id, p.kind, p.direction, p.title, p.description,
   p.timezone, p.start_date::text, p.end_date::text, p.due_date::text, p.status,
   p.revision, p.current_rule_version, p.created_at, p.updated_at,
-  r.weekdays, r.weekly_target, r.effective_date::text`;
+  r.weekdays, r.weekly_target, r.effective_date::text,
+  n.version AS numeric_version, n.label AS numeric_label, n.unit AS numeric_unit,
+  n.effective_from::text AS numeric_effective_from`;
 export const fromPlan = `FROM plans p JOIN plan_rule_versions r
-  ON r.plan_id = p.id AND r.version = p.current_rule_version`;
+  ON r.plan_id = p.id AND r.version = p.current_rule_version
+  LEFT JOIN LATERAL (
+    SELECT version, label, unit, effective_from
+    FROM plan_numeric_config_versions WHERE plan_id = p.id
+    ORDER BY version DESC LIMIT 1
+  ) n ON true`;
 const instant = (value: Date | string): string => new Date(value).toISOString();
 export function toDto(row: PlanRow): PlanDto {
   return {
@@ -78,6 +91,15 @@ export function toDto(row: PlanRow): PlanDto {
         : row.kind === "weekly"
           ? { weeklyTarget: row.weekly_target! }
           : null,
+    numericItem:
+      row.numeric_version === null
+        ? null
+        : {
+            label: row.numeric_label!,
+            unit: row.numeric_unit!,
+            version: row.numeric_version,
+            effectiveFrom: row.numeric_effective_from!,
+          },
     revision: row.revision,
     createdAt: instant(row.created_at),
     updatedAt: instant(row.updated_at),
@@ -186,6 +208,13 @@ function ruleFields(rule: RuleVersion): [number[] | null, number | null] {
       ? [null, rule.weeklyTarget]
       : [null, null];
 }
+function numericItem(value: unknown): NumericItemInput {
+  guardFields(value, ["label", "unit"]);
+  return {
+    label: cleanText(value.label, 40)!,
+    unit: cleanText(value.unit, 20)!,
+  };
+}
 
 @Injectable()
 export class PlansService {
@@ -260,6 +289,7 @@ export class PlansService {
       "groupId",
       "reminder",
       "rule",
+      "numericItem",
     ]);
     if (
       !["fixed", "weekly", "one_time"].includes(input.kind) ||
@@ -303,6 +333,8 @@ export class PlansService {
     const groupId = input.groupId ?? null;
     const reminder = input.reminder;
     if (reminder !== undefined) validateReminder(reminder, input.kind);
+    const numeric =
+      input.numericItem === undefined ? null : numericItem(input.numericItem);
     return this.write.run(
       userId,
       key,
@@ -333,6 +365,12 @@ export class PlansService {
          VALUES ($1, 1, $2, $3, $4)`,
           [id, startDate, weekdays, weeklyTarget],
         );
+        if (numeric)
+          await client.query(
+            `INSERT INTO plan_numeric_config_versions (plan_id, version, effective_from, label, unit)
+             VALUES ($1,1,$2,$3,$4)`,
+            [id, startDate, numeric.label, numeric.unit],
+          );
         if (reminder) await saveReminder(client, id, reminder);
         const result = toDto(await this.locked(client, userId, id));
         await appendUserChange(client, userId, "plan", id, "upsert", {
@@ -455,6 +493,72 @@ export class PlansService {
             dueDate === undefined ? old.due_date : dueDate,
             input.rule === undefined ? 0 : 1,
           ],
+        );
+        const result = toDto(await this.locked(client, userId, id));
+        await appendUserChange(client, userId, "plan", id, "upsert", {
+          revision: result.revision,
+        });
+        return result;
+      },
+    );
+  }
+
+  async setNumericItem(
+    userId: string,
+    id: string,
+    input: NumericConfigRequest,
+    key: string,
+    mode: "create" | "edit",
+  ): Promise<PlanDto> {
+    requireUuid(id);
+    guardFields(input, ["label", "unit", "baseRevision"]);
+    const baseRevision = revision(input.baseRevision);
+    const numeric = numericItem({ label: input.label, unit: input.unit });
+    return this.write.run(
+      userId,
+      key,
+      `plan.numeric.${mode}`,
+      { id, input },
+      async (client) => {
+        const old = await this.locked(client, userId, id);
+        if (old.revision !== baseRevision)
+          fail("RULE_CHANGED", 409, "计划已在其他设备修改");
+        if (old.status === "archived")
+          fail("PLAN_NOT_ACTIVE", 409, "归档计划不可修改");
+        if (mode === "create" && old.numeric_version !== null)
+          fail("RULE_CHANGED", 409, "数值项已存在，请使用修改操作");
+        if (mode === "edit" && old.numeric_version === null)
+          fail("VALIDATION_ERROR", 400, "数值项尚未配置");
+        if (
+          old.numeric_label === numeric.label &&
+          old.numeric_unit === numeric.unit
+        )
+          return toDto(old);
+        const effectiveFrom = [
+          nextRuleEffectiveDate(old.timezone, new Date().toISOString()),
+          old.start_date,
+        ]
+          .sort()
+          .at(-1) as BusinessDate;
+        if (
+          old.numeric_effective_from &&
+          old.numeric_effective_from >= effectiveFrom
+        )
+          fail("RULE_CHANGED", 409, "已有待生效的数值项配置，请在生效后修改");
+        await client.query(
+          `INSERT INTO plan_numeric_config_versions (plan_id, version, effective_from, label, unit)
+         VALUES ($1,$2,$3,$4,$5)`,
+          [
+            id,
+            (old.numeric_version ?? 0) + 1,
+            effectiveFrom,
+            numeric.label,
+            numeric.unit,
+          ],
+        );
+        await client.query(
+          "UPDATE plans SET revision=revision+1,updated_at=now() WHERE id=$1 AND owner_id=$2",
+          [id, userId],
         );
         const result = toDto(await this.locked(client, userId, id));
         await appendUserChange(client, userId, "plan", id, "upsert", {
