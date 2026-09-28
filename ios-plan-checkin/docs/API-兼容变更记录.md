@@ -91,3 +91,9 @@
 - 新增 `POST/PATCH /api/v1/plans/{id}/numeric-config`，请求为 `{label,unit,baseRevision}`，均需 Bearer 与幂等键。POST 只用于尚无配置的计划，PATCH 只修改已有配置；旧修订号、待生效重复配置返回 `RULE_CHANGED`。
 - 数值项新增版本从计划时区的下一业务日生效，创建计划时的初版从计划开始日生效；旧打卡的原始数值、名称、单位及版本引用不重写。计划响应的 `numericItem` 表示最新已设置版本，可能尚待生效；记录写入时须按业务日期选择版本。
 - 增量响应字段没有提高旧请求必填要求。OpenAPI 77 个操作、兼容基线、PGlite 服务/历史快照、隔离 PostgreSQL 真实 HTTP 和部分周领域测试的原始证据见 [WEB-06 记录](./atdd/web/WEB-06-计划数值项与部分周.md)。浏览器 F/V/N 仍待 Web 页面和正式验收环境。
+
+## WEB-08 记录数值快照与一次性附件
+
+- `PUT /api/v1/plans/{id}/checkins/{businessDate}` 的数值请求保持原有 `{value,unit}` 格式。已配置数值项的计划按目标业务日期校验单位并保存当时标签、单位与版本；不匹配返回既有 `RULE_CHANGED` 409。未配置计划继续接受旧式数值。新记录的 `numeric` 响应可附 `label/configVersion`，旧记录没有快照时仍只返回 `{value,unit}`。
+- `POST/PATCH /api/v1/plans/{id}/one-time-resolution` 增加可选 `note`、`numeric`、`mediaIds`；原有 `reason` 请求继续有效，两种备注字段不能同时提供。响应新增可忽略的 `numeric`、`mediaIds`、`mediaAttachFailed`。详情统计中的一次性结果返回相同附件信息；修订历史保存前后快照。
+- 既有必填请求字段、路由和成功码未改变；OpenAPI 仍为 77 个操作，兼容基线检查通过。真实 HTTP、数据库唯一行、幂等、并发冲突、修订审计与旧客户端回归见 [WEB-08 记录](./atdd/web/WEB-08-打卡补记与修订API.md)。浏览器和真实对象上传不在本次服务端通过范围。

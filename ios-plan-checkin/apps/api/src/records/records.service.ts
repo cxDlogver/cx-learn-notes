@@ -47,6 +47,8 @@ interface CheckinRow {
   failure_reason: string | null;
   numeric_value: string | null;
   numeric_unit: string | null;
+  numeric_label: string | null;
+  numeric_config_version: number | null;
   is_backfilled: boolean;
   is_revised: boolean;
   revision: number;
@@ -60,6 +62,10 @@ interface ResolutionRow {
   resolved_business_date: string;
   resolved_at: Date | string;
   note: string | null;
+  numeric_value: string | null;
+  numeric_unit: string | null;
+  numeric_label: string | null;
+  numeric_config_version: number | null;
   revision: number;
   created_at: Date | string;
 }
@@ -77,8 +83,12 @@ type Conflict = {
 };
 const instant = (value: Date | string) => new Date(value).toISOString();
 const checkinColumns = `c.id, c.plan_id, c.business_date::text, c.result, c.note, c.failure_reason,
-  c.numeric_value::text, c.numeric_unit, c.is_backfilled, c.is_revised,
+  c.numeric_value::text, c.numeric_unit, c.numeric_label,
+  n.version AS numeric_config_version, c.is_backfilled, c.is_revised,
   c.revision, r.version AS rule_version, c.created_at, c.updated_at`;
+const resolutionColumns = `o.plan_id, o.resolution, o.resolved_business_date::text,
+  o.resolved_at, o.note, o.numeric_value::text, o.numeric_unit,
+  o.numeric_label, n.version AS numeric_config_version, o.revision, o.created_at`;
 
 async function sequence(
   client: PoolClient,
@@ -117,6 +127,18 @@ function numeric(
   return { value: value.value, unit: cleanText(value.unit, 30)! };
 }
 
+function mediaIdsOf(value: string[] | undefined): string[] {
+  const ids = value ?? [];
+  if (
+    !Array.isArray(ids) ||
+    ids.length > 9 ||
+    ids.some((id) => typeof id !== "string" || !requireUuid(id)) ||
+    new Set(ids).size !== ids.length
+  )
+    fail("VALIDATION_ERROR", 400, "照片标识不正确");
+  return ids;
+}
+
 @Injectable()
 export class RecordsService {
   private readonly write: PlanWrite;
@@ -125,6 +147,38 @@ export class RecordsService {
     config: ApiConfig,
   ) {
     this.write = new PlanWrite(database, config);
+  }
+
+  private async recordedNumeric(
+    client: PoolClient,
+    planId: string,
+    date: BusinessDate,
+    entry: { value: string; unit: string } | null,
+  ): Promise<{
+    value: string;
+    unit: string;
+    label: string | null;
+    configId: string | null;
+  } | null> {
+    if (!entry) return null;
+    const found = await client.query<{
+      id: string;
+      label: string;
+      unit: string;
+    }>(
+      `SELECT id, label, unit FROM plan_numeric_config_versions
+       WHERE plan_id = $1 AND effective_from <= $2 ORDER BY effective_from DESC LIMIT 1`,
+      [planId, date],
+    );
+    const config = found.rows[0];
+    if (config && entry.unit !== config.unit)
+      fail("RULE_CHANGED", 409, "数值项单位已变化，请刷新后重试");
+    return {
+      value: entry.value,
+      unit: config?.unit ?? entry.unit,
+      label: config?.label ?? null,
+      configId: config?.id ?? null,
+    };
   }
 
   private async plan(
@@ -216,6 +270,7 @@ export class RecordsService {
   ): Promise<CheckinRow | null> {
     const found = await client.query<CheckinRow>(
       `SELECT ${checkinColumns} FROM checkins c JOIN plan_rule_versions r ON r.id = c.rule_version_id
+       LEFT JOIN plan_numeric_config_versions n ON n.id = c.numeric_config_version_id
        WHERE c.plan_id = $1 AND c.business_date = $2 ${lock ? "FOR UPDATE OF c" : ""}`,
       [planId, date],
     );
@@ -243,7 +298,14 @@ export class RecordsService {
       numeric:
         row.numeric_value === null
           ? null
-          : { value: row.numeric_value, unit: row.numeric_unit! },
+          : {
+              value: row.numeric_value,
+              unit: row.numeric_unit!,
+              ...(row.numeric_label ? { label: row.numeric_label } : {}),
+              ...(row.numeric_config_version
+                ? { configVersion: row.numeric_config_version }
+                : {}),
+            },
       mediaIds: media.rows.map((item) => item.id),
       isBackfilled: row.is_backfilled,
       isRevised: row.is_revised,
@@ -329,15 +391,8 @@ export class RecordsService {
         : cleanText(input.failureReason, 1000, false);
     if (input.result !== "failure" && failureReason)
       fail("VALIDATION_ERROR", 400, "仅失败记录可填写失败原因");
-    const number = numeric(input.numeric);
-    const mediaIds = input.mediaIds ?? [];
-    if (
-      !Array.isArray(mediaIds) ||
-      mediaIds.length > 9 ||
-      mediaIds.some((id) => typeof id !== "string" || !requireUuid(id)) ||
-      new Set(mediaIds).size !== mediaIds.length
-    )
-      fail("VALIDATION_ERROR", 400, "照片标识不正确");
+    const rawNumber = numeric(input.numeric);
+    const mediaIds = mediaIdsOf(input.mediaIds);
     const result = await this.write.run<CheckinDto | Conflict>(
       userId,
       key,
@@ -428,6 +483,12 @@ export class RecordsService {
           if (!conflict.rowCount)
             fail("CHECKIN_CONFLICT", 409, "冲突已过期，请刷新记录");
         }
+        const number = await this.recordedNumeric(
+          client,
+          planId,
+          date,
+          rawNumber,
+        );
         const before = existing
           ? await this.dto(client, existing, userId, 0)
           : null;
@@ -435,8 +496,9 @@ export class RecordsService {
         if (!existing) {
           const inserted = await client.query<{ id: string }>(
             `INSERT INTO checkins (plan_id, owner_id, business_date, result, note, failure_reason,
-              numeric_value, numeric_unit, rule_version_id, is_backfilled)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+              numeric_value, numeric_unit, numeric_label, numeric_config_version_id,
+              rule_version_id, is_backfilled)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
             [
               planId,
               userId,
@@ -446,6 +508,8 @@ export class RecordsService {
               failureReason,
               number?.value ?? null,
               number?.unit ?? null,
+              number?.label ?? null,
+              number?.configId ?? null,
               plan.ruleIds.get(activeRule.version),
               date < today,
             ],
@@ -456,7 +520,8 @@ export class RecordsService {
         } else {
           const changed = await client.query(
             `UPDATE checkins SET result = $3, note = $4, failure_reason = $5,
-             numeric_value = $6, numeric_unit = $7, is_revised = true,
+             numeric_value = $6, numeric_unit = $7, numeric_label = $8,
+             numeric_config_version_id = $9, is_revised = true,
              revision = revision + 1, updated_at = now()
              WHERE id = $1 AND revision = $2`,
             [
@@ -467,6 +532,8 @@ export class RecordsService {
               failureReason,
               number?.value ?? null,
               number?.unit ?? null,
+              number?.label ?? null,
+              number?.configId ?? null,
             ],
           );
           if (!changed.rowCount)
@@ -532,16 +599,30 @@ export class RecordsService {
   private async attachMedia(
     client: PoolClient,
     userId: string,
-    checkinId: string,
+    targetId: string,
     mediaIds: string[],
+    target: "checkin" | "one_time" = "checkin",
   ): Promise<boolean> {
     if (!mediaIds.length) return false;
+    const column = target === "checkin" ? "checkin_id" : "one_time_plan_id";
+    const other = target === "checkin" ? "one_time_plan_id" : "checkin_id";
     await client.query("SAVEPOINT media_attach");
     try {
+      const total = await client.query<{ n: string }>(
+        `SELECT count(*)::text AS n FROM media
+         WHERE owner_id = $1 AND status <> 'deleted' AND
+           (${column} = $2 OR id = ANY($3::uuid[]))`,
+        [userId, targetId, mediaIds],
+      );
+      if (Number(total.rows[0]?.n ?? 0) > 9) {
+        await client.query("ROLLBACK TO SAVEPOINT media_attach");
+        await client.query("RELEASE SAVEPOINT media_attach");
+        return true;
+      }
       const updated = await client.query(
-        `UPDATE media SET checkin_id = $1 WHERE id = ANY($2::uuid[]) AND owner_id = $3
-         AND (checkin_id IS NULL OR checkin_id = $1) AND one_time_plan_id IS NULL AND status <> 'deleted'`,
-        [checkinId, mediaIds, userId],
+        `UPDATE media SET ${column} = $1 WHERE id = ANY($2::uuid[]) AND owner_id = $3
+         AND (${column} IS NULL OR ${column} = $1) AND ${other} IS NULL AND status <> 'deleted'`,
+        [targetId, mediaIds, userId],
       );
       if (updated.rowCount !== mediaIds.length) {
         await client.query("ROLLBACK TO SAVEPOINT media_attach");
@@ -557,17 +638,38 @@ export class RecordsService {
     }
   }
 
-  private resolutionDto(
+  private async resolutionDto(
+    client: PoolClient,
     row: ResolutionRow,
     dueDate: string,
-  ): OneTimeResolutionDto {
+    ownerId: string,
+    mediaAttachFailed = false,
+  ): Promise<OneTimeResolutionDto> {
     const resolvedAt = instant(row.resolved_at);
+    const media = await client.query<{ id: string }>(
+      `SELECT id FROM media WHERE one_time_plan_id = $1 AND owner_id = $2
+       AND status <> 'deleted' ORDER BY created_at, id`,
+      [row.plan_id, ownerId],
+    );
     return {
       planId: row.plan_id,
       resolution: row.resolution,
       resolvedBusinessDate: row.resolved_business_date,
       resolvedAt,
       note: row.note,
+      numeric:
+        row.numeric_value === null
+          ? null
+          : {
+              value: row.numeric_value,
+              unit: row.numeric_unit!,
+              ...(row.numeric_label ? { label: row.numeric_label } : {}),
+              ...(row.numeric_config_version
+                ? { configVersion: row.numeric_config_version }
+                : {}),
+            },
+      mediaIds: media.rows.map((item) => item.id),
+      ...(mediaAttachFailed ? { mediaAttachFailed: true } : {}),
       revision: row.revision,
       isRevised: row.revision > 1,
       timing:
@@ -592,6 +694,9 @@ export class RecordsService {
       "baseRevision",
       "completedAt",
       "reason",
+      "note",
+      "numeric",
+      "mediaIds",
     ]);
     if (
       !["completed", "failed", "cancelled"].includes(input?.resolution) ||
@@ -601,8 +706,16 @@ export class RecordsService {
       fail("VALIDATION_ERROR", 400, "终态或修订号不正确");
     if (input.completedAt && input.resolution !== "completed")
       fail("VALIDATION_ERROR", 400, "只有完成结果可指定完成时间");
+    if (input.note !== undefined && input.reason !== undefined)
+      fail("VALIDATION_ERROR", 400, "备注与旧版原因字段不能同时提交");
     const note =
-      input.reason === undefined ? null : cleanText(input.reason, 1000, false);
+      input.note === undefined
+        ? input.reason === undefined
+          ? null
+          : cleanText(input.reason, 1000, false)
+        : cleanText(input.note, 2000, false);
+    const rawNumber = numeric(input.numeric);
+    const mediaIds = mediaIdsOf(input.mediaIds);
     return this.write.run(
       userId,
       key,
@@ -613,8 +726,9 @@ export class RecordsService {
         if (plan.row.kind !== "one_time")
           fail("VALIDATION_ERROR", 400, "此计划不是一次性任务");
         const existing = await client.query<ResolutionRow>(
-          `SELECT plan_id, resolution, resolved_business_date::text, resolved_at, note, revision, created_at
-           FROM one_time_resolutions WHERE plan_id = $1 FOR UPDATE`,
+          `SELECT ${resolutionColumns} FROM one_time_resolutions o
+           LEFT JOIN plan_numeric_config_versions n ON n.id = o.numeric_config_version_id
+           WHERE o.plan_id = $1 FOR UPDATE OF o`,
           [planId],
         );
         const current = existing.rows[0];
@@ -637,40 +751,86 @@ export class RecordsService {
           fail("PLAN_DATE_INVALID", 400, "实际完成时间不正确");
         const resolvedAt = input.resolution === "completed" ? completedAt : now;
         const date = businessDateAt(resolvedAt, plan.row.timezone);
+        const number = await this.recordedNumeric(
+          client,
+          planId,
+          date,
+          rawNumber,
+        );
+        const before = current
+          ? await this.resolutionDto(
+              client,
+              current,
+              plan.row.due_date!,
+              userId,
+            )
+          : null;
         if (!current) {
           await client.query(
-            `INSERT INTO one_time_resolutions (plan_id, resolution, resolved_business_date, resolved_at, note)
-             VALUES ($1,$2,$3,$4,$5)`,
-            [planId, input.resolution, date, resolvedAt, note],
-          );
-        } else {
-          await client.query(
-            `UPDATE one_time_resolutions SET resolution = $2, resolved_business_date = $3,
-             resolved_at = $4, note = $5, revision = revision + 1, updated_at = now()
-             WHERE plan_id = $1 AND revision = $6`,
+            `INSERT INTO one_time_resolutions (plan_id, resolution, resolved_business_date,
+              resolved_at, note, numeric_value, numeric_unit, numeric_label,
+              numeric_config_version_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
             [
               planId,
               input.resolution,
               date,
               resolvedAt,
               note,
+              number?.value ?? null,
+              number?.unit ?? null,
+              number?.label ?? null,
+              number?.configId ?? null,
+            ],
+          );
+        } else {
+          await client.query(
+            `UPDATE one_time_resolutions SET resolution = $2, resolved_business_date = $3,
+             resolved_at = $4, note = $5, numeric_value = $6, numeric_unit = $7,
+             numeric_label = $8, numeric_config_version_id = $9,
+             revision = revision + 1, updated_at = now()
+             WHERE plan_id = $1 AND revision = $10`,
+            [
+              planId,
+              input.resolution,
+              date,
+              resolvedAt,
+              note,
+              number?.value ?? null,
+              number?.unit ?? null,
+              number?.label ?? null,
+              number?.configId ?? null,
               input.baseRevision,
             ],
           );
         }
         const updated = await client.query<ResolutionRow>(
-          `SELECT plan_id, resolution, resolved_business_date::text, resolved_at, note, revision, created_at
-           FROM one_time_resolutions WHERE plan_id = $1`,
+          `SELECT ${resolutionColumns} FROM one_time_resolutions o
+           LEFT JOIN plan_numeric_config_versions n ON n.id = o.numeric_config_version_id
+           WHERE o.plan_id = $1`,
           [planId],
         );
-        const after = this.resolutionDto(updated.rows[0]!, plan.row.due_date!);
+        const mediaAttachFailed = await this.attachMedia(
+          client,
+          userId,
+          planId,
+          mediaIds,
+          "one_time",
+        );
+        const after = await this.resolutionDto(
+          client,
+          updated.rows[0]!,
+          plan.row.due_date!,
+          userId,
+          mediaAttachFailed,
+        );
         await client.query(
           `INSERT INTO one_time_resolution_revisions (plan_id, revision, before_snapshot, after_snapshot, reason)
            VALUES ($1,$2,$3,$4,$5)`,
           [
             planId,
             after.revision,
-            current ? this.resolutionDto(current, plan.row.due_date!) : null,
+            before,
             after,
             correction ? "correction" : "create",
           ],

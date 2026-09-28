@@ -893,10 +893,10 @@
       ],
       "scope": "依赖：WEB-06。扩展循环与一次性结果的备注、照片、数值，维持同日唯一有效记录、幂等、版本冲突和修订审计。关联：CHECK、ONLINE。完成证据：并发/重试/补记/历史版本的 API、DB 计数与审计记录。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T14:29:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
         "summary": null,
         "changedPaths": [],
@@ -915,7 +915,13 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T14:29:00Z",
+          "type": "STARTED",
+          "summary": "记录 API 按业务日期选择数值配置版本，一次性结果补附加内容；真实 API/DB/审计取证后才判定完成。"
+        }
+      ]
     },
     {
       "id": "WEB-09",

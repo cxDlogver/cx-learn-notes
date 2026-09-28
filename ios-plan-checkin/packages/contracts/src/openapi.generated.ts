@@ -1023,6 +1023,12 @@ export interface components {
       value: string;
       unit: string;
     };
+    RecordedNumericEntry: {
+      value: string;
+      unit: string;
+      label?: string | null;
+      configVersion?: number | null;
+    };
     NumericItemInput: {
       label: string;
       unit: string;
@@ -1262,6 +1268,9 @@ export interface components {
       /** Format: date-time */
       completedAt?: string;
       reason?: string;
+      note?: string | null;
+      numeric?: components["schemas"]["NumericEntry"] | null;
+      mediaIds?: string[];
     };
     SmsChallengeRequest: {
       /** @constant */
@@ -1498,7 +1507,7 @@ export interface components {
       result: "success" | "failure" | "skip";
       note?: string | null;
       failureReason?: string | null;
-      numeric?: components["schemas"]["NumericEntry"] | null;
+      numeric?: components["schemas"]["RecordedNumericEntry"] | null;
       mediaIds?: string[];
       mediaAttachFailed?: boolean;
       isBackfilled?: boolean;
@@ -1591,6 +1600,9 @@ export interface components {
       /** Format: date-time */
       resolvedAt: string;
       note: string | null;
+      numeric?: components["schemas"]["RecordedNumericEntry"] | null;
+      mediaIds?: string[];
+      mediaAttachFailed?: boolean;
       revision: number;
       isRevised: boolean;
       /** @enum {unknown} */

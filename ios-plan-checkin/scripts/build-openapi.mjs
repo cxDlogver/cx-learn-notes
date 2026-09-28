@@ -50,6 +50,14 @@ const schemas = {
     serverTime: instant,
   }),
   NumericEntry: properties(["value", "unit"], { value: decimal, unit: str() }),
+  RecordedNumericEntry: properties(["value", "unit"], {
+    value: decimal,
+    unit: str(),
+    label: { oneOf: [str(), { type: "null" }] },
+    configVersion: {
+      oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }],
+    },
+  }),
   NumericItemInput: properties(["label", "unit"], {
     label: { type: "string", minLength: 1, maxLength: 40 },
     unit: { type: "string", minLength: 1, maxLength: 20 },
@@ -330,6 +338,9 @@ const schemas = {
     baseRevision: { type: "integer", minimum: 0 },
     completedAt: instant,
     reason: str(),
+    note: { oneOf: [str(), { type: "null" }] },
+    numeric: { oneOf: [ref("NumericEntry"), { type: "null" }] },
+    mediaIds: { type: "array", maxItems: 9, items: uuid },
   }),
   SmsChallengeRequest: properties(["countryCode", "phone", "purpose"], {
     countryCode: { const: "+86" },
@@ -648,7 +659,7 @@ Object.assign(schemas, {
       result: { enum: ["success", "failure", "skip"] },
       note: { oneOf: [str(), { type: "null" }] },
       failureReason: { oneOf: [str(), { type: "null" }] },
-      numeric: { oneOf: [ref("NumericEntry"), { type: "null" }] },
+      numeric: { oneOf: [ref("RecordedNumericEntry"), { type: "null" }] },
       mediaIds: { type: "array", items: uuid },
       mediaAttachFailed: { type: "boolean" },
       isBackfilled: { type: "boolean" },
@@ -734,6 +745,9 @@ Object.assign(schemas, {
       resolvedBusinessDate: date,
       resolvedAt: instant,
       note: { oneOf: [str(), { type: "null" }] },
+      numeric: { oneOf: [ref("RecordedNumericEntry"), { type: "null" }] },
+      mediaIds: { type: "array", maxItems: 9, items: uuid },
+      mediaAttachFailed: { type: "boolean" },
       revision: { type: "integer", minimum: 1 },
       isRevised: { type: "boolean" },
       timing: { enum: ["on_time", "late", null] },

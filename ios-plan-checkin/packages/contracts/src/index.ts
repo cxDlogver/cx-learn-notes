@@ -142,6 +142,10 @@ export interface NumericEntry {
   value: DecimalString;
   unit: string;
 }
+export interface RecordedNumericEntry extends NumericEntry {
+  label?: string;
+  configVersion?: number;
+}
 export interface PutCheckinRequest {
   result: CheckinResult;
   note?: string | null;
@@ -161,7 +165,7 @@ export interface CheckinDto {
   result: CheckinResult;
   note: string | null;
   failureReason: string | null;
-  numeric: NumericEntry | null;
+  numeric: RecordedNumericEntry | null;
   mediaIds: Uuid[];
   mediaAttachFailed?: boolean;
   isBackfilled: boolean;
@@ -210,6 +214,9 @@ export interface OneTimeResolutionRequest {
   baseRevision: number;
   completedAt?: UtcInstant;
   reason?: string;
+  note?: string | null;
+  numeric?: NumericEntry | null;
+  mediaIds?: Uuid[];
 }
 export interface OneTimeResolutionDto {
   planId: Uuid;
@@ -217,6 +224,9 @@ export interface OneTimeResolutionDto {
   resolvedBusinessDate: BusinessDate;
   resolvedAt: UtcInstant;
   note: string | null;
+  numeric?: RecordedNumericEntry | null;
+  mediaIds?: Uuid[];
+  mediaAttachFailed?: boolean;
   revision: number;
   isRevised: boolean;
   timing: "on_time" | "late" | null;

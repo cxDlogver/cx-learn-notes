@@ -6402,6 +6402,22 @@
         },
         "additionalProperties": false
       },
+      "RecordedNumericEntry": {
+        "type": "object",
+        "required": ["value", "unit"],
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+          },
+          "unit": { "type": "string" },
+          "label": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "configVersion": {
+            "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+          }
+        },
+        "additionalProperties": false
+      },
       "NumericItemInput": {
         "type": "object",
         "required": ["label", "unit"],
@@ -6901,7 +6917,19 @@
           "resolution": { "enum": ["completed", "failed", "cancelled"] },
           "baseRevision": { "type": "integer", "minimum": 0 },
           "completedAt": { "type": "string", "format": "date-time" },
-          "reason": { "type": "string" }
+          "reason": { "type": "string" },
+          "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "numeric": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/NumericEntry" },
+              { "type": "null" }
+            ]
+          },
+          "mediaIds": {
+            "type": "array",
+            "maxItems": 9,
+            "items": { "type": "string", "format": "uuid" }
+          }
         },
         "additionalProperties": false
       },
@@ -7428,7 +7456,7 @@
           },
           "numeric": {
             "oneOf": [
-              { "$ref": "#/components/schemas/NumericEntry" },
+              { "$ref": "#/components/schemas/RecordedNumericEntry" },
               { "type": "null" }
             ]
           },
@@ -7597,6 +7625,18 @@
           "resolvedBusinessDate": { "type": "string", "format": "date" },
           "resolvedAt": { "type": "string", "format": "date-time" },
           "note": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+          "numeric": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/RecordedNumericEntry" },
+              { "type": "null" }
+            ]
+          },
+          "mediaIds": {
+            "type": "array",
+            "maxItems": 9,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "mediaAttachFailed": { "type": "boolean" },
           "revision": { "type": "integer", "minimum": 1 },
           "isRevised": { "type": "boolean" },
           "timing": { "enum": ["on_time", "late", null] }

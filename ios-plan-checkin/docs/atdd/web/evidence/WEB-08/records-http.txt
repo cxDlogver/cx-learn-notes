@@ -1,0 +1,39 @@
+command: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-records-http-smoke.ps1
+exitCode: 0
+stdout:
+Applied 0001_core.sql
+Applied 0002_social_operations.sql
+Applied 0003_plan_management.sql
+Applied 0004_record_conflicts.sql
+Applied 0005_incremental_sync.sql
+Applied 0006_conflict_resolution_link.sql
+Applied 0007_media_cleanup.sql
+Applied 0008_social_notifications.sql
+Applied 0009_data_exports.sql
+Applied 0010_deletion_audit.sql
+Applied 0011_rate_limits.sql
+Applied 0012_web_compatibility.sql
+{"event":"http_request","at":"2026-09-28T14:46:20.299Z","requestId":"d2733880-74f3-4f05-8e6a-ffa5d4d846ad","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":62,"code":"NONE","operation":"post","idempotencyHash":"a6894766d2d053350d5b"}
+{"event":"http_request","at":"2026-09-28T14:46:20.334Z","requestId":"4585fd63-9804-45d0-852f-317183e1dfe6","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":25,"code":"NONE","operation":"post","idempotencyHash":"399a01b8ca22c2ce0cc1"}
+{"event":"http_request","at":"2026-09-28T14:46:20.353Z","requestId":"cb50e277-3eba-453f-95ca-741e4ef0bc97","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":17,"code":"NONE","operation":"post","idempotencyHash":"8f9d84841e27c9272151"}
+{"event":"http_request","at":"2026-09-28T14:46:20.375Z","requestId":"7c0ead46-401d-4e0d-ba87-13b0beec3b27","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":19,"code":"NONE","operation":"post","idempotencyHash":"f61ce473d7a9668b9d65"}
+{"event":"http_request","at":"2026-09-28T14:46:20.412Z","requestId":"e00598a6-2772-4faf-a63d-23d38730273b","method":"POST","route":"/api/v1/plans","status":201,"durationMs":33,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"plan.create","idempotencyHash":"9d0579df5b85cf0ee35c"}
+{"event":"http_request","at":"2026-09-28T14:46:20.456Z","requestId":"daa4094a-4f82-4854-81cb-d702efb04087","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":200,"durationMs":40,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"392d9ec411726e3eb2af","baseRevision":0,"idempotencyHash":"03d0e34c3a55959ea22f"}
+{"event":"http_request","at":"2026-09-28T14:46:20.469Z","requestId":"2adc5580-c8a9-4ec4-836b-d3f4bd2d01d7","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":200,"durationMs":10,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"392d9ec411726e3eb2af","baseRevision":0,"idempotencyHash":"03d0e34c3a55959ea22f"}
+{"event":"http_request","at":"2026-09-28T14:46:20.500Z","requestId":"685a75c7-a0ec-42d7-a6ed-8434e5f0d59a","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":200,"durationMs":28,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"392d9ec411726e3eb2af","baseRevision":0,"idempotencyHash":"314d460e789f4014cda5"}
+{"event":"http_request","at":"2026-09-28T14:46:20.522Z","requestId":"4b7a226b-e3a8-4487-80a3-e70bdf064eba","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":409,"durationMs":20,"code":"RULE_CHANGED","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"392d9ec411726e3eb2af","baseRevision":1,"idempotencyHash":"c65d36b0424114351933"}
+{"event":"http_request","at":"2026-09-28T14:46:20.554Z","requestId":"6c8f30a4-db59-4082-9892-5b6999af8188","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":200,"durationMs":29,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"392d9ec411726e3eb2af","baseRevision":1,"idempotencyHash":"0b0c1cde12a9d7f30c70"}
+{"event":"http_request","at":"2026-09-28T14:46:20.561Z","requestId":"f162cd4a-cc17-43a9-bc50-a09aa9eb7e8b","method":"GET","route":"/api/v1/plans/:id/checkins/:businessDate","status":404,"durationMs":5,"code":"NOT_FOUND","actorHash":"b143b641d53d21ccb98c","operation":"get","resourceHash":"392d9ec411726e3eb2af"}
+{"event":"http_request","at":"2026-09-28T14:46:20.584Z","requestId":"48d4c605-f275-4113-b0a8-50984054eed9","method":"POST","route":"/api/v1/plans","status":201,"durationMs":22,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"plan.create","idempotencyHash":"71664fc70824db697771"}
+{"event":"http_request","at":"2026-09-28T14:46:20.618Z","requestId":"57caaefd-6e69-4517-be09-b7c6afc0c20e","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":200,"durationMs":32,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"e992686068381cdd7c36","baseRevision":0,"idempotencyHash":"17527a32adcb05ae4394"}
+{"event":"http_request","at":"2026-09-28T14:46:20.636Z","requestId":"6103b8f2-0027-4382-b7f6-8e0aaf934095","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":409,"durationMs":49,"code":"CHECKIN_CONFLICT","actorHash":"5bc9e75592be768e401b","operation":"checkin.put","resourceHash":"e992686068381cdd7c36","baseRevision":0,"idempotencyHash":"8ddc67feb21b28a1cb40"}
+{"event":"http_request","at":"2026-09-28T14:46:20.662Z","requestId":"975932ca-3376-454f-acc4-5d4443b356b0","method":"POST","route":"/api/v1/plans","status":201,"durationMs":25,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"plan.create","idempotencyHash":"13d0c7c18e7687c3c226"}
+{"event":"http_request","at":"2026-09-28T14:46:20.701Z","requestId":"d339edb3-d82e-450d-92ab-0c75cf468ec5","method":"POST","route":"/api/v1/plans/:id/one-time-resolution","status":201,"durationMs":34,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"one_time.resolve","resourceHash":"fc39c89d2b22e89b9baf","baseRevision":0,"idempotencyHash":"00df6cf1367b2b09acf2"}
+{"event":"http_request","at":"2026-09-28T14:46:20.736Z","requestId":"76a23103-917e-4425-9ef4-4f9a6e9a789d","method":"PATCH","route":"/api/v1/plans/:id/one-time-resolution","status":200,"durationMs":34,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"one_time.correct","resourceHash":"fc39c89d2b22e89b9baf","baseRevision":1,"idempotencyHash":"91c300de1e4807d9c9f5"}
+{"event":"http_request","at":"2026-09-28T14:46:20.755Z","requestId":"073d926f-a57a-42af-8239-f2166bddcea7","method":"GET","route":"/api/v1/plans/:id/detail","status":200,"durationMs":17,"code":"NONE","actorHash":"5bc9e75592be768e401b","operation":"get","resourceHash":"fc39c89d2b22e89b9baf"}
+{"oldWrite":200,"retry":200,"currentWrite":200,"wrongUnit":409,"correction":200,"foreignRead":404,"race":[200,409],"oneTimeCreate":201,"oneTimeCorrection":200,"detail":200,"cacheControl":"no-store","oldNumeric":{"value":"2.500000","unit":"公里","label":"距离","configVersion":1},"newNumeric":{"value":"30.000000","unit":"分钟","label":"用时","configVersion":2},"checkins":2,"checkinRevisions":2,"racingRows":1,"raceConflicts":1,"oneTimeRows":1,"oneTimeRevisions":2,"mediaLinked":1}
+
+stderr:
+(node:35072) ExperimentalWarning: CommonJS module F:\CX_notes\cx-learn-notes\ios-plan-checkin\apps\api\package.json is loading ES Module F:\CX_notes\cx-learn-notes\ios-plan-checkin\node_modules\.pnpm\@nestjs+core@12.1.0_@nestjs_64cca02103bced40e73bfea9fad68b75\node_modules\@nestjs\core\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

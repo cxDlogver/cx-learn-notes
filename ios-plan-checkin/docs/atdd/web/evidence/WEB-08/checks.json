@@ -1,0 +1,161 @@
+{
+  "task": "WEB-08",
+  "generatedAt": "2026-09-28T14:45:54.273Z",
+  "checks": [
+    {
+      "name": "contracts-typecheck",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "packages/contracts/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/contracts-typecheck.txt",
+      "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+    },
+    {
+      "name": "api-build",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "apps/api/tsconfig.json"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/api-build.txt",
+      "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+    },
+    {
+      "name": "openapi",
+      "command": [
+        "node",
+        "scripts/build-openapi.mjs",
+        "--check"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/openapi.txt",
+      "sha256": "1ddc2f85b0e3628249e1b3592f7cef2c4ead087beed514c713579a3e18830e9a"
+    },
+    {
+      "name": "compat",
+      "command": [
+        "node",
+        "scripts/check-contract-compat.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/compat.txt",
+      "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+    },
+    {
+      "name": "records-smoke",
+      "command": [
+        "node",
+        "scripts/records-smoke.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/records-smoke.txt",
+      "sha256": "f003cf460a8d7af036e8bdbe865e133b60a2f174a2d35b06a5aaaf58a5993ef0"
+    },
+    {
+      "name": "web-records-smoke",
+      "command": [
+        "node",
+        "scripts/web-records-smoke.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/web-records-smoke.txt",
+      "sha256": "71d99e9f902c46b1e2396fda795373bce13eec7a604f4afa8b1ee25786ccbc0b"
+    },
+    {
+      "name": "views-smoke",
+      "command": [
+        "node",
+        "scripts/views-smoke.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/views-smoke.txt",
+      "sha256": "ec2fd5360d08a1fa93b3f79d6d5635c8eaa4e6a07a0a4d870f3e733e64927c93"
+    },
+    {
+      "name": "media-smoke",
+      "command": [
+        "node",
+        "scripts/media-smoke.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/media-smoke.txt",
+      "sha256": "331df7950eccd4bc601ef9e15bd8670c15241e252605ecfebd62859610b3d73b"
+    },
+    {
+      "name": "mobile-records-smoke",
+      "command": [
+        "node",
+        "scripts/mobile-records-smoke.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/mobile-records-smoke.txt",
+      "sha256": "58aab9d7ed4c63428558f06868c82c2c89a3d7a2cbed249e35c52512faf0cba3"
+    },
+    {
+      "name": "records-http",
+      "command": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "scripts/run-web-records-http-smoke.ps1"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/records-http.txt",
+      "sha256": "afc8ff8bb12774c64b9402894f2540ab439c814aeb555db2b25516a259ff23c8"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "apps/api/src/records/records.service.ts",
+        "apps/api/src/views/views.service.ts",
+        "packages/contracts/src/index.ts",
+        "scripts/build-openapi.mjs",
+        "scripts/web-records-smoke.mjs",
+        "scripts/web-records-http-smoke.mjs",
+        "scripts/web-08-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/lint.txt",
+      "sha256": "68bd29d584a584ea768131415bfa065252070b49feed1830f1f5ed4b1b02bbde"
+    },
+    {
+      "name": "format",
+      "command": [
+        "node",
+        "node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "apps/api/src/records/records.service.ts",
+        "apps/api/src/views/views.service.ts",
+        "packages/contracts/src/index.ts",
+        "scripts/build-openapi.mjs",
+        "scripts/web-records-smoke.mjs",
+        "scripts/web-records-http-smoke.mjs",
+        "scripts/web-08-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/format.txt",
+      "sha256": "5b7a972ac7cd640f5ace3203693e9ec1c18e1a3238e155d07d821cb4fa5b7aee"
+    },
+    {
+      "name": "progress-ledger",
+      "command": [
+        "python",
+        "docs/atdd/web/check_execution_progress.py"
+      ],
+      "exitCode": 0,
+      "evidencePath": "docs/atdd/web/evidence/WEB-08/progress-ledger.txt",
+      "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+    }
+  ]
+}

@@ -62,6 +62,10 @@ interface ResolutionRow {
   resolved_business_date: string;
   resolved_at: Date | string;
   note: string | null;
+  numeric_value: string | null;
+  numeric_unit: string | null;
+  numeric_label: string | null;
+  numeric_config_version: number | null;
   revision: number;
 }
 interface Snapshot {
@@ -70,6 +74,7 @@ interface Snapshot {
   records: CheckinRow[];
   facts: RecordFact[];
   resolution: ResolutionRow | null;
+  resolutionMediaIds: string[];
   reminderTimeLocal: string | null;
 }
 const instant = (value: Date | string) => new Date(value).toISOString();
@@ -108,6 +113,7 @@ function summaryRecord(
 function resolutionDto(
   row: ResolutionRow,
   dueDate: string,
+  mediaIds: string[],
 ): OneTimeResolutionDto {
   return {
     planId: row.plan_id,
@@ -115,6 +121,18 @@ function resolutionDto(
     resolvedBusinessDate: row.resolved_business_date,
     resolvedAt: instant(row.resolved_at),
     note: row.note,
+    numeric:
+      row.numeric_value === null
+        ? null
+        : {
+            value: row.numeric_value,
+            unit: row.numeric_unit!,
+            ...(row.numeric_label ? { label: row.numeric_label } : {}),
+            ...(row.numeric_config_version
+              ? { configVersion: row.numeric_config_version }
+              : {}),
+          },
+    mediaIds,
     revision: row.revision,
     isRevised: row.revision > 1,
     timing:
@@ -233,8 +251,18 @@ export class ViewsService {
       [ids],
     );
     const resolutions = await client.query<ResolutionRow>(
-      `SELECT plan_id, resolution, resolved_business_date::text, resolved_at, note, revision
-         FROM one_time_resolutions WHERE plan_id = ANY($1::uuid[])`,
+      `SELECT o.plan_id, o.resolution, o.resolved_business_date::text, o.resolved_at,
+        o.note, o.numeric_value::text, o.numeric_unit, o.numeric_label,
+        n.version AS numeric_config_version, o.revision
+         FROM one_time_resolutions o
+         LEFT JOIN plan_numeric_config_versions n ON n.id = o.numeric_config_version_id
+         WHERE o.plan_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    const resolutionMedia = await client.query<{ plan_id: string; id: string }>(
+      `SELECT one_time_plan_id AS plan_id, id FROM media
+       WHERE one_time_plan_id = ANY($1::uuid[]) AND status <> 'deleted'
+       ORDER BY created_at, id`,
       [ids],
     );
     const reminders = await client.query<{
@@ -271,6 +299,7 @@ export class ViewsService {
     const ruleMap = byPlan(rules.rows);
     const eventMap = byPlan(events.rows);
     const recordMap = byPlan(records.rows);
+    const resolutionMediaMap = byPlan(resolutionMedia.rows);
     const resolutionMap = new Map(
       resolutions.rows.map((row) => [row.plan_id, row]),
     );
@@ -330,6 +359,9 @@ export class ViewsService {
           ruleVersion: record.rule_version,
         })),
         resolution: resolutionMap.get(row.id) ?? null,
+        resolutionMediaIds: (resolutionMediaMap.get(row.id) ?? []).map(
+          (item) => item.id,
+        ),
         reminderTimeLocal: reminderMap.get(row.id) ?? null,
       };
     });
@@ -375,7 +407,11 @@ export class ViewsService {
       dueDate: row.due_date!,
       state: oneTimeState(timeline, resolution, now),
       resolution: snapshot.resolution
-        ? resolutionDto(snapshot.resolution, row.due_date!)
+        ? resolutionDto(
+            snapshot.resolution,
+            row.due_date!,
+            snapshot.resolutionMediaIds,
+          )
         : null,
     };
   }
