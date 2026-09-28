@@ -74,6 +74,10 @@ const requiredTables = [
   "rate_limit_buckets",
   "worker_heartbeats",
   "deletion_tombstones",
+  "channel_notification_preferences",
+  "web_push_subscriptions",
+  "inbox_messages",
+  "plan_numeric_config_versions",
 ];
 for (const table of requiredTables) {
   if (!names.has(table)) throw new Error(`Missing core schema table: ${table}`);
@@ -85,6 +89,9 @@ const requiredConstraints = [
   /CHECK\s*\(result IN \('success', 'failure', 'skip'\)\)/i,
   /tr_plan_timezone_immutable/i,
   /resolution_of_conflict_id UUID REFERENCES checkin_conflicts\(id\)/i,
+  /PRIMARY KEY\s*\(user_id,\s*channel\)/i,
+  /UNIQUE\s*\(recipient_user_id,\s*business_event_key\)/i,
+  /fk_one_time_numeric_config_plan/i,
 ];
 for (const constraint of requiredConstraints) {
   if (!constraint.test(allSql))

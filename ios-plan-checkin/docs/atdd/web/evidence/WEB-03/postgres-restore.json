@@ -1,0 +1,66 @@
+{
+  "engine": "PostgreSQL 17-alpine local loopback container",
+  "scope": "temporary web_atdd databases with synthetic users; no production data",
+  "backupBytes": 113814,
+  "aggregateFields": [
+    "tables",
+    "users",
+    "channel_prefs",
+    "checkins",
+    "inbox",
+    "push",
+    "one_time_numeric"
+  ],
+  "original": "41|2|1|1|1|1|1",
+  "restored": "41|2|1|1|1|1|1",
+  "steps": [
+    {
+      "step": "create empty isolated database",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "step": "old database migration, rollback and constraints",
+      "exitCode": 0,
+      "stdout": "PostgreSQL Web migration smoke passed: rollback, 37→41 tables, iOS backfill, legacy numeric snapshot, one-time result, inbox, Push and worker constraints.",
+      "stderr": ""
+    },
+    {
+      "step": "backup isolated test database",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "step": "backup bytes",
+      "exitCode": 0,
+      "stdout": "113814",
+      "stderr": ""
+    },
+    {
+      "step": "create isolated restore database",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "step": "restore isolated backup",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "step": "original aggregate",
+      "exitCode": 0,
+      "stdout": "41|2|1|1|1|1|1",
+      "stderr": ""
+    },
+    {
+      "step": "restored aggregate",
+      "exitCode": 0,
+      "stdout": "41|2|1|1|1|1|1",
+      "stderr": ""
+    }
+  ]
+}

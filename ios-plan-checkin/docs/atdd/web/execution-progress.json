@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T11:53:26Z",
+  "updatedAt": "2026-09-28T12:42:58Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -153,14 +153,17 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "结果和原始证据校验器已实现；本机 Chrome/Edge CDP 探针可采截图、DOM、无障碍树、布局和浏览器版本。隔离业务种子、正式浏览器矩阵与 CI 产物保留仍待实现。",
+        "summary": "结果证据校验、人工 F/V/N 写入并同步 Markdown/JSON 台账、本机 Chrome/Edge 交互采集已实现；隔离业务种子、正式矩阵与 CI 仍待完成。",
         "changedPaths": [
           "docs/atdd/web/validate_result.py",
           "docs/atdd/web/test_validate_result.py",
           "docs/atdd/web/requirements.txt",
           "docs/atdd/web/check_execution_progress.py",
           "docs/atdd/web/WEB-02-证据工具进展.md",
-          "scripts/web-browser-capture.mjs"
+          "scripts/web-browser-capture.mjs",
+          "docs/atdd/web/record_result.py",
+          "docs/atdd/web/test_record_result.py",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest.json"
         ],
         "commit": null,
         "checks": [
@@ -193,23 +196,41 @@
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-02/browser-syntax.txt",
             "sha256": "fd735ee7d4a61dcde76ac285bd60c3ebb734435c236b383a8a0ecdf20bb07ac4"
+          },
+          {
+            "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/record-tool-selftest.txt",
+            "sha256": "f5097c7348a05a956682cb705a4be40dcc297df31c21b8a52c7c0bab2b590e37"
+          },
+          {
+            "command": "node --check scripts/web-browser-capture.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/record-browser-syntax.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           }
         ],
         "evidence": [
           "docs/atdd/web/evidence/WEB-02/checks.json",
           "docs/atdd/web/WEB-02-证据工具进展.md",
-          "docs/atdd/web/evidence/WEB-02/browser-captures.json"
+          "docs/atdd/web/evidence/WEB-02/browser-captures.json",
+          "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png"
         ]
       },
       "verification": {
-        "summary": "八项合成结果校验自测、Chrome 390x844 和 Edge 1280x800 的浏览器采集探针已实测；均非产品业务验收，136 项仍 NOT_RUN。",
+        "summary": "12 项合成校验/录入自测（含临时结果写入与 Markdown/JSON 同步）、Chrome 390x844 交互采集和先前 Edge 1280x800 探针已实测；均非产品业务验收，136 项仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
           "docs/atdd/web/evidence/WEB-02/tool-selftest.txt",
           "docs/atdd/web/evidence/WEB-02/browser-captures.json",
           "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/screen-after.png",
-          "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/screen-after.png"
+          "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/record-tool-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-before.png",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/browser-action-files.json"
         ]
       },
       "review": {
@@ -234,6 +255,12 @@
           "type": "BROWSER_TOOL_CHECKED",
           "summary": "真实 Chrome/Edge 采集工具通过合成页探针，截图/DOM/AX/布局 SHA 已记录；业务 ATDD 未执行。",
           "evidencePath": "docs/atdd/web/evidence/WEB-02/browser-captures.json"
+        },
+        {
+          "at": "2026-09-28T12:26:05Z",
+          "type": "RESULT_WRITER_AND_ACTIONS_CHECKED",
+          "summary": "录入器拒绝伪造 PASS/危险路径，Chrome 合成页输入与点击截图/DOM 实测；业务 ATDD 未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/browser-action-files.json"
         }
       ]
     },
@@ -245,29 +272,96 @@
       ],
       "scope": "依赖：WEB-01。为渠道通知偏好、社交收件箱/已读、Web Push 订阅、数值配置版本和一次性结果附件补充向前兼容的 schema/SQL，保留移动端原有字段语义。产物：`db/migrations`、数据字典、回填和回滚说明。关联：PLAN、CHECK、SOCIAL、NOTIFY、DATA。完成证据：空库及旧库迁移/回滚、约束与历史值核对、SQL/DB 记录。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T12:31:22Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "0012 向前兼容迁移及约束已编码；PGlite 空库/旧库、PostgreSQL 17 旧库事务回滚和备份恢复均通过；新 API/Worker 由后续任务接入。",
+        "changedPaths": [
+          "db/migrations/0012_web_compatibility.sql",
+          "db/migrations/manifest.json",
+          "scripts/migrations-smoke.mjs",
+          "scripts/web-migrations-smoke.mjs",
+          "scripts/sql-static-check.mjs",
+          "package.json",
+          "docs/atdd/web/WEB-03-数据迁移与回滚.md"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "node scripts/sql-static-check.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/sql-static.txt",
+            "sha256": "fc9351b5e723168609b964706708d558c4be947afc3fb5c2fdfee2361241c23f"
+          },
+          {
+            "command": "node scripts/migrations-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/empty-db.txt",
+            "sha256": "115f463d952dd2b876d1da3cfe9f12456d2fba23480a42aa681704f646f2ff45"
+          },
+          {
+            "command": "node scripts/web-migrations-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/legacy-db-and-rollback.txt",
+            "sha256": "71889f6c417968130df698d18ce55b72aad6bc39502e96f90651ef043eac734c"
+          },
+          {
+            "command": "node scripts/migrate.mjs --plan",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/migration-plan.txt",
+            "sha256": "29a4b263202d21fda010bdc0f6cb2c02f13f07b3e4ab4f1cb258e8d9f57e3ac7"
+          },
+          {
+            "command": "PostgreSQL 17 old-data migration, transactional rollback, pg_dump/pg_restore and aggregate compare",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/postgres-restore.json",
+            "sha256": "41e27cb4beadec3d1bb471d60f787f274655bf069489d8758dc5244ab8c45331"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-03/checks.json",
+          "docs/atdd/web/WEB-03-数据迁移与回滚.md",
+          "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "PGlite 41 表空库/旧库验证及隔离 PostgreSQL 17 旧库、事务回滚、113814 字节备份与恢复通过；原库/恢复库 41|2|1|1|1|1|1 一致。业务浏览器用例仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-03/sql-static.txt",
+          "docs/atdd/web/evidence/WEB-03/empty-db.txt",
+          "docs/atdd/web/evidence/WEB-03/legacy-db-and-rollback.txt",
+          "docs/atdd/web/evidence/WEB-03/migration-plan.txt",
+          "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T12:31:22Z",
+          "type": "STARTED",
+          "summary": "核对 0001～0011 迁移与 Web 数据设计，开始向前兼容扩展；业务浏览器用例仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-28T12:36:56Z",
+          "type": "MIGRATION_LOCAL_CHECKED",
+          "summary": "空库/旧库及事务回滚、兼容回填和约束的本地 PGlite 检查通过；真实 PostgreSQL 环境待验。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-03/checks.json"
+        },
+        {
+          "at": "2026-09-28T12:42:58Z",
+          "type": "POSTGRES_RESTORE_CHECKED",
+          "summary": "隔离 PostgreSQL 17 旧库迁移/回滚/备份/恢复均通过，原库和恢复库七项汇总相同；未执行浏览器业务用例。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        }
+      ]
     },
     {
       "id": "WEB-04",

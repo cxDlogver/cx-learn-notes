@@ -1,0 +1,35 @@
+{
+  "scope": "PGlite and SQL static migration checks; no browser product acceptance",
+  "checks": [
+    {
+      "command": "node scripts/sql-static-check.mjs",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-03/sql-static.txt",
+      "sha256": "fc9351b5e723168609b964706708d558c4be947afc3fb5c2fdfee2361241c23f"
+    },
+    {
+      "command": "node scripts/migrations-smoke.mjs",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-03/empty-db.txt",
+      "sha256": "115f463d952dd2b876d1da3cfe9f12456d2fba23480a42aa681704f646f2ff45"
+    },
+    {
+      "command": "node scripts/web-migrations-smoke.mjs",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-03/legacy-db-and-rollback.txt",
+      "sha256": "71889f6c417968130df698d18ce55b72aad6bc39502e96f90651ef043eac734c"
+    },
+    {
+      "command": "node scripts/migrate.mjs --plan",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-03/migration-plan.txt",
+      "sha256": "29a4b263202d21fda010bdc0f6cb2c02f13f07b3e4ab4f1cb258e8d9f57e3ac7"
+    },
+    {
+      "command": "PostgreSQL 17 old-data migration, transactional rollback, pg_dump/pg_restore and aggregate compare",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-03/postgres-restore.json",
+      "sha256": "41e27cb4beadec3d1bb471d60f787f274655bf069489d8758dc5244ab8c45331"
+    }
+  ]
+}

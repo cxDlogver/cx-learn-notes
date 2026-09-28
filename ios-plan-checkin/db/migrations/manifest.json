@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextMigration": "0012",
+  "nextMigration": "0013",
   "migrations": [
     { "file": "0001_core.sql", "phase": "expand" },
     { "file": "0002_social_operations.sql", "phase": "expand" },
@@ -12,6 +12,7 @@
     { "file": "0008_social_notifications.sql", "phase": "expand" },
     { "file": "0009_data_exports.sql", "phase": "expand" },
     { "file": "0010_deletion_audit.sql", "phase": "expand" },
-    { "file": "0011_rate_limits.sql", "phase": "expand" }
+    { "file": "0011_rate_limits.sql", "phase": "expand" },
+    { "file": "0012_web_compatibility.sql", "phase": "expand" }
   ]
 }

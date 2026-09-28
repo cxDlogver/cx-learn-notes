@@ -21,7 +21,7 @@ const targetUrl = args.get("--url");
 const outputDirectory = args.get("--out");
 if (!targetUrl || !outputDirectory) {
   throw new Error(
-    "Usage: node scripts/web-browser-capture.mjs --url URL --out DIR [--width 390 --height 844 --browser chrome]",
+    "Usage: node scripts/web-browser-capture.mjs --url URL --out DIR [--width 390 --height 844 --browser chrome --steps FILE]",
   );
 }
 const output = resolve(outputDirectory);
@@ -52,6 +52,16 @@ if (!["http:", "https:", "data:"].includes(parsedUrl.protocol)) {
   throw new Error(
     "URL must use http, https, or synthetic data for tool self-tests",
   );
+}
+const stepsPath = args.get("--steps");
+let steps = [];
+if (stepsPath) {
+  const resolved = resolve(stepsPath);
+  if (!resolved.startsWith(workspace + sep))
+    throw new Error("--steps must be inside the project workspace");
+  steps = JSON.parse(await readFile(resolved, "utf8"));
+  if (!Array.isArray(steps) || steps.length > 100)
+    throw new Error("steps must be an array of at most 100 actions");
 }
 
 async function freePort() {
@@ -215,6 +225,62 @@ try {
     await delay(100);
   }
   if (!ready) throw new Error("page did not finish loading");
+  const before = await cdp.command("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile(
+    join(output, "screen-before.png"),
+    Buffer.from(before.data, "base64"),
+  );
+  const actionTrace = [];
+  for (const [index, step] of steps.entries()) {
+    if (!step || !["click", "type", "wait-for"].includes(step.action))
+      throw new Error(`unsupported action at step ${index + 1}`);
+    if (typeof step.selector !== "string" || !step.selector)
+      throw new Error(`missing selector at step ${index + 1}`);
+    let box;
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      box = await cdp.evaluate(`(() => {
+        const node = document.querySelector(${JSON.stringify(step.selector)});
+        if (!node) return null;
+        node.scrollIntoView({block: 'center'});
+        const rect = node.getBoundingClientRect();
+        return rect.width && rect.height ? {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2} : null;
+      })()`);
+      if (box) break;
+      await delay(100);
+    }
+    if (!box) throw new Error(`selector unavailable at step ${index + 1}`);
+    if (step.action === "click" || step.action === "type") {
+      await cdp.command("Input.dispatchMouseEvent", {
+        type: "mousePressed",
+        x: box.x,
+        y: box.y,
+        button: "left",
+        clickCount: 1,
+      });
+      await cdp.command("Input.dispatchMouseEvent", {
+        type: "mouseReleased",
+        x: box.x,
+        y: box.y,
+        button: "left",
+        clickCount: 1,
+      });
+    }
+    if (step.action === "type") {
+      if (typeof step.text !== "string")
+        throw new Error(`missing text at step ${index + 1}`);
+      await cdp.command("Input.insertText", { text: step.text });
+    }
+    actionTrace.push({
+      action: step.action,
+      selector: step.selector,
+      ...(step.action === "type" ? { characters: step.text.length } : {}),
+      at: new Date().toISOString(),
+    });
+    await delay(100);
+  }
   const screenshot = await cdp.command("Page.captureScreenshot", {
     format: "png",
     captureBeyondViewport: false,
@@ -252,6 +318,10 @@ try {
       `${JSON.stringify(accessibility, null, 2)}\n`,
     ),
     writeFile(
+      join(output, "action-trace.json"),
+      `${JSON.stringify(actionTrace, null, 2)}\n`,
+    ),
+    writeFile(
       join(output, "visual-result.json"),
       `${JSON.stringify(visual, null, 2)}\n`,
     ),
@@ -261,7 +331,7 @@ try {
     ),
     writeFile(
       join(output, "capture.json"),
-      `${JSON.stringify({ capturedAt, url: safeUrl, browser: version.product, userAgent: version.userAgent, os: process.platform, requestedViewport: { width, height }, observedViewport: { width: visual.innerWidth, height: visual.innerHeight }, files: ["screen-after.png", "dom.html", "accessibility.json", "visual-result.json", "browser-log.jsonl"] }, null, 2)}\n`,
+      `${JSON.stringify({ capturedAt, url: safeUrl, browser: version.product, userAgent: version.userAgent, os: process.platform, requestedViewport: { width, height }, observedViewport: { width: visual.innerWidth, height: visual.innerHeight }, files: ["screen-before.png", "screen-after.png", "action-trace.json", "dom.html", "accessibility.json", "visual-result.json", "browser-log.jsonl"] }, null, 2)}\n`,
     ),
   ]);
   const image = await readFile(join(output, "screen-after.png"));

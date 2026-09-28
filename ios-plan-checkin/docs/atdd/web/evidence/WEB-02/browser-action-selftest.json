@@ -1,0 +1,6 @@
+[
+  { "action": "wait-for", "selector": "#name" },
+  { "action": "type", "selector": "#name", "text": "Synthetic user" },
+  { "action": "click", "selector": "#save" },
+  { "action": "wait-for", "selector": "#saved" }
+]
