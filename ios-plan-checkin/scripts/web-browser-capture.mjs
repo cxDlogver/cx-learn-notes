@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { Buffer } from "node:buffer";
 import {
   mkdir,
   mkdtemp,
@@ -10,7 +11,10 @@ import {
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
+import process from "node:process";
+import { clearTimeout, setTimeout } from "node:timers";
 import { setTimeout as delay } from "node:timers/promises";
+import { URL } from "node:url";
 
 const workspace = resolve(import.meta.dirname, "..");
 const args = new Map();
@@ -53,6 +57,27 @@ if (!["http:", "https:", "data:"].includes(parsedUrl.protocol)) {
     "URL must use http, https, or synthetic data for tool self-tests",
   );
 }
+const frozenNowUtc = args.get("--frozen-now");
+if (frozenNowUtc) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(frozenNowUtc) ||
+    Number.isNaN(new Date(frozenNowUtc).valueOf()) ||
+    (parsedUrl.protocol !== "data:" &&
+      !["127.0.0.1", "localhost"].includes(parsedUrl.hostname))
+  )
+    throw new Error(
+      "--frozen-now requires exact UTC time and a synthetic or loopback page",
+    );
+}
+const canonicalFrozenNow = frozenNowUtc
+  ? new Date(frozenNowUtc).toISOString()
+  : null;
+const browserTimezone = args.get("--timezone") ?? "Asia/Shanghai";
+try {
+  new Intl.DateTimeFormat("en", { timeZone: browserTimezone });
+} catch {
+  throw new Error("--timezone must be a valid IANA timezone");
+}
 const stepsPath = args.get("--steps");
 let steps = [];
 if (stepsPath) {
@@ -73,7 +98,7 @@ async function freePort() {
 }
 
 async function getJson(url) {
-  const response = await fetch(url);
+  const response = await globalThis.fetch(url);
   if (!response.ok) throw new Error(`CDP HTTP ${response.status}`);
   return response.json();
 }
@@ -143,7 +168,7 @@ class Cdp {
 }
 
 async function connect(url) {
-  const socket = new WebSocket(url);
+  const socket = new globalThis.WebSocket(url);
   await new Promise((done, fail) => {
     const timeout = setTimeout(
       () => fail(new Error("WebSocket connection timeout")),
@@ -217,6 +242,21 @@ try {
     deviceScaleFactor: 1,
     mobile: width < 768,
   });
+  await cdp.command("Emulation.setTimezoneOverride", {
+    timezoneId: browserTimezone,
+  });
+  if (frozenNowUtc)
+    await cdp.command("Page.addScriptToEvaluateOnNewDocument", {
+      source: `(() => {
+        const NativeDate = globalThis.Date;
+        const frozen = NativeDate.parse(${JSON.stringify(canonicalFrozenNow)});
+        class FrozenDate extends NativeDate {
+          constructor(...args) { super(...(args.length ? args : [frozen])); }
+          static now() { return frozen; }
+        }
+        globalThis.Date = FrozenDate;
+      })();`,
+    });
   await cdp.command("Page.navigate", { url: targetUrl });
   let ready = false;
   for (let attempt = 0; attempt < 80; attempt += 1) {
@@ -225,6 +265,11 @@ try {
     await delay(100);
   }
   if (!ready) throw new Error("page did not finish loading");
+  const observedPageNow = await cdp.evaluate("new Date().toISOString()");
+  if (canonicalFrozenNow && observedPageNow !== canonicalFrozenNow)
+    throw new Error(
+      "browser page clock was not frozen at the requested instant",
+    );
   const before = await cdp.command("Page.captureScreenshot", {
     format: "png",
     captureBeyondViewport: false,
@@ -322,6 +367,10 @@ try {
       `${JSON.stringify(actionTrace, null, 2)}\n`,
     ),
     writeFile(
+      join(output, "timeline.json"),
+      `${JSON.stringify({ capturedAt, frozenNowUtc: canonicalFrozenNow, observedPageNow, browserTimezone, actions: actionTrace }, null, 2)}\n`,
+    ),
+    writeFile(
       join(output, "visual-result.json"),
       `${JSON.stringify(visual, null, 2)}\n`,
     ),
@@ -331,7 +380,7 @@ try {
     ),
     writeFile(
       join(output, "capture.json"),
-      `${JSON.stringify({ capturedAt, url: safeUrl, browser: version.product, userAgent: version.userAgent, os: process.platform, requestedViewport: { width, height }, observedViewport: { width: visual.innerWidth, height: visual.innerHeight }, files: ["screen-before.png", "screen-after.png", "action-trace.json", "dom.html", "accessibility.json", "visual-result.json", "browser-log.jsonl"] }, null, 2)}\n`,
+      `${JSON.stringify({ capturedAt, url: safeUrl, browser: version.product, userAgent: version.userAgent, os: process.platform, requestedViewport: { width, height }, observedViewport: { width: visual.innerWidth, height: visual.innerHeight }, frozenNowUtc: canonicalFrozenNow, observedPageNow, browserTimezone, files: ["screen-before.png", "screen-after.png", "action-trace.json", "timeline.json", "dom.html", "accessibility.json", "visual-result.json", "browser-log.jsonl"] }, null, 2)}\n`,
     ),
   ]);
   const image = await readFile(join(output, "screen-after.png"));
@@ -347,6 +396,7 @@ try {
   const profileReal = await realpath(profile);
   const tempReal = await realpath(tmpdir());
   if (dirname(profileReal) !== tempReal)
+    // eslint-disable-next-line no-unsafe-finally
     throw new Error(
       "refusing to remove a browser profile outside the temporary directory",
     );

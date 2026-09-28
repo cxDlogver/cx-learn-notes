@@ -153,7 +153,7 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "校验、人工结果同步、Chrome/Edge 交互采集和本地 SHA 归档已实现；CI 工具校验已配置。隔离业务种子、固定时钟、外部桩、非 Chromium 矩阵与外部 artifact 保留仍待完成，上传被自动审批拒绝。",
+        "summary": "校验、人工结果同步、Chrome/Edge 交互采集和本地 SHA 归档已实现；CI 工具校验已配置。隔离业务种子、固定时钟、外部桩、非 Chromium 矩阵与外部 artifact 保留仍待完成，上传被自动审批拒绝。 隔离 A/B/C/D、六独立 Web 会话、F/FD/W/O 种子/清理与 Node/Chrome 同 UTC 冻结探针已实现；外部依赖与 CI 保留仍缺。",
         "changedPaths": [
           "docs/atdd/web/validate_result.py",
           "docs/atdd/web/test_validate_result.py",
@@ -167,7 +167,13 @@
           "docs/atdd/web/archive_evidence.py",
           ".gitignore",
           "package.json",
-          "../.github/workflows/ios-plan-checkin.yml"
+          "../.github/workflows/ios-plan-checkin.yml",
+          "scripts/web-atdd-fixture.mjs",
+          "scripts/web-atdd-fixture-session-smoke.mjs",
+          "scripts/run-web-atdd-fixture-smoke.ps1",
+          "scripts/web-atdd-clock.mjs",
+          "scripts/web-atdd-clock-selftest.mjs",
+          "scripts/web-02-seed-evidence.mjs"
         ],
         "commit": null,
         "checks": [
@@ -218,6 +224,36 @@
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
             "sha256": "b24b2776687f6a69ffa3f04a37db76bd2fc74c9afe6d5766ea10e5d148526ee1"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-atdd-fixture-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/fixture-selftest.txt",
+            "sha256": "64098e4b182fd271c36a1afd991393967321ab913aaa3cf955e9bbd562277e1a"
+          },
+          {
+            "command": "node scripts/web-atdd-clock-selftest.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/clock-run.txt",
+            "sha256": "9f418b137986560c6691d8c9d46617052d53d06cc6c8c92e98065ee508c1886b"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-clock.mjs scripts/web-atdd-clock-selftest.mjs scripts/web-browser-capture.mjs scripts/web-02-seed-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/seed-lint.txt",
+            "sha256": "f7812321a3ea8b0698c29cfcbc7fed802d713d70f8904117b2f2056a885c1514"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-clock.mjs scripts/web-atdd-clock-selftest.mjs scripts/web-browser-capture.mjs scripts/web-02-seed-evidence.mjs docs/atdd/web/WEB-02-证据工具进展.md docs/任务执行计划-计划打卡-Web-v1.md docs/atdd/web/execution-progress.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/seed-format.txt",
+            "sha256": "3696fc06ce7bc70d596f136d82d816824287d7a71a4b0bea89f1f1da441e298d"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/seed-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
           }
         ],
         "evidence": [
@@ -226,11 +262,13 @@
           "docs/atdd/web/evidence/WEB-02/browser-captures.json",
           "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
           "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
-          "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
+          "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
+          "docs/atdd/web/evidence/WEB-02/seed-checks.json",
+          "docs/atdd/web/evidence/WEB-02/clock-selftest.json"
         ]
       },
       "verification": {
-        "summary": "12 项合成工具自测、Chrome/Edge 探针、Chrome 交互及本地 ZIP 77 文件逐项哈希通过；0 个业务结果，136 项 NOT_RUN；CI 外部证据上传未获自动审批。",
+        "summary": "12 项合成工具自测、Chrome/Edge 探针、Chrome 交互及本地 ZIP 77 文件逐项哈希通过；0 个业务结果，136 项 NOT_RUN；CI 外部证据上传未获自动审批。 临时 PostgreSQL 17 两次种子/清理、六会话真实 HTTP 和隔离 Node/Chrome 冻结时钟探针通过；仍仅为工具/测试数据证明。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
@@ -242,7 +280,10 @@
           "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-before.png",
           "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
           "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
-          "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
+          "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
+          "docs/atdd/web/evidence/WEB-02/fixture-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/timeline.json",
+          "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/screen-after.png"
         ]
       },
       "review": {
@@ -279,6 +320,17 @@
           "type": "LOCAL_ARCHIVE_AND_CI_CHECK_CONFIGURED",
           "summary": "本地证据 ZIP 逐文件哈希通过，CI 工具自测/台账校验已配置；外部 artifact 上传被自动审批拒绝。",
           "evidencePath": "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
+        },
+        {
+          "at": "2026-09-28T14:03:00Z",
+          "type": "ISOLATED_FIXTURE_STARTED",
+          "summary": "依据 ATDD §1.4 开始 A/B/C/D、A1/A2/A3 会话、固定业务日期及 F/FD/W/O 种子和清理工具；业务用例仍未执行。"
+        },
+        {
+          "at": "2026-09-28T14:14:00Z",
+          "type": "ISOLATED_FIXTURE_AND_CLOCK_CHECKED",
+          "summary": "两轮 A/B/C/D 种子/清理、六 Cookie 真实会话与 Node/Chrome 同时钟探针通过；13 个原始文件哈希匹配，业务验收未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/seed-checks.json"
         }
       ]
     },

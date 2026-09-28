@@ -2,7 +2,7 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 任务状态 | `IN_PROGRESS`；校验、结果写入及本机 Chrome/Edge 交互采集已实现，隔离业务数据种子和正式浏览器矩阵未实现 |
+| 任务状态 | `IN_PROGRESS`；校验、结果写入、本机 Chrome/Edge 交互采集、隔离 A/B/C/D 种子与固定时钟探针已实现，外部桩和正式浏览器矩阵未完成 |
 | 验收状态 | 136 个业务用例均 `NOT_RUN`；本页没有业务 PASS 或截图 |
 | 依据 | [Web 验收矩阵](../../ATDD-BDD-计划打卡-Web-v1-验收矩阵.md) §1.3、[结果 schema](./acceptance-result.schema.json)、[任务计划](../../任务执行计划-计划打卡-Web-v1.md) WEB-02 |
 
@@ -42,9 +42,16 @@
 
 仓库顶层 `.github/workflows/ios-plan-checkin.yml` 已接入 Python 3.11、`jsonschema` 依赖和 `web:atdd:check`，在原 `pnpm check` 之后运行工具自测及台账校验。尝试配置外部 CI artifact 上传被自动审批拒绝：证据、截图和台账上传到未核实的外部目的地有敏感数据外流风险。未配置上传，也没有改用其他外发路径；因此 **CI 产物保留要求尚未完成**。本地 ZIP 可供内部人工核验，外部保留策略待明确授权后再做。
 
+## 隔离账号、业务数据和时钟增量
+
+- `scripts/web-atdd-fixture.mjs` 只接受本机 `web_atdd_*` PostgreSQL 库、`APP_ENV=development`、`SMS_PROVIDER=stub` 和测试专用密钥。`seed RUN_ID SERVER_NOW_UTC` 创建 A 主人、B 好友、C 陌生人、D 被屏蔽者，A1/A2/A3 与 B1/C1/D1 六个独立 Web 会话，F/FD/W/O 及要做/不要做、暂停、归档、数值历史和部分周变体。可公开清单写入忽略提交的 `artifacts/fixtures/RUN_ID/manifest.json`；Cookie/CSRF 仅写同目录忽略提交的私密文件，日志不输出秘密。
+- `cleanup RUN_ID` 读取清单并再次核对本机测试库和账号前缀，仅删除该运行的四个用户及级联数据，同时删除私密会话文件。对同一 `RUN_ID` 的“种子→清理→重建→清理”在临时 PostgreSQL 17 库通过：每轮 4 用户、10 计划、6 会话、5 记录、1 好友对、1 屏蔽对和 1 分享；清理后目标用户 0。真实 Web `/auth/web/session` 依次恢复 A1/A2/A3/B1/C1/D1 六个 Cookie，全部 200、`no-store`，A 三端同账号且会话彼此独立。原始输出与 SHA 见 [种子增量检查](./evidence/WEB-02/seed-checks.json)及[隔离服务输出](./evidence/WEB-02/fixture-selftest.txt)。
+- `scripts/web-atdd-clock.mjs` 是只供本机隔离服务进程加载的冻结时钟预载入器；拒绝生产环境或非测试库。浏览器采集器的 `--frozen-now` 只允许合成页或 loopback 页面，在导航前注入相同 UTC 时钟，并用 `--timezone` 设置 IANA 浏览器时区；`timeline.json` 保存真实采集时间、页面时间、浏览器时区与动作顺序。Chrome 合成页在 `America/Los_Angeles` 下观察到与服务端相同的 `2026-09-28T13:00:00.000Z`，生产环境注入被拒绝。见[时钟自测](./evidence/WEB-02/clock-selftest.json)及[浏览器时间线](./evidence/WEB-02/browser-clock-selftest/timeline.json)。
+- 限制：数据库的 `now()` 仍是隔离容器实时时钟；涉及 OTP/刷新到期的跨日场景必须连同数据库时间字段设计专用种子，不能仅依赖 Node/页面冻结。当前探针是合成页面，不是产品 Web 交互或正式跨浏览器验收。业务 136 项继续 `NOT_RUN`。
+
 ## 后续必须完成
 
-1. 为隔离 A/B/C/D 账号、固定时钟和业务日期、短信/对象存储/Push 桩设计可重建种子与清理机制。
+1. 将可审计短信、对象存储与 Web Push 供应端桩及 Worker 接入真实测试链路；补数据库时间字段的到期边界种子。
 2. 将本机 Chrome/Edge 运行器接入实际 Web 测试环境，补全手机 Safari/Chrome、桌面 Safari/Firefox 与版本记录，并从正式浏览器读取每个真实用例的环境和步骤。
 3. CI 校验已接入；外部 artifact 保留因自动审批拒绝尚缺。需批准明确的证据目的地、访问控制和保存期限后再接入；同时定义改动触发的 `STALE` 传播和复验责任。
 4. 生成一个合法但不计业务验收的结果样本，验证写入器与台账的完整闭环。完成这些之前 WEB-02 checklist 不勾选，后续依赖任务不能以本次合成自测解锁。

@@ -1,0 +1,7 @@
+command: node node_modules/prettier/bin/prettier.cjs --check scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-clock.mjs scripts/web-atdd-clock-selftest.mjs scripts/web-browser-capture.mjs scripts/web-02-seed-evidence.mjs docs/atdd/web/WEB-02-证据工具进展.md docs/任务执行计划-计划打卡-Web-v1.md docs/atdd/web/execution-progress.json
+exitCode: 0
+stdout:
+Checking formatting...
+All matched files use Prettier code style!
+
+stderr:
