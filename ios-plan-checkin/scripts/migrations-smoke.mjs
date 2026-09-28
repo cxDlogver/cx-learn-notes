@@ -20,7 +20,7 @@ try {
   const count = await db.query(
     "SELECT count(*)::integer AS n FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'",
   );
-  assert.equal(count.rows[0].n, 34);
+  assert.equal(count.rows[0].n, 35);
 
   const user = await db.query(
     "INSERT INTO users (phone_ciphertext, phone_lookup_hash) VALUES (decode('01','hex'), decode('02','hex')) RETURNING id",
@@ -72,7 +72,7 @@ try {
     /check constraint/i,
   );
   process.stdout.write(
-    "Migration smoke passed: 34 tables, unique checkin, immutable timezone/rules and one-time direction.\n",
+    "Migration smoke passed: 35 tables, unique checkin, immutable timezone/rules and one-time direction.\n",
   );
 } finally {
   await db.close();

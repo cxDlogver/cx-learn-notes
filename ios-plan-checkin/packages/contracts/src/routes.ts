@@ -97,7 +97,7 @@ export const apiRoutes = [
   ["POST", "me/exports", "createExport", true],
   ["GET", "me/exports/{id}", "getExport", true],
   ["POST", "me/deletion-request", "requestDeletion", true],
-  ["POST", "me/deletion-cancel", "cancelDeletion", true],
+  ["POST", "me/deletion-cancel", "cancelDeletion", false],
   ["GET", "me/deletion-status", "getDeletionStatus", true],
 ] as const satisfies ReadonlyArray<
   readonly [HttpMethod, string, string, boolean]

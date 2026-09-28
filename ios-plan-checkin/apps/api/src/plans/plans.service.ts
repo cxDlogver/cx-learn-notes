@@ -520,6 +520,10 @@ export class PlansService {
           ],
         );
         if (action === "delete") {
+          await client.query(
+            "INSERT INTO plan_deletion_jobs(plan_id,owner_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+            [id, userId],
+          );
           const revoked = await client.query<{ friend_id: string }>(
             "UPDATE plan_shares SET revoked_at=now(),revision=revision+1 WHERE plan_id=$1 AND revoked_at IS NULL RETURNING friend_id",
             [id],

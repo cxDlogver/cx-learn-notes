@@ -5460,12 +5460,29 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DeletionRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/DeletionStatus" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5516,7 +5533,6 @@
       "post": {
         "operationId": "cancelDeletion",
         "tags": ["me"],
-        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -5531,12 +5547,29 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SmsVerifyRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/AuthTokens" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5593,7 +5626,16 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/DeletionStatus" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5900,6 +5942,26 @@
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "bytes": { "type": "integer", "minimum": 1 }
         },
+        "additionalProperties": false
+      },
+      "DeletionStatus": {
+        "type": "object",
+        "required": ["status", "dueAt"],
+        "properties": {
+          "status": { "enum": ["active", "deletion_pending"] },
+          "dueAt": {
+            "oneOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeletionRequest": {
+        "type": "object",
+        "required": ["confirmed"],
+        "properties": { "confirmed": { "const": true } },
         "additionalProperties": false
       },
       "FixedPlanCreate": {

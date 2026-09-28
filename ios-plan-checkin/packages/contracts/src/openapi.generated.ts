@@ -1017,6 +1017,15 @@ export interface components {
       sha256: string;
       bytes: number;
     };
+    DeletionStatus: {
+      /** @enum {unknown} */
+      status: "active" | "deletion_pending";
+      dueAt: string | null;
+    };
+    DeletionRequest: {
+      /** @constant */
+      confirmed: true;
+    };
     FixedPlanCreate: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -6590,7 +6599,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeletionRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -6598,7 +6611,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["DeletionStatus"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -6658,7 +6676,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SmsVerifyRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -6666,7 +6688,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["AuthTokens"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -6731,7 +6758,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["DeletionStatus"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

@@ -30,6 +30,12 @@ export class PlanWrite {
       .update(JSON.stringify({ operation, input }))
       .digest();
     return this.database.transaction(async (client) => {
+      const active = await client.query(
+        "SELECT id FROM users WHERE id=$1 AND status='active' FOR SHARE",
+        [userId],
+      );
+      if (!active.rows.length)
+        fail("UNAUTHENTICATED", 401, "账号已停用，请重新验证身份");
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
         `${userId}:${key}`,
       ]);

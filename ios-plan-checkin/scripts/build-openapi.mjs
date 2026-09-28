@@ -177,6 +177,13 @@ const schemas = {
     sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
     bytes: { type: "integer", minimum: 1 },
   }),
+  DeletionStatus: properties(["status", "dueAt"], {
+    status: { enum: ["active", "deletion_pending"] },
+    dueAt: { oneOf: [instant, { type: "null" }] },
+  }),
+  DeletionRequest: properties(["confirmed"], {
+    confirmed: { const: true },
+  }),
   FixedPlanCreate: properties(
     ["kind", "direction", "title", "timezone", "startDate", "rule"],
     {
@@ -1081,6 +1088,9 @@ const responseData = {
   listDataExports: { type: "array", items: ref("DataExport") },
   getDataExport: ref("DataExport"),
   getDataExportDownloadUrl: ref("DataExportDownload"),
+  requestDeletion: ref("DeletionStatus"),
+  getDeletionStatus: ref("DeletionStatus"),
+  cancelDeletion: ref("AuthTokens"),
 };
 
 const bodies = {
@@ -1111,6 +1121,8 @@ const bodies = {
   createEncouragement: "CreateEncouragementRequest",
   registerPushToken: "RegisterPushTokenRequest",
   updateNotificationPreferences: "UpdateNotificationPreferencesRequest",
+  requestDeletion: "DeletionRequest",
+  cancelDeletion: "SmsVerifyRequest",
 };
 const paths = {};
 for (const [method, suffix, operationId, auth] of apiRoutes) {

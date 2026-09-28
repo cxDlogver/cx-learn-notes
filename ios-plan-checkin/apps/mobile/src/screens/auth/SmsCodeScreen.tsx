@@ -53,11 +53,18 @@ export function SmsCodeScreen({ navigation, route }: Props) {
     if (attempt.current?.code !== value)
       attempt.current = { code: value, key: Crypto.randomUUID() };
     try {
-      const tokens = await repository.verifySms(
-        challenge.challengeId,
-        value,
-        attempt.current.key,
-      );
+      const tokens =
+        route.params.purpose === "cancel_deletion"
+          ? await repository.cancelDeletion(
+              challenge.challengeId,
+              value,
+              attempt.current.key,
+            )
+          : await repository.verifySms(
+              challenge.challengeId,
+              value,
+              attempt.current.key,
+            );
       await session.adopt(tokens);
     } catch (cause) {
       setError(
@@ -78,7 +85,10 @@ export function SmsCodeScreen({ navigation, route }: Props) {
     setResending(true);
     setError(null);
     try {
-      const next = await repository.createSmsChallenge(route.params.phone);
+      const next =
+        route.params.purpose === "cancel_deletion"
+          ? await repository.createCancellationChallenge(route.params.phone)
+          : await repository.createSmsChallenge(route.params.phone);
       setChallenge(next);
       setResendAt(Date.now() + next.resendAfterSeconds * 1000);
       setNow(Date.now());
@@ -104,7 +114,10 @@ export function SmsCodeScreen({ navigation, route }: Props) {
         >
           <View style={styles.top}>
             <Text testID="auth.sms.instruction" style={authStyles.caption}>
-              验证码已发送至 {maskPhone(route.params.phone)}
+              {route.params.purpose === "cancel_deletion"
+                ? "撤销注销验证码"
+                : "验证码"}
+              已发送至 {maskPhone(route.params.phone)}
             </Text>
             <Pressable
               accessibilityRole="button"

@@ -257,6 +257,10 @@ export interface DataExportDownloadDto {
   sha256: string;
   bytes: number;
 }
+export interface DeletionStatusDto {
+  status: "active" | "deletion_pending";
+  dueAt: UtcInstant | null;
+}
 export interface SocialUserDto {
   id: Uuid;
   username: string;

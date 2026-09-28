@@ -19,6 +19,7 @@ import type {
 import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
 import { fail } from "../http.js";
+import { appendUserChange } from "../sync/change-log.js";
 import { SmsProvider } from "./sms-provider.js";
 
 interface ChallengeRow {
@@ -230,8 +231,8 @@ export class AuthService {
     ) {
       fail("VALIDATION_ERROR", 400, "请输入有效的中国大陆手机号");
     }
-    if (input.purpose !== "login") {
-      fail("VALIDATION_ERROR", 400, "当前流程只支持登录验证码");
+    if (!["login", "cancel_deletion"].includes(input.purpose)) {
+      fail("VALIDATION_ERROR", 400, "验证码用途不正确");
     }
     const phone = `+86${input.phone}`;
     const phoneHash = this.digest(this.config.phoneLookupKey, phone);
@@ -268,13 +269,14 @@ export class AuthService {
         await client.query(
           `INSERT INTO auth_challenges
            (id, phone_lookup_hash, phone_ciphertext, requester_hash, code_hash, purpose, expires_at)
-         VALUES ($1, $2, $3, $4, $5, 'login', now() + interval '5 minutes')`,
+         VALUES ($1, $2, $3, $4, $5, $6, now() + interval '5 minutes')`,
           [
             challengeId,
             phoneHash,
             this.encryptPhone(phone),
             requesterHash,
             this.digest(this.config.otpHashKey, `${challengeId}:${code}`),
+            input.purpose,
           ],
         );
         try {
@@ -295,6 +297,7 @@ export class AuthService {
     input: SmsVerifyRequest,
     deviceId: string,
     idempotencyKey: string,
+    purpose: "login" | "cancel_deletion" = "login",
   ): Promise<AuthTokens> {
     if (
       !input ||
@@ -306,7 +309,7 @@ export class AuthService {
     const outcome = await this.idempotent(
       idempotencyKey,
       "sms_verify",
-      { input, deviceId },
+      { input, deviceId, purpose },
       async (client) => {
         const found = await client.query<ChallengeRow>(
           "SELECT * FROM auth_challenges WHERE id = $1 FOR UPDATE",
@@ -315,6 +318,7 @@ export class AuthService {
         const challenge = found.rows[0];
         if (
           !challenge ||
+          challenge.purpose !== purpose ||
           challenge.consumed_at ||
           challenge.expires_at.getTime() <= Date.now()
         ) {
@@ -336,10 +340,53 @@ export class AuthService {
           "UPDATE auth_challenges SET consumed_at = now() WHERE id = $1",
           [challenge.id],
         );
-        const existing = await client.query<{ id: string; status: string }>(
-          "SELECT id, status FROM users WHERE phone_lookup_hash = $1 FOR UPDATE",
+        const existing = await client.query<{
+          id: string;
+          status: string;
+          deletion_due_at: Date | null;
+        }>(
+          "SELECT id, status, deletion_due_at FROM users WHERE phone_lookup_hash = $1 FOR UPDATE",
           [challenge.phone_lookup_hash],
         );
+        if (purpose === "cancel_deletion") {
+          const account = existing.rows[0];
+          if (
+            account?.status !== "deletion_pending" ||
+            !account.deletion_due_at ||
+            account.deletion_due_at.getTime() <= Date.now()
+          )
+            return { kind: "forbidden" } as const;
+          await client.query(
+            "UPDATE users SET status='active',deletion_due_at=NULL,updated_at=now() WHERE id=$1 AND status='deletion_pending'",
+            [account.id],
+          );
+          await client.query(
+            "UPDATE deletion_jobs SET status='cancelled',updated_at=now() WHERE user_id=$1 AND status IN ('pending','failed')",
+            [account.id],
+          );
+          const friends = await client.query<{ other_id: string }>(
+            `SELECT CASE WHEN user_low=$1 THEN user_high ELSE user_low END AS other_id
+             FROM friendships WHERE user_low=$1 OR user_high=$1`,
+            [account.id],
+          );
+          for (const friend of friends.rows)
+            await appendUserChange(
+              client,
+              friend.other_id,
+              "friend",
+              account.id,
+              "upsert",
+            );
+          return {
+            kind: "success",
+            tokens: await this.createSession(
+              client,
+              account.id,
+              deviceId,
+              false,
+            ),
+          } as const;
+        }
         if (existing.rows[0]?.status === "deletion_pending")
           return { kind: "deletion_pending" } as const;
         if (existing.rows[0]?.status === "deleted")

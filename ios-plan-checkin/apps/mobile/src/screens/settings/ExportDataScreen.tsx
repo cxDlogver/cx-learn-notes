@@ -39,6 +39,10 @@ const content: {
   },
 ];
 const tempDirectory = () => new Directory(Paths.cache, "plan-checkin-exports");
+export function purgeExportCache(): void {
+  const directory = tempDirectory();
+  if (directory.exists) directory.delete();
+}
 function cleanupOldFiles(): void {
   const directory = tempDirectory();
   if (!directory.exists) return;

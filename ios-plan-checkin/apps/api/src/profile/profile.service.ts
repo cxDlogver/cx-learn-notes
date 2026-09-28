@@ -125,6 +125,11 @@ export class ProfileService {
       .digest();
     try {
       return await this.database.transaction(async (client) => {
+        const active = await client.query(
+          "SELECT id FROM users WHERE id=$1 AND status='active' FOR UPDATE",
+          [userId],
+        );
+        if (!active.rows.length) fail("UNAUTHENTICATED", 401, "账号已停用");
         await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
           idempotencyKey,
         ]);

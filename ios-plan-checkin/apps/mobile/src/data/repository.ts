@@ -35,6 +35,7 @@ import type {
   UserDto,
   DataExportDto,
   DataExportDownloadDto,
+  DeletionStatusDto,
   UsernameAvailabilityDto,
   TodayDto,
   TodayItemDto,
@@ -78,11 +79,19 @@ export type RecordSaveResult =
 
 export interface AppRepository {
   createSmsChallenge(phone: string): Promise<SmsChallengeDto>;
+  createCancellationChallenge(phone: string): Promise<SmsChallengeDto>;
   verifySms(
     challengeId: string,
     code: string,
     idempotencyKey: string,
   ): Promise<AuthTokens>;
+  cancelDeletion(
+    challengeId: string,
+    code: string,
+    idempotencyKey: string,
+  ): Promise<AuthTokens>;
+  getDeletionStatus(): Promise<DeletionStatusDto>;
+  requestDeletion(): Promise<DeletionStatusDto>;
   getMe(): Promise<UserDto>;
   checkUsername(username: string): Promise<UsernameAvailabilityDto>;
   updateMe(input: {
@@ -412,6 +421,13 @@ export class HttpRepository implements AppRepository {
       purpose: "login",
     });
   }
+  createCancellationChallenge(phone: string): Promise<SmsChallengeDto> {
+    return this.api.postWithoutSession("/auth/sms/challenges", {
+      countryCode: "+86",
+      phone,
+      purpose: "cancel_deletion",
+    });
+  }
   async verifySms(
     challengeId: string,
     code: string,
@@ -425,6 +441,23 @@ export class HttpRepository implements AppRepository {
         "Idempotency-Key": idempotencyKey,
       },
     );
+  }
+  async cancelDeletion(
+    challengeId: string,
+    code: string,
+    idempotencyKey: string,
+  ): Promise<AuthTokens> {
+    return this.api.postWithoutSession(
+      "/me/deletion-cancel",
+      { challengeId, code },
+      { "X-Device-Id": await deviceId(), "Idempotency-Key": idempotencyKey },
+    );
+  }
+  getDeletionStatus(): Promise<DeletionStatusDto> {
+    return this.api.get("/me/deletion-status");
+  }
+  requestDeletion(): Promise<DeletionStatusDto> {
+    return this.api.post("/me/deletion-request", { confirmed: true });
   }
   getMe(): Promise<UserDto> {
     return this.api.get("/me");

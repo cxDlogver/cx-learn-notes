@@ -74,6 +74,18 @@ export class ReminderCoordinator {
         ),
     );
   }
+  async cancelAccount(accountId: string): Promise<void> {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    await Promise.all(
+      scheduled
+        .filter(
+          (item) => isOwned(item) && item.content.data?.accountId === accountId,
+        )
+        .map((item) =>
+          Notifications.cancelScheduledNotificationAsync(item.identifier),
+        ),
+    );
+  }
   async cancelForDate(planId: string, businessDate: string): Promise<void> {
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
     await Promise.all(

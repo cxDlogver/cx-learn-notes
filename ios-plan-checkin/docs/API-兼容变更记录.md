@@ -10,6 +10,16 @@
 
 开发自检由 `pnpm export:smoke`、`pnpm check` 与 `pnpm mobile:bundle:check` 执行；正式 ATDD 验收另行进行。
 
+## OPS-03 计划删除与账号注销
+
+- 落地既有 `POST /api/v1/me/deletion-request`、`POST /api/v1/me/deletion-cancel`、`GET /api/v1/me/deletion-status`。申请体必须包含 `confirmed: true`；提交后立即停用账号、撤销会话和分享、关闭设备推送，并设置 30 天到期时间。客户端同时清除本机加密数据库、照片、密钥、导出缓存和本账号本地提醒。
+- 撤销注销通过 `POST /api/v1/auth/sms/challenges` 的 `purpose=cancel_deletion` 获取原手机号验证码，再将 `challengeId` 和 `code` 提交至无需旧会话的 `deletion-cancel`。验证码只能用于对应用途；到期后不能撤销。撤销后好友关系保留，原逐计划分享不自动恢复。
+- 删除计划立即不可读，并通过既有媒体清理作业先移除照片对象，再物理删除关联记录。为覆盖最长 10 分钟上传签名，物理清理至少等待 11 分钟。注销到期后 Worker 等照片及导出文件对象清理完成，再删除账号数据和手机号，并记录恢复备份时使用的删除墓碑。
+- 迁移 `0010_deletion_audit.sql` 保存计划删除作业的状态、尝试次数与完成时间；账号完成墓碑保存重试次数和最后失败代码。恢复脚本以签名文件独立导出、回放墓碑，并在恢复账号彻底清除前阻止开放 API。
+- `deletion-cancel` 从预留接口调整为无需 Bearer 会话；请求须经短信验证。`X-Device-Id` 可选，不传时服务端生成设备标识；其余既有接口参数保持兼容。
+
+开发自检由 `pnpm deletion:smoke`、`pnpm media:smoke`、`pnpm check` 与 `pnpm mobile:bundle:check` 执行。真实对象存储、短信通道、iOS Keychain/SQLCipher/通知与正式 ATDD 留待相应环境验证。备份墓碑操作见 [OPS-03-删除与墓碑流程.md](./OPS-03-删除与墓碑流程.md)。
+
 ## SOC-01 好友关系
 
 - 新增 `GET /api/v1/friends`，返回当前好友的用户名、昵称和可选头像；不返回手机号、计划或统计。

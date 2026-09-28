@@ -68,6 +68,30 @@ export function PhoneLoginScreen({ navigation }: Props) {
       setPending(false);
     }
   }
+  async function requestCancellation(): Promise<void> {
+    if (pending) return;
+    if (!phonePattern.test(normalized)) {
+      setError("请输入原账号绑定的手机号");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    try {
+      const challenge =
+        await repository.createCancellationChallenge(normalized);
+      navigation.navigate("SmsCode", {
+        phone: normalized,
+        challenge,
+        purpose: "cancel_deletion",
+      });
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "验证码发送失败，请重试",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <SafeAreaView style={authStyles.screen}>
@@ -150,6 +174,20 @@ export function PhoneLoginScreen({ navigation }: Props) {
                 pending={pending}
               />
             </View>
+            <Pressable
+              testID="auth.phone.cancel-deletion"
+              accessibilityRole="button"
+              accessibilityLabel="撤销账号注销"
+              onPress={() => void requestCancellation()}
+              style={{
+                minHeight: 44,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 15,
+              }}
+            >
+              <Text style={styles.policy}>30 天内撤销账号注销</Text>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

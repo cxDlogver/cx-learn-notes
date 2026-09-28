@@ -10,6 +10,7 @@ interface MediaRow {
   object_key: string;
   status: "pending" | "ready" | "deleted";
   created_at: Date | string;
+  deleted_at: Date | string | null;
   object_deleted_at: Date | string | null;
   target_deleted: boolean;
 }
@@ -57,9 +58,9 @@ export async function enqueueMediaCleanup(pool: Pool): Promise<void> {
      LEFT JOIN plans p ON p.id=coalesce(c.plan_id,m.one_time_plan_id)
      LEFT JOIN users u ON u.id=m.owner_id
      WHERE m.object_deleted_at IS NULL AND
-       (m.status='deleted' OR
-       (m.status='pending' AND m.created_at<now()-interval '24 hours') OR
-        (m.status='ready' AND (p.status='deleted' OR u.status='deleted')))
+       ((m.status='deleted' AND m.deleted_at<=now()-interval '11 minutes') OR
+        (p.status='deleted' AND p.deleted_at<=now()-interval '11 minutes') OR u.status='deleted' OR
+       (m.status='pending' AND m.created_at<now()-interval '24 hours'))
        AND NOT EXISTS (
          SELECT 1 FROM worker_jobs j WHERE j.name='cleanup-orphan-media'
            AND j.payload->>'mediaId'=m.id::text
@@ -103,8 +104,9 @@ export async function processMediaCleanup(
       await client.query("BEGIN");
       // Hold the media row while deleting the object so completion cannot race cleanup.
       const media = await client.query<MediaRow>(
-        `SELECT m.object_key,m.status,m.created_at,m.object_deleted_at,
-           coalesce(p.status='deleted',false) OR coalesce(u.status='deleted',false) AS target_deleted
+        `SELECT m.object_key,m.status,m.created_at,m.deleted_at,m.object_deleted_at,
+           coalesce(p.status='deleted' AND p.deleted_at<=now()-interval '11 minutes',false)
+             OR coalesce(u.status='deleted',false) AS target_deleted
          FROM media m
          LEFT JOIN checkins c ON c.id=m.checkin_id
          LEFT JOIN plans p ON p.id=coalesce(c.plan_id,m.one_time_plan_id)
@@ -116,9 +118,12 @@ export async function processMediaCleanup(
       const shouldDelete =
         row &&
         !row.object_deleted_at &&
-        (row.status === "deleted" ||
+        ((row.status === "deleted" &&
+          row.deleted_at &&
+          new Date(row.deleted_at).getTime() <= Date.now() - 660_000) ||
           (row.status === "pending" &&
-            new Date(row.created_at).getTime() < Date.now() - 86_400_000) ||
+            (row.target_deleted ||
+              new Date(row.created_at).getTime() < Date.now() - 86_400_000)) ||
           (row.status === "ready" && row.target_deleted));
       if (shouldDelete) await objects.delete(row.object_key);
       if (shouldDelete)

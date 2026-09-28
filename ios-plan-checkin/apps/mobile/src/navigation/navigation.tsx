@@ -47,6 +47,7 @@ import { EncouragementsScreen } from "../screens/social/EncouragementsScreen";
 import { SocialNotificationsScreen } from "../screens/social/SocialNotificationsScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { ExportDataScreen } from "../screens/settings/ExportDataScreen";
+import { DeleteAccountScreen } from "../screens/settings/DeleteAccountScreen";
 import {
   ChangePhoneScreen,
   NotificationSettingsScreen,
@@ -114,7 +115,11 @@ export type RootStackParamList = {
 };
 export type AuthStackParamList = {
   PhoneLogin: undefined;
-  SmsCode: { phone: string; challenge: SmsChallengeDto };
+  SmsCode: {
+    phone: string;
+    challenge: SmsChallengeDto;
+    purpose?: "login" | "cancel_deletion";
+  };
   ProfileSetup: undefined;
 };
 
@@ -276,9 +281,20 @@ function MainStack() {
           ),
         }}
       />
-      <RootStack.Screen name="DeleteAccount" options={{ title: "删除账号" }}>
-        {() => <Shell title="删除账号" body="账号删除功能正在开发。" />}
-      </RootStack.Screen>
+      <RootStack.Screen
+        name="DeleteAccount"
+        component={DeleteAccountScreen}
+        options={{
+          headerTitle: () => (
+            <Text
+              testID="delete-account.title"
+              style={{ color: penColors.text, fontSize: 17, fontWeight: "700" }}
+            >
+              删除账号
+            </Text>
+          ),
+        }}
+      />
       <RootStack.Screen
         name="Reminders"
         options={{

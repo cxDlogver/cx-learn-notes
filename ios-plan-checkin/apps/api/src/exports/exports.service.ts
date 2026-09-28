@@ -45,6 +45,12 @@ export class ExportsService {
     if (!uuid.test(idempotencyKey ?? ""))
       fail("VALIDATION_ERROR", 400, "缺少有效的幂等键");
     return this.database.transaction(async (client) => {
+      const activeUser = await client.query(
+        "SELECT id FROM users WHERE id=$1 AND status='active' FOR SHARE",
+        [userId],
+      );
+      if (!activeUser.rows.length)
+        fail("UNAUTHENTICATED", 401, "账号已停用，请重新验证身份");
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
         userId,
       ]);

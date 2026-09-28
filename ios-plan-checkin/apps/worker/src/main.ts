@@ -1,4 +1,5 @@
 import pg from "pg";
+import { finalizeDeletedPlans, finalizeDueAccounts } from "./deletion.js";
 import {
   claimDataExport,
   cleanupExpiredExports,
@@ -64,6 +65,12 @@ async function bootstrap(): Promise<void> {
         await cleanupExpiredExports(pool);
       } catch {
         process.stderr.write("Data export cycle failed\n");
+      }
+      try {
+        await finalizeDeletedPlans(pool);
+        await finalizeDueAccounts(pool);
+      } catch {
+        process.stderr.write("Deletion cycle failed\n");
       }
       await new Promise<void>((resolve) => setTimeout(resolve, 15_000));
     }

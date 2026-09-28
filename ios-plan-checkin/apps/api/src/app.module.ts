@@ -8,6 +8,7 @@ import { SyncModule } from "./sync/sync.module.js";
 import { MediaModule } from "./media/media.module.js";
 import { ViewsModule } from "./views/views.module.js";
 import { ExportsModule } from "./exports/exports.module.js";
+import { DeletionModule } from "./deletion/deletion.module.js";
 
 @Controller("health")
 class HealthController {
@@ -28,6 +29,7 @@ class HealthController {
     SyncModule,
     MediaModule,
     ExportsModule,
+    DeletionModule,
   ],
   controllers: [HealthController],
 })

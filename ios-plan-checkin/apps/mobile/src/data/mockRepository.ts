@@ -133,6 +133,9 @@ export class MockRepository implements AppRepository {
       resendAfterSeconds: 60,
     };
   }
+  createCancellationChallenge(phone: string): Promise<SmsChallengeDto> {
+    return this.createSmsChallenge(phone);
+  }
   async verifySms(_challengeId: string, code: string): Promise<AuthTokens> {
     if (code !== "123456") throw new Error("验证码不正确");
     return {
@@ -142,6 +145,21 @@ export class MockRepository implements AppRepository {
       userId: this.user.id,
       isNewUser: false,
     };
+  }
+  cancelDeletion(challengeId: string, code: string): Promise<AuthTokens> {
+    return this.verifySms(challengeId, code);
+  }
+  async getDeletionStatus(): Promise<{
+    status: "active" | "deletion_pending";
+    dueAt: string | null;
+  }> {
+    return { status: this.user.accountStatus, dueAt: null };
+  }
+  async requestDeletion(): Promise<{
+    status: "deletion_pending";
+    dueAt: string;
+  }> {
+    throw new Error("演示模式不支持注销账号，请连接开发服务后重试");
   }
   async getMe(): Promise<UserDto> {
     return this.user;

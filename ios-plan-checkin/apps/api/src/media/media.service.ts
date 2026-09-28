@@ -101,6 +101,11 @@ export class MediaService {
       sha.toString("base64"),
     );
     await this.database.transaction(async (client) => {
+      const active = await client.query(
+        "SELECT id FROM users WHERE id=$1 AND status='active' FOR SHARE",
+        [userId],
+      );
+      if (!active.rows.length) fail("UNAUTHENTICATED", 401, "账号已停用");
       await client.query(
         `INSERT INTO media(id,owner_id,object_key,sha256,mime,bytes)
          VALUES($1,$2,$3,$4,$5,$6)`,
@@ -171,6 +176,11 @@ export class MediaService {
       fail("NOT_FOUND", 404, "照片不存在");
     if (candidate.status === "pending") await this.verifyObject(candidate);
     return this.database.transaction(async (client) => {
+      const active = await client.query(
+        "SELECT id FROM users WHERE id=$1 AND status='active' FOR SHARE",
+        [userId],
+      );
+      if (!active.rows.length) fail("UNAUTHENTICATED", 401, "账号已停用");
       const locked = await client.query<MediaRow>(
         "SELECT * FROM media WHERE id=$1 AND owner_id=$2 FOR UPDATE",
         [mediaId, userId],
@@ -250,6 +260,11 @@ export class MediaService {
   async remove(userId: string, mediaId: string): Promise<{ deleted: true }> {
     requireUuid(mediaId);
     await this.database.transaction(async (client) => {
+      const active = await client.query(
+        "SELECT id FROM users WHERE id=$1 AND status='active' FOR SHARE",
+        [userId],
+      );
+      if (!active.rows.length) fail("UNAUTHENTICATED", 401, "账号已停用");
       const row = await client.query<MediaRow>(
         "SELECT * FROM media WHERE id=$1 AND owner_id=$2 FOR UPDATE",
         [mediaId, userId],

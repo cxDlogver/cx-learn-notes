@@ -233,6 +233,16 @@ export function SettingsScreen() {
           />
         </View>
         <Pressable
+          testID="settings.delete-account"
+          accessibilityRole="button"
+          accessibilityLabel="删除账号"
+          onPress={() => navigation.navigate("DeleteAccount")}
+          style={styles.logout}
+        >
+          <Text style={styles.logoutText}>删除账号</Text>
+          <Ionicons name="chevron-forward" size={18} color={danger} />
+        </Pressable>
+        <Pressable
           testID="settings.logout"
           accessibilityRole="button"
           accessibilityLabel="退出登录"
