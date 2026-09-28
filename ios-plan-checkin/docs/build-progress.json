@@ -5,19 +5,19 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "f228cfefedfee2e31dd89661efed2af1741936bd",
+  "integrationCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
   "currentWork": {
-    "taskId": "OPS-04",
-    "phase": "安全加固、脱敏日志与可观测性",
-    "updatedAt": "2026-09-28T04:21:57.000Z",
-    "baseCommit": "f228cfefedfee2e31dd89661efed2af1741936bd",
+    "taskId": "OPS-05",
+    "phase": "部署、密钥注入与恢复材料",
+    "updatedAt": "2026-09-28T04:45:31.000Z",
+    "baseCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
     "completedSteps": [
-      "OPS-03 计划删除、账号即时停用、短信撤销、30 天后对象与业务清理、备份墓碑回放及客户端本地清除已提交；全仓静态检查、PGlite 删除/媒体/登录/资料/计划/导出自检和 iOS JS 打包通过。"
+      "OPS-04 API 共享限流、脱敏结构化请求日志、Worker 心跳与日志、Prometheus 指标/告警及运行说明已提交；全仓静态检查、PGlite 迁移/限流、认证和计划写入自检通过。"
     ],
     "nextSteps": [
-      "盘点现有日志、requestId、限流、审计和监控缺口，核对技术方案中的敏感字段规则。",
-      "实现 API 与 Worker 的统一脱敏追踪、关键指标、告警配置和速率限制。",
-      "执行 S0/S1/S5/S6 与开发自检，提交代码和台账。"
+      "盘点现有三环境配置、Compose 与发布脚本，核对大陆单区域部署与密钥注入要求。",
+      "实现部署/回滚/IaC 静态材料、迁移顺序和备份恢复运行手册。",
+      "执行 S0/S2/S5/S6 与开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
@@ -740,12 +740,14 @@
         "S5",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "f228cfefedfee2e31dd89661efed2af1741936bd",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
+      "integratedCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
+      "staticPassed": true,
+      "blocker": "全仓静态检查、PGlite 限流/迁移与认证/计划开发自检通过；真实 PostgreSQL 多副本限流、生产指标采集/告警投递及权限流量验证需部署环境，用户要求稍后验证。"
     },
     {
       "priority": 34,
@@ -761,10 +763,10 @@
         "S5",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
       "taskCommit": null,
       "integratedCommit": null
     },
