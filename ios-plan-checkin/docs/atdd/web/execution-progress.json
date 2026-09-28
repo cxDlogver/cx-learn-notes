@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T13:15:32Z",
+  "updatedAt": "2026-09-28T13:22:42Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -153,7 +153,7 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "结果证据校验、人工 F/V/N 写入并同步 Markdown/JSON 台账、本机 Chrome/Edge 交互采集已实现；隔离业务种子、正式矩阵与 CI 仍待完成。",
+        "summary": "校验、人工结果同步、Chrome/Edge 交互采集和本地 SHA 归档已实现；CI 工具校验已配置。隔离业务种子、固定时钟、外部桩、非 Chromium 矩阵与外部 artifact 保留仍待完成，上传被自动审批拒绝。",
         "changedPaths": [
           "docs/atdd/web/validate_result.py",
           "docs/atdd/web/test_validate_result.py",
@@ -163,7 +163,11 @@
           "scripts/web-browser-capture.mjs",
           "docs/atdd/web/record_result.py",
           "docs/atdd/web/test_record_result.py",
-          "docs/atdd/web/evidence/WEB-02/browser-action-selftest.json"
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest.json",
+          "docs/atdd/web/archive_evidence.py",
+          ".gitignore",
+          "package.json",
+          "../.github/workflows/ios-plan-checkin.yml"
         ],
         "commit": null,
         "checks": [
@@ -208,6 +212,12 @@
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-02/record-browser-syntax.txt",
             "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "python docs/atdd/web/archive_evidence.py --out docs/atdd/web/artifacts/tool-selftest-20260928.zip; verify ZIP entry SHA-256",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
+            "sha256": "b24b2776687f6a69ffa3f04a37db76bd2fc74c9afe6d5766ea10e5d148526ee1"
           }
         ],
         "evidence": [
@@ -215,11 +225,12 @@
           "docs/atdd/web/WEB-02-证据工具进展.md",
           "docs/atdd/web/evidence/WEB-02/browser-captures.json",
           "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
-          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png"
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
         ]
       },
       "verification": {
-        "summary": "12 项合成校验/录入自测（含临时结果写入与 Markdown/JSON 同步）、Chrome 390x844 交互采集和先前 Edge 1280x800 探针已实测；均非产品业务验收，136 项仍 NOT_RUN。",
+        "summary": "12 项合成工具自测、Chrome/Edge 探针、Chrome 交互及本地 ZIP 77 文件逐项哈希通过；0 个业务结果，136 项 NOT_RUN；CI 外部证据上传未获自动审批。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
@@ -230,7 +241,8 @@
           "docs/atdd/web/evidence/WEB-02/record-tool-selftest.txt",
           "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-before.png",
           "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
-          "docs/atdd/web/evidence/WEB-02/browser-action-files.json"
+          "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
+          "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
         ]
       },
       "review": {
@@ -261,6 +273,12 @@
           "type": "RESULT_WRITER_AND_ACTIONS_CHECKED",
           "summary": "录入器拒绝伪造 PASS/危险路径，Chrome 合成页输入与点击截图/DOM 实测；业务 ATDD 未执行。",
           "evidencePath": "docs/atdd/web/evidence/WEB-02/browser-action-files.json"
+        },
+        {
+          "at": "2026-09-28T13:22:42Z",
+          "type": "LOCAL_ARCHIVE_AND_CI_CHECK_CONFIGURED",
+          "summary": "本地证据 ZIP 逐文件哈希通过，CI 工具自测/台账校验已配置；外部 artifact 上传被自动审批拒绝。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
         }
       ]
     },

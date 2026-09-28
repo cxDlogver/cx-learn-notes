@@ -248,6 +248,12 @@ Web Push 的受控端到端链路（权限、订阅、服务端发送、浏览�
 - 提交：`ec1777612843b36d8f1f5579dc5464c4f546f0fa`。Web 会话、Cookie/CSRF/Origin、Web audience、移动兼容契约和自测源码均已提交；最终服务与真实 HTTP 证据、lint、typecheck、安全扫描及原始哈希见 [WEB-04 清单](./atdd/web/evidence/WEB-04/checks.json)。
 - 复核：公开注册、15 分钟 access、30 天 refresh、旧令牌与迟到重放、退出、换号全会话撤销、限流策略及 Web/iOS 通知隔离的 API 判定已具备。后续多标签浏览器协调、页面登录和 AUTH/SEC 的 F/V/N 由 WEB-05/12/20 验证；136 项当前继续 `NOT_RUN`。WEB-04 是 API 支撑任务，不主拥有浏览器用例，故勾选。
 
+### 2026-09-28 21:22 CST｜WEB-02｜本地证据归档与 CI 校验增量
+
+- 实施：`archive_evidence.py` 校验结果文件、来源、进度后，把原始证据和来源文档打成 ZIP，并在 ZIP 内附逐文件 SHA-256 索引；项目 `.gitignore` 忽略本地归档。仓库顶层 CI 已加入 Python 3.11、固定 `jsonschema` 依赖和 `web:atdd:check`，会执行 12 项工具自测与 Markdown/JSON 台账一致性检查。详细记录见 [WEB-02 进展](./atdd/web/WEB-02-证据工具进展.md)。
+- 实测：本地归档包含 77 文件、0 业务结果，整体 SHA-256 为 `1cef6490edc0ae8991b6e93e996c6ea6eea2477411ce0d4fbec254617c02f2e8`，逐文件哈希核验通过，见[归档验证](./atdd/web/evidence/WEB-02/archive-selftest.json)。没有由合成数据生成业务 PASS 或截图。
+- 审批与剩余：尝试把截图、台账和计划上传到 CI artifact 被自动审批拒绝，理由是未核实外部目的地可能外流敏感证据；未上传，也未采用替代外发方式。隔离 A/B/C/D 种子、固定时钟、受控对象/Push 桩、`STALE` 传播、完整浏览器运行器和 CI 外部产物保留仍缺。WEB-02 不勾选，依赖它的 WEB-05 仍未解锁；136 项业务用例继续 `NOT_RUN`。
+
 ## 7. 决策与偏差记录
 
 每条偏差记录：发现时间、来源文件/行、矛盾内容、影响任务与用例、可选方案、最终决定、PRD/技术/ATDD/契约变更、复测范围和复核人。尚未核对真实代码路径时，不将技术方案中列出的新增端点视为已存在接口。注册开放、Web 在线、分端提醒、消息已读跨浏览器、部分周不计达标和 Web 独立验收等已确认边界不能被实现便利性改写。

@@ -3,12 +3,12 @@ name: iOS plan checkin static checks
 on:
   push:
     paths:
-      - 'ios-plan-checkin/**'
-      - '.github/workflows/ios-plan-checkin.yml'
+      - "ios-plan-checkin/**"
+      - ".github/workflows/ios-plan-checkin.yml"
   pull_request:
     paths:
-      - 'ios-plan-checkin/**'
-      - '.github/workflows/ios-plan-checkin.yml'
+      - "ios-plan-checkin/**"
+      - ".github/workflows/ios-plan-checkin.yml"
 
 jobs:
   static:
@@ -24,8 +24,14 @@ jobs:
           run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
           cache: pnpm
           cache-dependency-path: ios-plan-checkin/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r docs/atdd/web/requirements.txt
       - run: pnpm check
+      - run: pnpm web:atdd:check
+        if: always()

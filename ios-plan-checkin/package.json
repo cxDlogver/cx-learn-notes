@@ -29,6 +29,7 @@
     "web:db:smoke": "node scripts/web-migrations-smoke.mjs",
     "web:db:postgres:smoke": "node scripts/web-migrations-smoke.mjs",
     "web:atdd:check": "python -m unittest discover -s docs/atdd/web -p test_*.py -v && python docs/atdd/web/check_execution_progress.py",
+    "web:atdd:archive": "python docs/atdd/web/archive_evidence.py",
     "export:smoke": "tsc -p apps/api/tsconfig.json && tsc -p apps/worker/tsconfig.json && node scripts/data-export-smoke.mjs",
     "deletion:smoke": "tsc -p apps/api/tsconfig.json && tsc -p apps/worker/tsconfig.json && node scripts/deletion-smoke.mjs",
     "deletion:tombstones:export": "node scripts/deletion-tombstones.mjs export",
