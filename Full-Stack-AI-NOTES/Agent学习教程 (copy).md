@@ -69,7 +69,7 @@ Microsoft 进一步指出，现实生产系统通常不会完全依赖 Agent，�
 
 企业 Agent 体系保留三层：Foundation、Capability、Application。
 
-![企业 Agent 三层架构](assets/01-three-layers.svg)
+![企业 Agent 三层架构](assets/agent-tutorial-企业三层架构.svg)
 
 | 层级 | 回答的问题 | 主要产物 | 不负责什么 |
 | --- | --- | --- | --- |
@@ -109,7 +109,7 @@ Microsoft 进一步指出，现实生产系统通常不会完全依赖 Agent，�
 构建 Agent → 执行一次 Run → 运营多个 Agent
 ```
 
-![Foundation 生命周期](assets/02-foundation-lifecycle.svg)
+![Foundation 生命周期](assets/agent-tutorial-foundation生命周期.svg)
 
 构建、执行和运营是一条连续的职责链。身份权限既影响本地工具调用，也影响生产发布；追踪既用于单次 Run 排错，也用于线上质量分析。
 
@@ -172,7 +172,7 @@ Runtime 可以执行重试，但不应自行制定业务策略。这里有两类
 - Application 决定：哪些错误允许重试、最多几次、间隔多长、用原上下文继续还是新开 Run、最终转人工还是错误分支。
 - Foundation 执行：记录当前是第几次 attempt、设置计时器、调度下一次执行、读取检查点、保证状态一致并留下追踪记录。
 
-![策略与执行机制](assets/03-policy-mechanism.svg)
+![策略与执行机制](assets/agent-tutorial-重试策略与执行机制.svg)
 
 可以把一次重试写成一份明确的业务策略：
 
@@ -236,7 +236,7 @@ BUG-42 可以限制诊断阶段最多调用模型 20 次、运行 30 分钟。�
 
 Capability 不是“Agent 运行需要的所有东西”，而是能被多个 Agent 或多个业务流程复用的资产。
 
-![Capability 复用关系](assets/04-capability-reuse.svg)
+![Capability 复用关系](assets/agent-tutorial-capability复用.svg)
 
 一项资产进入 Capability 层前，至少要回答：
 
@@ -329,7 +329,7 @@ Application 有两种常见的构建起点：
 
 两者是业务设计的不同面向，不是固定的上下层关系。目标导向的 Agent 可以单独提供服务，也可以被某个业务阶段调用；流程导向的阶段可以使用 Agent，也可以只执行普通代码或工具。
 
-![两种业务构建面向](assets/05-two-workflow-modes.svg)
+![两种业务构建面向](assets/agent-tutorial-两种业务构建方式.svg)
 
 ### 4.1 目标导向：围绕业务目标构建 Agent
 
@@ -410,7 +410,7 @@ Agent 不是每个 Stage 的必选项。测试、Schema 校验、状态回写等
 
 Orchestrator 不分“确定性 Orchestrator”和“AI Orchestrator”。真正分成两种的是 Gate：确定性 Gate 用规则判断，AI Gate 用模型审查。只要下一阶段仍由预先写好的规则映射，流程控制权就在 Orchestrator。
 
-![Orchestrator、Gate 与 Supervisor 的控制权对比](assets/05-control-patterns.svg)
+![Orchestrator、Gate 与 Supervisor 的控制权对比](assets/agent-tutorial-orchestrator-gate-supervisor对比.svg)
 
 #### 4.3.1 Orchestrator 怎样经过 Gate 推进流程
 
@@ -585,7 +585,7 @@ Anthropic 文档中的 Orchestrator-Workers 指模型动态拆解任务并分派
 
 Business Workflow 不直接调用 Codex SDK 或某条 CLI。所有 Agent 阶段都经过同一个 AgentStageExecutor，再由它从 Adapter 注册表中找到具体实现。
 
-![Agent 接入 Business Workflow](assets/06-stage-agent-adapter.svg)
+![Agent 接入 Business Workflow](assets/agent-tutorial-agent接入业务工作流.svg)
 
 ### 5.1 先看懂 Adapter 怎样参与调用
 
@@ -995,7 +995,7 @@ await orchestrator.advanceByRules({
 
 ## 6. BUG-42：用一条流程看清各部分怎样配合
 
-![BUG-42 执行结构](assets/07-bug42-execution.svg)
+![BUG-42 执行结构](assets/agent-tutorial-BUG42执行结构.svg)
 
 ### 6.1 先写 Workflow 定义
 

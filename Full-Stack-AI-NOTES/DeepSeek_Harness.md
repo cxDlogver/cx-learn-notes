@@ -32,7 +32,7 @@ DeepSeek Harness 本质上是一套 **<u>全插件化的 Agent 运行框架</u>*
 
 所以我认为 DeepSeek Harness 最适合的几个方向，一是针对不同业务快速组合垂直 Harness，二是构建企业内部共享插件生态的 Agent Platform，第三个，也是最前沿的方向，就是让 Agent 能够持续修改、评估和优化自己的 Runtime，最终形成真正的自进化 Agent。
 
-![image-20260815074515524](assets/image-20260815074515524.png)
+![image-20260815074515524](assets/deepseek-harness-概述.png)
 
 ## 一、DeepSeek Harness 是什么
 

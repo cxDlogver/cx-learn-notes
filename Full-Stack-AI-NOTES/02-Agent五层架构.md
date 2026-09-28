@@ -45,7 +45,7 @@ Agent
 | 编排层 | 整个任务如何运行？ | 分解、路由、状态机、循环、并行、持久化 | Workflow、Agent Loop、Graph、Scheduler、Subagent |
 | 反馈与控制层 | 是否正确、安全，是否继续？ | 验证、审批、重试、回滚、终止、追踪 | Guardrail、Validator、Test、Evaluator、HITL、Tracing |
 
-![ChatGPT Image 2026年7月13日 10_52_49](../assets/ChatGPT%20Image%202026年7月13日%2010_52_49-3924622.png)
+![ChatGPT Image 2026年7月13日 10_52_49](../assets/agent-arch-五层整体结构.png)
 
 五层的协作关系更接近下面这张图：
 

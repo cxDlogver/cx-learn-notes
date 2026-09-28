@@ -35,7 +35,7 @@
 
 第一章区分了两种 Agent 研发语境。从这一章开始，我们只讨论第二类：怎样构建一个能够运行的 Agent。
 
-![Agent System 整体框架](assets/image-20260823155903948.png)
+![Agent System 整体框架](assets/agent-system-整体框架.png)
 
 *图 2-1：Agent System 整体框架。Model 负责推理与决策；Agent Harness 承担运行、上下文组织、能力接入、执行控制和状态支撑。*
 
@@ -232,7 +232,7 @@ Checkpoint 保存的是“继续执行所需的数据”，Trace 记录的是“
 
 这里的基本原则是：通用机制尽量复用，业务规则由企业自己定义。
 
-![企业开发 Agent 的整体思路](assets/enterprise-agent-development-overview-2026.png)
+![企业开发 Agent 的整体思路](assets/agent-system-企业开发整体思路.png)
 
 *图 3-1：企业开发 Agent 的整体思路。先复用通用底座并组合业务能力，再按业务需要扩展执行策略；只有现有底座无法满足关键要求时，才进入底层替换或自研。*
 
@@ -352,7 +352,7 @@ Agent 每次调用模型之前，都要先回答一个问题：这一轮应该�
 
 当前输入、会话历史、任务状态、长期记忆和外部知识都可能有用，但不能不加选择地全部交给模型。Context Management 负责从这些信息中筛选、组织和压缩内容，形成当前这次模型调用的输入。Memory、知识库和业务数据库虽然来源不同，最终都可能通过这一步进入 Context，因此放在同一章讨论。
 
-![Context、Memory 与知识检索整体框架](assets/context-memory-retrieval-overview-2026.png)
+![Context、Memory 与知识检索整体框架](assets/agent-system-context与记忆检索.png)
 
 *图 4-1：Context、Memory 与知识检索整体框架。候选信息经过 Context Management 形成当前模型输入；运行结果写回 State，满足条件的信息再经过 Memory Lifecycle 沉淀为长期记忆；外部知识通过 RAG 检索进入 Context。*
 
@@ -604,7 +604,7 @@ Tool、Skill 和 MCP 不是同一层概念：
 
 MCP Server 可以提供 Tools、Resources 和 Prompts。Tools 是模型可以选择的可执行函数；Resources 是由应用管理的上下文资料；Prompts 是由用户选择或应用使用的提示模板。[25](https://modelcontextprotocol.io/specification/2025-11-25/server/index) 因此，本章把三者放在同一个能力管理体系中讨论，但不会把它们都叫作 Tool。
 
-![Agent 能力管理整体框架](assets/agent-capability-management-overview-2026.png)
+![Agent 能力管理整体框架](assets/agent-system-能力管理框架.png)
 
 *图 5-1：Agent 能力管理整体框架。不同来源的能力先完成注册和接入，再按 Agent、任务、权限和运行状态筛选。Tool 与 Skill 通过不同通道提供给模型，选择后也进入不同的执行或加载路径。*
 
@@ -845,7 +845,7 @@ Harness 校验、加载或执行
 
 下面使用一套接近 JavaScript 的通用接口。`ToolPolicyEvaluator`、`dispatchToolCall` 等名称是本文为了说明调用关系定义的，不是某个框架的官方 API。最后一节再对应到 LangChain、LangGraph 和 OpenAI Agents SDK。
 
-![一次 Tool Call 的实际执行时序](assets/agent-tool-call-execution-sequence-2026.png)
+![一次 Tool Call 的实际执行时序](assets/agent-system-tool-call执行时序.png)
 
 *图 6-1：一次 Tool Call 的实际执行时序。箭头表示实际调用顺序，分支表示 Runtime 收到策略判断以后采取的动作。*
 

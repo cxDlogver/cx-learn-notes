@@ -1301,7 +1301,7 @@ class MyClass {
 
 `constructor`实际就是类，保存所有静态属性和方法。
 
-![image-20250802233313942](assets/image-20250802233313942.png)
+![image-20250802233313942](assets/js-原型对象.png)
 
 **4.访问方式**
 
@@ -2815,7 +2815,7 @@ DOM中的D意为Document，即文档。所谓文档就是指整个网页，换�
 </html>
 ```
 
-![img](assets/20220808135838431.png)
+![img](assets/js-DOM概念.png)
 
 ### 【节点（Node）】
 
@@ -2845,7 +2845,7 @@ DOM中的D意为Document，即文档。所谓文档就是指整个网页，换�
 
 DOM就是一种宿主对象，即由运行环境（浏览器）提供的对象。对象的复杂程度也开始提升，我们先来看看document的继承关系：
 
-![img](assets/20220808141848408.png)
+![img](assets/js-Document对象.png)
 
 在标准中，Document继承了Node，Node继承了EventTarget，换言之EventTarget、Node以及Document中所定义的方法document都可以调用，它在浏览器中的实际结构会更复杂一些，这里我们暂时不过多的赘述。
 
@@ -2870,7 +2870,7 @@ DOM就是一种宿主对象，即由运行环境（浏览器）提供的对象�
 
 在网页中所有的元素（标签）都是一个Element对象。Element对象的继承关系和Document类似：
 
-![img](assets/20220808210844195.png)
+![img](assets/js-Element对象.png)
 
 | 特性     | `Node`             | `Element`                      |
 | -------- | ------------------ | ------------------------------ |

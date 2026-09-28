@@ -690,7 +690,7 @@ Vite 在开发时更像一个“模块服务器”：
 
 ### 【完整请求链路】
 
-![image-20260226214952324](assets/image-20260226214952324.png)
+![image-20260226214952324](assets/vite-完整请求链路.png)
 
 假设入口是 `index.html`，其中有：
 
@@ -861,7 +861,7 @@ CSS Modules、PostCSS、Sass/Less 等也都是在这个链路中按需处理。
 
 ### 【生产构建阶段（vite build）】
 
-![image-20260226214930878](assets/image-20260226214930878.png)
+![image-20260226214930878](assets/vite-生产构建阶段.png)
 
 开发阶段不打包，但生产必须打包，因为要：
 
@@ -1275,15 +1275,15 @@ Vite启动`dev`服务器时，虽不进行全量编译，但会执行两类优�
 
 **`vue`源文件被编译**
 
-![image-20260225221058440](assets/image-20260225221058440.png)
+![image-20260225221058440](assets/vite-按需编译-1.png)
 
-![image-20260225221112098](assets/image-20260225221112098.png)
+![image-20260225221112098](assets/vite-按需编译-2.png)
 
 **`js`文件没有变化，仍然基于ESM**
 
-![image-20260225221123518](assets/image-20260225221123518.png)
+![image-20260225221123518](assets/vite-按需编译-3.png)
 
-![image-20260225221133062](assets/image-20260225221133062.png)
+![image-20260225221133062](assets/vite-按需编译-4.png)
 
 ## 5. Vite常见配置
 

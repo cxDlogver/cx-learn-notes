@@ -82,11 +82,11 @@ NVM（Node Version Manager）是 **Node.js 版本管理工具**，可以方便�
 
 第一种直接在命令行中输入node，会进入到node的REPL界面（交互编程环境），在REPL下和浏览器的控制台类似，我们可以直接输入各种JS代码，REPL会立即执行这些代码并输出结果（.exit用来退出REPL）。
 
-![img](assets/20220927094943815.png)
+![img](assets/nodejs-REPL交互执行.png)
 
 第二种也是我们最常使用的一种，就是将js代码编写到一个js文件中，然后通过命令行执行js文件
 
-![img](assets/20220927095238144.png)
+![img](assets/nodejs-命令行执行js文件.png)
 
 Node.js虽然也属于js，但是它和浏览器中js还是有所区别的。对于ECMAScript标准来说，它们是一致的所以像是原始值、流程控制语句、运算符、函数、对象、数组、内建对象这些东西无论是浏览器环境还是node中都是一样的。对于宿主对象来说浏览器和node是截然不同的，像是DOM、BOM这些对象在node中通通是不存在的，但是一些东西在Node中依然得到了保留，比如console对象、比如定时器之类。
 
@@ -950,7 +950,7 @@ HTTP/1.1 采用了长连接的方式，这使得管道（pipeline）网络传输
 
 超文本传输安全协议（Hypertext Transfer Protocol Secure，简称：HTTPS）是一种通过计算机网络进行安全通信的传输协议。HTTPS经由HTTP进行通信，但利用SSL/TLS来加密数据包。HTTPS开发的主要目的，是提供对网站服务器的身份认证，保护交换数据的隐私与完整性。
 
-![img](assets/1603965685749-8cc21a1b-4277-42b1-aeed-18978c1cdb95.png)
+![img](assets/https-协议原理.png)
 
 HTTP协议采用**明文传输**信息，存在**信息窃听**、**信息篡改**和**信息劫持**的风险，而协议TLS/SSL具有**身份验证**、**信息加密**和**完整性校验**的功能，可以避免此类问题发生。
 
@@ -965,7 +965,7 @@ TLS/SSL的功能实现主要依赖三类基本算法：**散列函数hash**、**
 - 基于散列函数验证信息的完整性
 - 对称加密算法采用协商的秘钥对数据加密
 - 非对称加密实现身份认证和秘钥协商
-  ![img](assets/1603965685769-63a91dae-936d-42d3-8571-577cefa11e33.png)
+  ![img](assets/https-TLS-SSL工作原理.png)
 
 **2.1 散列函数hash**
 
@@ -1875,7 +1875,7 @@ promise.then((data) => {
 
 当我们调用Promise的then方法时，相当于为Promise设置了一个回调函数，换句话说，<font color='#409eff'>then中的回调函数不会立即执行，而是在Promise的PromiseState发生变化时才会执行</font>。如果PromiseState从pending变成了fulfilled则then的第一个回调函数执行，且PromiseResult的值作为参数传递给回调函数。如果PromiseState从pending变成了rejected则then的第二个回调函数执行，且PromiseResult的值作为参数传递给回调函数。
 
-![img](assets/20221010132511667-1024x574.png)
+![img](assets/nodejs-promise获取数据.png)
 
 <font color='#409eff'>then执行后每次总会返回一个新的Promise</font>，并将then中回调函数的返回值存储到这个Promise中，如果没有指定返回值则新Promise中不会存储任何值。如果 `.then()` 的回调中**返回的不是一个 Promise（而是普通值）**，那它会被自动包装成一个**立即 resolve 的 Promise**，并作为**下一个 `.then()` 的输入值**继续执行。
 

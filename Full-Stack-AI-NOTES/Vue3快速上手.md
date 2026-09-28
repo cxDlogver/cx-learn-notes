@@ -29,7 +29,7 @@ date: 2025-12-17 21:46:46
 
 - 截止2023年10月，最新的公开版本为：`3.3.4`
 
-  <img src="assets/1695089947298-161c1b47-eb86-42fb-b1f8-d6a4fcab8ee2-1765979249041-3.png" alt="image.png" style="zoom:30%;" /> 
+  <img src="assets/vue3-简介与最新版本.png" alt="image.png" style="zoom:30%;" /> 
 
 ## 1.1. 【性能的提升】
 
@@ -125,7 +125,7 @@ npm run serve
 - 对 `TypeScript`、`JSX`、`CSS` 等支持开箱即用。
 - 真正的按需编译，不再等待整个应用编译完成。
 - `webpack`构建 与 `vite`构建对比图如下：
-  <img src="assets/1683167182037-71c78210-8217-4e7d-9a83-e463035efbbe.png" alt="webpack构建" title="webpack构建" style="zoom:20%;box-shadow:0 0 10px black" />	<img src="assets/1683167204081-582dc237-72bc-499e-9589-2cdfd452e62f-1765979249041-4.png" alt="vite构建" title="vite构建" style="zoom: 20%;box-shadow:0 0 10px black" />
+  <img src="assets/vue3-webpack构建.png" alt="webpack构建" title="webpack构建" style="zoom:20%;box-shadow:0 0 10px black" />	<img src="assets/vue3-vite构建.png" alt="vite构建" title="vite构建" style="zoom: 20%;box-shadow:0 0 10px black" />
 
 * 具体操作如下（点击查看[官方文档](https://cn.vuejs.org/guide/quick-start.html#creating-a-vue-application)）
 
@@ -181,9 +181,9 @@ npm create vue@latest
 
 安装官方推荐的`vscode`插件：
 
-<img src="assets/volar-1765979249041-6.png" alt="Snipaste_2023-10-08_20-46-34" style="zoom:50%;" /> 
+<img src="assets/vue3-vscode安装volar插件.png" alt="Snipaste_2023-10-08_20-46-34" style="zoom:50%;" /> 
 
-<img src="assets/image-20231218085906380-1765979249041-8.png" alt="image-20231218085906380" style="zoom:42%;" /> 
+<img src="assets/vue3-vite项目结构.png" alt="image-20231218085906380" style="zoom:42%;" /> 
 
 总结：
 
@@ -243,13 +243,13 @@ npm create vue@latest
 
 `Options`类型的 `API`，数据、方法、计算属性等，是分散在：`data`、`methods`、`computed`中的，若想新增或者修改一个需求，就需要分别修改：`data`、`methods`、`computed`，不便于维护和复用。
 
-<img src="assets/1696662197101-55d2b251-f6e5-47f4-b3f1-d8531bbf9279.gif" alt="1.gif" style="zoom:70%;border-radius:20px" /><img src="assets/1696662200734-1bad8249-d7a2-423e-a3c3-ab4c110628be-1765979249041-9.gif" alt="2.gif" style="zoom:70%;border-radius:20px" />
+<img src="assets/vue3-options-api弊端-1.gif" alt="1.gif" style="zoom:70%;border-radius:20px" /><img src="assets/vue3-options-api弊端-2.gif" alt="2.gif" style="zoom:70%;border-radius:20px" />
 
 ### Composition API 的优势
 
 可以用函数的方式，更加优雅的组织代码，让相关功能的代码更加有序的组织在一起。
 
-<img src="assets/1696662249851-db6403a1-acb5-481a-88e0-e1e34d2ef53a-1765979249041-10.gif" alt="3.gif" style="height:300px;border-radius:10px"  /><img src="assets/1696662256560-7239b9f9-a770-43c1-9386-6cc12ef1e9c0.gif" alt="4.gif" style="height:300px;border-radius:10px"  />
+<img src="assets/vue3-composition-api优势-1.gif" alt="3.gif" style="height:300px;border-radius:10px"  /><img src="assets/vue3-composition-api优势-2.gif" alt="4.gif" style="height:300px;border-radius:10px"  />
 
 > 说明：以上四张动图原创作者：大帅老猿
 
@@ -549,7 +549,7 @@ function test(){
 
 > 1. `ref`创建的变量必须使用`.value`（可以使用`volar`插件自动添加`.value`）。
 >
->    <img src="assets/自动补充value-1765979249042-12.png" alt="自动补充value" style="zoom:50%;border-radius:20px" /> 
+>    <img src="assets/vue3-ref-reactive自动补充value.png" alt="自动补充value" style="zoom:50%;border-radius:20px" /> 
 >
 > 2. `reactive`重新分配一个新对象，会**失去**响应式（可以使用`Object.assign`去整体替换）。 
 >
@@ -608,7 +608,7 @@ function test(){
 
 作用：根据已有数据计算出新数据（和`Vue2`中的`computed`作用一致）。
 
-<img src="assets/computed-1765979249042-13.gif" style="zoom:20%;" />  
+<img src="assets/vue3-computed计算属性.gif" style="zoom:20%;" />  
 
 ```vue
 <template>
@@ -1329,7 +1329,7 @@ function test(){
 
 ## 4.1. 【对路由的理解】
 
-<img src="assets/image-20231018144351536-1765979249042-14.png" alt="image-20231018144351536" style="zoom:20%;border-radius:40px" /> 
+<img src="assets/vue3-路由理解.png" alt="image-20231018144351536" style="zoom:20%;border-radius:40px" /> 
 
 ## 4.2. 【基本切换效果】
 
@@ -1685,7 +1685,7 @@ console.log(router.replace)
 
 ## 5.1【准备一个效果】
 
-<img src="assets/pinia_example-1765979249042-15.gif" alt="pinia_example" style="zoom:30%;border:3px solid" /> 
+<img src="assets/vue3-pinia效果示例.gif" alt="pinia_example" style="zoom:30%;border:3px solid" /> 
 
 ## 5.2【搭建 pinia 环境】
 
@@ -1711,7 +1711,7 @@ app.mount('#app')
 
 此时开发者工具中已经有了`pinia`选项
 
-<img src="assets/1684309952481-c67f67f9-d1a3-4d69-8bd6-2b381e003f31.png" style="zoom:80%;border:1px solid black;border-radius:10px" />
+<img src="assets/vue3-搭建pinia环境.png" style="zoom:80%;border:1px solid black;border-radius:10px" />
 
 ## 5.3【存储+读取数据】
 
@@ -1974,7 +1974,7 @@ export const useTalkStore = defineStore('talk',()=>{
 
 **常见搭配形式：**
 
-<img src="assets/image-20231119185900990-1765979249042-16.png" alt="image-20231119185900990" style="zoom:60%;" /> 
+<img src="assets/vue3-组件通信总览.png" alt="image-20231119185900990" style="zoom:60%;" /> 
 
 ## 6.1. 【props】
 
@@ -2422,7 +2422,7 @@ $parent可以获取某一个组件的父组件实例VC,因此可以使用父组�
 
 ### 1. 默认插槽
 
-![img](assets/default_slot.png)
+![img](assets/vue3-默认插槽.png)
 
 ```vue
 父组件中：

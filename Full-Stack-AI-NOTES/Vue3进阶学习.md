@@ -13,7 +13,7 @@ categories: Vue
 
 Vue 组件的生命周期包括一系列的钩子函数，这些函数在组件的不同阶段被调用。了解这些生命周期钩子可以帮助你在合适的时机执行特定的操作。
 
-![图1](assets/图1.png)
+![图1](assets/vue3-advanced-组件生命周期流程.png)
 
 ### 创建阶段
 
@@ -197,7 +197,7 @@ export default {
 </style>
 ```
 
-![图2](assets/图2.png)
+![图2](assets/vue3-advanced-父子组件生命周期-1.png)
 
 **组件创建的生命周期如下：**
 
@@ -207,7 +207,7 @@ export default {
 
 - 销毁周期和创建周期是相同的。组件的创建生命周期是深度优先遍历的顺序，如果子组件还有子组件，会先创建最深层的子组件。 
 
-![图3](assets/图3.png)
+![图3](assets/vue3-advanced-父子组件生命周期-2.png)
 
 <font color='#1677ff'>注意点：</font>
 
@@ -388,7 +388,7 @@ export default {
 
 ## 1.MVVM框架
 
-![image-20251217223808740](assets/image-20251217223808740.png)
+![image-20251217223808740](assets/vue3-advanced-MVVM框架.png)
 
 根据MVVM库的特点：
 
@@ -479,7 +479,7 @@ Vue 的响应式原理，本质上是：**数据劫持负责“感知变化”�
 
 Vue2响应式原理的流程图如下：
 
-![image-20251218021138928](assets/image-20251218021138928.png)
+![image-20251218021138928](assets/vue3-advanced-响应式原理.png)
 
 核心代码(先不看，直接看流程)
 
@@ -1189,7 +1189,7 @@ vm.address === vm._data.address
 - 首先将数据从`data`中取出放到`_data`中，并进行数据劫持的相关操作
 - 将数据从`_data`中复制了一份在`vm`实例对象上，对 `vm` 实例的属性访问，转发到 `vm._data` 上。**（数据代理）**
 
-![image-20250903140313714](assets/image-20250903140313714.png)
+![image-20250903140313714](assets/vue3-advanced-数据代理.png)
 
 > 要注意的是，数据代理的作用是减少代码量，让开发体验更好。与响应式没有关系。
 

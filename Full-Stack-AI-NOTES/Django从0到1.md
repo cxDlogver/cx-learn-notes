@@ -45,7 +45,7 @@ http://127.0.0.1:8000/ # 默认
 
 > Django 采用 **“一个项目 Project + 多个应用 App”** 的结构。
 
-<img src="assets/1aICZBUzrgLgc5GoWuiFHcw.jpegutm_source=chatgpt.jpeg" alt="How to Structure Your Django Project" style="zoom: 50%;" /><img src="assets/1jRO4h3b3f8cmsxW81NCoig.pngutm_source=chatgpt-1764944514302-1.png" alt="Django Project Architecture: The best project skeleton ever. | by Mandanka  Rajan | Medium" style="zoom: 33%;" />
+<img src="assets/django-项目结构.jpeg" alt="How to Structure Your Django Project" style="zoom: 50%;" /><img src="assets/django-最佳项目骨架.png" alt="Django Project Architecture: The best project skeleton ever. | by Mandanka  Rajan | Medium" style="zoom: 33%;" />
 
 #### 从0到1的一个Django示例
 

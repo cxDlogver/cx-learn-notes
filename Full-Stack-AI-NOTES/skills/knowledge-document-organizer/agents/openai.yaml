@@ -1,0 +1,7 @@
+interface:
+  display_name: "知识梳理文档"
+  short_description: "基于可靠资料编写结构紧凑、层级清晰且引用规范的知识文档"
+  default_prompt: "使用 $knowledge-document-organizer 按现有教程风格梳理这份知识文档，并核验引用来源。"
+
+policy:
+  allow_implicit_invocation: false
