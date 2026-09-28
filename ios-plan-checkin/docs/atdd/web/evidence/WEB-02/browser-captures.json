@@ -1,0 +1,142 @@
+{
+  "taskId": "WEB-02",
+  "kind": "synthetic-browser-tool-check",
+  "businessAcceptance": "NOT_RUN",
+  "captures": [
+    {
+      "label": "Chrome phone emulation without viewport meta; observed default layout width 980",
+      "browser": "Chrome/153.0.8010.53",
+      "requestedViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observedViewport": {
+        "width": 980,
+        "height": 2121
+      },
+      "horizontalOverflow": false,
+      "files": [
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest/accessibility.json",
+          "sha256": "a11d83a04546c59b6912a27c12564bf0b8c63e9095d0fe5deaa45f58c297c44c",
+          "bytes": 6544
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest/browser-log.jsonl",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "bytes": 1
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest/capture.json",
+          "sha256": "acf178f8a978534965583cc45c053a1fd955df55d3c7620ed952a637b1696215",
+          "bytes": 532
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest/dom.html",
+          "sha256": "4cf3a51c619b5ecbd92e8aba5f69ea49ac92db61309c1478a76be1912679db37",
+          "bytes": 101
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest/screen-after.png",
+          "sha256": "464b2779d5fb8cacd5c8b32aec1b94c319bacfaa09b4d952654a2d0632b67ccb",
+          "bytes": 4099
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest/visual-result.json",
+          "sha256": "b15658dce7136c3d3a357a16c6febd34dd77b26818b1a9d18db4df18d785f207",
+          "bytes": 191
+        }
+      ]
+    },
+    {
+      "label": "Chrome responsive synthetic page at 390x844",
+      "browser": "Chrome/153.0.8010.53",
+      "requestedViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observedViewport": {
+        "width": 390,
+        "height": 844
+      },
+      "horizontalOverflow": false,
+      "files": [
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/accessibility.json",
+          "sha256": "bbc975d9f15fa1e93d2c68f91c4bcb9a43297bdfe540158ff4694a38fc5a32fa",
+          "bytes": 6664
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/browser-log.jsonl",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "bytes": 1
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/capture.json",
+          "sha256": "f20278825eb5ba811f42d430007d38c0b9fd9c303557c4e546ee4ec8d83bfbf0",
+          "bytes": 531
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/dom.html",
+          "sha256": "5adc8cc3d29dda15ca290b755f1c24c9ca129cae4c760725ec6e4f62b49ed1dd",
+          "bytes": 168
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/screen-after.png",
+          "sha256": "adcfac001f6aff64f61177ddfe4baa047d199167bd5569ee22c04954e65b3ce5",
+          "bytes": 6440
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/visual-result.json",
+          "sha256": "cebe70deab1a311e7624f0bc9edd94254c0294347e041ba67c0595998bc924fd",
+          "bytes": 189
+        }
+      ]
+    },
+    {
+      "label": "Edge desktop synthetic page at 1280x800",
+      "browser": "Edg/154.0.4258.37",
+      "requestedViewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "observedViewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "horizontalOverflow": false,
+      "files": [
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/accessibility.json",
+          "sha256": "de739b8c892f9c4899bbfd14c954413bd3a520566293e326b6efcbeef4db455b",
+          "bytes": 6664
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/browser-log.jsonl",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "bytes": 1
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/capture.json",
+          "sha256": "ef12fb21cb9fc9924dcbdae44bf37527de2c349bf1c525d10eda2c52650356d5",
+          "bytes": 544
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/dom.html",
+          "sha256": "5adc8cc3d29dda15ca290b755f1c24c9ca129cae4c760725ec6e4f62b49ed1dd",
+          "bytes": 168
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/screen-after.png",
+          "sha256": "96bbbb75b30343ec14b99b98bd74f00e8f83b478d1c1b2398c605815facc036b",
+          "bytes": 8467
+        },
+        {
+          "path": "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/visual-result.json",
+          "sha256": "8bda6819e971a8d0d3493603754cc1d60f6e56c0af9e75eb7dcf591888b42d3f",
+          "bytes": 191
+        }
+      ]
+    }
+  ]
+}

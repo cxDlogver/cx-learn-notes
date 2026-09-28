@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T11:45:29Z",
+  "updatedAt": "2026-09-28T11:53:26Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -153,13 +153,14 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "已实现 Web result.json 的 schema、基线、预期断言、路径、证据代码和 SHA-256 校验，并接入任务台账 PASS 分支；浏览器采集与隔离种子尚未实现。",
+        "summary": "结果和原始证据校验器已实现；本机 Chrome/Edge CDP 探针可采截图、DOM、无障碍树、布局和浏览器版本。隔离业务种子、正式浏览器矩阵与 CI 产物保留仍待实现。",
         "changedPaths": [
           "docs/atdd/web/validate_result.py",
           "docs/atdd/web/test_validate_result.py",
           "docs/atdd/web/requirements.txt",
           "docs/atdd/web/check_execution_progress.py",
-          "docs/atdd/web/WEB-02-证据工具进展.md"
+          "docs/atdd/web/WEB-02-证据工具进展.md",
+          "scripts/web-browser-capture.mjs"
         ],
         "commit": null,
         "checks": [
@@ -186,19 +187,29 @@
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-02/python-syntax.txt",
             "sha256": "c5a12597b9c9a60f249ea758ed9cd657c5080785fe8052e94f6761e2c8cfa17b"
+          },
+          {
+            "command": "node --check scripts/web-browser-capture.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/browser-syntax.txt",
+            "sha256": "fd735ee7d4a61dcde76ac285bd60c3ebb734435c236b383a8a0ecdf20bb07ac4"
           }
         ],
         "evidence": [
           "docs/atdd/web/evidence/WEB-02/checks.json",
-          "docs/atdd/web/WEB-02-证据工具进展.md"
+          "docs/atdd/web/WEB-02-证据工具进展.md",
+          "docs/atdd/web/evidence/WEB-02/browser-captures.json"
         ]
       },
       "verification": {
-        "summary": "八项临时合成数据自测通过；真实浏览器和 136 项业务 ATDD 尚未执行，WEB-02 保持 IN_PROGRESS。",
+        "summary": "八项合成结果校验自测、Chrome 390x844 和 Edge 1280x800 的浏览器采集探针已实测；均非产品业务验收，136 项仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
-          "docs/atdd/web/evidence/WEB-02/tool-selftest.txt"
+          "docs/atdd/web/evidence/WEB-02/tool-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/browser-captures.json",
+          "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/screen-after.png"
         ]
       },
       "review": {
@@ -217,6 +228,12 @@
           "type": "PARTIAL_TOOL_CHECKED",
           "summary": "结果校验器和 8 项合成自测通过；真实浏览器采集与外部桩待做。",
           "evidencePath": "docs/atdd/web/evidence/WEB-02/checks.json"
+        },
+        {
+          "at": "2026-09-28T11:53:26Z",
+          "type": "BROWSER_TOOL_CHECKED",
+          "summary": "真实 Chrome/Edge 采集工具通过合成页探针，截图/DOM/AX/布局 SHA 已记录；业务 ATDD 未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/browser-captures.json"
         }
       ]
     },
@@ -4541,6 +4558,17 @@
       "summary": "已实现证据包校验工具；八项合成自测通过，不计业务 PASS。",
       "evidence": [
         "docs/atdd/web/evidence/WEB-02/checks.json",
+        "docs/atdd/web/WEB-02-证据工具进展.md"
+      ]
+    },
+    {
+      "id": "WEB-02-BROWSER-PROBE-20260928",
+      "occurredAt": "2026-09-28T11:53:26Z",
+      "type": "BROWSER_TOOL_CHECKED",
+      "taskId": "WEB-02",
+      "summary": "Chrome 手机和 Edge 桌面采集探针输出真实浏览器证据；合成页不计业务 PASS。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-02/browser-captures.json",
         "docs/atdd/web/WEB-02-证据工具进展.md"
       ]
     }

@@ -33,8 +33,16 @@
       "path": "docs/atdd/web/evidence/WEB-02/python-syntax.txt",
       "sha256": "c5a12597b9c9a60f249ea758ed9cd657c5080785fe8052e94f6761e2c8cfa17b",
       "bytes": 34
+    },
+    {
+      "name": "browser-syntax",
+      "command": "node --check scripts/web-browser-capture.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/browser-syntax.txt",
+      "sha256": "fd735ee7d4a61dcde76ac285bd60c3ebb734435c236b383a8a0ecdf20bb07ac4",
+      "bytes": 33
     }
   ],
   "browserAcceptance": "NOT_RUN",
-  "note": "Synthetic self-tests validate only the evidence tool. Browser capture and data fixtures remain pending."
+  "note": "Synthetic self-tests and Chrome/Edge capture probes validate tooling only; business browser acceptance remains NOT_RUN."
 }
