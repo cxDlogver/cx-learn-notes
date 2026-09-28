@@ -2,6 +2,13 @@
 
 本文件记录开发阶段相对于 `packages/contracts/compat-baseline.json` 的接口增量。接口定义以 `packages/contracts/src/routes.ts`、`src/index.ts` 和生成的 `openapi.json` 为准。
 
+## WEB-01 导出入口兼容补齐
+
+- 旧 `POST/GET /api/v1/exports`、`GET /api/v1/exports/{id}` 和 `GET /api/v1/exports/{id}/download-url` 继续保留，原 operation ID 和授权/幂等行为不变。
+- Web 使用 `POST/GET /api/v1/me/exports`、`GET /api/v1/me/exports/{id}` 和 `GET /api/v1/me/exports/{id}/download-url`。其中创建与详情原先只在契约中预留，现由同一控制器实现；列表和下载操作补入契约与 OpenAPI。
+- 本文件旧 OPS-02 段的 `/api/v1/me/data-exports` 为历史记录，不是当前控制器的实际路径。Web 的路径决定与差异见 [WEB-01 契约核对](./atdd/web/WEB-01-契约核对与兼容迁移.md)。
+- 静态路由审计、OpenAPI 检查、兼容检查和导出冒烟的实际结果保存在 `docs/atdd/web/evidence/WEB-01/`。这些输出只证明路径/兼容开发检查，不算 Web 浏览器 ATDD 通过。
+
 ## OPS-02 完整数据导出
 
 - 新增 `POST /api/v1/me/data-exports`、`GET /api/v1/me/data-exports`、`GET /api/v1/me/data-exports/{id}`、`GET /api/v1/me/data-exports/{id}/download-url`。创建需要幂等键，同一账户同时仅运行一项，每日最多创建五项；列表和下载仅限本人。

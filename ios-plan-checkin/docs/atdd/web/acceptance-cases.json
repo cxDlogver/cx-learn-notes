@@ -1,0 +1,3588 @@
+{
+  "title": "计划打卡 Web V1 ATDD/BDD 用例清单",
+  "status": "acceptance-baseline-not-executed",
+  "schemaVersion": "1.0.0",
+  "caseCount": 136,
+  "sourceDigest": {
+    "webPrd": "cb401befa77eb7543906643857ca59d9cf0ffcfc7742d4f02c661702ff9c2178",
+    "webTechnical": "3f1f8d65f5242fd05ba5fe286bb3ce09c915e9d7ecba8682b9683652839fabcf",
+    "iosPrd": "75f1f4b1878dc8c9b9c08e70a7391f67ca2145ef7f458b605833ed9cd43a46a7",
+    "iosAcceptance": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
+    "iosPen": "eb586ed8eefc166a11cf1dc84ebe7638a67981d7fe8adcb38522154b28d31e09",
+    "matrix": "c746b0469d3bf1af5951acccb246f7af8504a141aa5f2274867b1cfdc0d2b8c4"
+  },
+  "sourcePaths": {
+    "webPrd": "PRD-计划打卡-Web-v1.md",
+    "webTechnical": "技术方案-计划打卡-Web-v1.md",
+    "iosPrd": "PRD-计划打卡-iOS-v1.md",
+    "iosAcceptance": "ATDD-BDD-计划打卡-iOS-v1-验收矩阵.md",
+    "iosPen": "ui/plan-checkin.pen",
+    "matrix": "ATDD-BDD-计划打卡-Web-v1-验收矩阵.md"
+  },
+  "cases": [
+    {
+      "id": "WEB-AUTH-01",
+      "domain": "AUTH",
+      "given": "未登录，有效大陆手机号，短信桩可用",
+      "when": "请求验证码",
+      "then": {
+        "functional": "返回 challengeId 与冷却时间，进入验证码步骤",
+        "visual": "标签、焦点、倒计时和手机/桌面布局清楚",
+        "negative": "不创建会话，不显示完整手机号于日志"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 80,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-02",
+      "domain": "AUTH",
+      "given": "空号、非法号、过快重发参数组",
+      "when": "请求验证码",
+      "then": {
+        "functional": "表单或 API 返回稳定错误及可重试时间",
+        "visual": "错误靠近字段，按钮禁用可读",
+        "negative": "不发送短信，不泄露账号是否存在"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 81,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-03",
+      "domain": "AUTH",
+      "given": "新手机号与有效验证码",
+      "when": "完成验证和用户名/昵称",
+      "then": {
+        "functional": "公开注册成功，进入今日空态",
+        "visual": "首次资料页与创建计划入口可见",
+        "negative": "不要求邀请码，不生成第二账号"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 82,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-04",
+      "domain": "AUTH",
+      "given": "既有账号、正确验证码",
+      "when": "登录",
+      "then": {
+        "functional": "取得本人数据和 Web 会话",
+        "visual": "加载到今日无私有内容闪露",
+        "negative": "不进入新用户资料，不返回 refresh 给 JS"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 83,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-05",
+      "domain": "AUTH",
+      "given": "验证码错误、过期、已使用参数组",
+      "when": "提交验证码",
+      "then": {
+        "functional": "返回对应错误，可按冷却规则重试",
+        "visual": "保留可修正输入，焦点可达",
+        "negative": "不登录，不创建有效会话"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 84,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-06",
+      "domain": "AUTH",
+      "given": "同号/设备/IP 触发阈值",
+      "when": "再次请求或验证",
+      "then": {
+        "functional": "返回限流及重试提示",
+        "visual": "倒计时和错误状态清楚",
+        "negative": "不继续调用短信供应商"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 85,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-07",
+      "domain": "AUTH",
+      "given": "A 已登录，access 过期、refresh 有效",
+      "when": "打开计划页",
+      "then": {
+        "functional": "自动取得新 access 并显示本人数据",
+        "visual": "不无故跳登录页",
+        "negative": "旧 refresh 不可再次轮换，不重复写业务数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 86,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-08",
+      "domain": "AUTH",
+      "given": "A 的 refresh 到期或撤销",
+      "when": "刷新私人路径",
+      "then": {
+        "functional": "要求短信重登，登录后回原目标路径",
+        "visual": "私有页面在失效时清除",
+        "negative": "不用过期 token 继续请求私人数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 87,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-09",
+      "domain": "AUTH",
+      "given": "同账号 A1/A3 两标签接近过期",
+      "when": "同时触发刷新",
+      "then": {
+        "functional": "两标签恢复有效会话或明确重登",
+        "visual": "不反复弹登录页或显示旧数据",
+        "negative": "不发生轮换风暴、Cookie 回退或新会话误撤销"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L",
+        "T"
+      ],
+      "matrixLine": 88,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-10",
+      "domain": "AUTH",
+      "given": "A1 Web 与 A2 另一浏览器均登录",
+      "when": "A1 主动退出",
+      "then": {
+        "functional": "A1 会话撤销并清私有视图，A2 保持有效",
+        "visual": "退出后返回/前进不露旧页",
+        "negative": "不撤销其他 Web 会话或遗漏当前 Cookie"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 89,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-11",
+      "domain": "AUTH",
+      "given": "A 已验证旧身份，有新手机号验证码",
+      "when": "确认换号",
+      "then": {
+        "functional": "新手机号可登录，旧会话按全会话规则失效",
+        "visual": "两步确认和失败提示可读",
+        "negative": "不可跳过旧身份或新号码验证"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 90,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-AUTH-12",
+      "domain": "AUTH",
+      "given": "登录表单含号码、验证码、昵称",
+      "when": "查看浏览器存储、网络和日志",
+      "then": {
+        "functional": "access 仅在内存，refresh 仅安全 Cookie",
+        "visual": "N/A",
+        "negative": "不在 DOM、localStorage、日志或 URL 中出现令牌/验证码"
+      },
+      "evidenceCodes": [
+        "A",
+        "L",
+        "D"
+      ],
+      "matrixLine": 91,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-01",
+      "domain": "PLAN",
+      "given": "A 登录，固定计划表单",
+      "when": "选周一/三/五并保存",
+      "then": {
+        "functional": "仅选中星期生成义务，计划持有规则 V1",
+        "visual": "表单、星期选中、详情信息清楚",
+        "negative": "其他星期不产生待处理"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 97,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-02",
+      "domain": "PLAN",
+      "given": "固定计划未选星期",
+      "when": "保存",
+      "then": {
+        "functional": "前后端拒绝并定位字段",
+        "visual": "错误与按钮状态可读",
+        "negative": "不创建计划或默认每日"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 98,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-03",
+      "domain": "PLAN",
+      "given": "选择每日快捷项",
+      "when": "保存",
+      "then": {
+        "functional": "等价于七天全选固定循环",
+        "visual": "每日和星期控件一致",
+        "negative": "不产生独立计划类型"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 99,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-04",
+      "domain": "PLAN",
+      "given": "周目标 N=1、7 边界",
+      "when": "分别创建",
+      "then": {
+        "functional": "均合法，进度目标正确",
+        "visual": "数值控件及说明正确",
+        "negative": "不套用固定星期限制"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 100,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-05",
+      "domain": "PLAN",
+      "given": "周目标 N=0、8、非整数",
+      "when": "保存",
+      "then": {
+        "functional": "返回字段错误",
+        "visual": "错误定位目标输入",
+        "negative": "不钳制为合法值或落库"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 101,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-06",
+      "domain": "PLAN",
+      "given": "一次性任务截止为计划时区今天/未来",
+      "when": "保存",
+      "then": {
+        "functional": "初态待完成，提醒默认关闭",
+        "visual": "截止日期和状态清楚",
+        "negative": "不生成每日未记录或默认提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 102,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-07",
+      "domain": "PLAN",
+      "given": "一次性截止为计划时区昨天",
+      "when": "保存",
+      "then": {
+        "functional": "日期校验拒绝",
+        "visual": "错误聚焦截止日",
+        "negative": "不创建逾期初态任务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 103,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-08",
+      "domain": "PLAN",
+      "given": "循环计划选“不要做”",
+      "when": "保存并查看今日",
+      "then": {
+        "functional": "方向与成功文案正确",
+        "visual": "不出现“完成吸烟”类反义文案",
+        "negative": "不允许一次性计划选“不要做”"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 104,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-09",
+      "domain": "PLAN",
+      "given": "计划时区 Z1，浏览器时区 Z2",
+      "when": "创建并切换浏览器时区",
+      "then": {
+        "functional": "计划保持 Z1，历史日期不移动",
+        "visual": "详情标示按计划时区计算",
+        "negative": "不按浏览器本地日重归属记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 105,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-10",
+      "domain": "PLAN",
+      "given": "固定计划已有历史",
+      "when": "修改星期或有效期",
+      "then": {
+        "functional": "新规则次日生效，旧规则版本保留",
+        "visual": "生效日期提示清楚",
+        "negative": "不重算旧日期义务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 106,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-11",
+      "domain": "PLAN",
+      "given": "周目标本周已有记录",
+      "when": "周中改 N",
+      "then": {
+        "functional": "本周为部分周，历史记录保留",
+        "visual": "标示部分周和不计达标",
+        "negative": "不把该周纳入达标率/连续周"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 107,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-12",
+      "domain": "PLAN",
+      "given": "运行中固定计划今日未记",
+      "when": "当天暂停再同日恢复",
+      "then": {
+        "functional": "当天未提交义务取消，恢复最早次日",
+        "visual": "暂停/恢复状态可辨",
+        "negative": "不补出当日义务或未记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 108,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-13",
+      "domain": "PLAN",
+      "given": "运行中计划已有今日记录",
+      "when": "暂停或归档",
+      "then": {
+        "functional": "记录保留，后续义务停止",
+        "visual": "历史结果和生命周期并存",
+        "negative": "不删已提交记录或继续提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 109,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-14",
+      "domain": "PLAN",
+      "given": "归档计划有历史",
+      "when": "查看并显式恢复",
+      "then": {
+        "functional": "历史可读，恢复后按规则执行",
+        "visual": "归档入口与恢复反馈明确",
+        "negative": "归档期间不可新打卡"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 110,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-15",
+      "domain": "PLAN",
+      "given": "分组含多个计划",
+      "when": "重命名、移动并删除分组",
+      "then": {
+        "functional": "计划移入未分组，历史保留",
+        "visual": "列表标签和空态更新",
+        "negative": "不连带删除计划与记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 111,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-16",
+      "domain": "PLAN",
+      "given": "有记录/照片/分享的计划",
+      "when": "确认删除",
+      "then": {
+        "functional": "计划和分享立即不可读，清理任务产生",
+        "visual": "不可逆警示列出影响，提供归档替代",
+        "negative": "不把删除当归档，不让好友读历史"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 112,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-17",
+      "domain": "PLAN",
+      "given": "计划设置一个数值项",
+      "when": "填名称和单位并保存",
+      "then": {
+        "functional": "所有计划类型可配置最多一个项",
+        "visual": "数值项可选且不阻断建计划",
+        "negative": "不自动根据数值判定结果"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 113,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-PLAN-18",
+      "domain": "PLAN",
+      "given": "已有“公里”历史数值",
+      "when": "改数值项为“分钟”",
+      "then": {
+        "functional": "新记录用新单位，历史保留“公里”",
+        "visual": "历史和当前单位标注清楚",
+        "negative": "不换算或重释历史数值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 114,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-01",
+      "domain": "CHECK",
+      "given": "今日固定计划应执行且未记",
+      "when": "选成功并提交",
+      "then": {
+        "functional": "形成唯一成功记录，今日卡片保留",
+        "visual": "结果/提交反馈清楚",
+        "negative": "不要求备注、照片或数值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 120,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-02",
+      "domain": "CHECK",
+      "given": "今日“要做”计划",
+      "when": "明确提交失败",
+      "then": {
+        "functional": "记录失败并同步今日/日历",
+        "visual": "失败与未记录文案图形不同",
+        "negative": "不把未操作自动记失败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 121,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-03",
+      "domain": "CHECK",
+      "given": "今日“不要做”计划",
+      "when": "主动确认成功",
+      "then": {
+        "functional": "表示目标行为未发生",
+        "visual": "文案明确“今天做到了”",
+        "negative": "不因未打开网页自动成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 122,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-04",
+      "domain": "CHECK",
+      "given": "固定计划应执行日",
+      "when": "选择跳过并提交",
+      "then": {
+        "functional": "形成跳过记录",
+        "visual": "跳过与失败/未记录不同",
+        "negative": "不进入完成率分母"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 123,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-05",
+      "domain": "CHECK",
+      "given": "固定计划非选中星期",
+      "when": "尝试 UI/直接 API 打卡",
+      "then": {
+        "functional": "UI 禁用，API 拒绝",
+        "visual": "禁用原因可读",
+        "negative": "不写入非应执行日"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 124,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-06",
+      "domain": "CHECK",
+      "given": "每周 N 天计划空白日",
+      "when": "查看日历并选择打卡",
+      "then": {
+        "functional": "空白日可自愿记录，空白本身无状态",
+        "visual": "周进度和日状态分开",
+        "negative": "不派生单日未记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 125,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-07",
+      "domain": "CHECK",
+      "given": "同计划同日已有成功",
+      "when": "再次进入记录页",
+      "then": {
+        "functional": "进入修正并预填原值",
+        "visual": "标题为修改记录",
+        "negative": "不新增第二条有效记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 126,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-08",
+      "domain": "CHECK",
+      "given": "周目标 3 天，本周成功两日",
+      "when": "同日重复提交成功",
+      "then": {
+        "functional": "仍为 2/3",
+        "visual": "进度不跳到 3/3",
+        "negative": "不生成重复成功天数"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 127,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-09",
+      "domain": "CHECK",
+      "given": "过去合法日期无记录",
+      "when": "在今日之后补记成功",
+      "then": {
+        "functional": "业务日期和实际提交时间分存",
+        "visual": "显示补记标记",
+        "negative": "不可为未来日期预记"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 128,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-10",
+      "domain": "CHECK",
+      "given": "历史记录为失败",
+      "when": "修正为成功",
+      "then": {
+        "functional": "保留修正标记/时间，统计重算",
+        "visual": "原值与新值可辨",
+        "negative": "不清除补记/修正审计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 129,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-11",
+      "domain": "CHECK",
+      "given": "已分享计划，历史备注含私人文字",
+      "when": "修改记录",
+      "then": {
+        "functional": "授权好友只见允许字段及已修正",
+        "visual": "分享预览与本人视图不同",
+        "negative": "不泄露照片和数值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 130,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-12",
+      "domain": "CHECK",
+      "given": "计划配置数值项",
+      "when": "打卡填十进制值",
+      "then": {
+        "functional": "原始字符串和单位按版本保存",
+        "visual": "数值与结果分区展示",
+        "negative": "不靠值自动判成败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 131,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-13",
+      "domain": "CHECK",
+      "given": "选照片 JPEG/PNG/HEIC/WebP、上限边界",
+      "when": "上传并提交",
+      "then": {
+        "functional": "合法文件签名直传并关联记录",
+        "visual": "进度、失败、完成态清楚",
+        "negative": "超过 20MB 或第 10 张拒绝且不破坏纯结果"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 132,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-14",
+      "domain": "CHECK",
+      "given": "上传 URL 过期或对象 CORS 失败",
+      "when": "再试照片上传",
+      "then": {
+        "functional": "给出可恢复错误，可不带照片提交",
+        "visual": "错误与纯结果保存按钮分离",
+        "negative": "不显示未上传照片为已保存"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 133,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-15",
+      "domain": "CHECK",
+      "given": "一次性任务到期前",
+      "when": "标记完成并附备注/照片/数值",
+      "then": {
+        "functional": "按时完成，附加内容可回顾",
+        "visual": "完成日期与私人附件清楚",
+        "negative": "不出现每日打卡/连续率"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F"
+      ],
+      "matrixLine": 134,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-16",
+      "domain": "CHECK",
+      "given": "一次性任务逾期",
+      "when": "完成并附内容",
+      "then": {
+        "functional": "状态迟完成，保留实际完成日",
+        "visual": "逾期和迟完成文案准确",
+        "negative": "不显示按时完成"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 135,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-17",
+      "domain": "CHECK",
+      "given": "一次性任务待完成或逾期",
+      "when": "标记失败/取消并附内容",
+      "then": {
+        "functional": "对应终态及附件可见",
+        "visual": "失败/取消操作可辨",
+        "negative": "终态后不再接受第二次新建完成"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F"
+      ],
+      "matrixLine": 136,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-CHECK-18",
+      "domain": "CHECK",
+      "given": "一次性结果误记终态",
+      "when": "修正原结果",
+      "then": {
+        "functional": "仅原结果被修订且保留标记",
+        "visual": "“修正原记录”入口明确",
+        "negative": "不通过新建结果绕过终态唯一性"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 137,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-01",
+      "domain": "STAT",
+      "given": "固定计划过去 4 次应记日成功 2、失败 1、未记录 1，今天未记",
+      "when": "查看完成率",
+      "then": {
+        "functional": "2/4=50%，今天不入分母",
+        "visual": "统计截止日可见",
+        "negative": "不显示 2/5 或把今天判失败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 145,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-02",
+      "domain": "STAT",
+      "given": "WEB-STAT-01 同种子",
+      "when": "今天成功",
+      "then": {
+        "functional": "3/5=60%，今日立即计入",
+        "visual": "数值与卡片一致",
+        "negative": "不双计或等到明天才计入"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 146,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-03",
+      "domain": "STAT",
+      "given": "固定计划有跳过、失败、未记录",
+      "when": "查看连续成功",
+      "then": {
+        "functional": "任一非成功应记日中断连续数",
+        "visual": "历史状态分明",
+        "negative": "不把跳过当成功或未记录当失败记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 147,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-04",
+      "domain": "STAT",
+      "given": "每周目标 3 天，空白周一/二，周三成功",
+      "when": "查看周进度",
+      "then": {
+        "functional": "1/3，空白日无未记录",
+        "visual": "周进度与日历一致",
+        "negative": "不按空白天扣目标"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 148,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-05",
+      "domain": "STAT",
+      "given": "周目标 3，周一/三/五成功",
+      "when": "周内查看",
+      "then": {
+        "functional": "本周已达标，提醒停止",
+        "visual": "已达标状态清楚",
+        "negative": "不阻止第 4 天自愿记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N"
+      ],
+      "matrixLine": 149,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-06",
+      "domain": "STAT",
+      "given": "周目标 3，成功四天",
+      "when": "查看达标率",
+      "then": {
+        "functional": "进度 4/3，达标率 100%",
+        "visual": "实际数与封顶率并列",
+        "negative": "不显示超过 100%"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 150,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-07",
+      "domain": "STAT",
+      "given": "完整周成功 2/3，周日结束",
+      "when": "查看历史周",
+      "then": {
+        "functional": "本周未达标",
+        "visual": "历史周标签清楚",
+        "negative": "不给空白日添加未记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 151,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-08",
+      "domain": "STAT",
+      "given": "周中开始/结束或周中暂停/恢复参数组",
+      "when": "查看周统计",
+      "then": {
+        "functional": "标部分周、记录保留、达标率不计",
+        "visual": "有“不参与统计”解释",
+        "negative": "不计连续达标周"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 152,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-09",
+      "domain": "STAT",
+      "given": "周中修改 N 且有旧记录",
+      "when": "跨周查看",
+      "then": {
+        "functional": "当前周部分周，下一完整周用新 N",
+        "visual": "旧/新目标时段清楚",
+        "negative": "不追溯重写旧周"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 153,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-10",
+      "domain": "STAT",
+      "given": "一次性任务截止日跨午夜",
+      "when": "查看状态并迟完成",
+      "then": {
+        "functional": "截止前待完成，过期后逾期，之后迟完成",
+        "visual": "截止日/完成日可见",
+        "negative": "不生成每日未记录或每日完成率"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 154,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-11",
+      "domain": "STAT",
+      "given": "计划时区 Z1、浏览器时区 Z2 跨日",
+      "when": "切换浏览器时区后回看",
+      "then": {
+        "functional": "历史业务日和周归属不变",
+        "visual": "计划时区提示持续",
+        "negative": "不移动到前/后一天"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 155,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-STAT-12",
+      "domain": "STAT",
+      "given": "历史失败被补记/修正成功",
+      "when": "重新查看今日、日历、详情、统计",
+      "then": {
+        "functional": "四处同一最终结果和重算值",
+        "visual": "图文状态一致",
+        "negative": "不出现旧缓存或好友不同统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 156,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-01",
+      "domain": "ONLINE",
+      "given": "浏览器启动前已断网",
+      "when": "访问私人路由",
+      "then": {
+        "functional": "显示联网重试入口，未宣称缓存数据可用",
+        "visual": "无网络状态可辨、键盘可达",
+        "negative": "不显示旧数据为最新或伪登录成功"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "L",
+        "T"
+      ],
+      "matrixLine": 164,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-02",
+      "domain": "ONLINE",
+      "given": "已填打卡表单，提交前断网",
+      "when": "点击提交",
+      "then": {
+        "functional": "操作失败或待确认，联网后可重新核对",
+        "visual": "不显示“已保存”",
+        "negative": "不在本机生成权威成功记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L",
+        "T"
+      ],
+      "matrixLine": 165,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-03",
+      "domain": "ONLINE",
+      "given": "请求已发出，响应前断网",
+      "when": "恢复网络并用同幂等键核对/重试",
+      "then": {
+        "functional": "最终一条有效记录且状态明确",
+        "visual": "提交中到最终结果不跳假成功",
+        "negative": "不换键造成第二记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 166,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-04",
+      "domain": "ONLINE",
+      "given": "用户连续点击保存/浏览器自动重试",
+      "when": "发送同一业务动作多次",
+      "then": {
+        "functional": "只出现一次计划/打卡/留言",
+        "visual": "按钮忙态防重复",
+        "negative": "DB/事件队列无重复有效事实"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 167,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-05",
+      "domain": "ONLINE",
+      "given": "A1/A3 两标签打开同一记录",
+      "when": "A1 修正后 A3 保存旧版本",
+      "then": {
+        "functional": "A3 见冲突和两个版本，可选择最终版",
+        "visual": "冲突差异与选择按钮可读",
+        "negative": "不静默覆盖 A1"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 168,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-06",
+      "domain": "ONLINE",
+      "given": "A1 桌面与 A2 手机浏览器同账号",
+      "when": "A1 打卡，A2 刷新",
+      "then": {
+        "functional": "A2 读到同一最终状态与统计",
+        "visual": "两视口文案和状态一致",
+        "negative": "不因浏览器缓存出现旧结果"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 169,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-07",
+      "domain": "ONLINE",
+      "given": "未提交表单遇断网并刷新/关闭浏览器",
+      "when": "重新打开页面",
+      "then": {
+        "functional": "只恢复服务端已确认数据",
+        "visual": "未提交提示与页面空态清楚",
+        "negative": "不宣称未提交草稿已永久保存"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 170,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-ONLINE-08",
+      "domain": "ONLINE",
+      "given": "API 可用但对象域上传中断",
+      "when": "提交纯结果或重试附件",
+      "then": {
+        "functional": "纯结果可保存，附件失败单独恢复",
+        "visual": "附件状态与打卡结果分离",
+        "negative": "不因照片失败重复结果或泄漏半成品"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 171,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-01",
+      "domain": "SOCIAL",
+      "given": "A 搜索已存在用户名 B",
+      "when": "搜索",
+      "then": {
+        "functional": "仅返回用户名、昵称、可选头像",
+        "visual": "搜索结果不含计划内容",
+        "negative": "不暴露手机号或私人统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 177,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-02",
+      "domain": "SOCIAL",
+      "given": "A/B 非好友",
+      "when": "A 请求，B 接受/拒绝参数组",
+      "then": {
+        "functional": "好友关系按操作变化",
+        "visual": "请求、等待、接受/拒绝清楚",
+        "negative": "不因申请自动开放计划"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 178,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-03",
+      "domain": "SOCIAL",
+      "given": "A/B 已是好友，A 未分享",
+      "when": "B 查看朋友页和直接 API",
+      "then": {
+        "functional": "看不到 A 计划",
+        "visual": "空态解释好友与授权区别",
+        "negative": "不返回计划名、数量和历史"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 179,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-04",
+      "domain": "SOCIAL",
+      "given": "A 有跑步、阅读计划与历史备注",
+      "when": "预览分享跑步给 B",
+      "then": {
+        "functional": "预览列出可见的历史状态和文字备注",
+        "visual": "隐私提示与确认同屏可读",
+        "negative": "不在确认前授权或发送消息"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 180,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-05",
+      "domain": "SOCIAL",
+      "given": "A 仅授权跑步给 B",
+      "when": "B 查看共享列表和计划",
+      "then": {
+        "functional": "仅跑步规则、进度、历史状态、文字可见",
+        "visual": "只读状态和时间规则清楚",
+        "negative": "不返回阅读、照片、数值或私人统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 181,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-06",
+      "domain": "SOCIAL",
+      "given": "已分享记录含照片、数值",
+      "when": "B 深链和媒体 API 请求",
+      "then": {
+        "functional": "私人附件拒绝访问",
+        "visual": "页面不出现占位泄漏信息",
+        "negative": "对象短链不可被 B 获取"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F"
+      ],
+      "matrixLine": 182,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-07",
+      "domain": "SOCIAL",
+      "given": "A 分享跑步给 B、C",
+      "when": "B 发 Emoji 与留言",
+      "then": {
+        "functional": "A/B 可见，消息入箱一次",
+        "visual": "Emoji/留言/发送反馈清楚",
+        "negative": "C 不可看 B 的留言"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 183,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-08",
+      "domain": "SOCIAL",
+      "given": "B 已获分享但无编辑权限",
+      "when": "B 尝试打卡/改记录",
+      "then": {
+        "functional": "UI 不给编辑，API 拒绝",
+        "visual": "只读提示清楚",
+        "negative": "不改变 A 的结果或统计"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 184,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-09",
+      "domain": "SOCIAL",
+      "given": "A 已授权 B 且 B 页面仍打开",
+      "when": "A 撤销分享",
+      "then": {
+        "functional": "B 新读当前和历史均拒绝",
+        "visual": "B 页面刷新为无权限态",
+        "negative": "不继续显示缓存私人内容或允许留言"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 185,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-10",
+      "domain": "SOCIAL",
+      "given": "A 与 B 为好友且有分享",
+      "when": "删除好友或屏蔽 B",
+      "then": {
+        "functional": "相关授权立即失效",
+        "visual": "关系和共享列表更新",
+        "negative": "不保留历史深链访问"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 186,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-11",
+      "domain": "SOCIAL",
+      "given": "A 删除或归档一项已分享计划",
+      "when": "B 查旧链接",
+      "then": {
+        "functional": "删除后不可读；归档按授权继续只读历史",
+        "visual": "错误/归档状态可辨",
+        "negative": "不把删除当归档或泄漏照片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 187,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-12",
+      "domain": "SOCIAL",
+      "given": "好友申请、分享、留言三类事件",
+      "when": "触发并打开消息中心",
+      "then": {
+        "functional": "各事件仅一条，按游标可回看",
+        "visual": "未读数、类别、时间和跳转可读",
+        "negative": "不重复生成或混淆发送者"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 188,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-13",
+      "domain": "SOCIAL",
+      "given": "A 同时登录桌面/手机 Web",
+      "when": "在桌面标一条消息已读",
+      "then": {
+        "functional": "手机 Web 与 API 均显示已读",
+        "visual": "两端未读数同步",
+        "negative": "不按浏览器分别维护已读事实"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 189,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SOCIAL-14",
+      "domain": "SOCIAL",
+      "given": "分享已撤销但历史消息仍在",
+      "when": "点击旧消息",
+      "then": {
+        "functional": "先鉴权，进入安全无权限页",
+        "visual": "不显示残留计划详情",
+        "negative": "消息存在不恢复授权"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 190,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "iosPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-01",
+      "domain": "NOTIFY",
+      "given": "固定周二/四计划，规则启用",
+      "when": "到周二/周三提醒时点",
+      "then": {
+        "functional": "周二有适用提醒，周三无",
+        "visual": "设置页星期与今日状态一致",
+        "negative": "不在非选中日发计划提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "T"
+      ],
+      "matrixLine": 198,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-02",
+      "domain": "NOTIFY",
+      "given": "每周目标 3，已成功两日",
+      "when": "到用户选定提醒时点",
+      "then": {
+        "functional": "尚差一天时可提示",
+        "visual": "进度与提醒内容一致",
+        "negative": "不把空白日当失败"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "T"
+      ],
+      "matrixLine": 199,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-03",
+      "domain": "NOTIFY",
+      "given": "每周目标已达标",
+      "when": "到后续提醒时点",
+      "then": {
+        "functional": "提醒停止，仍可自愿打卡",
+        "visual": "今日显示已达标",
+        "negative": "不继续催促"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "T"
+      ],
+      "matrixLine": 200,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-04",
+      "domain": "NOTIFY",
+      "given": "一次性提醒默认关闭",
+      "when": "创建后到提醒候选时点",
+      "then": {
+        "functional": "默认不发；用户开启后按提前天数提示",
+        "visual": "截止日与开关状态清楚",
+        "negative": "不把任务当每日提醒"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "N",
+        "T"
+      ],
+      "matrixLine": 201,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-05",
+      "domain": "NOTIFY",
+      "given": "计划暂停、归档、当日已打卡或终态参数组",
+      "when": "到原提醒时点",
+      "then": {
+        "functional": "任务执行前复核状态并跳过",
+        "visual": "设置页说明停止原因",
+        "negative": "无不适用推送/站内催促"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "N",
+        "T"
+      ],
+      "matrixLine": 202,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-06",
+      "domain": "NOTIFY",
+      "given": "A 在 Web 和 iOS 渠道均有偏好",
+      "when": "Web 关闭计划投递",
+      "then": {
+        "functional": "Web 停止投递，iOS 渠道值不变",
+        "visual": "Web 开关准确反映",
+        "negative": "不修改共享提醒时间/星期"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 203,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-07",
+      "domain": "NOTIFY",
+      "given": "A 有共享提醒时间，Web 开关关闭",
+      "when": "Web 修改计划提醒时间",
+      "then": {
+        "functional": "共享规则更新，渠道开关仍各自独立",
+        "visual": "新时间与关闭状态同时显示",
+        "negative": "不自动开启任一渠道"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 204,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-08",
+      "domain": "NOTIFY",
+      "given": "社交三类偏好可单独设置",
+      "when": "在 Web 关闭其中一类",
+      "then": {
+        "functional": "仅对应 Web 类别停止投递，iOS 值不变",
+        "visual": "三类状态分开展示",
+        "negative": "不共用一个总开关"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D"
+      ],
+      "matrixLine": 205,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-09",
+      "domain": "NOTIFY",
+      "given": "网页打开且计划到提醒点",
+      "when": "观察即时提示",
+      "then": {
+        "functional": "提示一次，今日待办持续可见",
+        "visual": "焦点不被强夺、提示可关闭",
+        "negative": "不生成每次计划提醒的持久收件箱消息"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 206,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-10",
+      "domain": "NOTIFY",
+      "given": "A1/A3 同账号两标签页打开",
+      "when": "同一提醒时点到达",
+      "then": {
+        "functional": "同一浏览器端只呈现一次有效提示",
+        "visual": "活动标签反馈清楚",
+        "negative": "不双弹或双推"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L",
+        "N",
+        "T"
+      ],
+      "matrixLine": 207,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-11",
+      "domain": "NOTIFY",
+      "given": "支持 Push 且用户尚未操作权限",
+      "when": "打开首次使用页，再主动开启通知",
+      "then": {
+        "functional": "首次使用不弹权限；点击后请求并注册",
+        "visual": "权限说明和开关清楚",
+        "negative": "不静默订阅或在登录时强求权限"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "L"
+      ],
+      "matrixLine": 208,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-12",
+      "domain": "NOTIFY",
+      "given": "用户拒绝权限或浏览器不支持",
+      "when": "尝试开启通知",
+      "then": {
+        "functional": "设置页解释降级，站内与今日继续可用",
+        "visual": "拒绝/不支持文案可读",
+        "negative": "不伪称已开启或阻断打卡"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "L"
+      ],
+      "matrixLine": 209,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-13",
+      "domain": "NOTIFY",
+      "given": "受控支持浏览器已授权订阅",
+      "when": "触发计划/社交事件",
+      "then": {
+        "functional": "服务端受理、浏览器展示通用通知并可点击",
+        "visual": "通知外层无私人详情，点击回正确登录后页面",
+        "negative": "不展示计划名/备注/留言/照片"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "N",
+        "T"
+      ],
+      "matrixLine": 210,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-14",
+      "domain": "NOTIFY",
+      "given": "有有效 Push 订阅",
+      "when": "用户关闭或取消订阅",
+      "then": {
+        "functional": "服务端撤销并停止后续发送",
+        "visual": "设置状态及时更新",
+        "negative": "不继续使用旧 endpoint 发送"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "N"
+      ],
+      "matrixLine": 211,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-15",
+      "domain": "NOTIFY",
+      "given": "Push 订阅过期或供应端永久失败",
+      "when": "Worker 尝试发送",
+      "then": {
+        "functional": "标记失效并清理，用户可重新订阅",
+        "visual": "设置页真实反映状态",
+        "negative": "不无限重试或影响业务打卡"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "N"
+      ],
+      "matrixLine": 212,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-NOTIFY-16",
+      "domain": "NOTIFY",
+      "given": "iPhone/iPad 普通网址模式与加入主屏幕模式",
+      "when": "分别检查能力和权限",
+      "then": {
+        "functional": "普通网址仍可完整使用；安装模式按平台能力订阅",
+        "visual": "安装条件和限制可理解",
+        "negative": "不承诺普通标签页关闭后必达；后台稳定送达仅记录观察"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "N",
+        "T"
+      ],
+      "matrixLine": 213,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-01",
+      "domain": "DATA",
+      "given": "A 有计划、记录、照片、好友与分享",
+      "when": "通过 `/api/v1/me/exports` 创建导出",
+      "then": {
+        "functional": "生成私有 ZIP 任务并可查进度",
+        "visual": "任务状态与等待反馈清楚",
+        "negative": "B 不可查询或下载 A 的任务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "F"
+      ],
+      "matrixLine": 219,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-02",
+      "domain": "DATA",
+      "given": "导出任务完成",
+      "when": "下载 ZIP 并核清单",
+      "then": {
+        "functional": "包含 CSV/JSON、私人照片和关系数据",
+        "visual": "下载入口与有效期提示可读",
+        "negative": "不缺历史修订或泄漏他人数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "D"
+      ],
+      "matrixLine": 220,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-03",
+      "domain": "DATA",
+      "given": "A 在 24 小时内超导出频次",
+      "when": "再请求导出",
+      "then": {
+        "functional": "按既有限额拒绝并提示",
+        "visual": "限流文案清楚",
+        "negative": "不多建任务或耗尽 Worker"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 221,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-04",
+      "domain": "DATA",
+      "given": "文件/签名下载 URL 到期",
+      "when": "使用旧链接",
+      "then": {
+        "functional": "明确失效并提供重新获取方式",
+        "visual": "无空白页",
+        "negative": "旧链接不继续开放私人 ZIP"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F",
+        "L"
+      ],
+      "matrixLine": 222,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-05",
+      "domain": "DATA",
+      "given": "已归档计划仍有历史",
+      "when": "查看并导出",
+      "then": {
+        "functional": "历史保留且可导出",
+        "visual": "归档标记清楚",
+        "negative": "不因归档删除照片或记录"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F"
+      ],
+      "matrixLine": 223,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-06",
+      "domain": "DATA",
+      "given": "有照片与分享的计划",
+      "when": "确认删除计划",
+      "then": {
+        "functional": "当前与历史访问撤销，后台清理",
+        "visual": "确认层列出影响与归档替代",
+        "negative": "好友不能再读，照片短链失效"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 224,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-07",
+      "domain": "DATA",
+      "given": "A 申请删除账号",
+      "when": "完成二次确认",
+      "then": {
+        "functional": "登录和分享立即停用，进入 30 天撤销期",
+        "visual": "不可逆后果和期限说明清楚",
+        "negative": "原 Web 会话、Push 订阅不再有效"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 225,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-08",
+      "domain": "DATA",
+      "given": "A 在 30 天内用受控流程撤销删除",
+      "when": "执行撤销",
+      "then": {
+        "functional": "账号按既有规则恢复",
+        "visual": "状态与恢复反馈可读",
+        "negative": "不产生第二账户或额外分享权限"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "T"
+      ],
+      "matrixLine": 226,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-09",
+      "domain": "DATA",
+      "given": "删除等待期届满",
+      "when": "运行最终清理 Worker",
+      "then": {
+        "functional": "业务数据、照片与关系按规则清除",
+        "visual": "N/A",
+        "negative": "不保留可读取的私有对象或有效会话"
+      },
+      "evidenceCodes": [
+        "A",
+        "D",
+        "L",
+        "F",
+        "T"
+      ],
+      "matrixLine": 227,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-DATA-10",
+      "domain": "DATA",
+      "given": "A 的多浏览器会话和历史消息存在",
+      "when": "账号最终删除后重访",
+      "then": {
+        "functional": "所有会话拒绝，消息和导出不可读",
+        "visual": "登录/删除状态清楚",
+        "negative": "浏览器返回、深链或缓存不暴露旧数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 228,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-01",
+      "domain": "UI",
+      "given": "第 13 节列出的 16 个页面键，每键有正常、空、加载或错误等适用状态",
+      "when": "逐页打开并按状态截图",
+      "then": {
+        "functional": "入口、主操作和返回路径可达",
+        "visual": "沿用视觉令牌与层级，信息可读",
+        "negative": "不出现空白页、错位或无法操作的关键控件"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 234,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-02",
+      "domain": "UI",
+      "given": "桌面宽视口已登录",
+      "when": "在今日、计划、日历、好友、消息和设置间切换",
+      "then": {
+        "functional": "导航与当前路由一致",
+        "visual": "桌面导航、内容和辅助区重新排布且层级明确",
+        "negative": "不用手机窄栏机械放大或遮挡内容"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 235,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-03",
+      "domain": "UI",
+      "given": "手机窄视口已登录",
+      "when": "切换核心模块并执行主要操作",
+      "then": {
+        "functional": "核心入口可单手触达，返回位置明确",
+        "visual": "底部或紧凑导航不遮盖内容",
+        "negative": "不依赖悬停才能发现功能"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 236,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-04",
+      "domain": "UI",
+      "given": "360、390、393 像素可用内容宽度",
+      "when": "走完登录、建计划、打卡、分享和删除流程",
+      "then": {
+        "functional": "每个控件可达",
+        "visual": "页面宽度不超过可用视口，长文案合理换行",
+        "negative": "不出现页面级横向滚动、截断或视口外不可达操作"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 237,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-05",
+      "domain": "UI",
+      "given": "768、1024、1280、1440 像素宽度",
+      "when": "调整窗口并复核关键页",
+      "then": {
+        "functional": "数据与操作连续保留",
+        "visual": "栅格、侧栏与卡片按断点自然重排",
+        "negative": "不因断点切换丢输入或出现重叠"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 238,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-06",
+      "domain": "UI",
+      "given": "长表单、月历详情和历史列表",
+      "when": "纵向滚动至末尾并提交",
+      "then": {
+        "functional": "全部字段及提交按钮可达",
+        "visual": "允许纵向滚动；固定导航与安全区不遮挡最后一项",
+        "negative": "不要求整页塞进一屏或出现水平溢出"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 239,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-07",
+      "domain": "UI",
+      "given": "浏览器缩放至 200%，系统放大字体",
+      "when": "完成登录、打卡和消息操作",
+      "then": {
+        "functional": "核心路径仍可操作",
+        "visual": "文字重排，焦点和按钮保持可见",
+        "negative": "不发生文字覆盖、裁剪或只能横向拖动才能阅读"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 240,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-08",
+      "domain": "UI",
+      "given": "仅键盘可用",
+      "when": "Tab、Shift+Tab、Enter、Space、Esc 走核心流程",
+      "then": {
+        "functional": "可完成导航、编辑、保存和关闭",
+        "visual": "焦点指示持续可见、顺序符合阅读顺序",
+        "negative": "不存在键盘死角或仅鼠标可点控件"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 241,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-09",
+      "domain": "UI",
+      "given": "打开确认删除、补记或权限对话框",
+      "when": "键盘循环并关闭",
+      "then": {
+        "functional": "焦点被约束、关闭后回到触发点",
+        "visual": "对话框标题、按钮与危险动作清楚",
+        "negative": "焦点不落入背景，也不无故丢失"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 242,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-10",
+      "domain": "UI",
+      "given": "屏幕阅读器与语义检查开启",
+      "when": "遍历表单、统计图、日历和消息",
+      "then": {
+        "functional": "标签、错误、状态变化与数值摘要可感知",
+        "visual": "信息层级对应标题和语义结构",
+        "negative": "不只靠颜色、图形或占位符传达必需信息"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 243,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-11",
+      "domain": "UI",
+      "given": "浅色、深色及系统主题切换",
+      "when": "打开第 13 节关键页与弹层",
+      "then": {
+        "functional": "主题切换后数据和操作保留",
+        "visual": "两种主题的对比度、图标、边框和状态可辨",
+        "negative": "不用 iOS 浅色画板作深色逐像素阈值"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 244,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-12",
+      "domain": "UI",
+      "given": "成功、失败、暂停、超期、未完成等状态存在",
+      "when": "查看今日、月历和统计",
+      "then": {
+        "functional": "各状态含文字或形状说明",
+        "visual": "视觉令牌一致，危险与成功状态区别明确",
+        "negative": "不仅凭红绿颜色判断结果"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 245,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-13",
+      "domain": "UI",
+      "given": "API 延迟、空结果和可恢复错误",
+      "when": "分别触发加载、空态和重试",
+      "then": {
+        "functional": "有明确反馈和可用的下一步",
+        "visual": "骨架、占位、错误文案不抖动或遮挡",
+        "negative": "不无限转圈、不把错误当空列表"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 246,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-14",
+      "domain": "UI",
+      "given": "用户可访问的详情深链",
+      "when": "直接打开、刷新、返回、前进",
+      "then": {
+        "functional": "登录后回目标页，状态与 URL 同步",
+        "visual": "标题与返回位置准确",
+        "negative": "不因 SPA 刷新 404 或露出前一用户数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L"
+      ],
+      "matrixLine": 247,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-15",
+      "domain": "UI",
+      "given": "手机触屏与桌面鼠标并用",
+      "when": "操作菜单、日期格、上传和提示",
+      "then": {
+        "functional": "点击/触摸目标可用",
+        "visual": "触控区域、间距和悬停反馈符合对应输入方式",
+        "negative": "核心动作不只在 hover 显示"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A"
+      ],
+      "matrixLine": 248,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-UI-16",
+      "domain": "UI",
+      "given": "长计划名、多照片、满月历和大量历史",
+      "when": "滚动、展开并查看详情",
+      "then": {
+        "functional": "内容完整可达，媒体保持比例",
+        "visual": "卡片、弹层与列表不横向撑破视口",
+        "negative": "不截断唯一关键信息、不盖住导航或提交"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "F"
+      ],
+      "matrixLine": 249,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosPen",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-01",
+      "domain": "SEC",
+      "given": "未登录或访问令牌过期且不可续期",
+      "when": "直接请求私有路由/API",
+      "then": {
+        "functional": "返回登录或 401，保留可恢复的目标路径",
+        "visual": "登录反馈清楚",
+        "negative": "不返回私人计划、照片、消息或导出"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 255,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-02",
+      "domain": "SEC",
+      "given": "A、B 仅为好友或无关系",
+      "when": "B 猜测 A 的对象 ID",
+      "then": {
+        "functional": "服务端按资源权限拒绝越权",
+        "visual": "拒绝状态可理解",
+        "negative": "不通过前端隐藏代替服务端授权"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "F"
+      ],
+      "matrixLine": 256,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-03",
+      "domain": "SEC",
+      "given": "Web 登录成功",
+      "when": "检查刷新 Cookie、访问令牌和退出",
+      "then": {
+        "functional": "Secure/HttpOnly/SameSite 生效，访问令牌仅内存，退出撤销会话",
+        "visual": "设置页登录状态真实",
+        "negative": "不把刷新令牌写入 localStorage、URL 或可读脚本变量"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 257,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-04",
+      "domain": "SEC",
+      "given": "Cookie 刷新和写操作端点存在",
+      "when": "伪造跨站请求与非法 Origin",
+      "then": {
+        "functional": "CSRF/Origin 校验拒绝请求",
+        "visual": "N/A",
+        "negative": "不因 Cookie 自动携带产生跨站状态变更"
+      },
+      "evidenceCodes": [
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 258,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-05",
+      "domain": "SEC",
+      "given": "备注、计划名、昵称含脚本或 HTML",
+      "when": "保存、分享和重新打开",
+      "then": {
+        "functional": "内容按文本安全呈现，CSP 有效",
+        "visual": "特殊字符显示完整",
+        "negative": "不执行脚本、注入样式或盗取会话"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "L",
+        "T"
+      ],
+      "matrixLine": 259,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-06",
+      "domain": "SEC",
+      "given": "A 退出或删除，浏览器有历史缓存",
+      "when": "后退、刷新、离线尝试旧 URL",
+      "then": {
+        "functional": "受保护内容无法继续访问",
+        "visual": "显示登录或失效反馈",
+        "negative": "不从 BFCache、HTTP 缓存或预览露出私人数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L"
+      ],
+      "matrixLine": 260,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-07",
+      "domain": "SEC",
+      "given": "照片和导出使用私有对象链接",
+      "when": "跨用户、过期和跨来源访问",
+      "then": {
+        "functional": "签名与 CORS 策略按权限和时效生效",
+        "visual": "失败提示清楚",
+        "negative": "不暴露永久公链或开放桶访问"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "F",
+        "L"
+      ],
+      "matrixLine": 261,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-08",
+      "domain": "SEC",
+      "given": "网络重试、双击与多标签重复提交",
+      "when": "提交打卡、好友请求或导出",
+      "then": {
+        "functional": "幂等键或去重规则得到单一有效结果",
+        "visual": "不重复成功提示",
+        "negative": "不生成重复记录、消息或任务"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 262,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-09",
+      "domain": "SEC",
+      "given": "两浏览器同时修改同一计划/记录",
+      "when": "先后提交冲突版本",
+      "then": {
+        "functional": "冲突明确提示、可重载与重试",
+        "visual": "冲突信息和恢复动作可见",
+        "negative": "不静默覆盖较新的数据"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 263,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-10",
+      "domain": "SEC",
+      "given": "短时间多次请求短信、登录或注册",
+      "when": "达到服务端限流阈值",
+      "then": {
+        "functional": "429 与冷却提示按既定规则出现",
+        "visual": "剩余等待可理解",
+        "negative": "不无限发短信或泄露账号是否存在"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 264,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-11",
+      "domain": "SEC",
+      "given": "错误、Push 发送、导出和删除产生服务日志",
+      "when": "检查结构化日志和监控样本",
+      "then": {
+        "functional": "有关联 ID 与失败原因，可定位问题",
+        "visual": "N/A",
+        "negative": "不记录验证码、访问/刷新令牌、照片正文或私人备注"
+      },
+      "evidenceCodes": [
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 265,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    },
+    {
+      "id": "WEB-SEC-12",
+      "domain": "SEC",
+      "given": "预发布环境和 Web 候选构建",
+      "when": "检查 HTTPS、回滚、健康检查与关键路径",
+      "then": {
+        "functional": "站点/API 可通过同站点 HTTPS 访问，回滚和恢复演练通过",
+        "visual": "首屏和错误页可读",
+        "negative": "不以未完成的 iOS 客户端联测阻断 Web，亦不绕过 Web 自身阻断项"
+      },
+      "evidenceCodes": [
+        "S",
+        "H",
+        "V",
+        "A",
+        "D",
+        "L",
+        "T"
+      ],
+      "matrixLine": 266,
+      "sourceRefs": [
+        "matrix",
+        "webPrd",
+        "webTechnical",
+        "iosAcceptance"
+      ]
+    }
+  ]
+}

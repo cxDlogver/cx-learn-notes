@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plan-checkin.example/schema/web-acceptance-result-v1.json",
+  "title": "计划打卡 Web V1 单个验收实例结果",
+  "description": "每个稳定用例 ID、variant 和 runId 保存一个结果；不要求 iOS 画板映射或像素阈值。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "caseId",
+    "variant",
+    "runId",
+    "status",
+    "sourceRefs",
+    "build",
+    "environment",
+    "fixtureId",
+    "startedAt",
+    "endedAt",
+    "assertions",
+    "evidence",
+    "reviewer"
+  ],
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "pattern": "^WEB-(AUTH|PLAN|CHECK|STAT|ONLINE|SOCIAL|NOTIFY|DATA|UI|SEC)-[0-9]{2}$"
+    },
+    "variant": { "type": "string", "minLength": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"] },
+    "sourceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appVersion", "gitCommit", "apiVersion", "sourceDigest"],
+      "properties": {
+        "appVersion": { "type": "string", "minLength": 1 },
+        "gitCommit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+        "apiVersion": { "type": "string", "minLength": 1 },
+        "sourceDigest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["webPrd", "webTechnical", "iosPrd", "iosAcceptance", "iosPen", "matrix"],
+          "properties": {
+            "webPrd": { "$ref": "#/$defs/sha256" },
+            "webTechnical": { "$ref": "#/$defs/sha256" },
+            "iosPrd": { "$ref": "#/$defs/sha256" },
+            "iosAcceptance": { "$ref": "#/$defs/sha256" },
+            "iosPen": { "$ref": "#/$defs/sha256" },
+            "matrix": { "$ref": "#/$defs/sha256" }
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "osName", "osVersion", "planTimezone", "businessDate", "serverNowUtc", "network"],
+      "properties": {
+        "kind": { "enum": ["browser", "api"] },
+        "browserName": { "enum": ["Chrome", "Edge", "Safari", "Firefox", "Other"] },
+        "browserVersion": { "type": "string", "minLength": 1 },
+        "osName": { "type": "string", "minLength": 1 },
+        "osVersion": { "type": "string", "minLength": 1 },
+        "viewportWidth": { "type": "integer", "minimum": 1 },
+        "viewportHeight": { "type": "integer", "minimum": 1 },
+        "deviceScaleFactor": { "type": "number", "exclusiveMinimum": 0 },
+        "fontScale": { "type": "number", "exclusiveMinimum": 0 },
+        "colorScheme": { "enum": ["light", "dark", "system"] },
+        "planTimezone": { "type": "string", "minLength": 1 },
+        "businessDate": { "type": "string", "format": "date" },
+        "serverNowUtc": { "type": "string", "format": "date-time" },
+        "network": { "enum": ["online", "offline", "degraded"] },
+        "pushCapability": { "enum": ["supported", "unsupported", "not_applicable"] },
+        "permission": { "enum": ["default", "granted", "denied", "not_applicable"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "browser" } } },
+          "then": {
+            "required": [
+              "browserName",
+              "browserVersion",
+              "viewportWidth",
+              "viewportHeight",
+              "deviceScaleFactor",
+              "fontScale",
+              "colorScheme"
+            ]
+          }
+        }
+      ]
+    },
+    "fixtureId": { "type": "string", "minLength": 1 },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["functional", "visual", "negative"],
+      "properties": {
+        "functional": { "$ref": "#/$defs/assertion" },
+        "visual": { "$ref": "#/$defs/assertion" },
+        "negative": { "$ref": "#/$defs/assertion" }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "path", "sha256", "mimeType"],
+        "properties": {
+          "code": { "enum": ["S", "H", "V", "A", "D", "L", "N", "F", "T"] },
+          "path": { "$ref": "#/$defs/relativePath" },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "mimeType": { "type": "string", "minLength": 3 }
+        }
+      }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "reviewedAt", "reason"],
+      "properties": {
+        "kind": { "enum": ["human", "ai"] },
+        "name": { "type": "string", "minLength": 1 },
+        "modelVersion": { "type": "string", "minLength": 1 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "ai" } } },
+          "then": { "required": ["modelVersion", "confidence"] }
+        }
+      ]
+    },
+    "blocker": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected", "actual", "status", "evidencePaths"],
+      "properties": {
+        "expected": { "type": "string", "minLength": 1 },
+        "actual": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN", "N_A"] },
+        "evidencePaths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "PASS" } } },
+      "then": {
+        "properties": {
+          "assertions": {
+            "properties": {
+              "functional": { "properties": { "status": { "const": "PASS" } } },
+              "visual": { "properties": { "status": { "enum": ["PASS", "N_A"] } } },
+              "negative": { "properties": { "status": { "const": "PASS" } } }
+            }
+          },
+          "evidence": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "BLOCKED" } } },
+      "then": { "required": ["blocker"] }
+    }
+  ]
+}

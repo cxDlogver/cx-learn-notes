@@ -1,0 +1,65 @@
+{
+  "taskId": "WEB-01",
+  "status": "development-checks-only",
+  "sourceCommit": "4d72bf3b",
+  "checks": [
+    {
+      "name": "contracts",
+      "command": "node scripts/build-openapi.mjs --check",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/contracts.txt",
+      "sha256": "6c5ea6d6c6a0517c6fd3e5d1015c2a4e3b69e7da73dd057d4b0a3fdcff733171",
+      "bytes": 53
+    },
+    {
+      "name": "compat",
+      "command": "node scripts/check-contract-compat.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/compat.txt",
+      "sha256": "bd890f2f1b3d3d8a2c634dc92d81eff24a27ab6b774f3ed4890f0cbaceaf1392",
+      "bytes": 41
+    },
+    {
+      "name": "route-audit",
+      "command": "node scripts/web-contract-audit.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/route-audit.txt",
+      "sha256": "5d6bf13934ddb3355d3742de9bcfa1fb03decf7b7fa0043714fa3192c45ee9f6",
+      "bytes": 85
+    },
+    {
+      "name": "export-smoke",
+      "command": "node scripts/data-export-smoke.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/export-smoke.txt",
+      "sha256": "08d175e090cb31f99e3405339a23c2d303566dcc9a4cd8d717eb0d681e8bd161",
+      "bytes": 90
+    },
+    {
+      "name": "typecheck",
+      "command": "tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/typecheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "security",
+      "command": "node scripts/security-static.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/security.txt",
+      "sha256": "2074491243b2f3d49aea2bb8d76e0d61fde51dd970ce3fe9d240cc5ae27a49f8",
+      "bytes": 48
+    },
+    {
+      "name": "format",
+      "command": "prettier --check changed WEB-01 files",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-01/format.txt",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66
+    }
+  ],
+  "browserAcceptance": "NOT_RUN",
+  "note": "Command outputs are development evidence; no Web screenshots or ATDD PASS results exist."
+}

@@ -11,7 +11,7 @@ import { ExportsService } from "./exports.service.js";
 interface RequestLike {
   headers: Record<string, string | string[] | undefined>;
 }
-@Controller("exports")
+@Controller(["exports", "me/exports"])
 export class ExportsController {
   constructor(
     private readonly auth: AuthService,
