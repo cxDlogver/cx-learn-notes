@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "releaseStatus": "SOURCE_FREEZE_NATIVE_PENDING",
   "acceptanceStatus": "NOT_RUN",
-  "sourceCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+  "sourceCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
   "branch": "codex/ios-plan-checkin-build",
   "appVersion": "0.1.0",
   "migrationVersion": "0011_rate_limits.sql",
@@ -70,17 +70,16 @@
     "infra/deploy/Dockerfile": "e985e1a224109cdf1bd560bb7dc4893b08236816a3edaabc825b04a1ced781cf",
     "infra/deploy/manifest.mjs": "056586d66b5586cb4237ee24504848deeaeb526615757d1424ef6bdd8be81473",
     "infra/observability/alerts.yml": "4e7398412dfd17c6a6ef690c4ea26ee42b9fc2355ed1f3ad03d94a7c9084a4c0",
-    "package.json": "5c5fcb4d6ca7ef56b2b07bcf2ca13943f28a2bf48710e6c3ca01b08a892a3673",
+    "package.json": "4a5a8506b0d055ba76e27a2ce92c6d8da5854c643ba5d79912c2b595586d7c35",
     "packages/contracts/openapi.json": "55549c87de5bb6a6a07a8adc18b71fb36ae0d791edea4697d110abb8f15b21e4",
     "pnpm-lock.yaml": "5d597f439f8740da4583b1d64cbcd2c885c0a71895786148bdb2a8d7a26a7865"
   },
   "taskSummary": {
     "total": 35,
-    "done": 5,
+    "done": 6,
     "staticPassedEnvironmentBlocked": 29,
     "environmentBlockedTaskIds": [
       "FND-02",
-      "FND-05",
       "CORE-03",
       "CORE-04",
       "CORE-05",
@@ -107,7 +106,8 @@
       "OPS-02",
       "OPS-03",
       "OPS-04",
-      "OPS-05"
+      "OPS-05",
+      "OPS-06"
     ]
   },
   "nativeIosRelease": {

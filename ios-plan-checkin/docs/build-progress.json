@@ -5,20 +5,20 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+  "integrationCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
   "currentWork": null,
   "nextTaskId": null,
   "resumeWhenAvailable": {
     "candidateManifest": "docs/release-candidate.json",
-    "sourceCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
-    "priorityTaskIds": ["FND-05", "CORE-03", "FND-02", "OPS-05", "OPS-06"],
+    "sourceCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
+    "priorityTaskIds": ["CORE-03", "FND-02", "OPS-05", "OPS-06"],
     "nextSteps": [
-      "真实 PostgreSQL/对象存储就绪后，先补 FND-05/CORE-03 的迁移与并发验证，再按台账逐项关闭相关环境阻断。",
+      "本地 PostgreSQL/对象存储已启动并完成空库迁移与部分 API 检查；继续补 CORE-03 的上一版库迁移、约束和并发事务证据，再逐项关闭相关环境阻断。",
       "macOS/Xcode 或 EAS 就绪后，补 iOS Release、SQLCipher/Keychain/APNs/相册/通知真机验证与视觉核对。",
       "中国大陆预发集群与供应商配置就绪后，补镜像、迁移部署、告警和备份恢复演练；更新候选清单实际构建摘要并移交独立 ATDD。"
     ],
     "knownConstraints": [
-      "当前只冻结静态源码与 64 个资源摘要；真实环境验证、可安装 iOS Release 和正式 ATDD 未完成。"
+      "本地 PostgreSQL/S3 与 API 开发检查已通过；真实 iOS、预发环境、可安装 Release 和正式 ATDD 未完成。"
     ]
   },
   "tasks": [
@@ -103,14 +103,13 @@
         "S5",
         "S6"
       ],
-      "status": "BLOCKED",
+      "status": "DONE",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "ec6bf28461b3cfc6b27d50c54977db545bd872c3",
-      "taskCommit": "917978ce228b288cd78b421553a6ba2ef52f68a2",
-      "integratedCommit": "917978ce228b288cd78b421553a6ba2ef52f68a2",
-      "staticPassed": true,
-      "blocker": "Docker Compose 配置静态校验通过，但本机 Docker Desktop Linux 引擎未启动，无法验证本地依赖启动、空库迁移和健康检查。"
+      "taskCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
+      "integratedCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
+      "staticPassed": true
     },
     {
       "priority": 6,
@@ -165,7 +164,7 @@
       "taskCommit": "eceb0613792bc0a209a29a46d1e86318e0a4ef65",
       "integratedCommit": "eceb0613792bc0a209a29a46d1e86318e0a4ef65",
       "staticPassed": true,
-      "blocker": "PostgreSQL 17 语法解析、27 表内存 PostgreSQL 迁移及关键约束自测通过；Docker 引擎未运行，真实 PostgreSQL 空库/升级库迁移与并发事务证据待补。"
+      "blocker": "本地 PostgreSQL 17 空库迁移 0001–0011 与部分 API 读写通过；上一版库升级、数据库约束和并发事务证据仍待补。"
     },
     {
       "priority": 9,
@@ -187,7 +186,7 @@
       "taskCommit": "6ae3ef9035eaaec56ec5cb166aac2bd54c9377f0",
       "integratedCommit": "6ae3ef9035eaaec56ec5cb166aac2bd54c9377f0",
       "staticPassed": true,
-      "blocker": "验证码、加密幂等、登录、refresh 轮换和登出已通过内存 PostgreSQL 开发自测；真实 PostgreSQL、短信网关及端到端 HTTP 验证待运行环境就绪。"
+      "blocker": "本地真实 PostgreSQL 上的短信 stub 登录、登出和部分 HTTP 反向断言已通过；短信网关、完整 refresh 轮换和高并发限流仍待环境验证。"
     },
     {
       "priority": 10,
@@ -231,7 +230,7 @@
       "taskCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
       "integratedCommit": "adfa06dac0adbb4ff16e74e960e96e6b74254278",
       "staticPassed": true,
-      "blocker": "计划与分组 CRUD、规则版本、生命周期和权限已通过静态检查与内存 PostgreSQL 自测；真实容器数据库迁移、并发及 API 运行验证待环境就绪。"
+      "blocker": "本地 PostgreSQL 上创建与幂等 API 已通过，静态检查和内存 PostgreSQL 回归通过；其余 CRUD、并发与权限的真实服务端场景仍待验证。"
     },
     {
       "priority": 12,
@@ -253,7 +252,7 @@
       "taskCommit": "e094a97c8d3f0c0aeffcf7100175c2b3e7c03d87",
       "integratedCommit": "e094a97c8d3f0c0aeffcf7100175c2b3e7c03d87",
       "staticPassed": true,
-      "blocker": "同日唯一、补记/修订审计、冲突选择、一次性终态纠错及附件失败保留基础记录已通过静态检查和内存 PostgreSQL 自测；真实容器数据库并发和 API 运行验证待环境就绪。"
+      "blocker": "本地 PostgreSQL 上打卡和陈旧版本冲突 API 已通过，静态检查及内存 PostgreSQL 回归通过；同日并发、补记/修订审计和离线冲突端到端场景仍待验证。"
     },
     {
       "priority": 13,
@@ -274,7 +273,7 @@
       "taskCommit": "5af4c3243abedc3ae26323e51cb76a2840bd84f9",
       "integratedCommit": "5af4c3243abedc3ae26323e51cb76a2840bd84f9",
       "staticPassed": true,
-      "blocker": "Today、日历、详情和统计 API 已通过 S0/S1/S2、领域单测与 PGlite 跨接口/查询索引开发自检；真实 PostgreSQL 查询计划和运行时验证按用户要求稍后执行。"
+      "blocker": "本地 PostgreSQL 上 Today 和统计 API 已通过，日历/详情开发自检通过；真实查询计划、日期边界与完整运行时场景仍待验证。"
     },
     {
       "priority": 14,
@@ -569,7 +568,7 @@
       "taskCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
       "integratedCommit": "4b519497432aac6b552d85a479b4409a6f613ad4",
       "staticPassed": true,
-      "blocker": "S0/S1/S2/S4/S6、PGlite 媒体权限/完整性/清理、本地 SQLite 迁移、客户端队列开发自检和 iOS JS 打包通过；真实 MinIO、相册权限、弱网及后台恢复按用户要求稍后验证。"
+      "blocker": "本地 SeaweedFS S3 上的签名上传、确认、私有下载和删除后拒绝已通过；相册权限、弱网/后台恢复、延迟物理清理及 iOS 客户端链路仍待验证。"
     },
     {
       "priority": 27,
@@ -691,7 +690,7 @@
       "taskCommit": "1efede749d0ca62332e35b19e8acb390f7f72203",
       "integratedCommit": "1efede749d0ca62332e35b19e8acb390f7f72203",
       "staticPassed": true,
-      "blocker": "Windows 主机无法执行真实对象存储、iOS 系统分享/文件保护和 Pen/VoiceOver 实测；静态代码、PGlite 导出自检与 iOS JS 打包已通过，用户要求稍后原生验证。"
+      "blocker": "本地 S3 读写已通过，但数据导出与对象存储的完整联动尚未实测；iOS 系统分享/文件保护和 Pen/VoiceOver 仍需原生环境。静态代码、PGlite 导出自检与 iOS JS 打包已通过。"
     },
     {
       "priority": 32,
@@ -718,7 +717,7 @@
       "taskCommit": "f228cfefedfee2e31dd89661efed2af1741936bd",
       "integratedCommit": "f228cfefedfee2e31dd89661efed2af1741936bd",
       "staticPassed": true,
-      "blocker": "Windows 主机无法执行真实对象存储、短信通道、iOS Keychain/SQLCipher/通知与备份恢复联动演练；静态代码、PGlite 删除/媒体/回归自检和 iOS JS 打包已通过，用户要求稍后原生验证。"
+      "blocker": "本地 S3 读写已通过，但真实短信通道、iOS Keychain/SQLCipher/通知与备份恢复联动演练仍需环境；静态代码、PGlite 删除/媒体/回归自检和 iOS JS 打包已通过。"
     },
     {
       "priority": 33,
@@ -820,10 +819,10 @@
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
-      "taskCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
-      "integratedCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+      "taskCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
+      "integratedCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
       "staticPassed": true,
-      "blocker": "S0–S6 全仓静态检查、37 表迁移自检、iOS JS 打包和 64 资源 SHA-256 复核通过；可安装 iOS Release、API/Worker 镜像摘要、真实预发部署/恢复与必要主链路验证尚无环境，正式 ATDD 尚未执行。"
+      "blocker": "S0–S6 全仓静态检查、37 表/11 迁移、本地 API 10 项开发检查、对象存储检查与 iOS JS 打包通过；可安装 iOS Release、API/Worker 镜像摘要、预发部署/恢复及 iOS 主链路仍缺环境，正式 ATDD 尚未执行。"
     }
   ]
 }
