@@ -1,0 +1,13 @@
+{
+  "environment": "production",
+  "namespace": "plan-checkin-production",
+  "region": "cn-hangzhou",
+  "apiReplicas": 2,
+  "workerReplicas": 2,
+  "apiMinReplicas": 2,
+  "apiMaxReplicas": 6,
+  "trustProxyHops": 1,
+  "smsProvider": "http",
+  "apnsProvider": "apns",
+  "apnsEnvironment": "production"
+}

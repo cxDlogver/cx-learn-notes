@@ -1,0 +1,13 @@
+{
+  "environment": "development",
+  "namespace": "plan-checkin-dev",
+  "region": "cn-hangzhou",
+  "apiReplicas": 1,
+  "workerReplicas": 1,
+  "apiMinReplicas": 1,
+  "apiMaxReplicas": 2,
+  "trustProxyHops": 1,
+  "smsProvider": "stub",
+  "apnsProvider": "stub",
+  "apnsEnvironment": "sandbox"
+}

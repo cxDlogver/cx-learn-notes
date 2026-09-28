@@ -1,4 +1,10 @@
-import { Controller, Get, Module } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Module,
+  ServiceUnavailableException,
+} from "@nestjs/common";
+import { Database } from "./database.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { ProfileModule } from "./profile/profile.module.js";
 import { PlansModule } from "./plans/plans.module.js";
@@ -12,9 +18,29 @@ import { DeletionModule } from "./deletion/deletion.module.js";
 
 @Controller("health")
 class HealthController {
+  constructor(private readonly database: Database) {}
+
   @Get()
   getHealth(): { status: "ok" } {
     return { status: "ok" };
+  }
+
+  @Get("live")
+  getLive(): { status: "ok" } {
+    return { status: "ok" };
+  }
+
+  @Get("ready")
+  async getReady(): Promise<{ status: "ok" }> {
+    try {
+      await this.database.query("SELECT 1");
+      return { status: "ok" };
+    } catch {
+      throw new ServiceUnavailableException({
+        code: "SERVICE_UNAVAILABLE",
+        message: "数据库暂时不可用",
+      });
+    }
   }
 }
 
