@@ -186,21 +186,7 @@ QA.md 索引
 
 附件可以作为补充材料，但**长期有效的知识应该沉淀回 Markdown 正文**，再由 [知识体系索引.md](./知识体系索引.md) 连接，而不是依赖 PDF 成为唯一知识来源。
 
-## 8. Agent 专题仍保留完整学习路径
-
-原 README 中的 Agent 教程现在作为整个知识库的一条专项主线，推荐顺序仍然是：
-
-| 顺序 | 文档 | 核心问题 |
-| --- | --- | --- |
-| 1 | [从 Prompt Engineer 到 Harness Engineer](./01-从Prompt-Engineer到Harness-Engineer.md) | 为什么只优化 Prompt 已经不够 |
-| 2 | [Agent 五层架构](./02-Agent五层架构.md) | Agent 系统由哪些职责域组成 |
-| 3 | [Agent 完整工作流](./03-Agent完整工作流.md) | 五层怎样形成运行闭环 |
-| 4 | [LangChain、LangGraph 与 Deep Agents](./04-从LangChain到Deep-Agents.md) | Framework、Runtime 与 Harness 怎样选择 |
-| 5 | [业务案例：研发缺陷修复 Agent](./05-业务案例-研发缺陷修复Agent.md) | 通用架构怎样进入业务 |
-| 6 | [Agent 四种范式](./06-Agent四种范式.md) | 不同 Agent 范式控制什么粒度 |
-| 7 | [Agent 核心原理与最小实现](./07-Agent核心原理与最小实现.md) | Model、Context、Tool、State、Memory、Loop、Control 怎样形成闭环 |
-
-## 9. 新增内容时同时维护四种关系
+## 8. 新增内容时同时维护四种关系
 
 新增、移动或实质修改文件后，至少检查四件事：
 
