@@ -1,156 +1,218 @@
-# AI Agent 架构学习教程
+# Full-Stack AI Notes
 
-建议按顺序阅读：先理解工程角色为何从 Prompt Engineer 演化为 Harness Engineer，再掌握五层架构和闭环工作流，然后理解 LangChain、LangGraph、Deep Agents 与具体业务 Agent 的关系，用四种范式总结不同控制粒度，最后回到可运行内核，把 Model、Context、Tool、State、Memory、Loop 和 Control 落成最小实现。
+`Full-Stack-AI-NOTES` 是一套面向 **全栈工程、AI Agent、项目实践与技术问答** 的个人知识库。它不只保存 Markdown 笔记，还通过 **知识体系索引、Skill、QA、源码与附件资源** 建立统一的读取和维护方式。
 
-> 文档版本：2026-07-13。
-
-### 【先记住一条主线】
-
-Agent 的演化不是“Prompt 被淘汰了”，而是工程问题不断扩大：
+这个目录的核心目标不是持续堆叠文件，而是让知识能够被：
 
 ```text
-Prompt Engineering
-解决：怎样把单次任务说清楚
-        ↓ 任务从单轮变成多轮，Prompt 无法决定每轮该看什么
-Context Engineering
-解决：当前这一轮应该给模型看什么
-        ↓ 信息准备充分，模型仍不能真实读取、修改和验证外部环境
-Tool Use + ReAct
-解决：模型怎样作用于外部环境，并根据观察继续行动
-        ↓ 循环越长，工具结果和历史越多；会话也会结束或压缩
-Memory + Rule Files
-解决：怎样跨轮、跨会话重新注入稳定知识
-        ↓ 规则常驻越多，占用的上下文越多
-Skills + Progressive Disclosure
-解决：怎样把任务知识拆成能力包并按需加载
-        ↓ 知道规则、拥有工具，仍不等于能管理复杂任务的全局进度
-State + Workflow + Feedback
-解决：长任务怎样持续推进、验证、恢复和终止
-        ↓ 各部分需要被装配为同一个可运行、可治理的系统
-Harness Engineering
-解决：怎样把模型、上下文、工具、编排、反馈和安全边界组装成可靠系统
+找到 → 阅读 → 核验 → 回答 → 实践 → 记录 → 重新接入知识体系
 ```
 
-这里描述的是工程能力的演化顺序，不是新增架构层级。Memory、规则文件和 Skills 主要属于上下文组织与 Harness 装配机制；在五层模型中，它们不会成为模型层与执行层之外的额外业务层。
+## 1. 读取知识时先经过三个入口
 
-最终可以用一个简化公式理解：
+进入 `Full-Stack-AI-NOTES` 后，不建议直接在大量文件中无序搜索。默认按下面的顺序读取：
 
 ```text
-AI Agent = Model + Harness
-
-Harness
-= Context Management
-+ Tool / Execution Environment
-+ State / Orchestration
-+ Feedback / Evaluation
-+ Memory / Skills
-+ Permission / Approval
-+ Observability
+README.md
+   ↓ 先理解目录和维护规则
+知识体系索引.md
+   ↓ 找到主题、前置知识、相关文档
+QA.md
+   ↓ 检查是否已有相同或相关问题
+相关知识 Markdown
+   ↓ 阅读完整正文
+source/ / resource/
+   ↓ 需要实现或附件证据时继续读取
+外部官方资料 / 标准 / 论文
+   ↓ 对变化事实和关键结论做最终核验
 ```
 
-模型提供概率性的理解与决策能力，Harness 提供可执行、可验证、可恢复、可治理的工程环境。
+三个入口承担不同职责：
 
-### 【教程目录】
-
-| 顺序 | 章节 | 核心问题 | 学完后的产出 |
-| --- | --- | --- | --- |
-| 1 | [从 Prompt Engineer 到 Harness Engineer](./01-从Prompt-Engineer到Harness-Engineer.md) | 为什么只优化 Prompt 不再足够？ | 能解释 Agent 工程角色的完整演化链 |
-| 2 | [Agent 五层架构](./02-Agent五层架构.md) | 一个 Agent 系统由哪些职责域组成？ | 能用五层模型拆解任意 Agent 产品 |
-| 3 | [Agent 完整工作流](./03-Agent完整工作流.md) | 五层如何在一次任务中协作？ | 能设计状态、循环、门禁和完成条件 |
-| 4 | [LangChain、LangGraph 与 Deep Agents](./04-从LangChain到Deep-Agents.md) | Framework、Runtime、Harness 有什么区别？ | 能根据复杂度选择合适的抽象层 |
-| 5 | [业务案例：研发缺陷修复 Agent](./05-业务案例-研发缺陷修复Agent.md) | 如何把通用框架变成业务 Agent？ | 得到一份从 MVP 到生产系统的设计蓝图 |
-| 6 | [Agent 四种范式](./06-Agent四种范式.md) | ReAct、Plan-and-Execute、Reflexion、Tree of Thoughts 分别控制什么？ | 能按行动、任务、Trial 和候选路径选择并组合范式 |
-| 7 | [Agent 核心原理与最小实现](./07-Agent核心原理与最小实现.md) | Model、Context、Tool、State、Memory、Loop 和 Control 如何真正形成闭环？ | 能运行、测试并解释一个五层最小 Agent |
-
-### 【五条主线如何融合】
-
-这套教程不是几段互不相关的知识，而是同一个系统的五个观察角度：
-
-| 观察角度 | 关注的问题 | 在教程中的位置 |
+| 入口 | 职责 | 不应该做什么 |
 | --- | --- | --- |
-| 思想演化 | 工程问题为什么从“写指令”扩展到“造环境” | 第 1 章 |
-| 架构分层 | 扩展出来的职责应该如何解耦 | 第 2、3 章 |
-| 技术落地 | 不同框架分别封装了哪些职责，业务还要补什么 | 第 4、5 章 |
-| 控制范式 | 模型应在哪个粒度上动态决定行动、计划、重试或搜索 | 第 6 章 |
-| 运行内核 | 核心数据对象怎样在代码中形成受控状态闭环 | 第 7 章 |
+| [知识体系索引.md](./知识体系索引.md) | 整个目录的主知识地图，组织主题、前置关系、主文档和延伸资料 | 不替代具体知识正文 |
+| [QA.md](./QA.md) | 记录明确要求保存的问题、回答要点和问题之间的关联 | 不自动记录每次聊天，不成为第二套知识库 |
+| [knowledge-document-organizer](./skills/knowledge-document-organizer/SKILL.md) | 规定 AI 如何读取本地知识、核验外部资料、整理文档、更新索引和记录 QA | 不把 Skill 中的规则当成技术事实 |
 
-五条主线的关系是：
+因此，**知识体系索引是“读什么”，Skill 是“怎么读、怎么写”，QA 是“已经问过什么、学到什么”。**
 
-```mermaid
-flowchart LR
-    A["思想演化<br/>为什么需要 Harness"] --> B["五层架构<br/>Harness 要解决哪些职责"]
-    B --> C["完整工作流<br/>这些职责如何形成闭环"]
-    C --> D["框架递进<br/>哪些能力可由框架提供"]
-    D --> E["业务 Agent<br/>哪些规则必须由业务定义"]
-    E --> F["Agent 范式<br/>不同控制粒度如何选择与组合"]
-    F --> G["最小实现<br/>数据合同与状态闭环如何运行"]
+## 2. 目录结构区分知识正文、图片、代码和附件
+
+```text
+Full-Stack-AI-NOTES/
+├── README.md
+├── 知识体系索引.md
+├── QA.md
+│
+├── *.md
+│   └── 知识教程、专题笔记、项目复盘、面试与工程文档
+│
+├── skills/
+│   └── knowledge-document-organizer/
+│       ├── SKILL.md
+│       ├── references/
+│       └── agents/
+│
+├── assets/
+│   └── Markdown 文档引用的图片资源
+│
+├── source/
+│   └── 可运行代码、脚本、Demo、最小实现
+│
+└── resource/
+    └── PDF、导出资料、Prompt 等非代码附件
 ```
 
-### 【案例如何贯穿】
+目录边界是稳定约束：
 
-教程使用三个互补案例：
+- **文档图片必须放在 `assets/`。** PNG、JPG、JPEG、GIF、WebP、SVG 等文档图片不要散落在根目录。
+- **完整代码资源必须放在 `source/`。** Markdown 正文可以保留用于解释的短代码片段，但独立 Demo、脚本、HTML 示例、可运行项目和测试代码都进入 `source/`。
+- **PDF 等附件必须放在 `resource/`。** PDF、简历导出、资料附件、Prompt 或其他不适合作为知识正文维护的文件统一放入该目录。
+- **根目录优先保留 Markdown 知识正文和入口文件。**
 
-- 第 3、6 章使用“生成一份结论可追溯的调研报告”，帮助读者在不依赖代码背景的情况下理解 State、双循环、四种范式及其组合；
-- 第 4、5 章使用“研发缺陷修复 Agent”，展示框架选型、文件修改、测试、审批和业务 Harness 的工程落地。
-- 第 7 章使用“查询离线天气并进行计算”，用两次工具调用展示 Decision、Observation、Evidence 与完成验证。
+移动文件后，必须同步检查并修正正文链接、知识体系索引和 QA 中的引用。
 
-三个案例虽然工具和产物不同，但都需要五层能力：
+## 3. 知识体系覆盖六条主要学习主线
 
-- 模型理解目标、事实、失败和候选方案；
-- 上下文层按步骤选择规则、证据、产物和历史结果；
-- 执行层调用领域工具并返回真实 Observation；
-- 编排层维护阶段、循环、依赖、重试和恢复；
-- 反馈与控制层用规则、证据、权限和人工审批决定继续还是结束。
+完整导航见 [知识体系索引.md](./知识体系索引.md)。从整体上可以把当前内容理解为六条主线：
 
-如果要迁移到客服、数据分析、审批、投研或运营场景，只需要替换领域工具、领域 Skills、状态字段和验收标准，五层与双循环仍然成立。
+| 主线 | 主要内容 | 推荐入口 |
+| --- | --- | --- |
+| 浏览器与前端基础 | 网络、浏览器渲染、JavaScript、TypeScript、CSS、异步、V8 | [计算机网络连接概述](./计算机网络连接概述.md)、[JavaScript核心总结](./JavaScript核心总结.md)、[基于Chrome浏览器渲染原理](./基于Chrome浏览器渲染原理.md) |
+| 框架与前端工程化 | Vue、Router、模块化、Vite、Webpack、测试、CI/CD | [Vue3进阶学习](./Vue3进阶学习.md)、[前端工程化设计全面解析](./前端工程化设计全面解析.md) |
+| 性能、监控与 SEO | Web Vitals、资源、渲染、监控、Lighthouse、Nuxt、SEO | [性能专项优化](./性能专项优化.md)、[Nuxt SEO 学习笔记](<./Nuxt SEO 学习笔记.md>) |
+| 服务端与全栈 | Node.js、HTTP、数据库、鉴权、Django、实时通信 | [NodeJS核心总结](./NodeJS核心总结.md)、[Django从0到1](./Django从0到1.md)、[DATABASE](./DATABASE.md) |
+| AI Agent 与 AI Native | Context、Tool、Memory、Skill、MCP、Runtime、Harness、AI-DLC | [01-从Prompt-Engineer到Harness-Engineer](./01-从Prompt-Engineer到Harness-Engineer.md)、[Agent学习教程](./Agent学习教程.md)、[项目工程化设计](./项目工程化设计.md) |
+| 项目与面试表达 | 项目复盘、技术方案、面试追问、算法与表达 | [项目概述](./项目概述.md)、[前端面试核心问题](./前端面试核心问题.md)、[项目扩展面试题](./项目扩展面试题.md) |
 
-### 【术语约定】
+这些主线不是彼此独立的目录，而是知识之间的依赖关系。例如：
 
-| 术语 | 本教程中的含义 |
-| --- | --- |
-| LLM / Model | 根据当前上下文生成判断、计划、工具调用或答案的概率性决策模块 |
-| Tool | 暴露给模型的能力接口；背后可以由 Function、API、CLI、Script、浏览器或 MCP Server 实现 |
-| Workflow | 主要由代码预先规定路径的流程，强调可预测性 |
-| Agent Loop | 模型根据观察动态决定下一步工具和停止时机的循环 |
-| Runtime | 负责状态、持久化、恢复、流式输出和中断等运行能力的底座 |
-| Harness | 围绕模型预装工具、提示、文件系统、上下文管理、规划、子 Agent 和控制机制的工程外壳 |
-| 业务 Agent | 通用框架或 Harness 加上领域目标、工具、规则、数据、权限、评估和运营机制后的完整产品 |
+```text
+网络 / 浏览器 / JavaScript
+        ↓
+框架与前端工程化
+        ↓
+性能、监控与项目实践
+        ↓
+服务端与完整交付链路
+        ↓
+AI Native / Agent 工程化
+        ↓
+项目复盘与 QA 输出
+```
 
-“Workflow”和“Agent”不是非此即彼。生产系统通常是确定性 Workflow 包住若干模型驱动的 Agent Loop，即“确定性外壳 + Agent 自主内核”。
+## 4. Skill 负责知识库的读取、整理与写回
 
-### 【推荐学习方式】
+当前核心 Skill 是：
 
-第一遍只关注每章开头的核心公式、架构图和判断标准，先形成整体地图。第二遍结合第 5 章案例，把自己的业务逐项代入五层。第三遍运行第 7 章的零依赖最小 Agent，亲自观察 State、Decision、Observation 和 Evidence 怎样变化。第四遍再使用 LangChain 做 Tool Calling Loop，遇到显式状态、循环、恢复或审批需求时引入 LangGraph；只有长任务确实需要规划、上下文卸载、Skills 或子 Agent 时，才升级到 Deep Agents 一类 Harness。第五遍结合第 6 章判断当前问题发生在 Action、Plan、Trial 还是 Candidate 粒度，只增加真正需要的范式。
+[skills/knowledge-document-organizer/SKILL.md](./skills/knowledge-document-organizer/SKILL.md)
 
-每完成一章，可以尝试回答一个问题：
+它统一处理三类工作：
 
-1. 当前问题是模型能力不足，还是 Harness 缺失？
-2. 这个能力属于五层中的哪一层？
-3. 它应该由模型动态决定，还是由程序确定性控制？
-4. 框架已经提供了什么，业务仍然必须定义什么？
-5. 哪条证据能够证明任务真的完成了？
-6. 当前不确定性发生在 Action、Plan、Trial，还是多个 Candidate 之间？
-7. Model、Runtime 和 Control 之间的数据合同能否被单独测试？
+### 【知识问答】
 
-### 【引用证据如何阅读】
+回答问题前先读取：
 
-教程把文章标题直接嵌入它所支撑的表述中。例如：
+```text
+知识体系索引
+  ↓
+QA 历史
+  ↓
+相关本地知识正文
+  ↓
+source / resource（按需）
+  ↓
+权威外部资料
+```
 
-> Anthropic 的 [《Effective context engineering for AI agents》](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) 指出，Context Engineering 关注模型在当前推理时应看到的完整 Token 集合，而不只是一段 Prompt。
+索引只能用于定位，正式回答不能只根据索引摘要生成。
 
-这种写法让文章链接成为句子的一部分，读者可以立即判断是哪篇文献支持当前结论。各章末尾的“本章引用证据”仍集中列出完整资料，便于核对版本和继续阅读。教程自行归纳的五层模型、工程公式和业务设计，会使用“可以理解为”“本教程归纳”等表述，不冒充某篇文章的原始定义。
+### 【知识文档维护】
 
-### 【原始资料与官方延伸阅读】
+新增或修改知识后，需要同时判断：
 
-- [OpenAI：Harness engineering](https://openai.com/index/harness-engineering/)
-- [Anthropic：Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
-- [Anthropic：Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
-- [ReAct：Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
-- [LangChain：Plan-and-Execute Agents](https://www.langchain.com/blog/plan-and-execute-agents)
-- [Reflexion：Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366)
-- [Tree of Thoughts：Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601)
-- [LangChain：Agents](https://docs.langchain.com/oss/python/langchain/agents)
-- [LangGraph：Overview](https://docs.langchain.com/oss/python/langgraph/overview)
-- [Deep Agents：Overview](https://docs.langchain.com/oss/python/deepagents/overview)
-- [LangChain：Frameworks, runtimes, and harnesses](https://docs.langchain.com/oss/python/concepts/products)
-- [Model Context Protocol：Introduction](https://modelcontextprotocol.io/docs/getting-started/intro)
+- 应该补充已有文档还是新建独立知识文档；
+- 新内容与哪些旧知识存在前置、延伸、对比或冲突；
+- 是否需要补充图片、源码或附件；
+- 是否需要更新 [知识体系索引.md](./知识体系索引.md)。
+
+### 【QA 记录】
+
+普通问答默认不写入 QA。只有明确提出“记录问题”“写入 QA”“保存这题”等要求时，才创建 QA 记录并同步 [QA.md](./QA.md)。
+
+## 5. QA 是知识体系上的问题视图
+
+[QA.md](./QA.md) 不重新组织整套知识，而是记录“知识被怎样问过”。
+
+一个完整的 QA 关系应当是：
+
+```text
+知识体系索引
+    ↓ 定位
+知识正文
+    ↓ 支撑
+问题 → 标准回答
+    ↓
+QA.md 索引
+    ↘ 相关问题 / 下一层知识
+```
+
+因此：
+
+- 已有问题优先复用或继续深入，不重复制造同义问题；
+- 回答中发现知识缺口时，优先补对应知识正文；
+- QA 文件只在明确要求记录时创建；
+- QA 中的结论仍需要回到知识正文和权威资料核验。
+
+## 6. source 保存可以验证知识的实现
+
+`source/` 用于独立的代码资源，目前包括：
+
+- `source/ai-coding-workflow.ts`：需求、规划、编码、测试阶段组成的 AI Coding Workflow；
+- `source/minimal-agent/`：五层 Agent 与受控 ReAct Loop 的最小实现；
+- `source/5.dynamic-height-virtual-list.html`：动态高度虚拟列表示例。
+
+知识正文中的代码用于解释；`source/` 中的代码用于运行、验证和继续扩展。一个完整实现不应长期只存在于 Markdown 代码块中。
+
+## 7. resource 保存 PDF 与其他附件资料
+
+`resource/` 用于不适合作为 Markdown 知识正文持续维护的附件。目前主要包括：
+
+- 网络、Node.js、算法等 PDF 学习资料；
+- 官网开发和面试资料的 PDF 导出；
+- 简历 PDF；
+- 历史 Prompt 等辅助资料。
+
+附件可以作为补充材料，但**长期有效的知识应该沉淀回 Markdown 正文**，再由 [知识体系索引.md](./知识体系索引.md) 连接，而不是依赖 PDF 成为唯一知识来源。
+
+## 8. Agent 专题仍保留完整学习路径
+
+原 README 中的 Agent 教程现在作为整个知识库的一条专项主线，推荐顺序仍然是：
+
+| 顺序 | 文档 | 核心问题 |
+| --- | --- | --- |
+| 1 | [从 Prompt Engineer 到 Harness Engineer](./01-从Prompt-Engineer到Harness-Engineer.md) | 为什么只优化 Prompt 已经不够 |
+| 2 | [Agent 五层架构](./02-Agent五层架构.md) | Agent 系统由哪些职责域组成 |
+| 3 | [Agent 完整工作流](./03-Agent完整工作流.md) | 五层怎样形成运行闭环 |
+| 4 | [LangChain、LangGraph 与 Deep Agents](./04-从LangChain到Deep-Agents.md) | Framework、Runtime 与 Harness 怎样选择 |
+| 5 | [业务案例：研发缺陷修复 Agent](./05-业务案例-研发缺陷修复Agent.md) | 通用架构怎样进入业务 |
+| 6 | [Agent 四种范式](./06-Agent四种范式.md) | 不同 Agent 范式控制什么粒度 |
+| 7 | [Agent 核心原理与最小实现](./07-Agent核心原理与最小实现.md) | Model、Context、Tool、State、Memory、Loop、Control 怎样形成闭环 |
+
+## 9. 新增内容时同时维护四种关系
+
+新增、移动或实质修改文件后，至少检查四件事：
+
+1. **知识关系**：是否需要进入 `知识体系索引.md`，以及它与哪些知识存在依赖或延伸。
+2. **QA 关系**：是否影响已有问题，或者暴露了新的知识缺口。
+3. **资源关系**：图片是否位于 `assets/`、代码是否位于 `source/`、PDF 等附件是否位于 `resource/`。
+4. **证据关系**：关键事实是否有可靠来源，代码结论是否有实现、测试或运行证据。
+
+最终目标不是让仓库拥有更多文件，而是让任何一个知识点都能沿着：
+
+```text
+索引 → 正文 → 实现 / 附件 → QA → 继续学习
+```
+
+被稳定地找到和复用。
