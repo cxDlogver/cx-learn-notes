@@ -172,40 +172,38 @@ export class SharesService {
   }
 
   private async snapshot(client: PoolClient, plan: PlanRow): Promise<Snapshot> {
-    const [rules, events, records, resolutions] = await Promise.all([
-      client.query<{
-        version: number;
-        effective_date: string;
-        weekdays: number[] | null;
-        weekly_target: number | null;
-      }>(
-        `SELECT version, effective_date::text, weekdays, weekly_target
+    const rules = await client.query<{
+      version: number;
+      effective_date: string;
+      weekdays: number[] | null;
+      weekly_target: number | null;
+    }>(
+      `SELECT version, effective_date::text, weekdays, weekly_target
          FROM plan_rule_versions WHERE plan_id = $1 ORDER BY version`,
-        [plan.id],
-      ),
-      client.query<{
-        seq: number;
-        action: LifecycleEvent["action"];
-        business_date: string;
-        effective_at: Date | string;
-      }>(
-        `SELECT seq, action, business_date::text, effective_at
+      [plan.id],
+    );
+    const events = await client.query<{
+      seq: number;
+      action: LifecycleEvent["action"];
+      business_date: string;
+      effective_at: Date | string;
+    }>(
+      `SELECT seq, action, business_date::text, effective_at
          FROM plan_lifecycle_events WHERE plan_id = $1 ORDER BY seq`,
-        [plan.id],
-      ),
-      client.query<CheckinRow>(
-        `SELECT c.id, c.business_date::text, c.result, c.note, c.failure_reason,
+      [plan.id],
+    );
+    const records = await client.query<CheckinRow>(
+      `SELECT c.id, c.business_date::text, c.result, c.note, c.failure_reason,
           c.is_backfilled, c.is_revised, r.version AS rule_version
          FROM checkins c JOIN plan_rule_versions r ON r.id = c.rule_version_id
          WHERE c.plan_id = $1 ORDER BY c.business_date`,
-        [plan.id],
-      ),
-      client.query<ResolutionRow>(
-        `SELECT resolution, resolved_business_date::text, resolved_at, note, revision
+      [plan.id],
+    );
+    const resolutions = await client.query<ResolutionRow>(
+      `SELECT resolution, resolved_business_date::text, resolved_at, note, revision
          FROM one_time_resolutions WHERE plan_id = $1`,
-        [plan.id],
-      ),
-    ]);
+      [plan.id],
+    );
     const versions: RuleVersion[] = rules.rows.map((rule) =>
       plan.kind === "fixed"
         ? {

@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: plan_checkin
       POSTGRES_PASSWORD: local_only_change_me
     ports:
-      - 127.0.0.1:5432:5432
+      - 127.0.0.1:${PLAN_CHECKIN_POSTGRES_PORT:-5432}:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -18,21 +18,20 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - 127.0.0.1:6379:6379
+      - 127.0.0.1:${PLAN_CHECKIN_REDIS_PORT:-6379}:6379
     healthcheck:
       test: [CMD, redis-cli, ping]
       interval: 5s
       timeout: 3s
       retries: 10
   object-storage:
-    image: quay.io/minio/minio:RELEASE.2025-10-15T17-29-55Z
-    command: server /data --console-address :9001
+    image: chrislusf/seaweedfs@sha256:ce9e796f1fe6f06968f4c04bdaf8f678dad9c8acdfef3d244133d71bfa6bf882
     environment:
-      MINIO_ROOT_USER: localdev
-      MINIO_ROOT_PASSWORD: local_only_change_me
+      AWS_ACCESS_KEY_ID: localdev
+      AWS_SECRET_ACCESS_KEY: local_only_change_me
+      S3_BUCKET: plan-checkin-local
     ports:
-      - 127.0.0.1:9000:9000
-      - 127.0.0.1:9001:9001
+      - 127.0.0.1:${PLAN_CHECKIN_OBJECT_PORT:-9000}:8333
     volumes:
       - object_data:/data
 volumes:

@@ -123,7 +123,6 @@ export class MediaService {
       expiresAt: new Date(Date.now() + 600_000).toISOString(),
       headers: {
         "Content-Type": input.mime,
-        "x-amz-checksum-sha256": sha.toString("base64"),
       },
     };
   }

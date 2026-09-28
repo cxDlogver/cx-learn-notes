@@ -29,7 +29,7 @@
 4. 用相同参数改 `--mode deploy`。脚本创建 Namespace/ServiceAccount，核对密钥键、TLS 与两区节点，等待迁移 Job 成功，再滚动 API/Worker 并等待 rollout。迁移脚本有数据库 advisory lock 和 SQL 哈希校验，同一提交重试不重复应用。失败时停止发布并保留旧服务流量；Job 失败先查迁移状态，不直接反向执行 SQL。
 5. 预发核对 readiness、`/internal/metrics`、短信/APNs 沙箱、私有对象读写/删除、账号注销重试、备份恢复；再按相同步骤发布生产。iOS 客户端随后通过 TestFlight 分组逐步放量，观察 5xx、P95/P99、同步冲突和 Worker/删除告警。客户端版本须与 OpenAPI 兼容基线一致。
 
-开发环境可使用本地 Compose；真实 Kubernetes 发布需要 `kubectl`、仓库镜像、集群上下文和已建立的 Secret，当前 Windows 环境未执行。
+开发环境将 `.env.example` 复制为 `.env`，设置本机可用的 `PLAN_CHECKIN_POSTGRES_PORT`、`PLAN_CHECKIN_REDIS_PORT`、`PLAN_CHECKIN_OBJECT_PORT`，并同步修改 `DATABASE_URL`、`REDIS_URL`、`OBJECT_ENDPOINT` 和 `OBJECT_PUBLIC_ENDPOINT`，再运行 `pnpm infra:up`。本地 S3 兼容存储使用 [SeaweedFS 官方镜像](https://github.com/seaweedfs/seaweedfs)并绑定回环地址；这是开发替身，不代表生产对象存储供应商。真实 Kubernetes 发布需要 `kubectl`、仓库镜像、集群上下文和已建立的 Secret。
 
 ## 回滚与灰度
 

@@ -191,9 +191,9 @@ export class SocialService {
       [userId],
     );
     return this.database.transaction(async (client) => {
-      const items = await Promise.all(
-        found.rows.map((row) => this.requestDto(client, row)),
-      );
+      const items: FriendRequestDto[] = [];
+      for (const row of found.rows)
+        items.push(await this.requestDto(client, row));
       return {
         incoming: items.filter((item) => item.receiver.id === userId),
         outgoing: items.filter((item) => item.sender.id === userId),

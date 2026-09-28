@@ -1,0 +1,130 @@
+{
+  "kind": "local-http-development-check",
+  "formalAtdd": false,
+  "startedAt": "2026-09-28T05:47:13.942Z",
+  "endedAt": "2026-09-28T05:47:14.427Z",
+  "environment": "Windows loopback + Docker PostgreSQL 17/Redis/SeaweedFS",
+  "cases": [
+    {
+      "caseId": "AUTH-09-api-unauthenticated",
+      "status": "PASS",
+      "requestIds": [
+        "15fe0dc4-5601-427e-97d3-7dcf8383edbb"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "AUTH-01-04-api-login",
+      "status": "PASS",
+      "requestIds": [
+        "05327d0e-2f07-46e4-9845-6ce7fe544dde",
+        "d5cdbcbb-b458-4a7d-9c4d-bb2eba898735"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "PLAN-02-api-empty-rule",
+      "status": "PASS",
+      "requestIds": [
+        "f309960e-75d3-40fc-8575-95ec24d3e873",
+        "d3f6824b-6165-4209-b98b-0e3ea416e098"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "PLAN-03-api-create-idempotency",
+      "status": "PASS",
+      "requestIds": [
+        "356a6c12-9c80-4eb2-be2d-14561e313edd",
+        "f6747e41-c0f1-4cff-b9a5-38095488f26f",
+        "3b942cf3-1f7f-4f82-85b8-8f38c7db9563"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "CHECK-01-SYNC-03-api-checkin",
+      "status": "PASS",
+      "requestIds": [
+        "ef651bfe-aa5d-43f6-912e-a9b57901d6d4",
+        "d91f1991-850d-402b-9d7f-42873539b448",
+        "b11b6aec-19c0-483b-9dfe-d624b84bfe3b"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "SYNC-06-api-stale-revision",
+      "status": "PASS",
+      "requestIds": [
+        "399bb9e2-e01b-4516-be3e-a96bb723a30c",
+        "34758829-2bf4-47cb-9431-6d44dfea4253"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "VIEW-api-today-statistics",
+      "status": "PASS",
+      "requestIds": [
+        "3a69e732-ab56-4651-ac27-ae73aefdfc20",
+        "825a1bc2-f43b-4ef8-82a4-4a68522568e7"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "MEDIA-api-signed-upload-private-download",
+      "status": "PASS",
+      "requestIds": [
+        "b869695f-2539-4288-a529-287831b4e34a",
+        "745f2af6-13e2-42cc-9500-3ef14b6d6ff6",
+        "74d88191-701e-473c-b47c-3fa2ad571e71",
+        "d3f23cbc-8a19-47ba-b0b9-f33135c7fc78",
+        "8044fd22-dc74-494b-916b-da3d36d73a17",
+        "b4b5f649-879e-489e-a90e-c37393c3b8d9"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "AUTH-09-api-logout",
+      "status": "PASS",
+      "requestIds": [
+        "b260c297-cc6b-4045-9660-a081e4852325",
+        "473d61df-b54b-4ed8-b78a-e59f325b6535"
+      ],
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    },
+    {
+      "caseId": "OPS-04-api-metrics-and-redaction",
+      "status": "PASS",
+      "assertionTypes": [
+        "functional",
+        "negative"
+      ]
+    }
+  ]
+}

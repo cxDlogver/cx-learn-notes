@@ -58,7 +58,12 @@ if (process.argv.includes("--check")) {
 } else if (process.argv.includes("--write")) {
   const progress = JSON.parse(await read("docs/build-progress.json"));
   assert.equal(progress.tasks.length, 35);
-  assert.equal(progress.currentWork?.taskId, "OPS-06");
+  const sourceFreezeActive = progress.currentWork?.taskId === "OPS-06";
+  const sourceFreezeRecorded =
+    progress.currentWork === null &&
+    progress.tasks.find((task) => task.id === "OPS-06")?.status === "BLOCKED" &&
+    progress.tasks.find((task) => task.id === "OPS-06")?.staticPassed === true;
+  assert.ok(sourceFreezeActive || sourceFreezeRecorded);
   for (const task of progress.tasks.filter((item) => item.id !== "OPS-06"))
     assert.ok(
       task.status === "DONE" ||

@@ -210,40 +210,41 @@ export class ViewsService {
     if (options.planId && !found.rows[0]) fail("NOT_FOUND", 404, "计划不存在");
     if (!found.rows.length) return [];
     const ids = found.rows.map((row) => row.id);
-    const [rules, events, resolutions, reminders] = await Promise.all([
-      client.query<{
-        plan_id: string;
-        version: number;
-        effective_date: string;
-        weekdays: number[] | null;
-        weekly_target: number | null;
-      }>(
-        `SELECT plan_id, version, effective_date::text, weekdays, weekly_target
+    const rules = await client.query<{
+      plan_id: string;
+      version: number;
+      effective_date: string;
+      weekdays: number[] | null;
+      weekly_target: number | null;
+    }>(
+      `SELECT plan_id, version, effective_date::text, weekdays, weekly_target
          FROM plan_rule_versions WHERE plan_id = ANY($1::uuid[]) ORDER BY plan_id, version`,
-        [ids],
-      ),
-      client.query<{
-        plan_id: string;
-        seq: number;
-        action: LifecycleEvent["action"];
-        business_date: string;
-        effective_at: Date | string;
-      }>(
-        `SELECT plan_id, seq, action, business_date::text, effective_at
+      [ids],
+    );
+    const events = await client.query<{
+      plan_id: string;
+      seq: number;
+      action: LifecycleEvent["action"];
+      business_date: string;
+      effective_at: Date | string;
+    }>(
+      `SELECT plan_id, seq, action, business_date::text, effective_at
          FROM plan_lifecycle_events WHERE plan_id = ANY($1::uuid[]) ORDER BY plan_id, seq`,
-        [ids],
-      ),
-      client.query<ResolutionRow>(
-        `SELECT plan_id, resolution, resolved_business_date::text, resolved_at, note, revision
+      [ids],
+    );
+    const resolutions = await client.query<ResolutionRow>(
+      `SELECT plan_id, resolution, resolved_business_date::text, resolved_at, note, revision
          FROM one_time_resolutions WHERE plan_id = ANY($1::uuid[])`,
-        [ids],
-      ),
-      client.query<{ plan_id: string; time_local: string | null }>(
-        `SELECT plan_id, time_local::text FROM reminder_settings
+      [ids],
+    );
+    const reminders = await client.query<{
+      plan_id: string;
+      time_local: string | null;
+    }>(
+      `SELECT plan_id, time_local::text FROM reminder_settings
          WHERE plan_id = ANY($1::uuid[]) AND enabled = true`,
-        [ids],
-      ),
-    ]);
+      [ids],
+    );
     const recordParams: unknown[] = [ids];
     let recordFilter = "c.plan_id = ANY($1::uuid[])";
     if (options.from) {
