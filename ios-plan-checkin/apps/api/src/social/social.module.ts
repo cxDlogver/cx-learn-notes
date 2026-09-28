@@ -20,6 +20,8 @@ import {
   NotificationPreferencesController,
 } from "./notifications.controller.js";
 import { NotificationsService } from "./notifications.service.js";
+import { InboxController } from "./inbox.controller.js";
+import { InboxService } from "./inbox.service.js";
 
 @Module({
   imports: [AuthModule],
@@ -34,12 +36,14 @@ import { NotificationsService } from "./notifications.service.js";
     EncouragementsController,
     DevicesController,
     NotificationPreferencesController,
+    InboxController,
   ],
   providers: [
     SocialService,
     SharesService,
     EncouragementsService,
     NotificationsService,
+    InboxService,
   ],
   exports: [SocialService, SharesService],
 })

@@ -97,3 +97,9 @@
 - `PUT /api/v1/plans/{id}/checkins/{businessDate}` 的数值请求保持原有 `{value,unit}` 格式。已配置数值项的计划按目标业务日期校验单位并保存当时标签、单位与版本；不匹配返回既有 `RULE_CHANGED` 409。未配置计划继续接受旧式数值。新记录的 `numeric` 响应可附 `label/configVersion`，旧记录没有快照时仍只返回 `{value,unit}`。
 - `POST/PATCH /api/v1/plans/{id}/one-time-resolution` 增加可选 `note`、`numeric`、`mediaIds`；原有 `reason` 请求继续有效，两种备注字段不能同时提供。响应新增可忽略的 `numeric`、`mediaIds`、`mediaAttachFailed`。详情统计中的一次性结果返回相同附件信息；修订历史保存前后快照。
 - 既有必填请求字段、路由和成功码未改变；OpenAPI 仍为 77 个操作，兼容基线检查通过。真实 HTTP、数据库唯一行、幂等、并发冲突、修订审计与旧客户端回归见 [WEB-08 记录](./atdd/web/WEB-08-打卡补记与修订API.md)。浏览器和真实对象上传不在本次服务端通过范围。
+
+## WEB-13 社交消息收件箱
+
+- 新增 `GET /api/v1/me/inbox`，可选 `cursor`、`limit`（1～50），返回消息数组、下一游标、是否有更多与账号级未读数。游标绑定当前账号；逐条重新检查好友、分享、屏蔽与账号/计划状态，失权时只保留通用事件与时间，不返回目标或对方 ID。
+- 新增 `POST /api/v1/me/inbox/{id}/read`，需 Bearer 与幂等键，只允许收件人标已读；重复同键或再次标记保留最初 `readAt`。社交业务事务按唯一事件键写好友申请、接受、分享、共享记录更新和鼓励消息，payload 不含正文或私人附件。
+- 旧好友、分享、鼓励、通知请求与响应不变；OpenAPI 增至 79 个操作，兼容基线及旧行为回归通过。A/B/C/D、双 Web 会话、失权拒绝与数据库去重的证据见 [WEB-13 记录](./atdd/web/WEB-13-社交消息服务端.md)。iOS 客户端联测另行执行。

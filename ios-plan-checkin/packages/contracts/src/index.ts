@@ -400,6 +400,31 @@ export interface NotificationPreferencesDto {
   revision: number;
   updatedAt: UtcInstant;
 }
+export type InboxEventType =
+  | "friend_request"
+  | "friend_accepted"
+  | "share"
+  | "shared_update"
+  | "encouragement";
+export interface InboxMessageDto {
+  id: Uuid;
+  eventType: InboxEventType;
+  actorId: Uuid | null;
+  subjectId: Uuid | null;
+  canOpen: boolean;
+  createdAt: UtcInstant;
+  readAt: UtcInstant | null;
+}
+export interface InboxPageDto {
+  messages: InboxMessageDto[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  unreadCount: number;
+}
+export interface InboxReadDto {
+  id: Uuid;
+  readAt: UtcInstant;
+}
 export interface UpdateNotificationPreferencesRequest {
   friendRequests?: boolean;
   sharedUpdates?: boolean;

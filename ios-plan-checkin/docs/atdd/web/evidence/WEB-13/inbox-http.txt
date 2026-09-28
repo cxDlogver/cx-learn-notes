@@ -1,0 +1,55 @@
+command: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-inbox-http-smoke.ps1
+exitCode: 0
+stdout:
+Applied 0001_core.sql
+Applied 0002_social_operations.sql
+Applied 0003_plan_management.sql
+Applied 0004_record_conflicts.sql
+Applied 0005_incremental_sync.sql
+Applied 0006_conflict_resolution_link.sql
+Applied 0007_media_cleanup.sql
+Applied 0008_social_notifications.sql
+Applied 0009_data_exports.sql
+Applied 0010_deletion_audit.sql
+Applied 0011_rate_limits.sql
+Applied 0012_web_compatibility.sql
+{"event":"http_request","at":"2026-09-28T15:08:44.344Z","requestId":"7b3cf76b-d5b5-433b-8aac-633a2a25b5b7","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":61,"code":"NONE","operation":"post","idempotencyHash":"0d03e310cd9e0267706b"}
+{"event":"http_request","at":"2026-09-28T15:08:44.378Z","requestId":"fb6b8bc3-8d46-4088-a2a6-6b41ac97e78a","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":25,"code":"NONE","operation":"post","idempotencyHash":"0f0b32af32f3c5c2548e"}
+{"event":"http_request","at":"2026-09-28T15:08:44.397Z","requestId":"a054a3f3-f76f-4c35-ac3f-68953a2b4276","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":17,"code":"NONE","operation":"post","idempotencyHash":"8f995bbc2155a0dd6234"}
+{"event":"http_request","at":"2026-09-28T15:08:44.418Z","requestId":"8d151b03-7e44-46fc-b30b-53b999168db8","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":18,"code":"NONE","operation":"post","idempotencyHash":"8d9dbcb2a45811d1b112"}
+{"event":"http_request","at":"2026-09-28T15:08:44.435Z","requestId":"74a08cf8-53e3-4824-b175-84959da79ca4","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":15,"code":"NONE","operation":"post","idempotencyHash":"4764e3780107b4425bfe"}
+{"event":"http_request","at":"2026-09-28T15:08:44.453Z","requestId":"cb7f8b9b-68dc-4b29-b7d6-6d79b9652ea5","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":17,"code":"NONE","operation":"post","idempotencyHash":"bfc2aa8a879e15fa8c25"}
+{"event":"http_request","at":"2026-09-28T15:08:44.466Z","requestId":"c47894aa-c89c-4860-a764-cd3276b2ed8f","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":11,"code":"NONE","operation":"post","idempotencyHash":"2658f2b03d50fa810f8f"}
+{"event":"http_request","at":"2026-09-28T15:08:44.484Z","requestId":"51fdbbba-9038-44df-bd8b-f8cc2bbbed6f","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":16,"code":"NONE","operation":"post","idempotencyHash":"b75261d98f2981665236"}
+{"event":"http_request","at":"2026-09-28T15:08:44.492Z","requestId":"eec04bd0-7122-4d8d-9b88-7343fbb0e73c","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":3,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.542Z","requestId":"2f59483e-ad4a-4de2-bc47-eca6a83cc0c1","method":"POST","route":"/api/v1/friend-requests","status":201,"durationMs":38,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"friend-request","idempotencyHash":"a960b9b29c1cb594d372"}
+{"event":"http_request","at":"2026-09-28T15:08:44.554Z","requestId":"7c79ee5c-1248-4198-a7f7-c310cceae570","method":"POST","route":"/api/v1/friend-requests","status":201,"durationMs":10,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"friend-request","idempotencyHash":"a960b9b29c1cb594d372"}
+{"event":"http_request","at":"2026-09-28T15:08:44.567Z","requestId":"d8246c1c-7e1f-4ba7-a0bc-0c6e52eca43f","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":12,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.605Z","requestId":"086c6b0b-e45b-4509-8469-e153a471afc7","method":"POST","route":"/api/v1/friend-requests/:id/accept","status":201,"durationMs":37,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"friend-accept","resourceHash":"b026b45807a11ec8a5ba","idempotencyHash":"238b818a8998c94eaed6"}
+{"event":"http_request","at":"2026-09-28T15:08:44.615Z","requestId":"8e170ada-fc04-4ab6-b430-5aaebe25cf33","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":9,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.649Z","requestId":"f52d7c88-6e74-46b4-b18e-4d0334dc9930","method":"POST","route":"/api/v1/plans","status":201,"durationMs":31,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"plan.create","idempotencyHash":"cf78422cc6599d8b4dcf"}
+{"event":"http_request","at":"2026-09-28T15:08:44.679Z","requestId":"14808c5f-4a66-4683-a3e9-eb2450d56681","method":"GET","route":"/api/v1/plans/:id/share-preview","status":200,"durationMs":29,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"get","resourceHash":"5d3a29f37c9ff08ee5fe"}
+{"event":"http_request","at":"2026-09-28T15:08:44.721Z","requestId":"33788ae2-5ec4-46f3-a82b-eefc427887ab","method":"PUT","route":"/api/v1/plans/:id/shares/:friendId","status":200,"durationMs":41,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"share-plan","resourceHash":"5d3a29f37c9ff08ee5fe","idempotencyHash":"1958d734bb47e895a814"}
+{"event":"http_request","at":"2026-09-28T15:08:44.757Z","requestId":"9fc7f1f4-1594-4010-b183-bc430b49bcea","method":"PUT","route":"/api/v1/plans/:id/checkins/:businessDate","status":200,"durationMs":34,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"checkin.put","resourceHash":"5d3a29f37c9ff08ee5fe","baseRevision":0,"idempotencyHash":"fa5aeff44691a1c63b46"}
+{"event":"http_request","at":"2026-09-28T15:08:44.782Z","requestId":"a29ba9ec-a3fc-4903-800e-38db38d67b5d","method":"POST","route":"/api/v1/checkins/:id/encouragements","status":201,"durationMs":24,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"encouragement-create","resourceHash":"0f4a5215942208deffad","idempotencyHash":"0c1518766f1ef951fc7c"}
+{"event":"http_request","at":"2026-09-28T15:08:44.793Z","requestId":"b91f1cd1-b459-4d60-ba80-f17983867456","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":9,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.802Z","requestId":"8de83412-d41b-4f95-ab79-14a1ea1ca39c","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":9,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.806Z","requestId":"9818fa3a-f9f8-42fb-9404-cfa7d525b2c7","method":"GET","route":"/api/v1/me/inbox","status":400,"durationMs":3,"code":"VALIDATION_ERROR","actorHash":"3fbdb1d5ba1edadd8b60","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.822Z","requestId":"1d1de498-a065-4bfe-a71e-228eea9a324c","method":"POST","route":"/api/v1/me/inbox/:id/read","status":201,"durationMs":15,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"inbox.read","resourceHash":"6ac722ec061264cf7492","idempotencyHash":"41fb63819cf3bf06e181"}
+{"event":"http_request","at":"2026-09-28T15:08:44.833Z","requestId":"2a7e537f-ee6f-4650-9e14-14cc2d22f52f","method":"POST","route":"/api/v1/me/inbox/:id/read","status":201,"durationMs":10,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"inbox.read","resourceHash":"6ac722ec061264cf7492","idempotencyHash":"41fb63819cf3bf06e181"}
+{"event":"http_request","at":"2026-09-28T15:08:44.847Z","requestId":"6f004576-9127-408f-97c6-400a632cf979","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":12,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.859Z","requestId":"dd3d4753-23cf-4ac6-b1dc-171d9fc28e9b","method":"POST","route":"/api/v1/me/inbox/:id/read","status":404,"durationMs":11,"code":"NOT_FOUND","actorHash":"3fbdb1d5ba1edadd8b60","operation":"inbox.read","resourceHash":"6ac722ec061264cf7492","idempotencyHash":"7067fe419d557c8fcd92"}
+{"event":"http_request","at":"2026-09-28T15:08:44.871Z","requestId":"7b3038f5-55fe-4a28-a703-b4744f9ee6eb","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":12,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.892Z","requestId":"5c6015b6-627e-4704-940d-7cf28ea6ca6d","method":"DELETE","route":"/api/v1/plans/:id/shares/:friendId","status":200,"durationMs":20,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"revoke-share","resourceHash":"5d3a29f37c9ff08ee5fe","idempotencyHash":"7cec4242a4a05e60d27f"}
+{"event":"http_request","at":"2026-09-28T15:08:44.905Z","requestId":"46877cd1-b188-4660-816f-bb4495b5c3d2","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":11,"code":"NONE","actorHash":"e8f602504fe7937504cc","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.920Z","requestId":"704aeb72-4946-4254-a27b-3d69b35b383c","method":"GET","route":"/api/v1/shared-plans/:id","status":403,"durationMs":14,"code":"SHARE_REVOKED","actorHash":"e8f602504fe7937504cc","operation":"get","resourceHash":"5d3a29f37c9ff08ee5fe"}
+{"event":"http_request","at":"2026-09-28T15:08:44.950Z","requestId":"8078cd77-b90b-4e5e-a20d-0737d8f5b762","method":"POST","route":"/api/v1/blocks","status":201,"durationMs":29,"code":"NONE","actorHash":"2ef1ea2c98cc4b86535d","operation":"friend-block","idempotencyHash":"41d6218f948c6fc78c08"}
+{"event":"http_request","at":"2026-09-28T15:08:44.967Z","requestId":"f6ebecdb-d936-4653-96b0-7dd19a56d38c","method":"POST","route":"/api/v1/friend-requests","status":403,"durationMs":16,"code":"FRIEND_BLOCKED","actorHash":"8cdb4d52e1d685df2330","operation":"friend-request","idempotencyHash":"95b29c14381cd5851d30"}
+{"event":"http_request","at":"2026-09-28T15:08:44.976Z","requestId":"853cc6f4-93d8-4cae-bdc5-5ef2fdf839f0","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":8,"code":"NONE","actorHash":"3fbdb1d5ba1edadd8b60","operation":"get"}
+{"event":"http_request","at":"2026-09-28T15:08:44.983Z","requestId":"9bf416c4-8909-4ff6-ae95-9ae7636d30a6","method":"GET","route":"/api/v1/me/inbox","status":200,"durationMs":7,"code":"NONE","actorHash":"8cdb4d52e1d685df2330","operation":"get"}
+{"accounts":4,"bSessions":2,"friendRequest":1,"friendAccepted":1,"share":1,"sharedUpdate":1,"encouragement":1,"pageStatuses":[200,200],"crossAccountCursor":400,"readStatuses":[201,201,404],"revokedShare":403,"blockedRequest":403,"privateCacheControl":"no-store","crossSessionReadEqual":true,"revokedTargetsHidden":true,"payloadPrivate":true}
+
+stderr:
+(node:44944) ExperimentalWarning: CommonJS module F:\CX_notes\cx-learn-notes\ios-plan-checkin\apps\api\package.json is loading ES Module F:\CX_notes\cx-learn-notes\ios-plan-checkin\node_modules\.pnpm\@nestjs+core@12.1.0_@nestjs_64cca02103bced40e73bfea9fad68b75\node_modules\@nestjs\core\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

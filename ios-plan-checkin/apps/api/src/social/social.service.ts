@@ -9,7 +9,10 @@ import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
 import { fail } from "../http.js";
 import { PlanWrite, requireUuid } from "../plans/write.js";
-import { enqueueSocialNotification } from "./notification-jobs.js";
+import {
+  enqueueSocialNotification,
+  recordFriendAccepted,
+} from "./notification-jobs.js";
 
 interface SocialUserRow {
   id: string;
@@ -256,6 +259,12 @@ export class SocialService {
           );
           await this.change(client, senderId, receiverId, "friend", "upsert");
           await this.change(client, receiverId, senderId, "friend", "upsert");
+          await recordFriendAccepted(
+            client,
+            reverse.rows[0].id,
+            receiverId,
+            senderId,
+          );
           return this.requestDto(client, accepted.rows[0]!);
         }
         const existing = await client.query<RequestRow>(
@@ -332,6 +341,7 @@ export class SocialService {
         );
         await this.change(client, userId, item.sender_id, "friend", "upsert");
         await this.change(client, item.sender_id, userId, "friend", "upsert");
+        await recordFriendAccepted(client, requestId, item.sender_id, userId);
         return this.requestDto(client, accepted.rows[0]!);
       },
     );

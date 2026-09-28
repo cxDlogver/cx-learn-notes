@@ -27,6 +27,7 @@ import {
   PlanWrite,
   requireUuid,
 } from "../plans/write.js";
+import { recordSharedUpdate } from "../social/notification-jobs.js";
 
 interface PlanRow {
   id: string;
@@ -581,6 +582,12 @@ export class RecordsService {
             "UPDATE checkin_conflicts SET resolved_at = now() WHERE id = $1",
             [input.resolutionOfConflictId],
           );
+        await recordSharedUpdate(
+          client,
+          userId,
+          planId,
+          `checkin:${row.id}:${row.revision}`,
+        );
         return after;
       },
     );
@@ -839,6 +846,12 @@ export class RecordsService {
           oneTimeResolution: after.resolution,
           revision: after.revision,
         });
+        await recordSharedUpdate(
+          client,
+          userId,
+          planId,
+          `one-time:${planId}:${after.revision}`,
+        );
         return after;
       },
     );

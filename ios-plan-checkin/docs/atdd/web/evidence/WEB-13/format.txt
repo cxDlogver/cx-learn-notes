@@ -1,0 +1,7 @@
+command: node node_modules/prettier/bin/prettier.cjs --check apps/api/src/social/notification-jobs.ts apps/api/src/social/social.service.ts apps/api/src/social/inbox.service.ts apps/api/src/social/inbox.controller.ts apps/api/src/social/social.module.ts apps/api/src/records/records.service.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/web-inbox-smoke.mjs scripts/web-inbox-http-smoke.mjs scripts/web-13-evidence.mjs
+exitCode: 0
+stdout:
+Checking formatting...
+All matched files use Prettier code style!
+
+stderr:

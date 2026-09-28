@@ -36,6 +36,8 @@ export const apiRoutes = [
   ["POST", "auth/web/logout", "logoutWebSession", false],
   ["GET", "me", "getMe", true],
   ["PATCH", "me", "updateMe", true],
+  ["GET", "me/inbox", "listInbox", true],
+  ["POST", "me/inbox/{id}/read", "markInboxRead", true],
   ["GET", "usernames/availability", "checkUsername", true],
   ["POST", "me/change-phone/challenge", "createChangePhoneChallenge", true],
   ["POST", "me/change-phone/confirm", "confirmChangePhone", true],

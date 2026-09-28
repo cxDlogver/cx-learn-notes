@@ -1214,10 +1214,10 @@
       ],
       "scope": "依赖：WEB-03、WEB-04、WEB-06。补充社交事件持久收件箱、账号级已读、分页、授权撤销后的逐条校验，复用好友/分享 API 并确保越权拒绝。关联：SOCIAL、NOTIFY、SEC。完成证据：A/B/C/D 账号的 API/DB/日志、重复事件去重和撤销后拒绝记录。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T14:55:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
         "summary": null,
         "changedPaths": [],
@@ -1236,7 +1236,13 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T14:55:00Z",
+          "type": "STARTED",
+          "summary": "社交事务收件箱去重、逐条权限复核、游标分页与账号级已读；真实多账号取证后判定完成。"
+        }
+      ]
     },
     {
       "id": "WEB-14",

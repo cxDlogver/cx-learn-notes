@@ -166,6 +166,41 @@ const schemas = {
       updatedAt: instant,
     },
   ),
+  InboxMessage: properties(
+    [
+      "id",
+      "eventType",
+      "actorId",
+      "subjectId",
+      "canOpen",
+      "createdAt",
+      "readAt",
+    ],
+    {
+      id: uuid,
+      eventType: {
+        enum: [
+          "friend_request",
+          "friend_accepted",
+          "share",
+          "shared_update",
+          "encouragement",
+        ],
+      },
+      actorId: { oneOf: [uuid, { type: "null" }] },
+      subjectId: { oneOf: [uuid, { type: "null" }] },
+      canOpen: { type: "boolean" },
+      createdAt: instant,
+      readAt: { oneOf: [instant, { type: "null" }] },
+    },
+  ),
+  InboxPage: properties(["messages", "nextCursor", "hasMore", "unreadCount"], {
+    messages: { type: "array", items: ref("InboxMessage") },
+    nextCursor: { oneOf: [str(), { type: "null" }] },
+    hasMore: { type: "boolean" },
+    unreadCount: { type: "integer", minimum: 0 },
+  }),
+  InboxRead: properties(["id", "readAt"], { id: uuid, readAt: instant }),
   UpdateNotificationPreferencesRequest: properties(["baseRevision"], {
     baseRevision: { type: "integer", minimum: 1 },
     friendRequests: { type: "boolean" },
@@ -1132,6 +1167,8 @@ const responseData = {
   registerPushToken: ref("PushTokenRegistration"),
   getNotificationPreferences: ref("NotificationPreferences"),
   updateNotificationPreferences: ref("NotificationPreferences"),
+  listInbox: ref("InboxPage"),
+  markInboxRead: ref("InboxRead"),
   createDataExport: ref("DataExport"),
   listDataExports: { type: "array", items: ref("DataExport") },
   getDataExport: ref("DataExport"),
@@ -1231,6 +1268,19 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
       in: "query",
       required: false,
       schema: { type: "integer", minimum: 1, maximum: 200 },
+    });
+  } else if (operationId === "listInbox") {
+    parameters.push({
+      name: "cursor",
+      in: "query",
+      required: false,
+      schema: str(),
+    });
+    parameters.push({
+      name: "limit",
+      in: "query",
+      required: false,
+      schema: { type: "integer", minimum: 1, maximum: 50 },
     });
   } else if (operationId === "searchUsers") {
     parameters.push({
