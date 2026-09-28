@@ -45,6 +45,13 @@ import { PlanDetailScreen } from "../screens/plans/PlanDetailScreen";
 import { RemindersScreen } from "../screens/plans/RemindersScreen";
 import { EncouragementsScreen } from "../screens/social/EncouragementsScreen";
 import { SocialNotificationsScreen } from "../screens/social/SocialNotificationsScreen";
+import { SettingsScreen } from "../screens/settings/SettingsScreen";
+import {
+  ChangePhoneScreen,
+  NotificationSettingsScreen,
+  PrivacySettingsScreen,
+  ProfileSettingsScreen,
+} from "../screens/settings/AccountScreens";
 import { CalendarScreen } from "../screens/calendar/CalendarScreen";
 import { TodayScreen } from "../screens/today/TodayScreen";
 import {
@@ -62,7 +69,7 @@ import {
   SharePermissionsScreen,
 } from "../screens/social/SocialScreens";
 import type { PlanDraft } from "../screens/plans/planForm";
-import { SettingsEntry, Shell } from "./entryScreens";
+import { Shell } from "./entryScreens";
 import { parseAppLink, type AppLink } from "./links";
 
 export type MainTabParamList = {
@@ -85,6 +92,12 @@ export type RootStackParamList = {
   RecordConflict: { planId: string; businessDate: string };
   SyncFeedback: undefined;
   Settings: undefined;
+  ProfileSettings: undefined;
+  ChangePhone: undefined;
+  PrivacySettings: undefined;
+  NotificationSettings: undefined;
+  ExportData: undefined;
+  DeleteAccount: undefined;
   Reminders: { planId?: string } | undefined;
   CreatePlan: { kind: PlanKind; draft?: PlanDraft };
   EditPlan: { planId: string };
@@ -216,9 +229,44 @@ function MainStack() {
       </RootStack.Screen>
       <RootStack.Screen
         name="Settings"
-        component={SettingsEntry}
-        options={{ title: "个人" }}
+        component={SettingsScreen}
+        options={{
+          headerTitle: () => (
+            <Text
+              testID="settings.title"
+              style={{ color: penColors.text, fontSize: 17, fontWeight: "700" }}
+            >
+              设置
+            </Text>
+          ),
+        }}
       />
+      <RootStack.Screen
+        name="ProfileSettings"
+        component={ProfileSettingsScreen}
+        options={{ title: "资料" }}
+      />
+      <RootStack.Screen
+        name="ChangePhone"
+        component={ChangePhoneScreen}
+        options={{ title: "更换手机号" }}
+      />
+      <RootStack.Screen
+        name="PrivacySettings"
+        component={PrivacySettingsScreen}
+        options={{ title: "隐私" }}
+      />
+      <RootStack.Screen
+        name="NotificationSettings"
+        component={NotificationSettingsScreen}
+        options={{ title: "通知" }}
+      />
+      <RootStack.Screen name="ExportData" options={{ title: "导出数据" }}>
+        {() => <Shell title="导出数据" body="数据导出功能正在开发。" />}
+      </RootStack.Screen>
+      <RootStack.Screen name="DeleteAccount" options={{ title: "删除账号" }}>
+        {() => <Shell title="删除账号" body="账号删除功能正在开发。" />}
+      </RootStack.Screen>
       <RootStack.Screen
         name="Reminders"
         options={{

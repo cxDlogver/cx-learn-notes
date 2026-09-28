@@ -59,9 +59,11 @@ export class MockSessionGateway implements SessionGateway {
       isNewUser: false,
     };
   }
+  async logout(_refreshToken: string): Promise<void> {}
 }
 
 export class MockRepository implements AppRepository {
+  private pendingPhoneChange: string | null = null;
   private groups: GroupDto[] = [];
   private records = new Map<string, CheckinDto>();
   private resolutions = new Map<string, OneTimeResolutionDto>();
@@ -159,6 +161,35 @@ export class MockRepository implements AppRepository {
       revision: this.user.revision + 1,
     };
     return this.user;
+  }
+
+  async createPhoneChange(phone: string): Promise<{
+    requestId: string;
+    oldMasked: string;
+    newMasked: string;
+    expiresAt: string;
+  }> {
+    this.pendingPhoneChange = phone;
+    return {
+      requestId: "00000000-0000-4000-8000-000000000003",
+      oldMasked: "+86138****0000",
+      newMasked: `+86${phone.slice(0, 3)}****${phone.slice(-4)}`,
+      expiresAt: new Date(Date.now() + 300_000).toISOString(),
+    };
+  }
+  async confirmPhoneChange(input: {
+    requestId: string;
+    oldCode: string;
+    newCode: string;
+  }): Promise<{ changed: true }> {
+    if (
+      !this.pendingPhoneChange ||
+      input.oldCode !== "123456" ||
+      input.newCode !== "123456"
+    )
+      throw new Error("验证码不正确");
+    this.pendingPhoneChange = null;
+    return { changed: true };
   }
 
   async getToday(): Promise<TodayDto> {

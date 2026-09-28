@@ -66,6 +66,36 @@ assert.equal(await session.accessToken(), "access");
 await session.clear();
 assert.equal(await store.read(), null);
 
+const logoutStore = memory();
+const revoked = [];
+const logoutSession = new SessionManager(
+  logoutStore,
+  {
+    refresh: async () => tokens(),
+    logout: async (value) => revoked.push(value),
+  },
+  () => false,
+);
+await logoutSession.adopt(tokens("active-refresh"));
+await logoutSession.logout();
+assert.deepEqual(revoked, ["active-refresh"]);
+assert.equal(logoutSession.getSnapshot().phase, "unauthenticated");
+assert.equal(await logoutStore.read(), null);
+const failedLogout = new SessionManager(
+  logoutStore,
+  {
+    refresh: async () => tokens(),
+    logout: async () => {
+      throw new Error("offline");
+    },
+  },
+  () => false,
+);
+await failedLogout.adopt(tokens("preserved-refresh"));
+await assert.rejects(() => failedLogout.logout(), /offline/);
+assert.equal(failedLogout.getSnapshot().phase, "authenticated");
+assert.equal(await logoutStore.read(), "preserved-refresh");
+
 const transientStore = memory();
 await transientStore.write("still-saved");
 const transient = new SessionManager(

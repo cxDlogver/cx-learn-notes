@@ -8,6 +8,7 @@ export interface RefreshTokenStore {
 
 export interface SessionGateway {
   refresh(refreshToken: string): Promise<AuthTokens>;
+  logout(refreshToken: string): Promise<void>;
 }
 export interface SessionLocalData {
   activate(userId: string): Promise<void>;
@@ -87,6 +88,12 @@ export class SessionManager {
       this.setSnapshot({ phase: "unavailable", userId: null });
       throw error;
     }
+  }
+
+  async logout(): Promise<void> {
+    const refreshToken = this.tokens?.refreshToken ?? (await this.store.read());
+    if (refreshToken) await this.gateway.logout(refreshToken);
+    await this.clear();
   }
 
   private async refresh(stored?: string): Promise<AuthTokens> {

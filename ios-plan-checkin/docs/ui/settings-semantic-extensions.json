@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "sourceFrame": "ZLkv2",
+  "sourceScreen": "settings-home",
+  "note": "以下流程没有独立 Pen 画板。沿用设置首页的颜色、分组卡片、48pt 行高及标准 iOS 导航，不把语义扩展伪称为原稿节点。",
+  "extensions": [
+    {
+      "key": "profile-settings",
+      "componentPath": "apps/mobile/src/screens/settings/AccountScreens.tsx",
+      "entryTestID": "settings.profile",
+      "testIDs": ["profile-settings.title", "profile-settings.nickname", "profile-settings.username", "profile-settings.save", "profile-settings.change-phone"],
+      "behavior": "可修改昵称；用户名设置后只读；更换手机号从资料页进入。"
+    },
+    {
+      "key": "change-phone",
+      "componentPath": "apps/mobile/src/screens/settings/AccountScreens.tsx",
+      "entryTestID": "profile-settings.change-phone",
+      "testIDs": ["change-phone.new-phone", "change-phone.send", "change-phone.old-code", "change-phone.new-code", "change-phone.expiry", "change-phone.confirm", "change-phone.restart"],
+      "behavior": "先向旧号和新号发送验证码，双码均验证成功后撤销全部会话并回登录页。"
+    },
+    {
+      "key": "privacy-settings",
+      "componentPath": "apps/mobile/src/screens/settings/AccountScreens.tsx",
+      "entryTestID": "settings.privacy",
+      "testIDs": ["privacy-settings.title", "privacy-settings.friends", "privacy-settings.profile", "privacy-settings.export", "privacy-settings.delete"],
+      "behavior": "解释好友分享边界，通向实际授权、数据导出和删除入口；不添加 PRD 未定义的隐私开关。"
+    },
+    {
+      "key": "notification-settings",
+      "componentPath": "apps/mobile/src/screens/settings/AccountScreens.tsx",
+      "entryTestID": "settings.notifications",
+      "testIDs": ["notification-settings.title", "notification-settings.reminders", "notification-settings.social"],
+      "behavior": "分别进入计划提醒与社交通知设置。"
+    }
+  ]
+}

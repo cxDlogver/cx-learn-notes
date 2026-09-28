@@ -88,6 +88,17 @@ export interface AppRepository {
     nickname: string;
     baseRevision: number;
   }): Promise<UserDto>;
+  createPhoneChange(phone: string): Promise<{
+    requestId: string;
+    oldMasked: string;
+    newMasked: string;
+    expiresAt: string;
+  }>;
+  confirmPhoneChange(input: {
+    requestId: string;
+    oldCode: string;
+    newCode: string;
+  }): Promise<{ changed: true }>;
   getToday(): Promise<TodayDto & { source?: "server" | "local" }>;
   getCalendar(
     month: string,
@@ -262,6 +273,12 @@ export class ApiClient implements SessionGateway {
     });
   }
 
+  async logout(refreshToken: string): Promise<void> {
+    await this.postWithoutSession<{ loggedOut: true }>("/auth/logout", {
+      refreshToken,
+    });
+  }
+
   async get<T>(path: string): Promise<T> {
     if (!this.session) throw new Error("SessionManager 尚未接入");
     const accessToken = await this.session.accessToken();
@@ -417,6 +434,24 @@ export class HttpRepository implements AppRepository {
     baseRevision: number;
   }): Promise<UserDto> {
     return this.api.patch("/me", input);
+  }
+  createPhoneChange(phone: string): Promise<{
+    requestId: string;
+    oldMasked: string;
+    newMasked: string;
+    expiresAt: string;
+  }> {
+    return this.api.post("/me/change-phone/challenge", {
+      countryCode: "+86",
+      phone,
+    });
+  }
+  confirmPhoneChange(input: {
+    requestId: string;
+    oldCode: string;
+    newCode: string;
+  }): Promise<{ changed: true }> {
+    return this.api.post("/me/change-phone/confirm", input);
   }
 
   async getToday(): Promise<TodayDto & { source?: "server" | "local" }> {
