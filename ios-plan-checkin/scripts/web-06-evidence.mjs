@@ -85,7 +85,9 @@ for (const [name, executable, args] of checks) {
     encoding: "utf8",
     maxBuffer: 4 * 1024 * 1024,
   });
-  const output = `command: ${isPython ? "python" : isPowerShell ? "powershell" : "node"} ${argv.join(" ")}\nexitCode: ${result.status}\nstdout:\n${result.stdout ?? ""}\nstderr:\n${result.stderr ?? ""}`;
+  const stdout = (result.stdout ?? "").replaceAll("\r\n", "\n");
+  const stderr = (result.stderr ?? "").replaceAll("\r\n", "\n");
+  const output = `command: ${isPython ? "python" : isPowerShell ? "powershell" : "node"} ${argv.join(" ")}\nexitCode: ${result.status}\nstdout:\n${stdout}\nstderr:\n${stderr}`;
   const bytes = Buffer.from(output, "utf8");
   const path = `${name}.txt`;
   await writeFile(resolve(evidenceDir, path), bytes);
