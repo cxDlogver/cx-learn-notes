@@ -3,14 +3,14 @@
   "planPath": "docs/构建计划-计划打卡-iOS-v1.md",
   "planSha256": "21fdcd5502b86f3c3161d7c1925a29af972294f63ac50abc9daf80978b2a3c32",
   "projectSubtree": "ios-plan-checkin",
-  "integrationBranch": "codex/ios-plan-checkin-build",
+  "integrationBranch": "main",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
+  "integrationCommit": "68ca324d32216c84689f6143447fa57f914d6348",
   "currentWork": null,
   "nextTaskId": null,
   "resumeWhenAvailable": {
     "candidateManifest": "docs/release-candidate.json",
-    "sourceCommit": "a24030838bab4988dbc5a5cfb8b757ff2527ee68",
+    "sourceCommit": "68ca324d32216c84689f6143447fa57f914d6348",
     "priorityTaskIds": ["CORE-03", "FND-02", "OPS-05", "OPS-06"],
     "nextSteps": [
       "本地 PostgreSQL/对象存储已启动并完成空库迁移与部分 API 检查；继续补 CORE-03 的上一版库迁移、约束和并发事务证据，再逐项关闭相关环境阻断。",
