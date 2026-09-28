@@ -5,19 +5,19 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "9e9e345fdf460dab485b1669d9b97f7f527b521b",
+  "integrationCommit": "05fbc7d77da43599a69c35293f8c5dae86b19d78",
   "currentWork": {
-    "taskId": "OPS-01",
-    "phase": "设置首页、资料手机号变更、会话与隐私设置",
-    "updatedAt": "2026-09-28T00:08:44.000Z",
-    "baseCommit": "9e9e345fdf460dab485b1669d9b97f7f527b521b",
+    "taskId": "OPS-02",
+    "phase": "完整数据 ZIP 导出与客户端导出页",
+    "updatedAt": "2026-09-28T00:23:54.000Z",
+    "baseCommit": "05fbc7d77da43599a69c35293f8c5dae86b19d78",
     "completedSteps": [
-      "SOC-05 鼓励留言、通知偏好、加密 APNs token、社交通知 Worker 和客户端入口已提交；S0/S1/S2/S4/S6、PGlite 通知测试、社交/分享/登录/迁移回归及 iOS JS 打包通过。"
+      "OPS-01 设置页、资料昵称编辑、双验证码换号、服务器撤销当前会话与隐私/通知入口已提交；S0/S1/S3/S4/S6、登录/资料与客户端会话自检、iOS JS 打包通过。"
     ],
     "nextSteps": [
-      "核对设置首页、手机号变更、会话与隐私设置的 PRD/技术规则及已实现的账号接口。",
-      "实现 settings-home 与无独立 Pen 画板流程的语义扩展映射，接通换号和登出。",
-      "执行 S0/S1/S3/S4/S6 与开发自检，提交代码和台账。"
+      "核对导出范围、异步任务、ZIP 清单、照片与关系授权范围的 PRD/技术约束。",
+      "实现后端导出作业、私有下载、过期清理与 export-data 页面。",
+      "执行 S0/S1/S2/S3/S5/S6 与 PGlite 导出开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
@@ -662,12 +662,14 @@
         "S4",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "9e9e345fdf460dab485b1669d9b97f7f527b521b",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "05fbc7d77da43599a69c35293f8c5dae86b19d78",
+      "integratedCommit": "05fbc7d77da43599a69c35293f8c5dae86b19d78",
+      "staticPassed": true,
+      "blocker": "Windows 主机无法执行 iOS 真机换号短信自动填充、系统权限、Pen/VoiceOver 实测；静态代码、PGlite 双码换号/旧会话撤销、客户端登出和 iOS JS 打包已通过，用户要求稍后原生验证。"
     },
     {
       "priority": 31,
@@ -686,10 +688,10 @@
         "S5",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "05fbc7d77da43599a69c35293f8c5dae86b19d78",
       "taskCommit": null,
       "integratedCommit": null
     },
