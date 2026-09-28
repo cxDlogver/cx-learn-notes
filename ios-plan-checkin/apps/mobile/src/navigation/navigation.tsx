@@ -46,6 +46,7 @@ import { RemindersScreen } from "../screens/plans/RemindersScreen";
 import { EncouragementsScreen } from "../screens/social/EncouragementsScreen";
 import { SocialNotificationsScreen } from "../screens/social/SocialNotificationsScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
+import { ExportDataScreen } from "../screens/settings/ExportDataScreen";
 import {
   ChangePhoneScreen,
   NotificationSettingsScreen,
@@ -261,9 +262,20 @@ function MainStack() {
         component={NotificationSettingsScreen}
         options={{ title: "通知" }}
       />
-      <RootStack.Screen name="ExportData" options={{ title: "导出数据" }}>
-        {() => <Shell title="导出数据" body="数据导出功能正在开发。" />}
-      </RootStack.Screen>
+      <RootStack.Screen
+        name="ExportData"
+        component={ExportDataScreen}
+        options={{
+          headerTitle: () => (
+            <Text
+              testID="export-data.title"
+              style={{ color: penColors.text, fontSize: 17, fontWeight: "700" }}
+            >
+              导出数据
+            </Text>
+          ),
+        }}
+      />
       <RootStack.Screen name="DeleteAccount" options={{ title: "删除账号" }}>
         {() => <Shell title="删除账号" body="账号删除功能正在开发。" />}
       </RootStack.Screen>

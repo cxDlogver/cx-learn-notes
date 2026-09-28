@@ -1,5 +1,10 @@
 import pg from "pg";
 import {
+  claimDataExport,
+  cleanupExpiredExports,
+  processDataExport,
+} from "./dataExport.js";
+import {
   S3ObjectDeleter,
   claimMediaCleanup,
   enqueueMediaCleanup,
@@ -49,6 +54,16 @@ async function bootstrap(): Promise<void> {
         }
       } catch {
         process.stderr.write("Social notification cycle failed\n");
+      }
+      try {
+        for (let count = 0; count < 3; count++) {
+          const job = await claimDataExport(pool);
+          if (!job) break;
+          await processDataExport(pool, job);
+        }
+        await cleanupExpiredExports(pool);
+      } catch {
+        process.stderr.write("Data export cycle failed\n");
       }
       await new Promise<void>((resolve) => setTimeout(resolve, 15_000));
     }

@@ -241,6 +241,22 @@ export interface UserDto {
   accountStatus: "active" | "deletion_pending";
   revision: number;
 }
+export interface DataExportDto {
+  id: Uuid;
+  status: "queued" | "running" | "ready" | "failed" | "expired";
+  createdAt: UtcInstant;
+  completedAt: UtcInstant | null;
+  expiresAt: UtcInstant | null;
+  fileBytes: number | null;
+  fileCount: number | null;
+  errorCode: string | null;
+}
+export interface DataExportDownloadDto {
+  url: string;
+  expiresAt: UtcInstant;
+  sha256: string;
+  bytes: number;
+}
 export interface SocialUserDto {
   id: Uuid;
   username: string;

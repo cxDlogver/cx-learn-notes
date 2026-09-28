@@ -67,6 +67,8 @@ const requiredTables = [
   "sync_acknowledgements",
   "worker_jobs",
   "export_jobs",
+  "data_exports",
+  "data_export_access",
   "deletion_jobs",
   "deletion_tombstones",
 ];

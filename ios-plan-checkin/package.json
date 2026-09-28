@@ -26,6 +26,7 @@
     "db:migrate:plan": "node scripts/migrate.mjs --plan",
     "db:static:check": "node scripts/sql-static-check.mjs && node scripts/migrate.mjs --plan",
     "db:smoke": "node scripts/migrations-smoke.mjs",
+    "export:smoke": "tsc -p apps/api/tsconfig.json && tsc -p apps/worker/tsconfig.json && node scripts/data-export-smoke.mjs",
     "auth:smoke": "tsc -p apps/api/tsconfig.json && node scripts/auth-smoke.mjs",
     "profile:smoke": "tsc -p apps/api/tsconfig.json && node scripts/profile-smoke.mjs",
     "plans:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/plans-smoke.mjs",

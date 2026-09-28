@@ -16,6 +16,8 @@ import type {
   TodayDto,
   TodayItemDto,
   UserDto,
+  DataExportDto,
+  DataExportDownloadDto,
   UsernameAvailabilityDto,
   UpdateGroupRequest,
   UpdatePlanRequest,
@@ -190,6 +192,18 @@ export class MockRepository implements AppRepository {
       throw new Error("验证码不正确");
     this.pendingPhoneChange = null;
     return { changed: true };
+  }
+  async createDataExport(): Promise<DataExportDto> {
+    throw new Error("演示模式不包含云端数据导出，请连接开发服务后重试");
+  }
+  async listDataExports(): Promise<DataExportDto[]> {
+    return [];
+  }
+  async getDataExport(_id: string): Promise<DataExportDto> {
+    throw new Error("导出任务不存在");
+  }
+  async getDataExportDownload(_id: string): Promise<DataExportDownloadDto> {
+    throw new Error("导出文件不存在");
   }
 
   async getToday(): Promise<TodayDto> {

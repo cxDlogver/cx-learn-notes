@@ -33,6 +33,8 @@ import type {
   PutCheckinRequest,
   SmsChallengeDto,
   UserDto,
+  DataExportDto,
+  DataExportDownloadDto,
   UsernameAvailabilityDto,
   TodayDto,
   TodayItemDto,
@@ -99,6 +101,10 @@ export interface AppRepository {
     oldCode: string;
     newCode: string;
   }): Promise<{ changed: true }>;
+  createDataExport(): Promise<DataExportDto>;
+  listDataExports(): Promise<DataExportDto[]>;
+  getDataExport(id: string): Promise<DataExportDto>;
+  getDataExportDownload(id: string): Promise<DataExportDownloadDto>;
   getToday(): Promise<TodayDto & { source?: "server" | "local" }>;
   getCalendar(
     month: string,
@@ -452,6 +458,18 @@ export class HttpRepository implements AppRepository {
     newCode: string;
   }): Promise<{ changed: true }> {
     return this.api.post("/me/change-phone/confirm", input);
+  }
+  createDataExport(): Promise<DataExportDto> {
+    return this.api.post("/exports", {});
+  }
+  listDataExports(): Promise<DataExportDto[]> {
+    return this.api.get("/exports");
+  }
+  getDataExport(id: string): Promise<DataExportDto> {
+    return this.api.get(`/exports/${encodeURIComponent(id)}`);
+  }
+  getDataExportDownload(id: string): Promise<DataExportDownloadDto> {
+    return this.api.get(`/exports/${encodeURIComponent(id)}/download-url`);
   }
 
   async getToday(): Promise<TodayDto & { source?: "server" | "local" }> {

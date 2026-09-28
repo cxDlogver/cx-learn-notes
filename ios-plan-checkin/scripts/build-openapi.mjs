@@ -149,6 +149,34 @@ const schemas = {
     sharedUpdates: { type: "boolean" },
     encouragements: { type: "boolean" },
   }),
+  DataExport: properties(
+    [
+      "id",
+      "status",
+      "createdAt",
+      "completedAt",
+      "expiresAt",
+      "fileBytes",
+      "fileCount",
+      "errorCode",
+    ],
+    {
+      id: uuid,
+      status: { enum: ["queued", "running", "ready", "failed", "expired"] },
+      createdAt: instant,
+      completedAt: { oneOf: [instant, { type: "null" }] },
+      expiresAt: { oneOf: [instant, { type: "null" }] },
+      fileBytes: { oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }] },
+      fileCount: { oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }] },
+      errorCode: { oneOf: [str(), { type: "null" }] },
+    },
+  ),
+  DataExportDownload: properties(["url", "expiresAt", "sha256", "bytes"], {
+    url: str("uri"),
+    expiresAt: instant,
+    sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
+    bytes: { type: "integer", minimum: 1 },
+  }),
   FixedPlanCreate: properties(
     ["kind", "direction", "title", "timezone", "startDate", "rule"],
     {
@@ -1049,6 +1077,10 @@ const responseData = {
   registerPushToken: ref("PushTokenRegistration"),
   getNotificationPreferences: ref("NotificationPreferences"),
   updateNotificationPreferences: ref("NotificationPreferences"),
+  createDataExport: ref("DataExport"),
+  listDataExports: { type: "array", items: ref("DataExport") },
+  getDataExport: ref("DataExport"),
+  getDataExportDownloadUrl: ref("DataExportDownload"),
 };
 
 const bodies = {

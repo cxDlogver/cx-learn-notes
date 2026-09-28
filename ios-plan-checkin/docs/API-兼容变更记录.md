@@ -2,6 +2,14 @@
 
 本文件记录开发阶段相对于 `packages/contracts/compat-baseline.json` 的接口增量。接口定义以 `packages/contracts/src/routes.ts`、`src/index.ts` 和生成的 `openapi.json` 为准。
 
+## OPS-02 完整数据导出
+
+- 新增 `POST /api/v1/me/data-exports`、`GET /api/v1/me/data-exports`、`GET /api/v1/me/data-exports/{id}`、`GET /api/v1/me/data-exports/{id}/download-url`。创建需要幂等键，同一账户同时仅运行一项，每日最多创建五项；列表和下载仅限本人。
+- Worker 在只读一致性快照中导出本人资料、计划与规则、打卡及修订、照片、好友与分享等数据为 JSON、CSV 和 ZIP 清单。逐表和照片流式写入私有对象存储；导出文件最多 2 GiB，下载地址有效期 5 分钟，文件在完成 24 小时后过期清理。下载请求留存访问审计。
+- 客户端导出页展示队列、处理、完成与失败状态；完成后先下载到应用缓存，再调用 iOS 分享面板，并清理缓存文件。ZIP 清单记录各文件哈希与字段；服务端生成 ZIP 的完整性由开发自检验证。真实对象存储、iOS 分享面板与系统文件保护需后续原生环境验证。
+
+开发自检由 `pnpm export:smoke`、`pnpm check` 与 `pnpm mobile:bundle:check` 执行；正式 ATDD 验收另行进行。
+
 ## SOC-01 好友关系
 
 - 新增 `GET /api/v1/friends`，返回当前好友的用户名、昵称和可选头像；不返回手机号、计划或统计。
