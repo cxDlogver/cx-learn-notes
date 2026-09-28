@@ -344,6 +344,16 @@ Object.assign(schemas, {
       isNewUser: { type: "boolean" },
     },
   ),
+  WebSession: properties(
+    ["accessToken", "accessExpiresAt", "userId", "isNewUser", "csrfToken"],
+    {
+      accessToken: str(),
+      accessExpiresAt: instant,
+      userId: uuid,
+      isNewUser: { type: "boolean" },
+      csrfToken: str(),
+    },
+  ),
   User: properties(
     [
       "id",
@@ -1041,6 +1051,9 @@ const responseData = {
   createSmsChallenge: ref("SmsChallengeResponse"),
   verifySmsChallenge: ref("AuthTokens"),
   refreshSession: ref("AuthTokens"),
+  verifyWebSmsChallenge: ref("WebSession"),
+  getWebSession: ref("WebSession"),
+  refreshWebSession: ref("WebSession"),
   getMe: ref("User"),
   updateMe: ref("User"),
   checkUsername: ref("UsernameAvailability"),
@@ -1097,6 +1110,7 @@ const bodies = {
   createSmsChallenge: "SmsChallengeRequest",
   verifySmsChallenge: "SmsVerifyRequest",
   refreshSession: "RefreshRequest",
+  verifyWebSmsChallenge: "SmsVerifyRequest",
   logout: "LogoutRequest",
   updateMe: "UpdateMeRequest",
   createChangePhoneChallenge: "ChangePhoneChallengeRequest",
@@ -1212,9 +1226,32 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
       schema: { const: "true" },
     });
   }
-  if (operationId === "verifySmsChallenge") {
+  if (
+    operationId === "verifySmsChallenge" ||
+    operationId === "verifyWebSmsChallenge"
+  ) {
     parameters.push({
       name: "X-Device-Id",
+      in: "header",
+      required: true,
+      schema: str(),
+    });
+  }
+  if (
+    ["verifyWebSmsChallenge", "refreshWebSession", "logoutWebSession"].includes(
+      operationId,
+    )
+  ) {
+    parameters.push({
+      name: "Origin",
+      in: "header",
+      required: true,
+      schema: str("uri"),
+    });
+  }
+  if (["refreshWebSession", "logoutWebSession"].includes(operationId)) {
+    parameters.push({
+      name: "X-CSRF-Token",
       in: "header",
       required: true,
       schema: str(),
@@ -1239,7 +1276,12 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
   paths[path][method.toLowerCase()] = {
     operationId,
     tags: [suffix.split("/")[0]],
-    ...(auth ? { security: [{ bearerAuth: [] }] } : {}),
+    ...(auth
+      ? { security: [{ bearerAuth: [] }] }
+      : suffix.startsWith("auth/web/") &&
+          operationId !== "verifyWebSmsChallenge"
+        ? { security: [{ webRefreshCookie: [] }] }
+        : {}),
     ...(parameters.length ? { parameters } : {}),
     ...(body
       ? {
@@ -1291,6 +1333,11 @@ const spec = {
   components: {
     securitySchemes: {
       bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      webRefreshCookie: {
+        type: "apiKey",
+        in: "cookie",
+        name: "__Host-plan-refresh",
+      },
     },
     schemas,
   },

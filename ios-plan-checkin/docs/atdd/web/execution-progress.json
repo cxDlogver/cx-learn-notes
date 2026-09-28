@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T12:46:05Z",
+  "updatedAt": "2026-09-28T13:13:10Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -379,29 +379,173 @@
       ],
       "scope": "依赖：WEB-01、WEB-03。实现公开注册、短信、15 分钟 access 自动续期、30 天 refresh Cookie、CSRF/Origin、多标签轮换、退出及账号状态，移动端 JSON refresh 兼容。产物：`apps/api/src/auth`、契约和安全测试。关联：AUTH、SEC。完成证据：正常、到期、重放、换号/退出、限流的请求/响应和日志，不记录秘密。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T12:48:35Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "新增 Web Cookie 验证/会话/续期/退出、Web audience、Origin/CSRF 与渠道隔离；旧移动 JSON 会话保持兼容。隔离服务与真实 HTTP 冒烟通过，浏览器客户端尚未验收。",
+        "changedPaths": [
+          "apps/api/src/auth/auth.controller.ts",
+          "apps/api/src/auth/auth.service.ts",
+          "apps/api/src/auth/web-session.ts",
+          "apps/api/src/config.ts",
+          "apps/api/src/rate-limit.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs",
+          "scripts/web-auth-smoke.mjs",
+          "scripts/web-auth-http-smoke.mjs",
+          ".env.example",
+          "package.json",
+          "docs/atdd/web/WEB-04-Web会话与注册API.md",
+          "docs/atdd/web/evidence/WEB-04/checks.json"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "contracts and API typecheck",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/contracts-typecheck.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "API typecheck",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/api-typecheck.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "OpenAPI check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/openapi.txt",
+            "sha256": "3855e1fd6887e2ef66d2ce4e2e7aa62d37da55de901341e243667d022991a39a"
+          },
+          {
+            "command": "mobile compatibility",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/compat.txt",
+            "sha256": "bd890f2f1b3d3d8a2c634dc92d81eff24a27ab6b774f3ed4890f0cbaceaf1392"
+          },
+          {
+            "command": "Web route audit",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/routes.txt",
+            "sha256": "5d6bf13934ddb3355d3742de9bcfa1fb03decf7b7fa0043714fa3192c45ee9f6"
+          },
+          {
+            "command": "security static",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/security.txt",
+            "sha256": "29a9af6367b447f34e615d6b2a11a5183a8c8fb214661f8eb2cbb968f5c941c5"
+          },
+          {
+            "command": "API compile",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/api-compile.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "mobile auth smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/mobile-auth.txt",
+            "sha256": "f4749f400659ba75ae33a41a4575fa2f02aec39a6f7fe31c67eb65cc919d8d66"
+          },
+          {
+            "command": "Web auth service smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-service.txt",
+            "sha256": "2886d4f75e868cb952780bf8ab4c3e793b32085dfbc1d67a18fa418c331fc354"
+          },
+          {
+            "command": "Web auth real HTTP smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-http.txt",
+            "sha256": "6a70f5d7c8baab2b043dce1137c08cd4f24b0d1b9e9476c030029da54f808301"
+          },
+          {
+            "command": "phone-change and profile compatibility smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/profile-phone-change.txt",
+            "sha256": "04373c71e6ccab3a50b1f105ec5991d5151ceb9a5e929c6a5e345fc3cec51261"
+          },
+          {
+            "command": "current Web auth source lint",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/lint-final.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "current API compile",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/api-compile-final.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "current Web auth service smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-service-final.txt",
+            "sha256": "2886d4f75e868cb952780bf8ab4c3e793b32085dfbc1d67a18fa418c331fc354"
+          },
+          {
+            "command": "current Web auth real HTTP smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt",
+            "sha256": "1b84bf36ff0389e42ded239ff96fd487f2da0aa55f06f867d8ee5991fe6210b6"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-04/checks.json",
+          "docs/atdd/web/evidence/WEB-04/web-auth-http.txt",
+          "docs/atdd/web/WEB-04-Web会话与注册API.md"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "PGlite 服务/控制器测试覆盖 Cookie 属性、Web audience、15m/30d、CSRF/Origin、轮换/重放、退出渠道隔离；隔离 PostgreSQL 真实 HTTP 覆盖公开短信注册、会话恢复、403/401、Cookie 清理。移动 JSON auth 冒烟及契约兼容通过；浏览器 F/V/N 未执行。 旧双验证码换号与全会话撤销回归通过。 最终源码 lint、编译及当前构建的服务/真实 HTTP 复验通过。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-04/web-auth-service.txt",
+          "docs/atdd/web/evidence/WEB-04/web-auth-http.txt",
+          "docs/atdd/web/evidence/WEB-04/mobile-auth.txt",
+          "docs/atdd/web/evidence/WEB-04/compat.txt",
+          "docs/atdd/web/evidence/WEB-04/profile-phone-change.txt",
+          "docs/atdd/web/evidence/WEB-04/web-auth-service-final.txt",
+          "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T12:48:35Z",
+          "type": "STARTED",
+          "summary": "在移动 JSON 会话兼容基础上开始 Web Cookie/CSRF/audience 会话 API；业务浏览器用例未执行。"
+        },
+        {
+          "at": "2026-09-28T13:07:21Z",
+          "type": "WEB_AUTH_API_CHECKED",
+          "summary": "Web Cookie/CSRF/轮换与旧移动接口服务测试、隔离 PostgreSQL 真实 HTTP 测试通过；浏览器业务验收未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/checks.json"
+        },
+        {
+          "at": "2026-09-28T13:10:18Z",
+          "type": "HTTP_AND_DOCUMENTATION_RECORDED",
+          "summary": "真实 HTTP 成功/拒绝/重放链路及移动换号兼容输出已逐项写入详细 Markdown、检查 JSON 和台账；业务 F/V/N 未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/web-auth-http.txt"
+        },
+        {
+          "at": "2026-09-28T13:13:10Z",
+          "type": "FINAL_SOURCE_RETESTED",
+          "summary": "修复测试脚本 Node 全局导入后，源码 lint 与当前构建服务/隔离 PostgreSQL HTTP 复验均通过。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt"
+        }
+      ]
     },
     {
       "id": "WEB-05",

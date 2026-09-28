@@ -233,6 +233,13 @@ export interface AuthTokens {
   userId: Uuid;
   isNewUser: boolean;
 }
+export interface WebSessionDto {
+  accessToken: string;
+  accessExpiresAt: UtcInstant;
+  userId: Uuid;
+  isNewUser: boolean;
+  csrfToken: string;
+}
 export interface UserDto {
   id: Uuid;
   username: string | null;

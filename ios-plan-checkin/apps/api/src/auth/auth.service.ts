@@ -40,6 +40,7 @@ interface SessionRow {
   revoked_at: Date | null;
   device_id: string;
   status: string;
+  client_channel: "ios" | "web";
 }
 
 @Injectable()
@@ -179,11 +180,14 @@ export class AuthService {
   private async accessToken(
     userId: string,
     sessionId: string,
+    channel: "ios" | "web" = "ios",
   ): Promise<string> {
     return new SignJWT({ sid: sessionId })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setIssuer("plan-checkin-api")
-      .setAudience("plan-checkin-mobile")
+      .setAudience(
+        channel === "web" ? "plan-checkin-web" : "plan-checkin-mobile",
+      )
       .setSubject(userId)
       .setIssuedAt()
       .setExpirationTime("15m")
@@ -196,17 +200,18 @@ export class AuthService {
     deviceId: string,
     isNewUser: boolean,
     rotatedFrom?: string,
+    channel: "ios" | "web" = "ios",
   ): Promise<AuthTokens> {
     const sessionId = randomUUID();
     const refreshToken = `${sessionId}.${randomBytes(32).toString("base64url")}`;
     const refreshHash = createHash("sha256").update(refreshToken).digest();
     await client.query(
-      `INSERT INTO sessions (id, user_id, refresh_hash, device_id, expires_at, rotated_from)
-       VALUES ($1, $2, $3, $4, now() + interval '30 days', $5)`,
-      [sessionId, userId, refreshHash, deviceId, rotatedFrom ?? null],
+      `INSERT INTO sessions (id, user_id, refresh_hash, device_id, expires_at, rotated_from, client_channel)
+       VALUES ($1, $2, $3, $4, now() + interval '30 days', $5, $6)`,
+      [sessionId, userId, refreshHash, deviceId, rotatedFrom ?? null, channel],
     );
     return {
-      accessToken: await this.accessToken(userId, sessionId),
+      accessToken: await this.accessToken(userId, sessionId, channel),
       refreshToken,
       accessExpiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
       userId,
@@ -298,6 +303,7 @@ export class AuthService {
     deviceId: string,
     idempotencyKey: string,
     purpose: "login" | "cancel_deletion" = "login",
+    channel: "ios" | "web" = "ios",
   ): Promise<AuthTokens> {
     if (
       !input ||
@@ -309,7 +315,7 @@ export class AuthService {
     const outcome = await this.idempotent(
       idempotencyKey,
       "sms_verify",
-      { input, deviceId, purpose },
+      { input, deviceId, purpose, channel },
       async (client) => {
         const found = await client.query<ChallengeRow>(
           "SELECT * FROM auth_challenges WHERE id = $1 FOR UPDATE",
@@ -384,6 +390,8 @@ export class AuthService {
               account.id,
               deviceId,
               false,
+              undefined,
+              channel,
             ),
           } as const;
         }
@@ -416,6 +424,8 @@ export class AuthService {
           userId,
           deviceId,
           isNewUser,
+          undefined,
+          channel,
         );
         return { kind: "success", tokens } as const;
       },
@@ -438,6 +448,7 @@ export class AuthService {
   async refresh(
     refreshToken: string,
     idempotencyKey: string,
+    channel: "ios" | "web" = "ios",
   ): Promise<AuthTokens> {
     const sessionId = refreshToken.match(
       /^([0-9a-f-]{36})\.[A-Za-z0-9_-]{43}$/i,
@@ -446,7 +457,7 @@ export class AuthService {
     return this.idempotent(
       idempotencyKey,
       "refresh",
-      { refreshToken },
+      { refreshToken, channel },
       async (client) => {
         const found = await client.query<SessionRow>(
           `SELECT s.*, u.status FROM sessions s JOIN users u ON u.id = s.user_id
@@ -460,6 +471,7 @@ export class AuthService {
           current.revoked_at ||
           current.expires_at.getTime() <= Date.now() ||
           current.status !== "active" ||
+          current.client_channel !== channel ||
           !this.equal(hash, current.refresh_hash)
         ) {
           fail("UNAUTHENTICATED", 401, "会话已失效，请重新登录");
@@ -474,29 +486,77 @@ export class AuthService {
           current.device_id,
           false,
           current.id,
+          channel,
         );
       },
     );
   }
 
-  async logout(refreshToken: string, idempotencyKey: string): Promise<void> {
+  async resumeWebSession(refreshToken: string): Promise<{
+    accessToken: string;
+    accessExpiresAt: string;
+    userId: string;
+    isNewUser: false;
+  }> {
+    const sessionId = refreshToken.match(
+      /^([0-9a-f-]{36})\.[A-Za-z0-9_-]{43}$/i,
+    )?.[1];
+    if (!sessionId) fail("UNAUTHENTICATED", 401, "会话已失效，请重新登录");
+    const hash = createHash("sha256").update(refreshToken).digest();
+    const found = await this.database.query<SessionRow>(
+      `SELECT s.*,u.status FROM sessions s JOIN users u ON u.id=s.user_id
+       WHERE s.id=$1 AND s.client_channel='web' AND s.revoked_at IS NULL
+         AND s.expires_at>now() AND u.status='active'`,
+      [sessionId],
+    );
+    const current = found.rows[0];
+    if (!current || !this.equal(hash, current.refresh_hash))
+      fail("UNAUTHENTICATED", 401, "会话已失效，请重新登录");
+    return {
+      accessToken: await this.accessToken(current.user_id, current.id, "web"),
+      accessExpiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
+      userId: current.user_id,
+      isNewUser: false,
+    };
+  }
+
+  async logout(
+    refreshToken: string,
+    idempotencyKey: string,
+    channel: "ios" | "web" = "ios",
+  ): Promise<void> {
     const sessionId = refreshToken.match(
       /^([0-9a-f-]{36})\.[A-Za-z0-9_-]{43}$/i,
     )?.[1];
     await this.idempotent(
       idempotencyKey,
       "logout",
-      { refreshToken },
+      { refreshToken, channel },
       async (client) => {
         if (sessionId) {
           const hash = createHash("sha256").update(refreshToken).digest();
-          await client.query(
-            `WITH ended AS (UPDATE sessions SET revoked_at=now()
-              WHERE id=$1 AND refresh_hash=$2 AND revoked_at IS NULL RETURNING user_id,device_id)
-             UPDATE devices d SET notifications_enabled=false,apns_token_ciphertext=NULL,push_token_hash=NULL
-             FROM ended WHERE d.id::text=ended.device_id AND d.user_id=ended.user_id`,
-            [sessionId, hash],
+          const ended = await client.query<{
+            user_id: string;
+            device_id: string;
+          }>(
+            `UPDATE sessions SET revoked_at=now()
+             WHERE id=$1 AND refresh_hash=$2 AND client_channel=$3 AND revoked_at IS NULL
+             RETURNING user_id,device_id`,
+            [sessionId, hash, channel],
           );
+          const row = ended.rows[0];
+          if (row && channel === "ios")
+            await client.query(
+              `UPDATE devices SET notifications_enabled=false,apns_token_ciphertext=NULL,push_token_hash=NULL
+               WHERE id::text=$1 AND user_id=$2`,
+              [row.device_id, row.user_id],
+            );
+          if (row && channel === "web")
+            await client.query(
+              `UPDATE web_push_subscriptions SET enabled=false,revoked_at=coalesce(revoked_at,now()),updated_at=now()
+               WHERE user_id=$1 AND browser_device_id=$2 AND revoked_at IS NULL`,
+              [row.user_id, row.device_id],
+            );
         }
         return { loggedOut: true };
       },
@@ -696,19 +756,29 @@ export class AuthService {
     try {
       const verified = await jwtVerify(token, this.config.accessTokenKey, {
         issuer: "plan-checkin-api",
-        audience: "plan-checkin-mobile",
+        audience: ["plan-checkin-mobile", "plan-checkin-web"],
         algorithms: ["HS256"],
       });
       const userId = verified.payload.sub;
       const sessionId = verified.payload.sid;
       if (typeof userId !== "string" || typeof sessionId !== "string")
         throw new Error("Missing JWT claims.");
-      const found = await this.database.query<{ id: string }>(
-        `SELECT s.id FROM sessions s JOIN users u ON u.id = s.user_id
+      const found = await this.database.query<{
+        id: string;
+        client_channel: "ios" | "web";
+      }>(
+        `SELECT s.id,s.client_channel FROM sessions s JOIN users u ON u.id = s.user_id
          WHERE s.id = $1 AND s.user_id = $2 AND s.revoked_at IS NULL AND s.expires_at > now() AND u.status = 'active'`,
         [sessionId, userId],
       );
-      if (!found.rowCount) throw new Error("Revoked session.");
+      if (
+        !found.rowCount ||
+        verified.payload.aud !==
+          (found.rows[0]?.client_channel === "web"
+            ? "plan-checkin-web"
+            : "plan-checkin-mobile")
+      )
+        throw new Error("Revoked or mismatched session.");
       observeActor(userId, this.config.accessTokenKey);
       return userId;
     } catch {

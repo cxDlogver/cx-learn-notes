@@ -50,6 +50,7 @@ export class ApiConfig {
   readonly objectAccessKeyId = required("OBJECT_ACCESS_KEY_ID");
   readonly objectSecretAccessKey = required("OBJECT_SECRET_ACCESS_KEY");
   readonly metricsToken = process.env.API_METRICS_TOKEN ?? "";
+  readonly webOrigin = process.env.WEB_ORIGIN;
   readonly trustProxyHops = Number(process.env.API_TRUST_PROXY_HOPS ?? "0");
 
   constructor() {
@@ -86,5 +87,21 @@ export class ApiConfig {
       throw new Error(
         "API_METRICS_TOKEN must be injected outside development.",
       );
+    if (this.webOrigin) {
+      const parsed = new URL(this.webOrigin);
+      if (
+        parsed.origin !== this.webOrigin ||
+        (parsed.protocol !== "https:" &&
+          !(
+            this.environment === "development" &&
+            parsed.protocol === "http:" &&
+            ["127.0.0.1", "localhost"].includes(parsed.hostname)
+          ))
+      ) {
+        throw new Error(
+          "WEB_ORIGIN must be one HTTPS origin (loopback HTTP only in development).",
+        );
+      }
+    }
   }
 }

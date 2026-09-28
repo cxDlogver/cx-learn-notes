@@ -218,6 +218,31 @@ Web Push 的受控端到端链路（权限、订阅、服务端发送、浏览�
 - 实际完成：旧通知偏好映射到 iOS 渠道，Web 渠道另存；旧会话、打卡数值单位和一次性备注保持原值；新增数据约束拒绝跨计划版本、重复消息与 Push endpoint。隔离备份恢复前后七项汇总一致。`check_execution_progress.py` 与格式检查通过。
 - 复核结论：WEB-03 的兼容数据结构、回填、回滚说明和环境级迁移证明齐备，勾选本任务。它不拥有 136 个业务用例中的任何首验结果；API/Worker 接入和浏览器 F/V/N 仍由 WEB-04～22 完成，全部业务用例当前 `NOT_RUN`。
 
+### 2026-09-28 20:48 CST｜WEB-04｜开始
+
+- 负责人、依赖与基线：Codex；WEB-01 与 WEB-03 已完成。现有 `auth/sms/verify`、`auth/refresh`、`auth/logout` 返回/接收 JSON refresh，JWT audience 为 `plan-checkin-mobile`；数据库已有 `sessions.client_channel`，但 API 尚未读写。
+- 目标与文件范围：在 `apps/api/src/auth` 新增 Web 专用短信验证、会话恢复/续期、退出及浏览器安全边界，保留移动端旧端点/响应；更新 `packages/contracts`、OpenAPI 和认证测试。Cookie 需 Secure/HttpOnly/SameSite、30 天轮换；access 15 分钟、Web audience 与 CSRF/Origin 校验。
+- 关联用例与计划证据：AUTH、SEC。先做服务层/API 的正常、到期、重放、并发轮换、退出、限流与拒绝检查，记录脱敏请求/响应；浏览器主验收仍归 WEB-05、WEB-20。代码尚未修改，所有业务结果仍 `NOT_RUN`，WEB-04 未勾选。
+
+### 2026-09-28 20:59 CST｜WEB-04｜Cookie 会话服务增量
+
+- 代码：新增 `/auth/web/verify`、`/session`、`/refresh`、`/logout` 控制器路径和 `web-session.ts` Cookie/CSRF/Origin 边界；服务层按 `ios/web` 分发 JWT audience 与会话渠道，Web refresh 只在 Cookie，返回体只含短期 access 与 CSRF；Web 退出撤销本浏览器订阅，移动 APNs 数据保持不变。追加契约、OpenAPI 和受控 PGlite 自测。
+- 实际检查：TypeScript、75 个 OpenAPI operation、旧移动契约兼容均通过；`web-auth-smoke.mjs` 断言 Web Cookie 属性、CSRF/Origin 拒绝、轮换重放、Web/iOS 通知隔离、移动 JSON 会话路径。首次脚本运行因根目录未暴露 `jose` 包而失败，改为从令牌载荷读取 audience 并以服务端 `authenticate` 验签，再次运行通过。
+- 证据与范围：以上为服务/控制器直接调用测试，尚缺真实 HTTP、限流和浏览器观察；AUTH/SEC 的业务 F/V/N 仍 `NOT_RUN`。WEB-04 未勾选，后续继续保存脱敏 HTTP 响应与拒绝证据。
+
+### 2026-09-28 21:07 CST｜WEB-04｜隔离 PostgreSQL HTTP 与回归增量
+
+- 环境：临时 PostgreSQL 17 `web_atdd_http` 库、loopback API 和内存短信桩；所有号码均为合成随机测试号，HTTP 原始日志只含 requestId、路由、状态和哈希标识。容器已停止并自动移除。
+- HTTP 实际结果：公开短信挑战 201，Web 验证 201 且 JSON 无 refresh；Cookie 有 `Secure/HttpOnly/SameSite=Lax/Path=/`、30 天 `Max-Age`，响应 `no-store`；会话恢复 200；伪造 Origin 和错误 CSRF 均 403；轮换 201；旧 Cookie 重放 401 且未返回清除 Cookie；退出 201，退出后恢复 401。原始日志和去敏响应摘要见 [WEB-04 HTTP 证据](./atdd/web/evidence/WEB-04/web-auth-http.txt)。
+- 兼容与反向检查：PGlite 服务测试覆盖第二次轮换后的迟到同键响应不覆盖新 Cookie、15 分钟 access、30 天刷新到期和 Web 退出不清 iOS APNs；移动旧 JSON 认证、双验证码换号及全会话撤销回归均通过。OpenAPI 75 项、兼容、typecheck、安全静态检查与全部命令 SHA 见 [检查清单](./atdd/web/evidence/WEB-04/checks.json)；设计与结论见 [WEB-04 详细记录](./atdd/web/WEB-04-Web会话与注册API.md)。
+- F/V/N 判定：本次只确认 API/服务端边界；Web 页面尚不存在，AUTH/SEC 业务用例 136 项总台账仍 `NOT_RUN`。WEB-04 待提交和最终复核。
+
+### 2026-09-28 21:13 CST｜WEB-04｜当前源码复测
+
+- 缺陷与修复：初次新测试脚本因根依赖解析 `jose` 失败、随后 lint 因 Node 内建对象未显式导入失败。改用现有服务端验签配合载荷 audience 检查，并补标准模块导入。没有修改业务验收基线或伪造旧结果。
+- 复测：当前源码 lint、API 编译、PGlite 服务断言和全新隔离 PostgreSQL 17 真实 HTTP 均退出 0。第二次数据库与首轮相互独立，取证后自动删除；最终[服务输出](./atdd/web/evidence/WEB-04/web-auth-service-final.txt)、[HTTP 日志与去敏响应](./atdd/web/evidence/WEB-04/web-auth-http-final.txt)、全部输出 SHA 见[清单](./atdd/web/evidence/WEB-04/checks.json)。
+- 当前结论：API 与旧移动端兼容检查通过，浏览器页面仍不存在，AUTH/SEC 用例仍 `NOT_RUN`；WEB-04 待代码提交及台账最终复核。
+
 ## 7. 决策与偏差记录
 
 每条偏差记录：发现时间、来源文件/行、矛盾内容、影响任务与用例、可选方案、最终决定、PRD/技术/ATDD/契约变更、复测范围和复核人。尚未核对真实代码路径时，不将技术方案中列出的新增端点视为已存在接口。注册开放、Web 在线、分端提醒、消息已读跨浏览器、部分周不计达标和 Web 独立验收等已确认边界不能被实现便利性改写。

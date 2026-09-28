@@ -24,11 +24,17 @@ export function ratePolicy(
 ): { name: string; limit: number } | null {
   if (method === "POST" && path === "/api/v1/auth/sms/challenges")
     return { name: "sms_challenge", limit: 30 };
-  if (method === "POST" && path === "/api/v1/auth/sms/verify")
+  if (
+    method === "POST" &&
+    ["/api/v1/auth/sms/verify", "/api/v1/auth/web/verify"].includes(path)
+  )
     return { name: "sms_verify", limit: 60 };
   if (method === "POST" && path === "/api/v1/me/deletion-cancel")
     return { name: "deletion_cancel", limit: 15 };
-  if (method === "POST" && path === "/api/v1/auth/refresh")
+  if (
+    method === "POST" &&
+    ["/api/v1/auth/refresh", "/api/v1/auth/web/refresh"].includes(path)
+  )
     return { name: "refresh", limit: 120 };
   if (method === "GET" && path === "/api/v1/usernames/availability")
     return { name: "username_lookup", limit: 120 };

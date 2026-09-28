@@ -35,6 +35,8 @@
     "deletion:tombstones:apply": "node scripts/deletion-tombstones.mjs apply",
     "deletion:tombstones:check": "node scripts/deletion-tombstones.mjs check",
     "auth:smoke": "tsc -p apps/api/tsconfig.json && node scripts/auth-smoke.mjs",
+    "web:auth:smoke": "tsc -p apps/api/tsconfig.json && node scripts/web-auth-smoke.mjs",
+    "web:auth:http:smoke": "tsc -p apps/api/tsconfig.json && node scripts/web-auth-http-smoke.mjs",
     "profile:smoke": "tsc -p apps/api/tsconfig.json && node scripts/profile-smoke.mjs",
     "plans:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/plans-smoke.mjs",
     "records:smoke": "tsc -p packages/domain/tsconfig.json && tsc -p apps/api/tsconfig.json && node scripts/records-smoke.mjs",
