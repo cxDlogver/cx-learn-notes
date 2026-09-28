@@ -20,14 +20,27 @@ Windows 本机已启动 PostgreSQL 17、Redis、SeaweedFS S3、API、Worker 与 
 环境配置取自忽略版本控制的本地 `.env`；仓库只保存 `.env.example`。独立机器需按 [部署与恢复手册](../../OPS-05-部署与恢复手册.md)生成自己的开发密钥与连接配置，再运行以下命令。后三个长时间运行的进程应分别放在终端中；Metro 仅提供开发包服务，需已安装的 iOS dev client 才能打开页面。
 
 ```powershell
+pnpm install --frozen-lockfile
 pnpm infra:up
 pnpm db:migrate:local
-pnpm exec tsc -p apps/api/tsconfig.json
-pnpm exec tsc -p apps/worker/tsconfig.json
+pnpm -r build
 node --env-file=.env apps/api/dist/main.js
 node --env-file=.env apps/worker/dist/main.js
 pnpm --dir apps/mobile exec expo start --dev-client --localhost --port 8081
 ```
+
+`pnpm -r build` 已在本次工作树实测通过，会先构建 contracts/domain/design-tokens，再构建 API 与 Worker。当前 Windows 主机的服务已在运行，重复启动 API 或 Metro 会占用同一端口；重启时先结束旧进程。
+
+### iOS 模拟器
+
+将 `codex/ios-plan-checkin-build` 分支同步到装有 Xcode 与 iOS Simulator 的 Mac。在同一台 Mac 上启动上述本地依赖、API 和 Worker，然后从项目根目录运行：
+
+```sh
+cd apps/mobile
+pnpm exec expo run:ios
+```
+
+首次运行会生成并编译原生 iOS 项目、安装开发版并启动 Metro。后续仅修改 JS/TS 时，可用 `pnpm exec expo start --dev-client` 连接已安装的开发版。模拟器与 API 在同一台 Mac 时，开发默认地址 `http://127.0.0.1:3000/api/v1` 可直接使用。短信使用本地 stub；登录验证码写在项目根目录的 `apps/api/.local/sms-outbox-login.json`，仅供本地测试。若 API 与模拟器分处不同机器，必须配置模拟器可访问的 `EXPO_PUBLIC_API_BASE_URL`，并同步修改对象存储的公开端点；现有 Compose 仅绑定本机回环地址，不能直接供另一台机器访问。
 
 ## 检查与证据
 
