@@ -5,19 +5,19 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
+  "integrationCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
   "currentWork": {
-    "taskId": "OPS-05",
-    "phase": "部署、密钥注入与恢复材料",
-    "updatedAt": "2026-09-28T04:45:31.000Z",
-    "baseCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
+    "taskId": "OPS-06",
+    "phase": "发布候选版冻结与独立验收移交",
+    "updatedAt": "2026-09-28T04:57:33.000Z",
+    "baseCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
     "completedSteps": [
-      "OPS-04 API 共享限流、脱敏结构化请求日志、Worker 心跳与日志、Prometheus 指标/告警及运行说明已提交；全仓静态检查、PGlite 迁移/限流、认证和计划写入自检通过。"
+      "OPS-05 三环境 Kubernetes 资源生成、固定摘要镜像构建、迁移前置部署、密钥键校验、两区检查、就绪探针与备份/回滚手册已提交；全仓静态检查及部署清单开发自检通过。"
     ],
     "nextSteps": [
-      "盘点现有三环境配置、Compose 与发布脚本，核对大陆单区域部署与密钥注入要求。",
-      "实现部署/回滚/IaC 静态材料、迁移顺序和备份恢复运行手册。",
-      "执行 S0/S2/S5/S6 与开发自检，提交代码和台账。"
+      "汇总所有任务状态与环境阻断，核对代码、锁文件、OpenAPI、迁移、设计映射和文档摘要。",
+      "生成机器可读候选版/移交清单与缺口报告，不宣称未完成的 Release 或 ATDD 已通过。",
+      "执行 S0–S6 全仓静态门槛与必要开发自检，提交代码和台账。"
     ],
     "uncommittedChanges": [],
     "knownConstraints": [
@@ -763,12 +763,14 @@
         "S5",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "489d07f8c99539b5ae4c08e1580cfa34c875798d",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
+      "integratedCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
+      "staticPassed": true,
+      "blocker": "三环境资源/密钥引用、固定镜像摘要、迁移顺序与恢复材料静态检查通过；真实中国大陆供应商资源、两区节点、WAF/IAM、镜像构建推送、预发部署与备份恢复演练待环境就绪。"
     },
     {
       "priority": 35,
@@ -818,10 +820,10 @@
         "S5",
         "S6"
       ],
-      "status": "NOT_STARTED",
-      "branch": null,
+      "status": "IN_PROGRESS",
+      "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
-      "baseCommit": null,
+      "baseCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
       "taskCommit": null,
       "integratedCommit": null
     }
