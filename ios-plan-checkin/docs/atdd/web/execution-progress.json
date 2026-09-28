@@ -628,33 +628,125 @@
       ],
       "scope": "依赖：WEB-01、WEB-03、WEB-04。完成三类计划、规则版本、计划时区、部分周口径、暂停/归档/删除、每计划最多一个数值项及历史单位快照，更新领域包/契约/API。关联：PLAN、STAT。完成证据：领域与数据库边界测试、历史规则/单位未被重写的前后快照和 API 证据。",
       "ownedCaseIds": [],
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "startedAt": "2026-09-28T13:29:00Z",
-      "completedAt": null,
+      "completedAt": "2026-09-28T13:56:00Z",
       "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
-        "commit": null,
-        "checks": [],
-        "evidence": []
+        "summary": "三类计划可配置一个数值项；POST/PATCH 版本追加、计划时区次日生效、历史数值/名称/单位/版本快照不改写；部分周统计口径已验证。",
+        "changedPaths": [
+          "apps/api/src/plans/plans.service.ts",
+          "apps/api/src/plans/plans.controller.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/domain/test/statistics.test.mjs",
+          "scripts/plans-smoke.mjs",
+          "scripts/web-plans-http-smoke.mjs",
+          "docs/atdd/web/WEB-06-计划数值项与部分周.md"
+        ],
+        "commit": "a389d52cae36ef7e3070eccc30a49db38339bcc2",
+        "checks": [
+          {
+            "command": "node node_modules/typescript/bin/tsc --noEmit -p packages/contracts/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/contracts-typecheck.txt",
+            "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/domain-build.txt",
+            "sha256": "68d9d171a782a55640fcf5183be4272f1e9d0e9cc23cc0851536deef239f9fc8"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/api-build.txt",
+            "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+          },
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/openapi.txt",
+            "sha256": "1ddc2f85b0e3628249e1b3592f7cef2c4ead087beed514c713579a3e18830e9a"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/compat.txt",
+            "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+          },
+          {
+            "command": "node scripts/plans-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/plans-smoke.txt",
+            "sha256": "62f74575d1ddd358513fc4570d6497692a41ae05f5e77ccee56a94df6ff38100"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-plans-http-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/plans-http.txt",
+            "sha256": "f4b7646b4479a8274f4680370e943a9586bf74c776b3c4790b07b0cf10abd4ab"
+          },
+          {
+            "command": "node --test packages/domain/test/statistics.test.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/statistics.txt",
+            "sha256": "de04e4f91ea588afba252494301dd81252a0b9134f92983715adfb1120e8559b"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js apps/api/src/plans/plans.service.ts apps/api/src/plans/plans.controller.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/plans-smoke.mjs scripts/web-plans-http-smoke.mjs packages/domain/test/statistics.test.mjs scripts/web-06-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/lint.txt",
+            "sha256": "c7c84a6196a50391875ae7a73b120ee4437d1e4a625bbc0acf4b3cd447d67831"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check apps/api/src/plans/plans.service.ts apps/api/src/plans/plans.controller.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/plans-smoke.mjs scripts/web-plans-http-smoke.mjs packages/domain/test/statistics.test.mjs scripts/web-06-evidence.mjs docs/任务执行计划-计划打卡-Web-v1.md docs/atdd/web/execution-progress.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/format.txt",
+            "sha256": "0018cb0ab1fe1f566180220bf1352f42dc5d2f94f97c45f65083848251f8e71c"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/progress-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-06/checks.json",
+          "docs/atdd/web/WEB-06-计划数值项与部分周.md",
+          "docs/API-兼容变更记录.md"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "11 项源码、契约、PGlite、隔离 PostgreSQL 17 真实 HTTP、固定时钟部分周与台账检查全部通过；提交 Git blob 中 11 个原始输出 SHA 均匹配。产品浏览器 F/V/N 未执行，136 项仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-06/plans-smoke.txt",
+          "docs/atdd/web/evidence/WEB-06/plans-http.txt",
+          "docs/atdd/web/evidence/WEB-06/statistics.txt"
+        ]
       },
       "review": {
-        "reviewer": null,
-        "reviewedAt": null,
-        "decision": null
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T13:56:00Z",
+        "decision": "WEB-06 服务端范围与历史不改写、部分周口径、真实 API 证据齐备；记录按日期选版本与浏览器 F/V/N 留给 WEB-08/07/11/21。"
       },
       "history": [
         {
           "at": "2026-09-28T13:29:00Z",
           "type": "STARTED",
           "summary": "计划服务数值项版本接入与部分周口径核验开始；浏览器业务用例尚未执行。"
+        },
+        {
+          "at": "2026-09-28T13:56:00Z",
+          "type": "DONE",
+          "summary": "11 项检查及提交后 SHA 复核通过，WEB-06 checklist 勾选；136 项浏览器业务用例未执行。",
+          "commit": "a389d52cae36ef7e3070eccc30a49db38339bcc2",
+          "evidencePath": "docs/atdd/web/evidence/WEB-06/checks.json"
         }
       ]
     },
