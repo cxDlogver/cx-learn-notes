@@ -1,0 +1,6 @@
+command: node scripts/migrations-smoke.mjs
+exitCode: 0
+stdout:
+Migration smoke passed: 42 tables, unique checkin, immutable timezone/rules and one-time direction.
+
+stderr:

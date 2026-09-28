@@ -1,0 +1,36 @@
+command: node scripts/web-notifications-smoke.mjs
+exitCode: 0
+stdout:
+PASS Web default is independent from iOS
+PASS Web social default matches expected
+PASS Web plan delivery can be disabled
+PASS Web social delivery can be disabled
+PASS iOS preference remains independent
+PASS other account Web preference remains default
+PASS stale Web revision rejected
+PASS Web Push subscription registered
+PASS subscription bound to authenticated browser device
+PASS subscription bound to account
+PASS endpoint is encrypted at rest
+PASS public key is encrypted at rest
+PASS IP endpoint rejected
+PASS off-curve P-256 key rejected
+PASS Web Push subscription revoked
+PASS revocation is persistent
+PASS iOS preference still unchanged after Web revoke
+PASS social event enqueues Web Push
+PASS provider accepted one Web device
+PASS payload category is generic social
+PASS provider acceptance is idempotent per job and device
+PASS delivery row tracks accepted subscription
+PASS Web social switch suppresses provider send
+PASS 410 clears expired subscription
+PASS permanent failure does not retry expired endpoint
+PASS 503 reported for retry
+PASS 503 persisted retryable failed job
+PASS 503 job reclaimed after backoff
+PASS retry accepted after provider recovered
+PASS recovered job marked succeeded
+WEB-NOTIFICATIONS-SMOKE checks=30
+
+stderr:

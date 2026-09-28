@@ -1418,16 +1418,72 @@
       ],
       "scope": "依赖：WEB-03、WEB-06、WEB-13。共享时间规则、Web/iOS 投递偏好隔离、计划提醒 Worker、订阅/发送/取消/永久失败清理，外层只发通用文案。关联：NOTIFY、SEC。完成证据：冻结时钟、队列与供应端受理、渠道隔离和失效清理日志。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T15:13:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "Web 独立偏好、订阅/撤销和 VAPID 公钥 API 已实现；社交消息 Web Push 与计划时区提醒 Worker 已接线，RFC 8291 加密、时间槽去重、发送前复核和 410 清理通过隔离测试。真实 HTTP、429/5xx 退避和浏览器端到端仍待验证。",
+        "changedPaths": [
+          "apps/api/src/auth/auth.service.ts",
+          "apps/api/src/social/notifications.controller.ts",
+          "apps/api/src/social/notifications.service.ts",
+          "apps/api/src/social/notification-jobs.ts",
+          "apps/api/src/social/social.module.ts",
+          "apps/api/src/config.ts",
+          "apps/worker/src/webPush.ts",
+          "apps/worker/src/webNotifications.ts",
+          "apps/worker/src/planReminders.ts",
+          "apps/worker/src/main.ts",
+          "apps/worker/src/queue.ts",
+          "db/migrations/0013_web_push_delivery.sql",
+          "db/migrations/manifest.json",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "scripts/build-openapi.mjs",
+          "scripts/web-notifications-smoke.mjs",
+          "scripts/web-push-rfc-smoke.mjs",
+          "scripts/web-plan-reminders-smoke.mjs",
+          "infra/deploy/manifest.mjs",
+          "docs/atdd/web/WEB-15-分端提醒与WebPush服务.md"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "node scripts/web-notifications-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-notifications-smoke.txt",
+            "sha256": "dcfd0d54a34d01ec9b64be6a6c910f5c95a2e810f83de8929a55f6b198d65faf"
+          },
+          {
+            "command": "node scripts/web-notifications-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-notifications-worker.txt",
+            "sha256": "cae5c096fb933ce957013165ba07900fa93a07c97c86a116f31a3e53cc69d969"
+          },
+          {
+            "command": "node scripts/web-plan-reminders-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-plan-reminders.txt",
+            "sha256": "3785b81335727b9fdc0a368ae427cd1fa7d98595a34f2f806b872e63c884e68e"
+          },
+          {
+            "command": "node scripts/web-push-rfc-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-push-rfc.txt",
+            "sha256": "c2c812c04afb6ab87b8bba5cca9ef11e3d9d9983a8d4db7634ab6f63d214597d"
+          },
+          {
+            "command": "node scripts/sql-static-check.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/sql-static.txt",
+            "sha256": "b0838cf5bafc7a68284cd4ec6d977bfb097b83e95d77ec4b7401c41100f33c84"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-15-分端提醒与WebPush服务.md"
+        ]
       },
       "verification": {
         "summary": null,
@@ -1440,7 +1496,23 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T15:13:00Z",
+          "type": "STARTED",
+          "summary": "Web/iOS 分端通知偏好、Web Push 订阅与 Worker、计划提醒时区规则接入开始；浏览器通知用例尚未执行。"
+        },
+        {
+          "at": "2026-09-28T15:24:00Z",
+          "type": "PROGRESS",
+          "summary": "Web 独立偏好和订阅 API 已实现；PGlite 16 项断言、83 项 OpenAPI 和兼容检查通过，原始输出及 SHA 已入库；Worker/浏览器仍未完成。"
+        },
+        {
+          "at": "2026-09-28T15:43:00Z",
+          "type": "PROGRESS",
+          "summary": "0013 迁移、社交 Web Push、VAPID/RFC 加密、计划时区调度与发送前复核接线；PGlite 24+15 项、RFC 官方向量和旧业务回归通过，真实 HTTP 与浏览器仍待验。"
+        }
+      ]
     },
     {
       "id": "WEB-16",

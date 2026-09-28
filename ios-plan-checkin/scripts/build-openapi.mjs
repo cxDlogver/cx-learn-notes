@@ -166,6 +166,43 @@ const schemas = {
       updatedAt: instant,
     },
   ),
+  WebNotificationPreferences: properties(
+    [
+      "planEnabled",
+      "friendRequests",
+      "sharedUpdates",
+      "encouragements",
+      "revision",
+      "updatedAt",
+    ],
+    {
+      planEnabled: { type: "boolean" },
+      friendRequests: { type: "boolean" },
+      sharedUpdates: { type: "boolean" },
+      encouragements: { type: "boolean" },
+      revision: { type: "integer", minimum: 1 },
+      updatedAt: instant,
+    },
+  ),
+  RegisterWebPushSubscriptionRequest: properties(
+    ["endpoint", "expirationTime", "keys"],
+    {
+      endpoint: { type: "string", format: "uri", maxLength: 2048 },
+      expirationTime: { oneOf: [instant, { type: "null" }] },
+      keys: properties(["p256dh", "auth"], {
+        p256dh: str(),
+        auth: str(),
+      }),
+    },
+  ),
+  WebPushSubscription: properties(["id", "registered"], {
+    id: { oneOf: [uuid, { type: "null" }] },
+    registered: { type: "boolean" },
+  }),
+  WebPushConfig: properties(["available", "publicKey"], {
+    available: { type: "boolean" },
+    publicKey: { oneOf: [str(), { type: "null" }] },
+  }),
   InboxMessage: properties(
     [
       "id",
@@ -203,6 +240,13 @@ const schemas = {
   InboxRead: properties(["id", "readAt"], { id: uuid, readAt: instant }),
   UpdateNotificationPreferencesRequest: properties(["baseRevision"], {
     baseRevision: { type: "integer", minimum: 1 },
+    friendRequests: { type: "boolean" },
+    sharedUpdates: { type: "boolean" },
+    encouragements: { type: "boolean" },
+  }),
+  UpdateWebNotificationPreferencesRequest: properties(["baseRevision"], {
+    baseRevision: { type: "integer", minimum: 1 },
+    planEnabled: { type: "boolean" },
     friendRequests: { type: "boolean" },
     sharedUpdates: { type: "boolean" },
     encouragements: { type: "boolean" },
@@ -1167,6 +1211,11 @@ const responseData = {
   registerPushToken: ref("PushTokenRegistration"),
   getNotificationPreferences: ref("NotificationPreferences"),
   updateNotificationPreferences: ref("NotificationPreferences"),
+  getWebNotificationPreferences: ref("WebNotificationPreferences"),
+  updateWebNotificationPreferences: ref("WebNotificationPreferences"),
+  registerWebPushSubscription: ref("WebPushSubscription"),
+  deleteWebPushSubscription: ref("WebPushSubscription"),
+  getWebPushConfig: ref("WebPushConfig"),
   listInbox: ref("InboxPage"),
   markInboxRead: ref("InboxRead"),
   createDataExport: ref("DataExport"),
@@ -1209,6 +1258,8 @@ const bodies = {
   createEncouragement: "CreateEncouragementRequest",
   registerPushToken: "RegisterPushTokenRequest",
   updateNotificationPreferences: "UpdateNotificationPreferencesRequest",
+  updateWebNotificationPreferences: "UpdateWebNotificationPreferencesRequest",
+  registerWebPushSubscription: "RegisterWebPushSubscriptionRequest",
   requestDeletion: "DeletionRequest",
   cancelDeletion: "SmsVerifyRequest",
 };

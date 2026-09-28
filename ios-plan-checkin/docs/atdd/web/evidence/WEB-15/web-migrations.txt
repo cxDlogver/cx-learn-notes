@@ -1,0 +1,6 @@
+command: node scripts/web-migrations-smoke.mjs
+exitCode: 0
+stdout:
+PGlite Web migration smoke passed: rollback, 37→41 tables, iOS backfill, legacy numeric snapshot, one-time result, inbox, Push and worker constraints.
+
+stderr:

@@ -1,0 +1,38 @@
+command: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-notifications-http-smoke.ps1
+exitCode: 0
+stdout:
+Applied 0001_core.sql
+Applied 0002_social_operations.sql
+Applied 0003_plan_management.sql
+Applied 0004_record_conflicts.sql
+Applied 0005_incremental_sync.sql
+Applied 0006_conflict_resolution_link.sql
+Applied 0007_media_cleanup.sql
+Applied 0008_social_notifications.sql
+Applied 0009_data_exports.sql
+Applied 0010_deletion_audit.sql
+Applied 0011_rate_limits.sql
+Applied 0012_web_compatibility.sql
+Applied 0013_web_push_delivery.sql
+{"event":"http_request","at":"2026-09-28T16:03:36.376Z","requestId":"bf446c6d-2477-4df7-b893-d9bc02f679dc","method":"POST","route":"/api/v1/auth/sms/challenges","status":201,"durationMs":63,"code":"NONE","operation":"post","idempotencyHash":"450450a6410a0127261d"}
+{"event":"http_request","at":"2026-09-28T16:03:36.416Z","requestId":"e4ee1997-1b10-46b8-9770-8f0fd89741af","method":"POST","route":"/api/v1/auth/web/verify","status":201,"durationMs":31,"code":"NONE","operation":"post","idempotencyHash":"697edede7fa696705fce"}
+{"event":"http_request","at":"2026-09-28T16:03:36.421Z","requestId":"47e36929-c34c-4362-ab90-8a4efdc6868a","method":"GET","route":"/api/v1/web-push/config","status":200,"durationMs":3,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:03:36.433Z","requestId":"d0ddbfba-dca2-43a2-8393-ffb39fa07eaa","method":"GET","route":"/api/v1/me/notification-channels/web","status":200,"durationMs":10,"code":"NONE","actorHash":"242ed6e11a448fc53c12","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:03:36.459Z","requestId":"5636f8c5-359c-4625-a8ee-acbce36da015","method":"PATCH","route":"/api/v1/me/notification-channels/web","status":200,"durationMs":24,"code":"NONE","actorHash":"242ed6e11a448fc53c12","operation":"web-notification-preferences-update","baseRevision":1,"idempotencyHash":"2c73ba47c8ebbd1dfa5f"}
+{"event":"http_request","at":"2026-09-28T16:03:36.467Z","requestId":"66afb3cc-e44e-4d1c-bad0-c516ec3d8fb1","method":"GET","route":"/api/v1/me/notification-preferences","status":200,"durationMs":7,"code":"NONE","actorHash":"242ed6e11a448fc53c12","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:03:36.485Z","requestId":"17146464-cc50-45d1-9b09-16de73fc246e","method":"PATCH","route":"/api/v1/me/notification-channels/web","status":409,"durationMs":15,"code":"RULE_CHANGED","actorHash":"242ed6e11a448fc53c12","operation":"web-notification-preferences-update","baseRevision":1,"idempotencyHash":"61656c692e426b638646"}
+{"event":"http_request","at":"2026-09-28T16:03:36.503Z","requestId":"9fc0ebfe-51ac-44e1-a858-2180429be21b","method":"POST","route":"/api/v1/auth/refresh","status":201,"durationMs":13,"code":"NONE","operation":"post","idempotencyHash":"449c34d70dc1e9599afe"}
+{"event":"http_request","at":"2026-09-28T16:03:36.508Z","requestId":"1e339811-c599-4ecc-8998-d216504af324","method":"GET","route":"/api/v1/me/notification-channels/web","status":401,"durationMs":3,"code":"UNAUTHENTICATED","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:03:36.518Z","requestId":"9f4a874f-b614-4dbc-a7d4-696a3cfffe04","method":"POST","route":"/api/v1/me/web-push-subscriptions","status":400,"durationMs":7,"code":"VALIDATION_ERROR","actorHash":"242ed6e11a448fc53c12","operation":"post","idempotencyHash":"bdc32b6363c5d64da160"}
+{"event":"http_request","at":"2026-09-28T16:03:36.525Z","requestId":"8bd8dfe2-3304-4aab-91a8-796f8855c2b4","method":"POST","route":"/api/v1/me/web-push-subscriptions","status":400,"durationMs":6,"code":"VALIDATION_ERROR","actorHash":"242ed6e11a448fc53c12","operation":"post","idempotencyHash":"aa13c3e26fd6021ec635"}
+{"event":"http_request","at":"2026-09-28T16:03:36.545Z","requestId":"026ea2f0-8100-42ae-89e6-09883b07e57b","method":"POST","route":"/api/v1/me/web-push-subscriptions","status":201,"durationMs":18,"code":"NONE","actorHash":"242ed6e11a448fc53c12","operation":"web-push-subscription-register","idempotencyHash":"52cc05ab7f3636c81b0a"}
+{"event":"http_request","at":"2026-09-28T16:03:36.563Z","requestId":"7391597f-95b2-47de-8ea5-71a95f035d3c","method":"DELETE","route":"/api/v1/me/web-push-subscriptions","status":200,"durationMs":15,"code":"NONE","actorHash":"242ed6e11a448fc53c12","operation":"web-push-subscription-delete","idempotencyHash":"e09e34eeeaa37a0469fc"}
+{"event":"http_request","at":"2026-09-28T16:03:36.587Z","requestId":"15a00aef-2d2c-437f-b27f-d61a487a3cca","method":"POST","route":"/api/v1/me/web-push-subscriptions","status":201,"durationMs":22,"code":"NONE","actorHash":"242ed6e11a448fc53c12","operation":"web-push-subscription-register","idempotencyHash":"e7041541d0fa4a5f58a6"}
+{"event":"http_request","at":"2026-09-28T16:03:36.608Z","requestId":"e65374e5-021e-4a75-9359-1231ca999901","method":"POST","route":"/api/v1/auth/web/logout","status":201,"durationMs":20,"code":"NONE","operation":"post","idempotencyHash":"a8eb235a868ca0acb709"}
+{"event":"http_request","at":"2026-09-28T16:03:36.614Z","requestId":"33b5e986-abc7-4331-98a0-782227a32c2c","method":"GET","route":"/api/v1/me/notification-channels/web","status":401,"durationMs":3,"code":"UNAUTHENTICATED","operation":"get"}
+{"database":"web_atdd_web15","openApiOperations":84,"webPreference":{"initial":200,"updated":200,"stale":409},"iosPreferenceUnaffected":true,"wrongChannel":401,"pushConfig":200,"subscription":{"invalid":400,"offCurve":400,"registered":201,"revoked":200},"encryptedAtRest":true,"logoutRevokedSubscription":true,"afterLogout":401}
+
+stderr:
+(node:56152) ExperimentalWarning: CommonJS module F:\CX_notes\cx-learn-notes\ios-plan-checkin\apps\api\package.json is loading ES Module F:\CX_notes\cx-learn-notes\ios-plan-checkin\node_modules\.pnpm\@nestjs+core@12.1.0_@nestjs_64cca02103bced40e73bfea9fad68b75\node_modules\@nestjs\core\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

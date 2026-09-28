@@ -1,0 +1,7 @@
+command: node node_modules/prettier/bin/prettier.cjs --check apps/api/src/auth/auth.service.ts apps/api/src/config.ts apps/api/src/social/notification-jobs.ts apps/api/src/social/notifications.controller.ts apps/api/src/social/notifications.service.ts apps/api/src/social/social.module.ts apps/worker/src/main.ts apps/worker/src/planReminders.ts apps/worker/src/queue.ts apps/worker/src/webNotifications.ts apps/worker/src/webPush.ts db/migrations/manifest.json docs/atdd/web/WEB-15-分端提醒与WebPush服务.md docs/atdd/web/execution-progress.json docs/任务执行计划-计划打卡-Web-v1.md infra/deploy/manifest.mjs packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/migrations-smoke.mjs scripts/sql-static-check.mjs scripts/web-notifications-http-smoke.mjs scripts/web-notifications-smoke.mjs scripts/web-plan-reminders-smoke.mjs scripts/web-push-rfc-smoke.mjs scripts/web-15-evidence.mjs
+exitCode: 0
+stdout:
+Checking formatting...
+All matched files use Prettier code style!
+
+stderr:

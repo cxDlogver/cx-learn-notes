@@ -315,6 +315,25 @@ Web Push 的受控端到端链路（权限、订阅、服务端发送、浏览�
 - 复核：[14 项检查清单](./atdd/web/evidence/WEB-13/checks.json)全部退出 0，原始文件 SHA-256 和已提交 Git blob 14/14 一致。[真实 HTTP](./atdd/web/evidence/WEB-13/inbox-http.txt)覆盖 A/B/C/D、B 两个独立 Web 会话、5 类事件各一条、游标拒绝 400、越权标记 404、撤销分享读取 403、屏蔽申请 403 与 `no-store`；[服务输出](./atdd/web/evidence/WEB-13/web-inbox-smoke.txt)证明去重、跨会话已读和失权后的消息去标识。
 - 缺陷与边界：首次真实 HTTP 自测因同 IP 第五次短信挑战命中 429；保持产品限流，改用隔离库第二会话种子并经真实会话恢复接口复测。此处仅服务端通过，无 Web 消息中心截图、DOM 或 F/V/N；136 项浏览器用例仍 `NOT_RUN`。复核人 Codex，按 WEB-13 服务端范围勾选；WEB-14/16/21 继续负责页面和正式验收。
 
+### 2026-09-28 23:13 CST｜WEB-15｜开始
+
+- 负责人、依赖与基线：Codex；WEB-03/06/13 已完成。迁移已提供 `channel_notification_preferences`、`web_push_subscriptions` 和两类 Worker 作业名，现有 API 仍只读写 iOS 旧偏好/APNs，Worker 尚无 Web 计划提醒与 Web Push 处理。
+- 本次实施：新增独立 Web 渠道偏好与 Web Push 订阅/取消 API、密文存储和失效清理；在服务端按计划时区与规则生成提醒，发送前二次检查状态、打卡、周目标和渠道开关；社交事件 Web 投递只用通用文案，不改变 iOS 设置。
+- 验收与证据目标：固定时钟、隔离订阅/供应端桩、队列去重及永久失败清理、Web/iOS 开关隔离的 API/DB/Worker 原始输出及哈希。WEB-15 不主拥有浏览器用例，权限弹窗和 Service Worker 展示归 WEB-16，136 项继续 `NOT_RUN`。
+- 风险：Web Push 标准加密与 VAPID 发送需正确的实现或经过审查的依赖；上线前还需受控真实浏览器和拟发布环境验证。后台关闭页面后的稳定送达不是发布阻断项。
+
+### 2026-09-28 23:24 CST｜WEB-15｜分端偏好与订阅 API 增量
+
+- 已实现：Web 专用通知偏好 GET/PATCH 及订阅 POST/DELETE，接口限制 Web 会话并使用其设备 ID；订阅端点和两类密钥加密存库，iOS 旧接口保持兼容。详细接口、检查与剩余见 [WEB-15 进行中记录](./atdd/web/WEB-15-分端提醒与WebPush服务.md)。
+- 已执行：PGlite 16 项断言全部通过，涵盖渠道/账号隔离、修订冲突、密文、IP 端点拒绝和撤销；[原始输出](./atdd/web/evidence/WEB-15/web-notifications-smoke.txt) SHA-256 `dcfd0d54a34d01ec9b64be6a6c910f5c95a2e810f83de8929a55f6b198d65faf`。API/契约 TypeScript、83 项 OpenAPI 和旧契约兼容通过。
+- 未完成：提醒调度、VAPID 加密发送、队列重试/清理、真实 HTTP 和浏览器链路。WEB-15 仍未勾选，136 个浏览器用例保持 `NOT_RUN`。
+
+### 2026-09-28 23:43 CST｜WEB-15｜Worker 与加密发送增量
+
+- 代码与数据：迁移 `0013` 建订阅受理表和永久事件/时间槽去重；社交入队、Web Push 供应端发送、410 失效清理及计划时区调度已接线。通知外层只含通用文案，VAPID 公钥由 API 提供，部署清单补齐注入项；详见[WEB-15 记录](./atdd/web/WEB-15-分端提醒与WebPush服务.md)。
+- 原始证据：[社交/订阅 24 项](./atdd/web/evidence/WEB-15/web-notifications-worker.txt)、[固定时钟计划 15 项](./atdd/web/evidence/WEB-15/web-plan-reminders.txt)、[RFC 8291 向量及供应端桩](./atdd/web/evidence/WEB-15/web-push-rfc.txt)、[42 表/13 迁移静态检查](./atdd/web/evidence/WEB-15/sql-static.txt)。各文件 SHA-256 写在详细记录中；旧好友/分享/收件箱/APNs/记录回归通过。
+- 尚缺真实 PostgreSQL HTTP、429/5xx 队列退避、完整浏览器链路及最终证据哈希复核；WEB-15 保持未勾选，136 项浏览器业务用例仍 `NOT_RUN`。
+
 ## 7. 决策与偏差记录
 
 每条偏差记录：发现时间、来源文件/行、矛盾内容、影响任务与用例、可选方案、最终决定、PRD/技术/ATDD/契约变更、复测范围和复核人。尚未核对真实代码路径时，不将技术方案中列出的新增端点视为已存在接口。注册开放、Web 在线、分端提醒、消息已读跨浏览器、部分周不计达标和 Web 独立验收等已确认边界不能被实现便利性改写。

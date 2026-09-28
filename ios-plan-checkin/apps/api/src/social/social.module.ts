@@ -18,6 +18,8 @@ import { EncouragementsService } from "./encouragements.service.js";
 import {
   DevicesController,
   NotificationPreferencesController,
+  WebPushSubscriptionsController,
+  WebPushConfigController,
 } from "./notifications.controller.js";
 import { NotificationsService } from "./notifications.service.js";
 import { InboxController } from "./inbox.controller.js";
@@ -36,6 +38,8 @@ import { InboxService } from "./inbox.service.js";
     EncouragementsController,
     DevicesController,
     NotificationPreferencesController,
+    WebPushSubscriptionsController,
+    WebPushConfigController,
     InboxController,
   ],
   providers: [

@@ -2,7 +2,9 @@ export type JobName =
   | "send-social-notification"
   | "prepare-data-export"
   | "finalize-account-deletion"
-  | "cleanup-orphan-media";
+  | "cleanup-orphan-media"
+  | "send-web-push"
+  | "send-plan-reminder";
 
 export interface QueuedJob<T = unknown> {
   id: string;

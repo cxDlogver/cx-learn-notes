@@ -94,7 +94,22 @@ export const apiRoutes = [
   ["GET", "plans/{id}/reminder", "getReminder", true],
   ["PUT", "plans/{id}/reminder", "putReminder", true],
   ["POST", "devices/push-token", "registerPushToken", true],
+  ["GET", "web-push/config", "getWebPushConfig", false],
+  ["POST", "me/web-push-subscriptions", "registerWebPushSubscription", true],
+  ["DELETE", "me/web-push-subscriptions", "deleteWebPushSubscription", true],
   ["GET", "me/notification-preferences", "getNotificationPreferences", true],
+  [
+    "GET",
+    "me/notification-channels/web",
+    "getWebNotificationPreferences",
+    true,
+  ],
+  [
+    "PATCH",
+    "me/notification-channels/web",
+    "updateWebNotificationPreferences",
+    true,
+  ],
   [
     "PATCH",
     "me/notification-preferences",

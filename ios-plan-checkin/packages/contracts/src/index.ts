@@ -400,6 +400,25 @@ export interface NotificationPreferencesDto {
   revision: number;
   updatedAt: UtcInstant;
 }
+export interface WebNotificationPreferencesDto extends NotificationPreferencesDto {
+  planEnabled: boolean;
+}
+export interface UpdateWebNotificationPreferencesRequest extends UpdateNotificationPreferencesRequest {
+  planEnabled?: boolean;
+}
+export interface RegisterWebPushSubscriptionRequest {
+  endpoint: string;
+  expirationTime: UtcInstant | null;
+  keys: { p256dh: string; auth: string };
+}
+export interface WebPushSubscriptionDto {
+  id: Uuid | null;
+  registered: boolean;
+}
+export interface WebPushConfigDto {
+  available: boolean;
+  publicKey: string | null;
+}
 export type InboxEventType =
   | "friend_request"
   | "friend_accepted"

@@ -17,9 +17,21 @@ import {
   processSocialNotification,
   pushTokenKey,
 } from "./socialNotifications.js";
+import { claimWebPush, processWebPush } from "./webNotifications.js";
+import {
+  claimPlanReminder,
+  enqueuePlanReminders,
+  processPlanReminder,
+} from "./planReminders.js";
+import { WebPushSender } from "./webPush.js";
 
 type CycleName =
-  "media_cleanup" | "social_notification" | "data_export" | "deletion";
+  | "media_cleanup"
+  | "social_notification"
+  | "web_push"
+  | "plan_reminder"
+  | "data_export"
+  | "deletion";
 async function runCycle(
   name: CycleName,
   work: () => Promise<number>,
@@ -60,6 +72,9 @@ async function bootstrap(): Promise<void> {
   const objects = new S3ObjectDeleter();
   const push = new ApnsSender();
   const pushKey = pushTokenKey(process.env.PUSH_TOKEN_ENCRYPTION_KEY ?? "");
+  const webPush = process.env.VAPID_PRIVATE_KEY ? new WebPushSender() : null;
+  if (process.env.APP_ENV === "production" && !webPush)
+    throw new Error("Production Web Push requires VAPID configuration");
   let stopping = false;
   process.once("SIGTERM", () => {
     stopping = true;
@@ -72,6 +87,7 @@ async function bootstrap(): Promise<void> {
       "\n",
   );
   let lastRateLimitCleanup = 0;
+  let lastPlanReminderScan = 0;
   try {
     while (!stopping) {
       await runCycle("media_cleanup", async () => {
@@ -91,6 +107,32 @@ async function bootstrap(): Promise<void> {
           const job = await claimSocialNotification(pool);
           if (!job) break;
           await processSocialNotification(pool, push, job, pushKey);
+          processed++;
+        }
+        return processed;
+      });
+      await runCycle("web_push", async () => {
+        if (!webPush) return 0;
+        let processed = 0;
+        for (let count = 0; count < 20; count++) {
+          const job = await claimWebPush(pool);
+          if (!job) break;
+          await processWebPush(pool, webPush, job, pushKey);
+          processed++;
+        }
+        return processed;
+      });
+      await runCycle("plan_reminder", async () => {
+        if (!webPush) return 0;
+        if (Date.now() - lastPlanReminderScan > 60_000) {
+          await enqueuePlanReminders(pool);
+          lastPlanReminderScan = Date.now();
+        }
+        let processed = 0;
+        for (let count = 0; count < 20; count++) {
+          const job = await claimPlanReminder(pool);
+          if (!job) break;
+          await processPlanReminder(pool, webPush, job, pushKey);
           processed++;
         }
         return processed;

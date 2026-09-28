@@ -1,0 +1,25 @@
+command: node scripts/web-plan-reminders-smoke.mjs
+exitCode: 0
+stdout:
+PASS future local reminder enqueued
+PASS same slot durable dedupe
+PASS job carries Web channel
+PASS job carries plan business date
+PASS generic plan notification accepted
+PASS accepted device not resent on retry
+PASS Shanghai 18:05 resolves to UTC 10:05
+PASS second job scheduled at correct instant
+PASS Web plan switch suppresses send
+PASS iOS social preference unchanged
+PASS completed weekly target produces no reminder
+PASS terminal one-time task produces no reminder
+PASS unrecorded plan initially queued
+PASS record created after queue suppresses send
+PASS active plan initially queued
+PASS pause after queue suppresses send
+PASS paused plan does not requeue
+PASS no extra jobs after lifecycle changes
+PASS fixture plan IDs remain distinct
+WEB-PLAN-REMINDERS-SMOKE checks=19
+
+stderr:

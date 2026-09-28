@@ -51,6 +51,7 @@ export class ApiConfig {
   readonly objectSecretAccessKey = required("OBJECT_SECRET_ACCESS_KEY");
   readonly metricsToken = process.env.API_METRICS_TOKEN ?? "";
   readonly webOrigin = process.env.WEB_ORIGIN;
+  readonly vapidPublicKey = process.env.VAPID_PUBLIC_KEY ?? null;
   readonly trustProxyHops = Number(process.env.API_TRUST_PROXY_HOPS ?? "0");
 
   constructor() {
@@ -102,6 +103,15 @@ export class ApiConfig {
           "WEB_ORIGIN must be one HTTPS origin (loopback HTTP only in development).",
         );
       }
+    }
+    if (this.vapidPublicKey) {
+      const key = Buffer.from(this.vapidPublicKey, "base64url");
+      if (
+        key.length !== 65 ||
+        key[0] !== 4 ||
+        key.toString("base64url") !== this.vapidPublicKey
+      )
+        throw new Error("VAPID_PUBLIC_KEY must be an uncompressed P-256 point");
     }
   }
 }

@@ -76,6 +76,7 @@ const requiredTables = [
   "deletion_tombstones",
   "channel_notification_preferences",
   "web_push_subscriptions",
+  "web_push_deliveries",
   "inbox_messages",
   "plan_numeric_config_versions",
 ];

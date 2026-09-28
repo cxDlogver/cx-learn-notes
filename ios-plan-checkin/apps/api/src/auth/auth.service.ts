@@ -750,7 +750,10 @@ export class AuthService {
     return { changed: true };
   }
 
-  async authenticate(bearer: string): Promise<string> {
+  async authenticateContext(
+    bearer: string,
+    requiredChannel?: "ios" | "web",
+  ): Promise<{ userId: string; channel: "ios" | "web"; deviceId: string }> {
     const token = bearer.startsWith("Bearer ") ? bearer.slice(7) : "";
     if (!token) fail("UNAUTHENTICATED", 401, "请先登录");
     try {
@@ -765,14 +768,17 @@ export class AuthService {
         throw new Error("Missing JWT claims.");
       const found = await this.database.query<{
         id: string;
+        device_id: string;
         client_channel: "ios" | "web";
       }>(
-        `SELECT s.id,s.client_channel FROM sessions s JOIN users u ON u.id = s.user_id
+        `SELECT s.id,s.device_id,s.client_channel FROM sessions s JOIN users u ON u.id = s.user_id
          WHERE s.id = $1 AND s.user_id = $2 AND s.revoked_at IS NULL AND s.expires_at > now() AND u.status = 'active'`,
         [sessionId, userId],
       );
       if (
         !found.rowCount ||
+        (requiredChannel !== undefined &&
+          found.rows[0]?.client_channel !== requiredChannel) ||
         verified.payload.aud !==
           (found.rows[0]?.client_channel === "web"
             ? "plan-checkin-web"
@@ -780,9 +786,17 @@ export class AuthService {
       )
         throw new Error("Revoked or mismatched session.");
       observeActor(userId, this.config.accessTokenKey);
-      return userId;
+      return {
+        userId,
+        channel: found.rows[0]!.client_channel,
+        deviceId: found.rows[0]!.device_id,
+      };
     } catch {
       fail("UNAUTHENTICATED", 401, "会话已失效，请重新登录");
     }
+  }
+
+  async authenticate(bearer: string): Promise<string> {
+    return (await this.authenticateContext(bearer)).userId;
   }
 }
