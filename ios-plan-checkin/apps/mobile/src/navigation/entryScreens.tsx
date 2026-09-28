@@ -53,6 +53,11 @@ export function SettingsEntry() {
           onPress={() => navigation.navigate("Reminders")}
           color={penColors.primary}
         />
+        <Button
+          title="社交通知"
+          onPress={() => navigation.navigate("SocialNotifications")}
+          color={penColors.primary}
+        />
         {__DEV__ ? (
           <Button
             title="运行 iOS 能力检查"

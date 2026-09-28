@@ -94,6 +94,61 @@ const schemas = {
       updatedAt: { oneOf: [instant, { type: "null" }] },
     },
   ),
+  CreateEncouragementRequest: properties(["kind", "body"], {
+    kind: { enum: ["emoji", "message"] },
+    body: { type: "string", minLength: 1, maxLength: 500 },
+  }),
+  Encouragement: properties(
+    ["id", "checkinId", "sender", "kind", "body", "createdAt"],
+    {
+      id: uuid,
+      checkinId: uuid,
+      sender: ref("SocialUser"),
+      kind: { enum: ["emoji", "message"] },
+      body: str(),
+      createdAt: instant,
+    },
+  ),
+  RegisterPushTokenRequest: properties(
+    ["deviceId", "platform", "token", "enabled"],
+    {
+      deviceId: uuid,
+      platform: { const: "ios" },
+      token: {
+        oneOf: [
+          { type: "string", pattern: "^[0-9a-fA-F]{64,200}$" },
+          { type: "null" },
+        ],
+      },
+      enabled: { type: "boolean" },
+    },
+  ),
+  PushTokenRegistration: properties(["deviceId", "registered"], {
+    deviceId: uuid,
+    registered: { type: "boolean" },
+  }),
+  NotificationPreferences: properties(
+    [
+      "friendRequests",
+      "sharedUpdates",
+      "encouragements",
+      "revision",
+      "updatedAt",
+    ],
+    {
+      friendRequests: { type: "boolean" },
+      sharedUpdates: { type: "boolean" },
+      encouragements: { type: "boolean" },
+      revision: { type: "integer", minimum: 1 },
+      updatedAt: instant,
+    },
+  ),
+  UpdateNotificationPreferencesRequest: properties(["baseRevision"], {
+    baseRevision: { type: "integer", minimum: 1 },
+    friendRequests: { type: "boolean" },
+    sharedUpdates: { type: "boolean" },
+    encouragements: { type: "boolean" },
+  }),
   FixedPlanCreate: properties(
     ["kind", "direction", "title", "timezone", "startDate", "rule"],
     {
@@ -390,6 +445,7 @@ Object.assign(schemas, {
   ),
   SharedHistoryEntry: properties(
     [
+      "checkinId",
       "businessDate",
       "status",
       "note",
@@ -399,6 +455,7 @@ Object.assign(schemas, {
       "ruleVersion",
     ],
     {
+      checkinId: { oneOf: [uuid, { type: "null" }] },
       businessDate: date,
       status: {
         enum: [
@@ -987,6 +1044,11 @@ const responseData = {
   listSharedPlans: { type: "array", items: ref("SharedPlan") },
   getSharedPlan: ref("SharedPlan"),
   listSharedCheckins: ref("SharedHistory"),
+  createEncouragement: ref("Encouragement"),
+  listEncouragements: { type: "array", items: ref("Encouragement") },
+  registerPushToken: ref("PushTokenRegistration"),
+  getNotificationPreferences: ref("NotificationPreferences"),
+  updateNotificationPreferences: ref("NotificationPreferences"),
 };
 
 const bodies = {
@@ -1014,6 +1076,9 @@ const bodies = {
   sharePlan: "ShareGrantRequest",
   ackSync: "SyncAckRequest",
   putReminder: "PutReminderRequest",
+  createEncouragement: "CreateEncouragementRequest",
+  registerPushToken: "RegisterPushTokenRequest",
+  updateNotificationPreferences: "UpdateNotificationPreferencesRequest",
 };
 const paths = {};
 for (const [method, suffix, operationId, auth] of apiRoutes) {

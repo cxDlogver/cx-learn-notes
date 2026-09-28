@@ -34,6 +34,7 @@ import { Database } from "../database.js";
 import { fail } from "../http.js";
 import { fromPlan, planColumns, type PlanRow } from "../plans/plans.service.js";
 import { PlanWrite, requireUuid } from "../plans/write.js";
+import { enqueueSocialNotification } from "./notification-jobs.js";
 
 interface UserRow {
   id: string;
@@ -42,6 +43,7 @@ interface UserRow {
   avatar_media_id: string | null;
 }
 interface CheckinRow {
+  id: string;
   business_date: string;
   result: "success" | "failure" | "skip";
   note: string | null;
@@ -192,7 +194,7 @@ export class SharesService {
         [plan.id],
       ),
       client.query<CheckinRow>(
-        `SELECT c.business_date::text, c.result, c.note, c.failure_reason,
+        `SELECT c.id, c.business_date::text, c.result, c.note, c.failure_reason,
           c.is_backfilled, c.is_revised, r.version AS rule_version
          FROM checkins c JOIN plan_rule_versions r ON r.id = c.rule_version_id
          WHERE c.plan_id = $1 ORDER BY c.business_date`,
@@ -344,6 +346,7 @@ export class SharesService {
         );
         if (status === "not_due" && !record) continue;
         entries.push({
+          checkinId: record?.id ?? null,
           businessDate: date,
           status,
           note: record?.note ?? null,
@@ -355,6 +358,7 @@ export class SharesService {
         });
       } else if (plan.kind === "weekly" && record) {
         entries.push({
+          checkinId: record.id,
           businessDate: date,
           status: record.result,
           note: record.note,
@@ -377,6 +381,7 @@ export class SharesService {
           revision: resolution.revision,
         };
         entries.push({
+          checkinId: null,
           businessDate: date,
           status: isResolved
             ? oneTimeState(timeline, fact, new Date().toISOString())
@@ -598,6 +603,12 @@ export class SharesService {
           [planId, friendId],
         );
         await this.change(client, friendId, planId, "upsert");
+        await enqueueSocialNotification(client, {
+          kind: "plan_share",
+          planId,
+          recipientId: friendId,
+          revision: granted.rows[0]!.revision,
+        });
         return {
           planId,
           friend,

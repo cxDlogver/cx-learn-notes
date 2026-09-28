@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextMigration": "0008",
+  "nextMigration": "0009",
   "migrations": [
     { "file": "0001_core.sql", "phase": "expand" },
     { "file": "0002_social_operations.sql", "phase": "expand" },
@@ -8,6 +8,7 @@
     { "file": "0004_record_conflicts.sql", "phase": "expand" },
     { "file": "0005_incremental_sync.sql", "phase": "expand" },
     { "file": "0006_conflict_resolution_link.sql", "phase": "expand" },
-    { "file": "0007_media_cleanup.sql", "phase": "expand" }
+    { "file": "0007_media_cleanup.sql", "phase": "expand" },
+    { "file": "0008_social_notifications.sql", "phase": "expand" }
   ]
 }

@@ -5,6 +5,12 @@ import {
   enqueueMediaCleanup,
   processMediaCleanup,
 } from "./mediaCleanup.js";
+import {
+  ApnsSender,
+  claimSocialNotification,
+  processSocialNotification,
+  pushTokenKey,
+} from "./socialNotifications.js";
 
 async function bootstrap(): Promise<void> {
   if (!process.env.DATABASE_URL) throw new Error("Worker DATABASE_URL missing");
@@ -13,6 +19,8 @@ async function bootstrap(): Promise<void> {
     max: 5,
   });
   const objects = new S3ObjectDeleter();
+  const push = new ApnsSender();
+  const pushKey = pushTokenKey(process.env.PUSH_TOKEN_ENCRYPTION_KEY ?? "");
   let stopping = false;
   process.once("SIGTERM", () => {
     stopping = true;
@@ -32,6 +40,15 @@ async function bootstrap(): Promise<void> {
         }
       } catch {
         process.stderr.write("Media cleanup cycle failed\n");
+      }
+      try {
+        for (let count = 0; count < 20; count++) {
+          const job = await claimSocialNotification(pool);
+          if (!job) break;
+          await processSocialNotification(pool, push, job, pushKey);
+        }
+      } catch {
+        process.stderr.write("Social notification cycle failed\n");
       }
       await new Promise<void>((resolve) => setTimeout(resolve, 15_000));
     }

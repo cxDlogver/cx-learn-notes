@@ -16,6 +16,7 @@ import { IncrementalSync } from "./incrementalSync";
 import { MediaRunner } from "./mediaRunner";
 import { ReminderCoordinator } from "./reminderCoordinator";
 import { deviceId } from "../platform/deviceId";
+import { syncPushRegistration } from "../platform/pushRegistration";
 import * as Network from "expo-network";
 import {
   MemorySessionStore,
@@ -34,6 +35,7 @@ export interface AppServices {
   incrementalSync: IncrementalSync | null;
   mediaRunner: MediaRunner | null;
   reminders: ReminderCoordinator | null;
+  registerPush: () => Promise<void>;
 }
 
 export const AppServicesContext = createContext<AppServices | null>(null);
@@ -72,6 +74,7 @@ export function createAppServices(): AppServices {
       incrementalSync: null,
       mediaRunner: null,
       reminders: null,
+      registerPush: async () => {},
     };
   }
   const configured = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -180,5 +183,6 @@ export function createAppServices(): AppServices {
     incrementalSync,
     mediaRunner,
     reminders,
+    registerPush: () => syncPushRegistration(repository, session),
   };
 }

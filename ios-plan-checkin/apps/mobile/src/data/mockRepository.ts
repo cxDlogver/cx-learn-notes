@@ -28,6 +28,12 @@ import type {
   SocialUserDto,
   ReminderDto,
   PutReminderRequest,
+  CreateEncouragementRequest,
+  EncouragementDto,
+  NotificationPreferencesDto,
+  PushTokenRegistrationDto,
+  RegisterPushTokenRequest,
+  UpdateNotificationPreferencesRequest,
 } from "@plan-checkin/contracts";
 import * as Crypto from "expo-crypto";
 import {
@@ -63,6 +69,14 @@ export class MockRepository implements AppRepository {
   private friendRequests: FriendRequestsDto = { incoming: [], outgoing: [] };
   private shares: PlanShareDto[] = [];
   private reminders = new Map<string, ReminderDto>();
+  private encouragements = new Map<string, EncouragementDto[]>();
+  private notificationPreferences: NotificationPreferencesDto = {
+    friendRequests: true,
+    sharedUpdates: true,
+    encouragements: true,
+    revision: 1,
+    updatedAt: new Date().toISOString(),
+  };
   private user: UserDto = {
     id: "00000000-0000-4000-8000-000000000001",
     username: "demo_user",
@@ -519,6 +533,53 @@ export class MockRepository implements AppRepository {
     _month?: string,
   ): Promise<SharedHistoryDto> {
     throw new Error("演示数据没有好友分享记录");
+  }
+  async listEncouragements(checkinId: string): Promise<EncouragementDto[]> {
+    return this.encouragements.get(checkinId) ?? [];
+  }
+  async createEncouragement(
+    checkinId: string,
+    input: CreateEncouragementRequest,
+  ): Promise<EncouragementDto> {
+    const saved: EncouragementDto = {
+      id: Crypto.randomUUID(),
+      checkinId,
+      sender: {
+        id: this.user.id,
+        username: this.user.username ?? "demo_user",
+        nickname: this.user.nickname,
+        avatarMediaId: this.user.avatarMediaId,
+      },
+      kind: input.kind,
+      body: input.body,
+      createdAt: new Date().toISOString(),
+    };
+    this.encouragements.set(checkinId, [
+      ...(this.encouragements.get(checkinId) ?? []),
+      saved,
+    ]);
+    return saved;
+  }
+  async registerPushToken(
+    input: RegisterPushTokenRequest,
+  ): Promise<PushTokenRegistrationDto> {
+    return { deviceId: input.deviceId, registered: input.enabled };
+  }
+  async getNotificationPreferences(): Promise<NotificationPreferencesDto> {
+    return this.notificationPreferences;
+  }
+  async updateNotificationPreferences(
+    input: UpdateNotificationPreferencesRequest,
+  ): Promise<NotificationPreferencesDto> {
+    if (input.baseRevision !== this.notificationPreferences.revision)
+      throw new Error("通知设置已变化");
+    this.notificationPreferences = {
+      ...this.notificationPreferences,
+      ...input,
+      revision: input.baseRevision + 1,
+      updatedAt: new Date().toISOString(),
+    };
+    return this.notificationPreferences;
   }
   async getSharePreview(
     _planId: string,

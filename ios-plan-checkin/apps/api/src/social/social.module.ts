@@ -13,6 +13,13 @@ import {
   SharedPlansController,
 } from "./shares.controller.js";
 import { SharesService } from "./shares.service.js";
+import { EncouragementsController } from "./encouragements.controller.js";
+import { EncouragementsService } from "./encouragements.service.js";
+import {
+  DevicesController,
+  NotificationPreferencesController,
+} from "./notifications.controller.js";
+import { NotificationsService } from "./notifications.service.js";
 
 @Module({
   imports: [AuthModule],
@@ -24,8 +31,16 @@ import { SharesService } from "./shares.service.js";
     PlanSharesController,
     FriendSharedPlansController,
     SharedPlansController,
+    EncouragementsController,
+    DevicesController,
+    NotificationPreferencesController,
   ],
-  providers: [SocialService, SharesService],
+  providers: [
+    SocialService,
+    SharesService,
+    EncouragementsService,
+    NotificationsService,
+  ],
   exports: [SocialService, SharesService],
 })
 export class SocialModule {}

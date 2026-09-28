@@ -51,7 +51,7 @@ function ReminderCard({
   plan: PlanDto;
   onPermissionChange: (granted: boolean) => void;
 }) {
-  const { repository, queryClient, reminders } = useAppServices();
+  const { repository, queryClient, reminders, registerPush } = useAppServices();
   const rule = useQuery({
     queryKey: ["reminder", plan.id],
     queryFn: () => repository.getReminder(plan.id),
@@ -129,6 +129,7 @@ function ReminderCard({
               ? await Notifications.requestPermissionsAsync()
               : before;
           onPermissionChange(after.granted);
+          void registerPush().catch(() => {});
         } catch {
           onPermissionChange(false);
         }

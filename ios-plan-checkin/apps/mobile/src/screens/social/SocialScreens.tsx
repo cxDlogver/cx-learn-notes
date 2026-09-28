@@ -640,14 +640,21 @@ export function SharedPlanDetailScreen({
   friendId: string;
 }) {
   const { repository } = useAppServices();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [month, setMonth] = useState<string | null>(null);
   const history = useQuery({
     queryKey: ["shared-plan", planId, "history", month],
     queryFn: () => repository.getSharedHistory(planId, month ?? undefined),
     retry: false,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
   const data =
-    history.data?.plan.owner.id === friendId ? history.data : undefined;
+    history.isSuccess &&
+    !history.isFetching &&
+    history.data?.plan.owner.id === friendId
+      ? history.data
+      : undefined;
   const displayMonth = month ?? data?.month ?? "";
   return (
     <PlanScreen>
@@ -763,6 +770,18 @@ export function SharedPlanDetailScreen({
                   {entry.isBackfilled && entry.isRevised ? " · " : ""}
                   {entry.isRevised ? "已修正" : ""}
                 </Text>
+              ) : null}
+              {entry.checkinId ? (
+                <Choice
+                  testID={`shared-detail.encourage.${entry.checkinId}`}
+                  label="鼓励这条记录"
+                  onPress={() =>
+                    navigation.navigate("Encouragements", {
+                      checkinId: entry.checkinId!,
+                      canSend: true,
+                    })
+                  }
+                />
               ) : null}
             </View>
           ))}

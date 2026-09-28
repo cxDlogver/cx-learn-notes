@@ -533,32 +533,48 @@ export function PlanDetailScreen({ planId }: { planId: string }) {
                 </Text>
               ) : null}
               {data.recentRecords.map((entry) => (
-                <Pressable
+                <View
                   key={`${entry.planId}:${entry.businessDate}`}
                   testID={`detail.record.${entry.businessDate}`}
-                  accessibilityRole="button"
-                  onPress={() => openRecord(entry)}
                   style={planStyles.card}
                 >
-                  <View
-                    style={[
-                      planStyles.row,
-                      { justifyContent: "space-between" },
-                    ]}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`查看 ${entry.businessDate} 的记录`}
+                    onPress={() => openRecord(entry)}
                   >
-                    <Text style={planStyles.cardTitle}>
-                      {entry.businessDate}
+                    <View
+                      style={[
+                        planStyles.row,
+                        { justifyContent: "space-between" },
+                      ]}
+                    >
+                      <Text style={planStyles.cardTitle}>
+                        {entry.businessDate}
+                      </Text>
+                      <Text style={{ color: planPalette.primary }}>
+                        {statusCopy[entry.status] ?? entry.status}
+                      </Text>
+                    </View>
+                    <Text style={[planStyles.body, { marginTop: 7 }]}>
+                      规则版本 {entry.ruleVersion}
+                      {entry.isBackfilled ? " · 已补记" : ""}
+                      {entry.isRevised ? " · 已修改" : ""}
                     </Text>
-                    <Text style={{ color: planPalette.primary }}>
-                      {statusCopy[entry.status] ?? entry.status}
-                    </Text>
-                  </View>
-                  <Text style={[planStyles.body, { marginTop: 7 }]}>
-                    规则版本 {entry.ruleVersion}
-                    {entry.isBackfilled ? " · 已补记" : ""}
-                    {entry.isRevised ? " · 已修改" : ""}
-                  </Text>
-                </Pressable>
+                  </Pressable>
+                  {entry.recordId ? (
+                    <Choice
+                      testID={`detail.encouragements.${entry.recordId}`}
+                      label="查看鼓励留言"
+                      onPress={() =>
+                        navigation.navigate("Encouragements", {
+                          checkinId: entry.recordId!,
+                          canSend: false,
+                        })
+                      }
+                    />
+                  ) : null}
+                </View>
               ))}
             </>
           ) : null}

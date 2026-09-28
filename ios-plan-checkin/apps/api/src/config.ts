@@ -35,6 +35,10 @@ export class ApiConfig {
     "AUTH_IDEMPOTENCY_KEY",
     this.environment,
   );
+  readonly pushTokenEncryptionKey = secret(
+    "PUSH_TOKEN_ENCRYPTION_KEY",
+    this.environment,
+  );
   readonly smsProvider = required("SMS_PROVIDER");
   readonly smsGatewayUrl = process.env.SMS_GATEWAY_URL;
   readonly smsGatewayToken = process.env.SMS_GATEWAY_TOKEN;

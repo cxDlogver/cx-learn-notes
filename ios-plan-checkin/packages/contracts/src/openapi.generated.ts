@@ -904,6 +904,50 @@ export interface components {
       revision: number;
       updatedAt: string | null;
     };
+    CreateEncouragementRequest: {
+      /** @enum {unknown} */
+      kind: "emoji" | "message";
+      body: string;
+    };
+    Encouragement: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      checkinId: string;
+      sender: components["schemas"]["SocialUser"];
+      /** @enum {unknown} */
+      kind: "emoji" | "message";
+      body: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    RegisterPushTokenRequest: {
+      /** Format: uuid */
+      deviceId: string;
+      /** @constant */
+      platform: "ios";
+      token: string | null;
+      enabled: boolean;
+    };
+    PushTokenRegistration: {
+      /** Format: uuid */
+      deviceId: string;
+      registered: boolean;
+    };
+    NotificationPreferences: {
+      friendRequests: boolean;
+      sharedUpdates: boolean;
+      encouragements: boolean;
+      revision: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    UpdateNotificationPreferencesRequest: {
+      baseRevision: number;
+      friendRequests?: boolean;
+      sharedUpdates?: boolean;
+      encouragements?: boolean;
+    };
     FixedPlanCreate: {
       /**
        * @description discriminator enum property added by openapi-typescript
@@ -1165,6 +1209,7 @@ export interface components {
           };
     };
     SharedHistoryEntry: {
+      checkinId: string | null;
       /** Format: date */
       businessDate: string;
       /** @enum {unknown} */
@@ -5385,7 +5430,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Encouragement"][];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -5447,7 +5497,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateEncouragementRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -5455,7 +5509,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["Encouragement"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -5666,7 +5725,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RegisterPushTokenRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -5674,7 +5737,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["PushTokenRegistration"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -5739,7 +5807,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["NotificationPreferences"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */
@@ -5799,7 +5872,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateNotificationPreferencesRequest"];
+      };
+    };
     responses: {
       /** @description Success */
       200: {
@@ -5807,7 +5884,12 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ApiSuccess"];
+          "application/json": {
+            data: components["schemas"]["NotificationPreferences"];
+            requestId: string;
+            /** Format: date-time */
+            serverTime: string;
+          };
         };
       };
       /** @description Invalid request */

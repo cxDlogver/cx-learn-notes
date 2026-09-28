@@ -50,3 +50,12 @@
 - 首次开启提醒前说明用途，权限拒绝时保留 App 内规则并显示系统设置入口；不会反复请求已不可再次弹出的系统权限。
 
 开发自检由 `pnpm test:unit`、`pnpm reminders:smoke` 与 `pnpm mobile:bundle:check` 执行；iOS 本地通知、时区变化、权限弹窗、Pen 截图和 VoiceOver 真机核对留待后续验证。
+
+## SOC-05 鼓励留言与社交通知
+
+- 落地既有 `POST/GET /api/v1/checkins/{id}/encouragements`。朋友只有在当前好友关系、逐计划授权、未拉黑和账户有效时才能对该条记录发送 Emoji 或文字；本人可看所有收到的鼓励，发送人仅能看自己的留言，其他获授权好友看不到。撤销授权后发送人失去历史留言读取权，主人保留已收到的内容。好友共享历史增加 `checkinId`，只用于打开有记录的鼓励入口。
+- 落地既有 `POST /api/v1/devices/push-token` 和 `GET/PATCH /api/v1/me/notification-preferences`。设备 token 在服务端以 AES-GCM 加密，索引使用 HMAC 摘要；好友申请、计划分享、鼓励留言三项开关独立。通知偏好写入使用修订号与幂等键。登出时撤销当前设备 token；Worker 只选有有效会话的设备。
+- 业务事务只写不含正文的 `worker_jobs` 事件。Worker 发前重新检查好友、分享、拉黑、账户、偏好和设备状态；撤销后的待发事件跳过。APNs 使用 HTTP/2、ES256 token、过期时间、折叠 ID；每设备接受结果持久化，重试跳过已接受设备，失效 token 停用。通知载荷仅包含通用文案与 `kind=social`，不含账户 ID、计划名、备注、失败原因、Emoji、照片或数值。点按后在当前已登录账户重新读取朋友数据。
+- 新迁移 `0008_social_notifications.sql` 增加鼓励类型、事件去重索引与逐设备投递表。开发态可使用 APNs stub；预发和生产必须注入真实 APNs 与 token 加密密钥。
+
+开发自检由 `pnpm social-notifications:smoke`、`pnpm social:smoke`、`pnpm shares:smoke` 与 `pnpm mobile:bundle:check` 执行。真实 APNs 沙箱、设备 token、后台投递、权限弹窗和正式 ATDD 留待有 iOS 环境时验证。APNs 接受与设备展示之间没有端到端强保证；进程在 APNs 接受后、投递表落库前崩溃时可能重发，折叠 ID 可减少可见重复。

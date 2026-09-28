@@ -444,7 +444,10 @@ export class AuthService {
         if (sessionId) {
           const hash = createHash("sha256").update(refreshToken).digest();
           await client.query(
-            "UPDATE sessions SET revoked_at = now() WHERE id = $1 AND refresh_hash = $2 AND revoked_at IS NULL",
+            `WITH ended AS (UPDATE sessions SET revoked_at=now()
+              WHERE id=$1 AND refresh_hash=$2 AND revoked_at IS NULL RETURNING user_id,device_id)
+             UPDATE devices d SET notifications_enabled=false,apns_token_ciphertext=NULL,push_token_hash=NULL
+             FROM ended WHERE d.id::text=ended.device_id AND d.user_id=ended.user_id`,
             [sessionId, hash],
           );
         }

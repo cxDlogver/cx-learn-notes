@@ -312,6 +312,7 @@ export interface SharedPlanDto {
       };
 }
 export interface SharedHistoryEntryDto {
+  checkinId: Uuid | null;
   businessDate: BusinessDate;
   status: CalendarStatus | "not_due";
   note: string | null;
@@ -319,6 +320,41 @@ export interface SharedHistoryEntryDto {
   isBackfilled: boolean;
   isRevised: boolean;
   ruleVersion: number;
+}
+export interface CreateEncouragementRequest {
+  kind: "emoji" | "message";
+  body: string;
+}
+export interface EncouragementDto {
+  id: Uuid;
+  checkinId: Uuid;
+  sender: SocialUserDto;
+  kind: "emoji" | "message";
+  body: string;
+  createdAt: UtcInstant;
+}
+export interface RegisterPushTokenRequest {
+  deviceId: Uuid;
+  platform: "ios";
+  token: string | null;
+  enabled: boolean;
+}
+export interface PushTokenRegistrationDto {
+  deviceId: Uuid;
+  registered: boolean;
+}
+export interface NotificationPreferencesDto {
+  friendRequests: boolean;
+  sharedUpdates: boolean;
+  encouragements: boolean;
+  revision: number;
+  updatedAt: UtcInstant;
+}
+export interface UpdateNotificationPreferencesRequest {
+  friendRequests?: boolean;
+  sharedUpdates?: boolean;
+  encouragements?: boolean;
+  baseRevision: number;
 }
 export interface SharedHistoryDto {
   plan: SharedPlanDto;

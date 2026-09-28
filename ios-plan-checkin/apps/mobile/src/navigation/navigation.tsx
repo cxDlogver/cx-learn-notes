@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
+  CommonActions,
   NavigationContainer,
   createNavigationContainerRef,
 } from "@react-navigation/native";
@@ -42,6 +43,8 @@ import { GroupManagementScreen } from "../screens/plans/GroupManagementScreen";
 import { PlanConfirmationsScreen } from "../screens/plans/PlanConfirmationsScreen";
 import { PlanDetailScreen } from "../screens/plans/PlanDetailScreen";
 import { RemindersScreen } from "../screens/plans/RemindersScreen";
+import { EncouragementsScreen } from "../screens/social/EncouragementsScreen";
+import { SocialNotificationsScreen } from "../screens/social/SocialNotificationsScreen";
 import { CalendarScreen } from "../screens/calendar/CalendarScreen";
 import { TodayScreen } from "../screens/today/TodayScreen";
 import {
@@ -92,6 +95,8 @@ export type RootStackParamList = {
   SelectShareFriend: { planId: string };
   SharePreview: { planId: string; friendId: string };
   SharePermissions: { friendId: string };
+  Encouragements: { checkinId: string; canSend: boolean };
+  SocialNotifications: undefined;
 };
 export type AuthStackParamList = {
   PhoneLogin: undefined;
@@ -283,6 +288,14 @@ function MainStack() {
       <RootStack.Screen name="SharePermissions" options={{ title: "分享权限" }}>
         {({ route }) => <SharePermissionsScreen {...route.params} />}
       </RootStack.Screen>
+      <RootStack.Screen name="Encouragements" options={{ title: "鼓励留言" }}>
+        {({ route }) => <EncouragementsScreen {...route.params} />}
+      </RootStack.Screen>
+      <RootStack.Screen
+        name="SocialNotifications"
+        component={SocialNotificationsScreen}
+        options={{ title: "社交通知" }}
+      />
     </RootStack.Navigator>
   );
 }
@@ -304,6 +317,7 @@ export function AppNavigation() {
     accountId: string;
     planId: string;
   } | null>(null);
+  const pendingSocialNotification = useRef(false);
   const opening = useRef(false);
   const cachedUser = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -365,6 +379,26 @@ export function AppNavigation() {
 
   const openPendingRef = useRef(openPending);
   openPendingRef.current = openPending;
+  const openSocial = useCallback(() => {
+    if (
+      !pendingSocialNotification.current ||
+      phase.current !== "authenticated" ||
+      !profileReady.current ||
+      !ready ||
+      !navigationRef.isReady()
+    )
+      return;
+    pendingSocialNotification.current = false;
+    void queryClient.invalidateQueries({ queryKey: ["friends"] });
+    void queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+    void queryClient.invalidateQueries({ queryKey: ["shared-plan"] });
+    void queryClient.invalidateQueries({ queryKey: ["encouragements"] });
+    navigationRef.dispatch(
+      CommonActions.navigate({ name: "Home", params: { screen: "Friends" } }),
+    );
+  }, [queryClient, ready]);
+  const openSocialRef = useRef(openSocial);
+  openSocialRef.current = openSocial;
 
   useEffect(() => {
     const accept = (url: string) => {
@@ -380,6 +414,12 @@ export function AppNavigation() {
   useEffect(() => {
     const accept = (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data;
+      if (data?.kind === "social") {
+        pendingSocialNotification.current = true;
+        void openSocialRef.current();
+        void Notifications.clearLastNotificationResponseAsync();
+        return;
+      }
       if (
         data?.kind !== "plan-checkin-reminder-v1" ||
         typeof data.accountId !== "string" ||
@@ -415,8 +455,10 @@ export function AppNavigation() {
   }, [snapshot.phase, snapshot.userId]);
   useEffect(() => {
     void openPending();
+    openSocial();
   }, [
     openPending,
+    openSocial,
     snapshot.phase,
     profile.data?.username,
     profile.data?.nickname,
@@ -472,6 +514,7 @@ export function AppNavigation() {
       onReady={() => {
         setReady(true);
         void openPendingRef.current();
+        openSocialRef.current();
       }}
     >
       {snapshot.phase === "authenticated" && !needsProfile ? (

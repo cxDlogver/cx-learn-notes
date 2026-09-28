@@ -9,6 +9,7 @@ import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
 import { fail } from "../http.js";
 import { PlanWrite, requireUuid } from "../plans/write.js";
+import { enqueueSocialNotification } from "./notification-jobs.js";
 
 interface SocialUserRow {
   id: string;
@@ -275,6 +276,11 @@ export class SocialService {
          VALUES ($1, $2) RETURNING *`,
           [senderId, receiverId],
         );
+        await enqueueSocialNotification(client, {
+          kind: "friend_request",
+          requestId: created.rows[0]!.id,
+          recipientId: receiverId,
+        });
         return this.requestDto(client, created.rows[0]!);
       },
     );

@@ -4278,12 +4278,31 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEncouragementRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": { "$ref": "#/components/schemas/Encouragement" },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -4346,7 +4365,19 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Encouragement" }
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -4578,12 +4609,33 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPushTokenRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PushTokenRegistration"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -4640,7 +4692,18 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationPreferences"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -4704,12 +4767,33 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationPreferencesRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiSuccess" }
+                "schema": {
+                  "type": "object",
+                  "required": ["data", "requestId", "serverTime"],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationPreferences"
+                    },
+                    "requestId": { "type": "string" },
+                    "serverTime": { "type": "string", "format": "date-time" }
+                  },
+                  "additionalProperties": false
+                }
               }
             }
           },
@@ -5394,6 +5478,82 @@
         },
         "additionalProperties": false
       },
+      "CreateEncouragementRequest": {
+        "type": "object",
+        "required": ["kind", "body"],
+        "properties": {
+          "kind": { "enum": ["emoji", "message"] },
+          "body": { "type": "string", "minLength": 1, "maxLength": 500 }
+        },
+        "additionalProperties": false
+      },
+      "Encouragement": {
+        "type": "object",
+        "required": ["id", "checkinId", "sender", "kind", "body", "createdAt"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "checkinId": { "type": "string", "format": "uuid" },
+          "sender": { "$ref": "#/components/schemas/SocialUser" },
+          "kind": { "enum": ["emoji", "message"] },
+          "body": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "RegisterPushTokenRequest": {
+        "type": "object",
+        "required": ["deviceId", "platform", "token", "enabled"],
+        "properties": {
+          "deviceId": { "type": "string", "format": "uuid" },
+          "platform": { "const": "ios" },
+          "token": {
+            "oneOf": [
+              { "type": "string", "pattern": "^[0-9a-fA-F]{64,200}$" },
+              { "type": "null" }
+            ]
+          },
+          "enabled": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "PushTokenRegistration": {
+        "type": "object",
+        "required": ["deviceId", "registered"],
+        "properties": {
+          "deviceId": { "type": "string", "format": "uuid" },
+          "registered": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "NotificationPreferences": {
+        "type": "object",
+        "required": [
+          "friendRequests",
+          "sharedUpdates",
+          "encouragements",
+          "revision",
+          "updatedAt"
+        ],
+        "properties": {
+          "friendRequests": { "type": "boolean" },
+          "sharedUpdates": { "type": "boolean" },
+          "encouragements": { "type": "boolean" },
+          "revision": { "type": "integer", "minimum": 1 },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "UpdateNotificationPreferencesRequest": {
+        "type": "object",
+        "required": ["baseRevision"],
+        "properties": {
+          "baseRevision": { "type": "integer", "minimum": 1 },
+          "friendRequests": { "type": "boolean" },
+          "sharedUpdates": { "type": "boolean" },
+          "encouragements": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
       "FixedPlanCreate": {
         "type": "object",
         "required": [
@@ -5953,6 +6113,7 @@
       "SharedHistoryEntry": {
         "type": "object",
         "required": [
+          "checkinId",
           "businessDate",
           "status",
           "note",
@@ -5962,6 +6123,12 @@
           "ruleVersion"
         ],
         "properties": {
+          "checkinId": {
+            "oneOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ]
+          },
           "businessDate": { "type": "string", "format": "date" },
           "status": {
             "enum": [

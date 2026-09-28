@@ -23,6 +23,12 @@ import type {
   SharedPlanDto,
   SocialUserDto,
   ReminderDto,
+  CreateEncouragementRequest,
+  EncouragementDto,
+  NotificationPreferencesDto,
+  PushTokenRegistrationDto,
+  RegisterPushTokenRequest,
+  UpdateNotificationPreferencesRequest,
   PutReminderRequest,
   PutCheckinRequest,
   SmsChallengeDto,
@@ -133,6 +139,18 @@ export interface AppRepository {
   blockFriend(friendId: string): Promise<void>;
   listFriendPlans(friendId: string): Promise<SharedPlanDto[]>;
   getSharedHistory(planId: string, month?: string): Promise<SharedHistoryDto>;
+  listEncouragements(checkinId: string): Promise<EncouragementDto[]>;
+  createEncouragement(
+    checkinId: string,
+    input: CreateEncouragementRequest,
+  ): Promise<EncouragementDto>;
+  registerPushToken(
+    input: RegisterPushTokenRequest,
+  ): Promise<PushTokenRegistrationDto>;
+  getNotificationPreferences(): Promise<NotificationPreferencesDto>;
+  updateNotificationPreferences(
+    input: UpdateNotificationPreferencesRequest,
+  ): Promise<NotificationPreferencesDto>;
   getSharePreview(
     planId: string,
     friendId: string,
@@ -1018,6 +1036,33 @@ export class HttpRepository implements AppRepository {
     return this.api.get(
       `/shared-plans/${encodeURIComponent(planId)}/checkins${month ? `?month=${encodeURIComponent(month)}` : ""}`,
     );
+  }
+  listEncouragements(checkinId: string): Promise<EncouragementDto[]> {
+    return this.api.get(
+      `/checkins/${encodeURIComponent(checkinId)}/encouragements`,
+    );
+  }
+  createEncouragement(
+    checkinId: string,
+    input: CreateEncouragementRequest,
+  ): Promise<EncouragementDto> {
+    return this.api.post(
+      `/checkins/${encodeURIComponent(checkinId)}/encouragements`,
+      input,
+    );
+  }
+  registerPushToken(
+    input: RegisterPushTokenRequest,
+  ): Promise<PushTokenRegistrationDto> {
+    return this.api.post("/devices/push-token", input);
+  }
+  getNotificationPreferences(): Promise<NotificationPreferencesDto> {
+    return this.api.get("/me/notification-preferences");
+  }
+  updateNotificationPreferences(
+    input: UpdateNotificationPreferencesRequest,
+  ): Promise<NotificationPreferencesDto> {
+    return this.api.patch("/me/notification-preferences", input);
   }
   getSharePreview(
     planId: string,

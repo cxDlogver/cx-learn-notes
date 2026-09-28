@@ -27,6 +27,7 @@ export default function App() {
         await services.incrementalSync?.trigger().catch(() => {});
         await services.mediaRunner?.trigger().catch(() => {});
         await services.reminders?.trigger().catch(() => {});
+        await services.registerPush().catch(() => {});
       })();
     };
     void services.session.restore().then(wake);

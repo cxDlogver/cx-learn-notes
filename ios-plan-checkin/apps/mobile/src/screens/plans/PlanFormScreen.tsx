@@ -38,7 +38,7 @@ type FormProps = {
 };
 export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { repository, queryClient, reminders } = useAppServices();
+  const { repository, queryClient, reminders, registerPush } = useAppServices();
   const [draft, setDraft] = useState<PlanDraft>(
     () => initial ?? initialDraft(kind, existing),
   );
@@ -110,6 +110,7 @@ export function PlanFormScreen({ kind, existing, initial, onDone }: FormProps) {
         } catch {
           // The plan is saved even if the system permission prompt is unavailable.
         }
+        void registerPush().catch(() => {});
       }
       void reminders?.trigger().catch(() => {});
       onDone(plan);
