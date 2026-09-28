@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1180" viewBox="0 0 1600 1180" role="img" aria-labelledby="title desc">
+  <title id="title">Orchestrator、Gate 与 Supervisor：谁决定下一步</title>
+  <desc id="desc">AI Gate 可以使用模型，但只要下一阶段由规则映射，控制权仍在 Orchestrator</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1 L 11 6 L 1 11 z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="1180" fill="#F8FAFC"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="72" y="76" font-size="36" font-weight="500" fill="#172033" text-anchor="start">Orchestrator、Gate 与 Supervisor：谁决定下一步</text>
+    <text x="72" y="116" font-size="20" font-weight="400" fill="#5F6B7A" text-anchor="start">AI Gate 可以使用模型，但只要下一阶段由规则映射，控制权仍在 Orchestrator</text>
+
+    <rect x="60" y="165" width="760" height="750" rx="18" fill="#FFF2E2" stroke="#C05A12" stroke-width="2"/>
+    <rect x="95" y="190" width="210" height="40" rx="20" fill="#C05A12" stroke="#C05A12" stroke-width="0"/>
+<text x="200" y="217" font-size="18" font-weight="500" fill="#FFFFFF" text-anchor="middle">Business Orchestrator</text>
+    <text x="95" y="258" font-size="25" font-weight="500" fill="#172033" text-anchor="start">规则控制：Gate 负责判断，Orchestrator 决定去向</text>
+
+    <rect x="100" y="295" width="260" height="90" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="230" y="330" font-size="20" font-weight="500" fill="#172033" text-anchor="middle">当前 Stage 的执行者</text>
+    <text x="230" y="360" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">完成任务并提交产物</text>
+    <path d="M 360 340 L 435 340" fill="none" stroke="#C05A12" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="435" y="295" width="300" height="90" rx="12" fill="#FFFFFF" stroke="#C05A12" stroke-width="2"/>
+    <text x="585" y="330" font-size="21" font-weight="500" fill="#172033" text-anchor="middle">阶段产物</text>
+    <text x="585" y="360" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">报告 · 补丁 · 测试结果 · 证据</text>
+
+    <text x="95" y="432" font-size="18" font-weight="500" fill="#C05A12" text-anchor="start">Orchestrator 调用当前 Stage 配置的门禁</text>
+    <path d="M 585 385 L 585 455 L 240 455 L 240 485" fill="none" stroke="#C05A12" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <path d="M 585 385 L 585 485" fill="none" stroke="#C05A12" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="100" y="485" width="280" height="125" rx="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="125" y="505" width="130" height="40" rx="20" fill="#2563EB" stroke="#2563EB" stroke-width="0"/>
+<text x="190" y="532" font-size="18" font-weight="500" fill="#FFFFFF" text-anchor="middle">确定性 Gate</text>
+    <text x="125" y="565" font-size="17" font-weight="500" fill="#172033" text-anchor="start">用规则检查数值、状态和审批</text>
+    <text x="125" y="592" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="start">返回：通过 / 不通过 + 原因</text>
+    <rect x="435" y="485" width="300" height="125" rx="12" fill="#FFFFFF" stroke="#6D3FC0" stroke-width="2"/>
+    <rect x="460" y="505" width="110" height="40" rx="20" fill="#6D3FC0" stroke="#6D3FC0" stroke-width="0"/>
+<text x="515" y="532" font-size="18" font-weight="500" fill="#FFFFFF" text-anchor="middle">AI Gate</text>
+    <text x="460" y="565" font-size="17" font-weight="500" fill="#172033" text-anchor="start">模型审查方案、代码或报告</text>
+    <text x="460" y="592" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="start">返回：建议 + 评分 + 引用证据</text>
+
+    <path d="M 240 610 L 240 650 L 420 650 L 420 675" fill="none" stroke="#2563EB" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <path d="M 585 610 L 585 650 L 420 650 L 420 675" fill="none" stroke="#6D3FC0" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="265" y="675" width="310" height="82" rx="12" fill="#FFFFFF" stroke="#B93838" stroke-width="2"/>
+    <text x="420" y="708" font-size="20" font-weight="500" fill="#B93838" text-anchor="middle">统一门禁结果</text>
+    <text x="420" y="737" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">通过 · 不通过 · 人工复核，并说明依据</text>
+    <path d="M 420 757 L 420 790" fill="none" stroke="#C05A12" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="265" y="790" width="310" height="72" rx="12" fill="#FFFFFF" stroke="#C05A12" stroke-width="2"/>
+    <text x="420" y="820" font-size="19" font-weight="500" fill="#172033" text-anchor="middle">Orchestrator 查固定规则映射</text>
+    <text x="420" y="846" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">门禁结果 → 对应的下一阶段</text>
+    <path d="M 265 826 L 205 826 L 205 875" fill="none" stroke="#C05A12" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <path d="M 420 862 L 420 875" fill="none" stroke="#C05A12" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <path d="M 575 826 L 635 826 L 635 875" fill="none" stroke="#C05A12" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="115" y="872" width="180" height="40" rx="20" fill="#EAF8EF" stroke="#EAF8EF" stroke-width="0"/>
+<text x="205" y="899" font-size="18" font-weight="500" fill="#15803D" text-anchor="middle">继续下一阶段</text>
+    <rect x="330" y="872" width="180" height="40" rx="20" fill="#FFF0F0" stroke="#FFF0F0" stroke-width="0"/>
+<text x="420" y="899" font-size="18" font-weight="500" fill="#B93838" text-anchor="middle">回到修改阶段</text>
+    <rect x="545" y="872" width="180" height="40" rx="20" fill="#FFF2E2" stroke="#FFF2E2" stroke-width="0"/>
+<text x="635" y="899" font-size="18" font-weight="500" fill="#C05A12" text-anchor="middle">转人工复核</text>
+
+    <rect x="850" y="165" width="690" height="750" rx="18" fill="#F3ECFF" stroke="#6D3FC0" stroke-width="2"/>
+    <rect x="885" y="190" width="160" height="40" rx="20" fill="#6D3FC0" stroke="#6D3FC0" stroke-width="0"/>
+<text x="965" y="217" font-size="18" font-weight="500" fill="#FFFFFF" text-anchor="middle">Supervisor</text>
+    <text x="885" y="258" font-size="25" font-weight="500" fill="#172033" text-anchor="start">模型控制：模型反复选择下一执行者或下一动作</text>
+
+    <rect x="890" y="295" width="250" height="105" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="1015" y="330" font-size="19" font-weight="500" fill="#172033" text-anchor="middle">任务目标与当前证据</text>
+    <text x="1015" y="360" font-size="15" font-weight="400" fill="#5F6B7A" text-anchor="middle">已完成工作 · 可用 Agent · 允许动作</text>
+    <path d="M 1140 348 L 1210 348" fill="none" stroke="#6D3FC0" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="1210" y="295" width="280" height="105" rx="12" fill="#FFFFFF" stroke="#6D3FC0" stroke-width="2"/>
+    <text x="1350" y="330" font-size="21" font-weight="500" fill="#172033" text-anchor="middle">Supervisor 模型</text>
+    <text x="1350" y="360" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">根据上下文决定下一步</text>
+
+    <path d="M 1350 400 L 1350 455 L 1190 455 L 1190 485" fill="none" stroke="#6D3FC0" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="1035" y="485" width="310" height="90" rx="12" fill="#FFFFFF" stroke="#6D3FC0" stroke-width="2"/>
+    <text x="1190" y="520" font-size="20" font-weight="500" fill="#172033" text-anchor="middle">选择下一项动作</text>
+    <text x="1190" y="550" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">调用 Agent / Tool · 选择阶段 · 结束</text>
+
+    <path d="M 1190 575 L 1190 610 L 975 610 L 975 635" fill="none" stroke="#6D3FC0" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <path d="M 1190 575 L 1190 635" fill="none" stroke="#6D3FC0" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <path d="M 1190 575 L 1190 610 L 1405 610 L 1405 635" fill="none" stroke="#6D3FC0" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="885" y="635" width="180" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="975" y="677" font-size="18" font-weight="500" fill="#172033" text-anchor="middle">专业 Agent A</text>
+    <rect x="1100" y="635" width="180" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="1190" y="677" font-size="18" font-weight="500" fill="#172033" text-anchor="middle">专业 Agent B</text>
+    <rect x="1315" y="635" width="180" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="1405" y="677" font-size="18" font-weight="500" fill="#172033" text-anchor="middle">专业 Agent C</text>
+
+    <path d="M 1190 705 L 1190 750" fill="none" stroke="#15803D" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="1065" y="750" width="250" height="80" rx="12" fill="#FFFFFF" stroke="#15803D" stroke-width="2"/>
+    <text x="1190" y="782" font-size="18" font-weight="500" fill="#172033" text-anchor="middle">读取执行结果并更新上下文</text>
+    <text x="1190" y="808" font-size="15" font-weight="400" fill="#5F6B7A" text-anchor="middle">继续判断，或者结束并汇总</text>
+    <path d="M 1065 790 L 870 790 L 870 430 L 1350 430 L 1350 400" fill="none" stroke="#6D3FC0" stroke-width="2.5" stroke-dasharray="9 8" marker-end="url(#arrow)"/>
+    <text x="915" y="775" font-size="15" font-weight="500" fill="#6D3FC0" text-anchor="middle">下一轮</text>
+    <path d="M 1345 530 L 1510 530 L 1510 790 L 1495 790" fill="none" stroke="#15803D" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <rect x="1325" y="770" width="170" height="40" rx="20" fill="#EAF8EF" stroke="#EAF8EF" stroke-width="0"/>
+<text x="1410" y="797" font-size="18" font-weight="500" fill="#15803D" text-anchor="middle">结束并汇总</text>
+    <text x="885" y="890" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="start">具体调用顺序运行时生成；权限边界和高风险 Gate 仍由系统限制</text>
+
+    <rect x="60" y="955" width="1480" height="180" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <rect x="90" y="980" width="145" height="40" rx="20" fill="#EEF2F6" stroke="#EEF2F6" stroke-width="0"/>
+<text x="162.5" y="1007" font-size="18" font-weight="500" fill="#172033" text-anchor="middle">不要混淆</text>
+    <rect x="265" y="980" width="500" height="120" rx="12" fill="#EAF2FF" stroke="#2563EB" stroke-width="2"/>
+    <text x="515" y="1015" font-size="20" font-weight="500" fill="#2563EB" text-anchor="middle">Model Router：只做一次分类和分发</text>
+    <text x="515" y="1048" font-size="17" font-weight="500" fill="#172033" text-anchor="middle">请求 → 模型判断类别 → 代码映射预设目标</text>
+    <text x="515" y="1078" font-size="16" font-weight="400" fill="#5F6B7A" text-anchor="middle">任务交出后，Router 不再持续调度</text>
+    <rect x="795" y="980" width="715" height="120" rx="12" fill="#EEF2F6" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="825" y="1017" font-size="18" font-weight="500" fill="#6D3FC0" text-anchor="start">AI Gate</text>
+    <text x="955" y="1017" font-size="17" font-weight="500" fill="#172033" text-anchor="start">模型判断当前产物 → 规则映射下一阶段 → Orchestrator 控制</text>
+    <text x="825" y="1062" font-size="18" font-weight="500" fill="#6D3FC0" text-anchor="start">Supervisor</text>
+    <text x="955" y="1062" font-size="17" font-weight="500" fill="#172033" text-anchor="start">模型选择下一动作 → 读取结果 → 再选择 → 模型持续控制</text>
+    <text x="1150" y="1120" font-size="18" font-weight="500" fill="#172033" text-anchor="middle">有分支、有循环，不代表必须使用 Supervisor</text>
+
+  </g>
+</svg>

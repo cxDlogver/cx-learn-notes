@@ -2,6 +2,10 @@ import { accessTokenManager } from "@/services/accessToken";
 import { handleUnauthenticated } from "@/utils/request";
 import { FrameTelemetryQueue } from "./FrameTelemetryQueue";
 import {
+  AdaptiveRenderController,
+  type AdaptiveRenderDecision,
+} from "./AdaptiveRenderController";
+import {
   REALTIME_CLOSE_CODE,
   resolveRealtimeRecoveryAction,
 } from "./realtimeConnectionPolicy";
@@ -20,6 +24,32 @@ export type RealtimeStatus =
   | "error"
   | "invalid-packet";
 
+export interface RenderPerformanceSample {
+  nowMs: number;
+  actualFps: number;
+  baselineFps: number;
+  renderP95Ms: number;
+  frameIntervalMs: number;
+}
+
+export interface RealtimeRuntimeStats {
+  pending: number;
+  oldestPendingMs: number;
+  arrivalRate: number;
+  consumeRate: number;
+  totalReceived: number;
+  totalConsumed: number;
+  batchSize: number;
+  safeBatchSize: number;
+  requiredBatchSize: number;
+  queueSlope: number;
+  overloaded: boolean;
+  requestedPointLimit: DeliveryPointLimit;
+  effectivePointLimit: DeliveryPointLimit;
+  mode: "auto" | "manual";
+  reason: string;
+}
+
 interface RealtimeClientOptions {
   url: string;
   onPacket: (packet: { code: number; message: string; data: unknown[] }) => void;
@@ -30,6 +60,9 @@ interface RealtimeClientOptions {
   maxPointsPerSecond?: DeliveryPointLimit;
   /** 每帧最多交给渲染层的点数，默认 1。 */
   maxPerFrame?: number;
+  /** 默认启用自适应批量；false 用于固定批量 A/B。 */
+  adaptiveRendering?: boolean;
+  onAdaptiveDecision?: (decision: AdaptiveRenderDecision) => void;
   WebSocketImpl?: typeof WebSocket;
   random?: () => number;
   getAccessToken?: () => string | null;
@@ -75,8 +108,18 @@ export default class RealtimeClient {
   private recoveringGap = false;
   private lastBucketStatus: "live" | "no-data" = "no-data";
   private maxPointsPerSecond: DeliveryPointLimit;
+  private desiredPointsPerSecond: DeliveryPointLimit;
   /** 每帧交给渲染层的点数；纯客户端参数，可在运行时调整。 */
   private maxPerFrame: number;
+  private adaptiveRendering: boolean;
+  private readonly adaptiveController: AdaptiveRenderController;
+  private lastDecision: AdaptiveRenderDecision;
+  private rateWindowStartedAt = 0;
+  private rateWindowReceived = 0;
+  private rateWindowConsumed = 0;
+  private arrivalRate = 0;
+  private consumeRate = 0;
+  private totalReceived = 0;
   private readonly frameQueue: FrameTelemetryQueue;
   private readonly WebSocketImpl: typeof WebSocket;
   private readonly random: () => number;
@@ -91,6 +134,7 @@ export default class RealtimeClient {
     )
       ? (options.maxPointsPerSecond as DeliveryPointLimit)
       : 0;
+    this.desiredPointsPerSecond = this.maxPointsPerSecond;
     this.WebSocketImpl = options.WebSocketImpl || WebSocket;
     this.random = options.random || Math.random;
     this.getAccessToken =
@@ -101,6 +145,25 @@ export default class RealtimeClient {
     this.onAuthenticationFailure =
       options.onAuthenticationFailure || handleUnauthenticated;
     this.maxPerFrame = Math.max(1, Math.floor(options.maxPerFrame ?? 1));
+    this.adaptiveRendering = options.adaptiveRendering !== false;
+    this.adaptiveController = new AdaptiveRenderController(
+      this.maxPerFrame,
+      this.desiredPointsPerSecond,
+    );
+    if (!this.adaptiveRendering) {
+      this.adaptiveController.setManualBatch(this.maxPerFrame);
+    }
+    this.lastDecision = {
+      mode: this.adaptiveRendering ? "auto" : "manual",
+      batchSize: this.maxPerFrame,
+      safeBatchSize: this.maxPerFrame,
+      requiredBatchSize: this.maxPerFrame,
+      frameBudgetMs: 1000 / 120,
+      queueSlope: 0,
+      overloaded: false,
+      requestedPointLimit: null,
+      reason: "initial",
+    };
     this.frameQueue = new FrameTelemetryQueue(
       (points) => this.publishFrame(points),
       this.maxPerFrame,
@@ -141,14 +204,70 @@ export default class RealtimeClient {
     return this.stopped ? 0 : this.frameQueue.pending();
   }
 
+  runtimeStats(nowMs = performance.now()): RealtimeRuntimeStats {
+    this.updateRateWindow(nowMs);
+    const counters = this.frameQueue.counters();
+    return {
+      pending: this.stopped ? 0 : this.frameQueue.pending(),
+      oldestPendingMs: this.stopped ? 0 : this.frameQueue.oldestPendingMs(),
+      arrivalRate: this.arrivalRate,
+      consumeRate: this.consumeRate,
+      totalReceived: this.totalReceived,
+      totalConsumed: counters.consumed,
+      batchSize: this.maxPerFrame,
+      safeBatchSize: this.lastDecision.safeBatchSize,
+      requiredBatchSize: this.lastDecision.requiredBatchSize,
+      queueSlope: this.lastDecision.queueSlope,
+      overloaded: this.lastDecision.overloaded,
+      requestedPointLimit: this.desiredPointsPerSecond,
+      effectivePointLimit: this.maxPointsPerSecond,
+      mode: this.adaptiveRendering ? "auto" : "manual",
+      reason: this.lastDecision.reason,
+    };
+  }
+
+  setAdaptiveRendering(enabled: boolean): void {
+    this.adaptiveRendering = enabled;
+    if (enabled) {
+      this.adaptiveController.setAutoMode();
+      return;
+    }
+    this.adaptiveController.setManualBatch(this.maxPerFrame);
+  }
+
+  reportRenderPerformance(sample: RenderPerformanceSample): void {
+    if (!this.adaptiveRendering || this.stopped) return;
+    this.updateRateWindow(sample.nowMs);
+    const decision = this.adaptiveController.evaluate({
+      ...sample,
+      arrivalRate: this.arrivalRate,
+      consumeRate: this.consumeRate,
+      pending: this.frameQueue.pending(),
+      oldestPendingMs: this.frameQueue.oldestPendingMs(),
+      effectivePointLimit: this.maxPointsPerSecond,
+    });
+    this.lastDecision = decision;
+    if (decision.batchSize !== this.maxPerFrame) {
+      this.applyMaxPerFrame(decision.batchSize);
+    }
+    if (
+      decision.requestedPointLimit !== null &&
+      decision.requestedPointLimit !== this.maxPointsPerSecond
+    ) {
+      this.applyPointLimit(decision.requestedPointLimit);
+    }
+    this.options.onAdaptiveDecision?.(decision);
+  }
+
   /**
    * 热更新每帧渲染数量。
    * 这是纯客户端参数，只影响帧队列每帧取几个点，服务端不感知，
    * 因此不需要像 setMaxPointsPerSecond 那样断开重连。
    */
   setMaxPerFrame(value: number): void {
-    this.maxPerFrame = Math.max(1, Math.floor(value));
-    this.frameQueue.setMaxPerFrame(this.maxPerFrame);
+    this.adaptiveRendering = false;
+    this.adaptiveController.setManualBatch(value);
+    this.applyMaxPerFrame(value);
   }
 
   /** 当前生效的每帧渲染数量，界面回显的唯一数据源。 */
@@ -158,6 +277,12 @@ export default class RealtimeClient {
 
   /** 修改单连接订阅上限后重建连接，使新参数从下一次握手开始生效。 */
   setMaxPointsPerSecond(value: DeliveryPointLimit): void {
+    this.desiredPointsPerSecond = value;
+    this.adaptiveController.setDesiredPointLimit(value);
+    this.applyPointLimit(value);
+  }
+
+  private applyPointLimit(value: DeliveryPointLimit): void {
     if (!ALLOWED_POINT_LIMITS.includes(value) || value === this.maxPointsPerSecond) {
       return;
     }
@@ -165,6 +290,25 @@ export default class RealtimeClient {
     if (this.socket && this.socket.readyState < WebSocket.CLOSING) {
       this.socket.close(REALTIME_CLOSE_CODE.PAGE_HIDDEN, "subscription changed");
     }
+  }
+
+  private applyMaxPerFrame(value: number): void {
+    this.maxPerFrame = Math.max(1, Math.floor(value));
+    this.frameQueue.setMaxPerFrame(this.maxPerFrame);
+  }
+
+  private updateRateWindow(nowMs: number): void {
+    if (!this.rateWindowStartedAt) {
+      this.rateWindowStartedAt = nowMs;
+      return;
+    }
+    const elapsed = nowMs - this.rateWindowStartedAt;
+    if (elapsed < SECOND_MS) return;
+    this.arrivalRate = this.rateWindowReceived * SECOND_MS / elapsed;
+    this.consumeRate = this.rateWindowConsumed * SECOND_MS / elapsed;
+    this.rateWindowReceived = 0;
+    this.rateWindowConsumed = 0;
+    this.rateWindowStartedAt = nowMs;
   }
 
   /**
@@ -303,6 +447,8 @@ export default class RealtimeClient {
     this.latestBatchStartMs = message.bucketStartMs;
     this.lastBucketStatus = message.status;
     if (message.points.length > 0) {
+      this.rateWindowReceived += message.points.length;
+      this.totalReceived += message.points.length;
       this.frameQueue.enqueue(message.points);
       this.nextRenderPoint = this.frameQueue.peekNext();
     }
@@ -316,7 +462,11 @@ export default class RealtimeClient {
       return;
     }
     if (message.status === "no-data") {
-      this.frameQueue.pause();
+      // no-data 只表示当前自然秒没有新点，不能取消上一秒尚未完成的消费。
+      // 队列为空时 schedule 本来就不会空转；仍有积压时必须继续排空。
+      if (this.frameQueue.pending() > 0) {
+        this.frameQueue.resume();
+      }
       this.options.onStatus("no-data");
       return;
     }
@@ -326,6 +476,7 @@ export default class RealtimeClient {
 
   private publishFrame(points: TelemetryPoint[]): void {
     if (!points.length) return;
+    this.rateWindowConsumed += points.length;
     this.options.onPacket({
       code: 200,
       message: "ok",

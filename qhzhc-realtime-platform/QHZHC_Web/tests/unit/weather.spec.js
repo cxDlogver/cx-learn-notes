@@ -195,15 +195,11 @@ describe("WeatherForecast", () => {
     const component = loadWeatherComponent();
     const vm = createWeatherVm(component, [104.817693, 28.169435]);
 
-    component.watch.newdata.handler.call(vm, {
-      data: [
-        {
-          pressure: 1073.5254,
-          relative_humidity: 100,
-          r: 2.34567,
-          angle: 341.88996595580545,
-        },
-      ],
+    component.watch.latestPoint.handler.call(vm, {
+      pressure: 1073.5254,
+      relative_humidity: 100,
+      r: 2.34567,
+      angle: 341.88996595580545,
     });
 
     expect(vm.pressure).toBe("1073.525");
@@ -211,27 +207,24 @@ describe("WeatherForecast", () => {
     expect(vm.direction_of_true_wind).toBe("341.89°");
   });
 
-  test("uses the latest realtime point for station weather values", () => {
+  test("updates station weather values from the latest point only", () => {
     const component = loadWeatherComponent();
     const vm = createWeatherVm(component, [104.817693, 28.169435]);
 
-    component.watch.newdata.handler.call(vm, {
-      data: [
-        {
-          pressure: 1073.1,
-          relative_humidity: 90,
-          r: 1.111,
-          angle: 10,
-        },
-        {
-          pressure: 1073.5254,
-          relative_humidity: 100,
-          r: 2.34567,
-          angle: 341.88996595580545,
-        },
-      ],
+    component.watch.latestPoint.handler.call(vm, {
+      pressure: 1073.1,
+      relative_humidity: 90,
+      r: 1.111,
+      angle: 10,
+    });
+    component.watch.latestPoint.handler.call(vm, {
+      pressure: 1073.5254,
+      relative_humidity: 100,
+      r: 2.34567,
+      angle: 341.88996595580545,
     });
 
+    expect(component.watch.latestPoint.deep).toBe(false);
     expect(vm.pressure).toBe("1073.525");
     expect(vm.speed_of_true_wind).toBe("2.346");
     expect(vm.direction_of_true_wind).toBe("341.89°");

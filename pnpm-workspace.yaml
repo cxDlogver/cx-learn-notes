@@ -7,3 +7,43 @@ packages:
   - official-network
   # 走航车可视化平台前端（接入 SDK 的业务应用，仅 Web 子包）
   - qhzhc-realtime-platform/QHZHC_Web
+
+# 本工作区同时存在 Vue2 项目（走航车平台）与 Vue3 官网，pnpm 的隐藏提升层
+# （node_modules/.pnpm/node_modules）每个包名只会指向一个版本。若某个包的
+# 直接依赖被解析到提升层，就会拿到"另一个项目"的版本而运行失败。
+# 下面为漏声明依赖的包补上声明，让 pnpm 为它们在各自 node_modules 下建立
+# 指向正确版本的本地链接，不再依赖提升层。
+packageExtensions:
+  # nuxt-site-config / nuxt-og-image 的 server 运行时直接 import 'vue'，但 package.json
+  # 未声明该依赖（官方漏配）。提升层被 Vue2 占据时会报
+  # "does not provide an export named 'toValue'" 导致 SSR/Nitro 启动失败。
+  nuxt-site-config:
+    peerDependencies:
+      vue: '^3.5.0'
+  nuxt-og-image:
+    peerDependencies:
+      vue: '^3.5.0'
+    dependencies:
+      h3: '^1.15.11'
+
+  # 以下 Nuxt 模块的 server 运行时直接 import 'h3'，但 package.json 未声明该依赖。
+  # 本工作区里 @nuxt/eslint → @eslint/config-inspector → devframe 会引入 h3@2.0.1-rc，
+  # pnpm 把它提升为隐藏层的 h3，导致这些模块解析到 h3 v2。h3 v2 的 getQuery() 依赖
+  # 绝对 URL（new URL(event.req.url)），在 Nitro 预渲染的 mock 事件（相对路径）下抛
+  # "Invalid URL"，使 /api/_nuxt_icon/* 等接口 500，整个 prerender 失败。
+  # Nuxt 4.3 / Nitro 2 运行时使用的是 h3 v1，这里显式钉住 v1。
+  '@nuxt/icon':
+    dependencies:
+      h3: '^1.15.11'
+  '@nuxtjs/sitemap':
+    dependencies:
+      h3: '^1.15.11'
+  nuxt-link-checker:
+    dependencies:
+      h3: '^1.15.11'
+  nuxt-seo-utils:
+    dependencies:
+      h3: '^1.15.11'
+  nuxt-schema-org:
+    dependencies:
+      h3: '^1.15.11'

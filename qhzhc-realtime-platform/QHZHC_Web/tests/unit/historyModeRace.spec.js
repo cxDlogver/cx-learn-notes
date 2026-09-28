@@ -170,7 +170,7 @@ describe("history query lifecycle", () => {
     await flushPromises();
 
     expect(fetchFiveMinuteWindow).toHaveBeenCalledWith();
-    expect(vm.gasdata).toBe(latestWindow);
+    expect(vm.gasdata).toEqual(latestWindow);
     expect(vm.mapList).toEqual(latestWindow.data);
     expect(vm.detailData).toBe(latestWindow.data[1]);
     expect(vm.checkData).toBe(true);
@@ -325,7 +325,7 @@ describe("history query lifecycle", () => {
     expect(fetchFiveMinuteWindow).toHaveBeenCalledWith();
     expect(vm.searchType).toBe(1);
     expect(vm.historyData).toEqual({ code: 200, message: "ok", data: [] });
-    expect(vm.gasdata).toBe(latestWindow);
+    expect(vm.gasdata).toEqual(latestWindow);
     expect(vm.mapList).toEqual(latestWindow.data);
     expect(vm.detailData).toBe(latestWindow.data[1]);
     expect(vm.checkData).toBe(true);

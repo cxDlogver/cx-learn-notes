@@ -57,16 +57,21 @@ export default {
     return {
       chart: null,
       gasdata: [],
+      chartUpdateTimer: null,
     };
   },
   watch: {
     newdata: {
       handler() {
-        this.updateOptions();
+        this.scheduleUpdateOptions();
       },
-      deep: true,
+      deep: false,
     },
     searchType() {
+      if (this.chartUpdateTimer !== null) {
+        clearTimeout(this.chartUpdateTimer);
+        this.chartUpdateTimer = null;
+      }
       this.updateOptions();
     },
   },
@@ -75,12 +80,27 @@ export default {
     this.updateOptions();
   },
   beforeDestroy() {
+    if (this.chartUpdateTimer !== null) {
+      clearTimeout(this.chartUpdateTimer);
+      this.chartUpdateTimer = null;
+    }
     if (this.chart) {
       this.chart.dispose();
       this.chart = null;
     }
   },
   methods: {
+    scheduleUpdateOptions() {
+      if (this.searchType !== 1) {
+        this.updateOptions();
+        return;
+      }
+      if (this.chartUpdateTimer !== null) return;
+      this.chartUpdateTimer = setTimeout(() => {
+        this.chartUpdateTimer = null;
+        this.updateOptions();
+      }, 120);
+    },
     getRealtimeTimeWindow(points) {
       if (this.searchType !== 1) {
         return undefined;
@@ -112,10 +132,9 @@ export default {
         timeWindow: this.getRealtimeTimeWindow(this.gasdata),
       });
       this.chart.setOption(options, {
-          notMerge: true,
-          lazyUpdate: false,
+        notMerge: true,
+        lazyUpdate: true,
       });
-      this.chart.resize();
     },
   },
 };

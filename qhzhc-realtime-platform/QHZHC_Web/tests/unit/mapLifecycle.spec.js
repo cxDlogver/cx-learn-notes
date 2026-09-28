@@ -56,6 +56,10 @@ class FakeFeature {
   setGeometry(geometry) {
     this.properties.geometry = geometry;
   }
+
+  getGeometry() {
+    return this.properties.geometry;
+  }
 }
 
 class FakeVectorSource {
@@ -109,6 +113,14 @@ class FakeLineString {
   constructor(coordinates) {
     this.coordinates = coordinates;
   }
+
+  appendCoordinate(coordinate) {
+    this.coordinates.push(coordinate);
+  }
+
+  getCoordinates() {
+    return this.coordinates;
+  }
 }
 
 function loadPlanimetricComponent() {
@@ -139,8 +151,12 @@ function bindOptionalMapHelpers(component, vm) {
   [
     "buildFeatureId",
     "hasValidGeoLocation",
+    "getPointStyle",
+    "getRouteStyle",
     "drawRouteSegment",
     "drawRouteSegments",
+    "resetRouteChunk",
+    "drawRealtimeBatch",
     "drawRealtimePoint",
     "removeTC",
     "redrawRealtimeWindow",
@@ -501,7 +517,7 @@ describe("map lifecycle ownership", () => {
 
     component.methods.drawRealtimePoint.call(vm);
 
-    expect(map.updateSize).toHaveBeenCalledTimes(1);
+    expect(map.updateSize).not.toHaveBeenCalled();
     expect(view.setCenter).toHaveBeenCalledWith([104200, 28200]);
     expect(routeSource.getFeatures()).toHaveLength(1);
   });
@@ -596,7 +612,26 @@ describe("map lifecycle ownership", () => {
     ]);
 
     expect(pointSource.getFeatures()).toHaveLength(3);
-    expect(routeSource.getFeatures()).toHaveLength(2);
+    expect(routeSource.getFeatures()).toHaveLength(1);
+    expect(routeSource.getFeatures()[0].getGeometry().getCoordinates()).toHaveLength(3);
+  });
+
+  test("2D route groups retain all coordinates and share a boundary point", () => {
+    const component = loadPlanimetricComponent();
+    const { vm, routeSource } = createPlanimetricVm(component);
+    const points = Array.from({ length: 260 }, (_, index) => ({
+      geo_location: [104 + index * 0.0001, 28 + index * 0.0001],
+    }));
+
+    vm.drawRouteSegments(points);
+
+    const groups = routeSource.getFeatures();
+    expect(groups).toHaveLength(2);
+    expect(groups[0].getGeometry().getCoordinates()).toHaveLength(256);
+    expect(groups[1].getGeometry().getCoordinates()).toHaveLength(5);
+    expect(groups[0].getGeometry().getCoordinates().at(-1)).toEqual(
+      groups[1].getGeometry().getCoordinates()[0],
+    );
   });
 
   test("2D concentration redraw clears previous gas colors when selected gas changes", () => {
@@ -671,7 +706,8 @@ describe("map lifecycle ownership", () => {
     expect(pointSource.getFeatures().map((feature) => feature.get("data"))).toEqual(
       points,
     );
-    expect(routeSource.getFeatures()).toHaveLength(2);
+    expect(routeSource.getFeatures()).toHaveLength(1);
+    expect(routeSource.getFeatures()[0].getGeometry().getCoordinates()).toHaveLength(3);
     expect(map.updateSize).toHaveBeenCalledTimes(1);
     expect(view.setCenter).toHaveBeenCalledWith([104300, 28300]);
     expect(vm.ensureOrUpdateCar).toHaveBeenCalledWith([104300, 28300]);
@@ -692,7 +728,28 @@ describe("map lifecycle ownership", () => {
     expect(pointSource.getFeatureById).not.toHaveBeenCalled();
   });
 
-  test("2D realtime layers keep every drawn point instead of pruning a window", () => {
+  test("2D selection restores only the prior point and reuses cached styles", () => {
+    const component = loadPlanimetricComponent();
+    const { vm, map, pointSource } = createPlanimetricVm(component);
+    const first = new FakeFeature({ Type: "数据点", color: "#00FF44", data: { sequence: 1 } });
+    const second = new FakeFeature({ Type: "数据点", color: "#F90000", data: { sequence: 2 } });
+    first.setId(1);
+    second.setId(2);
+    pointSource.addFeature(first);
+    pointSource.addFeature(second);
+    expect(vm.getPointStyle("#00FF44", 2)).toBe(vm.getPointStyle("#00FF44", 2));
+    map.forEachFeatureAtPixel.mockReturnValueOnce(first).mockReturnValueOnce(second);
+
+    vm.handleMapClick({ pixel: [1, 1] });
+    expect(first.getStyle()).toBeDefined();
+    vm.handleMapClick({ pixel: [2, 2] });
+
+    expect(first.getStyle()).toBeUndefined();
+    expect(second.getStyle()).toBeDefined();
+    expect(vm.$emit).toHaveBeenLastCalledWith("getTimePointer", { sequence: 2 });
+  });
+
+  test("2D realtime layers retain older features when a new point arrives", () => {
     const component = loadPlanimetricComponent();
     const { vm, pointSource, routeSource } = createPlanimetricVm(component);
     Array.from({ length: 5 }, (_, index) => {
@@ -711,32 +768,12 @@ describe("map lifecycle ownership", () => {
 
     component.methods.drawRealtimePoint.call(vm);
 
-    expect(component.methods.pruneRealtimeLayers).toBeUndefined();
     expect(pointSource.getFeatures()).toHaveLength(6);
+    expect(pointSource.getFeatureById("point-0")).toBeDefined();
     expect(routeSource.getFeatures()).toHaveLength(2);
   });
 
-  test("Cesium realtime entities are tracked without evicting older bars", () => {
-    const component = loadComponent("StereoscopicMap.vue", {
-      turf: {},
-      Cesium: {},
-    });
-    const removeById = jest.fn();
-    const vm = {
-      realtimeEntityIds: Array.from({ length: 300 }, (_, index) => `bar-${index}`),
-      viewer: { entities: { removeById } },
-    };
-
-    component.methods.trackRealtimeEntity.call(vm, "bar-300");
-    component.methods.trackRealtimeEntity.call(vm, "bar-300");
-
-    expect(vm.realtimeEntityIds).toHaveLength(301);
-    expect(vm.realtimeEntityIds[0]).toBe("bar-0");
-    expect(vm.realtimeEntityIds.at(-1)).toBe("bar-300");
-    expect(removeById).not.toHaveBeenCalled();
-  });
-
-  test("Cesium builds initial realtime bars in fixed slots without moving the camera", () => {
+  test("Cesium builds initial realtime bars with monotonic IDs without moving the camera", () => {
     const fromDegrees = jest.fn((longitude, latitude, height) => ({
       longitude,
       latitude,
@@ -780,7 +817,6 @@ describe("map lifecycle ownership", () => {
       isViewerReady: jest.fn(() => true),
       getColor: jest.fn(() => ({ color: "#00FF44", height: 40 })),
       upsertRealtimeBar: jest.fn(),
-      trackRealtimeEntity: jest.fn(),
       requestRender: jest.fn(),
     };
     const points = [
@@ -814,7 +850,7 @@ describe("map lifecycle ownership", () => {
     expect(vm.realtimeBarCursor).toBe(2);
   });
 
-  test("Cesium reuses a fixed realtime bar slot instead of replacing entities", () => {
+  test("Cesium explicitly updates an existing bar's static properties", () => {
     const fromDegrees = jest.fn((longitude, latitude, height) => ({
       longitude,
       latitude,
@@ -830,18 +866,14 @@ describe("map lifecycle ownership", () => {
       }
     }
     const material = { name: "bar-color" };
-    const existing = Object.freeze({
-      position: "position-callback",
-      box: Object.freeze({
-        dimensions: "dimensions-callback",
+    const existing = {
+      position: "old-position",
+      show: false,
+      box: {
+        dimensions: "old-dimensions",
         material: "material-property",
         heightReference: "none",
-      }),
-    });
-    const state = {
-      position: null,
-      dimensions: null,
-      color: null,
+      },
     };
     const entities = {
       getById: jest.fn(() => existing),
@@ -852,6 +884,7 @@ describe("map lifecycle ownership", () => {
       turf: {},
       Cesium: {
         Cartesian3,
+        ColorMaterialProperty: jest.fn((color) => ({ color })),
         Color: {
           fromCssColorString: jest.fn(() => ({
             withAlpha: jest.fn(() => material),
@@ -866,7 +899,6 @@ describe("map lifecycle ownership", () => {
     });
     const vm = {
       viewer: { entities },
-      realtimeBarStates: [state],
       getColor: jest.fn(() => ({ color: "#00FF44", height: 60 })),
     };
 
@@ -886,19 +918,17 @@ describe("map lifecycle ownership", () => {
     expect(entities.add).not.toHaveBeenCalled();
     expect(entities.removeById).not.toHaveBeenCalled();
     expect(fromDegrees).toHaveBeenCalledWith(104.1, 28.1, 30);
-    expect(state.position).toEqual({
+    expect(existing.position).toEqual({
       longitude: 104.1,
       latitude: 28.1,
       height: 30,
     });
-    expect(state.dimensions).toEqual({ x: 6, y: 6, z: 60 });
-    expect(state.color).toBe(material);
-    expect(existing.position).toBe("position-callback");
-    expect(existing.box.dimensions).toBe("dimensions-callback");
-    expect(existing.box.material).toBe("material-property");
+    expect(existing.box.dimensions).toEqual({ x: 6, y: 6, z: 60 });
+    expect(existing.box.material.color).toBe(material);
+    expect(existing.show).toBe(true);
   });
 
-  test("Cesium creates realtime bars with dynamic properties", () => {
+  test("Cesium creates realtime bars with static position, size and color", () => {
     const CallbackProperty = jest.fn((callback, isConstant) => ({
       callback,
       isConstant,
@@ -938,9 +968,7 @@ describe("map lifecycle ownership", () => {
     });
     const vm = {
       viewer: { entities },
-      realtimeBarStates: [],
       getColor: jest.fn(() => ({ color: "#00FF44", height: 60 })),
-      trackRealtimeEntity: jest.fn(),
     };
 
     component.methods.upsertRealtimeBar.call(
@@ -954,22 +982,19 @@ describe("map lifecycle ownership", () => {
       "pri_ch4",
     );
 
-    expect(CallbackProperty).toHaveBeenCalledTimes(3);
+    expect(CallbackProperty).not.toHaveBeenCalled();
     expect(ColorMaterialProperty).toHaveBeenCalledTimes(1);
     expect(entities.add).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "realtime-bar-0",
-        position: expect.objectContaining({ isConstant: false }),
+        position: { longitude: 104.1, latitude: 28.1, height: 30 },
         box: expect.objectContaining({
-          dimensions: expect.objectContaining({ isConstant: false }),
-          material: expect.objectContaining({
-            color: expect.objectContaining({ isConstant: false }),
-          }),
+          dimensions: expect.objectContaining({ x: 6, y: 6, z: 60 }),
+          material: { color: "bar-color" },
           heightReference: "none",
         }),
       }),
     );
-    expect(vm.trackRealtimeEntity).toHaveBeenCalledWith("realtime-bar-0");
   });
 
   test("Cesium keeps the vehicle visible by hiding only the current bar", () => {
@@ -1113,8 +1138,7 @@ describe("map lifecycle ownership", () => {
     expect(vm.updateRealtimeRoute).toHaveBeenCalledWith(points);
   });
 
-  test("Cesium creates a realtime trajectory through valid map points", () => {
-    const positions = [{ x: 1 }, { x: 2 }];
+  test("Cesium creates a static realtime trajectory through valid map points", () => {
     const color = { withAlpha: jest.fn(() => "route-color") };
     const CallbackProperty = jest.fn((callback, isConstant) => ({
       callback,
@@ -1122,7 +1146,9 @@ describe("map lifecycle ownership", () => {
     }));
     const Cesium = {
       Cartesian3: {
-        fromDegreesArrayHeights: jest.fn(() => positions),
+        fromDegrees: jest.fn((longitude, latitude, height) => ({
+          longitude, latitude, height,
+        })),
       },
       CallbackProperty,
       Color: {
@@ -1134,8 +1160,8 @@ describe("map lifecycle ownership", () => {
       Cesium,
     });
     const entities = {
-      getById: jest.fn(() => undefined),
-      add: jest.fn(),
+      add: jest.fn((entity) => entity),
+      removeById: jest.fn(),
     };
     const vm = {
       viewer: {
@@ -1147,28 +1173,23 @@ describe("map lifecycle ownership", () => {
     };
     vm.isViewerReady = component.methods.isViewerReady.bind(vm);
     vm.requestRender = component.methods.requestRender.bind(vm);
+    vm.clearRealtimeRoute = component.methods.clearRealtimeRoute.bind(vm);
+    vm.appendRealtimeRoute = component.methods.appendRealtimeRoute.bind(vm);
 
     component.methods.updateRealtimeRoute.call(vm, [
       { longitude: 104.1, latitude: 28.1 },
-      { longitude: "invalid", latitude: 28.2 },
+      { longitude: 104.2, latitude: 28.2 },
       { longitude: 104.3, latitude: 28.3 },
     ]);
 
-    expect(Cesium.Cartesian3.fromDegreesArrayHeights).toHaveBeenCalledWith([
-      104.1,
-      28.1,
-      2,
-      104.3,
-      28.3,
-      2,
-    ]);
-    expect(CallbackProperty).toHaveBeenCalledTimes(1);
-    expect(vm.realtimeRouteState.positions).toBe(positions);
+    expect(Cesium.Cartesian3.fromDegrees).toHaveBeenCalledTimes(3);
+    expect(CallbackProperty).not.toHaveBeenCalled();
+    expect(vm.realtimeRouteState.activePositions).toHaveLength(3);
     expect(entities.add).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: "realtime-route",
+        id: "realtime-route-0",
         polyline: expect.objectContaining({
-          positions: expect.objectContaining({ isConstant: false }),
+          positions: expect.any(Array),
           width: 5,
           material: "route-color",
           clampToGround: false,
@@ -1177,23 +1198,16 @@ describe("map lifecycle ownership", () => {
     );
   });
 
-  test("Cesium updates the realtime trajectory without replacing its dynamic property", () => {
-    const positions = [{ x: 1 }, { x: 2 }];
-    const route = {
-      polyline: Object.freeze({
-        positions: "positions-callback",
-        clampToGround: false,
-      }),
-    };
-    const entities = {
-      getById: jest.fn(() => route),
-      add: jest.fn(),
-    };
+  test("Cesium appends to the active static route group without replacing older groups", () => {
+    const first = { x: 1 };
+    const second = { x: 2 };
+    const route = { polyline: { positions: [first, second] } };
+    const entities = { add: jest.fn(), removeById: jest.fn() };
     const component = loadComponent("StereoscopicMap.vue", {
       turf: {},
       Cesium: {
         Cartesian3: {
-          fromDegreesArrayHeights: jest.fn(() => positions),
+          fromDegrees: jest.fn(() => ({ x: 3 })),
         },
         Color: {
           fromCssColorString: jest.fn(() => ({
@@ -1202,7 +1216,12 @@ describe("map lifecycle ownership", () => {
         },
       },
     });
-    const routeState = { positions: null };
+    const routeState = {
+      nextGroupIndex: 1,
+      activeEntity: route,
+      activePositions: [first, second],
+      lastPosition: second,
+    };
     const vm = {
       viewer: {
         entities,
@@ -1214,14 +1233,52 @@ describe("map lifecycle ownership", () => {
     vm.isViewerReady = component.methods.isViewerReady.bind(vm);
     vm.requestRender = component.methods.requestRender.bind(vm);
 
-    component.methods.updateRealtimeRoute.call(vm, [
-      { longitude: 104.1, latitude: 28.1 },
-      { longitude: 104.2, latitude: 28.2 },
+    component.methods.appendRealtimeRoute.call(vm, [
+      { longitude: 104.3, latitude: 28.3 },
     ]);
 
-    expect(routeState.positions).toBe(positions);
-    expect(route.polyline.positions).toBe("positions-callback");
+    expect(route.polyline.positions).toHaveLength(3);
+    expect(route.polyline.positions[2]).toEqual({ x: 3 });
     expect(entities.add).not.toHaveBeenCalled();
+  });
+
+  test("Cesium route groups share a boundary and retain every point past 256", () => {
+    const component = loadComponent("StereoscopicMap.vue", {
+      turf: {},
+      Cesium: {
+        Cartesian3: {
+          fromDegrees: jest.fn((longitude, latitude) => ({ longitude, latitude })),
+        },
+        Color: {
+          fromCssColorString: jest.fn(() => ({
+            withAlpha: jest.fn(() => "route-color"),
+          })),
+        },
+      },
+    });
+    const entities = {
+      add: jest.fn((entity) => entity),
+      removeById: jest.fn(),
+    };
+    const vm = {
+      viewer: { entities, scene: { requestRender: jest.fn() }, isDestroyed: () => false },
+      realtimeRouteState: null,
+    };
+    vm.isViewerReady = component.methods.isViewerReady.bind(vm);
+    vm.requestRender = component.methods.requestRender.bind(vm);
+    const points = Array.from({ length: 260 }, (_, index) => ({
+      longitude: 104 + index * 0.0001,
+      latitude: 28 + index * 0.0001,
+    }));
+
+    component.methods.appendRealtimeRoute.call(vm, points);
+
+    expect(entities.add).toHaveBeenCalledTimes(2);
+    const first = entities.add.mock.calls[0][0].polyline.positions;
+    const second = entities.add.mock.calls[1][0].polyline.positions;
+    expect(first).toHaveLength(256);
+    expect(second).toHaveLength(5);
+    expect(first.at(-1)).toEqual(second[0]);
   });
 
   test("Cesium explicitly installs the selected base imagery layer", () => {
@@ -1324,6 +1381,7 @@ describe("map lifecycle ownership", () => {
       isDestroyed: jest.fn(() => false),
       destroy: jest.fn(),
       scene: { requestRender: jest.fn() },
+      clock: { shouldAnimate: true },
     };
     const vm = {
       screenSpaceHandler: handler,
@@ -1337,6 +1395,8 @@ describe("map lifecycle ownership", () => {
     component.methods.remove.call(vm);
     expect(handler.destroy).toHaveBeenCalledTimes(1);
     expect(vm.screenSpaceHandler).toBeNull();
+    expect(viewer.clock.shouldAnimate).toBe(false);
+    expect(viewer.scene.maximumRenderTimeChange).toBe(Infinity);
 
     component.beforeDestroy.call(vm);
 
@@ -1359,7 +1419,7 @@ describe("map lifecycle ownership", () => {
     expect(vm.screenSpaceHandler).toBeNull();
   });
 
-  test("Cesium concentration redraw rebuilds bars for the selected gas only", () => {
+  test("Cesium gas switch updates bars without deleting route or vehicle", () => {
     const component = loadComponent("StereoscopicMap.vue", {
       turf: {},
       Cesium: {},
@@ -1374,10 +1434,19 @@ describe("map lifecycle ownership", () => {
       dataList: [],
       index: 0,
       prevData: null,
+      latestRealtimeBarId: "realtime-bar-1",
+      recolorGeneration: 0,
+      recolorFrameId: null,
+      viewer: {
+        entities: {
+          getById: jest.fn(() => ({ show: false })),
+        },
+      },
       remove: jest.fn(),
       moveBar: jest.fn(),
       nowBar: jest.fn(),
       updateRealtimeRoute: jest.fn(),
+      upsertRealtimeBar: jest.fn(),
       requestRender: jest.fn(),
       isViewerReady: jest.fn(() => true),
     };
@@ -1385,10 +1454,12 @@ describe("map lifecycle ownership", () => {
     component.methods.redrawConcentrationByGas.call(vm, "pri_co2", points);
 
     expect(vm.gasType).toBe("pri_co2");
-    expect(vm.remove).toHaveBeenCalledTimes(1);
-    expect(vm.moveBar).toHaveBeenCalledWith([points[0]]);
-    expect(vm.nowBar).toHaveBeenCalledWith(points[1]);
-    expect(vm.updateRealtimeRoute).toHaveBeenCalledWith(points);
+    expect(vm.remove).not.toHaveBeenCalled();
+    expect(vm.upsertRealtimeBar).toHaveBeenNthCalledWith(1, points[0], 0, "pri_co2");
+    expect(vm.upsertRealtimeBar).toHaveBeenNthCalledWith(2, points[1], 1, "pri_co2");
+    expect(vm.moveBar).not.toHaveBeenCalled();
+    expect(vm.nowBar).not.toHaveBeenCalled();
+    expect(vm.updateRealtimeRoute).not.toHaveBeenCalled();
     expect(vm.requestRender).toHaveBeenCalledTimes(1);
   });
 
@@ -1425,7 +1496,7 @@ describe("map lifecycle ownership", () => {
     expect(vm.moveBar).toHaveBeenCalledWith([points[0], points[1]]);
     expect(vm.nowBar).toHaveBeenCalledWith(points[2]);
     expect(vm.updateRealtimeRoute).toHaveBeenCalledWith(points);
-    expect(vm.requestRender).toHaveBeenCalledTimes(1);
+    expect(vm.requestRender).not.toHaveBeenCalled();
   });
 
   test("Cesium trajectory rendering releases a concentration click handler", () => {
@@ -1477,5 +1548,58 @@ describe("map lifecycle ownership", () => {
 
     expect(handler.destroy).toHaveBeenCalledTimes(1);
     expect(vm.screenSpaceHandler).toBeNull();
+  });
+
+  test("2D realtime batch draws every point and follows only at the batch tail", () => {
+    const component = loadPlanimetricComponent();
+    const points = [
+      { geo_location: [104.0, 28.0], pri_ch4: 1.2, time: "t0" },
+      { geo_location: [104.1, 28.1], pri_ch4: 1.4, time: "t1" },
+      { geo_location: [104.2, 28.2], pri_ch4: 1.6, time: "t2" },
+    ];
+    const { vm, map, view, pointSource, routeSource } = createPlanimetricVm(
+      component,
+      { mapList: points },
+    );
+
+    component.methods.drawRealtimeBatch.call(vm, points.slice(1));
+
+    expect(pointSource.getFeatures()).toHaveLength(2);
+    expect(routeSource.getFeatures()).toHaveLength(1);
+    expect(routeSource.getFeatures()[0].getGeometry().getCoordinates()).toHaveLength(3);
+    expect(map.updateSize).not.toHaveBeenCalled();
+    expect(view.setCenter).toHaveBeenCalledTimes(1);
+    expect(vm.dataForm).toBe(points[2]);
+  });
+
+  test("Cesium realtime batch appends every point and updates view only at the tail", () => {
+    const component = loadComponent("StereoscopicMap.vue", {
+      turf: {},
+      Cesium: {},
+    });
+    const points = [
+      { longitude: 104.0, latitude: 28.0 },
+      { longitude: 104.1, latitude: 28.1 },
+      { longitude: 104.2, latitude: 28.2 },
+    ];
+    const vm = {
+      mapList: points,
+      dataList: [],
+      index: 0,
+      prevData: null,
+      nowBar: jest.fn(),
+      appendRealtimeRoute: jest.fn(),
+      requestRender: jest.fn(),
+      isViewerReady: jest.fn(() => true),
+    };
+
+    component.methods.drawRealtimeBatch.call(vm, points.slice(1));
+
+    expect(vm.nowBar.mock.calls).toEqual([
+      [points[1], false],
+      [points[2], true],
+    ]);
+    expect(vm.appendRealtimeRoute).toHaveBeenCalledWith(points.slice(1));
+    expect(vm.index).toBe(2);
   });
 });

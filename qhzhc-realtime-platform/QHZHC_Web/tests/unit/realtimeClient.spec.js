@@ -393,4 +393,142 @@ describe("RealtimeClient", () => {
     client.stop();
     expect(client.pendingCount()).toBe(0);
   });
+
+  test("runtime stats conserve received, consumed, and pending points", () => {
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      adaptiveRendering: false,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket: jest.fn(),
+      onStatus: jest.fn(),
+    });
+    client.start();
+    const socket = MockSocket.instances[0];
+    socket.open();
+    socket.receive({
+      type: "telemetry_second",
+      batchId: "metrics",
+      bucketStartMs: BUCKET_START_MS,
+      bucketEndMs: BUCKET_START_MS + 1_000,
+      status: "live",
+      points: [telemetryPoint(1), telemetryPoint(2)],
+      sentAt: BUCKET_START_MS + 1_000,
+      replay: false,
+    });
+
+    expect(client.runtimeStats(1_000)).toEqual(
+      expect.objectContaining({
+        totalReceived: 2,
+        totalConsumed: 0,
+        pending: 2,
+      }),
+    );
+    frameCallbacks.shift()?.(0);
+    const stats = client.runtimeStats(2_000);
+    expect(stats.totalReceived).toBe(2);
+    expect(stats.totalConsumed).toBe(1);
+    expect(stats.pending).toBe(1);
+    expect(stats.totalConsumed + stats.pending).toBe(stats.totalReceived);
+    client.stop();
+  });
+
+  test("an empty no-data bucket does not freeze points queued by the previous second", () => {
+    const onPacket = jest.fn();
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      adaptiveRendering: false,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket,
+      onStatus: jest.fn(),
+    });
+    client.start();
+    const socket = MockSocket.instances[0];
+    socket.open();
+    socket.receive({
+      type: "telemetry_second",
+      batchId: "live-before-empty",
+      bucketStartMs: BUCKET_START_MS,
+      bucketEndMs: BUCKET_START_MS + 1_000,
+      status: "live",
+      points: [telemetryPoint(1), telemetryPoint(2)],
+      sentAt: BUCKET_START_MS + 1_000,
+      replay: false,
+    });
+    socket.receive({
+      type: "telemetry_second",
+      batchId: "empty-after-live",
+      bucketStartMs: BUCKET_START_MS + 1_000,
+      bucketEndMs: BUCKET_START_MS + 2_000,
+      status: "no-data",
+      points: [],
+      sentAt: BUCKET_START_MS + 2_000,
+      replay: false,
+    });
+
+    frameCallbacks.shift()?.(0);
+    frameCallbacks.shift()?.(16);
+
+    expect(onPacket).toHaveBeenCalledTimes(2);
+    expect(client.pendingCount()).toBe(0);
+    client.stop();
+  });
+
+  test("automatic overload control lowers only the effective subscription tier", () => {
+    const client = new RealtimeClient({
+      url: "ws://example.test/ws/robots/QH-ZHC-01",
+      WebSocketImpl: MockSocket,
+      initialBucketStartMs: BUCKET_START_MS,
+      maxPointsPerSecond: 20,
+      maxPerFrame: 50,
+      adaptiveRendering: true,
+      getAccessToken: () => "access.jwt",
+      refreshAccessToken: jest.fn(),
+      onPacket: jest.fn(),
+      onStatus: jest.fn(),
+    });
+    client.start();
+    const socket = MockSocket.instances[0];
+    socket.open();
+
+    for (let bucket = 0; bucket < 3; bucket += 1) {
+      socket.receive({
+        type: "telemetry_second",
+        batchId: `overload-${bucket}`,
+        bucketStartMs: BUCKET_START_MS + bucket * 1_000,
+        bucketEndMs: BUCKET_START_MS + (bucket + 1) * 1_000,
+        status: "live",
+        points: Array.from({ length: 20 }, (_, index) =>
+          telemetryPoint(bucket * 20 + index),
+        ),
+        sentAt: BUCKET_START_MS + (bucket + 1) * 1_000,
+        replay: false,
+      });
+      client.reportRenderPerformance({
+        nowMs: (bucket + 1) * 1_000,
+        actualFps: 30,
+        baselineFps: 60,
+        renderP95Ms: 20,
+        frameIntervalMs: 1000 / 60,
+      });
+    }
+
+    expect(socket.close).toHaveBeenCalledWith(
+      REALTIME_CLOSE_CODE.PAGE_HIDDEN,
+      "subscription changed",
+    );
+    expect(client.runtimeStats(4_000)).toEqual(
+      expect.objectContaining({
+        requestedPointLimit: 20,
+        effectivePointLimit: 10,
+        overloaded: true,
+      }),
+    );
+    client.stop();
+  });
 });

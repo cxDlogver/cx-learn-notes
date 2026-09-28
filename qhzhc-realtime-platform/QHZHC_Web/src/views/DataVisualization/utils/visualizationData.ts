@@ -11,6 +11,14 @@ export interface DataEnvelope<T> {
 export type ThresholdRange = readonly [number, number];
 
 export const REALTIME_CHART_WINDOW_MS = 5 * 60 * 1000;
+export const REALTIME_VISUAL_HISTORY_MAX_POINTS = 6_000;
+/**
+ * 实时地图数组的容量上限：20 点/秒 × 60 秒 × 60 分 × 24 小时 = 1728000，
+ * 即按 20 点/秒连续接收一整天的数据量。
+ * 这只是内存保护，超出后丢弃最旧的点；**渲染窗口另由「最大历史时间保留」控制**，
+ * 两者相互独立——数组保留全量，地图只绘制窗口内的点。
+ */
+export const REALTIME_MAP_MAX_POINTS = 20 * 60 * 24 * 60;
 
 export function appendRealtimePoint<T extends object>(
   points: T[] | null | undefined,
@@ -25,20 +33,26 @@ export function appendRealtimePoint<T extends object>(
 }
 
 /**
- * 实时轨迹追加：只做合并与基础过滤，不再截断点位数量。
- *
- * 轨迹按会话全量保留，长度只受运行时长与订阅频率影响，因此 mapList 会随时间持续增长。
+ * 实时地图追加：数组由非深度响应式容器持有，追加过程不创建中间数组。
+ * maxPoints 只做容量保护，超出时丢弃最旧的点；它不参与渲染筛选，
+ * 地图实际绘制的时间范围由「最大历史时间保留」决定。
  */
 export function appendRealtimeBatch<T extends object>(
   points: T[] | null | undefined,
   incoming: T[] | null | undefined,
+  maxPoints = REALTIME_MAP_MAX_POINTS,
 ): T[] {
   const currentPoints = Array.isArray(points) ? points : [];
-  const nextPoints = Array.isArray(incoming)
-    ? incoming.filter((point) => point && typeof point === "object")
-    : [];
-  if (!nextPoints.length) return currentPoints;
-  return currentPoints.concat(nextPoints);
+  if (Array.isArray(incoming)) {
+    for (const point of incoming) {
+      if (point && typeof point === "object") currentPoints.push(point);
+    }
+  }
+  const limit = Math.floor(maxPoints);
+  if (limit > 0 && currentPoints.length > limit) {
+    currentPoints.splice(0, currentPoints.length - limit);
+  }
+  return currentPoints;
 }
 
 export function appendRealtimeTimeWindow<
@@ -47,6 +61,7 @@ export function appendRealtimeTimeWindow<
   points: T[] | null | undefined,
   incoming: T[] | null | undefined,
   windowMs = REALTIME_CHART_WINDOW_MS,
+  maxPoints = REALTIME_VISUAL_HISTORY_MAX_POINTS,
 ): T[] {
   const combined = [
     ...(Array.isArray(points) ? points : []),
@@ -75,7 +90,8 @@ export function appendRealtimeTimeWindow<
   const start = end - windowMs;
   return timestamped
     .filter(({ timestamp }) => timestamp >= start && timestamp <= end)
-    .map(({ point }) => point);
+    .map(({ point }) => point)
+    .slice(-Math.max(1, Math.floor(maxPoints)));
 }
 
 export function normalizeEnvelope<T = LegacyTelemetryPoint>(payload: unknown): DataEnvelope<T> {

@@ -16,7 +16,7 @@
           <!-- <Weather v-if="weather_location_data != null" :location="weather_location_data"></Weather> -->
           <Weather
             :location="weather_location_data"
-            :newdata="gasdata"
+            :latest-point="weatherLatestPoint"
           ></Weather>
         </div>
       </div>
@@ -274,7 +274,7 @@
             </el-select>
           </div>
           <div class="btn-content" v-if="searchType == 1">
-            <div class="c-title">每帧渲染:</div>
+            <div class="c-title">渲染模式:</div>
             <el-select
               v-model="realtimeFrameLimit"
               size="mini"
@@ -283,6 +283,22 @@
             >
               <el-option
                 v-for="item in realtimeFrameLimitOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
+          </div>
+          <div class="btn-content" v-if="searchType == 1">
+            <div class="c-title">最大历史保留:</div>
+            <el-select
+              v-model="realtimeHistoryWindowMin"
+              size="mini"
+              style="width: 88px; margin-top: 10px"
+              @change="changeRealtimeHistoryWindow"
+            >
+              <el-option
+                v-for="item in realtimeHistoryWindowOptions"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -348,12 +364,64 @@
                   <span class="stats-value">{{ framePerRender }}</span>
                 </div>
                 <div class="stats-row">
-                  <span class="stats-label">渲染帧率</span>
-                  <span class="stats-value">{{ fps }}</span>
+                  <span class="stats-label">rAF FPS</span>
+                  <span class="stats-value">{{ fps.toFixed(1) }}</span>
                 </div>
                 <div class="stats-row">
-                  <span class="stats-label">每帧耗时</span>
+                  <span class="stats-label">数据提交频率</span>
+                  <span class="stats-value">{{ submitRate.toFixed(1) }}/s</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">到达 / 消费</span>
+                  <span class="stats-value">{{ arrivalRate.toFixed(1) }} / {{ consumeRate.toFixed(1) }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">最老等待</span>
+                  <span class="stats-value" :class="{ warn: oldestPendingMs > 1000 }">{{ oldestPendingMs.toFixed(0) }} ms</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">提交 P95</span>
+                  <span class="stats-value">{{ renderP95Ms.toFixed(2) }} ms</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">最近提交</span>
                   <span class="stats-value">{{ frameTime.toFixed(2) }} ms</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">订阅(目标/生效)</span>
+                  <span class="stats-value">{{ pointLimitLabel(requestedPointLimit) }} / {{ pointLimitLabel(effectivePointLimit) }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">接收 / 消费</span>
+                  <span class="stats-value">{{ totalReceived }} / {{ totalConsumed }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">可视保留 / 淘汰</span>
+                  <span class="stats-value">{{ visualPointCount }} / {{ visualEvicted }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">超窗已移出（{{ realtimeHistoryWindowMin }} 分钟）</span>
+                  <span class="stats-value">{{ realtimeWindowEvicted }}</span>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">LoAF 支持</span>
+                  <span class="stats-value">{{ loafSupported ? "支持" : "不支持" }}</span>
+                </div>
+                <div v-if="loafSupported" class="stats-section">
+                  <div class="stats-row"><span class="stats-label">LoAF 次数 (≥50 ms)</span><span class="stats-value" :class="{ warn: loafStats.count > 0 }">{{ loafStats.count }}</span></div>
+                  <div class="stats-row"><span class="stats-label">LoAF P95(近200) / 最大</span><span class="stats-value">{{ loafStats.p95Ms.toFixed(1) }} / {{ loafStats.maxMs.toFixed(1) }} ms</span></div>
+                  <div class="stats-row"><span class="stats-label">最近长帧</span><span class="stats-value">{{ loafStats.latestMs.toFixed(1) }} ms</span></div>
+                  <div class="stats-row"><span class="stats-label">有脚本归因的长帧</span><span class="stats-value">{{ loafStats.attributedCount }} / {{ loafStats.count }}</span></div>
+                  <div class="stats-row"><span class="stats-label">脚本累计 / 渲染阶段</span><span class="stats-value">{{ loafStats.latestScriptCount ? loafStats.latestScriptMs.toFixed(1) : "—" }} / {{ loafStats.latestRenderMs.toFixed(1) }} ms</span></div>
+                  <div class="stats-row"><span class="stats-label">rAF 等 / 样式起点后</span><span class="stats-value">{{ loafStats.latestPreStyleMs.toFixed(1) }} / {{ loafStats.latestPostStyleMs.toFixed(1) }} ms</span></div>
+                  <div class="stats-row"><span class="stats-label">脚本内强制布局</span><span class="stats-value">{{ loafStats.latestScriptCount ? loafStats.latestForcedLayoutMs.toFixed(1) + " ms" : "—" }}</span></div>
+                  <div class="stats-row"><span class="stats-label">最耗时脚本入口</span><span class="stats-value stats-source" :title="loafStats.topSourceURL">{{ loafStats.topScript }}</span></div>
+                  <div class="stats-row"><span class="stats-label">调用来源</span><span class="stats-value stats-source" :title="loafStats.topInvoker">{{ loafStats.topInvoker }}</span></div>
+                  <div class="stats-note">无归因时脚本耗时不可判定；“样式起点后”含布局和绘制，不能单独视作布局耗时。</div>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-label">控制状态</span>
+                  <span class="stats-value" :class="{ warn: overloaded }">{{ controlReason }}</span>
                 </div>
               </div>
             </div>
@@ -370,8 +438,11 @@
       <!-- 二维地图 -->
       <PlanimetricMap
         v-show="mapType == 1"
-        :mapList="mapList"
+        :mapList="currentMapPoints"
+        :realtimeBatch="realtimeBatch"
+        :realtimeBatchId="realtimeBatchId"
         :searchType="searchType"
+        :history-window-ms="realtimeHistoryWindowMs"
         ref="childMap"
         @getTimePointer="getTimePointer"
       >
@@ -380,7 +451,10 @@
       <StereoscopicMap
         v-if="mapType === 2"
         ref="child3DMap"
-        :mapList="mapList"
+        :mapList="currentMapPoints"
+        :realtimeBatch="realtimeBatch"
+        :realtimeBatchId="realtimeBatchId"
+        :history-window-ms="realtimeHistoryWindowMs"
         @getTimePointer="getTimePointer"
       >
       </StereoscopicMap>
@@ -475,6 +549,11 @@ import Details from "./components/Details.vue";
 import RangeConfig from "./components/RangeConfig.vue";
 import RealtimeClient from "./services/realtimeClient";
 import {
+  RafPerformanceMonitor,
+  percentile,
+} from "./services/RenderPerformanceMonitor";
+import { LongFrameDiagnostics } from "./services/LongFrameDiagnostics";
+import {
   fetchFiveMinuteWindow,
   fetchHistoryRange,
 } from "./services/historyApi";
@@ -512,14 +591,39 @@ export default {
       ],
       queuePending: 0, // 帧队列中尚未渲染的点数（运行指标面板展示）
       framePerRender: 1, // 客户端当前生效的每帧渲染数量
-      fps: 0, // 渲染帧率（FPS），运行指标面板展示（仅统计真实数据帧）
-      frameTime: 0, // 每帧渲染耗时（毫秒），取最近一帧实际耗时，不取平均
-      _frameCount: 0, // FPS 计量：当前 1 秒窗口内累计渲染的真实帧数
-      _frameWindowStart: 0, // FPS 计量：当前统计窗口起点（首帧时初始化）
+      fps: 0, // 独立 requestAnimationFrame 采样得到的真实画面帧率
+      baselineFps: 0,
+      frameIntervalMs: 1000 / 60,
+      submitRate: 0, // 每秒调用 handleRealtimePacket 的次数，不再冒充 FPS
+      frameTime: 0, // 从数据提交到下一次 rAF 的最近耗时
+      renderP95Ms: 0,
+      renderSamples: [],
+      submitWindowCount: 0,
+      submitWindowStartedAt: 0,
+      // 临时实验开关：为 true 时数据取出后不写入任何响应式状态（空渲染），
+      // 折线图与地图都收不到新 props，用于对照观察 rAF/FPS 是否受绘制链路影响。
+      // 观察结束后改回 false 即恢复真实渲染。
+      emptyRender: false,
+      arrivalRate: 0,
+      consumeRate: 0,
+      oldestPendingMs: 0,
+      queueSlope: 0,
+      overloaded: false,
+      controlReason: "initial",
+      requestedPointLimit: 0,
+      effectivePointLimit: 0,
+      totalReceived: 0,
+      totalConsumed: 0,
+      visualEvicted: 0,
+      loafSupported: false,
+      loafStats: new LongFrameDiagnostics().snapshot(),
+      performanceObserver: null,
+      rafMonitor: null,
       statsPanelShow: true, // 运行指标面板默认展开
       statsPollTimer: null,
-      realtimeFrameLimit: 1,
+      realtimeFrameLimit: "auto",
       realtimeFrameLimitOptions: [
+        { label: "自动", value: "auto" },
         { label: "1 点", value: 1 },
         { label: "2 点", value: 2 },
         { label: "5 点", value: 5 },
@@ -527,6 +631,17 @@ export default {
         { label: "20 点", value: 20 },
         { label: "50 点", value: 50 },
       ],
+      // 最大历史时间保留：只决定地图绘制最近多久的点，不改动底层数组长度。
+      // 底层数组另有容量上限（REALTIME_MAP_MAX_POINTS），两者相互独立。
+      realtimeHistoryWindowMin: 30,
+      realtimeHistoryWindowOptions: [
+        { label: "5 分钟", value: 5 },
+        { label: "15 分钟", value: 15 },
+        { label: "30 分钟", value: 30 },
+        { label: "60 分钟", value: 60 },
+        { label: "120 分钟", value: 120 },
+      ],
+      realtimeWindowEvicted: 0, // 因超出保留窗口而移出地图的点数（面板展示）
       sessionProfile: {},
       gasTypeList: [], //气体选择
       gasTypeData: {
@@ -576,10 +691,16 @@ export default {
       gasSelect: false, //气体选择弹窗
       searchType: 1, //查询方式1实时查询2历史查询
       mapList: [], //地图数据
+      // 冻结外壳阻止 Vue 2 对完整实时点数组递归观测；数组本身仍可追加。
+      realtimeMapStore: Object.freeze({ points: [] }),
+      visualPointCount: 0,
+      realtimeBatch: [],
+      realtimeBatchId: 0,
       // 气体数据
       gasdata: { code: 200, message: "ok", data: [] },
       // 用于天气获取经纬度
       weather_location_data: [116.4, 39.9], //默认北京
+      weatherLatestPoint: null,
       checkData: false, //是否选中数据
       // 标识是否连接成功
       connected: false,
@@ -601,6 +722,14 @@ export default {
     };
   },
   computed: {
+    currentMapPoints() {
+      return this.searchType === 1 ? this.realtimeMapStore.points : this.mapList;
+    },
+    /** 地图保留窗口（毫秒）；0 表示不限制。 */
+    realtimeHistoryWindowMs() {
+      const minutes = Number(this.realtimeHistoryWindowMin);
+      return Number.isFinite(minutes) && minutes > 0 ? minutes * 60 * 1000 : 0;
+    },
     canVisitRealtime() {
       return Boolean(
         this.sessionProfile.is_superuser ||
@@ -641,6 +770,9 @@ export default {
       this.signalState = "当前账户没有数据可视化查询权限";
     }
   },
+  mounted() {
+    this.startPerformanceMonitoring();
+  },
   beforeDestroy() {
     this.historyRequestSequence += 1;
     this.realtimeRequestSequence += 1;
@@ -650,11 +782,70 @@ export default {
     );
     // 先摘掉 document 上的监听，再停连接与轮询，避免销毁后仍有回调触发。
     document.removeEventListener("click", this.handleDocumentClick);
+    if (this.rafMonitor) {
+      this.rafMonitor.stop();
+      this.rafMonitor = null;
+    }
+    if (this.performanceObserver) {
+      this.performanceObserver.disconnect();
+      this.performanceObserver = null;
+    }
     this.stopStatsPolling();
     this.statsPanelShow = false;
     this.stopRealtime();
   },
   methods: {
+    startPerformanceMonitoring() {
+      if (this.rafMonitor) return;
+      this.submitWindowStartedAt = performance.now();
+      this.rafMonitor = new RafPerformanceMonitor((snapshot) => {
+        this.fps = snapshot.fps;
+        this.baselineFps = snapshot.baselineFps;
+        this.frameIntervalMs = snapshot.frameIntervalMs;
+        this.loafStats = this._loafDiagnostics.snapshot();
+        if (this.realtimeClient) {
+          this.realtimeClient.reportRenderPerformance({
+            nowMs: performance.now(),
+            actualFps: snapshot.fps,
+            baselineFps: snapshot.baselineFps,
+            renderP95Ms: this.renderP95Ms,
+            frameIntervalMs: snapshot.frameIntervalMs,
+          });
+          this.refreshStats();
+        }
+      });
+      this._loafDiagnostics = new LongFrameDiagnostics();
+      this.rafMonitor.start();
+      if (typeof PerformanceObserver !== "undefined") {
+        const supported = PerformanceObserver.supportedEntryTypes || [];
+        this.loafSupported = supported.includes("long-animation-frame");
+        if (this.loafSupported) {
+          this.performanceObserver = new PerformanceObserver((list) => {
+            list.getEntries().forEach((entry) => this._loafDiagnostics.record(entry));
+          });
+          this.performanceObserver.observe({
+            type: "long-animation-frame",
+            buffered: true,
+          });
+        }
+      }
+    },
+    recordRenderCompletion(startedAt) {
+      this.$nextTick(() => {
+        const commitDuration = performance.now() - startedAt;
+        this.renderSamples.push(commitDuration);
+        if (this.renderSamples.length > 120) {
+          this.renderSamples.splice(0, this.renderSamples.length - 120);
+        }
+        this.renderP95Ms = percentile(this.renderSamples, 0.95);
+        window.requestAnimationFrame(() => {
+          this.frameTime = performance.now() - startedAt;
+        });
+      });
+    },
+    pointLimitLabel(value) {
+      return Number(value) === 0 ? "全部" : String(value);
+    },
     getSessionProfile() {
       try {
         return JSON.parse(localStorage.getItem("user") || "{}");
@@ -680,7 +871,11 @@ export default {
         onStatus: this.handleRealtimeStatus,
         initialBucketStartMs: Number(options.initialBucketStartMs),
         maxPointsPerSecond: this.realtimePointLimit,
-        maxPerFrame: this.realtimeFrameLimit,
+        maxPerFrame:
+          this.realtimeFrameLimit === "auto"
+            ? 1
+            : Number(this.realtimeFrameLimit),
+        adaptiveRendering: this.realtimeFrameLimit === "auto",
       });
       this.realtimeClient.start();
       // 面板若已展开，新连接建立后继续采样。
@@ -715,25 +910,38 @@ export default {
     },
     /** 面板数字取自客户端当前生效值，避免下拉绑定值与实现出现两份真相。 */
     refreshStats() {
-      this.queuePending = this.realtimeClient
-        ? this.realtimeClient.pendingCount()
-        : 0;
-      this.framePerRender = this.realtimeClient
-        ? this.realtimeClient.maxPerFrameValue()
-        : this.realtimeFrameLimit;
-      this.aggregateFps();
+      if (this.realtimeClient) {
+        const stats = this.realtimeClient.runtimeStats();
+        this.queuePending = stats.pending;
+        this.framePerRender = stats.batchSize;
+        this.arrivalRate = stats.arrivalRate;
+        this.consumeRate = stats.consumeRate;
+        this.oldestPendingMs = stats.oldestPendingMs;
+        this.queueSlope = stats.queueSlope;
+        this.overloaded = stats.overloaded;
+        this.controlReason = stats.reason;
+        this.requestedPointLimit = stats.requestedPointLimit;
+        this.effectivePointLimit = stats.effectivePointLimit;
+        this.totalReceived = stats.totalReceived;
+        this.totalConsumed = stats.totalConsumed;
+      } else {
+        this.queuePending = 0;
+      }
+      this.aggregateSubmitRate();
     },
     /**
-     * 聚合 FPS：每帧在 handleRealtimePacket 里累加 _frameCount；只有“时间满 1 秒且当前队列
-     * 不为空”才把累计帧数提交为 FPS，并清零计数与窗口起点。队列空时不提交、不清零，
+     * 聚合 FPS：每帧在 handleRealtimePacket 里累加 _frameCount；只有"时间满 1 秒且当前队列
+     * 不为空"才把累计帧数提交为 FPS，并清零计数与窗口起点。队列空时不提交、不清零，
      * FPS 保留最近一次有效值（不会显示 0）。
      */
-    aggregateFps() {
+    aggregateSubmitRate() {
       const now = performance.now();
-      if (now - this._frameWindowStart >= 1000 && this.queuePending > 0) {
-        this.fps = this._frameCount;
-        this._frameCount = 0;
-        this._frameWindowStart = now;
+      if (!this.submitWindowStartedAt) this.submitWindowStartedAt = now;
+      const elapsed = now - this.submitWindowStartedAt;
+      if (elapsed >= 1000) {
+        this.submitRate = this.submitWindowCount * 1000 / elapsed;
+        this.submitWindowCount = 0;
+        this.submitWindowStartedAt = now;
       }
     },
     /** 点击面板与按钮之外的任意区域关闭。 */
@@ -747,6 +955,7 @@ export default {
       this.toggleStatsPanel();
     },
     changeRealtimePointLimit(value) {
+      this.requestedPointLimit = Number(value);
       if (this.realtimeClient) {
         this.realtimeClient.setMaxPointsPerSecond(Number(value));
       }
@@ -758,9 +967,38 @@ export default {
      */
     changeRealtimeFrameLimit(value) {
       if (this.realtimeClient) {
-        this.realtimeClient.setMaxPerFrame(Number(value));
+        if (value === "auto") {
+          this.realtimeClient.setAdaptiveRendering(true);
+        } else {
+          this.realtimeClient.setMaxPerFrame(Number(value));
+        }
         this.refreshStats();
       }
+    },
+    /**
+     * 最大历史保留只影响地图绘制的时间范围，底层数组不动。
+     * 窗口改小后立刻让两张地图各淘汰一次超窗可视对象，不必等下一批数据到达。
+     *
+     * 必须等 $nextTick：prop 是异步下发的，在 @change 里同步调用时子组件读到的
+     * 仍是上一个窗口值，用旧窗口算出的 cutoff 更靠前，会一个对象都命中不到。
+     */
+    changeRealtimeHistoryWindow() {
+      this.$nextTick(() => {
+        this.evictOutsideHistoryWindow();
+        this.refreshStats();
+      });
+    },
+    /** 让当前可见的地图按保留窗口淘汰一次，返回本次移出的可视点数。 */
+    evictOutsideHistoryWindow() {
+      let evicted = 0;
+      const targets = [this.$refs.childMap, this.$refs.child3DMap];
+      for (const map of targets) {
+        if (map && typeof map.evictOutsideHistoryWindow === "function") {
+          evicted += map.evictOutsideHistoryWindow() || 0;
+        }
+      }
+      if (evicted > 0) this.realtimeWindowEvicted += evicted;
+      return evicted;
     },
     stopRealtime() {
       if (this.realtimeClient) {
@@ -769,7 +1007,16 @@ export default {
       }
       this.stopStatsPolling();
       this.queuePending = 0;
-      this.framePerRender = this.realtimeFrameLimit;
+      this.framePerRender =
+        this.realtimeFrameLimit === "auto"
+          ? 1
+          : Number(this.realtimeFrameLimit);
+      this.arrivalRate = 0;
+      this.consumeRate = 0;
+      this.oldestPendingMs = 0;
+      this.queueSlope = 0;
+      this.overloaded = false;
+      this.controlReason = "stopped";
       this.connected = false;
     },
     /** 处理实时连接状态 */
@@ -801,9 +1048,19 @@ export default {
         // normalizeEnvelope 只保证 code 是数字、data 是数组；点位内部的字段合法性交给下游渲染容错。
         const result = normalizeEnvelope(packet);
         if (result.code === 200 && result.data.length) {
-          // 计时范围就是“真正渲染这一帧数据”的工作：增量并入折线图与地图、刷新详情卡与天气。
-          // 取最近一帧的实际耗时（不取平均），同时累计帧数用于 FPS 统计。
+          // 数据提交频率统计：只要包被消费就计数，与是否真正绘制无关。
+          this.submitWindowCount += 1;
           const t0 = performance.now();
+          // 空渲染实验：取出数据后不写入任何响应式状态，子组件收不到新 props，
+          // 折线图与地图都不重绘。但提交耗时仍照常测量，让 renderP95Ms / frameTime
+          // 反映「空渲染提交成本」——与真实渲染对比时，差值即绘制链路的开销。
+          if (this.emptyRender) {
+            this.signalState = "";
+            this.recordRenderCompletion(t0);
+            return;
+          }
+          // 同步开始点覆盖状态合并；$nextTick 后记录 Vue/子组件提交成本，
+          // 下一次 rAF 再记录端到端可见延迟。两者都不再冒充真实 FPS。
           const point = result.data[result.data.length - 1];
           // 两条曲线用的是不同的保留策略，所以必须各自增量合并，不能共用一份：
           // 折线图按时间窗口淘汰（以最新点为基准向前留 REALTIME_CHART_WINDOW_MS），
@@ -812,18 +1069,17 @@ export default {
             this.gasdata.data,
             result.data,
           );
-          const nextMapPoints = appendRealtimeBatch(this.mapList, result.data);
+          appendRealtimeBatch(this.realtimeMapStore.points, result.data);
           this.gasdata = { ...result, data: nextGasPoints };
-          this.mapList = nextMapPoints;
+          this.visualPointCount = this.realtimeMapStore.points.length;
+          this.realtimeBatch = result.data.slice();
+          this.realtimeBatchId += 1;
           // 详情卡与天气只关心批次里的最后一个点。
           this.detailData = point;
           this.detailsFlag = true;
           this.weatherLocationUpdate(point);
           this.signalState = "";
-          this.frameTime = performance.now() - t0;
-          const now = performance.now();
-          if (!this._frameWindowStart) this._frameWindowStart = now;
-          this._frameCount += 1; // 每渲染一帧累加计数
+          this.recordRenderCompletion(t0);
         } else if (result.code === 204) {
           // 204 = 链路正常但本次无新数据，原样透传服务端文案。
           this.signalState = result.message;
@@ -887,7 +1143,7 @@ export default {
       this.gasSelect = false;
     },
     redrawRealtimeConcentration() {
-      const points = Array.isArray(this.mapList) ? this.mapList : [];
+      const points = this.getRealtimeMapPoints();
       if (
         this.$refs.childMap &&
         this.$refs.childMap.redrawConcentrationByGas
@@ -906,7 +1162,7 @@ export default {
       }
     },
     redrawRealtimeWindow() {
-      const points = Array.isArray(this.mapList) ? this.mapList : [];
+      const points = this.getRealtimeMapPoints();
       if (this.mapType === 1 && this.$refs.childMap) {
         this.$refs.childMap.updatedMapSize();
         if (this.$refs.childMap.redrawRealtimeWindow) {
@@ -944,6 +1200,9 @@ export default {
       this.searchType = val;
       if (val === 2) {
         this.stopRealtime();
+        this.realtimeMapStore.points.length = 0;
+        this.visualPointCount = 0;
+        this.weatherLatestPoint = null;
         this.checkData = false;
         this.dateShow = true;
         this.detailsFlag = false;
@@ -969,7 +1228,10 @@ export default {
       this.loading = true;
       this.historyData = { code: 200, message: "ok", data: [] };
       this.gasdata = { code: 200, message: "ok", data: [] };
+      this.weatherLatestPoint = null;
       this.mapList = [];
+      this.realtimeMapStore.points.length = 0;
+      this.visualPointCount = 0;
       this.checkData = false;
       this.detailsFlag = false;
       if (this.$refs.childMap) {
@@ -990,7 +1252,8 @@ export default {
       } finally {
         if (this.isCurrentRealtimeRequest(requestSequence)) {
           this.loading = false;
-          const latestPoint = this.mapList[this.mapList.length - 1];
+          const mapPoints = this.getRealtimeMapPoints();
+          const latestPoint = mapPoints[mapPoints.length - 1];
           const latestPointTime = Date.parse(latestPoint && latestPoint.time);
           const initialBucketStartMs = Number.isFinite(latestPointTime) // 如果有最新采集数据，则从最新采集数据的下一秒开始推送
             ? Math.floor(latestPointTime / 1000) * 1000 + 1000
@@ -1003,8 +1266,15 @@ export default {
     },
     applyRealtimeInitialWindow(result) {
       const points = Array.isArray(result.data) ? result.data : [];
-      this.gasdata = result;
-      this.mapList = points.slice();
+      this.gasdata = {
+        ...result,
+        data: appendRealtimeTimeWindow([], points),
+      };
+      this.realtimeMapStore.points.length = 0;
+      appendRealtimeBatch(this.realtimeMapStore.points, points);
+      this.visualPointCount = this.realtimeMapStore.points.length;
+      this.visualEvicted = 0;
+      this.realtimeWindowEvicted = 0;
       this.checkData = points.length > 0;
       this.detailsFlag = points.length > 0;
       if (points.length) {
@@ -1013,6 +1283,7 @@ export default {
         this.weatherLocationUpdate(latestPoint);
         this.signalState = "";
       } else {
+        this.weatherLatestPoint = null;
         this.signalState = "无最新采集数据";
       }
       this.$nextTick(() => {
@@ -1041,6 +1312,7 @@ export default {
         this.loading = true;
         this.historyData = { code: 200, message: "ok", data: [] };
         this.gasdata = { code: 200, message: "ok", data: [] };
+        this.weatherLatestPoint = null;
         this.mapList = [];
         this.checkData = false;
         this.detailsFlag = false;
@@ -1050,6 +1322,8 @@ export default {
         }
         this.historyData = result;
         this.gasdata = result;
+        this.weatherLatestPoint = result.data.length
+          ? result.data[result.data.length - 1] : null;
         this.mapList = result.data.slice();
         this.checkData = result.data.length > 0;
         this.historyStatus = result.data.length ? "success" : "empty";
@@ -1076,7 +1350,14 @@ export default {
     //清除实时缓存数据
     clearData() {
       this.mapList = [];
+      this.realtimeMapStore.points.length = 0;
+      this.visualPointCount = 0;
+      this.realtimeBatch = [];
+      this.realtimeBatchId += 1;
+      this.visualEvicted = 0;
+      this.realtimeWindowEvicted = 0;
       this.gasdata = { code: 200, message: "ok", data: [] };
+      this.weatherLatestPoint = null;
       this.detailsFlag = false;
       if (this.$refs.childMap) {
         this.$refs.childMap.removeTC();
@@ -1085,10 +1366,23 @@ export default {
         this.$refs.child3DMap.remove();
       }
     },
+    getRealtimeMapPoints() {
+      return this.realtimeMapStore.points;
+    },
     /** 获取天气数据经纬度 */
     weatherLocationUpdate(point) {
+      this.weatherLatestPoint = point || null;
       if (point && Array.isArray(point.geo_location)) {
-        this.weather_location_data = point.geo_location.slice();
+        const next = point.geo_location.map(Number);
+        if (next.length !== 2 || !next.every(Number.isFinite)) return;
+        const current = this.weather_location_data;
+        if (Array.isArray(current) && current.length === 2 &&
+            current.every((value) => Number.isFinite(Number(value))) &&
+            current.every((value, index) =>
+              Number(value).toFixed(2) === next[index].toFixed(2))) {
+          return;
+        }
+        this.weather_location_data = next;
       }
     },
 
@@ -1749,7 +2043,9 @@ export default {
       position: absolute;
       bottom: calc(100% + 8px);
       right: 0;
-      width: 170px;
+      width: 315px;
+      max-height: 75vh;
+      overflow-y: auto;
       padding: 8px 10px;
       border-radius: 4px;
       background: rgba(18, 35, 54, 0.7);
@@ -1782,6 +2078,24 @@ export default {
     }
     .stats-value.warn {
       color: #ff7b10;
+    }
+    .stats-section {
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    .stats-source {
+      max-width: 165px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stats-note {
+      margin-top: 4px;
+      color: #9fb3c1;
+      font-size: 10px;
+      line-height: 1.35;
     }
   }
   .right {
@@ -1855,7 +2169,7 @@ export default {
       height: 180px !important;
     }
     .stats-panel {
-      width: 150px;
+      width: min(315px, calc(100vw - 24px));
     }
     .btn-content1,
     .btn-content2,
@@ -1891,7 +2205,7 @@ export default {
       right: 2vw !important;
     }
     .stats-panel {
-      width: 150px;
+      width: min(315px, calc(100vw - 24px));
     }
     .btn-content1,
     .btn-content2,

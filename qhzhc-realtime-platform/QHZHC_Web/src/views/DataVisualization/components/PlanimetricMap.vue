@@ -33,7 +33,7 @@
 
 import "ol/ol.css";
 
-import Map from "ol/Map";
+import OlMap from "ol/Map";
 import View from "ol/View";
 
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
@@ -58,12 +58,18 @@ import {
 
 import iconSrc from "@/assets/imgs/truck.png";
 
+const ROUTE_CHUNK_MAX_POINTS = 256;
+
 export default {
   props: {
     width: { type: String, default: "100%" },
     height: { type: String, default: "100%" },
     mapList: { type: Array, required: true },
+    realtimeBatch: { type: Array, default: () => [] },
+    realtimeBatchId: { type: Number, default: 0 },
     searchType: { type: Number },
+    /** 「最大历史保留」窗口（毫秒）；0 表示不限制。只影响可视对象，不改动点数组。 */
+    historyWindowMs: { type: Number, default: 0 },
   },
 
   data() {
@@ -80,9 +86,15 @@ export default {
 
       routeLayer: null,      // 轨迹线图层（layer）
       routeSource: null,     // 轨迹线数据源（source）
+      routeChunkFeature: null,
+      routeChunkPointCount: 0,
+      routeChunkLastCoordinate: null,
 
       pointLayer: null,      // 浓度点图层（layer）
       pointSource: null,     // 浓度点数据源（source）
+      pointStyleCache: new Map(),
+      routeStyleCache: new Map(),
+      selectedPointFeature: null,
 
       // ========= 业务数据 =========
       points: [],            // mapList 的工作副本（点列表）
@@ -142,25 +154,23 @@ export default {
   },
 
   watch: {
-    /**
-     * 实时数据更新：mapList 变化时
-     * - 将 points 指向最新列表
-     * - index 指向最后一个（最新点）
-     * - 执行实时点绘制（moveCircle）
-     */
+    // 兼容历史模式和既有外部调用；实时模式只由 realtimeBatchId 驱动，避免重复绘制。
     mapList: {
-      deep: true,
+      deep: false,
       handler(newVal) {
-        if (!Array.isArray(newVal) || newVal.length === 0) return;
+        if (!Array.isArray(newVal) || !newVal.length) return;
         if (this.$parent && this.$parent.mapType !== 1) return;
-
+        if (this.searchType === 1) return;
         this.points = newVal;
         this.index = newVal.length - 1;
         this.dataForm = this.points[this.index];
-
-        // 实时绘制：移动车辆 + 追加一个浓度点
-        this.drawRealtimePoint();
       },
+    },
+    /** 只监听批次版本，不再深度遍历不断增长的完整 mapList。 */
+    realtimeBatchId() {
+      if (this.searchType !== 1) return;
+      if (this.$parent && this.$parent.mapType !== 1) return;
+      this.drawRealtimeBatch(this.realtimeBatch);
     },
 
     /**
@@ -304,7 +314,7 @@ export default {
           ];
 
       // --- 2) Map + View ---
-      this.map = new Map({
+      this.map = new OlMap({
         target: "olMap",
         layers: baseLayers,
         view: new View({
@@ -339,6 +349,29 @@ export default {
     },
 
     /** 轨迹线图层（历史播放时追加线段） */
+    getRouteStyle(color) {
+      if (!this.routeStyleCache) this.routeStyleCache = new Map();
+      if (!this.routeStyleCache.has(color)) {
+        this.routeStyleCache.set(color, new Style({
+          fill: new Fill({ color: "#12FF9B" }),
+          stroke: new Stroke({ color, width: 2 }),
+        }));
+      }
+      return this.routeStyleCache.get(color);
+    },
+    getPointStyle(color, radius) {
+      if (!this.pointStyleCache) this.pointStyleCache = new Map();
+      const key = `${color}:${radius}`;
+      if (!this.pointStyleCache.has(key)) {
+        this.pointStyleCache.set(key, new Style({
+          image: new CircleStyle({
+            radius,
+            fill: new Fill({ color }),
+          }),
+        }));
+      }
+      return this.pointStyleCache.get(key);
+    },
     initRouteLayer() {
       this.routeSource = new VectorSource({ features: [] });
 
@@ -346,15 +379,7 @@ export default {
         source: this.routeSource,
         zIndex: 1006,
         // style 采用 feature 的 color 字段控制线颜色（保持原机制）
-        style: (feature) => {
-          return new Style({
-            fill: new Fill({ color: "#12FF9B" }),
-            stroke: new Stroke({
-              color: feature.get("color"),
-              width: 2,
-            }),
-          });
-        },
+        style: (feature) => this.getRouteStyle(feature.get("color")),
       });
 
       this.map.addLayer(this.routeLayer);
@@ -370,14 +395,9 @@ export default {
         title: "查询站点",
         visible: true,
         // style 由 feature 自身的 color/radius 决定（保持原机制）
-        style: (feature) => {
-          return new Style({
-            image: new CircleStyle({
-              radius: feature.get("radius"),
-              fill: new Fill({ color: feature.get("color") }),
-            }),
-          });
-        },
+        style: (feature) => this.getPointStyle(
+          feature.get("color"), feature.get("radius"),
+        ),
       });
 
       this.map.addLayer(this.pointLayer);
@@ -399,6 +419,8 @@ export default {
 
       this.pointSource && this.pointSource.clear();
       this.routeSource && this.routeSource.clear();
+      this.resetRouteChunk();
+      this.selectedPointFeature = null;
 
       if (this.iconLayer) this.iconLayer.getSource().clear();
       if (this.iconSource && this.iconFeature) this.iconSource.removeFeature(this.iconFeature);
@@ -415,6 +437,7 @@ export default {
      */
     removeCircle() {
       this.pointSource && this.pointSource.clear();
+      this.selectedPointFeature = null;
 
       if (Array.isArray(this.mapList) && this.mapList.length > 0) {
         this.index = this.mapList.length - 1;
@@ -427,6 +450,7 @@ export default {
       this.gasType = gasType;
       this.gasName = gasName;
       this.pointSource && this.pointSource.clear();
+      this.selectedPointFeature = null;
 
       const nextPoints = Array.isArray(points) ? points : [];
       this.points = nextPoints;
@@ -474,6 +498,58 @@ export default {
      * 4) 实时绘制（移动车辆 + 追加一个点）
      * ========================= */
 
+    drawRealtimeBatch(batch) {
+      if (!Array.isArray(batch) || !batch.length) return;
+      this.points = Array.isArray(this.mapList) ? this.mapList : [];
+      // 先按保留窗口移出超窗浓度点，再绘制本批新点，保证窗口始终生效。
+      this.evictOutsideHistoryWindow();
+      const startIndex = Math.max(0, this.points.length - batch.length);
+      const lastIndex = this.points.length - 1;
+      for (let index = startIndex; index <= lastIndex; index++) {
+        this.drawRealtimePoint(index, index === lastIndex);
+      }
+      this.index = lastIndex;
+      this.dataForm = this.points[lastIndex];
+    },
+
+    /**
+     * 按「最大历史保留」窗口移出超窗的浓度点可视对象，返回本次移出的点数。
+     *
+     * 两点约定：
+     * 1. 只删除地图对象，不删除父组件的点数组——数组另有容量上限，两者独立。
+     * 2. 用点自身的采样时间判断新旧，不用数组下标：数组达到容量上限后会丢弃
+     *    最旧的点，下标会整体前移，只有时间稳定。
+     *
+     * 注意：轨迹线段按分块保留，不参与窗口淘汰（分块没有逐点时间），
+     * 所以本窗口约束的是浓度点数量。
+     */
+    evictOutsideHistoryWindow() {
+      const windowMs = Number(this.historyWindowMs) || 0;
+      if (!windowMs || !this.pointSource) return 0;
+      // 用 prop 而不是内部 this.points：后者只在增量绘制与切气体时赋值，
+      // 初始窗口铺数据走 redrawRealtimeWindow，不会写 this.points。
+      const points = Array.isArray(this.mapList) ? this.mapList : [];
+      const count = points.length;
+      if (count < 2) return 0;
+      const latestTs = Date.parse(points[count - 1] && points[count - 1].time);
+      if (!Number.isFinite(latestTs)) return 0;
+      const cutoff = latestTs - windowMs;
+
+      const features = this.pointSource.getFeatures();
+      let removed = 0;
+      // feature 按插入顺序排列，最旧的在前，命中窗口边界即可停止。
+      while (removed < features.length) {
+        const feature = features[removed];
+        const data = feature && feature.get ? feature.get("data") : null;
+        const ts = Date.parse(data && data.time);
+        // 时间不可解析时停止，宁可不淘汰也不误删。
+        if (!Number.isFinite(ts) || ts >= cutoff) break;
+        this.pointSource.removeFeature(feature);
+        removed += 1;
+      }
+      return removed;
+    },
+
     /**
      * drawRealtimePoint（原 moveCircle）
      * - 更新当前气体区间范围 gasRange
@@ -481,20 +557,19 @@ export default {
      * - 车辆图标：首次创建；否则更新位置 + 调整朝向
      * - 浓度点：按 gasType 值映射颜色并追加绘制
      */
-    drawRealtimePoint() {
-      if (!this.points || !this.points[this.index]) return;
+    drawRealtimePoint(pointIndex = this.index, updateView = true) {
+      if (!this.points || !this.points[pointIndex]) return;
 
       // 1) 获取当前区间
       this.gasRange = this.getCurrentGasRange();
 
-      const current = this.points[this.index];
+      const current = this.points[pointIndex];
       if (!this.hasValidGeoLocation(current)) return;
 
       const center3857 = this.to3857(current.geo_location);
 
       // 2) 是否跟随居中（保持你原逻辑）
-      if (this.$parent.viewFlag) {
-        this.map.updateSize();
+      if (updateView && this.$parent.viewFlag) {
         this.map.getView().setCenter(center3857);
       }
 
@@ -502,7 +577,7 @@ export default {
       this.ensureOrUpdateCar(center3857);
 
       // 4) 追加路线线段
-      this.drawRouteSegment(this.points[this.index - 1], current);
+      this.drawRouteSegment(this.points[pointIndex - 1], current);
 
       // 5) 绘制浓度点（半径=2：保持你原实时点效果）
       const value = current[this.gasType];
@@ -515,11 +590,8 @@ export default {
         radius: 2,
         data: current,
       });
-      pointFeature.setId(this.buildFeatureId("realtime-point", current, this.index));
+      pointFeature.setId(this.buildFeatureId("realtime-point", current, pointIndex));
       this.pointSource.addFeature(pointFeature);
-      // 轨迹不设保留上限：已绘制的点与线段一直保留到 removeTC() 整体清理为止。
-
-      this.index++;
     },
 
     /**
@@ -596,20 +668,36 @@ export default {
         !this.hasValidGeoLocation(previous) ||
         !this.hasValidGeoLocation(current)
       ) {
+        this.resetRouteChunk();
         return;
       }
 
-      const coordinates = [
-        this.to3857(previous.geo_location),
-        this.to3857(current.geo_location),
-      ];
-      this.routeSource.addFeature(
-        new Feature({
+      const previousCoordinate = this.to3857(previous.geo_location);
+      const currentCoordinate = this.to3857(current.geo_location);
+      const last = this.routeChunkLastCoordinate;
+      const continuous = last &&
+        last[0] === previousCoordinate[0] &&
+        last[1] === previousCoordinate[1];
+      if (!this.routeChunkFeature ||
+          this.routeChunkPointCount >= ROUTE_CHUNK_MAX_POINTS ||
+          !continuous) {
+        this.routeChunkFeature = new Feature({
           type: "LineString",
-          geometry: new LineString(coordinates),
+          geometry: new LineString([previousCoordinate, currentCoordinate]),
           color: "#12FF9B",
-        }),
-      );
+        });
+        this.routeSource.addFeature(this.routeChunkFeature);
+        this.routeChunkPointCount = 2;
+      } else {
+        this.routeChunkFeature.getGeometry().appendCoordinate(currentCoordinate);
+        this.routeChunkPointCount += 1;
+      }
+      this.routeChunkLastCoordinate = currentCoordinate;
+    },
+    resetRouteChunk() {
+      this.routeChunkFeature = null;
+      this.routeChunkPointCount = 0;
+      this.routeChunkLastCoordinate = null;
     },
 
     drawRouteSegments(list) {
@@ -636,6 +724,9 @@ export default {
 
       // 1) 清除浓度点
       this.pointSource.clear();
+      this.selectedPointFeature = null;
+      this.routeSource.clear();
+      this.resetRouteChunk();
 
       // 2) 创建车辆
       this.iconFeature = new Feature({
@@ -672,14 +763,7 @@ export default {
           this.iconFeature.getStyle().getImage().setRotation(this.calcRotation(p1, p2));
 
           // 追加线段
-          const coordinates = [this.to3857(p1), this.to3857(p2)];
-          this.routeSource.addFeature(
-            new Feature({
-              type: "LineString",
-              geometry: new LineString(coordinates),
-              color: "#12FF9B",
-            })
-          );
+          this.drawRouteSegment(data[i], data[i + 1]);
 
           i++;
         } else {
@@ -709,6 +793,7 @@ export default {
       }
       // 1) 清除实时绘制路径及车辆
       this.routeSource.clear();
+      this.resetRouteChunk();
       this.iconLayer.getSource().clear();
 
       // 2) 停止历史播放
@@ -717,6 +802,7 @@ export default {
 
       // 3) 清除点
       this.pointSource.clear();
+      this.selectedPointFeature = null;
 
       if (!Array.isArray(list) || list.length === 0) return;
 
@@ -785,26 +871,11 @@ export default {
         return;
       }
 
-      this.pointSource.getFeatures().forEach((item) => {
-        const originColor = item.get("color");
-        item.setStyle(
-          new Style({
-            image: new CircleStyle({
-              radius: 5,
-              fill: new Fill({ color: originColor }),
-            }),
-          }),
-        );
-      });
-
-      selectedFeature.setStyle(
-        new Style({
-          image: new CircleStyle({
-            radius: 5,
-            fill: new Fill({ color: "#0095FF" }),
-          }),
-        }),
-      );
+      if (this.selectedPointFeature && this.selectedPointFeature !== selectedFeature) {
+        this.selectedPointFeature.setStyle(undefined);
+      }
+      selectedFeature.setStyle(this.getPointStyle("#0095FF", 5));
+      this.selectedPointFeature = selectedFeature;
 
       this.dataForm = selectedFeature.get("data");
       this.$emit("getTimePointer", this.dataForm);

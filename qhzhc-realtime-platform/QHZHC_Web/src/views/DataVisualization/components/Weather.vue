@@ -498,9 +498,9 @@ export default {
       type: Array,
       default: () => [],
     },
-    newdata: {
+    latestPoint: {
       type: Object,
-      default: () => {},
+      default: null,
     },
   },
   filters: {
@@ -590,22 +590,10 @@ export default {
     },
   },
   watch: {
-    newdata: {
-      //第一次挂载组件时，数据不会监听到。通过mounted方法初始化图表
-      deep: true,
-      handler(newval) {
-        if (newval.data && newval.data.length) {
-          const data = newval.data[newval.data.length - 1];
-          this.pressure = formatDecimal(data.pressure); //气压
-          this.speed_of_true_wind = formatDecimal(
-            firstPresent(data.speed_of_true_wind, data.r),
-          ); //风速
-          this.direction_of_true_wind = formatWindDirection(
-            firstPresent(data.direction_of_true_wind, data.angle),
-          ); //风向
-          this.relative_humidity = formatDecimal(data.relative_humidity); //湿度
-          // console.log("监听newdata数据改变", newval, this.pressure, this.speed_of_true_wind);
-        }
+    latestPoint: {
+      deep: false,
+      handler(point) {
+        this.applyLatestPoint(point);
       },
     },
     location: {
@@ -616,6 +604,7 @@ export default {
     },
   },
   created() {
+    this.applyLatestPoint(this.latestPoint);
     this.loadWeather();
   },
   beforeDestroy() {
@@ -629,6 +618,17 @@ export default {
     }
   },
   methods: {
+    applyLatestPoint(point) {
+      if (!point) return;
+      this.pressure = formatDecimal(point.pressure);
+      this.speed_of_true_wind = formatDecimal(
+        firstPresent(point.speed_of_true_wind, point.r),
+      );
+      this.direction_of_true_wind = formatWindDirection(
+        firstPresent(point.direction_of_true_wind, point.angle),
+      );
+      this.relative_humidity = formatDecimal(point.relative_humidity);
+    },
     handleClick() {
       if (this.activeName === "first") {
         this.$nextTick(() => {

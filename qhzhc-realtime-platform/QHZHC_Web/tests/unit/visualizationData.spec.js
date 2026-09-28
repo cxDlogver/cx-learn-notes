@@ -1,6 +1,7 @@
 import { getChart } from "@/views/DataVisualization/components/chartData";
 import {
   appendRealtimePoint,
+  appendRealtimeBatch,
   appendRealtimeTimeWindow,
   normalizeEnvelope,
   validateHistoryRange,
@@ -17,6 +18,18 @@ describe("visualization data helpers", () => {
     expect(result).toHaveLength(300);
     expect(result[0].time).toBe("1");
     expect(result[299].time).toBe("300");
+  });
+
+  test("realtime map history appends all points without copying or eviction", () => {
+    const existing = Array.from({ length: 5 }, (_, sequence) => ({ sequence }));
+    const incoming = [{ sequence: 5 }, { sequence: 6 }];
+
+    const result = appendRealtimeBatch(existing, incoming);
+
+    expect(result).toBe(existing);
+    expect(result.map((point) => point.sequence)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(existing).toHaveLength(7);
+    expect(incoming).toHaveLength(2);
   });
 
   test("appendRealtimeTimeWindow retains the inclusive latest five minutes", () => {

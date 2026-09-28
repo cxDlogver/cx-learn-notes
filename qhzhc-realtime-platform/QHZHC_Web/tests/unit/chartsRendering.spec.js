@@ -42,9 +42,9 @@ describe("VisualizationCharts rendering", () => {
     expect(mockSetOption).toHaveBeenCalledTimes(1);
     expect(mockSetOption.mock.calls[0][1]).toEqual({
       notMerge: true,
-      lazyUpdate: false,
+      lazyUpdate: true,
     });
-    expect(mockResize).toHaveBeenCalledTimes(1);
+    expect(mockResize).not.toHaveBeenCalled();
   });
 
   test("realtime charts derive an exact rolling five-minute time axis", () => {
@@ -93,5 +93,25 @@ describe("VisualizationCharts rendering", () => {
     const option = mockSetOption.mock.calls[0][0];
     expect(option.xAxis).not.toHaveProperty("min");
     expect(option.xAxis).not.toHaveProperty("max");
+  });
+
+  test("coalesces nearby realtime updates and cancels pending work on destroy", async () => {
+    jest.useFakeTimers();
+    try {
+      const wrapper = shallowMount(Charts, {
+        propsData: { chartName: "CH4", searchType: 1, newdata: { data: [] } },
+      });
+      await wrapper.setProps({ newdata: { data: [{ time: "2026-08-22T10:05:00.000Z" }] } });
+      await wrapper.setProps({ newdata: { data: [{ time: "2026-08-22T10:05:01.000Z" }] } });
+      expect(mockSetOption).toHaveBeenCalledTimes(1);
+      jest.advanceTimersByTime(120);
+      expect(mockSetOption).toHaveBeenCalledTimes(2);
+      await wrapper.setProps({ newdata: { data: [{ time: "2026-08-22T10:05:02.000Z" }] } });
+      wrapper.destroy();
+      jest.advanceTimersByTime(120);
+      expect(mockSetOption).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
