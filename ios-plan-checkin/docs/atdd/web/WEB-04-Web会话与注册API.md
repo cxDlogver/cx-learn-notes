@@ -2,7 +2,7 @@
 
 | 项目 | 实际结果 |
 | --- | --- |
-| 状态 | `IN_PROGRESS`；Web 专用 Cookie API 与契约已实现，服务层和隔离 PostgreSQL 真实 HTTP 冒烟通过；待最终提交与复核 |
+| 状态 | `DONE`；Web 专用 Cookie API 与契约已提交为 `ec1777612843b36d8f1f5579dc5464c4f546f0fa`，服务层和隔离 PostgreSQL 真实 HTTP 冒烟通过 |
 | 前置 | WEB-01 契约核对、WEB-03 `sessions.client_channel` 迁移 |
 | 业务验收 | 本任务是 API 支撑任务；136 项浏览器 F/V/N 仍 `NOT_RUN`，AUTH 首验归 WEB-05 |
 | 测试环境 | PGlite 临时库和 `127.0.0.1` 临时 PostgreSQL 17，合成手机号与内存短信桩；容器已停止 |
@@ -33,4 +33,4 @@ Web Cookie 使用 `Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000` 且�
 
 - WEB-05 建立同站点 React 客户端后，验证真实浏览器 Cookie、自动续期、多标签同步、桌面和手机登录页面及 AUTH 全部用例；结果逐变体进入 `evidence/<runId>/...`。
 - WEB-20 复核 HTTPS、CSP、跨源、浏览器缓存、CSRF 和安全失败注入。
-- WEB-04 提交源码和本页证据后完成本 API 任务；不提前标记 AUTH/SEC 用例 `PASS`。
+- WEB-04 API 任务已勾选；AUTH/SEC 用例仍待真实浏览器逐项取证，不提前标记 `PASS`。

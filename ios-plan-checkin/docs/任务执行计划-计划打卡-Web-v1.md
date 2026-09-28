@@ -69,7 +69,7 @@ Web Push 的受控端到端链路（权限、订阅、服务端发送、浏览�
 ### 4.2 基础、身份与计划
 
 - [x] **WEB-03｜共享数据兼容迁移。** 依赖：WEB-01。为渠道通知偏好、社交收件箱/已读、Web Push 订阅、数值配置版本和一次性结果附件补充向前兼容的 schema/SQL，保留移动端原有字段语义。产物：`db/migrations`、数据字典、回填和回滚说明。关联：PLAN、CHECK、SOCIAL、NOTIFY、DATA。完成证据：空库及旧库迁移/回滚、约束与历史值核对、SQL/DB 记录。
-- [ ] **WEB-04｜Web 会话与注册 API。** 依赖：WEB-01、WEB-03。实现公开注册、短信、15 分钟 access 自动续期、30 天 refresh Cookie、CSRF/Origin、多标签轮换、退出及账号状态，移动端 JSON refresh 兼容。产物：`apps/api/src/auth`、契约和安全测试。关联：AUTH、SEC。完成证据：正常、到期、重放、换号/退出、限流的请求/响应和日志，不记录秘密。
+- [x] **WEB-04｜Web 会话与注册 API。** 依赖：WEB-01、WEB-03。实现公开注册、短信、15 分钟 access 自动续期、30 天 refresh Cookie、CSRF/Origin、多标签轮换、退出及账号状态，移动端 JSON refresh 兼容。产物：`apps/api/src/auth`、契约和安全测试。关联：AUTH、SEC。完成证据：正常、到期、重放、换号/退出、限流的请求/响应和日志，不记录秘密。
 - [ ] **WEB-05｜SPA 骨架与登录。** 依赖：WEB-02、WEB-04。建立 `apps/web` React + TypeScript 构建、同站点 API 客户端、路由/深链、会话恢复、登录/验证码/首次资料及桌面/手机导航；根 `check`/CI 纳入 Web。主验收：`WEB-AUTH-01～12`。完成证据：受控桌面和手机浏览器逐例结果、截图/DOM、Cookie/网络证据、构建与刷新深链记录。
 - [ ] **WEB-06｜计划、分组与数值项服务端。** 依赖：WEB-01、WEB-03、WEB-04。完成三类计划、规则版本、计划时区、部分周口径、暂停/归档/删除、每计划最多一个数值项及历史单位快照，更新领域包/契约/API。关联：PLAN、STAT。完成证据：领域与数据库边界测试、历史规则/单位未被重写的前后快照和 API 证据。
 - [ ] **WEB-07｜计划与分组页面。** 依赖：WEB-05、WEB-06。实现列表、创建/编辑、分组、详情、生命周期确认、数值项配置及错误/空态。主验收：`WEB-PLAN-01～18`。完成证据：每项 F/V/N、窄屏与桌面截图、表单校验、历史版本和网络记录。
@@ -242,6 +242,11 @@ Web Push 的受控端到端链路（权限、订阅、服务端发送、浏览�
 - 缺陷与修复：初次新测试脚本因根依赖解析 `jose` 失败、随后 lint 因 Node 内建对象未显式导入失败。改用现有服务端验签配合载荷 audience 检查，并补标准模块导入。没有修改业务验收基线或伪造旧结果。
 - 复测：当前源码 lint、API 编译、PGlite 服务断言和全新隔离 PostgreSQL 17 真实 HTTP 均退出 0。第二次数据库与首轮相互独立，取证后自动删除；最终[服务输出](./atdd/web/evidence/WEB-04/web-auth-service-final.txt)、[HTTP 日志与去敏响应](./atdd/web/evidence/WEB-04/web-auth-http-final.txt)、全部输出 SHA 见[清单](./atdd/web/evidence/WEB-04/checks.json)。
 - 当前结论：API 与旧移动端兼容检查通过，浏览器页面仍不存在，AUTH/SEC 用例仍 `NOT_RUN`；WEB-04 待代码提交及台账最终复核。
+
+### 2026-09-28 21:15 CST｜WEB-04｜完成
+
+- 提交：`ec1777612843b36d8f1f5579dc5464c4f546f0fa`。Web 会话、Cookie/CSRF/Origin、Web audience、移动兼容契约和自测源码均已提交；最终服务与真实 HTTP 证据、lint、typecheck、安全扫描及原始哈希见 [WEB-04 清单](./atdd/web/evidence/WEB-04/checks.json)。
+- 复核：公开注册、15 分钟 access、30 天 refresh、旧令牌与迟到重放、退出、换号全会话撤销、限流策略及 Web/iOS 通知隔离的 API 判定已具备。后续多标签浏览器协调、页面登录和 AUTH/SEC 的 F/V/N 由 WEB-05/12/20 验证；136 项当前继续 `NOT_RUN`。WEB-04 是 API 支撑任务，不主拥有浏览器用例，故勾选。
 
 ## 7. 决策与偏差记录
 

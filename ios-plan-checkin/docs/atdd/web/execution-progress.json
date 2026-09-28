@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T13:13:10Z",
+  "updatedAt": "2026-09-28T13:15:32Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -379,9 +379,9 @@
       ],
       "scope": "依赖：WEB-01、WEB-03。实现公开注册、短信、15 分钟 access 自动续期、30 天 refresh Cookie、CSRF/Origin、多标签轮换、退出及账号状态，移动端 JSON refresh 兼容。产物：`apps/api/src/auth`、契约和安全测试。关联：AUTH、SEC。完成证据：正常、到期、重放、换号/退出、限流的请求/响应和日志，不记录秘密。",
       "ownedCaseIds": [],
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "startedAt": "2026-09-28T12:48:35Z",
-      "completedAt": null,
+      "completedAt": "2026-09-28T13:15:32Z",
       "owner": "Codex",
       "implementation": {
         "summary": "新增 Web Cookie 验证/会话/续期/退出、Web audience、Origin/CSRF 与渠道隔离；旧移动 JSON 会话保持兼容。隔离服务与真实 HTTP 冒烟通过，浏览器客户端尚未验收。",
@@ -403,7 +403,7 @@
           "docs/atdd/web/WEB-04-Web会话与注册API.md",
           "docs/atdd/web/evidence/WEB-04/checks.json"
         ],
-        "commit": null,
+        "commit": "ec1777612843b36d8f1f5579dc5464c4f546f0fa",
         "checks": [
           {
             "command": "contracts and API typecheck",
@@ -503,7 +503,7 @@
         ]
       },
       "verification": {
-        "summary": "PGlite 服务/控制器测试覆盖 Cookie 属性、Web audience、15m/30d、CSRF/Origin、轮换/重放、退出渠道隔离；隔离 PostgreSQL 真实 HTTP 覆盖公开短信注册、会话恢复、403/401、Cookie 清理。移动 JSON auth 冒烟及契约兼容通过；浏览器 F/V/N 未执行。 旧双验证码换号与全会话撤销回归通过。 最终源码 lint、编译及当前构建的服务/真实 HTTP 复验通过。",
+        "summary": "服务/PGlite 与两次隔离 PostgreSQL 真实 HTTP 复测通过：Cookie/Origin/CSRF、15m/30d、重放、会话恢复/退出、Web/iOS 隔离；移动认证及换号回归、限流策略映射、契约兼容、lint/typecheck/security 均通过。浏览器页面验收归后续任务，136 项仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
@@ -517,9 +517,9 @@
         ]
       },
       "review": {
-        "reviewer": null,
-        "reviewedAt": null,
-        "decision": null
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T13:15:32Z",
+        "decision": "WEB-04 API 范围、当前代码 HTTP/服务证据和移动兼容通过；页面与浏览器 AUTH/SEC F/V/N 留给 WEB-05/12/20。"
       },
       "history": [
         {
@@ -544,6 +544,13 @@
           "type": "FINAL_SOURCE_RETESTED",
           "summary": "修复测试脚本 Node 全局导入后，源码 lint 与当前构建服务/隔离 PostgreSQL HTTP 复验均通过。",
           "evidencePath": "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt"
+        },
+        {
+          "at": "2026-09-28T13:15:32Z",
+          "type": "DONE",
+          "summary": "Web 会话 API 代码与证据已提交并复核，checklist 勾选；浏览器业务用例尚未执行。",
+          "commit": "ec1777612843b36d8f1f5579dc5464c4f546f0fa",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/checks.json"
         }
       ]
     },
