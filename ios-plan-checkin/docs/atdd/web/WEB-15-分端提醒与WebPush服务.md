@@ -1,4 +1,4 @@
-# WEB-15｜分端提醒与 Web Push 服务（进行中）
+# WEB-15｜分端提醒与 Web Push 服务
 
 ## 1. 验收基线与范围
 
@@ -16,9 +16,9 @@
 
 本阶段原始输出 SHA-256 为 `dcfd0d54a34d01ec9b64be6a6c910f5c95a2e810f83de8929a55f6b198d65faf`。脚本 `scripts/web-notifications-smoke.mjs` 共有 16 项断言，退出码 0；输出中的合成账号、密钥和端点仅在隔离测试库内使用。
 
-## 3. 未完成与下一步
+## 3. 阶段性剩余与下一步（当时状态）
 
-- 尚需真实 PostgreSQL HTTP、供应端 429/5xx 退避与作业状态、浏览器端到端接收、已提交 Git blob/文件哈希复核。WEB-15 持续 `IN_PROGRESS`，不能勾选。
+- 当时尚需真实 PostgreSQL HTTP、供应端 429/5xx 退避与作业状态、浏览器端到端接收、已提交 Git blob/文件哈希复核；以下第 5 节记录后续完成结果。
 - 136 项 Web 浏览器 ATDD 用例继续 `NOT_RUN`，没有产品页面截图或浏览器 F/V/N 结果。
 
 ## 4. 后续增量（2026-09-28 23:43 CST）
@@ -30,3 +30,10 @@
 - [固定时钟计划提醒输出](./evidence/WEB-15/web-plan-reminders.txt) 15 项断言，包含上海 18:05→UTC 10:05、同槽去重、发送复核、周目标/终态/暂停/开关抑制；SHA-256 `3785b81335727b9fdc0a368ae427cd1fa7d98595a34f2f806b872e63c884e68e`。
 - [RFC 官方向量与供应端桩输出](./evidence/WEB-15/web-push-rfc.txt) 对照 RFC 8291 头与密文的固定向量逐字节通过，供应端桩检查 VAPID `aud`、授权头、通用加密正文大小；SHA-256 `c2c812c04afb6ab87b8bba5cca9ef11e3d9d9983a8d4db7634ab6f63d214597d`。[SQL 静态输出](./evidence/WEB-15/sql-static.txt) SHA-256 `b0838cf5bafc7a68284cd4ec6d977bfb097b83e95d77ec4b7401c41100f33c84`。
 - 好友、分享、收件箱、旧 APNs 和打卡服务冒烟回归均通过。上述结果仍属于服务端和受控供应端桩，真实浏览器 Push 权限、Service Worker、前后台送达、点击跳转和完整 F/V/N 归 WEB-16/21。
+
+## 5. 服务端完成复核（2026-09-29 00:06 CST）
+
+- 功能、测试、迁移、契约、部署环境和原始证据提交为 `2d94b986`。最终[20 项检查清单](./evidence/WEB-15/checks.json)全部退出 0；逐项复核原始文件与提交中的 Git blob SHA-256，均为 20/20 一致。OpenAPI 84 操作、旧移动契约兼容、42 表/13 迁移、类型、lint、格式、安全与部署静态检查均通过。
+- [隔离 PostgreSQL 17 真实 HTTP](./evidence/WEB-15/web-http.txt) 验证 Web 登录后的分端偏好更新 200、旧 iOS 偏好不变、旧 iOS access 请求 Web 专用 API 返回 401、修订冲突 409、非法端点/不在 P-256 曲线上的公钥均 400、订阅注册 201、取消 200、密文存储、Web 退出后订阅失效和旧 access 拒绝 401。临时数据库与容器在脚本退出后停止并删除；输出不含短信、令牌、订阅 URL 和私有内容。
+- [PGlite 社交/订阅](./evidence/WEB-15/web-notifications.txt) 30 项检查：业务事务入队、供应端受理记账、重试跳过已受理设备、Web/iOS 开关隔离、410 永久失效清理、503 持久失败/退避/重领及恢复、公钥曲线拒绝。[固定时钟计划提醒](./evidence/WEB-15/web-plan-reminders.txt) 19 项检查：上海时区、同槽去重、入队后补记与暂停抑制、周目标、一次性终态、Web 开关和旧 iOS 偏好隔离。[RFC 官方向量](./evidence/WEB-15/web-push-rfc.txt)验证加密头与密文逐字节一致，受控供应端桩检查 VAPID 和通用负载。
+- WEB-15 的 API/数据/Worker/供应端桩范围完成。WEB-16/21 仍须在真实浏览器验证用户授权、订阅、受控接收展示、点击和取消，并记录截图、DOM、网络与结果；后台稳定送达仅观察。136 个浏览器业务用例当前仍为 `NOT_RUN`，本任务没有认领业务用例 PASS。
