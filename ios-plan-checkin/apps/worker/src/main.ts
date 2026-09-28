@@ -18,6 +18,39 @@ import {
   pushTokenKey,
 } from "./socialNotifications.js";
 
+type CycleName =
+  "media_cleanup" | "social_notification" | "data_export" | "deletion";
+async function runCycle(
+  name: CycleName,
+  work: () => Promise<number>,
+): Promise<void> {
+  const started = performance.now();
+  try {
+    const processed = await work();
+    process.stdout.write(
+      JSON.stringify({
+        event: "worker_cycle",
+        at: new Date().toISOString(),
+        name,
+        result: "success",
+        processed,
+        durationMs: Math.round(performance.now() - started),
+      }) + "\n",
+    );
+  } catch {
+    // Do not serialize provider errors: they can contain phone numbers, URLs or credentials.
+    process.stderr.write(
+      JSON.stringify({
+        event: "worker_cycle",
+        at: new Date().toISOString(),
+        name,
+        result: "failed",
+        durationMs: Math.round(performance.now() - started),
+      }) + "\n",
+    );
+  }
+}
+
 async function bootstrap(): Promise<void> {
   if (!process.env.DATABASE_URL) throw new Error("Worker DATABASE_URL missing");
   const pool = new pg.Pool({
@@ -34,43 +67,68 @@ async function bootstrap(): Promise<void> {
   process.once("SIGINT", () => {
     stopping = true;
   });
-  process.stdout.write("plan-checkin worker ready\n");
+  process.stdout.write(
+    JSON.stringify({ event: "worker_ready", at: new Date().toISOString() }) +
+      "\n",
+  );
+  let lastRateLimitCleanup = 0;
   try {
     while (!stopping) {
-      try {
+      await runCycle("media_cleanup", async () => {
         await enqueueMediaCleanup(pool);
+        let processed = 0;
         for (let count = 0; count < 20; count++) {
           const job = await claimMediaCleanup(pool);
           if (!job) break;
           await processMediaCleanup(pool, objects, job);
+          processed++;
         }
-      } catch {
-        process.stderr.write("Media cleanup cycle failed\n");
-      }
-      try {
+        return processed;
+      });
+      await runCycle("social_notification", async () => {
+        let processed = 0;
         for (let count = 0; count < 20; count++) {
           const job = await claimSocialNotification(pool);
           if (!job) break;
           await processSocialNotification(pool, push, job, pushKey);
+          processed++;
         }
-      } catch {
-        process.stderr.write("Social notification cycle failed\n");
-      }
-      try {
+        return processed;
+      });
+      await runCycle("data_export", async () => {
+        let processed = 0;
         for (let count = 0; count < 3; count++) {
           const job = await claimDataExport(pool);
           if (!job) break;
           await processDataExport(pool, job);
+          processed++;
         }
         await cleanupExpiredExports(pool);
-      } catch {
-        process.stderr.write("Data export cycle failed\n");
-      }
-      try {
+        return processed;
+      });
+      await runCycle("deletion", async () => {
         await finalizeDeletedPlans(pool);
         await finalizeDueAccounts(pool);
+        return 0;
+      });
+      try {
+        await pool.query(
+          "INSERT INTO worker_heartbeats(worker_name,updated_at) VALUES('primary',now()) ON CONFLICT(worker_name) DO UPDATE SET updated_at=excluded.updated_at",
+        );
+        if (Date.now() - lastRateLimitCleanup > 900_000) {
+          await pool.query(
+            "DELETE FROM rate_limit_buckets WHERE window_start<now()-interval '1 hour'",
+          );
+          lastRateLimitCleanup = Date.now();
+        }
       } catch {
-        process.stderr.write("Deletion cycle failed\n");
+        process.stderr.write(
+          JSON.stringify({
+            event: "worker_maintenance",
+            at: new Date().toISOString(),
+            result: "failed",
+          }) + "\n",
+        );
       }
       await new Promise<void>((resolve) => setTimeout(resolve, 15_000));
     }

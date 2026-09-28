@@ -1,0 +1,101 @@
+groups:
+  - name: plan-checkin-critical
+    rules:
+      - alert: PlanCheckinApiWriteUnavailable
+        expr: sum(rate(plan_checkin_http_requests_total{method=~"POST|PUT|PATCH|DELETE",status=~"5.."}[5m])) > 0.05
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Core write requests are failing"
+      - alert: PlanCheckinDeletionOverdue
+        expr: plan_checkin_deletion_overdue > 0
+        for: 10m
+        labels: { severity: critical }
+        annotations:
+          summary: "Account deletion is overdue"
+      - alert: PlanCheckinPermissionDenialsSpike
+        expr: sum(rate(plan_checkin_http_requests_total{status="403"}[5m])) > 1
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Authorization denials increased; inspect access controls"
+      - alert: PlanCheckinWorkerStopped
+        expr: plan_checkin_worker_heartbeat_age_seconds < 0 or plan_checkin_worker_heartbeat_age_seconds > 90
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Worker heartbeat is missing or stale"
+  - name: plan-checkin-operational
+    rules:
+      - alert: PlanCheckinApi5xx
+        expr: sum(rate(plan_checkin_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(plan_checkin_http_requests_total[5m])), 0.001) > 0.01
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "API 5xx ratio exceeds 1%"
+      - alert: PlanCheckinApiP95
+        expr: histogram_quantile(0.95, sum by (le) (rate(plan_checkin_http_request_duration_seconds_bucket[5m]))) > 0.8
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "API P95 exceeds 800 ms"
+      - alert: PlanCheckinApiP99
+        expr: histogram_quantile(0.99, sum by (le) (rate(plan_checkin_http_request_duration_seconds_bucket[5m]))) > 2
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "API P99 exceeds 2 seconds"
+      - alert: PlanCheckinDatabaseLocks
+        expr: plan_checkin_db_lock_waits > 2
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Database lock waiters increased"
+      - alert: PlanCheckinDatabaseConnections
+        expr: plan_checkin_db_connections > 80
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Database connection count exceeds baseline"
+      - alert: PlanCheckinMediaCleanupStalled
+        expr: plan_checkin_media_cleanup_stalled > 0
+        for: 15m
+        labels: { severity: warning }
+        annotations:
+          summary: "Media cleanup backlog is stale"
+      - alert: PlanCheckinExportsStalled
+        expr: plan_checkin_export_stalled > 0
+        for: 15m
+        labels: { severity: warning }
+        annotations:
+          summary: "Data export jobs are stalled"
+      - alert: PlanCheckinNotificationsStalled
+        expr: plan_checkin_social_notifications_stalled > 0
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Social notifications are stalled"
+      - alert: PlanCheckinApnsRejected
+        expr: plan_checkin_apns_rejected > 5
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "APNs rejected several notifications"
+      - alert: PlanCheckinSyncConflicts
+        expr: plan_checkin_sync_conflicts_open > 100
+        for: 15m
+        labels: { severity: warning }
+        annotations:
+          summary: "Open sync conflicts exceed baseline"
+      - alert: PlanCheckinSmsFailures
+        expr: sum(rate(plan_checkin_events_total{kind="sms_failure"}[5m])) > 0.1
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "SMS delivery failures increased"
+      - alert: PlanCheckinWorkerBacklog
+        expr: plan_checkin_worker_stalled > 0
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Worker jobs are stalled"

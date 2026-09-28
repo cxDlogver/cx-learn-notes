@@ -49,6 +49,8 @@ export class ApiConfig {
   readonly objectRegion = process.env.OBJECT_REGION ?? "us-east-1";
   readonly objectAccessKeyId = required("OBJECT_ACCESS_KEY_ID");
   readonly objectSecretAccessKey = required("OBJECT_SECRET_ACCESS_KEY");
+  readonly metricsToken = process.env.API_METRICS_TOKEN ?? "";
+  readonly trustProxyHops = Number(process.env.API_TRUST_PROXY_HOPS ?? "0");
 
   constructor() {
     if (!["development", "staging", "production"].includes(this.environment)) {
@@ -73,6 +75,16 @@ export class ApiConfig {
     )
       throw new Error(
         "Object storage endpoints must use HTTPS outside development.",
+      );
+    if (
+      !Number.isInteger(this.trustProxyHops) ||
+      this.trustProxyHops < 0 ||
+      this.trustProxyHops > 2
+    )
+      throw new Error("API_TRUST_PROXY_HOPS must be an integer from 0 to 2.");
+    if (this.environment !== "development" && this.metricsToken.length < 32)
+      throw new Error(
+        "API_METRICS_TOKEN must be injected outside development.",
       );
   }
 }

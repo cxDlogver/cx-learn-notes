@@ -18,7 +18,7 @@ import type {
 } from "@plan-checkin/contracts";
 import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
-import { fail } from "../http.js";
+import { fail, observeActor } from "../http.js";
 import { appendUserChange } from "../sync/change-log.js";
 import { SmsProvider } from "./sms-provider.js";
 
@@ -709,6 +709,7 @@ export class AuthService {
         [sessionId, userId],
       );
       if (!found.rowCount) throw new Error("Revoked session.");
+      observeActor(userId, this.config.accessTokenKey);
       return userId;
     } catch {
       fail("UNAUTHENTICATED", 401, "会话已失效，请重新登录");

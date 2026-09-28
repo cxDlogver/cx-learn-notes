@@ -71,6 +71,8 @@ const requiredTables = [
   "data_export_access",
   "deletion_jobs",
   "plan_deletion_jobs",
+  "rate_limit_buckets",
+  "worker_heartbeats",
   "deletion_tombstones",
 ];
 for (const table of requiredTables) {

@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { Injectable } from "@nestjs/common";
 import { ApiConfig } from "../config.js";
+import { countEvent } from "../observability.js";
 
 @Injectable()
 export class SmsProvider {
@@ -21,18 +22,25 @@ export class SmsProvider {
         }),
         { encoding: "utf8", mode: 0o600 },
       );
+      countEvent("sms_success");
       return;
     }
-    const response = await fetch(this.config.smsGatewayUrl!, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${this.config.smsGatewayToken}`,
-      },
-      body: JSON.stringify({ phoneE164, code, purpose }),
-      signal: AbortSignal.timeout(5_000),
-    });
-    if (!response.ok)
-      throw new Error("SMS gateway rejected the delivery request.");
+    try {
+      const response = await fetch(this.config.smsGatewayUrl!, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${this.config.smsGatewayToken}`,
+        },
+        body: JSON.stringify({ phoneE164, code, purpose }),
+        signal: AbortSignal.timeout(5_000),
+      });
+      if (!response.ok)
+        throw new Error("SMS gateway rejected the delivery request.");
+      countEvent("sms_success");
+    } catch {
+      countEvent("sms_failure");
+      throw new Error("SMS delivery failed.");
+    }
   }
 }

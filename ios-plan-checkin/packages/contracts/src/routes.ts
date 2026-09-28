@@ -5,6 +5,7 @@ export const errorCodes = [
   "FORBIDDEN",
   "NOT_FOUND",
   "RATE_LIMITED",
+  "SERVICE_UNAVAILABLE",
   "OTP_EXPIRED",
   "OTP_INVALID",
   "OTP_RATE_LIMITED",

@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import type { PoolClient } from "pg";
 import { ApiConfig } from "../config.js";
 import { Database } from "../database.js";
-import { fail } from "../http.js";
+import { fail, observeWrite } from "../http.js";
 
 export const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -26,6 +26,7 @@ export class PlanWrite {
     work: (client: PoolClient) => Promise<T>,
   ): Promise<T> {
     requireUuid(key);
+    observeWrite(operation, input, this.config.accessTokenKey);
     const digest = createHmac("sha256", this.config.authIdempotencyKey)
       .update(JSON.stringify({ operation, input }))
       .digest();
