@@ -5,26 +5,22 @@
   "projectSubtree": "ios-plan-checkin",
   "integrationBranch": "codex/ios-plan-checkin-build",
   "projectBaseCommit": "c5ed636d1bbfc562edb999fcf5b2bcf4fd4a2a88",
-  "integrationCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
-  "currentWork": {
-    "taskId": "OPS-06",
-    "phase": "发布候选版冻结与独立验收移交",
-    "updatedAt": "2026-09-28T04:57:33.000Z",
-    "baseCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
-    "completedSteps": [
-      "OPS-05 三环境 Kubernetes 资源生成、固定摘要镜像构建、迁移前置部署、密钥键校验、两区检查、就绪探针与备份/回滚手册已提交；全仓静态检查及部署清单开发自检通过。"
-    ],
+  "integrationCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+  "currentWork": null,
+  "nextTaskId": null,
+  "resumeWhenAvailable": {
+    "candidateManifest": "docs/release-candidate.json",
+    "sourceCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+    "priorityTaskIds": ["FND-05", "CORE-03", "FND-02", "OPS-05", "OPS-06"],
     "nextSteps": [
-      "汇总所有任务状态与环境阻断，核对代码、锁文件、OpenAPI、迁移、设计映射和文档摘要。",
-      "生成机器可读候选版/移交清单与缺口报告，不宣称未完成的 Release 或 ATDD 已通过。",
-      "执行 S0–S6 全仓静态门槛与必要开发自检，提交代码和台账。"
+      "真实 PostgreSQL/对象存储就绪后，先补 FND-05/CORE-03 的迁移与并发验证，再按台账逐项关闭相关环境阻断。",
+      "macOS/Xcode 或 EAS 就绪后，补 iOS Release、SQLCipher/Keychain/APNs/相册/通知真机验证与视觉核对。",
+      "中国大陆预发集群与供应商配置就绪后，补镜像、迁移部署、告警和备份恢复演练；更新候选清单实际构建摘要并移交独立 ATDD。"
     ],
-    "uncommittedChanges": [],
     "knownConstraints": [
-      "真实 APNs、Docker/PostgreSQL、iOS 真机和正式 ATDD 稍后验证。"
+      "当前只冻结静态源码与 64 个资源摘要；真实环境验证、可安装 iOS Release 和正式 ATDD 未完成。"
     ]
   },
-  "nextTaskId": null,
   "tasks": [
     {
       "priority": 1,
@@ -820,12 +816,14 @@
         "S5",
         "S6"
       ],
-      "status": "IN_PROGRESS",
+      "status": "BLOCKED",
       "branch": "codex/ios-plan-checkin-build",
       "worktreePath": null,
       "baseCommit": "5d9cdf4d9e185b1c209b260a16bb912156222a77",
-      "taskCommit": null,
-      "integratedCommit": null
+      "taskCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+      "integratedCommit": "ec779470939aeb8504b45810398fdd128a183b4d",
+      "staticPassed": true,
+      "blocker": "S0–S6 全仓静态检查、37 表迁移自检、iOS JS 打包和 64 资源 SHA-256 复核通过；可安装 iOS Release、API/Worker 镜像摘要、真实预发部署/恢复与必要主链路验证尚无环境，正式 ATDD 尚未执行。"
     }
   ]
 }
