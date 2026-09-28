@@ -3,9 +3,9 @@
 | 项目 | 记录 |
 | --- | --- |
 | 任务 | `WEB-01`；核对基线为 2026-09-28 的 Web PRD、技术方案与 136 项 ATDD |
-| 状态 | 代码差异已定位并开始修订；浏览器用例尚未执行 |
+| 状态 | WEB-01 开发核对已完成；浏览器用例尚未执行 |
 | 源码 | `apps/api/src`、`packages/contracts/src/routes.ts`、生成的 `packages/contracts/openapi.json`、`db/migrations/0001～0011` |
-| 当前提交基线 | `4d72bf3b`；后续改动见任务日志和实际 diff |
+| 当前提交基线 | 起点 `4d72bf3b`；导出兼容改动 `6e984b061c1a008ed5ad9ee1396e52733617adee` |
 
 ## 1. 现有接口与 Web 复用决定
 

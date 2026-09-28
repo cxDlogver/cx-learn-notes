@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T11:40:00Z",
+  "updatedAt": "2026-09-28T11:39:56Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -41,9 +41,9 @@
       "dependencies": [],
       "scope": "依赖：无。逐项比对控制器、`packages/contracts/src/routes.ts`、OpenAPI、数据库迁移、Web PRD/技术方案与 136 项用例，建立差异清单和兼容迁移顺序；核对实际路由、现有 API 是否可复用、iOS 旧接口兼容。产物：契约差异记录、调整后的接口清单、技术决策、变更影响的用例 ID。完成证据：实际文件行/commit、契约检查输出、评审结论；未决冲突不得带入编码。",
       "ownedCaseIds": [],
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "startedAt": "2026-09-28T11:26:46Z",
-      "completedAt": null,
+      "completedAt": "2026-09-28T11:39:56Z",
       "owner": "Codex",
       "implementation": {
         "summary": "已增加 Web 导出路由兼容入口，保留旧路径；补齐 OpenAPI 契约和静态路由审计；完成源码/迁移缺口记录。",
@@ -56,7 +56,7 @@
           "docs/API-兼容变更记录.md",
           "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
         ],
-        "commit": null,
+        "commit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
         "checks": [
           {
             "command": "node scripts/build-openapi.mjs --check",
@@ -115,9 +115,9 @@
         ]
       },
       "review": {
-        "reviewer": null,
-        "reviewedAt": null,
-        "decision": null
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T11:39:56Z",
+        "decision": "WEB-01 源码/契约核对、兼容代码、检查和差异记录通过；不包含浏览器验收。"
       },
       "history": [
         {
@@ -126,9 +126,16 @@
           "summary": "开始核对控制器、契约、OpenAPI、迁移和 Web 验收差异；浏览器用例仍未执行。"
         },
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "type": "DEVELOPMENT_CHECKED",
           "summary": "导出新旧路由与 OpenAPI 对齐，7 项开发检查退出 0；浏览器用例仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        },
+        {
+          "at": "2026-09-28T11:39:56Z",
+          "type": "DONE",
+          "summary": "代码已提交，七项开发检查通过；本任务不拥有浏览器用例，相关业务用例保持 NOT_RUN。",
+          "commit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
           "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
         }
       ]
@@ -3437,12 +3444,12 @@
         "apps/api/src/exports/exports.controller.ts",
         "packages/contracts/src/routes.ts"
       ],
-      "implementationCommit": null,
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "verificationStatus": "NOT_RUN",
       "variants": [],
       "history": [
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "taskId": "WEB-01",
           "type": "PARTIAL_IMPLEMENTATION",
           "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
@@ -3473,12 +3480,12 @@
         "apps/api/src/exports/exports.controller.ts",
         "packages/contracts/src/routes.ts"
       ],
-      "implementationCommit": null,
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "verificationStatus": "NOT_RUN",
       "variants": [],
       "history": [
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "taskId": "WEB-01",
           "type": "PARTIAL_IMPLEMENTATION",
           "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
@@ -3509,12 +3516,12 @@
         "apps/api/src/exports/exports.controller.ts",
         "packages/contracts/src/routes.ts"
       ],
-      "implementationCommit": null,
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "verificationStatus": "NOT_RUN",
       "variants": [],
       "history": [
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "taskId": "WEB-01",
           "type": "PARTIAL_IMPLEMENTATION",
           "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
@@ -3545,12 +3552,12 @@
         "apps/api/src/exports/exports.controller.ts",
         "packages/contracts/src/routes.ts"
       ],
-      "implementationCommit": null,
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "verificationStatus": "NOT_RUN",
       "variants": [],
       "history": [
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "taskId": "WEB-01",
           "type": "PARTIAL_IMPLEMENTATION",
           "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
@@ -4130,12 +4137,12 @@
         "apps/api/src/exports/exports.controller.ts",
         "packages/contracts/src/routes.ts"
       ],
-      "implementationCommit": null,
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "verificationStatus": "NOT_RUN",
       "variants": [],
       "history": [
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "taskId": "WEB-01",
           "type": "PARTIAL_IMPLEMENTATION",
           "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
@@ -4266,12 +4273,12 @@
         "apps/api/src/exports/exports.controller.ts",
         "packages/contracts/src/routes.ts"
       ],
-      "implementationCommit": null,
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "verificationStatus": "NOT_RUN",
       "variants": [],
       "history": [
         {
-          "at": "2026-09-28T11:40:00Z",
+          "at": "2026-09-28T11:37:00Z",
           "taskId": "WEB-01",
           "type": "PARTIAL_IMPLEMENTATION",
           "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
@@ -4450,10 +4457,22 @@
     },
     {
       "id": "WEB-01-CHECKS-20260928",
-      "occurredAt": "2026-09-28T11:40:00Z",
+      "occurredAt": "2026-09-28T11:37:00Z",
       "type": "DEVELOPMENT_CHECKED",
       "taskId": "WEB-01",
       "summary": "新旧导出路径控制器/契约、OpenAPI 和兼容检查通过；浏览器验收未执行。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-01/checks.json",
+        "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
+      ]
+    },
+    {
+      "id": "WEB-01-DONE-20260928",
+      "occurredAt": "2026-09-28T11:39:56Z",
+      "type": "TASK_COMPLETED",
+      "taskId": "WEB-01",
+      "summary": "导出兼容代码提交，契约审计与静态检查通过；所有 Web 浏览器验收仍未运行。",
+      "commit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
       "evidence": [
         "docs/atdd/web/evidence/WEB-01/checks.json",
         "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
