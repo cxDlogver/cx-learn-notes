@@ -6,7 +6,6 @@ No dependency is needed until PASS results exist; validating those requires json
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from pathlib import Path
@@ -17,7 +16,6 @@ DOCS = ROOT / "docs"
 PLAN = DOCS / "任务执行计划-计划打卡-Web-v1.md"
 LEDGER = DOCS / "atdd" / "web" / "execution-progress.json"
 MANIFEST = DOCS / "atdd" / "web" / "acceptance-cases.json"
-SCHEMA = DOCS / "atdd" / "web" / "acceptance-result.schema.json"
 CHECKBOX = re.compile(r"^- \[([ x])\] \*\*(WEB-\d{2})｜", re.MULTILINE)
 
 
@@ -116,32 +114,18 @@ def main() -> None:
         if case["implementationStatus"] != "IMPLEMENTED" or not case["variants"]:
             raise ValueError(f"{case_id}: PASS without implementation or variant results")
         try:
-            from jsonschema import Draft202012Validator
+            from validate_result import validate_result
         except ImportError as exc:
-            raise RuntimeError("Install jsonschema to validate completed PASS results") from exc
-        validator = Draft202012Validator(read_json(SCHEMA))
+            raise RuntimeError("Install docs/atdd/web/requirements.txt to validate PASS results") from exc
         for variant in case["variants"]:
             if variant.get("status") != "PASS" or not variant.get("resultPath"):
                 raise ValueError(f"{case_id}: non-PASS or missing result path in a passing case")
             result_path = safe_path(variant["resultPath"])
-            result = read_json(result_path)
-            validator.validate(result)
+            result = validate_result(result_path)
             if result["caseId"] != case_id or result["variant"] != variant.get("variant"):
                 raise ValueError(f"{case_id}: result identity differs from ledger")
             if result["runId"] != variant.get("runId") or result["status"] != "PASS":
                 raise ValueError(f"{case_id}: result run or status differs from ledger")
-            if result["build"]["sourceDigest"] != manifest["sourceDigest"]:
-                raise ValueError(f"{case_id}: result uses a stale source baseline")
-            found_codes = set()
-            for item in result["evidence"]:
-                evidence_path = safe_path(item["path"], base=result_path.parent)
-                if not evidence_path.is_file():
-                    raise ValueError(f"{case_id}: evidence file missing: {evidence_path}")
-                if hashlib.sha256(evidence_path.read_bytes()).hexdigest() != item["sha256"]:
-                    raise ValueError(f"{case_id}: evidence SHA-256 mismatch: {evidence_path}")
-                found_codes.add(item["code"])
-            if not set(source["evidenceCodes"]) <= found_codes:
-                raise ValueError(f"{case_id}: required evidence codes missing")
 
     print(f"Web execution ledger OK: {len(tasks)} tasks, {len(cases)} cases")
 

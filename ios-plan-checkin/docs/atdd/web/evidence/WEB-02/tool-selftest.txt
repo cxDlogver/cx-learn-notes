@@ -1,0 +1,13 @@
+test_complete_synthetic_result_is_accepted (test_validate_result.EvidenceValidatorTests) ... ok
+test_missing_file_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+test_missing_required_evidence_code_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+test_result_outside_required_directory_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+test_stale_source_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+test_tampered_file_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+test_uncited_assertion_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+test_wrong_expected_text_is_rejected (test_validate_result.EvidenceValidatorTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.234s
+
+OK

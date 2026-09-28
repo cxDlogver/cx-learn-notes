@@ -2,7 +2,7 @@
   "title": "计划打卡 Web V1 任务与验收实时台账",
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
-  "updatedAt": "2026-09-28T11:39:56Z",
+  "updatedAt": "2026-09-28T11:45:29Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -148,29 +148,77 @@
       ],
       "scope": "依赖：WEB-01。实现隔离测试账号/时钟/数据种子、受控短信/对象存储/Push、浏览器运行器、截图与 DOM/无障碍树采集、F/V/N 结果写入、schema/哈希/清单校验、Markdown/JSON 一致性检查和 CI 保留策略。产物：`scripts` 或 `apps/web` 的测试工具、`evidence/web/` 目录规则与首个真实工具自测结果。完成证据：运行命令、生成的合法样本结果、无效证据被拒绝的记录；不把工具样本标成业务 PASS。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T11:41:32Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "已实现 Web result.json 的 schema、基线、预期断言、路径、证据代码和 SHA-256 校验，并接入任务台账 PASS 分支；浏览器采集与隔离种子尚未实现。",
+        "changedPaths": [
+          "docs/atdd/web/validate_result.py",
+          "docs/atdd/web/test_validate_result.py",
+          "docs/atdd/web/requirements.txt",
+          "docs/atdd/web/check_execution_progress.py",
+          "docs/atdd/web/WEB-02-证据工具进展.md"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/tool-selftest.txt",
+            "sha256": "561e0ba1a71686b93df7a32505beca69b17bd0bc03acc9c297c7720d50bacdba"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/ledger.txt",
+            "sha256": "0eeda650b0c45822a8cff7a8f41baec9a05c9337ad77ee7a8403a881916da990"
+          },
+          {
+            "command": "prettier --check Web plan, ledger and WEB-02 progress",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/format.txt",
+            "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+          },
+          {
+            "command": "ast.parse on 3 Web evidence Python files",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/python-syntax.txt",
+            "sha256": "c5a12597b9c9a60f249ea758ed9cd657c5080785fe8052e94f6761e2c8cfa17b"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-02/checks.json",
+          "docs/atdd/web/WEB-02-证据工具进展.md"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "八项临时合成数据自测通过；真实浏览器和 136 项业务 ATDD 尚未执行，WEB-02 保持 IN_PROGRESS。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-02/tool-selftest.txt"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T11:41:32Z",
+          "type": "STARTED",
+          "summary": "先实现 Web 验收证据包校验，再接入真实浏览器和隔离依赖。"
+        },
+        {
+          "at": "2026-09-28T11:45:29Z",
+          "type": "PARTIAL_TOOL_CHECKED",
+          "summary": "结果校验器和 8 项合成自测通过；真实浏览器采集与外部桩待做。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/checks.json"
+        }
+      ]
     },
     {
       "id": "WEB-03",
@@ -4476,6 +4524,24 @@
       "evidence": [
         "docs/atdd/web/evidence/WEB-01/checks.json",
         "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
+      ]
+    },
+    {
+      "id": "WEB-02-START-20260928",
+      "occurredAt": "2026-09-28T11:41:32Z",
+      "type": "TASK_STARTED",
+      "taskId": "WEB-02",
+      "summary": "Markdown 和 JSON 已同步记录开始；136 项业务验收仍 NOT_RUN。"
+    },
+    {
+      "id": "WEB-02-PARTIAL-20260928",
+      "occurredAt": "2026-09-28T11:45:29Z",
+      "type": "PARTIAL_IMPLEMENTATION",
+      "taskId": "WEB-02",
+      "summary": "已实现证据包校验工具；八项合成自测通过，不计业务 PASS。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-02/checks.json",
+        "docs/atdd/web/WEB-02-证据工具进展.md"
       ]
     }
   ]

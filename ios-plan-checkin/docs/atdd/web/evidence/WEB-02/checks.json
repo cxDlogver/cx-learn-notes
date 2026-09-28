@@ -1,0 +1,40 @@
+{
+  "taskId": "WEB-02",
+  "status": "IN_PROGRESS",
+  "checks": [
+    {
+      "name": "tool-selftest",
+      "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/tool-selftest.txt",
+      "sha256": "561e0ba1a71686b93df7a32505beca69b17bd0bc03acc9c297c7720d50bacdba",
+      "bytes": 827
+    },
+    {
+      "name": "ledger",
+      "command": "python docs/atdd/web/check_execution_progress.py",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/ledger.txt",
+      "sha256": "0eeda650b0c45822a8cff7a8f41baec9a05c9337ad77ee7a8403a881916da990",
+      "bytes": 45
+    },
+    {
+      "name": "format",
+      "command": "prettier --check Web plan, ledger and WEB-02 progress",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/format.txt",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66
+    },
+    {
+      "name": "python-syntax",
+      "command": "ast.parse on 3 Web evidence Python files",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/python-syntax.txt",
+      "sha256": "c5a12597b9c9a60f249ea758ed9cd657c5080785fe8052e94f6761e2c8cfa17b",
+      "bytes": 34
+    }
+  ],
+  "browserAcceptance": "NOT_RUN",
+  "note": "Synthetic self-tests validate only the evidence tool. Browser capture and data fixtures remain pending."
+}
