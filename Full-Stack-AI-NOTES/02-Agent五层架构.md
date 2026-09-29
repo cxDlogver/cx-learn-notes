@@ -393,7 +393,7 @@ OpenAI 的 Codex 文档 [《Sandboxing》](https://learn.chatgpt.com/docs/sandbo
 | Test / Eval / Approval | 反馈与控制层 | 提供完成证据与安全治理 |
 | Harness Engineering | 包裹并连接五层 | 把能力组装为可长期运行的系统 |
 
-这张表也解释了为什么 Harness 不是第六层：它是一种总装视角，覆盖五层的连接方式和运行环境。
+这张表也解释了为什么 Harness 不是第六层：它是一种总装视角，覆盖五层的连接方式和运行环境。这里的“五层”是职责分层，而 Agent Loop、Runtime、Harness 是另一组运行与装配概念；三者的统一口径见 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md)，不要把两套抽象强行做一一对应。
 
 ### 【常见架构误区】
 
