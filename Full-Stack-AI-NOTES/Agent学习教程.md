@@ -2216,6 +2216,37 @@ Runtime & Governance Policy  → 配置运行、恢复、安全和人工治理�
 
 也就是说，业务团队需要**理解底层 Agent System 的机制和边界，但通常不需要重新实现它**。研发资源应该更多投入到企业真正具有差异化价值的业务能力和业务流程上。
 
+### 【用 Foundation、Capability、Application 划分企业 Agent 责任边界】
+
+前面的“Framework / Platform → Business Capability → Business Workflow → Runtime & Governance”描述的是建设链路。换一个组织职责视角，还可以把企业 Agent 系统拆成 Foundation、Capability、Application 三层。
+
+**这是一套用于本文的工程责任模型，不是行业统一标准。** 它的作用不是增加三个新术语，而是避免把“底层运行机制、可复用能力、具体业务流程”长期混在同一层维护。
+
+![企业 Agent 三层架构](assets/agent-tutorial-企业三层架构.svg)
+
+| 层级 | 回答的问题 | 主要内容 | 不负责什么 |
+| --- | --- | --- | --- |
+| Foundation | Agent 怎样被稳定地构建、执行和运营 | Runtime、State、Checkpoint、权限、Sandbox、Tracing、发布与治理机制 | 不决定某个具体业务失败后应该走哪条业务分支 |
+| Capability | 哪些能力可以被多个 Agent 或 Workflow 复用 | Skill、Tool、API / MCP、Knowledge、可复用 Memory | 不编排完整业务流程 |
+| Application | 一个业务目标怎样被拆成可执行、可验收的任务 | Business Workflow、Stage、Gate、Artifact、人工节点和业务规则 | 不重新实现底层 Runtime |
+
+三层可以沿着一条依赖关系理解：
+
+```text
+Foundation
+  → 提供“任务能够怎样可靠运行”的通用机制
+
+Capability
+  → 提供“Agent 能够使用什么”的可复用能力
+
+Application
+  → 定义“这些能力为了什么业务目标、按什么流程被使用”
+```
+
+例如“测试失败以后回到代码实现阶段”属于 Application 的业务流程规则；“保存 Checkpoint 并从中断位置恢复”属于 Foundation 的通用运行机制；“修改代码”则属于 Capability 中可被多个 Agent 复用的 Tool 能力。
+
+因此，**三层不是三套彼此隔离的技术栈，而是三种不同的责任边界。** 后续讨论 Business Capability 时主要落在 Capability 层；讨论 Business Workflow 时主要落在 Application 层；Runtime、权限、恢复和 Trace 等机制则主要由 Foundation 提供。
+
 ### 【建设 Business Capability，让 Agent 真正具备业务能力】
 
 Agent Framework 解决的是“Agent 怎么运行”，但它并不知道：
@@ -3862,6 +3893,152 @@ start / end
 ```
 
 SDK 会自动让它属于当前 Trace，并挂在当前最近的父 Span 下。OpenAI 当前通过 `AsyncLocalStorage` 管理这种父子关系，因此正常异步调用一般不需要手动传 `parent_id`。
+
+### 【用 Adapter 把 Business Workflow 与具体 Agent 产品解耦】
+
+当同一条 Business Workflow 可能调用不同 Agent 产品或执行器时，不应该让 Workflow 直接依赖某个 SDK、CLI 或 Provider 的返回结构。更稳定的方式是在 Workflow 与具体 Agent 产品之间增加一层 Adapter（适配器）：**Workflow 只依赖统一的 Stage 输入输出契约，Adapter 负责把不同 Agent 的调用方式和结果转换成这个内部契约。**
+
+![Agent 接入 Business Workflow](assets/agent-tutorial-agent接入业务工作流.svg)
+
+完整调用链可以收敛为：
+
+```text
+Business Workflow
+        ↓
+Agent Stage
+        ↓
+AgentStageExecutor
+        ↓
+Adapter Registry
+   ├─ Codex Adapter
+   ├─ Claude Code Adapter
+   └─ Trae Agent Adapter
+        ↓
+统一 StageResult
+        ↓
+Gate / Transition
+        ↓
+下一 Stage
+```
+
+#### <u>1. Workflow 只依赖稳定的 Stage 契约</u>
+
+Workflow 需要关心的是“当前阶段要完成什么、输入是什么、必须交付什么、怎样验收”，而不是不同 Agent 产品怎样发请求。
+
+可以把内部接口抽象成：
+
+```ts
+interface AgentStageAdapter {
+  provider: string;
+
+  execute(input: StageContext): Promise<StageResult>;
+}
+
+interface StageContext {
+  workflowId: string;
+  stageId: string;
+  goal: string;
+  artifacts: ArtifactRef[];
+  permissions: string[];
+}
+
+interface StageResult {
+  status: "completed" | "failed" | "blocked";
+  artifacts: ArtifactRef[];
+  summary: string;
+  evidence?: Evidence[];
+}
+```
+
+这样 Workflow 的主干只依赖 `StageResult`。某个 Provider 更换 SDK、CLI 参数或者输出格式时，只需要修改对应 Adapter，不需要把 Provider 差异扩散到 Orchestrator、Gate 和后续 Stage。
+
+#### <u>2. Adapter 只处理产品差异，不接管业务流程</u>
+
+Adapter 的职责是：
+
+- 把统一的 `StageContext` 转换成具体 Agent 产品需要的输入；
+- 调用对应 SDK、CLI 或服务接口；
+- 把原始结果转换成统一 `StageResult`；
+- 把产品级错误转换成 Runtime 可以识别的错误类型。
+
+Adapter **不应该**自己决定“测试失败后回实现阶段”“风险过高时转人工”等业务流转。这些仍然属于 Application 层的 Workflow / Gate 规则。
+
+因此边界是：
+
+```text
+Adapter
+→ 解决“怎样调用这个 Agent 产品”
+
+Workflow / Gate
+→ 解决“业务上下一步应该去哪里”
+```
+
+#### <u>3. BUG-42 用一条缺陷修复流程串起这些边界</u>
+
+原 `Agent学习教程 (copy).md` 中的 BUG-42 案例保留其稳定知识结构，去掉与主教程重复的大段实现说明。
+
+![BUG-42 执行结构](assets/agent-tutorial-BUG42执行结构.svg)
+
+```text
+collect_context
+      ↓
+diagnose        → Agent + 根因分析 Skill + read-only
+      ↓
+implement       → Agent + 改码 Skill + workspace-write
+      ↓
+verify
+   ├─ pass  → risk_review
+   └─ fail  → implement
+                 ↓
+risk_review     → 独立只读 Agent
+      ↓
+approve         → Human
+   ├─ approve → release
+   └─ reject  → closed
+```
+
+这个案例同时说明三件事：
+
+1. **同一个 Agent 执行器可以在不同 Stage 加载不同 Skill 和权限。** `diagnose` 与 `implement` 不需要复制成两套底层 Runtime。
+2. **不是所有 Stage 都应该 Agent 化。** `verify` 可以由确定性 Test Runner 执行，`approve` 由人工执行，`release` 由确定性 Tool 执行。
+3. **Orchestrator 只推进流程，不承载根因分析或改码逻辑。** Agent 产出 Artifact，Gate 检查结果，Workflow 决定下一阶段。
+
+#### <u>4. 技术重试与业务回退必须分开记录</u>
+
+BUG-42 中最值得保留的边界，是“模型调用失败”和“补丁质量不合格”不能统一叫 Retry。
+
+```text
+模型 API Timeout
+→ 技术故障
+→ Runtime 按 Retry Policy 重试同一个 Stage
+→ attempt + 1
+
+测试失败
+→ 产物没有通过 Gate
+→ Workflow 回到 implement
+→ repairRound + 1
+```
+
+`attempt` 表示同一 Stage 因超时、网络错误、临时服务异常等技术原因被重新执行的次数；`repairRound` 表示业务产物因为质量问题被退回修改的次数。两者分开以后，才能正确统计系统稳定性、业务质量、成本以及人工介入时机。
+
+这层 Adapter 设计与前面的三层责任模型可以对应起来：
+
+```text
+Foundation
+→ 提供 Executor、Runtime、Retry、State 等通用机制
+
+Capability
+→ 提供 Tool、Skill、Agent Provider 等可复用能力
+
+Application
+→ 通过 Workflow / Stage / Gate 决定具体业务怎样推进
+
+Adapter
+→ 位于 Application 调用 Agent Capability 的接缝处，
+  隔离具体 Agent 产品的调用差异
+```
+
+从这里继续向底层理解 Agent 的实际运行机制，可以阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md)。
 
 ## 6. 参考文献
 
