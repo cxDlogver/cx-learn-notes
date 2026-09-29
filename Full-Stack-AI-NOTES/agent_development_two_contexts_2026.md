@@ -107,9 +107,15 @@ ReAct 是 Agent Loop 的经典实现范式之一。它把推理和行动交替�
 | Agent Runtime | 真正执行 Agent 的运行层 | 调用模型、分发工具、传递 State、处理中断和结束条件 |
 | Agent Harness | 围绕模型搭建的整套支撑结构 | 装配 Runtime、上下文、扩展能力、执行控制和运行记录 |
 
-三者的关系是：Harness 负责装配能力，Runtime 负责运行，Agent Loop 是运行时反复执行的核心循环。
+三者的关系可以先记成：Harness 负责装配和约束运行所需能力，Runtime 负责实际驱动执行，Agent Loop 是 Runtime 在任务推进过程中反复执行的核心决策机制。
 
-这些术语在不同框架中的边界会略有差别。本文后续都按上表使用，不再切换口径。
+**这里是一套用于本文的工程抽象，不是行业统一标准，也不表示 `Agent Loop < Runtime < Harness` 是严格的逐级包含关系。** 三者解决的是不同问题：
+
+- **Agent Loop** 说明“任务怎样通过多轮判断、行动和观察持续推进”，它首先是一种执行机制；
+- **Agent Runtime** 说明“谁来真正驱动这套机制”，负责模型调用、Tool 分发、State 传递、中断、恢复和结束条件；
+- **Agent Harness** 说明“怎样把 Runtime 与 Context、Tool、Memory、权限、Sandbox、Trace 等能力装配成可用的 Agent 系统”。
+
+不同框架会把一部分职责放在不同边界中：有的产品把 Runtime 作为 Harness 的内部组件，有的则把 Loop、Tool、Storage 等都做成可插拔能力。因此本文后续统一按“机制 → 运行层 → 支撑体系”的职责关系使用这三个术语，而不把它们当成行业固定的嵌套层级。
 
 ### 2.4 一次 Agent 请求的完整执行过程
 
