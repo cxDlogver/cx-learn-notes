@@ -1,0 +1,76 @@
+{
+  "capturedAt": "2026-09-28T17:45:02.628Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T17:45:00.965Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T17:45:01.125Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:45:01.252Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T17:45:01.354Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T17:45:01.470Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:45:01.580Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T17:45:01.696Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-nav a[href='/settings']",
+      "at": "2026-09-28T17:45:01.829Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/settings/change-phone']",
+      "at": "2026-09-28T17:45:01.939Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#new-phone",
+      "at": "2026-09-28T17:45:02.044Z"
+    },
+    {
+      "action": "type",
+      "selector": "#new-phone",
+      "characters": 11,
+      "at": "2026-09-28T17:45:02.155Z"
+    },
+    {
+      "action": "click",
+      "selector": ".phone-change-card button[type='submit']",
+      "at": "2026-09-28T17:45:02.261Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#old-phone-code",
+      "at": "2026-09-28T17:45:02.379Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#new-phone-code",
+      "at": "2026-09-28T17:45:02.490Z"
+    }
+  ]
+}

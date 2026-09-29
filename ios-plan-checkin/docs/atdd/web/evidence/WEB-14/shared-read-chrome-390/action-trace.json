@@ -1,0 +1,99 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T09:04:44.713Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T09:04:44.834Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T09:04:44.943Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T09:04:45.056Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T09:04:45.169Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": "[aria-labelledby='friend-list-heading']",
+    "expectedText": "web_atdd_social_a_1318",
+    "at": "2026-09-29T09:04:45.274Z"
+  },
+  {
+    "action": "click",
+    "selector": "[aria-labelledby='friend-list-heading'] .social-person .text-button",
+    "at": "2026-09-29T09:04:45.286Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": "[data-page-key='friend-shared-plans']",
+    "expectedText": "甲的晨间散步",
+    "at": "2026-09-29T09:04:45.397Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "friend-shared-list",
+    "at": "2026-09-29T09:04:45.429Z"
+  },
+  {
+    "action": "click",
+    "selector": "[data-page-key='friend-shared-plans'] .social-card .text-button",
+    "at": "2026-09-29T09:04:45.442Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": "[data-page-key='shared-plan-detail']",
+    "expectedText": "今天走了三公里",
+    "at": "2026-09-29T09:04:45.554Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "shared-history-readonly",
+    "at": "2026-09-29T09:04:45.581Z"
+  },
+  {
+    "action": "click",
+    "selector": ".encouragements .text-button",
+    "at": "2026-09-29T09:04:45.623Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".encouragements textarea",
+    "at": "2026-09-29T09:04:45.734Z"
+  },
+  {
+    "action": "type",
+    "selector": ".encouragements textarea",
+    "characters": 5,
+    "at": "2026-09-29T09:04:45.842Z"
+  },
+  {
+    "action": "click",
+    "selector": ".encouragements button[type='submit']",
+    "at": "2026-09-29T09:04:45.946Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".encouragements ul",
+    "expectedText": "坚持得很好",
+    "at": "2026-09-29T09:04:46.050Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "encouragement-sent",
+    "at": "2026-09-29T09:04:46.077Z"
+  }
+]

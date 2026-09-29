@@ -82,6 +82,19 @@ export const datasets: Dataset[] = [
     sql: "SELECT e.id,e.plan_id,e.seq,e.action,e.effective_at,e.business_date,e.created_at FROM plan_lifecycle_events e JOIN plans p ON p.id=e.plan_id WHERE p.owner_id=current_setting('app.export_user')::uuid ORDER BY e.id",
   },
   {
+    name: "plan_numeric_config_versions",
+    fields: [
+      "id",
+      "plan_id",
+      "version",
+      "effective_from",
+      "label",
+      "unit",
+      "created_at",
+    ],
+    sql: "SELECT n.id,n.plan_id,n.version,n.effective_from,n.label,n.unit,n.created_at FROM plan_numeric_config_versions n JOIN plans p ON p.id=n.plan_id WHERE p.owner_id=current_setting('app.export_user')::uuid ORDER BY n.plan_id,n.version",
+  },
+  {
     name: "checkins",
     fields: [
       "id",
@@ -92,6 +105,8 @@ export const datasets: Dataset[] = [
       "failure_reason",
       "numeric_value",
       "numeric_unit",
+      "numeric_label",
+      "numeric_config_version_id",
       "rule_version_id",
       "is_backfilled",
       "is_revised",
@@ -99,7 +114,7 @@ export const datasets: Dataset[] = [
       "created_at",
       "updated_at",
     ],
-    sql: "SELECT id,plan_id,business_date,result,note,failure_reason,numeric_value,numeric_unit,rule_version_id,is_backfilled,is_revised,revision,created_at,updated_at FROM checkins WHERE owner_id=current_setting('app.export_user')::uuid ORDER BY id",
+    sql: "SELECT id,plan_id,business_date,result,note,failure_reason,numeric_value,numeric_unit,numeric_label,numeric_config_version_id,rule_version_id,is_backfilled,is_revised,revision,created_at,updated_at FROM checkins WHERE owner_id=current_setting('app.export_user')::uuid ORDER BY id",
   },
   {
     name: "checkin_revisions",
@@ -137,9 +152,13 @@ export const datasets: Dataset[] = [
       "resolved_business_date",
       "resolved_at",
       "note",
+      "numeric_value",
+      "numeric_unit",
+      "numeric_label",
+      "numeric_config_version_id",
       "revision",
     ],
-    sql: "SELECT r.plan_id,r.resolution,r.resolved_business_date,r.resolved_at,r.note,r.revision FROM one_time_resolutions r JOIN plans p ON p.id=r.plan_id WHERE p.owner_id=current_setting('app.export_user')::uuid ORDER BY r.plan_id",
+    sql: "SELECT r.plan_id,r.resolution,r.resolved_business_date,r.resolved_at,r.note,r.numeric_value,r.numeric_unit,r.numeric_label,r.numeric_config_version_id,r.revision FROM one_time_resolutions r JOIN plans p ON p.id=r.plan_id WHERE p.owner_id=current_setting('app.export_user')::uuid ORDER BY r.plan_id",
   },
   {
     name: "one_time_resolution_revisions",
@@ -235,6 +254,32 @@ export const datasets: Dataset[] = [
       "updated_at",
     ],
     sql: "SELECT friend_requests,shared_updates,encouragements,revision,updated_at FROM notification_preferences WHERE user_id=current_setting('app.export_user')::uuid",
+  },
+  {
+    name: "channel_notification_preferences",
+    fields: [
+      "channel",
+      "plan_enabled",
+      "friend_requests",
+      "shared_updates",
+      "encouragements",
+      "revision",
+      "updated_at",
+    ],
+    sql: "SELECT channel,plan_enabled,friend_requests,shared_updates,encouragements,revision,updated_at FROM channel_notification_preferences WHERE user_id=current_setting('app.export_user')::uuid ORDER BY channel",
+  },
+  {
+    name: "inbox_messages",
+    fields: [
+      "id",
+      "event_type",
+      "actor_user_id",
+      "subject_id",
+      "sanitized_payload",
+      "created_at",
+      "read_at",
+    ],
+    sql: "SELECT id,event_type,actor_user_id,subject_id,sanitized_payload,created_at,read_at FROM inbox_messages WHERE recipient_user_id=current_setting('app.export_user')::uuid ORDER BY created_at,id",
   },
 ];
 const csv = (value: unknown): string => {

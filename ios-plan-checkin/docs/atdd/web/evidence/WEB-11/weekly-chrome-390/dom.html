@@ -1,0 +1,942 @@
+<html lang="zh-CN" style="--pen-background: #F8F9F6; --pen-surface: #FFFFFF; --pen-primary: #236B4A; --pen-text: #17231C; --pen-secondary: #7E8880;"><head>
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f3ec">
+    <title>计划打卡</title>
+  <style type="text/css" data-vite-dev-id="F:/CX_notes/cx-learn-notes/ios-plan-checkin/apps/web/src/styles.css">:root {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  color: var(--pen-text, #17231c);
+  background: var(--pen-background, #f8f9f6);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 0;
+}
+body {
+  min-width: 0;
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+.phone-change-card form {
+  display: grid;
+  gap: 10px;
+}
+.phone-change-card label {
+  font-weight: 700;
+}
+.phone-change-card input {
+  min-width: 0;
+  height: 50px;
+  border: 1px solid #cdd8ce;
+  border-radius: 12px;
+  padding: 0 14px;
+  background: var(--pen-surface, white);
+  color: var(--pen-text, #17231c);
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 3px solid #e4a44f;
+  outline-offset: 3px;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 15px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+  font-size: 25px;
+  font-weight: 800;
+  transform: rotate(-5deg);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--pen-primary, #236b4a);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.auth-layout {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
+  align-items: center;
+  gap: clamp(32px, 6vw, 120px);
+  padding: clamp(24px, 7vw, 96px);
+  background:
+    radial-gradient(circle at 20% 20%, #e8f3e9, transparent 40%),
+    var(--pen-background, #f8f9f6);
+}
+
+.auth-intro {
+  max-width: 600px;
+  justify-self: end;
+  width: 100%;
+}
+.auth-intro .brand-mark {
+  margin-bottom: 44px;
+}
+.auth-intro h1 {
+  margin: 0;
+  font-size: clamp(48px, 6vw, 86px);
+  line-height: 1.06;
+  letter-spacing: -0.05em;
+}
+.auth-intro > p:last-child {
+  color: var(--pen-secondary, #7e8880);
+  font-size: clamp(17px, 1.6vw, 22px);
+}
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--pen-surface, white);
+  border: 1px solid #e7ebe5;
+  border-radius: 24px;
+  box-shadow: 0 20px 70px #244a3014;
+  padding: clamp(24px, 4vw, 48px);
+}
+.auth-card h2 {
+  margin: 0 0 10px;
+  font-size: 29px;
+  letter-spacing: -0.03em;
+}
+.muted,
+.hint {
+  color: var(--pen-secondary, #7e8880);
+  line-height: 1.6;
+}
+.muted {
+  margin: 0 0 30px;
+}
+.hint {
+  margin: 5px 0 16px;
+  font-size: 12px;
+}
+.auth-card form {
+  display: grid;
+  gap: 10px;
+}
+.auth-card label {
+  margin-top: 7px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.auth-card input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  border: 1px solid #cdd8ce;
+  border-radius: 12px;
+  background: white;
+  padding: 0 14px;
+  color: var(--pen-text, #17231c);
+}
+.auth-card input:focus {
+  border-color: var(--pen-primary, #236b4a);
+}
+.phone-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.phone-field > span {
+  color: var(--pen-secondary, #7e8880);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.primary-button,
+.secondary-button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 750;
+}
+.primary-button {
+  width: 100%;
+  margin-top: 14px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+}
+.primary-button:hover:not(:disabled) {
+  background: #1b593d;
+}
+.secondary-button {
+  background: #e8f1e9;
+  color: var(--pen-primary, #236b4a);
+}
+.text-button {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  color: var(--pen-primary, #236b4a);
+  padding: 7px 0;
+  font-weight: 700;
+}
+.resend {
+  margin-top: 17px;
+}
+.form-error {
+  color: #a92828;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 4px 0;
+}
+
+.loading-screen {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
+.loading-screen button {
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 245px minmax(0, 1fr);
+  min-height: 100svh;
+}
+.sidebar {
+  background: white;
+  border-right: 1px solid #e5eae4;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 800;
+}
+.side-links {
+  display: grid;
+  gap: 6px;
+}
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 0 17px;
+  text-decoration: none;
+  color: #4c5a50;
+  font-weight: 650;
+}
+.side-link span {
+  width: 24px;
+  text-align: center;
+  font-size: 21px;
+}
+.side-link:hover {
+  background: #f1f6f0;
+}
+.side-link.active {
+  background: #e7f1e9;
+  color: var(--pen-primary, #236b4a);
+}
+.side-account {
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding: 16px 18px;
+  border-top: 1px solid #e5eae4;
+}
+.side-account span {
+  font-size: 12px;
+  color: var(--pen-secondary, #7e8880);
+  overflow-wrap: anywhere;
+}
+.workspace {
+  min-width: 0;
+}
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 74px;
+  border-bottom: 1px solid #e5eae4;
+  padding: 0 clamp(24px, 5vw, 72px);
+  color: #617268;
+}
+.mobile-brand {
+  display: none;
+  font-weight: 800;
+  color: var(--pen-text, #17231c);
+}
+.content-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 72px);
+}
+.content-panel h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  letter-spacing: -0.04em;
+  margin: 0 0 30px;
+}
+.empty-card,
+.settings-card {
+  max-width: 640px;
+  border: 1px solid #e2e8e2;
+  border-radius: 20px;
+  padding: clamp(26px, 4vw, 48px);
+  background: white;
+}
+.empty-card {
+  min-height: 290px;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+.empty-icon {
+  color: var(--pen-primary, #236b4a);
+  font-size: 50px;
+  line-height: 1;
+}
+.empty-card h2 {
+  margin: 16px 0 4px;
+  font-size: 22px;
+}
+.empty-card p {
+  margin: 0;
+  color: var(--pen-secondary, #7e8880);
+  line-height: 1.65;
+}
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 22px;
+  border-radius: 12px;
+  padding: 10px 18px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+  font-weight: 750;
+  text-decoration: none;
+}
+.today-list {
+  display: grid;
+  gap: 14px;
+}
+.today-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid #e2e8e2;
+  border-radius: 18px;
+  background: var(--pen-surface, white);
+}
+.today-card h2 {
+  margin: 0;
+}
+.today-card p:last-child {
+  margin-bottom: 0;
+  color: var(--pen-secondary, #7e8880);
+}
+.page-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-heading .action-link {
+  margin-top: 0;
+}
+.plan-form {
+  display: grid;
+  gap: 10px;
+  max-width: 720px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid #e2e8e2;
+  border-radius: 20px;
+  background: var(--pen-surface, white);
+}
+.plan-form > label,
+.plan-fieldset > label {
+  font-weight: 700;
+}
+.plan-form input:not([type="checkbox"]):not([type="radio"]),
+.plan-form select,
+.plan-form textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid #cdd8ce;
+  border-radius: 12px;
+  background: var(--pen-surface, white);
+  color: var(--pen-text, #17231c);
+  padding: 10px 14px;
+  font: inherit;
+}
+.plan-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.plan-form [aria-invalid="true"] {
+  border-color: #ba4a44;
+}
+.plan-fieldset {
+  min-width: 0;
+  margin: 4px 0;
+  border: 1px solid #e2e8e2;
+  border-radius: 12px;
+  padding: 16px;
+}
+.plan-fieldset legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+.plan-fieldset > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.weekday-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.weekday-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+}
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.form-actions .primary-button {
+  width: auto;
+  min-width: 150px;
+}
+.plan-detail-card dl {
+  display: grid;
+  grid-template-columns: minmax(90px, 160px) minmax(0, 1fr);
+  gap: 14px;
+}
+.plan-detail-card dt {
+  color: var(--pen-secondary, #7e8880);
+}
+.plan-detail-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.plan-lifecycle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0;
+}
+.plan-confirm {
+  max-width: 620px;
+  padding: 22px;
+  border: 1px solid #d9a6a6;
+  border-radius: 18px;
+  background: var(--pen-surface, #fff);
+}
+.plan-confirm h2 {
+  margin-top: 0;
+}
+.plan-confirm p {
+  line-height: 1.6;
+}
+.plan-edit-panel {
+  max-width: 680px;
+  margin: 24px 0;
+  padding: 22px;
+  border: 1px solid #dce5dd;
+  border-radius: 18px;
+  background: var(--pen-surface, #fff);
+}
+.plan-edit-panel .plan-form + .plan-form {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #dce5dd;
+}
+.group-manager {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid #dce5dd;
+}
+.group-create,
+.group-row form,
+.group-moves label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.group-create input,
+.group-row input,
+.group-moves select {
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cddbcf;
+  border-radius: 12px;
+  background: var(--pen-surface, #fff);
+  color: inherit;
+  font: inherit;
+}
+.group-list,
+.group-moves {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+.group-row {
+  padding: 16px;
+  border: 1px solid #dce5dd;
+  border-radius: 16px;
+}
+.group-delete-confirm {
+  padding: 12px;
+  border: 1px solid #d9a6a6;
+  border-radius: 12px;
+}
+.group-moves label {
+  justify-content: space-between;
+}
+.settings-card {
+  margin-bottom: 18px;
+}
+.one-time-result {
+  margin: 22px 0;
+}
+.one-time-result > h2 {
+  margin: 0 0 12px;
+}
+.one-time-result .plan-form {
+  max-width: 640px;
+}
+.private-media-gallery {
+  min-width: 0;
+}
+.private-media-gallery > p {
+  margin: 10px 0;
+}
+.private-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 12px 0;
+  list-style: none;
+}
+.private-media-grid li {
+  min-width: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.private-media-grid img {
+  display: block;
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+.plan-history {
+  margin: 22px 0;
+  padding: 20px;
+  border: 1px solid #dce5dd;
+  border-radius: 18px;
+}
+.plan-history > h2 {
+  margin: 0 0 10px;
+}
+.plan-history > input[type="date"] {
+  display: block;
+  max-width: 100%;
+  margin-top: 6px;
+}
+.history-context {
+  margin-top: 15px;
+}
+.history-recent ul {
+  list-style: none;
+  padding: 0;
+}
+.history-recent li {
+  margin: 8px 0;
+}
+.today-checkin {
+  min-width: 0;
+  width: min(100%, 420px);
+}
+.checkin-panel {
+  margin-top: 14px;
+}
+.checkin-panel .plan-form {
+  margin-top: 10px;
+}
+.checkin-panel fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+.checkin-panel legend {
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+.checkin-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 18px;
+}
+.checkin-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.checkin-date {
+  overflow-wrap: anywhere;
+}
+.checkin-panel input[type="file"] {
+  max-width: 100%;
+}
+.settings-card p {
+  margin-top: 0;
+}
+.bottom-nav {
+  display: none;
+}
+
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 18px;
+}
+.calendar-toolbar h2 {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(18px, 2vw, 26px);
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 100%;
+}
+.calendar-weekday {
+  text-align: center;
+  padding: 8px 0;
+  font-size: 12px;
+}
+.calendar-date {
+  min-width: 0;
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #dce5dd;
+  border-radius: 12px;
+  color: var(--pen-text, #17231c);
+  background: var(--pen-surface, white);
+  text-align: left;
+  cursor: pointer;
+}
+.calendar-date.selected {
+  border: 2px solid var(--pen-primary, #236b4a);
+}
+.calendar-date small {
+  color: var(--pen-secondary, #7e8880);
+  overflow-wrap: anywhere;
+}
+.calendar-date:focus-visible {
+  outline: 3px solid var(--pen-primary, #236b4a);
+  outline-offset: 2px;
+}
+.calendar-weeks,
+.calendar-day-detail {
+  margin-top: 26px;
+  padding: 22px;
+  border: 1px solid #dce5dd;
+  border-radius: 18px;
+  background: var(--pen-surface, white);
+}
+.calendar-weeks ul,
+.calendar-entry-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+.calendar-weeks li,
+.calendar-entry-list li {
+  padding: 12px 0;
+  border-top: 1px solid #dce5dd;
+}
+.calendar-entry-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+}
+.calendar-entry-list small {
+  flex-basis: 100%;
+  color: var(--pen-secondary, #7e8880);
+}
+.plan-statistics {
+  max-width: 920px;
+  margin: 24px 0;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid #dce5dd;
+  border-radius: 18px;
+  background: var(--pen-surface, white);
+}
+.plan-statistics-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.plan-statistics-heading h2 {
+  margin: 0;
+}
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 20px 0 0;
+}
+.statistics-grid > div {
+  min-width: 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--pen-background, #f8f9f6);
+}
+.statistics-grid dt {
+  color: var(--pen-secondary, #7e8880);
+  font-size: 13px;
+}
+.statistics-grid dd {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.statistics-current-week {
+  line-height: 1.65;
+}
+.statistics-weeks {
+  list-style: none;
+  padding: 0;
+  line-height: 1.8;
+}
+@media (max-width: 800px) {
+  .calendar-grid {
+    gap: 3px;
+  }
+  .calendar-date {
+    min-height: 62px;
+    padding: 5px;
+    border-radius: 8px;
+  }
+  .calendar-date small {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  .calendar-toolbar .secondary-button {
+    min-width: 0;
+    padding-inline: 9px;
+  }
+  .calendar-weeks,
+  .calendar-day-detail {
+    padding: 16px;
+  }
+  .statistics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .auth-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    align-content: center;
+    padding: 24px 18px 40px;
+  }
+  .auth-intro {
+    justify-self: center;
+    max-width: 480px;
+  }
+  .auth-intro .brand-mark {
+    margin-bottom: 18px;
+  }
+  .auth-intro h1 {
+    font-size: clamp(36px, 8vw, 50px);
+  }
+  .auth-intro > p:last-child {
+    font-size: 15px;
+  }
+  .auth-card {
+    justify-self: center;
+    max-width: 480px;
+    box-shadow: 0 12px 36px #244a3010;
+  }
+  .app-layout {
+    display: block;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+  .sidebar {
+    display: none;
+  }
+  .topbar {
+    justify-content: space-between;
+    height: 58px;
+    padding: 0 20px;
+    font-size: 13px;
+  }
+  .mobile-brand {
+    display: inline;
+    font-size: 17px;
+  }
+  .content-panel {
+    padding: 28px 18px;
+  }
+  .bottom-nav {
+    position: fixed;
+    z-index: 10;
+    inset: auto 0 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-height: 64px;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: white;
+    border-top: 1px solid #dce5dd;
+  }
+  .bottom-link {
+    min-width: 0;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 1px;
+    color: #68766b;
+    font-size: 11px;
+    text-decoration: none;
+  }
+  .bottom-link span:first-child {
+    font-size: 21px;
+  }
+  .bottom-link.active {
+    color: var(--pen-primary, #236b4a);
+    font-weight: 800;
+  }
+  .today-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .page-heading .action-link {
+    align-self: start;
+  }
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .form-actions .primary-button {
+    width: 100%;
+  }
+  .plan-detail-card dl {
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --pen-background: #14201a !important;
+    --pen-surface: #213128 !important;
+    --pen-text: #edf4eb !important;
+    --pen-secondary: #afc0b0 !important;
+    --pen-primary: #82cca0 !important;
+  }
+  .auth-layout {
+    background:
+      radial-gradient(circle at 20% 20%, #254231, transparent 40%),
+      var(--pen-background);
+  }
+  .auth-card,
+  .sidebar,
+  .empty-card,
+  .today-card,
+  .plan-form,
+  .settings-card,
+  .bottom-nav {
+    background: #213128;
+    border-color: #36503e;
+  }
+  .auth-card input {
+    background: #17241b;
+    border-color: #57715d;
+    color: var(--pen-text);
+  }
+  .side-link {
+    color: #c4d4c5;
+  }
+  .side-link:hover,
+  .side-link.active,
+  .secondary-button {
+    background: #31543b;
+  }
+  .topbar,
+  .side-account {
+    border-color: #36503e;
+  }
+  .form-error {
+    color: #ff9d9d;
+  }
+}
+</style></head>
+  <body>
+    <div id="root"><div class="app-layout"><aside class="sidebar" aria-label="主导航"><a href="/today" class="sidebar-brand"><span class="brand-mark">✓</span><span>计划打卡</span></a><nav aria-label="主导航" class="side-links"><a href="/today" class="side-link"><span aria-hidden="true">◉</span>今日</a><a href="/plans" class="side-link"><span aria-hidden="true">▤</span>计划</a><a href="/calendar" class="side-link active"><span aria-hidden="true">▦</span>日历</a><a href="/friends" class="side-link"><span aria-hidden="true">♧</span>朋友</a><a href="/inbox" class="side-link"><span aria-hidden="true">✉</span>消息</a><a href="/settings" class="side-link"><span aria-hidden="true">⚙</span>设置</a></nav><div class="side-account"><strong>周目标用户</strong><span>@web_atdd_weekly_stats_1314</span></div></aside><main class="workspace"><header class="topbar"><span class="mobile-brand">计划打卡</span><span>你好，周目标用户</span></header><section class="content-panel" data-page-key="calendar-month"><p class="eyebrow">历史与安排</p><h1>日历</h1><p class="muted">按各计划的业务日期显示，跨时区记录不会随设备日期移动。</p><div class="calendar-toolbar"><button class="secondary-button" type="button">上个月</button><h2>2026年9月</h2><button class="secondary-button" type="button">下个月</button></div><div class="calendar-grid" aria-label="2026年9月日历"><strong class="calendar-weekday">周一</strong><strong class="calendar-weekday">周二</strong><strong class="calendar-weekday">周三</strong><strong class="calendar-weekday">周四</strong><strong class="calendar-weekday">周五</strong><strong class="calendar-weekday">周六</strong><strong class="calendar-weekday">周日</strong><span class="calendar-empty"></span><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-01，无安排"><span>1</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-02，无安排"><span>2</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-03，无安排"><span>3</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-04，无安排"><span>4</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-05，无安排"><span>5</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-06，无安排"><span>6</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-07，无安排"><span>7</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-08，无安排"><span>8</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-09，无安排"><span>9</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-10，无安排"><span>10</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-11，无安排"><span>11</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-12，无安排"><span>12</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-13，无安排"><span>13</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-14，无安排"><span>14</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-15，无安排"><span>15</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-16，无安排"><span>16</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-17，无安排"><span>17</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-18，无安排"><span>18</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-19，无安排"><span>19</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-20，无安排"><span>20</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-21，无安排"><span>21</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-22，无安排"><span>22</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-23，无安排"><span>23</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-24，无安排"><span>24</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-25，无安排"><span>25</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-26，无安排"><span>26</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-27，无安排"><span>27</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-28，无安排"><span>28</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-29，无安排"><span>29</span><small>无安排</small></button><button class="calendar-date" type="button" aria-pressed="false" aria-label="2026-09-30，无安排"><span>30</span><small>无安排</small></button></div><p class="muted">本月没有计划记录或应执行日。</p><section class="calendar-weeks" aria-labelledby="weekly-heading"><h2 id="weekly-heading">周目标概览</h2><ul><li><strong>减少含糖饮料</strong> · 2026-08-31 起：0/— · 进行中或部分周，暂不计入达标统计</li><li><strong>减少含糖饮料</strong> · 2026-09-07 起：0/— · 进行中或部分周，暂不计入达标统计</li><li><strong>减少含糖饮料</strong> · 2026-09-14 起：0/— · 进行中或部分周，暂不计入达标统计</li><li><strong>减少含糖饮料</strong> · 2026-09-21 起：0/7 · 进行中或部分周，暂不计入达标统计</li><li><strong>减少含糖饮料</strong> · 2026-09-28 起：0/7 · 进行中或部分周，暂不计入达标统计</li></ul></section></section></main><nav class="bottom-nav" aria-label="手机主导航"><a href="/today" class="bottom-link"><span aria-hidden="true">◉</span><span>今日</span></a><a href="/plans" class="bottom-link"><span aria-hidden="true">▤</span><span>计划</span></a><a href="/calendar" class="bottom-link active"><span aria-hidden="true">▦</span><span>日历</span></a><a href="/friends" class="bottom-link"><span aria-hidden="true">♧</span><span>朋友</span></a><a href="/settings" class="bottom-link"><span aria-hidden="true">⚙</span><span>设置</span></a></nav></div></div>
+    <script type="module" src="/src/main.tsx?t=1790665628440"></script>
+  
+
+</body></html>

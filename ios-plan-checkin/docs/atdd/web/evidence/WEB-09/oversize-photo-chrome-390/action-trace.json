@@ -1,0 +1,144 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T06:32:03.894Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T06:32:04.019Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T06:32:04.129Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T06:32:04.246Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T06:32:04.355Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-29T06:32:04.475Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 23,
+    "at": "2026-09-29T06:32:04.587Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 6,
+    "at": "2026-09-29T06:32:04.715Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T06:32:04.831Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T06:32:04.934Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T06:32:05.071Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-29T06:32:05.175Z"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "one_time",
+    "at": "2026-09-29T06:32:05.281Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 10,
+    "at": "2026-09-29T06:32:05.403Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-29T06:32:05.514Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".one-time-result form",
+    "at": "2026-09-29T06:32:05.727Z"
+  },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled",
+    "at": "2026-09-29T06:32:05.838Z"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "characters": 10,
+    "at": "2026-09-29T06:32:05.958Z"
+  },
+  {
+    "action": "upload-oversize-fixture",
+    "selector": ".one-time-result input[type='file']",
+    "fixture": "[generated-oversize-image]",
+    "bytes": 20971521,
+    "at": "2026-09-29T06:32:06.130Z"
+  },
+  {
+    "action": "click",
+    "selector": ".one-time-result button[type='submit']",
+    "at": "2026-09-29T06:32:06.253Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result [role='alert']",
+    "expectedText": "不超过 20 MB",
+    "at": "2026-09-29T06:32:06.369Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "oversize-rejected",
+    "at": "2026-09-29T06:32:06.408Z"
+  },
+  {
+    "action": "click",
+    "selector": ".one-time-result .text-button",
+    "at": "2026-09-29T06:32:06.426Z"
+  },
+  {
+    "action": "click",
+    "selector": ".one-time-result button[type='submit']",
+    "at": "2026-09-29T06:32:06.554Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "expectedText": "当前结果：取消",
+    "at": "2026-09-29T06:32:06.674Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "pure-result-saved",
+    "at": "2026-09-29T06:32:06.725Z"
+  }
+]

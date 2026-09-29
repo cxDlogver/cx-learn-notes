@@ -8,7 +8,13 @@ import process from "node:process";
 import { URL } from "node:url";
 
 const runId = process.argv[2];
+const expiredAlias = process.argv[3] ?? null;
 if (!/^[a-z0-9-]{3,40}$/.test(runId ?? "")) throw new Error("RUN_ID required");
+if (
+  expiredAlias !== null &&
+  !["A1", "A2", "A3", "B1", "C1", "D1"].includes(expiredAlias)
+)
+  throw new Error("Unknown expected expired alias");
 const databaseUrl = process.env.WEB_ATDD_DATABASE_URL;
 if (!databaseUrl) throw new Error("WEB_ATDD_DATABASE_URL required");
 const database = new URL(databaseUrl);
@@ -64,6 +70,12 @@ try {
       },
     );
     const payload = await response.json();
+    if (alias === expiredAlias) {
+      assert.equal(response.status, 401, alias);
+      assert.equal(payload.code, "UNAUTHENTICATED", alias);
+      observed[alias] = { status: response.status, userId: session.userId };
+      continue;
+    }
     assert.equal(response.status, 200, alias);
     assert.equal(payload.data.userId, session.userId, alias);
     assert.equal(response.headers.get("cache-control"), "no-store");
@@ -89,6 +101,7 @@ try {
       distinctUsers: 4,
       distinctSessions: 6,
       sameAccountA: true,
+      expiredAlias,
       privateCacheControl: "no-store",
     })}\n`,
   );

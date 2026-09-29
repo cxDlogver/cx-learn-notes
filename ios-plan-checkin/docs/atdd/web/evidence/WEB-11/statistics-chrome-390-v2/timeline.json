@@ -1,0 +1,183 @@
+{
+  "capturedAt": "2026-09-29T07:19:06.486Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T07:19:03.047Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T07:19:03.134Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T07:19:03.251Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T07:19:03.359Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T07:19:03.473Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T07:19:03.589Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T07:19:03.692Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 19,
+      "at": "2026-09-29T07:19:03.803Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 4,
+      "at": "2026-09-29T07:19:03.910Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T07:19:04.020Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T07:19:04.123Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T07:19:04.266Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T07:19:04.368Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 6,
+      "at": "2026-09-29T07:19:04.487Z"
+    },
+    {
+      "action": "set-date",
+      "selector": "#plan-start-date",
+      "value": "2026-09-27",
+      "at": "2026-09-29T07:19:04.593Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .text-button",
+      "at": "2026-09-29T07:19:04.712Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T07:19:04.828Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='plan-detail'] h1",
+      "at": "2026-09-29T07:19:04.930Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".plan-statistics .statistics-grid",
+      "at": "2026-09-29T07:19:05.035Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "statistics-before",
+      "at": "2026-09-29T07:19:05.175Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-history .today-checkin button",
+      "at": "2026-09-29T07:19:05.189Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".plan-history .checkin-panel form",
+      "at": "2026-09-29T07:19:05.295Z"
+    },
+    {
+      "action": "type",
+      "selector": ".plan-history textarea",
+      "characters": 6,
+      "at": "2026-09-29T07:19:05.415Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-history .checkin-panel button[type='submit']",
+      "at": "2026-09-29T07:19:05.526Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".plan-history .today-checkin [role='status']",
+      "expectedText": "记录已保存",
+      "at": "2026-09-29T07:19:05.630Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".plan-statistics .statistics-grid > div:nth-child(3) dd",
+      "expectedText": "1",
+      "at": "2026-09-29T07:19:05.738Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-statistics-heading button",
+      "at": "2026-09-29T07:19:05.745Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".plan-statistics .statistics-grid > div:nth-child(3) dd",
+      "expectedText": "1",
+      "at": "2026-09-29T07:19:05.860Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "statistics-after",
+      "at": "2026-09-29T07:19:05.894Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-link[href='/calendar']",
+      "at": "2026-09-29T07:19:05.912Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='calendar-month'] .calendar-grid",
+      "at": "2026-09-29T07:19:06.029Z"
+    },
+    {
+      "action": "click",
+      "selector": ".calendar-date[aria-label^='2026-09-28']",
+      "at": "2026-09-29T07:19:06.151Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='calendar-day'] .calendar-entry-list",
+      "at": "2026-09-29T07:19:06.266Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "calendar-recorded",
+      "at": "2026-09-29T07:19:06.411Z"
+    }
+  ]
+}

@@ -10,7 +10,10 @@
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json",
+    "typecheck": "tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json",
+    "web:dev": "pnpm --filter @plan-checkin/web dev",
+    "web:build": "pnpm --filter @plan-checkin/web build",
+    "web:static:smoke": "node scripts/web-static-smoke.mjs",
     "test:unit": "tsc -p packages/domain/tsconfig.json && node --test packages/domain/test/*.test.mjs",
     "mobile:config:check": "node scripts/mobile-config-check.mjs",
     "design:build": "node scripts/build-design-resources.mjs --write",
@@ -67,7 +70,7 @@
     "candidate:check": "node scripts/release-candidate.mjs --check",
     "local:acceptance:http": "node --env-file=.env scripts/local-http-acceptance.mjs",
     "local:acceptance:object": "node --env-file=.env scripts/local-object-smoke.mjs",
-    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/infra-check.mjs && node scripts/deployment-static-check.mjs && node scripts/sql-static-check.mjs && node scripts/progress-check.mjs && node scripts/security-static.mjs"
+    "check": "prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/infra-check.mjs && node scripts/deployment-static-check.mjs && node scripts/sql-static-check.mjs && node scripts/progress-check.mjs && node scripts/security-static.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

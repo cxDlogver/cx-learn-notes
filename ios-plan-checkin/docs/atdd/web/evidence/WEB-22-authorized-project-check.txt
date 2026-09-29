@@ -1,0 +1,15 @@
+
+> plan-checkin@0.1.0 check
+> prettier --check . && eslint . && tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p packages/domain/tsconfig.json && tsc --noEmit -p packages/design-tokens/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/worker/tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json && node scripts/mobile-config-check.mjs --check && node scripts/build-design-resources.mjs --check && node scripts/build-openapi.mjs --check && node scripts/check-contract-compat.mjs && node scripts/infra-check.mjs && node scripts/deployment-static-check.mjs && node scripts/sql-static-check.mjs && node scripts/progress-check.mjs && node scripts/security-static.mjs
+
+Checking formatting...
+All matched files use Prettier code style!
+Expo SDK native module and iOS config check passed.
+Pen design resources and 32-page component map are consistent.
+OpenAPI route catalog contains 87 unique operations.
+API compatibility baseline check passed.
+Local Compose, 3 environment templates and migration manifest passed.
+Deployment static check passed: three isolated environments, Web/API routing, digest images, migration gate and secret references.
+SQL static catalog passed: 42 tables, 13 migrations.
+Build progress ledger passed: 35 unique tasks and resumable checkpoint.
+Security static scan passed (311 source files).

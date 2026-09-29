@@ -1,0 +1,51 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001298" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1298"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_one_response_loss"
+  },
+  { "action": "type", "selector": "#nickname", "text": "响应丢失验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  { "action": "type", "selector": "#plan-title", "text": "响应已丢失任务" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "text": "服务端先提交，再丢浏览器响应"
+  },
+  { "action": "drop-next-one-time-response" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result [role='alert']",
+    "text": "提交结果未知"
+  },
+  { "action": "snapshot", "label": "committed-unknown" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "text": "当前结果：取消"
+  },
+  { "action": "snapshot", "label": "replayed-saved" }
+]

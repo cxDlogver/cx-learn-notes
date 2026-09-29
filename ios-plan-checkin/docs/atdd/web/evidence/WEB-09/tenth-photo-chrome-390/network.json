@@ -1,0 +1,77 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:40.833Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "72a1709f5f7a10cb4a78374e357b7014fbd9b0e026c9e2c4771acc4bf10a0bd7",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:41.159Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "e901259c27d06f4d6944899dc3cdc5f7f1430b3ef171b98ad3fe8deb37bfac3d",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:41.501Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:41.520Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "operationKeySha256": "57aa497d4337b651f6398e7dd0b84991b18b51cdec85e8d236fc7d2897935c60",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:41.934Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:41.969Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "operationKeySha256": "0bdb4faa835f723a1afb02027aeafda01cafa4d4ac2208ee10dee36a5af7bd56",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:42.650Z"
+  },
+  {
+    "path": "/api/v1/plans/4919dbb1-abf8-4ce5-922e-f62294990b6e",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:42.670Z"
+  },
+  {
+    "path": "/api/v1/plans/4919dbb1-abf8-4ce5-922e-f62294990b6e/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:42.710Z"
+  },
+  {
+    "path": "/api/v1/plans/4919dbb1-abf8-4ce5-922e-f62294990b6e/one-time-resolution",
+    "method": "POST",
+    "operationKeySha256": "71e8695aa0b62f814388c5f081918d9c9606a92265e04381e868d77b3b9ddfcb",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:25:43.524Z"
+  }
+]

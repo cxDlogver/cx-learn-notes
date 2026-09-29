@@ -1,0 +1,138 @@
+{
+  "capturedAt": "2026-09-29T09:03:40.203Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T09:03:37.823Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T09:03:37.899Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T09:03:38.062Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T09:03:38.167Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T09:03:38.281Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T09:03:38.386Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T09:03:38.488Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 6,
+      "at": "2026-09-29T09:03:38.602Z"
+    },
+    {
+      "action": "set-date",
+      "selector": "#plan-start-date",
+      "value": "2026-09-27",
+      "at": "2026-09-29T09:03:38.714Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .text-button",
+      "at": "2026-09-29T09:03:38.832Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T09:03:38.946Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='plan-detail'] h1",
+      "at": "2026-09-29T09:03:39.055Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-history .today-checkin button",
+      "at": "2026-09-29T09:03:39.168Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".plan-history .checkin-panel form",
+      "at": "2026-09-29T09:03:39.282Z"
+    },
+    {
+      "action": "type",
+      "selector": ".plan-history textarea",
+      "characters": 7,
+      "at": "2026-09-29T09:03:39.405Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-history .checkin-panel button[type='submit']",
+      "at": "2026-09-29T09:03:39.513Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".plan-history .today-checkin [role='status']",
+      "expectedText": "记录已保存",
+      "at": "2026-09-29T09:03:39.627Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".share-manager",
+      "expectedText": "日历验收",
+      "at": "2026-09-29T09:03:39.628Z"
+    },
+    {
+      "action": "select-option-index",
+      "selector": "#share-friend",
+      "index": 1,
+      "at": "2026-09-29T09:03:39.631Z"
+    },
+    {
+      "action": "click",
+      "selector": ".share-selectors .secondary-button",
+      "at": "2026-09-29T09:03:39.754Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".share-preview",
+      "expectedText": "今天走了三公里",
+      "at": "2026-09-29T09:03:39.870Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "share-preview",
+      "at": "2026-09-29T09:03:39.933Z"
+    },
+    {
+      "action": "click",
+      "selector": ".share-preview .primary-button",
+      "at": "2026-09-29T09:03:39.960Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".share-manager .success-note",
+      "expectedText": "已授权这项计划",
+      "at": "2026-09-29T09:03:40.073Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "share-granted",
+      "at": "2026-09-29T09:03:40.114Z"
+    }
+  ]
+}

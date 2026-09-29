@@ -1,0 +1,121 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:52.780Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "db9c3de0d1cccb5d47ca19c2909d6a1cc73d68cd0f55ad2538e2bc97bdfc0d71",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:53.089Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "f80ab1dbe28b56c2ef4b45ceac4a307698d7ea2df3de6309fa97014db4e686bd",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:53.428Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:53.442Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "operationKeySha256": "8932a9d062d30b1a104b248b6ee41728b3179a6e7ab6ff3e1a0047f1fa25758d",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:53.885Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:53.936Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "operationKeySha256": "92fa1a4d4665553ebbc799f6c0c1699fb70abc610a6f9ccccb6eb76c290e456a",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:54.606Z"
+  },
+  {
+    "path": "/api/v1/plans/f6f2b83c-8a42-4168-a685-9946fcae99e6",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:54.627Z"
+  },
+  {
+    "path": "/api/v1/plans/f6f2b83c-8a42-4168-a685-9946fcae99e6/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:54.665Z"
+  },
+  {
+    "path": "/api/v1/media/upload-intents",
+    "method": "POST",
+    "operationKeySha256": "09a45a8bd5cabe971a9ce48985e7d464d31b443e5f4593f79b0140879af0f306",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:55.130Z"
+  },
+  {
+    "path": "[object-store]",
+    "method": "OPTIONS",
+    "status": 200,
+    "mimeType": "",
+    "at": "2026-09-29T01:55:55.133Z"
+  },
+  {
+    "path": "[object-store]",
+    "method": "PUT",
+    "status": 200,
+    "mimeType": "",
+    "at": "2026-09-29T01:55:55.138Z"
+  },
+  {
+    "path": "/api/v1/plans/f6f2b83c-8a42-4168-a685-9946fcae99e6/one-time-resolution",
+    "method": "POST",
+    "operationKeySha256": "8ca4bb2b8b523da5ebfd94842404e4035cecdefb46c0d1981dc5b9c268d457b4",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:55.178Z"
+  },
+  {
+    "path": "/api/v1/media/c406a576-7603-49df-9a34-e9cbd0b4e49c/complete",
+    "method": "POST",
+    "operationKeySha256": "54ca62c8511a37109e09f480dab9ad0da73cd704584cd37e49109878e64eae43",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:55.209Z"
+  },
+  {
+    "path": "/api/v1/media/c406a576-7603-49df-9a34-e9cbd0b4e49c/download-url",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:55:55.349Z"
+  },
+  {
+    "path": "[object-store]",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "image/png",
+    "at": "2026-09-29T01:55:55.361Z"
+  }
+]

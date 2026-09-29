@@ -1,0 +1,59 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001306" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1306"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_oversize_photo"
+  },
+  { "action": "type", "selector": "#nickname", "text": "超大照片验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "超大照片拒绝后纯结果"
+  },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "text": "超大照片不阻断纯结果"
+  },
+  {
+    "action": "upload-oversize-fixture",
+    "selector": ".one-time-result input[type='file']"
+  },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result [role='alert']",
+    "text": "不超过 20 MB"
+  },
+  { "action": "snapshot", "label": "oversize-rejected" },
+  { "action": "click", "selector": ".one-time-result .text-button" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "text": "当前结果：取消"
+  },
+  { "action": "snapshot", "label": "pure-result-saved" }
+]

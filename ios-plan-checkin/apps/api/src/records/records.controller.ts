@@ -12,6 +12,7 @@ import {
 import type {
   ApiSuccess,
   CheckinDto,
+  CheckinContextDto,
   OneTimeResolutionDto,
   OneTimeResolutionRequest,
   PutCheckinRequest,
@@ -58,6 +59,19 @@ export class RecordsController {
   ): Promise<ApiSuccess<CheckinDto>> {
     return ok(
       await this.records.get(await this.user(bearer), id, date),
+      request,
+    );
+  }
+
+  @Get("checkin-context/:businessDate")
+  async context(
+    @Headers("authorization") bearer: string,
+    @Param("id") id: string,
+    @Param("businessDate") date: string,
+    @Req() request: RequestLike,
+  ): Promise<ApiSuccess<CheckinContextDto>> {
+    return ok(
+      await this.records.context(await this.user(bearer), id, date),
       request,
     );
   }

@@ -1,0 +1,45 @@
+{
+  "capturedAt": "2026-09-29T08:09:00.914Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T08:08:59.962Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T08:09:00.047Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:09:00.180Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T08:09:00.287Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T08:09:00.407Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:09:00.513Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='calendar-day'] .calendar-entry-list",
+      "at": "2026-09-29T08:09:00.726Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "timezone-shanghai-day",
+      "at": "2026-09-29T08:09:00.863Z"
+    }
+  ]
+}

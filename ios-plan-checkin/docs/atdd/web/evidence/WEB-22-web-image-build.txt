@@ -1,0 +1,172 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Web.Dockerfile
+#1 transferring dockerfile: 713B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:22-bookworm-slim
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:22-bookworm-slim
+#2 DONE 12.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 137B done
+#4 DONE 0.0s
+
+#5 [build 1/5] FROM docker.io/library/node:22-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
+#5 resolve docker.io/library/node:22-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c 0.0s done
+#5 sha256:dc40c63c08b5453854c13da6d72b3182737b2e223156b786c67779e0d6f4e8e0 0B / 446B 0.2s
+#5 ...
+
+#6 [internal] load build context
+#6 transferring context: 4.54MB 0.2s done
+#6 DONE 0.3s
+
+#5 [build 1/5] FROM docker.io/library/node:22-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
+#5 sha256:8d9d84ee31888adba85837fbf8f0e6eca99263904b2ba04d79e7d4fc1da40056 0B / 1.71MB 0.2s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 0B / 49.84MB 0.2s
+#5 sha256:8ab8fd6c944526e5da2ca93b1663b2ab6f4bb8d4ea7b50a90d53c9fdcc5b0b9e 0B / 3.31kB 0.2s
+#5 sha256:dc40c63c08b5453854c13da6d72b3182737b2e223156b786c67779e0d6f4e8e0 446B / 446B 0.6s done
+#5 sha256:8ab8fd6c944526e5da2ca93b1663b2ab6f4bb8d4ea7b50a90d53c9fdcc5b0b9e 3.31kB / 3.31kB 1.6s done
+#5 extracting sha256:8ab8fd6c944526e5da2ca93b1663b2ab6f4bb8d4ea7b50a90d53c9fdcc5b0b9e
+#5 extracting sha256:8ab8fd6c944526e5da2ca93b1663b2ab6f4bb8d4ea7b50a90d53c9fdcc5b0b9e 0.0s done
+#5 sha256:8d9d84ee31888adba85837fbf8f0e6eca99263904b2ba04d79e7d4fc1da40056 0B / 1.71MB 5.3s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 0B / 49.84MB 5.3s
+#5 sha256:8d9d84ee31888adba85837fbf8f0e6eca99263904b2ba04d79e7d4fc1da40056 1.05MB / 1.71MB 6.5s
+#5 sha256:8d9d84ee31888adba85837fbf8f0e6eca99263904b2ba04d79e7d4fc1da40056 1.71MB / 1.71MB 6.7s done
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 2.10MB / 49.84MB 10.4s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 2.10MB / 49.84MB 15.5s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 5.24MB / 49.84MB 20.2s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 6.29MB / 49.84MB 25.3s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 7.34MB / 49.84MB 30.4s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 7.34MB / 49.84MB 35.5s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 12.58MB / 49.84MB 37.3s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 15.73MB / 49.84MB 38.2s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 19.92MB / 49.84MB 38.7s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 24.12MB / 49.84MB 39.7s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 27.26MB / 49.84MB 39.9s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 30.41MB / 49.84MB 40.5s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 34.60MB / 49.84MB 40.9s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 37.75MB / 49.84MB 41.2s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 40.89MB / 49.84MB 41.7s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 45.09MB / 49.84MB 42.3s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 49.28MB / 49.84MB 42.4s
+#5 sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 49.84MB / 49.84MB 42.5s done
+#5 extracting sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5
+#5 extracting sha256:61592f5b60306b96e5208206668cdf0fa62d3cda3a3baeed26efdcd1a21aaba5 1.1s done
+#5 DONE 43.8s
+
+#5 [build 1/5] FROM docker.io/library/node:22-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c
+#5 extracting sha256:8d9d84ee31888adba85837fbf8f0e6eca99263904b2ba04d79e7d4fc1da40056 0.1s done
+#5 extracting sha256:dc40c63c08b5453854c13da6d72b3182737b2e223156b786c67779e0d6f4e8e0 0.0s done
+#5 DONE 43.8s
+
+#7 [stage-1 2/4] WORKDIR /app
+#7 DONE 0.1s
+
+#8 [build 2/5] WORKDIR /workspace
+#8 DONE 0.1s
+
+#9 [build 3/5] RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
+#9 0.422 Preparing pnpm@11.25.0 for immediate activation...
+#9 DONE 3.4s
+
+#10 [build 4/5] COPY . .
+#10 DONE 0.1s
+
+#11 [build 5/5] RUN pnpm install --frozen-lockfile &&     pnpm exec tsc -p packages/contracts/tsconfig.json &&     pnpm exec tsc -p packages/domain/tsconfig.json &&     pnpm exec tsc -p packages/design-tokens/tsconfig.json &&     pnpm --filter @plan-checkin/web build
+#11 0.919 Scope: all 8 workspace projects
+#11 1.036 ? Verifying lockfile against supply-chain policies (771 entries)...
+#11 1.045 Lockfile is up to date, resolution step is skipped
+#11 1.204 Progress: resolved 1, reused 0, downloaded 0, added 0
+#11 1.320 Packages: +721
+#11 1.320 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#11 2.209 Progress: resolved 721, reused 0, downloaded 0, added 0
+#11 3.682 Progress: resolved 721, reused 0, downloaded 1, added 0
+#11 3.687 Packages are hard linked from the content-addressable store to the virtual store.
+#11 3.687   Content-addressable store is at: /root/.local/share/pnpm/store/v11
+#11 3.687   Virtual store is at:             node_modules/.pnpm
+#11 4.306 
+#11 4.306    ╭──────────────────────────────────────────────────────────────────────╮
+#11 4.306    │                                                                      │
+#11 4.306    │                 Update available! 11.25.0 → 12.6.0.                  │
+#11 4.306    │                 Changelog: https://pnpm.io/v/12.6.0                  │
+#11 4.306    │   To update, run: curl -fsSL https://get.pnpm.io/install.sh | sh -   │
+#11 4.306    │                                                                      │
+#11 4.306    ╰──────────────────────────────────────────────────────────────────────╯
+#11 4.306 
+#11 4.682 Progress: resolved 721, reused 0, downloaded 45, added 45
+#11 5.682 Progress: resolved 721, reused 0, downloaded 66, added 66
+#11 6.689 Progress: resolved 721, reused 0, downloaded 95, added 95
+#11 7.689 Progress: resolved 721, reused 0, downloaded 123, added 123
+#11 8.718 Progress: resolved 721, reused 0, downloaded 133, added 133
+#11 9.718 Progress: resolved 721, reused 0, downloaded 170, added 170
+#11 10.72 Progress: resolved 721, reused 0, downloaded 186, added 186
+#11 11.73 Progress: resolved 721, reused 0, downloaded 213, added 213
+#11 12.73 Progress: resolved 721, reused 0, downloaded 231, added 231
+#11 13.73 Progress: resolved 721, reused 0, downloaded 271, added 271
+#11 14.77 Progress: resolved 721, reused 0, downloaded 301, added 301
+#11 15.77 Progress: resolved 721, reused 0, downloaded 332, added 332
+#11 16.77 Progress: resolved 721, reused 0, downloaded 374, added 374
+#11 17.77 Progress: resolved 721, reused 0, downloaded 400, added 400
+#11 18.77 Progress: resolved 721, reused 0, downloaded 415, added 415
+#11 19.77 Progress: resolved 721, reused 0, downloaded 454, added 454
+#11 20.77 Progress: resolved 721, reused 0, downloaded 488, added 488
+#11 21.77 Progress: resolved 721, reused 0, downloaded 527, added 527
+#11 22.77 Progress: resolved 721, reused 0, downloaded 589, added 589
+#11 23.77 Progress: resolved 721, reused 0, downloaded 656, added 656
+#11 24.77 Progress: resolved 721, reused 0, downloaded 705, added 705
+#11 25.78 Progress: resolved 721, reused 0, downloaded 721, added 721, done
+#11 28.24 ✓ Lockfile passes supply-chain policies (771 entries in 27.2s)
+#11 28.24 .../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+#11 28.32 .../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+#11 28.54 
+#11 28.54 dependencies:
+#11 28.54 + pg 8.23.0
+#11 28.54 
+#11 28.54 devDependencies:
+#11 28.54 + @electric-sql/pglite 0.5.8
+#11 28.54 + @eslint/js 10.0.1
+#11 28.54 + @types/pg 8.23.1
+#11 28.54 + eslint 10.11.0
+#11 28.54 + libpg-query 17.7.4
+#11 28.54 + openapi-typescript 7.13.0
+#11 28.54 + prettier 3.9.9
+#11 28.54 + typescript 5.9.3
+#11 28.54 + typescript-eslint 8.70.1
+#11 28.54 
+#11 28.65 Done in 28.3s using pnpm v11.25.0
+#11 33.04 $ tsc --noEmit -p tsconfig.json && vite build
+#11 35.90 vite v8.3.1 building client environment for production...
+#11 35.91 transforming...
+#11 35.98 ✓ 34 modules transformed.
+#11 36.04 rendering chunks...
+#11 36.08 computing gzip size...
+#11 36.09 dist/index.html                   0.44 kB │ gzip:  0.30 kB
+#11 36.09 dist/assets/index-D2H6uMKo.css   17.97 kB │ gzip:  4.35 kB
+#11 36.09 dist/assets/index-R-znxhN8.js   298.04 kB │ gzip: 87.66 kB
+#11 36.09 
+#11 36.09 ✓ built in 190ms
+#11 DONE 36.5s
+
+#12 [stage-1 3/4] COPY --from=build --chown=node:node /workspace/apps/web/dist /app/dist
+#12 DONE 0.1s
+
+#13 [stage-1 4/4] COPY --from=build --chown=node:node /workspace/apps/web/server.mjs /app/server.mjs
+#13 DONE 0.1s
+
+#14 exporting to image
+#14 exporting layers 0.1s done
+#14 exporting manifest sha256:abef8d43dad531cfc3955c334f419a4f002d1ec0fa40bdc1da5c24071ff1f5d8 0.0s done
+#14 exporting config sha256:ec4177f034967cd397fcd4a91e6eb4b66a338703b43eabc2a7ec3276f4454519 0.0s done
+#14 exporting attestation manifest sha256:d25f4a33c138cc4ffad5635ce17f4d66bd911c6916e26dfab97e3012d46d76b8 0.0s done
+#14 exporting manifest list sha256:bd2df619bc096d3ffa2244fd7897151dc73d7977d5c86da9ba7109e135deb12a 0.0s done
+#14 naming to docker.io/library/plan-checkin-web:local done
+#14 unpacking to docker.io/library/plan-checkin-web:local 0.1s done
+#14 DONE 0.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/4d4qmcry6r3f3xjh6x2y6eqqi

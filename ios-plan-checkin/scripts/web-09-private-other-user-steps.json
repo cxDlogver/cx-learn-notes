@@ -1,0 +1,26 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001304" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1304"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_private_other"
+  },
+  { "action": "type", "selector": "#nickname", "text": "私人照片其他用户" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  {
+    "action": "probe-private-media",
+    "mediaId": "0e2fafa6-b22d-4f90-ac1b-e6fcde9cc2db",
+    "expectedStatus": 404
+  },
+  { "action": "snapshot", "label": "other-user-media-denied" }
+]

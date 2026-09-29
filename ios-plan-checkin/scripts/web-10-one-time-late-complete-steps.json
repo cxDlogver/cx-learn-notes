@@ -1,0 +1,25 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001295" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1295"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  { "action": "snapshot", "label": "overdue-before" },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "text": "次日完成"
+  },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "text": "逾期完成"
+  },
+  { "action": "snapshot", "label": "overdue-completed" }
+]

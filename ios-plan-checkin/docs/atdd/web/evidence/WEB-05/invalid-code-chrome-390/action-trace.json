@@ -1,0 +1,34 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T18:04:58.803Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:04:58.924Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T18:04:59.037Z"
+  },
+  {
+    "action": "type",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T18:04:59.152Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:04:59.262Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#auth-error",
+    "at": "2026-09-28T18:04:59.366Z"
+  }
+]

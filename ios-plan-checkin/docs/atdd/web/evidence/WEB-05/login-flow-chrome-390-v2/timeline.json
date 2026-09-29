@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-09-28T17:04:58.833Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T17:04:57.540Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T17:04:57.677Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:04:57.801Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T17:04:57.910Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T17:04:58.030Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:04:58.140Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-28T17:04:58.252Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 14,
+      "at": "2026-09-28T17:04:58.372Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 8,
+      "at": "2026-09-28T17:04:58.481Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:04:58.590Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T17:04:58.695Z"
+    }
+  ]
+}

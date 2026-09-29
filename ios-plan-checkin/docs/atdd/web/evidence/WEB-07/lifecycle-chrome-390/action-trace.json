@@ -1,0 +1,219 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T18:54:13.384Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:54:13.524Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T18:54:13.636Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T18:54:13.750Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:54:13.859Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-28T18:54:13.961Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 18,
+    "at": "2026-09-28T18:54:14.072Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 8,
+    "at": "2026-09-28T18:54:14.192Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:54:14.300Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T18:54:14.411Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T18:54:14.551Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-28T18:54:14.659Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 4,
+    "at": "2026-09-28T18:54:14.781Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(1) input",
+    "at": "2026-09-28T18:54:14.893Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(3) input",
+    "at": "2026-09-28T18:54:15.011Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(5) input",
+    "at": "2026-09-28T18:54:15.129Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-numeric-label",
+    "characters": 2,
+    "at": "2026-09-28T18:54:15.276Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-numeric-unit",
+    "characters": 2,
+    "at": "2026-09-28T18:54:15.404Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "fixed-form",
+    "at": "2026-09-28T18:54:15.544Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-28T18:54:15.567Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1",
+    "at": "2026-09-28T18:54:15.798Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(1)",
+    "at": "2026-09-28T18:54:15.923Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-confirm-title",
+    "at": "2026-09-28T18:54:16.043Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "pause-confirm",
+    "at": "2026-09-28T18:54:16.192Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-confirm .primary-button",
+    "at": "2026-09-28T18:54:16.210Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"][data-lifecycle=\"paused\"]",
+    "at": "2026-09-28T18:54:16.315Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "paused",
+    "at": "2026-09-28T18:54:16.458Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(1)",
+    "at": "2026-09-28T18:54:16.489Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-confirm-title",
+    "at": "2026-09-28T18:54:16.612Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-confirm .primary-button",
+    "at": "2026-09-28T18:54:16.751Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"][data-lifecycle=\"active\"]",
+    "at": "2026-09-28T18:54:16.969Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "resumed",
+    "at": "2026-09-28T18:54:17.108Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(2)",
+    "at": "2026-09-28T18:54:17.125Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-confirm-title",
+    "at": "2026-09-28T18:54:17.237Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-confirm .primary-button",
+    "at": "2026-09-28T18:54:17.356Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"][data-lifecycle=\"archived\"]",
+    "at": "2026-09-28T18:54:17.466Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "archived",
+    "at": "2026-09-28T18:54:17.625Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(2)",
+    "at": "2026-09-28T18:54:17.644Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-confirm-title",
+    "at": "2026-09-28T18:54:17.748Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "delete-confirm",
+    "at": "2026-09-28T18:54:17.893Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-confirm .primary-button",
+    "at": "2026-09-28T18:54:17.903Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plans\"]",
+    "at": "2026-09-28T18:54:18.012Z"
+  }
+]

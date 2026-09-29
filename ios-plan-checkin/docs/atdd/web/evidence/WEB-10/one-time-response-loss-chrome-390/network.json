@@ -1,0 +1,85 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:14.872Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "43e3377f23857abbdcb581dadef2d5a0ca39c60bf05aee9ebbda3e994e454a05",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:15.186Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "03f429d8752f5ff4a9074db81e17b9491becd60b877ec2cbd774b6da27200627",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:15.535Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:15.547Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "operationKeySha256": "bbfe561ed316bb66edf827d2e498660bdfa54e7b68fd9cc8c307fac04ed1e172",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:16.000Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:16.041Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "operationKeySha256": "f030fe591110ded9511210e3134cb2b0f950fff64b921fa15d361ef19e2836ad",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:16.702Z"
+  },
+  {
+    "path": "/api/v1/plans/3608b4e8-7758-4fa7-9ef5-0b8b8085a88b",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:16.720Z"
+  },
+  {
+    "path": "/api/v1/plans/3608b4e8-7758-4fa7-9ef5-0b8b8085a88b/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:16.753Z"
+  },
+  {
+    "path": "/api/v1/plans/3608b4e8-7758-4fa7-9ef5-0b8b8085a88b/one-time-resolution",
+    "method": "POST",
+    "operationKeySha256": "02ca6056c2706cff0c34d1035835c1cd848b30860ba10fccf9b896e61ee62915",
+    "status": 0,
+    "mimeType": "",
+    "at": "2026-09-29T01:37:17.179Z"
+  },
+  {
+    "path": "/api/v1/plans/3608b4e8-7758-4fa7-9ef5-0b8b8085a88b/one-time-resolution",
+    "method": "POST",
+    "operationKeySha256": "02ca6056c2706cff0c34d1035835c1cd848b30860ba10fccf9b896e61ee62915",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:37:17.307Z"
+  }
+]

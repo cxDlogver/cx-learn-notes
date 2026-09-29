@@ -1,0 +1,92 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T17:42:19.694Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:42:19.821Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T17:42:19.928Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T17:42:20.040Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:42:20.169Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='today']",
+    "at": "2026-09-28T17:42:20.282Z"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-nav a[href='/settings']",
+    "at": "2026-09-28T17:42:20.408Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/settings/change-phone']",
+    "at": "2026-09-28T17:42:20.518Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/settings/change-phone']",
+    "at": "2026-09-28T17:42:20.637Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#new-phone",
+    "at": "2026-09-28T17:42:20.747Z"
+  },
+  {
+    "action": "type",
+    "selector": "#new-phone",
+    "characters": 11,
+    "at": "2026-09-28T17:42:20.862Z"
+  },
+  {
+    "action": "click",
+    "selector": ".phone-change-card button[type='submit']",
+    "at": "2026-09-28T17:42:20.974Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#old-phone-code",
+    "at": "2026-09-28T17:42:21.081Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#old-phone-code",
+    "characters": 6,
+    "at": "2026-09-28T17:42:21.199Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#new-phone-code",
+    "characters": 6,
+    "at": "2026-09-28T17:42:21.306Z"
+  },
+  {
+    "action": "click",
+    "selector": ".phone-change-card button[type='submit']",
+    "at": "2026-09-28T17:42:21.411Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#phone",
+    "at": "2026-09-28T17:42:21.519Z"
+  }
+]

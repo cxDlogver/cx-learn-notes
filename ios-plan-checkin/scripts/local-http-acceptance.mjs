@@ -6,9 +6,13 @@ import process from "node:process";
 import { URL } from "node:url";
 
 const base = process.env.LOCAL_API_URL ?? "http://127.0.0.1:3000";
+const metricsBase = process.env.LOCAL_METRICS_URL ?? base;
 if (
-  !base.startsWith("http://127.0.0.1:") &&
-  !base.startsWith("http://localhost:")
+  ![base, metricsBase].every(
+    (url) =>
+      url.startsWith("http://127.0.0.1:") ||
+      url.startsWith("http://localhost:"),
+  )
 )
   throw new Error("Local HTTP acceptance only targets a loopback API.");
 const evidence = [];
@@ -261,7 +265,7 @@ try {
     assert.equal(after.status, 401);
     return [logout.requestId, after.requestId];
   });
-  const metrics = await globalThis.fetch(`${base}/internal/metrics`, {
+  const metrics = await globalThis.fetch(`${metricsBase}/internal/metrics`, {
     headers: { Authorization: `Bearer ${process.env.API_METRICS_TOKEN}` },
   });
   assert.equal(metrics.status, 200);

@@ -1,0 +1,52 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "text": "13900001258"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1258"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='today']"
+  },
+  {
+    "action": "advance-clock",
+    "offsetMs": 960000
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-nav a[href='/plans']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plans']"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card .action-link"
+  },
+  {
+    "action": "click",
+    "selector": ".today-card .action-link"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"] h1"
+  }
+]

@@ -1,0 +1,43 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001289" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1289"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_one_time" },
+  { "action": "type", "selector": "#nickname", "text": "一次性验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  { "action": "type", "selector": "#plan-title", "text": "完成个人作品" },
+  { "action": "type", "selector": "#plan-numeric-label", "text": "篇幅" },
+  { "action": "type", "selector": "#plan-numeric-unit", "text": "页" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "text": "已交付初稿"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result input[type='number']",
+    "text": "12"
+  },
+  {
+    "action": "upload-file",
+    "selector": ".one-time-result input[type='file']",
+    "file": "docs/atdd/web/fixtures/checkin-green.png"
+  },
+  { "action": "snapshot", "label": "one-time-ready" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result [role='status']" },
+  { "action": "snapshot", "label": "one-time-saved" }
+]

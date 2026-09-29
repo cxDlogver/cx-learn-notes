@@ -1,0 +1,51 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001303" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1303"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_private_owner"
+  },
+  { "action": "type", "selector": "#nickname", "text": "私人照片主人验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  { "action": "type", "selector": "#plan-title", "text": "仅本人查看的照片" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled"
+  },
+  {
+    "action": "upload-file",
+    "selector": ".one-time-result input[type='file']",
+    "file": "docs/atdd/web/fixtures/checkin-green.png"
+  },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result form [role='status']",
+    "text": "结果和照片均已保存"
+  },
+  {
+    "action": "click",
+    "selector": ".one-time-result .private-media-gallery > button"
+  },
+  {
+    "action": "wait-for-image",
+    "selector": ".one-time-result .private-media-grid img"
+  },
+  { "action": "snapshot", "label": "private-gallery-loaded" }
+]

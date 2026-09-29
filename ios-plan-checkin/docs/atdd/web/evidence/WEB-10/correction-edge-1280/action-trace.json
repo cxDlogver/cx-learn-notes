@@ -1,0 +1,87 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T20:04:56.231Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T20:04:56.360Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T20:04:56.476Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T20:04:56.598Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T20:04:56.722Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card .today-checkin button",
+    "at": "2026-09-28T20:04:56.945Z"
+  },
+  {
+    "action": "click",
+    "selector": ".today-card .today-checkin button",
+    "at": "2026-09-28T20:04:57.072Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".checkin-panel form",
+    "at": "2026-09-28T20:04:57.178Z"
+  },
+  {
+    "action": "click",
+    "selector": ".checkin-panel input[type='radio'][value='failure']",
+    "at": "2026-09-28T20:04:57.294Z"
+  },
+  {
+    "action": "type",
+    "selector": ".checkin-panel textarea:first-of-type",
+    "characters": 4,
+    "at": "2026-09-28T20:04:57.419Z"
+  },
+  {
+    "action": "replace",
+    "selector": ".checkin-panel input[type='number']",
+    "characters": 3,
+    "at": "2026-09-28T20:04:57.545Z"
+  },
+  {
+    "action": "upload-file",
+    "selector": ".checkin-panel input[type='file']",
+    "fixture": "[workspace-image]",
+    "at": "2026-09-28T20:04:57.659Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "correction-ready",
+    "at": "2026-09-28T20:04:57.815Z"
+  },
+  {
+    "action": "click",
+    "selector": ".checkin-panel button[type='submit']",
+    "at": "2026-09-28T20:04:57.826Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-checkin [role='status']",
+    "at": "2026-09-28T20:04:58.035Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "correction-saved",
+    "at": "2026-09-28T20:04:58.198Z"
+  }
+]

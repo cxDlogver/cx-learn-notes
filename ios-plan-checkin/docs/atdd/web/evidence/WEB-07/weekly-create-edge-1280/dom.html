@@ -1,0 +1,622 @@
+<html lang="zh-CN" style="--pen-background: #F8F9F6; --pen-surface: #FFFFFF; --pen-primary: #236B4A; --pen-text: #17231C; --pen-secondary: #7E8880;"><head>
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f3ec">
+    <title>计划打卡</title>
+  <style type="text/css" data-vite-dev-id="F:/CX_notes/cx-learn-notes/ios-plan-checkin/apps/web/src/styles.css">:root {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  color: var(--pen-text, #17231c);
+  background: var(--pen-background, #f8f9f6);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 0;
+}
+body {
+  min-width: 0;
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+.phone-change-card form {
+  display: grid;
+  gap: 10px;
+}
+.phone-change-card label {
+  font-weight: 700;
+}
+.phone-change-card input {
+  min-width: 0;
+  height: 50px;
+  border: 1px solid #cdd8ce;
+  border-radius: 12px;
+  padding: 0 14px;
+  background: var(--pen-surface, white);
+  color: var(--pen-text, #17231c);
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 3px solid #e4a44f;
+  outline-offset: 3px;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 15px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+  font-size: 25px;
+  font-weight: 800;
+  transform: rotate(-5deg);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--pen-primary, #236b4a);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.auth-layout {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
+  align-items: center;
+  gap: clamp(32px, 6vw, 120px);
+  padding: clamp(24px, 7vw, 96px);
+  background:
+    radial-gradient(circle at 20% 20%, #e8f3e9, transparent 40%),
+    var(--pen-background, #f8f9f6);
+}
+
+.auth-intro {
+  max-width: 600px;
+  justify-self: end;
+  width: 100%;
+}
+.auth-intro .brand-mark {
+  margin-bottom: 44px;
+}
+.auth-intro h1 {
+  margin: 0;
+  font-size: clamp(48px, 6vw, 86px);
+  line-height: 1.06;
+  letter-spacing: -0.05em;
+}
+.auth-intro > p:last-child {
+  color: var(--pen-secondary, #7e8880);
+  font-size: clamp(17px, 1.6vw, 22px);
+}
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--pen-surface, white);
+  border: 1px solid #e7ebe5;
+  border-radius: 24px;
+  box-shadow: 0 20px 70px #244a3014;
+  padding: clamp(24px, 4vw, 48px);
+}
+.auth-card h2 {
+  margin: 0 0 10px;
+  font-size: 29px;
+  letter-spacing: -0.03em;
+}
+.muted,
+.hint {
+  color: var(--pen-secondary, #7e8880);
+  line-height: 1.6;
+}
+.muted {
+  margin: 0 0 30px;
+}
+.hint {
+  margin: 5px 0 16px;
+  font-size: 12px;
+}
+.auth-card form {
+  display: grid;
+  gap: 10px;
+}
+.auth-card label {
+  margin-top: 7px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.auth-card input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  border: 1px solid #cdd8ce;
+  border-radius: 12px;
+  background: white;
+  padding: 0 14px;
+  color: var(--pen-text, #17231c);
+}
+.auth-card input:focus {
+  border-color: var(--pen-primary, #236b4a);
+}
+.phone-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.phone-field > span {
+  color: var(--pen-secondary, #7e8880);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.primary-button,
+.secondary-button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 750;
+}
+.primary-button {
+  width: 100%;
+  margin-top: 14px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+}
+.primary-button:hover:not(:disabled) {
+  background: #1b593d;
+}
+.secondary-button {
+  background: #e8f1e9;
+  color: var(--pen-primary, #236b4a);
+}
+.text-button {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  color: var(--pen-primary, #236b4a);
+  padding: 7px 0;
+  font-weight: 700;
+}
+.resend {
+  margin-top: 17px;
+}
+.form-error {
+  color: #a92828;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 4px 0;
+}
+
+.loading-screen {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
+.loading-screen button {
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 245px minmax(0, 1fr);
+  min-height: 100svh;
+}
+.sidebar {
+  background: white;
+  border-right: 1px solid #e5eae4;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 800;
+}
+.side-links {
+  display: grid;
+  gap: 6px;
+}
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 0 17px;
+  text-decoration: none;
+  color: #4c5a50;
+  font-weight: 650;
+}
+.side-link span {
+  width: 24px;
+  text-align: center;
+  font-size: 21px;
+}
+.side-link:hover {
+  background: #f1f6f0;
+}
+.side-link.active {
+  background: #e7f1e9;
+  color: var(--pen-primary, #236b4a);
+}
+.side-account {
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding: 16px 18px;
+  border-top: 1px solid #e5eae4;
+}
+.side-account span {
+  font-size: 12px;
+  color: var(--pen-secondary, #7e8880);
+  overflow-wrap: anywhere;
+}
+.workspace {
+  min-width: 0;
+}
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 74px;
+  border-bottom: 1px solid #e5eae4;
+  padding: 0 clamp(24px, 5vw, 72px);
+  color: #617268;
+}
+.mobile-brand {
+  display: none;
+  font-weight: 800;
+  color: var(--pen-text, #17231c);
+}
+.content-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 72px);
+}
+.content-panel h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  letter-spacing: -0.04em;
+  margin: 0 0 30px;
+}
+.empty-card,
+.settings-card {
+  max-width: 640px;
+  border: 1px solid #e2e8e2;
+  border-radius: 20px;
+  padding: clamp(26px, 4vw, 48px);
+  background: white;
+}
+.empty-card {
+  min-height: 290px;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+}
+.empty-icon {
+  color: var(--pen-primary, #236b4a);
+  font-size: 50px;
+  line-height: 1;
+}
+.empty-card h2 {
+  margin: 16px 0 4px;
+  font-size: 22px;
+}
+.empty-card p {
+  margin: 0;
+  color: var(--pen-secondary, #7e8880);
+  line-height: 1.65;
+}
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 22px;
+  border-radius: 12px;
+  padding: 10px 18px;
+  background: var(--pen-primary, #236b4a);
+  color: white;
+  font-weight: 750;
+  text-decoration: none;
+}
+.today-list {
+  display: grid;
+  gap: 14px;
+}
+.today-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid #e2e8e2;
+  border-radius: 18px;
+  background: var(--pen-surface, white);
+}
+.today-card h2 {
+  margin: 0;
+}
+.today-card p:last-child {
+  margin-bottom: 0;
+  color: var(--pen-secondary, #7e8880);
+}
+.page-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-heading .action-link {
+  margin-top: 0;
+}
+.plan-form {
+  display: grid;
+  gap: 10px;
+  max-width: 720px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid #e2e8e2;
+  border-radius: 20px;
+  background: var(--pen-surface, white);
+}
+.plan-form > label,
+.plan-fieldset > label {
+  font-weight: 700;
+}
+.plan-form input:not([type="checkbox"]):not([type="radio"]),
+.plan-form select,
+.plan-form textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid #cdd8ce;
+  border-radius: 12px;
+  background: var(--pen-surface, white);
+  color: var(--pen-text, #17231c);
+  padding: 10px 14px;
+  font: inherit;
+}
+.plan-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.plan-form [aria-invalid="true"] {
+  border-color: #ba4a44;
+}
+.plan-fieldset {
+  min-width: 0;
+  margin: 4px 0;
+  border: 1px solid #e2e8e2;
+  border-radius: 12px;
+  padding: 16px;
+}
+.plan-fieldset legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+.plan-fieldset > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.weekday-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.weekday-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+}
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.form-actions .primary-button {
+  width: auto;
+  min-width: 150px;
+}
+.plan-detail-card dl {
+  display: grid;
+  grid-template-columns: minmax(90px, 160px) minmax(0, 1fr);
+  gap: 14px;
+}
+.plan-detail-card dt {
+  color: var(--pen-secondary, #7e8880);
+}
+.plan-detail-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.settings-card {
+  margin-bottom: 18px;
+}
+.settings-card p {
+  margin-top: 0;
+}
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .auth-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    align-content: center;
+    padding: 24px 18px 40px;
+  }
+  .auth-intro {
+    justify-self: center;
+    max-width: 480px;
+  }
+  .auth-intro .brand-mark {
+    margin-bottom: 18px;
+  }
+  .auth-intro h1 {
+    font-size: clamp(36px, 8vw, 50px);
+  }
+  .auth-intro > p:last-child {
+    font-size: 15px;
+  }
+  .auth-card {
+    justify-self: center;
+    max-width: 480px;
+    box-shadow: 0 12px 36px #244a3010;
+  }
+  .app-layout {
+    display: block;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+  .sidebar {
+    display: none;
+  }
+  .topbar {
+    justify-content: space-between;
+    height: 58px;
+    padding: 0 20px;
+    font-size: 13px;
+  }
+  .mobile-brand {
+    display: inline;
+    font-size: 17px;
+  }
+  .content-panel {
+    padding: 28px 18px;
+  }
+  .bottom-nav {
+    position: fixed;
+    z-index: 10;
+    inset: auto 0 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-height: 64px;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: white;
+    border-top: 1px solid #dce5dd;
+  }
+  .bottom-link {
+    min-width: 0;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 1px;
+    color: #68766b;
+    font-size: 11px;
+    text-decoration: none;
+  }
+  .bottom-link span:first-child {
+    font-size: 21px;
+  }
+  .bottom-link.active {
+    color: var(--pen-primary, #236b4a);
+    font-weight: 800;
+  }
+  .today-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .page-heading .action-link {
+    align-self: start;
+  }
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .form-actions .primary-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --pen-background: #14201a !important;
+    --pen-surface: #213128 !important;
+    --pen-text: #edf4eb !important;
+    --pen-secondary: #afc0b0 !important;
+    --pen-primary: #82cca0 !important;
+  }
+  .auth-layout {
+    background:
+      radial-gradient(circle at 20% 20%, #254231, transparent 40%),
+      var(--pen-background);
+  }
+  .auth-card,
+  .sidebar,
+  .empty-card,
+  .today-card,
+  .plan-form,
+  .settings-card,
+  .bottom-nav {
+    background: #213128;
+    border-color: #36503e;
+  }
+  .auth-card input {
+    background: #17241b;
+    border-color: #57715d;
+    color: var(--pen-text);
+  }
+  .side-link {
+    color: #c4d4c5;
+  }
+  .side-link:hover,
+  .side-link.active,
+  .secondary-button {
+    background: #31543b;
+  }
+  .topbar,
+  .side-account {
+    border-color: #36503e;
+  }
+  .form-error {
+    color: #ff9d9d;
+  }
+}
+</style></head>
+  <body>
+    <div id="root"><div class="app-layout"><aside class="sidebar" aria-label="主导航"><a href="/today" class="sidebar-brand"><span class="brand-mark">✓</span><span>计划打卡</span></a><nav aria-label="主导航" class="side-links"><a href="/today" class="side-link"><span aria-hidden="true">◉</span>今日</a><a href="/plans" class="side-link active"><span aria-hidden="true">▤</span>计划</a><a href="/calendar" class="side-link"><span aria-hidden="true">▦</span>日历</a><a href="/friends" class="side-link"><span aria-hidden="true">♧</span>朋友</a><a href="/inbox" class="side-link"><span aria-hidden="true">✉</span>消息</a><a href="/settings" class="side-link"><span aria-hidden="true">⚙</span>设置</a></nav><div class="side-account"><strong>周目标用户</strong><span>@web_atdd_weekly</span></div></aside><main class="workspace"><header class="topbar"><span class="mobile-brand">计划打卡</span><span>你好，周目标用户</span></header><section class="content-panel" data-page-key="plan-detail"><a href="/plans" class="text-button">← 返回计划</a><p class="eyebrow">周目标</p><h1>减少含糖饮料</h1><div class="settings-card plan-detail-card"><dl><dt>状态</dt><dd>active</dd><dt>方向</dt><dd>不要做</dd><dt>计划时区</dt><dd>Asia/Shanghai</dd><dt>开始日期</dt><dd>2026-09-29</dd><dt>每周目标</dt><dd>7 次</dd><dt>规则版本</dt><dd>V1，2026-09-29 生效</dd></dl></div></section></main><nav class="bottom-nav" aria-label="手机主导航"><a href="/today" class="bottom-link"><span aria-hidden="true">◉</span><span>今日</span></a><a href="/plans" class="bottom-link active"><span aria-hidden="true">▤</span><span>计划</span></a><a href="/calendar" class="bottom-link"><span aria-hidden="true">▦</span><span>日历</span></a><a href="/friends" class="bottom-link"><span aria-hidden="true">♧</span><span>朋友</span></a><a href="/settings" class="bottom-link"><span aria-hidden="true">⚙</span><span>设置</span></a></nav></div></div>
+    <script type="module" src="/src/main.tsx?t=1790619395272"></script>
+  
+
+</body></html>

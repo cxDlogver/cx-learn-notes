@@ -1,0 +1,71 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T09:06:44.076Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T09:06:44.193Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T09:06:44.300Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T09:06:44.413Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T09:06:44.520Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-manager",
+    "expectedText": "日历验收",
+    "at": "2026-09-29T09:06:44.725Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "share-before-revoke",
+    "at": "2026-09-29T09:06:44.757Z"
+  },
+  {
+    "action": "click",
+    "selector": ".share-manager .social-person .text-button",
+    "at": "2026-09-29T09:06:44.764Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".share-confirm",
+    "at": "2026-09-29T09:06:44.872Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "share-revoke-confirm",
+    "at": "2026-09-29T09:06:45.047Z"
+  },
+  {
+    "action": "click",
+    "selector": ".share-confirm .primary-button",
+    "at": "2026-09-29T09:06:45.054Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-manager .success-note",
+    "expectedText": "分享已撤销",
+    "at": "2026-09-29T09:06:45.167Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "share-revoked",
+    "at": "2026-09-29T09:06:45.206Z"
+  }
+]

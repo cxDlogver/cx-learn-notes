@@ -29,3 +29,7 @@
 - 本机 Corepack 在请求 `pnpm@11.25.0` 时遇到签名 key 不匹配；改用仓库已安装的 TypeScript、ESLint、Prettier 与直接 Node 脚本完成等价检查。首次证据脚本 lint 因缺 Node 全局显式导入失败，修复后重跑通过。
 - 首次 HTTP 自测因遗漏 Web 登录 `Origin` 头返回 403；按真实 Web 请求补齐来源头后通过。首次 GET `no-store` 观测为 null 是自测服务未安装项目既有观测中间件；装入与生产启动一致的 `installObservability` 后返回 `no-store`。
 - 此处证明源码、真实 API、数据库和领域口径；没有 Web 页面、桌面/手机截图、DOM、无障碍树或用户交互 F/V/N 结果。`WEB-PLAN-17/18` 及其他 136 个业务用例仍为 `NOT_RUN`，不能用服务端测试代替正式浏览器验收。
+
+## 5. 2026-09-29 03:38 CST｜归档恢复修正后的全套回归
+
+WEB-07 浏览器联调发现归档计划无法按 Web 验收 `WEB-PLAN-14` 显式恢复，已扩充服务端状态校验及 `scripts/plans-smoke.mjs` 的 `archive → resume` 状态、修订号、事件顺序断言。重新运行 `node scripts/web-06-evidence.mjs` 的 11 项检查，契约、领域/API 构建、兼容、PGlite、隔离 PostgreSQL HTTP、统计、lint、格式和台账均 PASS；[新检查清单](./evidence/WEB-06/checks.json)与原始输出已更新。Web 浏览器与 DB 证据见 [WEB-07 增量记录](./WEB-07-计划页面增量记录.md)。此回归不替代 `WEB-PLAN-14` 旧历史、归档期间打卡拒绝和正式 F/V/N，业务用例仍 `NOT_RUN`。

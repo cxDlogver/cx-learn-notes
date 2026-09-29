@@ -1,0 +1,67 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T06:14:30.067Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T06:14:30.198Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T06:14:30.304Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T06:14:30.422Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T06:14:30.529Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-29T06:14:30.632Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 22,
+    "at": "2026-09-29T06:14:30.740Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 8,
+    "at": "2026-09-29T06:14:30.848Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T06:14:30.968Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T06:14:31.180Z"
+  },
+  {
+    "action": "probe-private-media",
+    "mediaId": "[other-user-media]",
+    "status": 404,
+    "at": "2026-09-29T06:14:31.299Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "other-user-media-denied",
+    "at": "2026-09-29T06:14:31.331Z"
+  }
+]

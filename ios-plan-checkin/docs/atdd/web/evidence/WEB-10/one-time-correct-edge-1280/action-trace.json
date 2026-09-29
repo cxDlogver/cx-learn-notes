@@ -1,0 +1,67 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T00:44:06.281Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T00:44:06.430Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T00:44:06.547Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T00:44:06.657Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T00:44:06.769Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".one-time-result form",
+    "at": "2026-09-29T00:44:06.990Z"
+  },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "failed",
+    "at": "2026-09-29T00:44:07.096Z"
+  },
+  {
+    "action": "replace",
+    "selector": ".one-time-result textarea",
+    "characters": 4,
+    "at": "2026-09-29T00:44:07.217Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "one-time-correction-ready",
+    "at": "2026-09-29T00:44:07.380Z"
+  },
+  {
+    "action": "click",
+    "selector": ".one-time-result button[type='submit']",
+    "at": "2026-09-29T00:44:07.388Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "expectedText": "当前结果：失败",
+    "at": "2026-09-29T00:44:07.501Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "one-time-correction-saved",
+    "at": "2026-09-29T00:44:07.550Z"
+  }
+]

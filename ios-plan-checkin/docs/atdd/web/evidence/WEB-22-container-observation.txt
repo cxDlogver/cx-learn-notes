@@ -1,0 +1,7 @@
+2026-09-29 20:48 CST | local Web container observation
+Image: plan-checkin-web:local (locally built; not pushed; no registry RepoDigest)
+Command: docker run -d --rm -p 127.0.0.1::8080 -e WEB_OBJECT_ORIGIN=https://objects.example.cn plan-checkin-web:local
+Observed: GET /healthz = 200; GET / = 200; Content-Security-Policy includes frame-ancestors.
+Endpoint used: 127.0.0.1:58227 (ephemeral port)
+Cleanup: docker stop completed in finally block.
+Scope: local container only; no Kubernetes cluster, TLS or real object service involved.

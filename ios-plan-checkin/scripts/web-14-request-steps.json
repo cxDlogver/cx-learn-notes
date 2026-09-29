@@ -1,0 +1,53 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001318" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1318"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_social_a_1318"
+  },
+  { "action": "type", "selector": "#nickname", "text": "社交验收甲" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": ".bottom-link[href='/friends']" },
+  { "action": "click", "selector": ".bottom-link[href='/friends']" },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='friends'] .social-search"
+  },
+  {
+    "action": "type",
+    "selector": "#friend-username",
+    "text": "web_atdd_calendar_1310"
+  },
+  { "action": "click", "selector": ".social-search button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".social-card",
+    "text": "web_atdd_calendar_1310"
+  },
+  { "action": "snapshot", "label": "search-result" },
+  {
+    "action": "click",
+    "selector": ".social-card .social-person .secondary-button"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": "[role='status'].success-note",
+    "text": "好友申请已发送"
+  },
+  { "action": "snapshot", "label": "request-sent" },
+  { "action": "click", "selector": ".bottom-link[href='/inbox']" },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='inbox'] .inbox-toolbar"
+  },
+  { "action": "snapshot", "label": "inbox-empty" }
+]

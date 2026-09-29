@@ -1,0 +1,18 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001310" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1310"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".inbox-toolbar",
+    "text": "未读 0 条"
+  },
+  { "action": "wait-for-text", "selector": ".inbox-item", "text": "已读" },
+  { "action": "snapshot", "label": "desktop-inbox-read" }
+]

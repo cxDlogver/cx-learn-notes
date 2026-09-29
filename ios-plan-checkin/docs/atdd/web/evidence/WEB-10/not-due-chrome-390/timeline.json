@@ -1,0 +1,122 @@
+{
+  "capturedAt": "2026-09-29T01:06:32.185Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T01:06:29.936Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T01:06:30.055Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T01:06:30.187Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T01:06:30.291Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T01:06:30.403Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T01:06:30.513Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T01:06:30.630Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 16,
+      "at": "2026-09-29T01:06:30.744Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 7,
+      "at": "2026-09-29T01:06:30.854Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T01:06:30.969Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T01:06:31.071Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T01:06:31.205Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T01:06:31.309Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 6,
+      "at": "2026-09-29T01:06:31.423Z"
+    },
+    {
+      "action": "set-date",
+      "selector": "#plan-start-date",
+      "value": "2026-09-27",
+      "at": "2026-09-29T01:06:31.536Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .weekday-option:nth-child(1) input",
+      "at": "2026-09-29T01:06:31.656Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T01:06:31.774Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".history-context",
+      "expectedText": "当天规则：V1",
+      "at": "2026-09-29T01:06:31.985Z"
+    },
+    {
+      "action": "set-date",
+      "selector": "#history-date",
+      "value": "2026-09-29",
+      "at": "2026-09-29T01:06:31.989Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".history-context",
+      "expectedText": "这一天不在可补记范围",
+      "at": "2026-09-29T01:06:32.091Z"
+    },
+    {
+      "action": "wait-for-absence",
+      "selector": ".plan-history .today-checkin",
+      "at": "2026-09-29T01:06:32.092Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "not-due-blocked",
+      "at": "2026-09-29T01:06:32.120Z"
+    }
+  ]
+}

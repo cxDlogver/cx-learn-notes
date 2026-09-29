@@ -1,0 +1,72 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:01.670Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:01.953Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:02.281Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:02.293Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:02.720Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:02.754Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:03.447Z"
+  },
+  {
+    "path": "/api/v1/plans/c28b37e2-214a-4c99-8010-b2bfaa19b0bb",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:03.463Z"
+  },
+  {
+    "path": "/api/v1/plans/c28b37e2-214a-4c99-8010-b2bfaa19b0bb/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:03.498Z"
+  },
+  {
+    "path": "/api/v1/plans/c28b37e2-214a-4c99-8010-b2bfaa19b0bb/one-time-resolution",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:12:03.959Z"
+  }
+]

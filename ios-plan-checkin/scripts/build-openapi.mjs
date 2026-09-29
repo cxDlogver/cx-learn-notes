@@ -750,6 +750,28 @@ Object.assign(schemas, {
       syncSequence: { type: "integer", minimum: 0 },
     },
   ),
+  CheckinContext: properties(
+    [
+      "planBusinessDate",
+      "timezone",
+      "canCreate",
+      "canRevise",
+      "ruleVersion",
+      "numericItem",
+      "record",
+    ],
+    {
+      planBusinessDate: date,
+      timezone: str(),
+      canCreate: { type: "boolean" },
+      canRevise: { type: "boolean" },
+      ruleVersion: {
+        oneOf: [{ type: "integer", minimum: 1 }, { type: "null" }],
+      },
+      numericItem: { oneOf: [ref("NumericItem"), { type: "null" }] },
+      record: { oneOf: [ref("Checkin"), { type: "null" }] },
+    },
+  ),
   CreateUploadIntentRequest: properties(["mime", "bytes", "sha256"], {
     mime: { enum: ["image/jpeg", "image/png", "image/heic", "image/webp"] },
     bytes: { type: "integer", minimum: 1, maximum: 20 * 1024 * 1024 },
@@ -1164,6 +1186,7 @@ const responseData = {
   verifySmsChallenge: ref("AuthTokens"),
   refreshSession: ref("AuthTokens"),
   verifyWebSmsChallenge: ref("WebSession"),
+  cancelDeletionWeb: ref("WebSession"),
   getWebSession: ref("WebSession"),
   refreshWebSession: ref("WebSession"),
   getMe: ref("User"),
@@ -1184,6 +1207,7 @@ const responseData = {
   updateGroup: ref("Group"),
   putCheckin: ref("Checkin"),
   getCheckin: ref("Checkin"),
+  getCheckinContext: ref("CheckinContext"),
   createUploadIntent: ref("UploadIntent"),
   completeMedia: ref("Media"),
   deleteMedia: properties(["deleted"], { deleted: { const: true } }),
@@ -1214,6 +1238,7 @@ const responseData = {
   getWebNotificationPreferences: ref("WebNotificationPreferences"),
   updateWebNotificationPreferences: ref("WebNotificationPreferences"),
   registerWebPushSubscription: ref("WebPushSubscription"),
+  getWebPushSubscription: ref("WebPushSubscription"),
   deleteWebPushSubscription: ref("WebPushSubscription"),
   getWebPushConfig: ref("WebPushConfig"),
   listInbox: ref("InboxPage"),
@@ -1232,6 +1257,7 @@ const bodies = {
   verifySmsChallenge: "SmsVerifyRequest",
   refreshSession: "RefreshRequest",
   verifyWebSmsChallenge: "SmsVerifyRequest",
+  cancelDeletionWeb: "SmsVerifyRequest",
   logout: "LogoutRequest",
   updateMe: "UpdateMeRequest",
   createChangePhoneChallenge: "ChangePhoneChallengeRequest",
@@ -1366,7 +1392,8 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
   }
   if (
     operationId === "verifySmsChallenge" ||
-    operationId === "verifyWebSmsChallenge"
+    operationId === "verifyWebSmsChallenge" ||
+    operationId === "cancelDeletionWeb"
   ) {
     parameters.push({
       name: "X-Device-Id",
@@ -1376,9 +1403,12 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
     });
   }
   if (
-    ["verifyWebSmsChallenge", "refreshWebSession", "logoutWebSession"].includes(
-      operationId,
-    )
+    [
+      "verifyWebSmsChallenge",
+      "cancelDeletionWeb",
+      "refreshWebSession",
+      "logoutWebSession",
+    ].includes(operationId)
   ) {
     parameters.push({
       name: "Origin",
@@ -1417,7 +1447,7 @@ for (const [method, suffix, operationId, auth] of apiRoutes) {
     ...(auth
       ? { security: [{ bearerAuth: [] }] }
       : suffix.startsWith("auth/web/") &&
-          operationId !== "verifyWebSmsChallenge"
+          !["verifyWebSmsChallenge", "cancelDeletionWeb"].includes(operationId)
         ? { security: [{ webRefreshCookie: [] }] }
         : {}),
     ...(parameters.length ? { parameters } : {}),

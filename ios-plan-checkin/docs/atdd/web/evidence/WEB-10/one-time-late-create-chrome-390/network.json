@@ -1,0 +1,65 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:09.628Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:09.920Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:10.271Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:10.289Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:10.743Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:10.775Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:11.578Z"
+  },
+  {
+    "path": "/api/v1/plans/97c71f4d-b96e-4450-b63b-25f53a3538e8",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:11.598Z"
+  },
+  {
+    "path": "/api/v1/plans/97c71f4d-b96e-4450-b63b-25f53a3538e8/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:13:11.643Z"
+  }
+]

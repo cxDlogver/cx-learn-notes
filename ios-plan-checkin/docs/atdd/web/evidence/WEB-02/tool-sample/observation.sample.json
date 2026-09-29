@@ -1,0 +1,57 @@
+{
+  "caseId": "WEB-DATA-09",
+  "runId": "synthetic-tool",
+  "variant": "api-fixture",
+  "status": "FAIL",
+  "build": {
+    "appVersion": "tool-fixture",
+    "gitCommit": "abcdef0",
+    "apiVersion": "tool-fixture"
+  },
+  "environment": {
+    "kind": "api",
+    "osName": "synthetic",
+    "osVersion": "synthetic",
+    "planTimezone": "Asia/Shanghai",
+    "businessDate": "2026-09-28",
+    "serverNowUtc": "2026-09-28T00:00:00Z",
+    "network": "online"
+  },
+  "fixtureId": "synthetic-tool-fixture",
+  "startedAt": "2026-09-28T00:00:00Z",
+  "endedAt": "2026-09-28T00:01:00Z",
+  "assertions": {
+    "functional": {
+      "actual": "Synthetic failure to test recorder propagation",
+      "status": "FAIL",
+      "evidencePaths": [
+        "a.txt"
+      ]
+    },
+    "visual": {
+      "actual": "API-only synthetic fixture",
+      "status": "N_A",
+      "evidencePaths": []
+    },
+    "negative": {
+      "actual": "Synthetic rejection observed",
+      "status": "PASS",
+      "evidencePaths": [
+        "a.txt"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "code": "A",
+      "path": "a.txt",
+      "mimeType": "text/plain"
+    }
+  ],
+  "reviewer": {
+    "kind": "human",
+    "name": "WEB-02-tool-fixture",
+    "reviewedAt": "2026-09-28T00:02:00Z",
+    "reason": "Synthetic recorder sample; not a product acceptance run"
+  }
+}

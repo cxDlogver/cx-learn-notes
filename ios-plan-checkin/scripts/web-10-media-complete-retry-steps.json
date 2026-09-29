@@ -1,0 +1,67 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001301" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1301"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_media_retry_v3"
+  },
+  { "action": "type", "selector": "#nickname", "text": "照片绑定重试验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  { "action": "type", "selector": "#plan-title", "text": "照片绑定故障任务" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "text": "终态已写入后照片绑定重试"
+  },
+  {
+    "action": "upload-file",
+    "selector": ".one-time-result input[type='file']",
+    "file": "docs/atdd/web/fixtures/checkin-green.png"
+  },
+  { "action": "fail-next-media-complete" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result [role='alert']",
+    "text": "照片尚未完成绑定"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".one-time-result .primary-button:disabled"
+  },
+  { "action": "snapshot", "label": "media-pending" },
+  {
+    "action": "click",
+    "selector": ".one-time-result .secondary-button"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result form [role='status']",
+    "text": "结果和照片均已保存"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".one-time-result .primary-button:not(:disabled)"
+  },
+  { "action": "snapshot", "label": "media-ready" }
+]

@@ -1,0 +1,113 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "text": "13900001310"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1310"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_calendar_1310"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "text": "日历验收"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "每日散步日历"
+  },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-27"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .text-button"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-link[href='/calendar']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='calendar-month'] .calendar-grid"
+  },
+  {
+    "action": "snapshot",
+    "label": "calendar-month"
+  },
+  {
+    "action": "click",
+    "selector": ".calendar-date[aria-label^='2026-09-27']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='calendar-day'] .calendar-entry-list"
+  },
+  {
+    "action": "snapshot",
+    "label": "calendar-day"
+  },
+  {
+    "action": "click",
+    "selector": ".calendar-toolbar button:first-child"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".calendar-toolbar h2",
+    "text": "2026年8月"
+  },
+  {
+    "action": "snapshot",
+    "label": "calendar-previous-month"
+  }
+]

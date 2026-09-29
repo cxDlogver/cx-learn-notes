@@ -1,0 +1,121 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T01:12:01.805Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T01:12:01.926Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T01:12:02.029Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T01:12:02.143Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T01:12:02.253Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-29T01:12:02.356Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 19,
+    "at": "2026-09-29T01:12:02.471Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 6,
+    "at": "2026-09-29T01:12:02.581Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T01:12:02.693Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T01:12:02.806Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T01:12:02.960Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-29T01:12:03.061Z"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "one_time",
+    "at": "2026-09-29T01:12:03.165Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 7,
+    "at": "2026-09-29T01:12:03.279Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-29T01:12:03.402Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".one-time-result form",
+    "at": "2026-09-29T01:12:03.516Z"
+  },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled",
+    "at": "2026-09-29T01:12:03.619Z"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "characters": 4,
+    "at": "2026-09-29T01:12:03.740Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "cancel-ready",
+    "at": "2026-09-29T01:12:03.895Z"
+  },
+  {
+    "action": "click",
+    "selector": ".one-time-result button[type='submit']",
+    "at": "2026-09-29T01:12:03.903Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "expectedText": "当前结果：取消",
+    "at": "2026-09-29T01:12:04.009Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "cancel-saved",
+    "at": "2026-09-29T01:12:04.040Z"
+  }
+]

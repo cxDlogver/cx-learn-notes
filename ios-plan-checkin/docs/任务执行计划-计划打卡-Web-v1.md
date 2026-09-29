@@ -340,9 +340,316 @@ Web Push 的受控端到端链路（权限、订阅、服务端发送、浏览�
 - [真实 PostgreSQL 17 HTTP](./atdd/web/evidence/WEB-15/web-http.txt) 验证 Web/iOS 渠道隔离、修订冲突、非法端点/曲线公钥拒绝、密文存储、订阅取消和 Web 退出撤销；固定时钟计划提醒 19 项、社交/订阅 30 项及 RFC 8291 官方向量均通过，503 重试恢复和 410 永久清理有原始输出。隔离容器已自动清理。
 - WEB-15 只拥有服务端范围，按计划勾选；真实浏览器权限、Service Worker 展示、点击及前后台观察由 WEB-16/21 负责。136 项业务 F/V/N 继续 `NOT_RUN`，没有将服务端检查冒充浏览器 PASS。
 
+### 2026-09-29 00:16 CST｜WEB-02｜留存完整工具结果样本
+
+- 实施：`generate_tool_sample.py` 使用正式结果写入器生成合成 `WEB-DATA-09` 的 [result.json](./atdd/web/evidence/WEB-02/tool-sample/evidence/synthetic-tool/WEB-DATA-09/api-fixture/result.json)、独立 [JSON 台账](./atdd/web/evidence/WEB-02/tool-sample/execution-progress.sample.json)和 [Markdown 日志](./atdd/web/evidence/WEB-02/tool-sample/execution-plan.sample.md)；[样本清单](./atdd/web/evidence/WEB-02/tool-sample/sample-check.json)存各文件 SHA-256。
+- 实测：结果 schema、来源摘要和原始证据哈希均通过；样本状态刻意为 `FAIL`，样本台账同步为 `FAIL`，正式台账仍为 `NOT_RUN`。15 项工具单测和正式台账一致性检查通过。这只是工具闭环，不计业务验收。
+- 剩余：受控外部桩、真实产品浏览器与全浏览器矩阵、CI 外部产物保留尚缺；WEB-02 继续未勾选，136 项业务用例仍 `NOT_RUN`。详细记录见 [WEB-02 进展](./atdd/web/WEB-02-证据工具进展.md)。
+
+### 2026-09-29 00:32 CST｜WEB-02｜数据库到期与供应端隔离链路
+
+- 实施：隔离种子新增数据库 `clock_timestamp()` 会话到期设置；本地对象存储限定两个开发源站，新增签名 PUT/GET 与清理探针；新增零外网请求的 Web Push 供应端桩。具体约束及边界见 [WEB-02 完整增量记录](./atdd/web/WEB-02-证据工具进展.md)。
+- 原始检查：[数据库与真实 HTTP 输出](./atdd/web/evidence/WEB-02/expiry-selftest.txt)证明 A3 到期 401、恢复 200，其余会话继续 200；[对象输出](./atdd/web/evidence/WEB-02/object-provider.txt)证明允许源站预检、拒绝源站 403、签名读写与删除；[Push 输出](./atdd/web/evidence/WEB-02/push-provider.txt)证明 201/202、410、503 和内网端点拒绝。 [七项命令与 SHA-256 清单](./atdd/web/evidence/WEB-02/provider-checks.json)记录退出码 0 及文件摘要，lint、格式、正式台账检查通过。
+- 限制：这些是隔离供应端/测试工具检查，尚未接入产品网页的正式浏览器 F/V/N；对象发布域名和 Safari/Firefox/手机矩阵待做，CI 外部产物保留仍缺。WEB-02 不勾选，136 项业务继续 `NOT_RUN`。
+
+### 2026-09-29 00:38 CST｜WEB-05｜客户端骨架与登录开始
+
+- 负责人、范围与基线：Codex；WEB-04 已完成，WEB-02 的合成证据、Chrome/Edge 采集、隔离账号与受控供应端可用，但正式浏览器矩阵和 CI 外部保留未完成。为使 WEB-02 的真实页面验收链路能够落地，先开始 `apps/web` 的可逆代码开发；WEB-05 在依赖和自身 12 项 AUTH 正式验收通过前不得勾选。
+- 本次实施目标：React + TypeScript SPA、同站点 `/api/v1`、内存 access、HttpOnly Cookie 恢复/轮换、验证码登录与首次资料、深链和响应式导航，并将构建/typecheck 接入根检查。
+- 证据目标：构建、静态检查、真实 Chrome/Edge 的登录和深链原始截图、DOM、Cookie/网络、逐项 F/V/N；所有尚未观察的 AUTH 项保持 `NOT_RUN`。当前无业务通过结论。
+
+### 2026-09-29 01:16 CST｜WEB-05｜登录与浏览器增量
+
+- 代码：新增 [Web SPA](../apps/web/)、同站点 API 客户端、内存 access/CSRF、Cookie 会话恢复与轮换、短信表单、首次资料、History 路由和桌面/手机导航。根 `typecheck`/`check` 已纳入 Web；验证码仅由隔离短信桩导入 CDP，不写入步骤或日志。具体实现、风险和未完成项见 [WEB-05 详细记录](./atdd/web/WEB-05-SPA骨架与登录.md)。
+- 真实浏览器：Chrome 153 的 390×844 与 Edge 154 的 1280×800 登录截图、DOM/无障碍树均已保存，两个视口文档宽度等于视口、无横向溢出；Chrome/Edge 新用户验证 201、资料保存 200，Chrome 刷新后会话恢复 200；Chrome 既有账号无需资料 PATCH，退出 201 后返回仍为登录页且 Cookie 清空。原始材料分别见 [Chrome 注册与刷新](./atdd/web/evidence/WEB-05/login-reload-chrome-390/network.json)、[Edge 注册](./atdd/web/evidence/WEB-05/login-flow-edge-1280/network.json)、[既有账号](./atdd/web/evidence/WEB-05/existing-login-chrome-390/network.json)、[退出](./atdd/web/evidence/WEB-05/logout-back-chrome-390/browser-storage.json)。
+- 缺陷与处理：首次使用已有 3000 端口的旧 API 得到 Web 会话 404，保留 [失败截图](./atdd/web/evidence/WEB-05/login-initial-chrome-390/screen-after.png)；改用临时 PostgreSQL 17 与 3001 隔离 API 后重新采集。iOS Pen 来源在共享工作区出现仅分组标题几何调整，已按 §7 更新来源摘要，不改用例文本。今日页仍是建设中占位，12 项 AUTH 未做完整 F/V/N，均保持 `NOT_RUN`；WEB-05 不勾选。
+
+### 2026-09-29 01:35 CST｜WEB-05｜今日真实空态增量
+
+- 代码先按 [WEB-05 增量记录](./atdd/web/WEB-05-SPA骨架与登录.md)写明目标，再接入权威 `GET /today`，将加载、失败重试、空态和非空条目分别渲染。创建计划入口已出现，目标表单尚未实现，WEB-07 接续。
+- Chrome 153 手机 390×844 与 Edge 154 桌面 1280×800 分别用隔离新账号完成短信、首次资料和今日 GET 200；[Chrome 截图/网络](./atdd/web/evidence/WEB-05/today-empty-chrome-390-v2/screen-after.png)、[Edge 截图/网络](./atdd/web/evidence/WEB-05/today-empty-edge-1280/screen-after.png)和 [哈希清单](./atdd/web/evidence/WEB-05/checks.json)可核查。两个视口无横向溢出；首次 Chrome 步骤失败另存，成功复测未覆盖失败。
+- 根 `npm run check`、Web 类型、Lint、格式及 Vite build 通过；旧系统 Corepack pnpm 签名错误有失败输出，项目私有 Node 直接执行 Vite 成功。全部 12 项 AUTH 正式 F/V/N 仍 `NOT_RUN`，WEB-02 依赖和 WEB-05 清单均未完成，因此保持 `[ ]`。复核人 Codex。
+
+### 2026-09-29 01:45 CST｜WEB-05｜换号双验证增量
+
+- 先在 [WEB-05 详细记录](./atdd/web/WEB-05-SPA骨架与登录.md)写入 `WEB-AUTH-11` 目标，再接入现有双码挑战/确认 API；换号成功后清除 Web Cookie 与内存会话。Chrome 手机 [双码页面](./atdd/web/evidence/WEB-05/change-phone-form-chrome-390/screen-after.png)显示两个掩码和可读字段，[完整网络](./atdd/web/evidence/WEB-05/change-phone-chrome-390/network.json)记录挑战/确认/退出均 201。
+- [新号独立登录](./atdd/web/evidence/WEB-05/new-phone-login-chrome-390/network.json)直接进入本人今日，无新用户资料步骤；[隔离数据库聚合](./atdd/web/evidence/WEB-05/change-phone-db.txt)为 1 个账号、3 条旧会话撤销、1 条新会话有效、1 个已消耗请求。错误路径和其他浏览器尚缺，`WEB-AUTH-11` 与 WEB-05 都不勾选。下一步补错误/会话边界并形成正式 F/V/N；复核人 Codex。
+
+### 2026-09-29 01:53 CST｜WEB-05｜换号错误与证据隐私修正
+
+- [错误旧码截图](./atdd/web/evidence/WEB-05/change-phone-invalid-chrome-390-v3/screen-after.png)已遮挡双码，确认 API 返回 400，[隔离库](./atdd/web/evidence/WEB-05/change-phone-invalid-db.txt)显示请求未消耗、错误次数为 1。页面保留可修正状态；`WEB-AUTH-11` 仍需占用/过期及浏览器变体。
+- 首次错误探针截图与无障碍材料包含测试验证码，发现后修正输入遮挡和采集器 DOM/AX 脱敏；两份未提交的敏感旧采集在路径确认后清理，以 v3 重新取证。详细处理和断言见 [WEB-05 记录](./atdd/web/WEB-05-SPA骨架与登录.md)。所有 12 项 AUTH 正式状态保持 `NOT_RUN`，WEB-05 `[ ]`；复核人 Codex。
+
+### 2026-09-29 02:03 CST｜WEB-05｜access 到期自动续期增量
+
+- [浏览器动作](./atdd/web/evidence/WEB-05/access-refresh-chrome-390/action-trace.json)在旧账号登录后将页面时钟推进 16 分钟，[网络](./atdd/web/evidence/WEB-05/access-refresh-chrome-390/network.json)显示一次 refresh 201 和后续今日 GET 200，页面未回登录。受控时钟动作仅允许 loopback 开发测试。
+- 计划详情页仍未实现，旧 refresh 重放与多标签反向断言未在本探针覆盖，`WEB-AUTH-07` 保持 `NOT_RUN`；WEB-05 `[ ]`，详见 [增量记录](./atdd/web/WEB-05-SPA骨架与登录.md)。复核人 Codex。
+
+### 2026-09-29 02:07 CST｜WEB-05｜短信错误参数增量
+
+- `WEB-AUTH-02` 非法 11 位号码的 [Chrome 网络](./atdd/web/evidence/WEB-05/invalid-phone-chrome-390/network.json)没有短信挑战请求；`WEB-AUTH-05` 错误验证码的 [网络](./atdd/web/evidence/WEB-05/invalid-code-chrome-390/network.json)返回 400，页面仍登录、Cookie 为空，截图输入已遮挡。详细 F/V/N 缺口见 [WEB-05 记录](./atdd/web/WEB-05-SPA骨架与登录.md)。
+- 空号、过快重发、过期与已使用变体未执行，两项正式用例均 `NOT_RUN`；WEB-05 `[ ]`，复核人 Codex。
+
+### 2026-09-29 02:11 CST｜WEB-07｜真实计划页提前开发
+
+- 发现验收交叉依赖：`WEB-AUTH-07` 要求打开计划页并看到本人数据，而 WEB-07 原定依赖 WEB-05 全项验收完成。WEB-06 服务端已完成，因此先在 [WEB-07 增量记录](./atdd/web/WEB-07-计划页面增量记录.md)锁定列表、三类创建和详情的第一批代码与证据目标，再进行可逆页面开发；WEB-05/WEB-07 均保持 `[ ]`，不把依赖缺口伪装为完成。
+- `WEB-PLAN-01～18` 仍全为 `NOT_RUN`。计划表单的分组、编辑、生命周期和正式浏览器 F/V/N 继续按 WEB-07 清单执行。复核人 Codex。
+
+### 2026-09-29 02:23 CST｜WEB-07｜三类计划创建增量与执行阻断
+
+- [WEB-07 详细记录](./atdd/web/WEB-07-计划页面增量记录.md)已同步代码、首次浏览器目标关闭、TypeScript 修正、三类真实创建与未测项。Chrome 手机固定周一/三/五加单一数值项、Edge 桌面周目标 7“不要做”、Chrome 360 宽一次性今日截止均取得创建 201、详情 200、截图/网络/布局和隔离数据库聚合；均无横向溢出。窄屏详情折行样式已调整，尚欠复测。
+- 启动固定计划空星期错误探针时，自动审批因账户用量上限未能完成，命令**未执行**。不将待运行脚本写作验收证据，也不绕过审批。当前 WEB-07 `[ ]`、18 项 PLAN `NOT_RUN`；恢复后先跑错误用例、重做构建与全量检查、形成哈希清单，再继续其余计划与分组功能。复核人 Codex。
+
+### 2026-09-29 02:47 CST｜WEB-07｜恢复执行与反向证据
+
+- 恢复后定位到隔离 API 就绪脚本的 Windows PowerShell 参数兼容问题，修正 401 判定并重启 13 项迁移的隔离数据库。详情和原始材料见 [WEB-07 增量记录](./atdd/web/WEB-07-计划页面增量记录.md)。
+- Chrome 153 手机 390×844 的固定计划空星期提交显示错误、`aria-invalid=true`，没有 `POST /plans`，无横向溢出；[截图](./atdd/web/evidence/WEB-07/fixed-empty-chrome-390/screen-after.png)、[网络](./atdd/web/evidence/WEB-07/fixed-empty-chrome-390/network.json)、[布局](./atdd/web/evidence/WEB-07/fixed-empty-chrome-390/visual-result.json)可复核。[SHA-256 清单](./atdd/web/evidence/WEB-07/checks.json)收录四次浏览器探针和三份隔离库聚合；生成脚本已验证成功/失败网络断言与证据隐私。
+- `npm run check`、Web 生产构建、执行台账校验和 `git diff --check` 均通过。该空星期探针不等于 WEB-PLAN-02 完整 F/V/N；WEB-07 及依赖 WEB-05 仍 `[ ]`，18 项 PLAN 保持 `NOT_RUN`。后续继续计划编辑、分组、生命周期与正式验收。复核人 Codex。
+
+### 2026-09-29 02:56 CST｜WEB-07｜生命周期操作增量
+
+- 计划详情接入当前 `revision` 的暂停、恢复、归档与显式确认删除；删除确认列出不可撤销影响和归档替代。Chrome 153 手机 390×844 的两次完整操作链路与隔离数据库聚合已保存；中文版 [归档截图](./atdd/web/evidence/WEB-07/lifecycle-chrome-390-v2/screen-archived.png)、[删除确认截图](./atdd/web/evidence/WEB-07/lifecycle-chrome-390-v2/screen-delete-confirm.png)、[网络](./atdd/web/evidence/WEB-07/lifecycle-chrome-390-v2/network.json)、[数据库事件](./atdd/web/evidence/WEB-07/lifecycle-v2-db.txt)可复核。四次状态事件按序落库，删除清理任务为 `pending`；手机无横向溢出。
+- [WEB-07 增量记录](./atdd/web/WEB-07-计划页面增量记录.md)说明首次英文状态修正、复测与未覆盖边界。[证据清单](./atdd/web/evidence/WEB-07/checks.json)现含六次浏览器、五份 DB 聚合的 SHA-256。Web TypeScript 和 Vite 生产构建通过。时间边界、已有历史/照片/分享、分组、编辑与正式 F/V/N 尚缺，因此 WEB-07 `[ ]`，18 项 PLAN `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 03:08 CST｜WEB-07｜分组管理增量
+
+- 计划列表新增分组创建、重命名、确认删除和两计划移组。首轮手机浏览器探针因隐藏侧栏链接选择器中断，已在 [WEB-07 增量记录](./atdd/web/WEB-07-计划页面增量记录.md)说明；换新隔离账号的 Chrome 390×844 完整链路通过。[网络](./atdd/web/evidence/WEB-07/groups-chrome-390-v2/network.json)含两次计划创建、分组创建、两次移组、重命名与删除的成功响应；[删除确认截图](./atdd/web/evidence/WEB-07/groups-chrome-390-v2/screen-delete-group-confirm.png)及[数据库聚合](./atdd/web/evidence/WEB-07/groups-db.txt)证实两个计划仍存在、均回未分组、分组数为 0，且手机无横向溢出。
+- [SHA-256 清单](./atdd/web/evidence/WEB-07/checks.json)为七次完整浏览器运行和六份 DB 聚合。尚无预置历史打卡与桌面分组 F/V/N，故 WEB-PLAN-15 仍 `NOT_RUN`；WEB-07 `[ ]`。复核人 Codex。
+
+### 2026-09-29 03:17 CST｜WEB-07｜归档后恢复回归
+
+- `WEB-PLAN-14` 联调发现服务端原本拒绝归档态恢复，已修正 `PlansService.lifecycle`，补充 PGlite 回归的状态、修订号、事件顺序断言。[服务输出](./atdd/web/evidence/WEB-07/archive-resume-service.txt)及 Chrome 390×844 的[请求记录](./atdd/web/evidence/WEB-07/archive-resume-chrome-390/network.json)、[状态截图](./atdd/web/evidence/WEB-07/archive-resume-chrome-390/screen-after.png)、[数据库聚合](./atdd/web/evidence/WEB-07/archive-resume-db.txt)表明归档→恢复两个操作均 201，最终 `active|3|archive,resume`，无横向溢出。详情见 [WEB-07 增量记录](./atdd/web/WEB-07-计划页面增量记录.md)。
+- [SHA-256 清单](./atdd/web/evidence/WEB-07/checks.json)现含八次完整浏览器、七份 DB 聚合和服务回归输出。归档期间打卡拒绝、旧历史和正式 F/V/N 未覆盖，WEB-PLAN-14 `NOT_RUN`，WEB-07 `[ ]`。复核人 Codex。
+
+### 2026-09-29 03:26 CST｜WEB-07｜计划编辑与版本追加
+
+- 详情页新增标题、说明、规则、截止/结束日期与数值项编辑；未改变规则不重复建版本。Chrome 390×844 [编辑网络](./atdd/web/evidence/WEB-07/edit-chrome-390/network.json)中计划 PATCH、数值项 PATCH 均 200；[最终详情截图](./atdd/web/evidence/WEB-07/edit-chrome-390/screen-after.png)显示 V2 次日生效。隔离库[版本行](./atdd/web/evidence/WEB-07/edit-db.txt)保留规则 V1 周一/三/五及数值 V1 距离/公里，新 V2 为周一/二/五、用时/分钟，从次日生效，手机无横向溢出。
+- [WEB-07 增量记录](./atdd/web/WEB-07-计划页面增量记录.md)详列代码、探针与缺口；[SHA-256 清单](./atdd/web/evidence/WEB-07/checks.json)现含九次完整浏览器、八份 DB 聚合。尚未核对旧打卡历史与周目标编辑，WEB-PLAN-10/11/18 仍 `NOT_RUN`，WEB-07 `[ ]`。复核人 Codex。
+
+### 2026-09-29 03:28 CST｜WEB-07｜周目标编辑桌面探针
+
+- Edge 154 桌面 1280×800 将“不要做”周目标 N=7 改为 N=1，计划 PATCH 200，V2 从次日生效。[截图](./atdd/web/evidence/WEB-07/weekly-edit-edge-1280/screen-after.png)、[网络](./atdd/web/evidence/WEB-07/weekly-edit-edge-1280/network.json)、[数据库规则行](./atdd/web/evidence/WEB-07/weekly-edit-db.txt)和[布局](./atdd/web/evidence/WEB-07/weekly-edit-edge-1280/visual-result.json)已记录。完整[证据清单](./atdd/web/evidence/WEB-07/checks.json)为十次浏览器、九份 DB 聚合。该周已有打卡及部分周达标统计未验证，WEB-PLAN-11 `NOT_RUN`、WEB-07 `[ ]`。复核人 Codex。
+
+### 2026-09-29 03:34 CST｜WEB-05｜AUTH07 真实计划页续期
+
+- 在真实个人计划页复核 access 到期：首轮仅推进浏览器时钟导致客户端连续续期三次，已保留问题网络；调整 Web 会话本地截止值按服务端 `serverTime` 的剩余有效期计算。[复测网络](./atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/network.json)为一次 refresh 201，计划列表/分组/详情 GET 均 200；[详情截图](./atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/screen-after.png)与[Cookie 元数据](./atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/browser-storage.json)显示未跳登录、个人数据可见、刷新 Cookie 不可读。详见 [WEB-05 增量记录](./atdd/web/WEB-05-SPA骨架与登录.md)。
+- [WEB-05 SHA-256 清单](./atdd/web/evidence/WEB-05/checks.json)更新为 18 次完整浏览器探针、八份旧检查输出；旧 refresh 重放、多标签与正式 F/V/N 未完成，WEB-AUTH-07 `NOT_RUN`，WEB-05 `[ ]`。复核人 Codex。
+
+### 2026-09-29 03:38 CST｜WEB-06｜归档恢复服务端变更回归
+
+- WEB-07 联调修正归档态可显式恢复后，重跑 WEB-06 全套 11 项证据命令均 PASS，包括 PGlite 状态/事件序列与隔离 PostgreSQL HTTP。新[检查清单](./atdd/web/evidence/WEB-06/checks.json)及 [WEB-06 回归说明](./atdd/web/WEB-06-计划数值项与部分周.md)已同步。WEB-06 服务端任务维持 `[x]`；WEB-PLAN-14 的正式浏览器 F/V/N 仍 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 03:40 CST｜WEB-09｜私人媒体链路开始
+
+- 在 [WEB-09 实时记录](./atdd/web/WEB-09-私人媒体链路.md)先列出现有上传意图、对象校验、每条九张、一次性结果和 Worker 清理能力，以及未闭环的浏览器直传/CORS、失败恢复、签名时效、私有对象与缩略图。依赖 WEB-03/08 已完成，WEB-09 从 `[ ]` 开始，不能凭服务端现状勾选。复核人 Codex。
+
+### 2026-09-29 03:47 CST｜WEB-09｜对象域和媒体 HTTP 探针
+
+- [对象域原始输出](./atdd/web/evidence/WEB-09/object-provider.txt)验证允许源预检 200、未授权源预检 403、签名 PUT/GET 200、无签名 GET 403、对象删除后不存在。首次完整 HTTP smoke 的媒体步骤通过，但内部 metrics 被 Vite fallback 返回 HTML，进程退出 1；[失败输出](./atdd/web/evidence/WEB-09/local-http-smoke.txt)保留。测试脚本改为内部 metrics 独立回环地址后，完整 [10/10 输出](./atdd/web/evidence/WEB-09/local-http-smoke-v2.txt)与[脱敏 JSON 报告](./atdd/web/evidence/WEB-09/local-http-report.json)通过，含上传意图、PUT、完成、私人下载及软删除。
+- [WEB-09 实时记录](./atdd/web/WEB-09-私人媒体链路.md)列出浏览器 UI、签名到期、边界、缩略图和清理文件清单尚缺。这些 HTTP 探针不替代真实浏览器验收，WEB-09 `[ ]`。复核人 Codex。
+- [WEB-09 SHA-256 清单](./atdd/web/evidence/WEB-09/checks.json)已经覆盖四份原始 HTTP/对象输出并记录一次证据脚本时间戳误判的修复；业务验收状态不变。
+
+### 2026-09-29 03:52 CST｜WEB-10｜真实今日打卡页面提前增量
+
+- [WEB-10 实时记录](./atdd/web/WEB-10-今日打卡页面增量记录.md)先锁定权威今日字段、循环计划当前日记录/修正和可选照片直传的第一批代码与浏览器证据。WEB-07/09 尚未完成，但 WEB-09 的真实浏览器照片证据需要产品上传入口，因此先开发可逆页面；WEB-07/09/10 均维持 `[ ]`，`WEB-CHECK-01～18` 均 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 04:07 CST｜WEB-10｜循环计划打卡与照片浏览器增量
+
+- 今日页现有权威 `/today` 卡片新增结果、文字、数值及照片表单，按 `planBusinessDate`、`activeRuleVersion`、原记录修订号提交；媒体依次完成上传意图、浏览器对象 PUT、记录关联和完成绑定。失败后可以清除待上传照片单独保存文字结果；保存后清空文件选择框。代码在 `apps/web/src/app/TodayCheckin.tsx`、`apps/web/src/data/api.ts`、`apps/web/src/app/App.tsx`、`apps/web/src/styles.css`；浏览器工具增加限定工作区夹具的上传动作，脱敏记录对象请求状态。
+- [Chrome 390×844 原始截图/网络](./atdd/web/evidence/WEB-10/photo-checkin-chrome-390/) 完成新记录与一张照片；[Edge 1280×800 原始截图/网络](./atdd/web/evidence/WEB-10/correction-edge-1280/) 完成同一记录修正与第二张照片，均无横向溢出。两次网络均显示预检 200、对象 PUT 200、记录 PUT 200、媒体完成 201。[DB 当前值](./atdd/web/evidence/WEB-10/db-record.txt)为一条修订 2 的失败记录和 2 张 ready 照片，[修订审计](./atdd/web/evidence/WEB-10/db-revisions.txt)为 1→2；[校验清单](./atdd/web/evidence/WEB-10/checks.json)固定证据哈希。证据脚本首跑暴露 `/` 根路由与桌面滚动条宽度的断言口径问题，修正为允许根路由及文档宽度 `≤` 视口后通过。
+- WEB-09 共享这两次浏览器媒体证据。WEB-07/09/10 仍 `[ ]`，全部 18 条 `WEB-CHECK` 仍 `NOT_RUN`；一次性终态、补记、do/avoid 全组合、冲突与故障反向、缩略图及媒体边界仍待完成。复核人 Codex。
+
+### 2026-09-29 08:46 CST｜WEB-10｜一次性任务终态增量
+
+- [WEB-10 实时记录](./atdd/web/WEB-10-今日打卡页面增量记录.md)补充一次性任务详情终态表单、首次 POST/修正 PATCH、实际完成时间、文字/数值/照片。恢复后隔离浏览器环境使用新数据库；之前循环记录的原始证据与数据库快照独立保存，不把两组数据误称为同一数据库。[首次连接失败截图](./atdd/web/evidence/WEB-10/one-time-complete-chrome-390/screen-before.png)和恢复过程也保留。
+- [Chrome 手机完成及上传](./atdd/web/evidence/WEB-10/one-time-complete-chrome-390-v2/)走详情 GET 200、对象预检/PUT 200、终态 POST 201、照片完成 201；[Edge 桌面修正](./atdd/web/evidence/WEB-10/one-time-correct-edge-1280/)走已有终态 GET 200、PATCH 200。数据库[唯一终态](./atdd/web/evidence/WEB-10/db-one-time-result.txt)为修订 2、原照片 ready，[修订审计](./atdd/web/evidence/WEB-10/db-one-time-revisions.txt)为 1→2。修订 SQL 首次因列歧义失败后改为显式限定列通过；[WEB-10 哈希清单](./atdd/web/evidence/WEB-10/checks.json)现覆盖 4 次浏览器运行及两个 DB 快照。
+- WEB-10 仍 `[ ]`，`WEB-CHECK-01～18` 仍 `NOT_RUN`。下一增量处理历史补记、迟完成/取消、反向与冲突；本任务不能仅凭增量探针勾选。复核人 Codex。
+
+### 2026-09-29 09:00 CST｜WEB-10｜历史业务日上下文与补记反馈修复
+
+- 新增本人只读 `GET /plans/{id}/checkin-context/{businessDate}`、`CheckinContextDto` 和 OpenAPI 第 85 个操作；服务端按计划时间线返回该日可新记/修正、规则/数值版本和原记录，Web 计划详情按业务日期开放补记与近期历史。API 兼容记录与 WEB-10 增量说明已更新。锁定的 Web 技术方案源文件曾尝试补充此说明，源摘要同步被自动审批拒绝（会绕过用例再生成），因此撤回该源文件改动；原 136 条验收基线和摘要校验维持有效。完整质量门禁在上下文服务端初版通过，前端反馈修复后仍需复跑。
+- [首次浏览器中间截图](./atdd/web/evidence/WEB-10/backfill-chrome-390/)与 DB 表明补记写入成功，但刷新上下文卸载表单、成功提示消失，浏览器等待超时。修复为同日期刷新期间保留上下文后，[Chrome 390×844 完整复测](./atdd/web/evidence/WEB-10/backfill-chrome-390-v2/)显示规则 V1、昨日业务日期与保存反馈，API 上下文 GET/打卡 PUT/刷新 GET 均 200；[DB 快照](./atdd/web/evidence/WEB-10/db-backfill.txt)证明 `is_backfilled=true`、修订 1、审计一条。[WEB-10 SHA 清单](./atdd/web/evidence/WEB-10/checks.json)现覆盖五次完整浏览器运行。
+- WEB-10 `[ ]`，`WEB-CHECK` 全部 `NOT_RUN`；继续处理历史规则变化、非应执行日期、终态迟完成/取消和故障反向。复核人 Codex。
+
+### 2026-09-29 09:08 CST｜WEB-10｜非应执行日反向核验
+
+- [Chrome 390×844 反向浏览器运行](./atdd/web/evidence/WEB-10/not-due-chrome-390/)从周一可补记切换到同计划周二，页面无表单，网络无记录 PUT；[DB](./atdd/web/evidence/WEB-10/db-not-due.txt)为零记录。[SHA-256 清单](./atdd/web/evidence/WEB-10/checks.json)现有六次完整浏览器运行。前端生产构建及根目录完整 `npm run check` 均通过；尝试在 Web 包目录运行不存在的 `check` 脚本失败后，已改用根目录命令完成质量门禁。
+- WEB-10 `[ ]`，全部 `WEB-CHECK` 仍 `NOT_RUN`。后续补规则变更跨版本、每周空白日、一次性迟完成/取消与故障/权限反向。复核人 Codex。
+
+### 2026-09-29 09:11 CST｜WEB-10｜每周空白日补记
+
+- [Edge 1280×800 浏览器运行](./atdd/web/evidence/WEB-10/weekly-backfill-edge-1280/)对每周 3 次计划的空白历史日读取上下文 V1 后补记，网络 GET/PUT/GET 均 200；[DB](./atdd/web/evidence/WEB-10/db-weekly-backfill.txt)为唯一昨日成功记录且 `is_backfilled=true`。[SHA-256 清单](./atdd/web/evidence/WEB-10/checks.json)增至七次完整浏览器运行。WEB-10 和所有 CHECK 主用例仍未签发；复核人 Codex。
+
+### 2026-09-29 09:17 CST｜WEB-10｜取消与迟完成终态
+
+- [Chrome 360×780 取消运行](./atdd/web/evidence/WEB-10/one-time-cancel-chrome-360/)和[DB 唯一终态/审计](./atdd/web/evidence/WEB-10/db-one-time-cancel.txt)通过。迟完成用[浏览器合规创建](./atdd/web/evidence/WEB-10/one-time-late-create-chrome-390/)加[隔离 DB 仅一行受控截止日夹具](./atdd/web/evidence/WEB-10/db-late-fixture.txt)模拟跨日；首次复登录遇短信频率限制，没有终态提交；冷却后[Edge 完整运行](./atdd/web/evidence/WEB-10/one-time-late-complete-edge-1280-v2/)显示逾期完成，[DB 日期对照](./atdd/web/evidence/WEB-10/db-one-time-late.txt)为截止 9/28、完成 9/29。[SHA-256 清单](./atdd/web/evidence/WEB-10/checks.json)增至十次完整浏览器运行。此不等同真实时钟跨日验收；WEB-10 `[ ]`，CHECK 主用例均 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 09:24 CST｜WEB-10｜未知结果同键重试增量
+
+- 今日打卡在网络未知/5xx 后保留原请求、操作 ID、幂等键及已上传媒体引用，输入冻结并明确提示“重试原操作”。[Chrome 390×844 离线→在线运行](./atdd/web/evidence/WEB-10/retry-chrome-390/)的两次 PUT 分别为 0/200，脱敏幂等键 SHA-256 相同；[DB](./atdd/web/evidence/WEB-10/db-retry.txt)只有一条记录和一条修订审计。[WEB-10 哈希清单](./atdd/web/evidence/WEB-10/checks.json)增至十一组。该场景为请求未送达后重试，提交后响应丢失与跨刷新续传仍待 WEB-12；WEB-10 `[ ]`，主用例均 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 09:34 CST｜WEB-10｜一次性结果未知后的同键恢复
+
+- 一次性结果也保留原终态请求体、媒体引用、首次/修正方式及幂等键，未知结果时冻结表单并提供原操作重试。[Chrome 390×844 断网→联网运行](./atdd/web/evidence/WEB-10/one-time-retry-chrome-390/)的终态 POST 为 0/201，两次键摘要一致，截图无横向溢出；[DB 唯一终态](./atdd/web/evidence/WEB-10/db-one-time-retry.txt)显示修订 1、审计 1、终态 1。[WEB-10 证据哈希清单](./atdd/web/evidence/WEB-10/checks.json)现覆盖十二组浏览器运行。此探针不证明服务端提交后响应丢失或刷新/多标签恢复；WEB-10 `[ ]`，`WEB-CHECK-01～18` 均 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 09:39 CST｜WEB-10｜提交成功但响应丢失复测
+
+- 隔离浏览器工具在终态服务器响应 201 后单次丢弃浏览器响应，保留[受控 Chrome 390×844 时间线、截图与脱敏网络](./atdd/web/evidence/WEB-10/one-time-response-loss-chrome-390/)；页面首次见 POST 0 和结果未知，再以同键 POST 201 恢复。两次键哈希相同，[DB 快照](./atdd/web/evidence/WEB-10/db-one-time-response-loss.txt)仅一条终态、修订 1、审计 1。[WEB-10 校验清单](./atdd/web/evidence/WEB-10/checks.json)增至十三组浏览器运行。此证据只覆盖同一页面的一次性结果；刷新/多标签、循环记录同类故障和完整反向断言仍未完成，WEB-10 `[ ]`，正式 CHECK 全 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 09:47 CST｜WEB-09/10｜媒体完成失败后的单独恢复
+
+- [WEB-10 实时记录](./atdd/web/WEB-10-今日打卡页面增量记录.md)保留首轮采集定位器超时、DB 已 ready 的诊断过程；第二轮走通后发现待绑定时写入按钮仍显得可用，现已禁用一次性和循环结果修改按钮，单独媒体重试有忙碌保护。最终[Chrome 390×844 完整复测](./atdd/web/evidence/WEB-10/media-complete-retry-chrome-390-v3/)显示终态 POST 201 仅一次、媒体完成首个 POST 0/重试 201，待绑定截图及恢复截图可复核按钮状态；[DB](./atdd/web/evidence/WEB-10/db-media-complete-retry-v3.txt)证实终态、修订、审计、ready 照片各 1。[14 组浏览器哈希清单](./atdd/web/evidence/WEB-10/checks.json)通过。WEB-09 缩略图/清理/边界及 WEB-10 完整 F/V/N 仍缺，两个任务均 `[ ]`，正式用例未签发。复核人 Codex。
+
+### 2026-09-29 14:05 CST｜WEB-09/10｜本人照片回顾
+
+- 结果页面新增显式打开的私人照片预览，鉴权 API 每次签发短时下载 URL，Web 只在内存中持有，可刷新；证据工具遮盖 DOM 中的签名 URL。[Chrome 390×844 上传并回顾截图/网络](./atdd/web/evidence/WEB-09/private-gallery-chrome-390/)显示对象图片 GET 200、`naturalWidth>0`、无横向溢出；[WEB-09 16 文件哈希清单](./atdd/web/evidence/WEB-09/checks.json)通过。此为原图 CSS 缩放，派生缩略图、跨账号拒绝、签名过期与删除清理尚缺。用量中断后隔离 DB 不可连接，本次无 DB 快照；不签发正式用例，WEB-09/10 均 `[ ]`。复核人 Codex。
+
+### 2026-09-29 14:17 CST｜WEB-09｜跨账号照片拒绝
+
+- 新隔离环境中，[A 的 Chrome 本人预览](./atdd/web/evidence/WEB-09/private-owner-chrome-390/)获取短时 URL 与对象图片均 200；[B 的独立 Edge 会话](./atdd/web/evidence/WEB-09/private-other-edge-1280/)为同一 media ID 请求下载 URL 返回 404，未发起对象 GET。[DB 归属快照](./atdd/web/evidence/WEB-09/db-cross-account-media.txt)证明 ready 照片属于 A、B 不拥有。[WEB-09 41 文件哈希清单](./atdd/web/evidence/WEB-09/checks.json)通过。环境恢复时 Vite 首次代理错指 3000 导致 API 就绪探针失败，显式改为隔离 API 3001 后重跑成功；详情在 [WEB-09 实时记录](./atdd/web/WEB-09-私人媒体链路.md)。签名链接到期及持有者访问、派生缩略图与清理待测，WEB-09 `[ ]`，正式 SEC/CHECK 用例仍 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 14:22 CST｜WEB-09｜签名到期供应端探针
+
+- [受控对象签名到期原始输出](./atdd/web/evidence/WEB-09/object-expiry.txt)：同一私有对象的一秒签名链接先 GET 200，等待约 2.2 秒后 GET 403；无签名 403，对象删除和不存在核对完成。[WEB-09 哈希清单](./atdd/web/evidence/WEB-09/checks.json)增至 42 文件。这只覆盖本地对象供应端一秒签名，不代替 API 300 秒链接的真实浏览器到期或权限撤销；WEB-09 `[ ]`，正式 `WEB-SEC-07` 仍 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 14:28 CST｜WEB-09｜第十张与纯结果反向
+
+- [Chrome 390×844 两张状态截图和脱敏网络](./atdd/web/evidence/WEB-09/tenth-photo-chrome-390/)显示选择 10 张同一合成 PNG 后提示最多 9 张；移除选择仍可提交无照片的一次性取消终态，只有终态 POST 201，没有上传意图、对象或媒体完成请求。[DB 快照](./atdd/web/evidence/WEB-09/db-tenth-photo-pure-result.txt)证明唯一终态、审计各 1，关联媒体 0。[WEB-09 56 文件哈希清单](./atdd/web/evidence/WEB-09/checks.json)通过。此不覆盖恰好 9 张、20 MB、MIME 和循环记录等完整用例，WEB-09 `[ ]`，`WEB-CHECK-13` 仍 `NOT_RUN`。复核人 Codex。
+
+### 2026-09-29 14:35 CST｜WEB-09｜20 MB 上限反向
+
+- [Chrome 390×844 超限错误与纯结果截图/网络](./atdd/web/evidence/WEB-09/oversize-photo-chrome-390/)证明 20,971,521 字节合成 PNG 被拒，移除后纯结果终态 POST 201；无上传意图、对象 PUT 或媒体完成。[DB](./atdd/web/evidence/WEB-09/db-oversize-pure-result.txt)为唯一终态、审计 1、照片 0。[WEB-09 70 文件哈希清单](./atdd/web/evidence/WEB-09/checks.json)通过。恰好 20 MB 正向、服务端伪造请求、MIME 和九张正向仍待测；WEB-09 `[ ]`，正式 CHECK 不变。复核人 Codex。
+
+### 2026-09-29 14:41 CST｜WEB-09｜九张正向边界
+
+- [Chrome 390×844 九张上传与预览](./atdd/web/evidence/WEB-09/nine-photos-chrome-390/)的网络含上传意图、对象 PUT、媒体完成、下载 URL、对象 GET 各 9 次成功，终态 POST 201 仅一次；页面双列预览无横向溢出，9 个签名 `src` 在 DOM 证据中全部遮盖。[DB](./atdd/web/evidence/WEB-09/db-nine-photos.txt)证实唯一终态和审计、9 张全 ready。[WEB-09 85 文件哈希清单](./atdd/web/evidence/WEB-09/checks.json)通过。与十张拒绝形成数量边界，但格式、单张正向上限、缩略图和清理仍缺；WEB-09 `[ ]`，`WEB-CHECK-13` 尚未签发。复核人 Codex。
+
+### 2026-09-29 14:43 CST｜WEB-11｜日历与权威统计页面开始
+
+- [WEB-11 实时记录](./atdd/web/WEB-11-日历详情与统计增量记录.md)已在编码前建立：`/calendar` 仍为占位页，详情尚未展示 API 的统计 DTO。先接入按计划业务日期的月/日视图与三类权威统计展示，再做手机/桌面和历史修正后刷新探针；冻结时钟的正式 `WEB-STAT-01～12` 全部继续 `NOT_RUN`。WEB-11 `[ ]`，复核人 Codex。
+
+### 2026-09-29 14:59 CST｜WEB-11｜月/日历手机增量与路由缺陷修复
+
+- `/calendar` 已替换占位页，手机 Chrome 390×844 创建每日计划、查看 9 月月格和 9 月 27 日日详情、切换至 8 月成功。初次探针发现查询参数导致路由退回默认页面，已修复并保留失败与成功两轮证据。成功运行的 [截图和动作/网络证据](./atdd/web/evidence/WEB-11/calendar-chrome-390-v3/) 显示日历 API 200、无横向溢出、控件无视口宽度越界；详见 [WEB-11 增量记录](./atdd/web/WEB-11-日历详情与统计增量记录.md)。计划详情统计、桌面/时区/修正与正式 `WEB-STAT-01～12` 尚未完成，任务保持 `[ ]`。
+
+### 2026-09-29 15:04 CST｜WEB-11｜详情三类统计与自动刷新
+
+- 固定计划保存补记后统计自动请求并显示分母 2、完成率 50.0%，日历同步显示成功；同路径已在手机 Chrome 与桌面 Edge 跑通。周中开始的周目标显示完整周 0、达标周 0；一次性结果从待处理变为按时完成。每轮截图、动作、DOM、网络和布局见 [WEB-11 增量记录](./atdd/web/WEB-11-日历详情与统计增量记录.md)。正式用例与冻结时钟、跨时区等仍待执行，WEB-11 保持 `[ ]`。
+
+### 2026-09-29 15:48 CST｜WEB-11｜增量证据索引与构建
+
+- [WEB-11 校验索引](./atdd/web/evidence/WEB-11/checks.json) 对五轮手机/桌面浏览器产物保存 71 个 SHA-256，并与 [隔离库只读事实](./atdd/web/evidence/WEB-11/db-statistics.txt) 对照。仓库 `npm run check`、Web `npm run build`、JSON 账本校验通过；正式验收通过数仍为 0，任务保持 `[ ]`。
+
+### 2026-09-29 16:11 CST｜WEB-11｜部分周与跨时区复核
+
+- 周日历现按计划时区分辨未开始、本周进行中和历史部分周；周中起始计划已重跑。相同账号在 Honolulu 与上海浏览器时区均显示上海计划的 `2026-09-29` 业务日，相关截图、API 200、数据库只读对照和 97 文件哈希见 [WEB-11 增量记录](./atdd/web/WEB-11-日历详情与统计增量记录.md)。冻结时钟和全套 `WEB-STAT` 正式断言未执行，WEB-11 `[ ]`。
+
+### 2026-09-29 16:12 CST｜WEB-14｜好友与消息页面开始
+
+- 已在编码前建立 [WEB-14 实时记录](./atdd/web/WEB-14-好友分享消息增量记录.md)。现有 API 具备搜索、好友关系、分享、鼓励和持久消息；Web `/friends`、`/inbox` 为占位页。先实现基础好友与消息流程，再补分享和权限反向路径；`WEB-SOCIAL-01～14` 保持 `NOT_RUN`，任务 `[ ]`。
+
+### 2026-09-29 16:41 CST｜WEB-14｜好友申请与持久消息增量
+
+- 甲/乙两个合成账号已通过手机浏览器完成精确用户名搜索、申请、接受、消息标记已读；隔离库确认 1 条好友关系、1 条申请消息且已读。截图、网络、DOM、动作与布局详见 [WEB-14 实时记录](./atdd/web/WEB-14-好友分享消息增量记录.md)；正式 `WEB-SOCIAL-01～14` 未执行完，WEB-14 保持 `[ ]`。
+
+### 2026-09-29 17:17 CST｜WEB-14｜授权、只读留言与撤销反向探针
+
+- 甲完成逐计划预览后授权，乙在只读历史看到文字并留言，甲撤销后乙旧深链 API 403 且 DOM 无计划名/备注。同账号桌面 Web 显示手机已读消息，DB 核对分享已撤销、留言与消息事件各一条。[WEB-14 记录及 7 轮、96 文件哈希证据](./atdd/web/WEB-14-好友分享消息增量记录.md)已同步；完整 `WEB-SOCIAL-01～14` 尚未签发，任务 `[ ]`。
+
+### 2026-09-29 19:12 CST｜执行顺序调整与 WEB-16 开始
+
+- 按用户指令，接下来优先完成首版缺失的代码与业务流程，暂停新增密集的浏览器验收探针；现有证据保留，正式用例仍 `NOT_RUN`，功能齐备后集中验收。WEB-14 的 JSON 已补齐。[WEB-16 编码前实时记录](./atdd/web/WEB-16-站内提醒与浏览器通知增量记录.md)已建立：先实现 Web 分端偏好、Push 订阅 UI/Service Worker、计划站内即时提示，任务 `[ ]`。
+
+### 2026-09-29 19:23 CST｜WEB-16 通知功能代码增量
+
+- 设置页已接入 Web 独立偏好与浏览器订阅、取消；Service Worker 限定通用通知和站内跳转；打开网页时按计划时区展示即时待办横幅，退出时清理当前浏览器订阅。源码路径、降级边界见 [WEB-16 增量记录](./atdd/web/WEB-16-站内提醒与浏览器通知增量记录.md)。
+- Prettier、Web TypeScript 与生产构建通过。按当前代码优先顺序未新增浏览器探针；`WEB-NOTIFY-01～16` 仍 `NOT_RUN`，WEB-16 保持 `[ ]`。
+
+### 2026-09-29 19:26 CST｜WEB-17 开始与服务端缺口
+
+- 先审计既有导出/注销/最终清理服务，发现注销撤销仅生成 iOS JSON 刷新令牌，尚无 Web 安全 Cookie 恢复入口。已先建立 [WEB-17 编码前增量记录](./atdd/web/WEB-17-导出删除会话服务端增量记录.md)，接下来补齐 Web 撤销端点并继续检查导出与最终清理。任务仍 `[ ]`，正式数据用例继续 `NOT_RUN`。
+
+### 2026-09-29 19:28 CST｜WEB-17 服务端代码增量
+
+- 新增 `auth/web/deletion-cancel`，撤销注销后创建 Web 会话并以安全 Cookie 返回刷新会话；注销事务立即关闭 Web Push 订阅。OpenAPI 86 项、旧契约兼容和 API TypeScript 检查通过。完整范围见 [WEB-17 记录](./atdd/web/WEB-17-导出删除会话服务端增量记录.md)；Worker 和浏览器正式验收未完成，任务继续 `[ ]`。
+
+### 2026-09-29 19:29 CST｜WEB-18 页面编码前计划
+
+- 已先建立 [WEB-18 增量记录](./atdd/web/WEB-18-导出账号删除设置页面增量记录.md)，接下来接入导出任务与下载、账号注销二次确认和短信撤销恢复。任务保持 `[ ]`，`WEB-DATA-01～10` 仍 `NOT_RUN`。
+
+### 2026-09-29 19:36 CST｜WEB-18 导出与账号管理代码增量
+
+- 设置页已实现导出历史/进度、创建与按需签名下载，展示有效期、文件数量/大小和哈希；注销二次确认后清除私人页面并提供独立短信撤销入口。Web 生产构建通过，原始输出与 SHA-256 见 [WEB-18 记录](./atdd/web/WEB-18-导出账号删除设置页面增量记录.md)。
+- 本轮继续以功能代码为先，未运行浏览器数据管理矩阵；WEB-18 保持 `[ ]`，`WEB-DATA-01～10` 均 `NOT_RUN`。WEB-17 的 API、OpenAPI 与兼容检查证据已存于[对应记录](./atdd/web/WEB-17-导出删除会话服务端增量记录.md)。
+
+### 2026-09-29 19:40 CST｜WEB-12 冲突体验编码前审计
+
+- 已先建立 [WEB-12 增量记录](./atdd/web/WEB-12-在线并发冲突增量记录.md)。现有未知提交原键重试和照片独立恢复可复用，下一步补前端 409 冲突详情与版本选择。`WEB-ONLINE-01～08` 均 `NOT_RUN`，任务保持 `[ ]`。
+
+### 2026-09-29 19:49 CST｜WEB-12 冲突与离线代码增量
+
+- 循环打卡现可并排查看冲突的服务器/本机版本，并明确选择保留或二次确认覆盖；登录及私人页断网时显示状态。保存使用新幂等键、当前修订和冲突 ID，代码与构建证据见 [WEB-12 记录](./atdd/web/WEB-12-在线并发冲突增量记录.md)。
+- Web 构建及相关 lint 通过；未扩展浏览器网络矩阵，`WEB-ONLINE-01～08` 均 `NOT_RUN`，任务保持 `[ ]`。
+
+### 2026-09-29 19:58 CST｜WEB-17 导出清单与 WEB-12/18 代码补充
+
+- WEB-17 的 ZIP 清单补齐数值配置与记录字段、分端通知偏好和站内消息；一次导出专项冒烟通过，原始输出及哈希见 [WEB-17 记录](./atdd/web/WEB-17-导出删除会话服务端增量记录.md)。WEB-12 冲突对照改为读取实际提交快照；WEB-18 在跨标签会话撤销时同时清除内存资料。最终 Web 构建通过，[输出及哈希](./atdd/web/evidence/WEB-12/web-build.txt)已归档。
+- 三项任务仍均 `[ ]`；真实照片 ZIP、浏览器下载/注销、双标签网络与冲突验收均未签发，相关用例保持 `NOT_RUN`。
+
+### 2026-09-29 19:59 CST｜WEB-16 通知状态补充
+
+- 即时提示加入同浏览器多标签领取去重；新增 Web 当前设备订阅状态 API，并与本地订阅状态共同显示。代码范围、Web 构建和 87 路由 OpenAPI 原始输出/哈希见 [WEB-16 记录](./atdd/web/WEB-16-站内提醒与浏览器通知增量记录.md)。`WEB-NOTIFY-01～16` 仍 `NOT_RUN`，任务 `[ ]`。
+
+### 2026-09-29 20:03 CST｜代码优先阶段项目静态门禁
+
+- `npm run check` 首轮因 Service Worker 全局 `URL` lint 失败，次轮因修正行格式失败；两次原始输出留存。修正后第三轮完整通过，含 87 路由契约、所有 TypeScript 包及安全/部署静态检查，输出与三个 SHA-256 见 [WEB-16 项目门禁记录](./atdd/web/WEB-16-站内提醒与浏览器通知增量记录.md)。本阶段仍未扩大浏览器验收，用例状态不变。
+
+### 2026-09-29 20:06 CST｜WEB-19 无障碍功能编码前审计
+
+- 已建立 [WEB-19 增量记录](./atdd/web/WEB-19-响应式主题无障碍增量记录.md)。静态审计发现四处危险确认层缺模态焦点管理；先完成原生对话框实现，浏览器视口/键盘/读屏矩阵仍后置，任务 `[ ]`。
+
+### 2026-09-29 20:12 CST｜WEB-19 模态焦点功能代码
+
+- 四处危险确认层已换为共用的原生模态对话框，新增 Esc、初始安全焦点、关闭回焦及窄屏纵向滚动。Web 构建通过，原始输出与哈希见 [WEB-19 记录](./atdd/web/WEB-19-响应式主题无障碍增量记录.md)。`WEB-UI-01～16` 未正式运行，任务 `[ ]`。
+
+### 2026-09-29 20:18 CST｜WEB-20 浏览器后退缓存安全编码前审计
+
+- 已建立 [WEB-20 增量记录](./atdd/web/WEB-20-安全隐私故障注入增量记录.md)。发现页面从 BFCache 恢复时未强制重验会话，旧 React 私人状态可能再次呈现；先补生命周期保护。依代码优先安排，`WEB-SEC-01～12` 暂不做完整浏览器故障注入，任务保持 `[ ]`。
+
+### 2026-09-29 20:21 CST｜WEB-20 后退缓存代码增量
+
+- Web 页面离开前同步移除私人视图；从后退缓存恢复后强制校验服务端会话并重取资料，失败时只显示重试反馈。切换登录账号也先清空旧资料。构建输出和 SHA-256 见 [WEB-20 记录](./atdd/web/WEB-20-安全隐私故障注入增量记录.md)；真实浏览器故障注入后置，`WEB-SEC-06` 未标为通过，任务 `[ ]`。
+
+### 2026-09-29 20:24 CST｜WEB-22 静态站部署编码前审计
+
+- 已建立 [WEB-22 增量记录](./atdd/web/WEB-22-Web静态站部署增量记录.md)。现有部署把入口 `/` 给 API，Web 只有本地 Vite 服务；先补同站点 Web 静态服务、镜像与路由代码。根据用户本轮代码优先要求，WEB-22 先进入代码开发，正式 WEB-21 和真实环境发布验收仍后置，任务 `[ ]`。
+
+### 2026-09-29 20:30 CST｜WEB-22 静态服务代码及部署清单审批阻断
+
+- 已新增只读 Web 静态服务、独立 Dockerfile、SPA 深链/API 隔离与 CSP/缓存头，并完成单次静态冒烟。原始输出和 SHA-256 见 [WEB-22 记录](./atdd/web/WEB-22-Web静态站部署增量记录.md)。
+- 自动审批拒绝了改变生产 Ingress `/` 路由并新增 Web Deployment 的清单补丁，理由是可能中断现有入口；部署清单和发布脚本未改，已请求用户就此明确授权。WEB-22 `[ ]`，发布环境与浏览器验收仍待执行。
+
+### 2026-09-29 20:33 CST｜代码优先阶段完整静态门禁
+
+- 本轮 `npm run check` 通过，涵盖格式、lint、TypeScript、87 路由契约、兼容和已有部署/安全静态检查；原始输出与哈希见 [WEB-22 记录](./atdd/web/WEB-22-Web静态站部署增量记录.md)。该结果不含正式浏览器矩阵，亦不证明被自动审批阻断的 Web 部署入口已经实现。
+
+### 2026-09-29 20:38 CST｜用户授权 Web 部署
+
+- 用户已明确同意部署并要求项目运行手册。WEB-22 继续编码同站点 Web Deployment/Service/Ingress 与发布顺序；先让后端就绪再更新入口。真实环境结果仍以实际镜像、TLS、对象域和集群记录为准，任务 `[ ]`。
+
+### 2026-09-29 20:51 CST｜WEB-22 部署代码与运行手册交付
+
+- Web Deployment/Service 和 `/api/v1`→API、`/`→Web 的同站点 Ingress 已入清单；发布脚本等待三组工作负载就绪后才应用入口。已生成 [项目运行手册](./项目运行手册-计划打卡-Web-v1.md)并更新 OPS-05。
+- 预发示例清单渲染、部署静态检查、Web 镜像本机构建/容器健康与首页检查、完整 `npm run check` 均通过；证据和 SHA-256 见 [WEB-22 记录](./atdd/web/WEB-22-Web静态站部署增量记录.md)。本机无 `kubectl` 上下文，镜像未推送且缺正式域名/TLS/对象来源，故未执行真实部署；WEB-22 `[ ]`，正式浏览器用例仍 `NOT_RUN`。
+
 ## 7. 决策与偏差记录
 
 每条偏差记录：发现时间、来源文件/行、矛盾内容、影响任务与用例、可选方案、最终决定、PRD/技术/ATDD/契约变更、复测范围和复核人。尚未核对真实代码路径时，不将技术方案中列出的新增端点视为已存在接口。注册开放、Web 在线、分端提醒、消息已读跨浏览器、部分周不计达标和 Web 独立验收等已确认边界不能被实现便利性改写。
+
+### 2026-09-29 01:16 CST｜iOS Pen 画板来源摘要更新
+
+- 发现：共享工作区的 `docs/ui/plan-checkin.pen` 出现 28 行替换，均为分组标题高度、文字纵坐标和字号；旧 SHA-256 `eb586ed8…d31e09` 与实际文件不符，台账校验如实失败。画板本身的编辑并非本次 Web 代码所做，保留原样。
+- 决定：Web 以画板为视觉参考且不设逐像素阈值；136 条 Web 用例文本与证据要求未变。运行 `build_cases.py` 重建机器清单并将 `iosPen` 来源摘要更新为 `b1c94dbc…79939`，重新生成隔离工具样本；既无正式 PASS 也无可失效的业务结果。受影响为 WEB-02 来源核验、WEB-05 浏览器证据和未来 WEB-19/UI 用例。复核人 Codex；若画板再变，继续按来源变更流程处理。
 
 ## 8. 发布完成定义
 

@@ -1,0 +1,23 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001252" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1252"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_fixed_empty" },
+  { "action": "type", "selector": "#nickname", "text": "空星期验收用户" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='today']" },
+  { "action": "click", "selector": ".bottom-nav a[href='/plans']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "type", "selector": "#plan-title", "text": "不能直接保存" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".plan-form [role='alert']" }
+]

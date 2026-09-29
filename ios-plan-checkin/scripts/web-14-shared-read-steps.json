@@ -1,0 +1,50 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001310" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1310"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": "[aria-labelledby='friend-list-heading']",
+    "text": "web_atdd_social_a_1318"
+  },
+  {
+    "action": "click",
+    "selector": "[aria-labelledby='friend-list-heading'] .social-person .text-button"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": "[data-page-key='friend-shared-plans']",
+    "text": "甲的晨间散步"
+  },
+  { "action": "snapshot", "label": "friend-shared-list" },
+  {
+    "action": "click",
+    "selector": "[data-page-key='friend-shared-plans'] .social-card .text-button"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": "[data-page-key='shared-plan-detail']",
+    "text": "今天走了三公里"
+  },
+  { "action": "snapshot", "label": "shared-history-readonly" },
+  { "action": "click", "selector": ".encouragements .text-button" },
+  { "action": "wait-for", "selector": ".encouragements textarea" },
+  {
+    "action": "type",
+    "selector": ".encouragements textarea",
+    "text": "坚持得很好"
+  },
+  { "action": "click", "selector": ".encouragements button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".encouragements ul",
+    "text": "坚持得很好"
+  },
+  { "action": "snapshot", "label": "encouragement-sent" }
+]

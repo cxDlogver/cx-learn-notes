@@ -1,0 +1,53 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001305" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1305"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_tenth_photo" },
+  { "action": "type", "selector": "#nickname", "text": "第十张照片验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  { "action": "type", "selector": "#plan-title", "text": "第十张拒绝后纯结果" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled"
+  },
+  {
+    "action": "type",
+    "selector": ".one-time-result textarea",
+    "text": "不附照片也可提交"
+  },
+  {
+    "action": "upload-file",
+    "selector": ".one-time-result input[type='file']",
+    "file": "docs/atdd/web/fixtures/checkin-green.png",
+    "count": 10
+  },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result [role='alert']",
+    "text": "每条结果最多 9 张照片"
+  },
+  { "action": "snapshot", "label": "tenth-photo-rejected" },
+  { "action": "click", "selector": ".one-time-result .text-button" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result > p[role='status']",
+    "text": "当前结果：取消"
+  },
+  { "action": "snapshot", "label": "pure-result-saved" }
+]

@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-09-28T17:00:56.688Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T17:00:55.369Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T17:00:55.435Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:00:55.560Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T17:00:55.769Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T17:00:55.884Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:00:55.998Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-28T17:00:56.106Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 13,
+      "at": "2026-09-28T17:00:56.222Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 8,
+      "at": "2026-09-28T17:00:56.335Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:00:56.447Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T17:00:56.553Z"
+    }
+  ]
+}

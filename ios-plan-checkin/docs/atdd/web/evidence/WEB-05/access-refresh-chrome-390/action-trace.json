@@ -1,0 +1,59 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T18:01:55.960Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:01:56.101Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T18:01:56.211Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T18:01:56.327Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:01:56.445Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='today']",
+    "at": "2026-09-28T18:01:56.554Z"
+  },
+  {
+    "action": "advance-clock",
+    "offsetMs": 960000,
+    "at": "2026-09-28T18:01:56.668Z"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-nav a[href='/plans']",
+    "at": "2026-09-28T18:01:56.687Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plans']",
+    "at": "2026-09-28T18:01:56.791Z"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-nav a[href='/today']",
+    "at": "2026-09-28T18:01:56.907Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T18:01:57.013Z"
+  }
+]

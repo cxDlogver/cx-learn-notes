@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import process from "node:process";
+import { URL } from "node:url";
 import "../apps/api/node_modules/reflect-metadata/Reflect.js";
 import { ExportsController } from "../apps/api/dist/exports/exports.controller.js";
 

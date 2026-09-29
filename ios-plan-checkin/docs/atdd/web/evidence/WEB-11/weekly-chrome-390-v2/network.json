@@ -1,0 +1,97 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:41.404Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "409802e0790a88526056d8b1843e731e00db26ebd9fe46b161184e4856ac5747",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:41.704Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "a48b3ba86e40fe960658c92df904d5cb60ad81d1e37a0064d5fb8c2af506080a",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:42.027Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:42.042Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "operationKeySha256": "c4f58c39c25df1e950daf10a00f6e05c446dadde4bdb4e3bedce8c511f474b04",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:42.472Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:42.509Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "operationKeySha256": "0e0c00dc9ba7ac6e0f64ffe725578df9108667a74aaef1a9fca4890e198a9fc8",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:43.550Z"
+  },
+  {
+    "path": "/api/v1/plans/c53ec8c7-c6f4-4b3e-8761-342147606ffa",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:43.599Z"
+  },
+  {
+    "path": "/api/v1/plans/c53ec8c7-c6f4-4b3e-8761-342147606ffa/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:43.651Z"
+  },
+  {
+    "path": "/api/v1/plans/c53ec8c7-c6f4-4b3e-8761-342147606ffa/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:43.678Z"
+  },
+  {
+    "path": "/api/v1/plans/c53ec8c7-c6f4-4b3e-8761-342147606ffa/statistics",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:43.688Z"
+  },
+  {
+    "path": "/api/v1/plans/c53ec8c7-c6f4-4b3e-8761-342147606ffa/statistics",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:43.878Z"
+  },
+  {
+    "path": "/api/v1/calendar",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:58:44.045Z"
+  }
+]

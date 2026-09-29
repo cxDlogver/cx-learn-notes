@@ -1,0 +1,89 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:43.915Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "7d7b0705f836befde6b83b7513127abee9786efa80a87073b3a1865db02a3182",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.273Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "8e761b8a9e16fe0188e05158f48500266e60e81d7b04a12b593d20f5869c3c5d",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.547Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.560Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.590Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.659Z"
+  },
+  {
+    "path": "/api/v1/friends",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.666Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561/shares",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.670Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.683Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561/statistics",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:44.684Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561/shares/9a846392-3983-40ba-a55a-023d6889f0aa",
+    "method": "DELETE",
+    "operationKeySha256": "f5593915ea7639f7533b2296e45a9d84faad42520e9a2a1f87f05430e07dd6d6",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:45.117Z"
+  },
+  {
+    "path": "/api/v1/plans/1ee66b33-a62b-4c53-9039-34287fa86561/shares",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:06:45.132Z"
+  }
+]

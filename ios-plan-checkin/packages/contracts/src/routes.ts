@@ -66,6 +66,12 @@ export const apiRoutes = [
   ["GET", "plans/{id}/calendar", "getPlanCalendar", true],
   ["PUT", "plans/{id}/checkins/{businessDate}", "putCheckin", true],
   ["GET", "plans/{id}/checkins/{businessDate}", "getCheckin", true],
+  [
+    "GET",
+    "plans/{id}/checkin-context/{businessDate}",
+    "getCheckinContext",
+    true,
+  ],
   ["GET", "plans/{id}/statistics", "getPlanStatistics", true],
   ["POST", "plans/{id}/one-time-resolution", "createOneTimeResolution", true],
   ["PATCH", "plans/{id}/one-time-resolution", "reviseOneTimeResolution", true],
@@ -95,6 +101,7 @@ export const apiRoutes = [
   ["PUT", "plans/{id}/reminder", "putReminder", true],
   ["POST", "devices/push-token", "registerPushToken", true],
   ["GET", "web-push/config", "getWebPushConfig", false],
+  ["GET", "me/web-push-subscriptions", "getWebPushSubscription", true],
   ["POST", "me/web-push-subscriptions", "registerWebPushSubscription", true],
   ["DELETE", "me/web-push-subscriptions", "deleteWebPushSubscription", true],
   ["GET", "me/notification-preferences", "getNotificationPreferences", true],
@@ -124,6 +131,7 @@ export const apiRoutes = [
   ["GET", "me/exports/{id}/download-url", "getExportDownloadUrl", true],
   ["POST", "me/deletion-request", "requestDeletion", true],
   ["POST", "me/deletion-cancel", "cancelDeletion", false],
+  ["POST", "auth/web/deletion-cancel", "cancelDeletionWeb", false],
   ["GET", "me/deletion-status", "getDeletionStatus", true],
 ] as const satisfies ReadonlyArray<
   readonly [HttpMethod, string, string, boolean]

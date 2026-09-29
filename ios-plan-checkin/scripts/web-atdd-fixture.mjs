@@ -17,12 +17,14 @@ import {
   mondayOfWeek,
 } from "../packages/domain/dist/index.js";
 
-const [action, runId, serverNowUtc] = process.argv.slice(2);
+const [action, runId, serverNowUtc, expiryOffset] = process.argv.slice(2);
 if (
-  !["seed", "cleanup"].includes(action) ||
+  !["seed", "cleanup", "set-session-expiry"].includes(action) ||
   !/^[a-z0-9-]{3,40}$/.test(runId ?? "")
 )
-  throw new Error("Use seed|cleanup RUN_ID [SERVER_NOW_UTC]");
+  throw new Error(
+    "Use seed|cleanup|set-session-expiry RUN_ID [SERVER_NOW_UTC|ALIAS OFFSET_SECONDS]",
+  );
 const databaseUrl = process.env.WEB_ATDD_DATABASE_URL;
 if (!databaseUrl) throw new Error("WEB_ATDD_DATABASE_URL is required");
 const database = new URL(databaseUrl);
@@ -72,7 +74,50 @@ try {
     "SELECT count(*)::int AS n FROM schema_migrations",
   );
   assert.ok(migrated.rows[0]?.n >= 12, "Apply all 12 migrations first");
-  if (action === "cleanup") {
+  if (action === "set-session-expiry") {
+    if (
+      !["A1", "A2", "A3", "B1", "C1", "D1"].includes(serverNowUtc) ||
+      !/^-?\d{1,4}$/.test(expiryOffset ?? "") ||
+      Math.abs(Number(expiryOffset)) > 3600
+    )
+      throw new Error(
+        "Use one seeded session alias and an offset within one hour",
+      );
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+    const sessions = JSON.parse(await readFile(privatePath, "utf8"));
+    if (
+      manifest.runId !== runId ||
+      manifest.database !== database.pathname.slice(1) ||
+      !sessions[serverNowUtc]
+    )
+      throw new Error("Fixture session does not match the test database");
+    const result = await client.query(
+      `UPDATE sessions s SET expires_at=clock_timestamp()+($3::integer * interval '1 second')
+       FROM users u WHERE s.id=$1 AND s.user_id=u.id AND u.id=$2
+         AND left(u.username,length($4))=$4
+       RETURNING s.expires_at`,
+      [
+        sessions[serverNowUtc].sessionId,
+        sessions[serverNowUtc].userId,
+        Number(expiryOffset),
+        `atdd_${namespace}_`,
+      ],
+    );
+    if (result.rowCount !== 1)
+      throw new Error("Refused to change a nonfixture session");
+    const databaseNow = await client.query(
+      "SELECT clock_timestamp() AS database_now",
+    );
+    process.stdout.write(
+      `${JSON.stringify({
+        runId,
+        alias: serverNowUtc,
+        offsetSeconds: Number(expiryOffset),
+        expiresAt: result.rows[0].expires_at,
+        databaseNow: databaseNow.rows[0].database_now,
+      })}\n`,
+    );
+  } else if (action === "cleanup") {
     const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     if (
       manifest.runId !== runId ||

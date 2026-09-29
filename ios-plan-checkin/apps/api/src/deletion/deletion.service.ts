@@ -49,6 +49,12 @@ export class DeletionService {
         "UPDATE devices SET notifications_enabled=false,apns_token_ciphertext=NULL,push_token_hash=NULL WHERE user_id=$1",
         [userId],
       );
+      await client.query(
+        `UPDATE web_push_subscriptions
+         SET enabled=false,revoked_at=coalesce(revoked_at,now()),updated_at=now()
+         WHERE user_id=$1 AND revoked_at IS NULL`,
+        [userId],
+      );
       const revoked = await client.query<{
         plan_id: string;
         friend_id: string;

@@ -1,0 +1,125 @@
+{
+  "capturedAt": "2026-09-29T08:36:47.203Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T08:36:44.848Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T08:36:44.927Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:36:45.054Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T08:36:45.273Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T08:36:45.385Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:36:45.495Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T08:36:45.598Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 22,
+      "at": "2026-09-29T08:36:45.713Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 5,
+      "at": "2026-09-29T08:36:45.821Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:36:45.937Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".bottom-link[href='/friends']",
+      "at": "2026-09-29T08:36:46.039Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-link[href='/friends']",
+      "at": "2026-09-29T08:36:46.165Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='friends'] .social-search",
+      "at": "2026-09-29T08:36:46.267Z"
+    },
+    {
+      "action": "type",
+      "selector": "#friend-username",
+      "characters": 22,
+      "at": "2026-09-29T08:36:46.382Z"
+    },
+    {
+      "action": "click",
+      "selector": ".social-search button[type='submit']",
+      "at": "2026-09-29T08:36:46.492Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".social-card",
+      "expectedText": "web_atdd_calendar_1310",
+      "at": "2026-09-29T08:36:46.594Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "search-result",
+      "at": "2026-09-29T08:36:46.614Z"
+    },
+    {
+      "action": "click",
+      "selector": ".social-card .social-person .secondary-button",
+      "at": "2026-09-29T08:36:46.619Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": "[role='status'].success-note",
+      "expectedText": "好友申请已发送",
+      "at": "2026-09-29T08:36:46.851Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "request-sent",
+      "at": "2026-09-29T08:36:46.893Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-link[href='/inbox']",
+      "at": "2026-09-29T08:36:46.917Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='inbox'] .inbox-toolbar",
+      "at": "2026-09-29T08:36:47.018Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "inbox-empty",
+      "at": "2026-09-29T08:36:47.152Z"
+    }
+  ]
+}

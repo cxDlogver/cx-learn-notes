@@ -1,0 +1,36 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001249" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1249"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_plan" },
+  { "action": "type", "selector": "#nickname", "text": "计划验收用户" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "type", "selector": "#plan-title", "text": "晨间散步" },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(1) input"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(3) input"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(5) input"
+  },
+  { "action": "type", "selector": "#plan-numeric-label", "text": "距离" },
+  { "action": "type", "selector": "#plan-numeric-unit", "text": "公里" },
+  { "action": "snapshot", "label": "fixed-form" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='plan-detail'] h1" }
+]

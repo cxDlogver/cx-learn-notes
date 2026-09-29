@@ -1,0 +1,50 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001296" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1296"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_retry" },
+  { "action": "type", "selector": "#nickname", "text": "重试验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "type", "selector": "#plan-title", "text": "网络重试计划" },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(2) input"
+  },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='plan-detail'] h1" },
+  { "action": "click", "selector": ".bottom-nav a[href='/today']" },
+  { "action": "wait-for", "selector": ".today-card .today-checkin button" },
+  { "action": "click", "selector": ".today-card .today-checkin button" },
+  { "action": "wait-for", "selector": ".checkin-panel form" },
+  {
+    "action": "type",
+    "selector": ".checkin-panel textarea",
+    "text": "网络重试后保存"
+  },
+  { "action": "network-offline" },
+  { "action": "click", "selector": ".checkin-panel button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".today-checkin [role='alert']",
+    "text": "提交结果未知"
+  },
+  { "action": "snapshot", "label": "unknown-offline" },
+  { "action": "network-online" },
+  { "action": "click", "selector": ".checkin-panel button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".today-checkin [role='status']",
+    "text": "记录已保存"
+  },
+  { "action": "snapshot", "label": "retry-saved" }
+]

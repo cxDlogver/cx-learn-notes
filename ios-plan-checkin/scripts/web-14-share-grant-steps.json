@@ -1,0 +1,57 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001318" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1318"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "type", "selector": "#plan-title", "text": "甲的晨间散步" },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-27"
+  },
+  { "action": "click", "selector": "#plan-weekdays .text-button" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='plan-detail'] h1" },
+  { "action": "click", "selector": ".plan-history .today-checkin button" },
+  { "action": "wait-for", "selector": ".plan-history .checkin-panel form" },
+  {
+    "action": "type",
+    "selector": ".plan-history textarea",
+    "text": "今天走了三公里"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-history .checkin-panel button[type='submit']"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-history .today-checkin [role='status']",
+    "text": "记录已保存"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-manager",
+    "text": "日历验收"
+  },
+  { "action": "select-option-index", "selector": "#share-friend", "index": 1 },
+  { "action": "click", "selector": ".share-selectors .secondary-button" },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-preview",
+    "text": "今天走了三公里"
+  },
+  { "action": "snapshot", "label": "share-preview" },
+  { "action": "click", "selector": ".share-preview .primary-button" },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-manager .success-note",
+    "text": "已授权这项计划"
+  },
+  { "action": "snapshot", "label": "share-granted" }
+]

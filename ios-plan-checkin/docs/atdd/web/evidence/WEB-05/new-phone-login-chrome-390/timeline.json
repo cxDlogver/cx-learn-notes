@@ -1,0 +1,40 @@
+{
+  "capturedAt": "2026-09-28T17:43:05.529Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T17:43:04.614Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T17:43:04.799Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:43:04.924Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T17:43:05.031Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T17:43:05.142Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:43:05.261Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T17:43:05.374Z"
+    }
+  ]
+}

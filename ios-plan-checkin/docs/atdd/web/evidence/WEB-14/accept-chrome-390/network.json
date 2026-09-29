@@ -1,0 +1,90 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:04.642Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "60b63ff1793fdaf43efc534c817c36d3c06c5069ccdaa153eef0e31cc3944e84",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:04.919Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "56caac00a6e559ad939e8904ae5dc3efdb713afb560a44cd084a7f1f687da9ef",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.268Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.283Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.332Z"
+  },
+  {
+    "path": "/api/v1/friends",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.472Z"
+  },
+  {
+    "path": "/api/v1/friend-requests",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.494Z"
+  },
+  {
+    "path": "/api/v1/friend-requests/a43891cc-ae6a-4b95-8065-73c84c1dc996/accept",
+    "method": "POST",
+    "operationKeySha256": "6127b4adb9440475887cbe68b92ec42de2dba9592998a2cfa204f527b4ee9a5f",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.681Z"
+  },
+  {
+    "path": "/api/v1/friends",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.692Z"
+  },
+  {
+    "path": "/api/v1/friend-requests",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.697Z"
+  },
+  {
+    "path": "/api/v1/me/inbox",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:05.779Z"
+  },
+  {
+    "path": "/api/v1/me/inbox/937c5816-1875-4ee9-bd5d-a999ccc57c8e/read",
+    "method": "POST",
+    "operationKeySha256": "40b49584e5f48f56a6c3cd8dc057fcb32d8f54060dd58de67df10abcd8863517",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:41:06.033Z"
+  }
+]

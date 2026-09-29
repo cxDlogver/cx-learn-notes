@@ -120,6 +120,21 @@ export class WebPushSubscriptionsController {
     private readonly notifications: NotificationsService,
   ) {}
 
+  @Get()
+  async status(
+    @Headers("authorization") bearer: string,
+    @Req() request: RequestLike,
+  ): Promise<ApiSuccess<WebPushSubscriptionDto>> {
+    const session = await this.auth.authenticateContext(bearer ?? "", "web");
+    return ok(
+      await this.notifications.getWebPushStatus(
+        session.userId,
+        session.deviceId,
+      ),
+      request,
+    );
+  }
+
   @Post()
   async register(
     @Headers("authorization") bearer: string,

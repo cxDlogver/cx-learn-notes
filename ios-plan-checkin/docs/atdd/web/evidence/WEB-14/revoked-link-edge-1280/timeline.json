@@ -1,0 +1,46 @@
+{
+  "capturedAt": "2026-09-29T09:07:23.195Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T09:07:22.316Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T09:07:22.428Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T09:07:22.562Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T09:07:22.674Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T09:07:22.784Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T09:07:22.895Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": "[data-page-key='shared-plan-detail'] [role='alert']",
+      "expectedText": "无法查看这项计划",
+      "at": "2026-09-29T09:07:23.104Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "revoked-link-denied",
+      "at": "2026-09-29T09:07:23.133Z"
+    }
+  ]
+}

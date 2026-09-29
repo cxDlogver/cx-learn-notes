@@ -1,0 +1,177 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T07:19:58.887Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T07:19:59.011Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T07:19:59.113Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T07:19:59.223Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T07:19:59.334Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-29T07:19:59.438Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 19,
+    "at": "2026-09-29T07:19:59.551Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 4,
+    "at": "2026-09-29T07:19:59.660Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T07:19:59.766Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T07:19:59.868Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T07:20:00.006Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-29T07:20:00.110Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 6,
+    "at": "2026-09-29T07:20:00.219Z"
+  },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-27",
+    "at": "2026-09-29T07:20:00.325Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .text-button",
+    "at": "2026-09-29T07:20:00.438Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-29T07:20:00.545Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1",
+    "at": "2026-09-29T07:20:00.648Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".plan-statistics .statistics-grid",
+    "at": "2026-09-29T07:20:00.754Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "statistics-before",
+    "at": "2026-09-29T07:20:00.922Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-history .today-checkin button",
+    "at": "2026-09-29T07:20:00.938Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".plan-history .checkin-panel form",
+    "at": "2026-09-29T07:20:01.045Z"
+  },
+  {
+    "action": "type",
+    "selector": ".plan-history textarea",
+    "characters": 6,
+    "at": "2026-09-29T07:20:01.168Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-history .checkin-panel button[type='submit']",
+    "at": "2026-09-29T07:20:01.281Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-history .today-checkin [role='status']",
+    "expectedText": "记录已保存",
+    "at": "2026-09-29T07:20:01.385Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-statistics .statistics-grid > div:nth-child(3) dd",
+    "expectedText": "1",
+    "at": "2026-09-29T07:20:01.502Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-statistics-heading button",
+    "at": "2026-09-29T07:20:01.508Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-statistics .statistics-grid > div:nth-child(3) dd",
+    "expectedText": "1",
+    "at": "2026-09-29T07:20:01.624Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "statistics-after",
+    "at": "2026-09-29T07:20:01.690Z"
+  },
+  {
+    "action": "click",
+    "selector": ".side-link[href='/calendar']",
+    "at": "2026-09-29T07:20:01.708Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='calendar-month'] .calendar-grid",
+    "at": "2026-09-29T07:20:01.817Z"
+  },
+  {
+    "action": "click",
+    "selector": ".calendar-date[aria-label^='2026-09-28']",
+    "at": "2026-09-29T07:20:01.988Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='calendar-day'] .calendar-entry-list",
+    "at": "2026-09-29T07:20:02.093Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "calendar-recorded",
+    "at": "2026-09-29T07:20:02.263Z"
+  }
+]

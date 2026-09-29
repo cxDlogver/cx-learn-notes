@@ -1,0 +1,5487 @@
+{
+  "title": "计划打卡 Web V1 任务与验收实时台账",
+  "schemaVersion": "1.0.0",
+  "state": "IN_PROGRESS",
+  "verificationBuildCommit": null,
+  "updatedAt": "2026-09-28T17:12:49.776350Z",
+  "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
+  "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
+  "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
+  "sourceDigest": {
+    "webPrd": "cb401befa77eb7543906643857ca59d9cf0ffcfc7742d4f02c661702ff9c2178",
+    "webTechnical": "3f1f8d65f5242fd05ba5fe286bb3ce09c915e9d7ecba8682b9683652839fabcf",
+    "iosPrd": "75f1f4b1878dc8c9b9c08e70a7391f67ca2145ef7f458b605833ed9cd43a46a7",
+    "iosAcceptance": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
+    "iosPen": "b1c94dbc01d577073a2c54ffa57f6953fbc4c6b07855fe4b9d829bce90479939",
+    "matrix": "c746b0469d3bf1af5951acccb246f7af8504a141aa5f2274867b1cfdc0d2b8c4"
+  },
+  "allowedTaskStatuses": [
+    "NOT_STARTED",
+    "IN_PROGRESS",
+    "BLOCKED",
+    "DONE"
+  ],
+  "allowedImplementationStatuses": [
+    "NOT_STARTED",
+    "IN_PROGRESS",
+    "IMPLEMENTED",
+    "STALE"
+  ],
+  "allowedVerificationStatuses": [
+    "NOT_RUN",
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "STALE"
+  ],
+  "evidenceRoot": "evidence",
+  "tasks": [
+    {
+      "id": "WEB-01",
+      "title": "源码与契约核对。",
+      "dependencies": [],
+      "scope": "依赖：无。逐项比对控制器、`packages/contracts/src/routes.ts`、OpenAPI、数据库迁移、Web PRD/技术方案与 136 项用例，建立差异清单和兼容迁移顺序；核对实际路由、现有 API 是否可复用、iOS 旧接口兼容。产物：契约差异记录、调整后的接口清单、技术决策、变更影响的用例 ID。完成证据：实际文件行/commit、契约检查输出、评审结论；未决冲突不得带入编码。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T11:26:46Z",
+      "completedAt": "2026-09-28T11:39:56Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "已增加 Web 导出路由兼容入口，保留旧路径；补齐 OpenAPI 契约和静态路由审计；完成源码/迁移缺口记录。",
+        "changedPaths": [
+          "apps/api/src/exports/exports.controller.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/web-contract-audit.mjs",
+          "docs/API-兼容变更记录.md",
+          "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
+        ],
+        "commit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+        "checks": [
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/contracts.txt",
+            "sha256": "e3d2ab94f4e51c3a00b0bfa3945b5be45ffd587ec3ea63fd109f18ab0b025ddc"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/compat.txt",
+            "sha256": "333f05a5cea284f9ae4969d21beabca41e611f6384e84a0a86567e6f3800f15a"
+          },
+          {
+            "command": "node scripts/web-contract-audit.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/route-audit.txt",
+            "sha256": "57a57a97ee43fbf0d932943dc9a4605c7cbab974387b94cfc522536e0f89127f"
+          },
+          {
+            "command": "node scripts/data-export-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/export-smoke.txt",
+            "sha256": "e7ee5424b3d1b62ae412dc2f8ba0b84063c46e61b41564f14068182a0a68fb62"
+          },
+          {
+            "command": "tsc --noEmit -p packages/contracts/tsconfig.json && tsc --noEmit -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/typecheck.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "node scripts/security-static.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/security.txt",
+            "sha256": "37fb52abe2e403ecdab5dabaa7d17e441e1f0ad184b589d61c900504db98495f"
+          },
+          {
+            "command": "prettier --check changed WEB-01 files",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-01/format.txt",
+            "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-01/checks.json",
+          "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
+        ]
+      },
+      "verification": {
+        "summary": "源码、OpenAPI、兼容和导出冒烟已通过；无 Web 客户端，浏览器 ATDD 尚未执行。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-01/checks.json"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T11:39:56Z",
+        "decision": "WEB-01 源码/契约核对、兼容代码、检查和差异记录通过；不包含浏览器验收。"
+      },
+      "history": [
+        {
+          "at": "2026-09-28T11:26:46Z",
+          "type": "STARTED",
+          "summary": "开始核对控制器、契约、OpenAPI、迁移和 Web 验收差异；浏览器用例仍未执行。"
+        },
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "type": "DEVELOPMENT_CHECKED",
+          "summary": "导出新旧路由与 OpenAPI 对齐，7 项开发检查退出 0；浏览器用例仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        },
+        {
+          "at": "2026-09-28T11:39:56Z",
+          "type": "DONE",
+          "summary": "代码已提交，七项开发检查通过；本任务不拥有浏览器用例，相关业务用例保持 NOT_RUN。",
+          "commit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-02",
+      "title": "实时证据与浏览器验收基础设施。",
+      "dependencies": [
+        "WEB-01"
+      ],
+      "scope": "依赖：WEB-01。实现隔离测试账号/时钟/数据种子、受控短信/对象存储/Push、浏览器运行器、截图与 DOM/无障碍树采集、F/V/N 结果写入、schema/哈希/清单校验、Markdown/JSON 一致性检查和 CI 保留策略。产物：`scripts` 或 `apps/web` 的测试工具、`evidence/web/` 目录规则与首个真实工具自测结果。完成证据：运行命令、生成的合法样本结果、无效证据被拒绝的记录；不把工具样本标成业务 PASS。",
+      "ownedCaseIds": [],
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T11:41:32Z",
+      "completedAt": null,
+      "owner": "Codex",
+      "implementation": {
+        "summary": "校验、人工结果同步、Chrome/Edge 交互采集和本地 SHA 归档已实现；CI 工具校验已配置。隔离 A/B/C/D、六独立 Web 会话、F/FD/W/O 种子/清理、冻结时钟与数据库到期边界探针已实现。候选变更会将旧 PASS 标 STALE 并重开下游任务。已留存独立合成 FAIL 结果，受控本地对象签名读写/清理和 Web Push 供应端桩均通过。产品浏览器矩阵与外部 artifact 保留待完成，上传被自动审批拒绝；正式 136 项仍 NOT_RUN。",
+        "changedPaths": [
+          "docs/atdd/web/validate_result.py",
+          "docs/atdd/web/test_validate_result.py",
+          "docs/atdd/web/requirements.txt",
+          "docs/atdd/web/check_execution_progress.py",
+          "docs/atdd/web/WEB-02-证据工具进展.md",
+          "scripts/web-browser-capture.mjs",
+          "docs/atdd/web/record_result.py",
+          "docs/atdd/web/test_record_result.py",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest.json",
+          "docs/atdd/web/archive_evidence.py",
+          ".gitignore",
+          "package.json",
+          "../.github/workflows/ios-plan-checkin.yml",
+          "scripts/web-atdd-fixture.mjs",
+          "scripts/web-atdd-fixture-session-smoke.mjs",
+          "scripts/run-web-atdd-fixture-smoke.ps1",
+          "scripts/web-atdd-clock.mjs",
+          "scripts/web-atdd-clock-selftest.mjs",
+          "scripts/web-02-seed-evidence.mjs",
+          "docs/atdd/web/mark_stale.py",
+          "docs/atdd/web/test_mark_stale.py",
+          "scripts/web-02-stale-evidence.mjs",
+          "docs/atdd/web/generate_tool_sample.py",
+          "docs/atdd/web/evidence/WEB-02/tool-sample",
+          "scripts/web-atdd-object-provider.mjs",
+          "scripts/web-atdd-push-provider.mjs",
+          "scripts/web-02-provider-evidence.mjs",
+          "infra/compose.yaml"
+        ],
+        "commit": null,
+        "checks": [
+          {
+            "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/tool-selftest.txt",
+            "sha256": "561e0ba1a71686b93df7a32505beca69b17bd0bc03acc9c297c7720d50bacdba"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/ledger.txt",
+            "sha256": "0eeda650b0c45822a8cff7a8f41baec9a05c9337ad77ee7a8403a881916da990"
+          },
+          {
+            "command": "prettier --check Web plan, ledger and WEB-02 progress",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/format.txt",
+            "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+          },
+          {
+            "command": "ast.parse on 3 Web evidence Python files",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/python-syntax.txt",
+            "sha256": "c5a12597b9c9a60f249ea758ed9cd657c5080785fe8052e94f6761e2c8cfa17b"
+          },
+          {
+            "command": "node --check scripts/web-browser-capture.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/browser-syntax.txt",
+            "sha256": "fd735ee7d4a61dcde76ac285bd60c3ebb734435c236b383a8a0ecdf20bb07ac4"
+          },
+          {
+            "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/record-tool-selftest.txt",
+            "sha256": "f5097c7348a05a956682cb705a4be40dcc297df31c21b8a52c7c0bab2b590e37"
+          },
+          {
+            "command": "node --check scripts/web-browser-capture.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/record-browser-syntax.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "python docs/atdd/web/archive_evidence.py --out docs/atdd/web/artifacts/tool-selftest-20260928.zip; verify ZIP entry SHA-256",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
+            "sha256": "b24b2776687f6a69ffa3f04a37db76bd2fc74c9afe6d5766ea10e5d148526ee1"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-atdd-fixture-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/fixture-selftest.txt",
+            "sha256": "64098e4b182fd271c36a1afd991393967321ab913aaa3cf955e9bbd562277e1a"
+          },
+          {
+            "command": "node scripts/web-atdd-clock-selftest.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/clock-run.txt",
+            "sha256": "9f418b137986560c6691d8c9d46617052d53d06cc6c8c92e98065ee508c1886b"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-clock.mjs scripts/web-atdd-clock-selftest.mjs scripts/web-browser-capture.mjs scripts/web-02-seed-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/seed-lint.txt",
+            "sha256": "f7812321a3ea8b0698c29cfcbc7fed802d713d70f8904117b2f2056a885c1514"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-clock.mjs scripts/web-atdd-clock-selftest.mjs scripts/web-browser-capture.mjs scripts/web-02-seed-evidence.mjs docs/atdd/web/WEB-02-证据工具进展.md docs/任务执行计划-计划打卡-Web-v1.md docs/atdd/web/execution-progress.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/seed-format.txt",
+            "sha256": "3696fc06ce7bc70d596f136d82d816824287d7a71a4b0bea89f1f1da441e298d"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/seed-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          },
+          {
+            "command": "python -m unittest discover -s docs/atdd/web -p test_*.py -v",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/stale-tests.txt",
+            "sha256": "ece9ac1fd01ea677179f003887b68de892138e78d8618297a0596f2d81658891"
+          },
+          {
+            "command": "python docs/atdd/web/mark_stale.py --commit 51cdc1ea07c8abc3eb531a8dfb0209088a38a96c --reason tool-selftest --dry-run",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/stale-dry-run.txt",
+            "sha256": "79ba0ae1505fa0236ec20cf83e6e6bada387944c1814a3dcea805bf8e2475108"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-02/stale-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-02/checks.json",
+          "docs/atdd/web/WEB-02-证据工具进展.md",
+          "docs/atdd/web/evidence/WEB-02/browser-captures.json",
+          "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
+          "docs/atdd/web/evidence/WEB-02/seed-checks.json",
+          "docs/atdd/web/evidence/WEB-02/clock-selftest.json",
+          "docs/atdd/web/evidence/WEB-02/stale-checks.json",
+          "docs/atdd/web/evidence/WEB-02/tool-sample/sample-check.json",
+          "docs/atdd/web/evidence/WEB-02/provider-checks.json"
+        ]
+      },
+      "verification": {
+        "summary": "15 项合成工具测试、Chrome/Edge 探针、交互及本地归档哈希通过；临时 PostgreSQL 17 六会话真实 HTTP、A3 数据库到期 401/恢复 200、隔离 Node/Chrome 冻结时钟通过。合成 FAIL result.json 的样本 JSON/Markdown 已同步；对象受控源站预检、签名读写/无签名拒绝/清理和 Push 201/202/410/503 均有原始输出。正式 136 项 NOT_RUN，CI 外部证据上传未获自动审批；这些均不是业务验收。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-02/tool-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/browser-captures.json",
+          "docs/atdd/web/evidence/WEB-02/browser-selftest-viewport/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/browser-selftest-edge/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/record-tool-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-before.png",
+          "docs/atdd/web/evidence/WEB-02/browser-action-selftest/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/browser-action-files.json",
+          "docs/atdd/web/evidence/WEB-02/archive-selftest.json",
+          "docs/atdd/web/evidence/WEB-02/fixture-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/timeline.json",
+          "docs/atdd/web/evidence/WEB-02/browser-clock-selftest/screen-after.png",
+          "docs/atdd/web/evidence/WEB-02/stale-tests.txt",
+          "docs/atdd/web/evidence/WEB-02/stale-dry-run.txt",
+          "docs/atdd/web/evidence/WEB-02/tool-sample/sample-check.json",
+          "docs/atdd/web/evidence/WEB-02/provider-checks.json",
+          "docs/atdd/web/evidence/WEB-02/expiry-selftest.txt",
+          "docs/atdd/web/evidence/WEB-02/object-provider.txt",
+          "docs/atdd/web/evidence/WEB-02/push-provider.txt"
+        ]
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": [
+        {
+          "at": "2026-09-28T11:41:32Z",
+          "type": "STARTED",
+          "summary": "先实现 Web 验收证据包校验，再接入真实浏览器和隔离依赖。"
+        },
+        {
+          "at": "2026-09-28T11:45:29Z",
+          "type": "PARTIAL_TOOL_CHECKED",
+          "summary": "结果校验器和 8 项合成自测通过；真实浏览器采集与外部桩待做。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/checks.json"
+        },
+        {
+          "at": "2026-09-28T11:53:26Z",
+          "type": "BROWSER_TOOL_CHECKED",
+          "summary": "真实 Chrome/Edge 采集工具通过合成页探针，截图/DOM/AX/布局 SHA 已记录；业务 ATDD 未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/browser-captures.json"
+        },
+        {
+          "at": "2026-09-28T12:26:05Z",
+          "type": "RESULT_WRITER_AND_ACTIONS_CHECKED",
+          "summary": "录入器拒绝伪造 PASS/危险路径，Chrome 合成页输入与点击截图/DOM 实测；业务 ATDD 未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/browser-action-files.json"
+        },
+        {
+          "at": "2026-09-28T13:22:42Z",
+          "type": "LOCAL_ARCHIVE_AND_CI_CHECK_CONFIGURED",
+          "summary": "本地证据 ZIP 逐文件哈希通过，CI 工具自测/台账校验已配置；外部 artifact 上传被自动审批拒绝。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/archive-selftest.json"
+        },
+        {
+          "at": "2026-09-28T14:03:00Z",
+          "type": "ISOLATED_FIXTURE_STARTED",
+          "summary": "依据 ATDD §1.4 开始 A/B/C/D、A1/A2/A3 会话、固定业务日期及 F/FD/W/O 种子和清理工具；业务用例仍未执行。"
+        },
+        {
+          "at": "2026-09-28T14:14:00Z",
+          "type": "ISOLATED_FIXTURE_AND_CLOCK_CHECKED",
+          "summary": "两轮 A/B/C/D 种子/清理、六 Cookie 真实会话与 Node/Chrome 同时钟探针通过；13 个原始文件哈希匹配，业务验收未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/seed-checks.json"
+        },
+        {
+          "at": "2026-09-28T14:23:00Z",
+          "type": "STALE_PROPAGATION_CHECKED",
+          "summary": "15 项合成工具测试及候选只读预览通过；PASS 失效会重开任务并保留原证据，136 项业务仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/stale-checks.json"
+        },
+        {
+          "at": "2026-09-28T16:16:00Z",
+          "type": "PERSISTENT_TOOL_SAMPLE_CHECKED",
+          "summary": "合成 FAIL result.json 经正式写入器和校验器生成；独立 JSON/Markdown 已同步，正式 136 项保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/tool-sample/sample-check.json"
+        },
+        {
+          "at": "2026-09-28T16:32:00Z",
+          "type": "CONTROLLED_PROVIDERS_AND_DB_EXPIRY_CHECKED",
+          "summary": "隔离 PostgreSQL 到期/恢复、对象签名读写与 CORS 拒绝、Push 供应端状态链路通过；产品浏览器 F/V/N 未运行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-02/provider-checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-03",
+      "title": "共享数据兼容迁移。",
+      "dependencies": [
+        "WEB-01"
+      ],
+      "scope": "依赖：WEB-01。为渠道通知偏好、社交收件箱/已读、Web Push 订阅、数值配置版本和一次性结果附件补充向前兼容的 schema/SQL，保留移动端原有字段语义。产物：`db/migrations`、数据字典、回填和回滚说明。关联：PLAN、CHECK、SOCIAL、NOTIFY、DATA。完成证据：空库及旧库迁移/回滚、约束与历史值核对、SQL/DB 记录。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T12:31:22Z",
+      "completedAt": "2026-09-28T12:46:05Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "0012 向前兼容迁移及约束已编码；PGlite 空库/旧库、PostgreSQL 17 旧库事务回滚和备份恢复均通过；新 API/Worker 由后续任务接入。",
+        "changedPaths": [
+          "db/migrations/0012_web_compatibility.sql",
+          "db/migrations/manifest.json",
+          "scripts/migrations-smoke.mjs",
+          "scripts/web-migrations-smoke.mjs",
+          "scripts/sql-static-check.mjs",
+          "package.json",
+          "docs/atdd/web/WEB-03-数据迁移与回滚.md"
+        ],
+        "commit": "f83bd068b928e8f86948c40aba69bbd847d49ae4",
+        "checks": [
+          {
+            "command": "node scripts/sql-static-check.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/sql-static.txt",
+            "sha256": "fc9351b5e723168609b964706708d558c4be947afc3fb5c2fdfee2361241c23f"
+          },
+          {
+            "command": "node scripts/migrations-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/empty-db.txt",
+            "sha256": "115f463d952dd2b876d1da3cfe9f12456d2fba23480a42aa681704f646f2ff45"
+          },
+          {
+            "command": "node scripts/web-migrations-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/legacy-db-and-rollback.txt",
+            "sha256": "71889f6c417968130df698d18ce55b72aad6bc39502e96f90651ef043eac734c"
+          },
+          {
+            "command": "node scripts/migrate.mjs --plan",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/migration-plan.txt",
+            "sha256": "29a4b263202d21fda010bdc0f6cb2c02f13f07b3e4ab4f1cb258e8d9f57e3ac7"
+          },
+          {
+            "command": "PostgreSQL 17 old-data migration, transactional rollback, pg_dump/pg_restore and aggregate compare",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-03/postgres-restore.json",
+            "sha256": "41e27cb4beadec3d1bb471d60f787f274655bf069489d8758dc5244ab8c45331"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-03/checks.json",
+          "docs/atdd/web/WEB-03-数据迁移与回滚.md",
+          "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        ]
+      },
+      "verification": {
+        "summary": "PGlite 空库/旧库与隔离 PostgreSQL 17 旧库迁移、事务回滚、备份/恢复及约束均通过；原库/恢复库 41|2|1|1|1|1|1 一致。本数据迁移任务不主拥有浏览器用例，136 项仍 NOT_RUN。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-03/sql-static.txt",
+          "docs/atdd/web/evidence/WEB-03/empty-db.txt",
+          "docs/atdd/web/evidence/WEB-03/legacy-db-and-rollback.txt",
+          "docs/atdd/web/evidence/WEB-03/migration-plan.txt",
+          "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T12:46:05Z",
+        "decision": "WEB-03 数据结构、旧行回填、事务回滚、隔离 PostgreSQL 备份恢复与证据核对通过；API/Worker 和浏览器业务验收留给后续任务。"
+      },
+      "history": [
+        {
+          "at": "2026-09-28T12:31:22Z",
+          "type": "STARTED",
+          "summary": "核对 0001～0011 迁移与 Web 数据设计，开始向前兼容扩展；业务浏览器用例仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-28T12:36:56Z",
+          "type": "MIGRATION_LOCAL_CHECKED",
+          "summary": "空库/旧库及事务回滚、兼容回填和约束的本地 PGlite 检查通过；真实 PostgreSQL 环境待验。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-03/checks.json"
+        },
+        {
+          "at": "2026-09-28T12:42:58Z",
+          "type": "POSTGRES_RESTORE_CHECKED",
+          "summary": "隔离 PostgreSQL 17 旧库迁移/回滚/备份/恢复均通过，原库和恢复库七项汇总相同；未执行浏览器业务用例。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-03/postgres-restore.json"
+        },
+        {
+          "at": "2026-09-28T12:46:05Z",
+          "type": "DONE",
+          "summary": "代码与数据库证据已提交，WEB-03 checklist 勾选；业务用例未执行。",
+          "commit": "f83bd068b928e8f86948c40aba69bbd847d49ae4",
+          "evidencePath": "docs/atdd/web/evidence/WEB-03/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-04",
+      "title": "Web 会话与注册 API。",
+      "dependencies": [
+        "WEB-01",
+        "WEB-03"
+      ],
+      "scope": "依赖：WEB-01、WEB-03。实现公开注册、短信、15 分钟 access 自动续期、30 天 refresh Cookie、CSRF/Origin、多标签轮换、退出及账号状态，移动端 JSON refresh 兼容。产物：`apps/api/src/auth`、契约和安全测试。关联：AUTH、SEC。完成证据：正常、到期、重放、换号/退出、限流的请求/响应和日志，不记录秘密。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T12:48:35Z",
+      "completedAt": "2026-09-28T13:15:32Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "新增 Web Cookie 验证/会话/续期/退出、Web audience、Origin/CSRF 与渠道隔离；旧移动 JSON 会话保持兼容。隔离服务与真实 HTTP 冒烟通过，浏览器客户端尚未验收。",
+        "changedPaths": [
+          "apps/api/src/auth/auth.controller.ts",
+          "apps/api/src/auth/auth.service.ts",
+          "apps/api/src/auth/web-session.ts",
+          "apps/api/src/config.ts",
+          "apps/api/src/rate-limit.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs",
+          "scripts/web-auth-smoke.mjs",
+          "scripts/web-auth-http-smoke.mjs",
+          ".env.example",
+          "package.json",
+          "docs/atdd/web/WEB-04-Web会话与注册API.md",
+          "docs/atdd/web/evidence/WEB-04/checks.json"
+        ],
+        "commit": "ec1777612843b36d8f1f5579dc5464c4f546f0fa",
+        "checks": [
+          {
+            "command": "contracts and API typecheck",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/contracts-typecheck.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "API typecheck",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/api-typecheck.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "OpenAPI check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/openapi.txt",
+            "sha256": "3855e1fd6887e2ef66d2ce4e2e7aa62d37da55de901341e243667d022991a39a"
+          },
+          {
+            "command": "mobile compatibility",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/compat.txt",
+            "sha256": "bd890f2f1b3d3d8a2c634dc92d81eff24a27ab6b774f3ed4890f0cbaceaf1392"
+          },
+          {
+            "command": "Web route audit",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/routes.txt",
+            "sha256": "5d6bf13934ddb3355d3742de9bcfa1fb03decf7b7fa0043714fa3192c45ee9f6"
+          },
+          {
+            "command": "security static",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/security.txt",
+            "sha256": "29a9af6367b447f34e615d6b2a11a5183a8c8fb214661f8eb2cbb968f5c941c5"
+          },
+          {
+            "command": "API compile",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/api-compile.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "mobile auth smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/mobile-auth.txt",
+            "sha256": "f4749f400659ba75ae33a41a4575fa2f02aec39a6f7fe31c67eb65cc919d8d66"
+          },
+          {
+            "command": "Web auth service smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-service.txt",
+            "sha256": "2886d4f75e868cb952780bf8ab4c3e793b32085dfbc1d67a18fa418c331fc354"
+          },
+          {
+            "command": "Web auth real HTTP smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-http.txt",
+            "sha256": "6a70f5d7c8baab2b043dce1137c08cd4f24b0d1b9e9476c030029da54f808301"
+          },
+          {
+            "command": "phone-change and profile compatibility smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/profile-phone-change.txt",
+            "sha256": "04373c71e6ccab3a50b1f105ec5991d5151ceb9a5e929c6a5e345fc3cec51261"
+          },
+          {
+            "command": "current Web auth source lint",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/lint-final.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "current API compile",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/api-compile-final.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "command": "current Web auth service smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-service-final.txt",
+            "sha256": "2886d4f75e868cb952780bf8ab4c3e793b32085dfbc1d67a18fa418c331fc354"
+          },
+          {
+            "command": "current Web auth real HTTP smoke",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt",
+            "sha256": "1b84bf36ff0389e42ded239ff96fd487f2da0aa55f06f867d8ee5991fe6210b6"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-04/checks.json",
+          "docs/atdd/web/evidence/WEB-04/web-auth-http.txt",
+          "docs/atdd/web/WEB-04-Web会话与注册API.md"
+        ]
+      },
+      "verification": {
+        "summary": "服务/PGlite 与两次隔离 PostgreSQL 真实 HTTP 复测通过：Cookie/Origin/CSRF、15m/30d、重放、会话恢复/退出、Web/iOS 隔离；移动认证及换号回归、限流策略映射、契约兼容、lint/typecheck/security 均通过。浏览器页面验收归后续任务，136 项仍 NOT_RUN。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-04/web-auth-service.txt",
+          "docs/atdd/web/evidence/WEB-04/web-auth-http.txt",
+          "docs/atdd/web/evidence/WEB-04/mobile-auth.txt",
+          "docs/atdd/web/evidence/WEB-04/compat.txt",
+          "docs/atdd/web/evidence/WEB-04/profile-phone-change.txt",
+          "docs/atdd/web/evidence/WEB-04/web-auth-service-final.txt",
+          "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T13:15:32Z",
+        "decision": "WEB-04 API 范围、当前代码 HTTP/服务证据和移动兼容通过；页面与浏览器 AUTH/SEC F/V/N 留给 WEB-05/12/20。"
+      },
+      "history": [
+        {
+          "at": "2026-09-28T12:48:35Z",
+          "type": "STARTED",
+          "summary": "在移动 JSON 会话兼容基础上开始 Web Cookie/CSRF/audience 会话 API；业务浏览器用例未执行。"
+        },
+        {
+          "at": "2026-09-28T13:07:21Z",
+          "type": "WEB_AUTH_API_CHECKED",
+          "summary": "Web Cookie/CSRF/轮换与旧移动接口服务测试、隔离 PostgreSQL 真实 HTTP 测试通过；浏览器业务验收未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/checks.json"
+        },
+        {
+          "at": "2026-09-28T13:10:18Z",
+          "type": "HTTP_AND_DOCUMENTATION_RECORDED",
+          "summary": "真实 HTTP 成功/拒绝/重放链路及移动换号兼容输出已逐项写入详细 Markdown、检查 JSON 和台账；业务 F/V/N 未执行。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/web-auth-http.txt"
+        },
+        {
+          "at": "2026-09-28T13:13:10Z",
+          "type": "FINAL_SOURCE_RETESTED",
+          "summary": "修复测试脚本 Node 全局导入后，源码 lint 与当前构建服务/隔离 PostgreSQL HTTP 复验均通过。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/web-auth-http-final.txt"
+        },
+        {
+          "at": "2026-09-28T13:15:32Z",
+          "type": "DONE",
+          "summary": "Web 会话 API 代码与证据已提交并复核，checklist 勾选；浏览器业务用例尚未执行。",
+          "commit": "ec1777612843b36d8f1f5579dc5464c4f546f0fa",
+          "evidencePath": "docs/atdd/web/evidence/WEB-04/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-05",
+      "title": "SPA 骨架与登录。",
+      "dependencies": [
+        "WEB-02",
+        "WEB-04"
+      ],
+      "scope": "依赖：WEB-02、WEB-04。建立 `apps/web` React + TypeScript 构建、同站点 API 客户端、路由/深链、会话恢复、登录/验证码/首次资料及桌面/手机导航；根 `check`/CI 纳入 Web。主验收：`WEB-AUTH-01～12`。完成证据：受控桌面和手机浏览器逐例结果、截图/DOM、Cookie/网络证据、构建与刷新深链记录。",
+      "ownedCaseIds": [
+        "WEB-AUTH-01",
+        "WEB-AUTH-02",
+        "WEB-AUTH-03",
+        "WEB-AUTH-04",
+        "WEB-AUTH-05",
+        "WEB-AUTH-06",
+        "WEB-AUTH-07",
+        "WEB-AUTH-08",
+        "WEB-AUTH-09",
+        "WEB-AUTH-10",
+        "WEB-AUTH-11",
+        "WEB-AUTH-12"
+      ],
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T16:38:00Z",
+      "completedAt": null,
+      "owner": "Codex",
+      "implementation": {
+        "summary": "开始 React + TypeScript SPA、Web 会话、首次资料和响应式导航。WEB-02 仍未完成，代码可先开发但不得提前勾选或签发 AUTH PASS。",
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": "12 项 AUTH 仍 NOT_RUN；待产品页面、受控浏览器和原始证据。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": [
+        {
+          "at": "2026-09-28T16:38:00Z",
+          "type": "STARTED_WITH_OPEN_EVIDENCE_DEPENDENCY",
+          "summary": "WEB-04 完成，WEB-02 受控测试工具可用但正式浏览器矩阵与 CI 外部保留未完成；先做可逆 Web 客户端代码，不签发业务 PASS。"
+        }
+      ]
+    },
+    {
+      "id": "WEB-06",
+      "title": "计划、分组与数值项服务端。",
+      "dependencies": [
+        "WEB-01",
+        "WEB-03",
+        "WEB-04"
+      ],
+      "scope": "依赖：WEB-01、WEB-03、WEB-04。完成三类计划、规则版本、计划时区、部分周口径、暂停/归档/删除、每计划最多一个数值项及历史单位快照，更新领域包/契约/API。关联：PLAN、STAT。完成证据：领域与数据库边界测试、历史规则/单位未被重写的前后快照和 API 证据。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T13:29:00Z",
+      "completedAt": "2026-09-28T13:56:00Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "三类计划可配置一个数值项；POST/PATCH 版本追加、计划时区次日生效、历史数值/名称/单位/版本快照不改写；部分周统计口径已验证。",
+        "changedPaths": [
+          "apps/api/src/plans/plans.service.ts",
+          "apps/api/src/plans/plans.controller.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/domain/test/statistics.test.mjs",
+          "scripts/plans-smoke.mjs",
+          "scripts/web-plans-http-smoke.mjs",
+          "docs/atdd/web/WEB-06-计划数值项与部分周.md"
+        ],
+        "commit": "a389d52cae36ef7e3070eccc30a49db38339bcc2",
+        "checks": [
+          {
+            "command": "node node_modules/typescript/bin/tsc --noEmit -p packages/contracts/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/contracts-typecheck.txt",
+            "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/domain-build.txt",
+            "sha256": "68d9d171a782a55640fcf5183be4272f1e9d0e9cc23cc0851536deef239f9fc8"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/api-build.txt",
+            "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+          },
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/openapi.txt",
+            "sha256": "1ddc2f85b0e3628249e1b3592f7cef2c4ead087beed514c713579a3e18830e9a"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/compat.txt",
+            "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+          },
+          {
+            "command": "node scripts/plans-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/plans-smoke.txt",
+            "sha256": "62f74575d1ddd358513fc4570d6497692a41ae05f5e77ccee56a94df6ff38100"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-plans-http-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/plans-http.txt",
+            "sha256": "f4b7646b4479a8274f4680370e943a9586bf74c776b3c4790b07b0cf10abd4ab"
+          },
+          {
+            "command": "node --test packages/domain/test/statistics.test.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/statistics.txt",
+            "sha256": "de04e4f91ea588afba252494301dd81252a0b9134f92983715adfb1120e8559b"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js apps/api/src/plans/plans.service.ts apps/api/src/plans/plans.controller.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/plans-smoke.mjs scripts/web-plans-http-smoke.mjs packages/domain/test/statistics.test.mjs scripts/web-06-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/lint.txt",
+            "sha256": "c7c84a6196a50391875ae7a73b120ee4437d1e4a625bbc0acf4b3cd447d67831"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check apps/api/src/plans/plans.service.ts apps/api/src/plans/plans.controller.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/plans-smoke.mjs scripts/web-plans-http-smoke.mjs packages/domain/test/statistics.test.mjs scripts/web-06-evidence.mjs docs/任务执行计划-计划打卡-Web-v1.md docs/atdd/web/execution-progress.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/format.txt",
+            "sha256": "0018cb0ab1fe1f566180220bf1352f42dc5d2f94f97c45f65083848251f8e71c"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-06/progress-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-06/checks.json",
+          "docs/atdd/web/WEB-06-计划数值项与部分周.md",
+          "docs/API-兼容变更记录.md"
+        ]
+      },
+      "verification": {
+        "summary": "11 项源码、契约、PGlite、隔离 PostgreSQL 17 真实 HTTP、固定时钟部分周与台账检查全部通过；提交 Git blob 中 11 个原始输出 SHA 均匹配。产品浏览器 F/V/N 未执行，136 项仍 NOT_RUN。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-06/plans-smoke.txt",
+          "docs/atdd/web/evidence/WEB-06/plans-http.txt",
+          "docs/atdd/web/evidence/WEB-06/statistics.txt"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T13:56:00Z",
+        "decision": "WEB-06 服务端范围与历史不改写、部分周口径、真实 API 证据齐备；记录按日期选版本与浏览器 F/V/N 留给 WEB-08/07/11/21。"
+      },
+      "history": [
+        {
+          "at": "2026-09-28T13:29:00Z",
+          "type": "STARTED",
+          "summary": "计划服务数值项版本接入与部分周口径核验开始；浏览器业务用例尚未执行。"
+        },
+        {
+          "at": "2026-09-28T13:56:00Z",
+          "type": "DONE",
+          "summary": "11 项检查及提交后 SHA 复核通过，WEB-06 checklist 勾选；136 项浏览器业务用例未执行。",
+          "commit": "a389d52cae36ef7e3070eccc30a49db38339bcc2",
+          "evidencePath": "docs/atdd/web/evidence/WEB-06/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-07",
+      "title": "计划与分组页面。",
+      "dependencies": [
+        "WEB-05",
+        "WEB-06"
+      ],
+      "scope": "依赖：WEB-05、WEB-06。实现列表、创建/编辑、分组、详情、生命周期确认、数值项配置及错误/空态。主验收：`WEB-PLAN-01～18`。完成证据：每项 F/V/N、窄屏与桌面截图、表单校验、历史版本和网络记录。",
+      "ownedCaseIds": [
+        "WEB-PLAN-01",
+        "WEB-PLAN-02",
+        "WEB-PLAN-03",
+        "WEB-PLAN-04",
+        "WEB-PLAN-05",
+        "WEB-PLAN-06",
+        "WEB-PLAN-07",
+        "WEB-PLAN-08",
+        "WEB-PLAN-09",
+        "WEB-PLAN-10",
+        "WEB-PLAN-11",
+        "WEB-PLAN-12",
+        "WEB-PLAN-13",
+        "WEB-PLAN-14",
+        "WEB-PLAN-15",
+        "WEB-PLAN-16",
+        "WEB-PLAN-17",
+        "WEB-PLAN-18"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-08",
+      "title": "打卡、补记与修订 API。",
+      "dependencies": [
+        "WEB-06"
+      ],
+      "scope": "依赖：WEB-06。扩展循环与一次性结果的备注、照片、数值，维持同日唯一有效记录、幂等、版本冲突和修订审计。关联：CHECK、ONLINE。完成证据：并发/重试/补记/历史版本的 API、DB 计数与审计记录。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T14:29:00Z",
+      "completedAt": "2026-09-28T14:49:00Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "循环记录按业务日期保存数值项标签/单位/版本快照；一次性结果和详情补备注、数值、照片；旧请求兼容，同日唯一、幂等与修订审计保留。",
+        "changedPaths": [
+          "apps/api/src/records/records.service.ts",
+          "apps/api/src/views/views.service.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs",
+          "scripts/web-records-smoke.mjs",
+          "scripts/web-records-http-smoke.mjs",
+          "scripts/run-web-records-http-smoke.ps1",
+          "docs/atdd/web/WEB-08-打卡补记与修订API.md"
+        ],
+        "commit": "daba2911c2b8975258d553d77d17e7e8ff1d26ef",
+        "checks": [
+          {
+            "command": "node node_modules/typescript/bin/tsc --noEmit -p packages/contracts/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/contracts-typecheck.txt",
+            "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/api-build.txt",
+            "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+          },
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/openapi.txt",
+            "sha256": "1ddc2f85b0e3628249e1b3592f7cef2c4ead087beed514c713579a3e18830e9a"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/compat.txt",
+            "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+          },
+          {
+            "command": "node scripts/records-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/records-smoke.txt",
+            "sha256": "f003cf460a8d7af036e8bdbe865e133b60a2f174a2d35b06a5aaaf58a5993ef0"
+          },
+          {
+            "command": "node scripts/web-records-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/web-records-smoke.txt",
+            "sha256": "71d99e9f902c46b1e2396fda795373bce13eec7a604f4afa8b1ee25786ccbc0b"
+          },
+          {
+            "command": "node scripts/views-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/views-smoke.txt",
+            "sha256": "ec2fd5360d08a1fa93b3f79d6d5635c8eaa4e6a07a0a4d870f3e733e64927c93"
+          },
+          {
+            "command": "node scripts/media-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/media-smoke.txt",
+            "sha256": "331df7950eccd4bc601ef9e15bd8670c15241e252605ecfebd62859610b3d73b"
+          },
+          {
+            "command": "node scripts/mobile-records-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/mobile-records-smoke.txt",
+            "sha256": "58aab9d7ed4c63428558f06868c82c2c89a3d7a2cbed249e35c52512faf0cba3"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-records-http-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/records-http.txt",
+            "sha256": "afc8ff8bb12774c64b9402894f2540ab439c814aeb555db2b25516a259ff23c8"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js apps/api/src/records/records.service.ts apps/api/src/views/views.service.ts packages/contracts/src/index.ts scripts/build-openapi.mjs scripts/web-records-smoke.mjs scripts/web-records-http-smoke.mjs scripts/web-08-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/lint.txt",
+            "sha256": "68bd29d584a584ea768131415bfa065252070b49feed1830f1f5ed4b1b02bbde"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check apps/api/src/records/records.service.ts apps/api/src/views/views.service.ts packages/contracts/src/index.ts scripts/build-openapi.mjs scripts/web-records-smoke.mjs scripts/web-records-http-smoke.mjs scripts/web-08-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/format.txt",
+            "sha256": "5b7a972ac7cd640f5ace3203693e9ec1c18e1a3238e155d07d821cb4fa5b7aee"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-08/progress-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-08/checks.json",
+          "docs/atdd/web/WEB-08-打卡补记与修订API.md",
+          "docs/API-兼容变更记录.md"
+        ]
+      },
+      "verification": {
+        "summary": "13 项检查通过，原始输出 SHA-256 与提交 Git blob 13/13 一致；隔离 PostgreSQL 真实 HTTP 验证并发、同键重试、跨账号、补记、历史版本、一次性附件及数据库计数。产品浏览器 F/V/N 尚未执行，136 项仍 NOT_RUN。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-08/records-http.txt",
+          "docs/atdd/web/evidence/WEB-08/web-records-smoke.txt",
+          "docs/atdd/web/evidence/WEB-08/records-smoke.txt"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T14:49:00Z",
+        "decision": "WEB-08 服务端范围与兼容、历史快照、并发/幂等和审计证据齐备；真实对象与浏览器 F/V/N 归 WEB-09/10。"
+      },
+      "history": [
+        {
+          "at": "2026-09-28T14:29:00Z",
+          "type": "STARTED",
+          "summary": "记录 API 按业务日期选择数值配置版本，一次性结果补附加内容；真实 API/DB/审计取证后才判定完成。"
+        },
+        {
+          "at": "2026-09-28T14:49:00Z",
+          "type": "DONE",
+          "summary": "13 项检查和提交后 SHA 复核通过，WEB-08 checklist 勾选；136 项浏览器业务用例未执行。",
+          "commit": "daba2911c2b8975258d553d77d17e7e8ff1d26ef",
+          "evidencePath": "docs/atdd/web/evidence/WEB-08/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-09",
+      "title": "私人媒体链路。",
+      "dependencies": [
+        "WEB-03",
+        "WEB-08"
+      ],
+      "scope": "依赖：WEB-03、WEB-08。对象直传、签名时效、CORS、类型/数量/大小限制、缩略图与删除清理，兼容一次性任务结果。关联：CHECK、DATA、SEC。完成证据：真实浏览器上传/失败重试截图、网络预检、对象权限与清理文件清单。",
+      "ownedCaseIds": [],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-10",
+      "title": "今日、打卡、补记和修正页面。",
+      "dependencies": [
+        "WEB-07",
+        "WEB-08",
+        "WEB-09"
+      ],
+      "scope": "依赖：WEB-07、WEB-08、WEB-09。实现 do/avoid、一次性终态、附加数值/照片/文字、历史修正和结果未知时的恢复。主验收：`WEB-CHECK-01～18`。完成证据：各类型逐例结果、前后截图、上传与 DB/审计证明、失败及反向断言。",
+      "ownedCaseIds": [
+        "WEB-CHECK-01",
+        "WEB-CHECK-02",
+        "WEB-CHECK-03",
+        "WEB-CHECK-04",
+        "WEB-CHECK-05",
+        "WEB-CHECK-06",
+        "WEB-CHECK-07",
+        "WEB-CHECK-08",
+        "WEB-CHECK-09",
+        "WEB-CHECK-10",
+        "WEB-CHECK-11",
+        "WEB-CHECK-12",
+        "WEB-CHECK-13",
+        "WEB-CHECK-14",
+        "WEB-CHECK-15",
+        "WEB-CHECK-16",
+        "WEB-CHECK-17",
+        "WEB-CHECK-18"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-11",
+      "title": "日历、详情与统计。",
+      "dependencies": [
+        "WEB-06",
+        "WEB-08",
+        "WEB-10"
+      ],
+      "scope": "依赖：WEB-06、WEB-08、WEB-10。复用权威领域规则/API，完成今日/日历/详情/统计一致性、部分周不计达标、时区与历史修订展示。主验收：`WEB-STAT-01～12`。完成证据：冻结时钟下的计算输入/输出、三视图截图和 API/DB 对照。",
+      "ownedCaseIds": [
+        "WEB-STAT-01",
+        "WEB-STAT-02",
+        "WEB-STAT-03",
+        "WEB-STAT-04",
+        "WEB-STAT-05",
+        "WEB-STAT-06",
+        "WEB-STAT-07",
+        "WEB-STAT-08",
+        "WEB-STAT-09",
+        "WEB-STAT-10",
+        "WEB-STAT-11",
+        "WEB-STAT-12"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-12",
+      "title": "在线状态、并发与冲突体验。",
+      "dependencies": [
+        "WEB-08",
+        "WEB-10",
+        "WEB-11"
+      ],
+      "scope": "依赖：WEB-08、WEB-10、WEB-11。实现断网限制、未知写入同键查询/重试、多标签刷新与冲突选择，不承诺离线使用。主验收：`WEB-ONLINE-01～08`。完成证据：网络切换时间线、两个独立浏览器/标签录屏、幂等和冲突审计。",
+      "ownedCaseIds": [
+        "WEB-ONLINE-01",
+        "WEB-ONLINE-02",
+        "WEB-ONLINE-03",
+        "WEB-ONLINE-04",
+        "WEB-ONLINE-05",
+        "WEB-ONLINE-06",
+        "WEB-ONLINE-07",
+        "WEB-ONLINE-08"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-13",
+      "title": "好友、分享和消息服务端。",
+      "dependencies": [
+        "WEB-03",
+        "WEB-04",
+        "WEB-06"
+      ],
+      "scope": "依赖：WEB-03、WEB-04、WEB-06。补充社交事件持久收件箱、账号级已读、分页、授权撤销后的逐条校验，复用好友/分享 API 并确保越权拒绝。关联：SOCIAL、NOTIFY、SEC。完成证据：A/B/C/D 账号的 API/DB/日志、重复事件去重和撤销后拒绝记录。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T14:55:00Z",
+      "completedAt": "2026-09-28T15:11:00Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "社交事务按业务事件键写去重收件箱；新增 HMAC 账号游标分页、未读数、幂等已读与逐条权限复核，失权消息隐藏目标及对方。",
+        "changedPaths": [
+          "apps/api/src/social/notification-jobs.ts",
+          "apps/api/src/social/social.service.ts",
+          "apps/api/src/social/inbox.service.ts",
+          "apps/api/src/social/inbox.controller.ts",
+          "apps/api/src/social/social.module.ts",
+          "apps/api/src/records/records.service.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs",
+          "scripts/web-inbox-smoke.mjs",
+          "scripts/web-inbox-http-smoke.mjs",
+          "scripts/run-web-inbox-http-smoke.ps1",
+          "docs/atdd/web/WEB-13-社交消息服务端.md"
+        ],
+        "commit": "7efa40880b48be7f6f37d3daa05d85ce06f7381f",
+        "checks": [
+          {
+            "command": "node node_modules/typescript/bin/tsc --noEmit -p packages/contracts/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/contracts-typecheck.txt",
+            "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/api-build.txt",
+            "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+          },
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/openapi.txt",
+            "sha256": "115a7f58892c557658facd337845cbbfeb8a354fe4a64f0a3de0f401c88cd8e5"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/compat.txt",
+            "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+          },
+          {
+            "command": "node scripts/social-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/social-smoke.txt",
+            "sha256": "460bbe7c737dc1c6c891ade13c0bbe868e03e22901d728c48f29227e970c9834"
+          },
+          {
+            "command": "node scripts/shares-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/shares-smoke.txt",
+            "sha256": "81216480230bba17cea6d3618e942a30aa217453cb18b747d3ae5a26ffe90550"
+          },
+          {
+            "command": "node scripts/social-notifications-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/social-notifications-smoke.txt",
+            "sha256": "597d1e3f747adecb9edc988c69aee81cace6c7b12312854e535444f23fa4ce64"
+          },
+          {
+            "command": "node scripts/records-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/records-smoke.txt",
+            "sha256": "f003cf460a8d7af036e8bdbe865e133b60a2f174a2d35b06a5aaaf58a5993ef0"
+          },
+          {
+            "command": "node scripts/web-inbox-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/web-inbox-smoke.txt",
+            "sha256": "cb83b81d9ad8094225cf62751acaf74e3fdef35a6d4895ffb7e40734cf7736b7"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-inbox-http-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/inbox-http.txt",
+            "sha256": "793c9609c6c038a1229ea938d0017587473ae4bfdda6968a88fea7f7e60776c8"
+          },
+          {
+            "command": "node scripts/security-static.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/security-static.txt",
+            "sha256": "0aa6f2f509cf5a44d2741db7003eb2c94915c5833d4bf34299d9118386c2449a"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js apps/api/src/social/notification-jobs.ts apps/api/src/social/social.service.ts apps/api/src/social/inbox.service.ts apps/api/src/social/inbox.controller.ts apps/api/src/social/social.module.ts apps/api/src/records/records.service.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/web-inbox-smoke.mjs scripts/web-inbox-http-smoke.mjs scripts/web-13-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/lint.txt",
+            "sha256": "a7285367fb2819088e558b8d7a21422e1d787deda5e4972bf7be0d825ca2df59"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check apps/api/src/social/notification-jobs.ts apps/api/src/social/social.service.ts apps/api/src/social/inbox.service.ts apps/api/src/social/inbox.controller.ts apps/api/src/social/social.module.ts apps/api/src/records/records.service.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/web-inbox-smoke.mjs scripts/web-inbox-http-smoke.mjs scripts/web-13-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/format.txt",
+            "sha256": "da8ed092dbc92a61a04a9ebfe981498acd841d385a7d16525153a76fdd7e574d"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-13/progress-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-13/checks.json",
+          "docs/atdd/web/WEB-13-社交消息服务端.md",
+          "docs/API-兼容变更记录.md"
+        ]
+      },
+      "verification": {
+        "summary": "14 项检查通过，证据 SHA-256 与 Git blob 14/14 一致；四账号及 B 两独立 Web 会话的 PGlite/真实 HTTP 验证事件去重、分页、跨会话已读、越权拒绝与撤销后隐藏。产品浏览器 F/V/N 未执行，136 项仍 NOT_RUN。",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-13/inbox-http.txt",
+          "docs/atdd/web/evidence/WEB-13/web-inbox-smoke.txt",
+          "docs/atdd/web/evidence/WEB-13/security-static.txt"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T15:11:00Z",
+        "decision": "WEB-13 服务端事件、账号级已读、分页、失权复核、兼容和真实多账号 API/DB 证据齐备；页面及浏览器验收归 WEB-14/16/21。"
+      },
+      "history": [
+        {
+          "at": "2026-09-28T14:55:00Z",
+          "type": "STARTED",
+          "summary": "社交事务收件箱去重、逐条权限复核、游标分页与账号级已读；真实多账号取证后判定完成。"
+        },
+        {
+          "at": "2026-09-28T15:11:00Z",
+          "type": "DONE",
+          "summary": "14 项检查和提交后 SHA 复核通过，WEB-13 checklist 勾选；136 项浏览器业务用例未执行。",
+          "commit": "7efa40880b48be7f6f37d3daa05d85ce06f7381f",
+          "evidencePath": "docs/atdd/web/evidence/WEB-13/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-14",
+      "title": "好友、分享和消息页面。",
+      "dependencies": [
+        "WEB-07",
+        "WEB-13"
+      ],
+      "scope": "依赖：WEB-07、WEB-13。实现搜索/申请/接受/屏蔽、逐计划授权预览、鼓励互动、消息中心与已读；同账号两个 Web 浏览器核对。主验收：`WEB-SOCIAL-01～14`。完成证据：主人/好友/陌生人视图截图、消息已读对照、无权读取的网络证据。",
+      "ownedCaseIds": [
+        "WEB-SOCIAL-01",
+        "WEB-SOCIAL-02",
+        "WEB-SOCIAL-03",
+        "WEB-SOCIAL-04",
+        "WEB-SOCIAL-05",
+        "WEB-SOCIAL-06",
+        "WEB-SOCIAL-07",
+        "WEB-SOCIAL-08",
+        "WEB-SOCIAL-09",
+        "WEB-SOCIAL-10",
+        "WEB-SOCIAL-11",
+        "WEB-SOCIAL-12",
+        "WEB-SOCIAL-13",
+        "WEB-SOCIAL-14"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-15",
+      "title": "分端提醒与 Web Push 服务。",
+      "dependencies": [
+        "WEB-03",
+        "WEB-06",
+        "WEB-13"
+      ],
+      "scope": "依赖：WEB-03、WEB-06、WEB-13。共享时间规则、Web/iOS 投递偏好隔离、计划提醒 Worker、订阅/发送/取消/永久失败清理，外层只发通用文案。关联：NOTIFY、SEC。完成证据：冻结时钟、队列与供应端受理、渠道隔离和失效清理日志。",
+      "ownedCaseIds": [],
+      "status": "DONE",
+      "startedAt": "2026-09-28T15:13:00Z",
+      "completedAt": "2026-09-28T16:06:00Z",
+      "owner": "Codex",
+      "implementation": {
+        "summary": "Web-only notification preferences and encrypted browser subscription API; durable social and timezone-aware plan jobs, RFC 8291/VAPID sender, dedupe, visibility recheck, retry and expiry cleanup. Browser F/V/N remains WEB-16/21.",
+        "changedPaths": [
+          ".env.example",
+          "apps/api/src/auth/auth.service.ts",
+          "apps/api/src/config.ts",
+          "apps/api/src/social/notification-jobs.ts",
+          "apps/api/src/social/notifications.controller.ts",
+          "apps/api/src/social/notifications.service.ts",
+          "apps/api/src/social/social.module.ts",
+          "apps/worker/src/main.ts",
+          "apps/worker/src/planReminders.ts",
+          "apps/worker/src/queue.ts",
+          "apps/worker/src/webNotifications.ts",
+          "apps/worker/src/webPush.ts",
+          "db/migrations/0013_web_push_delivery.sql",
+          "db/migrations/manifest.json",
+          "docs/atdd/web/WEB-15-分端提醒与WebPush服务.md",
+          "infra/deploy/manifest.mjs",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/openapi.generated.ts",
+          "packages/contracts/src/routes.ts",
+          "scripts/build-openapi.mjs",
+          "scripts/migrations-smoke.mjs",
+          "scripts/run-web-notifications-http-smoke.ps1",
+          "scripts/sql-static-check.mjs",
+          "scripts/web-15-evidence.mjs",
+          "scripts/web-notifications-http-smoke.mjs",
+          "scripts/web-notifications-smoke.mjs",
+          "scripts/web-plan-reminders-smoke.mjs",
+          "scripts/web-push-rfc-smoke.mjs"
+        ],
+        "commit": "2d94b986a6f358dfca5223a3553cc2d0d192c08c",
+        "checks": [
+          {
+            "command": "node node_modules/typescript/bin/tsc --noEmit -p packages/contracts/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/contracts-typecheck.txt",
+            "sha256": "0a648d3d102c91648832ad61f5e71c6d81bf7d827e7f15c971ed3b6d92659049"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p packages/domain/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/domain-build.txt",
+            "sha256": "68d9d171a782a55640fcf5183be4272f1e9d0e9cc23cc0851536deef239f9fc8"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/api/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/api-build.txt",
+            "sha256": "2a18e7d1f97bc9fb36c7246a03b041000ea5e75b2aacc6aa8684a920f3c1e699"
+          },
+          {
+            "command": "node node_modules/typescript/bin/tsc -p apps/worker/tsconfig.json",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/worker-build.txt",
+            "sha256": "131f31b4b41ed7b7e8448cf88ae082d746cdf985bf802c4ac7841b5f3b09ff72"
+          },
+          {
+            "command": "node scripts/build-openapi.mjs --check",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/openapi.txt",
+            "sha256": "d2dc3f31316a180650e0a64effa71a8fed27008ae5b6bc44405a03988abac4c4"
+          },
+          {
+            "command": "node scripts/check-contract-compat.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/compat.txt",
+            "sha256": "97cc1d8badac1495f4a1fbc2f79fe6ab95f9d825a3f6c6241fb3c0b5212dc1b5"
+          },
+          {
+            "command": "node scripts/sql-static-check.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/sql-static.txt",
+            "sha256": "fecc58295c3a2da5bb54b216992ddb25be525cc09885f20195fb9af19c269cdc"
+          },
+          {
+            "command": "node scripts/migrations-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/migrations.txt",
+            "sha256": "a75bbbbf546fdb5933e2bb2a36c47c4278058e77058be22a5a8bc79c18787556"
+          },
+          {
+            "command": "node scripts/web-migrations-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-migrations.txt",
+            "sha256": "e8d2097dd28e9700c3da2e3318a0ca3350917da2dfe5a083da512a1e4fc6ace0"
+          },
+          {
+            "command": "node scripts/reminders-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/reminders.txt",
+            "sha256": "e8e23b3e37036d78d0b3a450ee0cc0c0a88f6890e5a23bc432b0ec4cd8b23624"
+          },
+          {
+            "command": "node scripts/social-notifications-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/social-notifications.txt",
+            "sha256": "597d1e3f747adecb9edc988c69aee81cace6c7b12312854e535444f23fa4ce64"
+          },
+          {
+            "command": "node scripts/web-notifications-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-notifications.txt",
+            "sha256": "51485b80287adc6ed4138c0f96a06732e772c63c2918848d79677717f4cb8820"
+          },
+          {
+            "command": "node scripts/web-plan-reminders-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-plan-reminders.txt",
+            "sha256": "eda9b684b479b5890e715df88a9b28891470d9de1e35335838a1a9067514e498"
+          },
+          {
+            "command": "node scripts/web-push-rfc-smoke.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-push-rfc.txt",
+            "sha256": "e8752bde29cdea8f5602fb64fa4e79ad06597c00725ae8b35922c68a3fdeeeb3"
+          },
+          {
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-notifications-http-smoke.ps1",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/web-http.txt",
+            "sha256": "321be044e4f53cbab3aa05436b72ab973c90b87af9df224db83ceecd773e1636"
+          },
+          {
+            "command": "node scripts/security-static.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/security-static.txt",
+            "sha256": "49089169d3d73ec8748380237411c9b821c7e2914b18a6fb665eff4fa806696b"
+          },
+          {
+            "command": "node scripts/deployment-static-check.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/deployment-static.txt",
+            "sha256": "5734aa30a12ee27ad6ea69512cef35f849ff75f8e83ceef6c55e6713375923b0"
+          },
+          {
+            "command": "node node_modules/eslint/bin/eslint.js apps/api/src/auth/auth.service.ts apps/api/src/config.ts apps/api/src/social/notification-jobs.ts apps/api/src/social/notifications.controller.ts apps/api/src/social/notifications.service.ts apps/api/src/social/social.module.ts apps/worker/src/main.ts apps/worker/src/planReminders.ts apps/worker/src/queue.ts apps/worker/src/webNotifications.ts apps/worker/src/webPush.ts infra/deploy/manifest.mjs packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/migrations-smoke.mjs scripts/sql-static-check.mjs scripts/web-notifications-http-smoke.mjs scripts/web-notifications-smoke.mjs scripts/web-plan-reminders-smoke.mjs scripts/web-push-rfc-smoke.mjs scripts/web-15-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/lint.txt",
+            "sha256": "c52b7261fc6732067056e015808ee1edc809baed74f709d9454c9cbaf9a041b9"
+          },
+          {
+            "command": "node node_modules/prettier/bin/prettier.cjs --check apps/api/src/auth/auth.service.ts apps/api/src/config.ts apps/api/src/social/notification-jobs.ts apps/api/src/social/notifications.controller.ts apps/api/src/social/notifications.service.ts apps/api/src/social/social.module.ts apps/worker/src/main.ts apps/worker/src/planReminders.ts apps/worker/src/queue.ts apps/worker/src/webNotifications.ts apps/worker/src/webPush.ts db/migrations/manifest.json docs/atdd/web/WEB-15-分端提醒与WebPush服务.md docs/atdd/web/execution-progress.json docs/任务执行计划-计划打卡-Web-v1.md infra/deploy/manifest.mjs packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/migrations-smoke.mjs scripts/sql-static-check.mjs scripts/web-notifications-http-smoke.mjs scripts/web-notifications-smoke.mjs scripts/web-plan-reminders-smoke.mjs scripts/web-push-rfc-smoke.mjs scripts/web-15-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/format.txt",
+            "sha256": "c32da21e82d5758b9bdc4cf4705ea5236fa2c9b5eabcb32aeb3f463dc906be7b"
+          },
+          {
+            "command": "python docs/atdd/web/check_execution_progress.py",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-15/progress-ledger.txt",
+            "sha256": "abc0250b6ee3a19a5e5c2e932ff5526654777766d49bb8ed25966d6c6b798f94"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-15/checks.json",
+          "docs/atdd/web/WEB-15-分端提醒与WebPush服务.md"
+        ]
+      },
+      "verification": {
+        "summary": "20 checks passed and worktree/committed Git blob SHA-256 matched 20/20; PostgreSQL 17 HTTP, PGlite social (30), frozen-clock plan (19), RFC vector, 503 retry and 410 cleanup. Browser cases remain NOT_RUN.",
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-15/web-http.txt",
+          "docs/atdd/web/evidence/WEB-15/web-notifications.txt",
+          "docs/atdd/web/evidence/WEB-15/web-plan-reminders.txt",
+          "docs/atdd/web/evidence/WEB-15/web-push-rfc.txt"
+        ]
+      },
+      "review": {
+        "reviewer": "Codex",
+        "reviewedAt": "2026-09-28T16:06:00Z",
+        "decision": "WEB-15 API, data, Worker and controlled provider scope complete. Browser permission, Service Worker, delivery and navigation are WEB-16/21."
+      },
+      "history": [
+        {
+          "at": "2026-09-28T15:13:00Z",
+          "type": "STARTED",
+          "summary": "Web/iOS 分端通知偏好、Web Push 订阅与 Worker、计划提醒时区规则接入开始；浏览器通知用例尚未执行。"
+        },
+        {
+          "at": "2026-09-28T15:24:00Z",
+          "type": "PROGRESS",
+          "summary": "Web 独立偏好和订阅 API 已实现；PGlite 16 项断言、83 项 OpenAPI 和兼容检查通过，原始输出及 SHA 已入库；Worker/浏览器仍未完成。"
+        },
+        {
+          "at": "2026-09-28T15:43:00Z",
+          "type": "PROGRESS",
+          "summary": "0013 迁移、社交 Web Push、VAPID/RFC 加密、计划时区调度与发送前复核接线；PGlite 24+15 项、RFC 官方向量和旧业务回归通过，真实 HTTP 与浏览器仍待验。"
+        },
+        {
+          "at": "2026-09-28T16:06:00Z",
+          "type": "DONE",
+          "summary": "20 checks and committed SHA review passed; WEB-15 checked. 136 browser cases remain NOT_RUN.",
+          "commit": "2d94b986a6f358dfca5223a3553cc2d0d192c08c",
+          "evidencePath": "docs/atdd/web/evidence/WEB-15/checks.json"
+        }
+      ]
+    },
+    {
+      "id": "WEB-16",
+      "title": "站内提示、设置与浏览器通知。",
+      "dependencies": [
+        "WEB-05",
+        "WEB-14",
+        "WEB-15"
+      ],
+      "scope": "依赖：WEB-05、WEB-14、WEB-15。实现用户手势触发权限、Service Worker 订阅、通用通知展示/点击、计划即时站内提示、关闭与不支持降级。主验收：`WEB-NOTIFY-01～16`。完成证据：受控支持浏览器的权限到清理完整链路截图/录屏/网络/Push 记录；后台稳定送达仅观察。",
+      "ownedCaseIds": [
+        "WEB-NOTIFY-01",
+        "WEB-NOTIFY-02",
+        "WEB-NOTIFY-03",
+        "WEB-NOTIFY-04",
+        "WEB-NOTIFY-05",
+        "WEB-NOTIFY-06",
+        "WEB-NOTIFY-07",
+        "WEB-NOTIFY-08",
+        "WEB-NOTIFY-09",
+        "WEB-NOTIFY-10",
+        "WEB-NOTIFY-11",
+        "WEB-NOTIFY-12",
+        "WEB-NOTIFY-13",
+        "WEB-NOTIFY-14",
+        "WEB-NOTIFY-15",
+        "WEB-NOTIFY-16"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-17",
+      "title": "导出、删除和会话撤销服务端。",
+      "dependencies": [
+        "WEB-03",
+        "WEB-08",
+        "WEB-09",
+        "WEB-13",
+        "WEB-15"
+      ],
+      "scope": "依赖：WEB-03、WEB-08、WEB-09、WEB-13、WEB-15。完善导出任务、ZIP/照片清单、签名下载、计划删除、账号 30 天撤销期与最终清理，并撤销会话/分享/Push。关联：DATA、SEC。完成证据：Worker、ZIP 校验、私有对象拒绝、删除前后 DB/文件清单及恢复演练。",
+      "ownedCaseIds": [],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-18",
+      "title": "导出、账号删除与设置页面。",
+      "dependencies": [
+        "WEB-05",
+        "WEB-16",
+        "WEB-17"
+      ],
+      "scope": "依赖：WEB-05、WEB-16、WEB-17。实现导出进度/下载失效、删除二次确认和恢复说明、设置导航、退出后的私人缓存清理。主验收：`WEB-DATA-01～10`。完成证据：真实浏览器下载/失效/删除/撤销路径截图、文件摘要、会话失效与反向权限证明。",
+      "ownedCaseIds": [
+        "WEB-DATA-01",
+        "WEB-DATA-02",
+        "WEB-DATA-03",
+        "WEB-DATA-04",
+        "WEB-DATA-05",
+        "WEB-DATA-06",
+        "WEB-DATA-07",
+        "WEB-DATA-08",
+        "WEB-DATA-09",
+        "WEB-DATA-10"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-19",
+      "title": "响应式、主题与可访问性。",
+      "dependencies": [
+        "WEB-05",
+        "WEB-07",
+        "WEB-10",
+        "WEB-11",
+        "WEB-14",
+        "WEB-16",
+        "WEB-18"
+      ],
+      "scope": "依赖：WEB-05、WEB-07、WEB-10、WEB-11、WEB-14、WEB-16、WEB-18。统一 16 页面键、空/加载/错误态、浅/深色、200% 缩放、键盘/焦点/读屏、长内容与无横向溢出。主验收：`WEB-UI-01～16`。完成证据：每页键至少一个合法结果、视口/主题矩阵截图、DOM/无障碍树、布局和焦点观察；不得逐像素套 iOS 画板。",
+      "ownedCaseIds": [
+        "WEB-UI-01",
+        "WEB-UI-02",
+        "WEB-UI-03",
+        "WEB-UI-04",
+        "WEB-UI-05",
+        "WEB-UI-06",
+        "WEB-UI-07",
+        "WEB-UI-08",
+        "WEB-UI-09",
+        "WEB-UI-10",
+        "WEB-UI-11",
+        "WEB-UI-12",
+        "WEB-UI-13",
+        "WEB-UI-14",
+        "WEB-UI-15",
+        "WEB-UI-16"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-20",
+      "title": "安全、隐私与故障注入。",
+      "dependencies": [
+        "WEB-04",
+        "WEB-09",
+        "WEB-12",
+        "WEB-13",
+        "WEB-15",
+        "WEB-17"
+      ],
+      "scope": "依赖：WEB-04、WEB-09、WEB-12、WEB-13、WEB-15、WEB-17。核对鉴权/越权、Cookie/CSRF、XSS/CSP、CORS、缓存、限流、日志脱敏、HTTPS、幂等和冲突恢复。主验收：`WEB-SEC-01～12`。完成证据：请求拒绝/日志/DB/浏览器缓存和深链复测、配置与部署检查；严重失败阻断后续发布。",
+      "ownedCaseIds": [
+        "WEB-SEC-01",
+        "WEB-SEC-02",
+        "WEB-SEC-03",
+        "WEB-SEC-04",
+        "WEB-SEC-05",
+        "WEB-SEC-06",
+        "WEB-SEC-07",
+        "WEB-SEC-08",
+        "WEB-SEC-09",
+        "WEB-SEC-10",
+        "WEB-SEC-11",
+        "WEB-SEC-12"
+      ],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-21",
+      "title": "136 项全量浏览器复验。",
+      "dependencies": [
+        "WEB-19",
+        "WEB-20"
+      ],
+      "scope": "依赖：WEB-19、WEB-20。锁定候选 commit、源文档哈希和测试环境，在正式浏览器当前及上一稳定大版本执行全部适用用例/变体，核对至少 151 个实例、截图和原始证据。完成证据：按 [结果 schema](./atdd/web/acceptance-result.schema.json)校验的完整 `result.json`、浏览器版本矩阵、失败修复与复测、136 ID 无 `BLOCKED/NOT_RUN/STALE`；主流程和安全项全 PASS。",
+      "ownedCaseIds": [],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    },
+    {
+      "id": "WEB-22",
+      "title": "拟发布环境与 Web 发布候选。",
+      "dependencies": [
+        "WEB-21"
+      ],
+      "scope": "依赖：WEB-21。验证真实短信、HTTPS 同站点入口、对象直传、受控 Web Push、部署/回滚、监控告警、迁移恢复，汇总需求差异、风险例外和证据清单。完成证据：可复核的 Web 候选清单、部署/回滚记录、所有阻断项关闭和负责人签核；仅形成候选，不凭计划文档宣称已上线。",
+      "ownedCaseIds": [],
+      "status": "NOT_STARTED",
+      "startedAt": null,
+      "completedAt": null,
+      "owner": null,
+      "implementation": {
+        "summary": null,
+        "changedPaths": [],
+        "commit": null,
+        "checks": [],
+        "evidence": []
+      },
+      "verification": {
+        "summary": null,
+        "runIds": [],
+        "browserMatrix": [],
+        "evidence": []
+      },
+      "review": {
+        "reviewer": null,
+        "reviewedAt": null,
+        "decision": null
+      },
+      "history": []
+    }
+  ],
+  "caseLedger": [
+    {
+      "caseId": "WEB-AUTH-01",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "未登录，有效大陆手机号，短信桩可用",
+        "when": "请求验证码",
+        "functional": "返回 challengeId 与冷却时间，进入验证码步骤",
+        "visual": "标签、焦点、倒计时和手机/桌面布局清楚",
+        "negative": "不创建会话，不显示完整手机号于日志",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-02",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "空号、非法号、过快重发参数组",
+        "when": "请求验证码",
+        "functional": "表单或 API 返回稳定错误及可重试时间",
+        "visual": "错误靠近字段，按钮禁用可读",
+        "negative": "不发送短信，不泄露账号是否存在",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-03",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "新手机号与有效验证码",
+        "when": "完成验证和用户名/昵称",
+        "functional": "公开注册成功，进入今日空态",
+        "visual": "首次资料页与创建计划入口可见",
+        "negative": "不要求邀请码，不生成第二账号",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-04",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "既有账号、正确验证码",
+        "when": "登录",
+        "functional": "取得本人数据和 Web 会话",
+        "visual": "加载到今日无私有内容闪露",
+        "negative": "不进入新用户资料，不返回 refresh 给 JS",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-05",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "验证码错误、过期、已使用参数组",
+        "when": "提交验证码",
+        "functional": "返回对应错误，可按冷却规则重试",
+        "visual": "保留可修正输入，焦点可达",
+        "negative": "不登录，不创建有效会话",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-06",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "同号/设备/IP 触发阈值",
+        "when": "再次请求或验证",
+        "functional": "返回限流及重试提示",
+        "visual": "倒计时和错误状态清楚",
+        "negative": "不继续调用短信供应商",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-07",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "A 已登录，access 过期、refresh 有效",
+        "when": "打开计划页",
+        "functional": "自动取得新 access 并显示本人数据",
+        "visual": "不无故跳登录页",
+        "negative": "旧 refresh 不可再次轮换，不重复写业务数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-08",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "A 的 refresh 到期或撤销",
+        "when": "刷新私人路径",
+        "functional": "要求短信重登，登录后回原目标路径",
+        "visual": "私有页面在失效时清除",
+        "negative": "不用过期 token 继续请求私人数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-09",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "同账号 A1/A3 两标签接近过期",
+        "when": "同时触发刷新",
+        "functional": "两标签恢复有效会话或明确重登",
+        "visual": "不反复弹登录页或显示旧数据",
+        "negative": "不发生轮换风暴、Cookie 回退或新会话误撤销",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-10",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "A1 Web 与 A2 另一浏览器均登录",
+        "when": "A1 主动退出",
+        "functional": "A1 会话撤销并清私有视图，A2 保持有效",
+        "visual": "退出后返回/前进不露旧页",
+        "negative": "不撤销其他 Web 会话或遗漏当前 Cookie",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-11",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "A 已验证旧身份，有新手机号验证码",
+        "when": "确认换号",
+        "functional": "新手机号可登录，旧会话按全会话规则失效",
+        "visual": "两步确认和失败提示可读",
+        "negative": "不可跳过旧身份或新号码验证",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-AUTH-12",
+      "ownerTask": "WEB-05",
+      "baseline": {
+        "given": "登录表单含号码、验证码、昵称",
+        "when": "查看浏览器存储、网络和日志",
+        "functional": "access 仅在内存，refresh 仅安全 Cookie",
+        "visual": "N/A",
+        "negative": "不在 DOM、localStorage、日志或 URL 中出现令牌/验证码",
+        "requiredEvidenceCodes": [
+          "A",
+          "L",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-01",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "A 登录，固定计划表单",
+        "when": "选周一/三/五并保存",
+        "functional": "仅选中星期生成义务，计划持有规则 V1",
+        "visual": "表单、星期选中、详情信息清楚",
+        "negative": "其他星期不产生待处理",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-02",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "固定计划未选星期",
+        "when": "保存",
+        "functional": "前后端拒绝并定位字段",
+        "visual": "错误与按钮状态可读",
+        "negative": "不创建计划或默认每日",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-03",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "选择每日快捷项",
+        "when": "保存",
+        "functional": "等价于七天全选固定循环",
+        "visual": "每日和星期控件一致",
+        "negative": "不产生独立计划类型",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-04",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "周目标 N=1、7 边界",
+        "when": "分别创建",
+        "functional": "均合法，进度目标正确",
+        "visual": "数值控件及说明正确",
+        "negative": "不套用固定星期限制",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-05",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "周目标 N=0、8、非整数",
+        "when": "保存",
+        "functional": "返回字段错误",
+        "visual": "错误定位目标输入",
+        "negative": "不钳制为合法值或落库",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-06",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "一次性任务截止为计划时区今天/未来",
+        "when": "保存",
+        "functional": "初态待完成，提醒默认关闭",
+        "visual": "截止日期和状态清楚",
+        "negative": "不生成每日未记录或默认提醒",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "N"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-07",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "一次性截止为计划时区昨天",
+        "when": "保存",
+        "functional": "日期校验拒绝",
+        "visual": "错误聚焦截止日",
+        "negative": "不创建逾期初态任务",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-08",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "循环计划选“不要做”",
+        "when": "保存并查看今日",
+        "functional": "方向与成功文案正确",
+        "visual": "不出现“完成吸烟”类反义文案",
+        "negative": "不允许一次性计划选“不要做”",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-09",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "计划时区 Z1，浏览器时区 Z2",
+        "when": "创建并切换浏览器时区",
+        "functional": "计划保持 Z1，历史日期不移动",
+        "visual": "详情标示按计划时区计算",
+        "negative": "不按浏览器本地日重归属记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-10",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "固定计划已有历史",
+        "when": "修改星期或有效期",
+        "functional": "新规则次日生效，旧规则版本保留",
+        "visual": "生效日期提示清楚",
+        "negative": "不重算旧日期义务",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-11",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "周目标本周已有记录",
+        "when": "周中改 N",
+        "functional": "本周为部分周，历史记录保留",
+        "visual": "标示部分周和不计达标",
+        "negative": "不把该周纳入达标率/连续周",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-12",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "运行中固定计划今日未记",
+        "when": "当天暂停再同日恢复",
+        "functional": "当天未提交义务取消，恢复最早次日",
+        "visual": "暂停/恢复状态可辨",
+        "negative": "不补出当日义务或未记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-13",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "运行中计划已有今日记录",
+        "when": "暂停或归档",
+        "functional": "记录保留，后续义务停止",
+        "visual": "历史结果和生命周期并存",
+        "negative": "不删已提交记录或继续提醒",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "N"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-14",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "归档计划有历史",
+        "when": "查看并显式恢复",
+        "functional": "历史可读，恢复后按规则执行",
+        "visual": "归档入口与恢复反馈明确",
+        "negative": "归档期间不可新打卡",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-15",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "分组含多个计划",
+        "when": "重命名、移动并删除分组",
+        "functional": "计划移入未分组，历史保留",
+        "visual": "列表标签和空态更新",
+        "negative": "不连带删除计划与记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-16",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "有记录/照片/分享的计划",
+        "when": "确认删除",
+        "functional": "计划和分享立即不可读，清理任务产生",
+        "visual": "不可逆警示列出影响，提供归档替代",
+        "negative": "不把删除当归档，不让好友读历史",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-17",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "计划设置一个数值项",
+        "when": "填名称和单位并保存",
+        "functional": "所有计划类型可配置最多一个项",
+        "visual": "数值项可选且不阻断建计划",
+        "negative": "不自动根据数值判定结果",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-PLAN-18",
+      "ownerTask": "WEB-07",
+      "baseline": {
+        "given": "已有“公里”历史数值",
+        "when": "改数值项为“分钟”",
+        "functional": "新记录用新单位，历史保留“公里”",
+        "visual": "历史和当前单位标注清楚",
+        "negative": "不换算或重释历史数值",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-01",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "今日固定计划应执行且未记",
+        "when": "选成功并提交",
+        "functional": "形成唯一成功记录，今日卡片保留",
+        "visual": "结果/提交反馈清楚",
+        "negative": "不要求备注、照片或数值",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-02",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "今日“要做”计划",
+        "when": "明确提交失败",
+        "functional": "记录失败并同步今日/日历",
+        "visual": "失败与未记录文案图形不同",
+        "negative": "不把未操作自动记失败",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-03",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "今日“不要做”计划",
+        "when": "主动确认成功",
+        "functional": "表示目标行为未发生",
+        "visual": "文案明确“今天做到了”",
+        "negative": "不因未打开网页自动成功",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-04",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "固定计划应执行日",
+        "when": "选择跳过并提交",
+        "functional": "形成跳过记录",
+        "visual": "跳过与失败/未记录不同",
+        "negative": "不进入完成率分母",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-05",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "固定计划非选中星期",
+        "when": "尝试 UI/直接 API 打卡",
+        "functional": "UI 禁用，API 拒绝",
+        "visual": "禁用原因可读",
+        "negative": "不写入非应执行日",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-06",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "每周 N 天计划空白日",
+        "when": "查看日历并选择打卡",
+        "functional": "空白日可自愿记录，空白本身无状态",
+        "visual": "周进度和日状态分开",
+        "negative": "不派生单日未记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-07",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "同计划同日已有成功",
+        "when": "再次进入记录页",
+        "functional": "进入修正并预填原值",
+        "visual": "标题为修改记录",
+        "negative": "不新增第二条有效记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-08",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "周目标 3 天，本周成功两日",
+        "when": "同日重复提交成功",
+        "functional": "仍为 2/3",
+        "visual": "进度不跳到 3/3",
+        "negative": "不生成重复成功天数",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-09",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "过去合法日期无记录",
+        "when": "在今日之后补记成功",
+        "functional": "业务日期和实际提交时间分存",
+        "visual": "显示补记标记",
+        "negative": "不可为未来日期预记",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-10",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "历史记录为失败",
+        "when": "修正为成功",
+        "functional": "保留修正标记/时间，统计重算",
+        "visual": "原值与新值可辨",
+        "negative": "不清除补记/修正审计",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-11",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "已分享计划，历史备注含私人文字",
+        "when": "修改记录",
+        "functional": "授权好友只见允许字段及已修正",
+        "visual": "分享预览与本人视图不同",
+        "negative": "不泄露照片和数值",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-12",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "计划配置数值项",
+        "when": "打卡填十进制值",
+        "functional": "原始字符串和单位按版本保存",
+        "visual": "数值与结果分区展示",
+        "negative": "不靠值自动判成败",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-13",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "选照片 JPEG/PNG/HEIC/WebP、上限边界",
+        "when": "上传并提交",
+        "functional": "合法文件签名直传并关联记录",
+        "visual": "进度、失败、完成态清楚",
+        "negative": "超过 20MB 或第 10 张拒绝且不破坏纯结果",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-14",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "上传 URL 过期或对象 CORS 失败",
+        "when": "再试照片上传",
+        "functional": "给出可恢复错误，可不带照片提交",
+        "visual": "错误与纯结果保存按钮分离",
+        "negative": "不显示未上传照片为已保存",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-15",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "一次性任务到期前",
+        "when": "标记完成并附备注/照片/数值",
+        "functional": "按时完成，附加内容可回顾",
+        "visual": "完成日期与私人附件清楚",
+        "negative": "不出现每日打卡/连续率",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-16",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "一次性任务逾期",
+        "when": "完成并附内容",
+        "functional": "状态迟完成，保留实际完成日",
+        "visual": "逾期和迟完成文案准确",
+        "negative": "不显示按时完成",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-17",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "一次性任务待完成或逾期",
+        "when": "标记失败/取消并附内容",
+        "functional": "对应终态及附件可见",
+        "visual": "失败/取消操作可辨",
+        "negative": "终态后不再接受第二次新建完成",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-CHECK-18",
+      "ownerTask": "WEB-10",
+      "baseline": {
+        "given": "一次性结果误记终态",
+        "when": "修正原结果",
+        "functional": "仅原结果被修订且保留标记",
+        "visual": "“修正原记录”入口明确",
+        "negative": "不通过新建结果绕过终态唯一性",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-01",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "固定计划过去 4 次应记日成功 2、失败 1、未记录 1，今天未记",
+        "when": "查看完成率",
+        "functional": "2/4=50%，今天不入分母",
+        "visual": "统计截止日可见",
+        "negative": "不显示 2/5 或把今天判失败",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-02",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "WEB-STAT-01 同种子",
+        "when": "今天成功",
+        "functional": "3/5=60%，今日立即计入",
+        "visual": "数值与卡片一致",
+        "negative": "不双计或等到明天才计入",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-03",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "固定计划有跳过、失败、未记录",
+        "when": "查看连续成功",
+        "functional": "任一非成功应记日中断连续数",
+        "visual": "历史状态分明",
+        "negative": "不把跳过当成功或未记录当失败记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-04",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "每周目标 3 天，空白周一/二，周三成功",
+        "when": "查看周进度",
+        "functional": "1/3，空白日无未记录",
+        "visual": "周进度与日历一致",
+        "negative": "不按空白天扣目标",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-05",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "周目标 3，周一/三/五成功",
+        "when": "周内查看",
+        "functional": "本周已达标，提醒停止",
+        "visual": "已达标状态清楚",
+        "negative": "不阻止第 4 天自愿记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "N"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-06",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "周目标 3，成功四天",
+        "when": "查看达标率",
+        "functional": "进度 4/3，达标率 100%",
+        "visual": "实际数与封顶率并列",
+        "negative": "不显示超过 100%",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-07",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "完整周成功 2/3，周日结束",
+        "when": "查看历史周",
+        "functional": "本周未达标",
+        "visual": "历史周标签清楚",
+        "negative": "不给空白日添加未记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-08",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "周中开始/结束或周中暂停/恢复参数组",
+        "when": "查看周统计",
+        "functional": "标部分周、记录保留、达标率不计",
+        "visual": "有“不参与统计”解释",
+        "negative": "不计连续达标周",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-09",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "周中修改 N 且有旧记录",
+        "when": "跨周查看",
+        "functional": "当前周部分周，下一完整周用新 N",
+        "visual": "旧/新目标时段清楚",
+        "negative": "不追溯重写旧周",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-10",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "一次性任务截止日跨午夜",
+        "when": "查看状态并迟完成",
+        "functional": "截止前待完成，过期后逾期，之后迟完成",
+        "visual": "截止日/完成日可见",
+        "negative": "不生成每日未记录或每日完成率",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-11",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "计划时区 Z1、浏览器时区 Z2 跨日",
+        "when": "切换浏览器时区后回看",
+        "functional": "历史业务日和周归属不变",
+        "visual": "计划时区提示持续",
+        "negative": "不移动到前/后一天",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-STAT-12",
+      "ownerTask": "WEB-11",
+      "baseline": {
+        "given": "历史失败被补记/修正成功",
+        "when": "重新查看今日、日历、详情、统计",
+        "functional": "四处同一最终结果和重算值",
+        "visual": "图文状态一致",
+        "negative": "不出现旧缓存或好友不同统计",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-01",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "浏览器启动前已断网",
+        "when": "访问私人路由",
+        "functional": "显示联网重试入口，未宣称缓存数据可用",
+        "visual": "无网络状态可辨、键盘可达",
+        "negative": "不显示旧数据为最新或伪登录成功",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-02",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "已填打卡表单，提交前断网",
+        "when": "点击提交",
+        "functional": "操作失败或待确认，联网后可重新核对",
+        "visual": "不显示“已保存”",
+        "negative": "不在本机生成权威成功记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-03",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "请求已发出，响应前断网",
+        "when": "恢复网络并用同幂等键核对/重试",
+        "functional": "最终一条有效记录且状态明确",
+        "visual": "提交中到最终结果不跳假成功",
+        "negative": "不换键造成第二记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-04",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "用户连续点击保存/浏览器自动重试",
+        "when": "发送同一业务动作多次",
+        "functional": "只出现一次计划/打卡/留言",
+        "visual": "按钮忙态防重复",
+        "negative": "DB/事件队列无重复有效事实",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-05",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "A1/A3 两标签打开同一记录",
+        "when": "A1 修正后 A3 保存旧版本",
+        "functional": "A3 见冲突和两个版本，可选择最终版",
+        "visual": "冲突差异与选择按钮可读",
+        "negative": "不静默覆盖 A1",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-06",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "A1 桌面与 A2 手机浏览器同账号",
+        "when": "A1 打卡，A2 刷新",
+        "functional": "A2 读到同一最终状态与统计",
+        "visual": "两视口文案和状态一致",
+        "negative": "不因浏览器缓存出现旧结果",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-07",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "未提交表单遇断网并刷新/关闭浏览器",
+        "when": "重新打开页面",
+        "functional": "只恢复服务端已确认数据",
+        "visual": "未提交提示与页面空态清楚",
+        "negative": "不宣称未提交草稿已永久保存",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-ONLINE-08",
+      "ownerTask": "WEB-12",
+      "baseline": {
+        "given": "API 可用但对象域上传中断",
+        "when": "提交纯结果或重试附件",
+        "functional": "纯结果可保存，附件失败单独恢复",
+        "visual": "附件状态与打卡结果分离",
+        "negative": "不因照片失败重复结果或泄漏半成品",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-01",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 搜索已存在用户名 B",
+        "when": "搜索",
+        "functional": "仅返回用户名、昵称、可选头像",
+        "visual": "搜索结果不含计划内容",
+        "negative": "不暴露手机号或私人统计",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-02",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A/B 非好友",
+        "when": "A 请求，B 接受/拒绝参数组",
+        "functional": "好友关系按操作变化",
+        "visual": "请求、等待、接受/拒绝清楚",
+        "negative": "不因申请自动开放计划",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-03",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A/B 已是好友，A 未分享",
+        "when": "B 查看朋友页和直接 API",
+        "functional": "看不到 A 计划",
+        "visual": "空态解释好友与授权区别",
+        "negative": "不返回计划名、数量和历史",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-04",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 有跑步、阅读计划与历史备注",
+        "when": "预览分享跑步给 B",
+        "functional": "预览列出可见的历史状态和文字备注",
+        "visual": "隐私提示与确认同屏可读",
+        "negative": "不在确认前授权或发送消息",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-05",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 仅授权跑步给 B",
+        "when": "B 查看共享列表和计划",
+        "functional": "仅跑步规则、进度、历史状态、文字可见",
+        "visual": "只读状态和时间规则清楚",
+        "negative": "不返回阅读、照片、数值或私人统计",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-06",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "已分享记录含照片、数值",
+        "when": "B 深链和媒体 API 请求",
+        "functional": "私人附件拒绝访问",
+        "visual": "页面不出现占位泄漏信息",
+        "negative": "对象短链不可被 B 获取",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-07",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 分享跑步给 B、C",
+        "when": "B 发 Emoji 与留言",
+        "functional": "A/B 可见，消息入箱一次",
+        "visual": "Emoji/留言/发送反馈清楚",
+        "negative": "C 不可看 B 的留言",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-08",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "B 已获分享但无编辑权限",
+        "when": "B 尝试打卡/改记录",
+        "functional": "UI 不给编辑，API 拒绝",
+        "visual": "只读提示清楚",
+        "negative": "不改变 A 的结果或统计",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-09",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 已授权 B 且 B 页面仍打开",
+        "when": "A 撤销分享",
+        "functional": "B 新读当前和历史均拒绝",
+        "visual": "B 页面刷新为无权限态",
+        "negative": "不继续显示缓存私人内容或允许留言",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-10",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 与 B 为好友且有分享",
+        "when": "删除好友或屏蔽 B",
+        "functional": "相关授权立即失效",
+        "visual": "关系和共享列表更新",
+        "negative": "不保留历史深链访问",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-11",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 删除或归档一项已分享计划",
+        "when": "B 查旧链接",
+        "functional": "删除后不可读；归档按授权继续只读历史",
+        "visual": "错误/归档状态可辨",
+        "negative": "不把删除当归档或泄漏照片",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-12",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "好友申请、分享、留言三类事件",
+        "when": "触发并打开消息中心",
+        "functional": "各事件仅一条，按游标可回看",
+        "visual": "未读数、类别、时间和跳转可读",
+        "negative": "不重复生成或混淆发送者",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-13",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "A 同时登录桌面/手机 Web",
+        "when": "在桌面标一条消息已读",
+        "functional": "手机 Web 与 API 均显示已读",
+        "visual": "两端未读数同步",
+        "negative": "不按浏览器分别维护已读事实",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SOCIAL-14",
+      "ownerTask": "WEB-14",
+      "baseline": {
+        "given": "分享已撤销但历史消息仍在",
+        "when": "点击旧消息",
+        "functional": "先鉴权，进入安全无权限页",
+        "visual": "不显示残留计划详情",
+        "negative": "消息存在不恢复授权",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-01",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "固定周二/四计划，规则启用",
+        "when": "到周二/周三提醒时点",
+        "functional": "周二有适用提醒，周三无",
+        "visual": "设置页星期与今日状态一致",
+        "negative": "不在非选中日发计划提醒",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-02",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "每周目标 3，已成功两日",
+        "when": "到用户选定提醒时点",
+        "functional": "尚差一天时可提示",
+        "visual": "进度与提醒内容一致",
+        "negative": "不把空白日当失败",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-03",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "每周目标已达标",
+        "when": "到后续提醒时点",
+        "functional": "提醒停止，仍可自愿打卡",
+        "visual": "今日显示已达标",
+        "negative": "不继续催促",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-04",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "一次性提醒默认关闭",
+        "when": "创建后到提醒候选时点",
+        "functional": "默认不发；用户开启后按提前天数提示",
+        "visual": "截止日与开关状态清楚",
+        "negative": "不把任务当每日提醒",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-05",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "计划暂停、归档、当日已打卡或终态参数组",
+        "when": "到原提醒时点",
+        "functional": "任务执行前复核状态并跳过",
+        "visual": "设置页说明停止原因",
+        "negative": "无不适用推送/站内催促",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-06",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "A 在 Web 和 iOS 渠道均有偏好",
+        "when": "Web 关闭计划投递",
+        "functional": "Web 停止投递，iOS 渠道值不变",
+        "visual": "Web 开关准确反映",
+        "negative": "不修改共享提醒时间/星期",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-07",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "A 有共享提醒时间，Web 开关关闭",
+        "when": "Web 修改计划提醒时间",
+        "functional": "共享规则更新，渠道开关仍各自独立",
+        "visual": "新时间与关闭状态同时显示",
+        "negative": "不自动开启任一渠道",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-08",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "社交三类偏好可单独设置",
+        "when": "在 Web 关闭其中一类",
+        "functional": "仅对应 Web 类别停止投递，iOS 值不变",
+        "visual": "三类状态分开展示",
+        "negative": "不共用一个总开关",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-09",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "网页打开且计划到提醒点",
+        "when": "观察即时提示",
+        "functional": "提示一次，今日待办持续可见",
+        "visual": "焦点不被强夺、提示可关闭",
+        "negative": "不生成每次计划提醒的持久收件箱消息",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-10",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "A1/A3 同账号两标签页打开",
+        "when": "同一提醒时点到达",
+        "functional": "同一浏览器端只呈现一次有效提示",
+        "visual": "活动标签反馈清楚",
+        "negative": "不双弹或双推",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-11",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "支持 Push 且用户尚未操作权限",
+        "when": "打开首次使用页，再主动开启通知",
+        "functional": "首次使用不弹权限；点击后请求并注册",
+        "visual": "权限说明和开关清楚",
+        "negative": "不静默订阅或在登录时强求权限",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "N",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-12",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "用户拒绝权限或浏览器不支持",
+        "when": "尝试开启通知",
+        "functional": "设置页解释降级，站内与今日继续可用",
+        "visual": "拒绝/不支持文案可读",
+        "negative": "不伪称已开启或阻断打卡",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "N",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-13",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "受控支持浏览器已授权订阅",
+        "when": "触发计划/社交事件",
+        "functional": "服务端受理、浏览器展示通用通知并可点击",
+        "visual": "通知外层无私人详情，点击回正确登录后页面",
+        "negative": "不展示计划名/备注/留言/照片",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-14",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "有有效 Push 订阅",
+        "when": "用户关闭或取消订阅",
+        "functional": "服务端撤销并停止后续发送",
+        "visual": "设置状态及时更新",
+        "negative": "不继续使用旧 endpoint 发送",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "N"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-15",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "Push 订阅过期或供应端永久失败",
+        "when": "Worker 尝试发送",
+        "functional": "标记失效并清理，用户可重新订阅",
+        "visual": "设置页真实反映状态",
+        "negative": "不无限重试或影响业务打卡",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "N"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-NOTIFY-16",
+      "ownerTask": "WEB-16",
+      "baseline": {
+        "given": "iPhone/iPad 普通网址模式与加入主屏幕模式",
+        "when": "分别检查能力和权限",
+        "functional": "普通网址仍可完整使用；安装模式按平台能力订阅",
+        "visual": "安装条件和限制可理解",
+        "negative": "不承诺普通标签页关闭后必达；后台稳定送达仅记录观察",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "N",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-DATA-01",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "A 有计划、记录、照片、好友与分享",
+        "when": "通过 `/api/v1/me/exports` 创建导出",
+        "functional": "生成私有 ZIP 任务并可查进度",
+        "visual": "任务状态与等待反馈清楚",
+        "negative": "B 不可查询或下载 A 的任务",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "F"
+        ]
+      },
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/api/src/exports/exports.controller.ts",
+        "packages/contracts/src/routes.ts"
+      ],
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": [
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "taskId": "WEB-01",
+          "type": "PARTIAL_IMPLEMENTATION",
+          "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-DATA-02",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "导出任务完成",
+        "when": "下载 ZIP 并核清单",
+        "functional": "包含 CSV/JSON、私人照片和关系数据",
+        "visual": "下载入口与有效期提示可读",
+        "negative": "不缺历史修订或泄漏他人数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "F",
+          "D"
+        ]
+      },
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/api/src/exports/exports.controller.ts",
+        "packages/contracts/src/routes.ts"
+      ],
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": [
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "taskId": "WEB-01",
+          "type": "PARTIAL_IMPLEMENTATION",
+          "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-DATA-03",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "A 在 24 小时内超导出频次",
+        "when": "再请求导出",
+        "functional": "按既有限额拒绝并提示",
+        "visual": "限流文案清楚",
+        "negative": "不多建任务或耗尽 Worker",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/api/src/exports/exports.controller.ts",
+        "packages/contracts/src/routes.ts"
+      ],
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": [
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "taskId": "WEB-01",
+          "type": "PARTIAL_IMPLEMENTATION",
+          "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-DATA-04",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "文件/签名下载 URL 到期",
+        "when": "使用旧链接",
+        "functional": "明确失效并提供重新获取方式",
+        "visual": "无空白页",
+        "negative": "旧链接不继续开放私人 ZIP",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/api/src/exports/exports.controller.ts",
+        "packages/contracts/src/routes.ts"
+      ],
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": [
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "taskId": "WEB-01",
+          "type": "PARTIAL_IMPLEMENTATION",
+          "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-DATA-05",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "已归档计划仍有历史",
+        "when": "查看并导出",
+        "functional": "历史保留且可导出",
+        "visual": "归档标记清楚",
+        "negative": "不因归档删除照片或记录",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-DATA-06",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "有照片与分享的计划",
+        "when": "确认删除计划",
+        "functional": "当前与历史访问撤销，后台清理",
+        "visual": "确认层列出影响与归档替代",
+        "negative": "好友不能再读，照片短链失效",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-DATA-07",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "A 申请删除账号",
+        "when": "完成二次确认",
+        "functional": "登录和分享立即停用，进入 30 天撤销期",
+        "visual": "不可逆后果和期限说明清楚",
+        "negative": "原 Web 会话、Push 订阅不再有效",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-DATA-08",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "A 在 30 天内用受控流程撤销删除",
+        "when": "执行撤销",
+        "functional": "账号按既有规则恢复",
+        "visual": "状态与恢复反馈可读",
+        "negative": "不产生第二账户或额外分享权限",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-DATA-09",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "删除等待期届满",
+        "when": "运行最终清理 Worker",
+        "functional": "业务数据、照片与关系按规则清除",
+        "visual": "N/A",
+        "negative": "不保留可读取的私有对象或有效会话",
+        "requiredEvidenceCodes": [
+          "A",
+          "D",
+          "L",
+          "F",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "FAIL",
+      "variants": [
+        {
+          "variant": "api-fixture",
+          "runId": "synthetic-tool",
+          "status": "FAIL",
+          "resultPath": "evidence/synthetic-tool/WEB-DATA-09/api-fixture/result.json"
+        }
+      ],
+      "history": [
+        {
+          "at": "2026-09-28T17:12:49.776350Z",
+          "type": "CASE_RECORDED",
+          "summary": "api-fixture FAIL; F/V/N observed and evidence hashed",
+          "evidencePath": "evidence/synthetic-tool/WEB-DATA-09/api-fixture/result.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-DATA-10",
+      "ownerTask": "WEB-18",
+      "baseline": {
+        "given": "A 的多浏览器会话和历史消息存在",
+        "when": "账号最终删除后重访",
+        "functional": "所有会话拒绝，消息和导出不可读",
+        "visual": "登录/删除状态清楚",
+        "negative": "浏览器返回、深链或缓存不暴露旧数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-01",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "第 13 节列出的 16 个页面键，每键有正常、空、加载或错误等适用状态",
+        "when": "逐页打开并按状态截图",
+        "functional": "入口、主操作和返回路径可达",
+        "visual": "沿用视觉令牌与层级，信息可读",
+        "negative": "不出现空白页、错位或无法操作的关键控件",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-02",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "桌面宽视口已登录",
+        "when": "在今日、计划、日历、好友、消息和设置间切换",
+        "functional": "导航与当前路由一致",
+        "visual": "桌面导航、内容和辅助区重新排布且层级明确",
+        "negative": "不用手机窄栏机械放大或遮挡内容",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-03",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "手机窄视口已登录",
+        "when": "切换核心模块并执行主要操作",
+        "functional": "核心入口可单手触达，返回位置明确",
+        "visual": "底部或紧凑导航不遮盖内容",
+        "negative": "不依赖悬停才能发现功能",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-04",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "360、390、393 像素可用内容宽度",
+        "when": "走完登录、建计划、打卡、分享和删除流程",
+        "functional": "每个控件可达",
+        "visual": "页面宽度不超过可用视口，长文案合理换行",
+        "negative": "不出现页面级横向滚动、截断或视口外不可达操作",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-05",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "768、1024、1280、1440 像素宽度",
+        "when": "调整窗口并复核关键页",
+        "functional": "数据与操作连续保留",
+        "visual": "栅格、侧栏与卡片按断点自然重排",
+        "negative": "不因断点切换丢输入或出现重叠",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-06",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "长表单、月历详情和历史列表",
+        "when": "纵向滚动至末尾并提交",
+        "functional": "全部字段及提交按钮可达",
+        "visual": "允许纵向滚动；固定导航与安全区不遮挡最后一项",
+        "negative": "不要求整页塞进一屏或出现水平溢出",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-07",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "浏览器缩放至 200%，系统放大字体",
+        "when": "完成登录、打卡和消息操作",
+        "functional": "核心路径仍可操作",
+        "visual": "文字重排，焦点和按钮保持可见",
+        "negative": "不发生文字覆盖、裁剪或只能横向拖动才能阅读",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-08",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "仅键盘可用",
+        "when": "Tab、Shift+Tab、Enter、Space、Esc 走核心流程",
+        "functional": "可完成导航、编辑、保存和关闭",
+        "visual": "焦点指示持续可见、顺序符合阅读顺序",
+        "negative": "不存在键盘死角或仅鼠标可点控件",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-09",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "打开确认删除、补记或权限对话框",
+        "when": "键盘循环并关闭",
+        "functional": "焦点被约束、关闭后回到触发点",
+        "visual": "对话框标题、按钮与危险动作清楚",
+        "negative": "焦点不落入背景，也不无故丢失",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-10",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "屏幕阅读器与语义检查开启",
+        "when": "遍历表单、统计图、日历和消息",
+        "functional": "标签、错误、状态变化与数值摘要可感知",
+        "visual": "信息层级对应标题和语义结构",
+        "negative": "不只靠颜色、图形或占位符传达必需信息",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-11",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "浅色、深色及系统主题切换",
+        "when": "打开第 13 节关键页与弹层",
+        "functional": "主题切换后数据和操作保留",
+        "visual": "两种主题的对比度、图标、边框和状态可辨",
+        "negative": "不用 iOS 浅色画板作深色逐像素阈值",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-12",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "成功、失败、暂停、超期、未完成等状态存在",
+        "when": "查看今日、月历和统计",
+        "functional": "各状态含文字或形状说明",
+        "visual": "视觉令牌一致，危险与成功状态区别明确",
+        "negative": "不仅凭红绿颜色判断结果",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-13",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "API 延迟、空结果和可恢复错误",
+        "when": "分别触发加载、空态和重试",
+        "functional": "有明确反馈和可用的下一步",
+        "visual": "骨架、占位、错误文案不抖动或遮挡",
+        "negative": "不无限转圈、不把错误当空列表",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-14",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "用户可访问的详情深链",
+        "when": "直接打开、刷新、返回、前进",
+        "functional": "登录后回目标页，状态与 URL 同步",
+        "visual": "标题与返回位置准确",
+        "negative": "不因 SPA 刷新 404 或露出前一用户数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-15",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "手机触屏与桌面鼠标并用",
+        "when": "操作菜单、日期格、上传和提示",
+        "functional": "点击/触摸目标可用",
+        "visual": "触控区域、间距和悬停反馈符合对应输入方式",
+        "negative": "核心动作不只在 hover 显示",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-UI-16",
+      "ownerTask": "WEB-19",
+      "baseline": {
+        "given": "长计划名、多照片、满月历和大量历史",
+        "when": "滚动、展开并查看详情",
+        "functional": "内容完整可达，媒体保持比例",
+        "visual": "卡片、弹层与列表不横向撑破视口",
+        "negative": "不截断唯一关键信息、不盖住导航或提交",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "F"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-01",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "未登录或访问令牌过期且不可续期",
+        "when": "直接请求私有路由/API",
+        "functional": "返回登录或 401，保留可恢复的目标路径",
+        "visual": "登录反馈清楚",
+        "negative": "不返回私人计划、照片、消息或导出",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-02",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "A、B 仅为好友或无关系",
+        "when": "B 猜测 A 的对象 ID",
+        "functional": "服务端按资源权限拒绝越权",
+        "visual": "拒绝状态可理解",
+        "negative": "不通过前端隐藏代替服务端授权",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "F"
+        ]
+      },
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/api/src/exports/exports.controller.ts",
+        "packages/contracts/src/routes.ts"
+      ],
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": [
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "taskId": "WEB-01",
+          "type": "PARTIAL_IMPLEMENTATION",
+          "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-SEC-03",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "Web 登录成功",
+        "when": "检查刷新 Cookie、访问令牌和退出",
+        "functional": "Secure/HttpOnly/SameSite 生效，访问令牌仅内存，退出撤销会话",
+        "visual": "设置页登录状态真实",
+        "negative": "不把刷新令牌写入 localStorage、URL 或可读脚本变量",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-04",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "Cookie 刷新和写操作端点存在",
+        "when": "伪造跨站请求与非法 Origin",
+        "functional": "CSRF/Origin 校验拒绝请求",
+        "visual": "N/A",
+        "negative": "不因 Cookie 自动携带产生跨站状态变更",
+        "requiredEvidenceCodes": [
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-05",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "备注、计划名、昵称含脚本或 HTML",
+        "when": "保存、分享和重新打开",
+        "functional": "内容按文本安全呈现，CSP 有效",
+        "visual": "特殊字符显示完整",
+        "negative": "不执行脚本、注入样式或盗取会话",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-06",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "A 退出或删除，浏览器有历史缓存",
+        "when": "后退、刷新、离线尝试旧 URL",
+        "functional": "受保护内容无法继续访问",
+        "visual": "显示登录或失效反馈",
+        "negative": "不从 BFCache、HTTP 缓存或预览露出私人数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-07",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "照片和导出使用私有对象链接",
+        "when": "跨用户、过期和跨来源访问",
+        "functional": "签名与 CORS 策略按权限和时效生效",
+        "visual": "失败提示清楚",
+        "negative": "不暴露永久公链或开放桶访问",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "F",
+          "L"
+        ]
+      },
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/api/src/exports/exports.controller.ts",
+        "packages/contracts/src/routes.ts"
+      ],
+      "implementationCommit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": [
+        {
+          "at": "2026-09-28T11:37:00Z",
+          "taskId": "WEB-01",
+          "type": "PARTIAL_IMPLEMENTATION",
+          "summary": "导出路径已对齐；所属业务与浏览器 F/V/N 未执行，verificationStatus 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-01/checks.json"
+        }
+      ]
+    },
+    {
+      "caseId": "WEB-SEC-08",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "网络重试、双击与多标签重复提交",
+        "when": "提交打卡、好友请求或导出",
+        "functional": "幂等键或去重规则得到单一有效结果",
+        "visual": "不重复成功提示",
+        "negative": "不生成重复记录、消息或任务",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-09",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "两浏览器同时修改同一计划/记录",
+        "when": "先后提交冲突版本",
+        "functional": "冲突明确提示、可重载与重试",
+        "visual": "冲突信息和恢复动作可见",
+        "negative": "不静默覆盖较新的数据",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-10",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "短时间多次请求短信、登录或注册",
+        "when": "达到服务端限流阈值",
+        "functional": "429 与冷却提示按既定规则出现",
+        "visual": "剩余等待可理解",
+        "negative": "不无限发短信或泄露账号是否存在",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-11",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "错误、Push 发送、导出和删除产生服务日志",
+        "when": "检查结构化日志和监控样本",
+        "functional": "有关联 ID 与失败原因，可定位问题",
+        "visual": "N/A",
+        "negative": "不记录验证码、访问/刷新令牌、照片正文或私人备注",
+        "requiredEvidenceCodes": [
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    },
+    {
+      "caseId": "WEB-SEC-12",
+      "ownerTask": "WEB-20",
+      "baseline": {
+        "given": "预发布环境和 Web 候选构建",
+        "when": "检查 HTTPS、回滚、健康检查与关键路径",
+        "functional": "站点/API 可通过同站点 HTTPS 访问，回滚和恢复演练通过",
+        "visual": "首屏和错误页可读",
+        "negative": "不以未完成的 iOS 客户端联测阻断 Web，亦不绕过 Web 自身阻断项",
+        "requiredEvidenceCodes": [
+          "S",
+          "H",
+          "V",
+          "A",
+          "D",
+          "L",
+          "T"
+        ]
+      },
+      "implementationStatus": "NOT_STARTED",
+      "implementationPaths": [],
+      "implementationCommit": null,
+      "verificationStatus": "NOT_RUN",
+      "variants": [],
+      "history": []
+    }
+  ],
+  "events": [
+    {
+      "id": "BASELINE-20260928-01",
+      "occurredAt": "2026-09-28",
+      "type": "BASELINE",
+      "taskId": null,
+      "summary": "建立 Web 代码开发与浏览器验收执行基线；22 个任务未开始，136 个用例未执行。",
+      "currentFacts": [
+        "仓库尚无 apps/web",
+        "Web ATDD 136 项是未执行的验收基线",
+        "当前没有 Web 浏览器截图或 PASS 结果"
+      ],
+      "artifacts": [
+        "docs/任务执行计划-计划打卡-Web-v1.md",
+        "docs/atdd/web/execution-progress.json",
+        "docs/atdd/web/check_execution_progress.py",
+        "docs/atdd/web/acceptance-cases.json"
+      ],
+      "checks": [
+        {
+          "command": "python docs/atdd/web/check_execution_progress.py",
+          "exitCode": 0,
+          "actual": "Web execution ledger OK: 22 tasks, 136 cases"
+        }
+      ],
+      "nextAction": "领取 WEB-01，核对控制器、契约和需求差异。"
+    },
+    {
+      "id": "WEB-01-START-20260928",
+      "occurredAt": "2026-09-28T11:26:46Z",
+      "type": "TASK_STARTED",
+      "taskId": "WEB-01",
+      "summary": "先建立 Markdown 与 JSON 任务记录，再开展源码与契约核对。",
+      "checks": [
+        {
+          "command": "python docs/atdd/web/check_execution_progress.py",
+          "exitCode": 0,
+          "actual": "Web execution ledger OK: 22 tasks, 136 cases"
+        }
+      ]
+    },
+    {
+      "id": "WEB-01-CHECKS-20260928",
+      "occurredAt": "2026-09-28T11:37:00Z",
+      "type": "DEVELOPMENT_CHECKED",
+      "taskId": "WEB-01",
+      "summary": "新旧导出路径控制器/契约、OpenAPI 和兼容检查通过；浏览器验收未执行。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-01/checks.json",
+        "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
+      ]
+    },
+    {
+      "id": "WEB-01-DONE-20260928",
+      "occurredAt": "2026-09-28T11:39:56Z",
+      "type": "TASK_COMPLETED",
+      "taskId": "WEB-01",
+      "summary": "导出兼容代码提交，契约审计与静态检查通过；所有 Web 浏览器验收仍未运行。",
+      "commit": "6e984b061c1a008ed5ad9ee1396e52733617adee",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-01/checks.json",
+        "docs/atdd/web/WEB-01-契约核对与兼容迁移.md"
+      ]
+    },
+    {
+      "id": "WEB-02-START-20260928",
+      "occurredAt": "2026-09-28T11:41:32Z",
+      "type": "TASK_STARTED",
+      "taskId": "WEB-02",
+      "summary": "Markdown 和 JSON 已同步记录开始；136 项业务验收仍 NOT_RUN。"
+    },
+    {
+      "id": "WEB-02-PARTIAL-20260928",
+      "occurredAt": "2026-09-28T11:45:29Z",
+      "type": "PARTIAL_IMPLEMENTATION",
+      "taskId": "WEB-02",
+      "summary": "已实现证据包校验工具；八项合成自测通过，不计业务 PASS。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-02/checks.json",
+        "docs/atdd/web/WEB-02-证据工具进展.md"
+      ]
+    },
+    {
+      "id": "WEB-02-BROWSER-PROBE-20260928",
+      "occurredAt": "2026-09-28T11:53:26Z",
+      "type": "BROWSER_TOOL_CHECKED",
+      "taskId": "WEB-02",
+      "summary": "Chrome 手机和 Edge 桌面采集探针输出真实浏览器证据；合成页不计业务 PASS。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-02/browser-captures.json",
+        "docs/atdd/web/WEB-02-证据工具进展.md"
+      ]
+    }
+  ]
+}

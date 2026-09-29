@@ -2,9 +2,9 @@
 
 ## 范围与前置条件
 
-[`infra/deploy/manifest.mjs`](../infra/deploy/manifest.mjs) 生成开发、预发、生产隔离的 Kubernetes Namespace、专用 ServiceAccount、迁移 Job、API/Worker Deployment、ClusterIP Service、TLS Ingress 与 API HPA。生产配置以中国大陆单一区域 `cn-hangzhou` 为部署输入，API/Worker 各 2 副本，Pod 按可用区分散；具体云账号、Kubernetes 集群、两区节点、Ingress/WAF、托管 PostgreSQL、Redis、私有对象存储和供应商网络地址由部署环境提供。`cn-hangzhou` 是当前配置值，需在实际供应商账户核对服务可用区与数据驻留后冻结；本仓库尚无特定云厂商的资源账号，不能声称云资源已开通。
+[`infra/deploy/manifest.mjs`](../infra/deploy/manifest.mjs) 生成开发、预发、生产隔离的 Kubernetes Namespace、专用 ServiceAccount、迁移 Job、API/Worker/Web Deployment、ClusterIP Service、同站点 TLS Ingress 与 API HPA。Ingress 将 `/api/v1` 交给 API、`/` 交给 Web。生产配置以中国大陆单一区域 `cn-hangzhou` 为部署输入，API/Worker/Web 各 2 副本，Pod 按可用区分散；具体云账号、Kubernetes 集群、两区节点、Ingress/WAF、托管 PostgreSQL、Redis、私有对象存储和供应商网络地址由部署环境提供。`cn-hangzhou` 是当前配置值，需在实际供应商账户核对服务可用区与数据驻留后冻结；本仓库尚无特定云厂商的资源账号，不能声称云资源已开通。Web 的具体运行与检查命令见[项目运行手册](./项目运行手册-计划打卡-Web-v1.md)。
 
-所有生产镜像必须以 `@sha256:` 摘要引用。API 和 Worker 使用同一源码镜像、不同入口；容器以非 root 运行，根文件系统只读，Kubernetes ServiceAccount token 禁止自动挂载。`public-waf` IngressClass、TLS Secret、指标采集与告警接收器必须先由集群平台提供。Ingress 不应绕过 WAF；`/internal/metrics` 只能由私网采集，须附 Bearer token。
+所有生产镜像必须以 `@sha256:` 摘要引用。API 和 Worker 使用同一源码镜像、不同入口；Web 使用独立静态镜像。容器以非 root 运行，根文件系统只读，Kubernetes ServiceAccount token 禁止自动挂载。`public-waf` IngressClass、TLS Secret、指标采集与告警接收器必须先由集群平台提供。Ingress 不应绕过 WAF；`/internal/metrics` 只能由私网采集，须附 Bearer token。
 
 ## 密钥注入合同
 
@@ -18,22 +18,24 @@
 
 三环境 Secret 与数据库、对象 bucket 完全隔离。生产 Secret 不使用本地 `local_only_` 值；生产 `APP_ENV`、短信/APNs 环境由受版本控制的环境配置给定，业务密钥只在运行时注入。数据库连接使用专用角色和 TLS；迁移角色仅用于迁移 Job，API/Worker 使用最小业务权限。对象凭据分别限制 bucket 和操作范围，Worker 才有删除对象权限。实际 IAM/网络策略由选定云平台补充并在预发核验。
 
+Web Pod 不注入业务 Secret，仅接收公开的对象 HTTPS 来源 `WEB_OBJECT_ORIGIN` 以生成 CSP。API Secret 中的 `WEB_ORIGIN` 必须是 `https://<Ingress host>`；对象签名 URL 的来源必须与 `WEB_OBJECT_ORIGIN` 匹配。
+
 ## 构建与发布顺序
 
-1. 在项目根目录用 `infra/deploy/Dockerfile` 构建镜像并推送私有仓库；记录镜像的 **仓库摘要** 与 Git 40 位提交 SHA。构建执行锁文件固定安装及 contracts/domain/API/Worker 编译。运行 `pnpm check`、`pnpm db:smoke`、`pnpm infra:check`。
+1. 在项目根目录分别用 `infra/deploy/Dockerfile` 与 `infra/deploy/Web.Dockerfile` 构建 API/Worker 与 Web 镜像并推送私有仓库；记录两个镜像的 **仓库摘要** 与 Git 40 位提交 SHA。构建执行锁文件固定安装及各自依赖编译。运行 `pnpm check`、`pnpm db:smoke`、`pnpm infra:check`、`pnpm web:static:smoke`。
 2. 核对 `db/migrations/manifest.json`：现有迁移均为 `expand`，新迁移先扩展兼容字段，不能在仍有旧服务或旧客户端时移除字段。发布前保存 PostgreSQL 一致性备份、对象存储版本点及独立删除墓碑文件，并确认恢复材料位于隔离存储。
 3. 先在预发渲染并审阅无密钥部署清单：
 
-   `node scripts/deploy.mjs --environment staging --context <kube-context> --image <registry/image@sha256:digest> --release <git-sha> --host <api-domain> --tls-secret <secret-name> --mode render`
+   `node scripts/deploy.mjs --environment staging --context <kube-context> --image <app@sha256:digest> --web-image <web@sha256:digest> --release <git-sha> --host <web-api-domain> --tls-secret <secret-name> --object-origin <https://object-domain> --mode render`
 
-4. 用相同参数改 `--mode deploy`。脚本创建 Namespace/ServiceAccount，核对密钥键、TLS 与两区节点，等待迁移 Job 成功，再滚动 API/Worker 并等待 rollout。迁移脚本有数据库 advisory lock 和 SQL 哈希校验，同一提交重试不重复应用。失败时停止发布并保留旧服务流量；Job 失败先查迁移状态，不直接反向执行 SQL。
+4. 用相同参数改 `--mode deploy`。脚本创建 Namespace/ServiceAccount，核对密钥键、TLS 与两区节点，等待迁移 Job 成功，再滚动 API/Worker/Web 并等待三者 rollout，最后应用 Ingress 路由。迁移脚本有数据库 advisory lock 和 SQL 哈希校验，同一提交重试不重复应用。失败时停止发布并保留旧服务流量；Job 失败先查迁移状态，不直接反向执行 SQL。
 5. 预发核对 readiness、`/internal/metrics`、短信/APNs 沙箱、私有对象读写/删除、账号注销重试、备份恢复；再按相同步骤发布生产。iOS 客户端随后通过 TestFlight 分组逐步放量，观察 5xx、P95/P99、同步冲突和 Worker/删除告警。客户端版本须与 OpenAPI 兼容基线一致。
 
 开发环境将 `.env.example` 复制为 `.env`，设置本机可用的 `PLAN_CHECKIN_POSTGRES_PORT`、`PLAN_CHECKIN_REDIS_PORT`、`PLAN_CHECKIN_OBJECT_PORT`，并同步修改 `DATABASE_URL`、`REDIS_URL`、`OBJECT_ENDPOINT` 和 `OBJECT_PUBLIC_ENDPOINT`，再运行 `pnpm infra:up`。本地 S3 兼容存储使用 [SeaweedFS 官方镜像](https://github.com/seaweedfs/seaweedfs)并绑定回环地址；这是开发替身，不代表生产对象存储供应商。真实 Kubernetes 发布需要 `kubectl`、仓库镜像、集群上下文和已建立的 Secret。
 
 ## 回滚与灰度
 
-服务端回滚使用上一已验证镜像摘要与对应 Git SHA，命令参数保持目标环境/Host/TLS 不变，`--mode rollback` 只恢复 API/Worker 镜像，不重跑迁移。迁移设计必须向前兼容旧版服务；若旧版不兼容，先做新的向前修复迁移，禁止直接降库。回滚后检查两个 Deployment 的 rollout、就绪端点、写请求、同步和 Worker 队列。手机端灰度由 TestFlight 分组停止放量或回退已批准构建；数据库事实与本地离线队列不可通过卸载客户端处理。
+服务端回滚使用上一已验证的 API/Worker 与 Web 镜像摘要及对应 Git SHA，命令参数保持目标环境/Host/TLS/对象域一致，`--mode rollback` 恢复三个 Deployment 并在就绪后重用对应 Ingress，不重跑迁移。迁移设计必须向前兼容旧版服务；若旧版不兼容，先做新的向前修复迁移，禁止直接降库。回滚后检查三个 Deployment 的 rollout、就绪端点、Web 深链、写请求、同步和 Worker 队列。手机端灰度由 TestFlight 分组停止放量或回退已批准构建；数据库事实与本地离线队列不可通过卸载客户端处理。
 
 ## 备份和恢复门槛
 

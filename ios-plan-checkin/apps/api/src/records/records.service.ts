@@ -1,6 +1,7 @@
 import { HttpException, Injectable } from "@nestjs/common";
 import type {
   CheckinDto,
+  CheckinContextDto,
   OneTimeResolutionDto,
   OneTimeResolutionRequest,
   PutCheckinRequest,
@@ -336,6 +337,53 @@ export class RecordsService {
         [userId, row.id],
       );
       return this.dto(client, row, userId, Number(changed.rows[0]?.seq ?? 0));
+    });
+  }
+
+  async context(
+    userId: string,
+    planId: string,
+    rawDate: string,
+  ): Promise<CheckinContextDto> {
+    requireUuid(planId);
+    const date = this.date(rawDate);
+    return this.database.transaction(async (client) => {
+      await client.query(
+        "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY",
+      );
+      const plan = await this.plan(client, userId, planId, false);
+      const rule = ruleForDate(plan.timeline, date);
+      const existing = await this.current(client, planId, date);
+      const numericConfig = await client.query<{
+        label: string;
+        unit: string;
+        version: number;
+        effective_from: string;
+      }>(
+        `SELECT label, unit, version, effective_from::text
+         FROM plan_numeric_config_versions WHERE plan_id=$1 AND effective_from <= $2
+         ORDER BY effective_from DESC LIMIT 1`,
+        [planId, date],
+      );
+      const config = numericConfig.rows[0];
+      return {
+        planBusinessDate: date,
+        timezone: plan.row.timezone,
+        canCreate:
+          !existing &&
+          canRecordOnDate(plan.timeline, date, new Date().toISOString()),
+        canRevise: Boolean(existing),
+        ruleVersion: existing?.rule_version ?? rule?.version ?? null,
+        numericItem: config
+          ? {
+              label: config.label,
+              unit: config.unit,
+              version: config.version,
+              effectiveFrom: config.effective_from,
+            }
+          : null,
+        record: existing ? await this.dto(client, existing, userId, 0) : null,
+      };
     });
   }
 

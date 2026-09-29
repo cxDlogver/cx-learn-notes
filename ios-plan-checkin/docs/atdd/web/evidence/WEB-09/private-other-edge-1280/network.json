@@ -1,0 +1,54 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:29.894Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "0f7bfdef05236a8c52666affef66637415336e9daa4599821839d42612b78ec2",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:30.243Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "dabfc8d63311a39b86fa9fd0fcdf9f6e00d0959f06c443b66dd5f7202f5787d1",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:30.564Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:30.579Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "operationKeySha256": "3526f02f20a0707a626280e315786c6c9211947aec45c681abd524064b752f16",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:31.015Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:31.069Z"
+  },
+  {
+    "path": "/api/v1/media/0e2fafa6-b22d-4f90-ac1b-e6fcde9cc2db/download-url",
+    "method": "GET",
+    "status": 404,
+    "mimeType": "application/json",
+    "at": "2026-09-29T06:14:31.298Z"
+  }
+]

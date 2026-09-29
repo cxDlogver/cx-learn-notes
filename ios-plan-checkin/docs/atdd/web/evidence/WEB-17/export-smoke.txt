@@ -1,0 +1,5 @@
+
+> plan-checkin@0.1.0 export:smoke
+> tsc -p apps/api/tsconfig.json && tsc -p apps/worker/tsconfig.json && node scripts/data-export-smoke.mjs
+
+Data export smoke passed: scoped SQL, owner-only download and independent ZIP extraction.

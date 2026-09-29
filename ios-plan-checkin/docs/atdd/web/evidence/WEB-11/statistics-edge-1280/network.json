@@ -1,0 +1,133 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:19:58.699Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "efeb74a8de871ddbe13e7f99b5b7d9edb8174dcb2717332791762d6d0ae6b1ed",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:19:59.050Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "99f1d4a246cf71ce28b05a07a8d794189e03692d46dbec575e48fe3b5fef3222",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:19:59.393Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:19:59.411Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "operationKeySha256": "dbeb68ebeb8abb6d413aa48554c918ebc9bbb0c1c82d724a30f9deb8609100be",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:19:59.797Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:19:59.851Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "operationKeySha256": "3de6f6472063906a37dbdf812221f035bad4caf64344caa41f4ea9749be3692b",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:00.586Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:00.605Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:00.645Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/statistics",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:00.677Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:00.683Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/checkins/2026-09-28",
+    "method": "PUT",
+    "operationKeySha256": "8b0ae87000bf07671cc9b31144536c2ba8e5e8070898ea7b5b680f5174bc09c5",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:01.363Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:01.403Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:01.409Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/statistics",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:01.414Z"
+  },
+  {
+    "path": "/api/v1/plans/1ac12d5e-3f99-4fbd-9cfd-7217095a5721/statistics",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:01.546Z"
+  },
+  {
+    "path": "/api/v1/calendar",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:01.746Z"
+  },
+  {
+    "path": "/api/v1/calendar/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T07:20:02.082Z"
+  }
+]

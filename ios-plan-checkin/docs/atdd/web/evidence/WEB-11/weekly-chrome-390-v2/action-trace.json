@@ -1,0 +1,147 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T07:58:41.537Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T07:58:41.656Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T07:58:41.767Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T07:58:41.880Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T07:58:41.994Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-29T07:58:42.096Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 26,
+    "at": "2026-09-29T07:58:42.214Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 5,
+    "at": "2026-09-29T07:58:42.322Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T07:58:42.430Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T07:58:42.533Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T07:58:42.669Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-29T07:58:42.777Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 6,
+    "at": "2026-09-29T07:58:42.892Z"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "weekly",
+    "at": "2026-09-29T07:58:42.998Z"
+  },
+  {
+    "action": "click",
+    "selector": "input[name='direction'][value='avoid']",
+    "at": "2026-09-29T07:58:43.108Z"
+  },
+  {
+    "action": "replace",
+    "selector": "#plan-weekly-target",
+    "characters": 1,
+    "at": "2026-09-29T07:58:43.240Z"
+  },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-23",
+    "at": "2026-09-29T07:58:43.353Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "weekly-form",
+    "at": "2026-09-29T07:58:43.497Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-29T07:58:43.508Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1",
+    "at": "2026-09-29T07:58:43.620Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".plan-statistics .statistics-grid",
+    "at": "2026-09-29T07:58:43.729Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-statistics-heading button",
+    "at": "2026-09-29T07:58:43.835Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-statistics .statistics-current-week",
+    "expectedText": "本周",
+    "at": "2026-09-29T07:58:43.946Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "weekly-statistics",
+    "at": "2026-09-29T07:58:43.985Z"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-link[href='/calendar']",
+    "at": "2026-09-29T07:58:44.004Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".calendar-weeks",
+    "expectedText": "部分周",
+    "at": "2026-09-29T07:58:44.118Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "weekly-calendar",
+    "at": "2026-09-29T07:58:44.168Z"
+  }
+]

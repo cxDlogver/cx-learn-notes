@@ -2,7 +2,7 @@
 
 | 项目 | 当前记录 |
 | --- | --- |
-| 任务状态 | `IN_PROGRESS`；校验、结果写入、本机 Chrome/Edge 交互采集、隔离 A/B/C/D 种子与固定时钟探针已实现，外部桩和正式浏览器矩阵未完成 |
+| 任务状态 | `IN_PROGRESS`；校验、结果写入、本机 Chrome/Edge 交互采集、隔离种子、数据库到期边界与受控对象/Push 供应端探针已实现，正式浏览器矩阵和 CI 外部保留未完成 |
 | 验收状态 | 136 个业务用例均 `NOT_RUN`；本页没有业务 PASS 或截图 |
 | 依据 | [Web 验收矩阵](../../ATDD-BDD-计划打卡-Web-v1-验收矩阵.md) §1.3、[结果 schema](./acceptance-result.schema.json)、[任务计划](../../任务执行计划-计划打卡-Web-v1.md) WEB-02 |
 
@@ -57,7 +57,18 @@
 
 ## 后续必须完成
 
-1. 将可审计短信、对象存储与 Web Push 供应端桩及 Worker 接入真实测试链路；补数据库时间字段的到期边界种子。
+### 可留存的结果写入样本（2026-09-29）
+
+运行 `python docs/atdd/web/generate_tool_sample.py`，在 [tool-sample](./evidence/WEB-02/tool-sample/sample-check.json) 中生成并验证完整的 [合成结果 JSON](./evidence/WEB-02/tool-sample/evidence/synthetic-tool/WEB-DATA-09/api-fixture/result.json)、原始 `a.txt`、独立的 JSON 台账和 Markdown 执行日志。`sample-check.json` 列出逐文件 SHA-256。样本 `WEB-DATA-09` 故意为 `FAIL`；样本台账为 `FAIL`，正式台账仍是 `NOT_RUN`。路径在 `docs/atdd/web/evidence/WEB-02/tool-sample/`，不在正式业务 `evidence/<runId>/` 下。工具检查 15 项通过，正式 136 项没有因此通过。
+
+### 数据库到期边界与受控供应端（2026-09-29）
+
+- `web-atdd-fixture.mjs set-session-expiry RUN_ID ALIAS OFFSET_SECONDS` 仅接受本机 `web_atdd_*` 库、开发配置、六个隔离会话别名和 ±3600 秒范围，直接以 PostgreSQL `clock_timestamp()` 设置到期时间。隔离 PostgreSQL 17 中，A3 设置为数据库当前时间前 1 秒后，真实 `/auth/web/session` 返回 401；设置为当前时间后 3600 秒后恢复 200。A1/A2/B/C/D 不受影响，种子重建与最终清理仍通过。见[原始 HTTP/数据库输出](./evidence/WEB-02/expiry-selftest.txt)。这补上了仅冻结 Node/浏览器时钟不能覆盖数据库 `now()` 的缺口。
+- 本地 SeaweedFS S3 限制为 `http://127.0.0.1:5173` 和 `http://localhost:5173` 两个开发源站。实际预检允许前者 200，对 `https://untrusted.example` 返回 403；签名 PUT 200、签名 GET 200 且 SHA-256 相同、无签名 GET 403，测试对象删除后的 HEAD 为 404。见[对象供应端记录](./evidence/WEB-02/object-provider.txt)。仅调整本地 compose 默认配置，拟发布环境的对象源站仍须独立配置和实测。
+- Web Push 采用隔离进程内供应端桩：VAPID/加密 payload 经真实 `WebPushSender` 生成，桩记录 201/202 接受、410 永久失效、503 可重试与内网端点拒绝；外发网络请求为 0。见[Push 供应端记录](./evidence/WEB-02/push-provider.txt)。Worker 队列与失效处理的集成证据另见 [WEB-15](./WEB-15-分端提醒与WebPush服务.md)。短信使用真实 API 的受控 `SMS_PROVIDER=stub` 链路，见 [WEB-04](./WEB-04-Web会话与注册API.md)。
+- [七项增量检查清单](./evidence/WEB-02/provider-checks.json)记录命令、退出码、原始输出大小和 SHA-256；含样本生成、到期、对象、Push、lint、格式和正式台账校验。没有产品 Web 页面，也没有把供应端探针记为业务 PASS。
+
+1. 短信/对象/Push 受控桩和数据库到期边界已有独立实测；还需将对象签名直传和 Push Worker 与实际 Web 页面组成同一正式验收运行，补失败注入与跨组件原始证据。
 2. 将本机 Chrome/Edge 运行器接入实际 Web 测试环境，补全手机 Safari/Chrome、桌面 Safari/Firefox 与版本记录，并从正式浏览器读取每个真实用例的环境和步骤。
 3. CI 校验已接入；外部 artifact 保留因自动审批拒绝尚缺。需批准明确的证据目的地、访问控制和保存期限后再接入。候选构建变化已可传播 `STALE`，仍需将该命令接入正式运行流程并由责任人复验。
-4. 生成一个合法但不计业务验收的结果样本，验证写入器与台账的完整闭环。完成这些之前 WEB-02 checklist 不勾选，后续依赖任务不能以本次合成自测解锁。
+4. 合法但不计业务验收的结果样本已留存。完成全部剩余项之前 WEB-02 checklist 不勾选，后续依赖任务不能以本次合成自测解锁。

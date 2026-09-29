@@ -1,0 +1,75 @@
+{
+  "caseId": "WEB-DATA-09",
+  "variant": "api-fixture",
+  "runId": "synthetic-tool",
+  "status": "FAIL",
+  "sourceRefs": [
+    "matrix",
+    "webPrd",
+    "webTechnical",
+    "iosAcceptance"
+  ],
+  "build": {
+    "appVersion": "tool-fixture",
+    "gitCommit": "abcdef0",
+    "apiVersion": "tool-fixture",
+    "sourceDigest": {
+      "webPrd": "cb401befa77eb7543906643857ca59d9cf0ffcfc7742d4f02c661702ff9c2178",
+      "webTechnical": "3f1f8d65f5242fd05ba5fe286bb3ce09c915e9d7ecba8682b9683652839fabcf",
+      "iosPrd": "75f1f4b1878dc8c9b9c08e70a7391f67ca2145ef7f458b605833ed9cd43a46a7",
+      "iosAcceptance": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
+      "iosPen": "b1c94dbc01d577073a2c54ffa57f6953fbc4c6b07855fe4b9d829bce90479939",
+      "matrix": "c746b0469d3bf1af5951acccb246f7af8504a141aa5f2274867b1cfdc0d2b8c4"
+    }
+  },
+  "environment": {
+    "kind": "api",
+    "osName": "synthetic",
+    "osVersion": "synthetic",
+    "planTimezone": "Asia/Shanghai",
+    "businessDate": "2026-09-28",
+    "serverNowUtc": "2026-09-28T00:00:00Z",
+    "network": "online"
+  },
+  "fixtureId": "synthetic-tool-fixture",
+  "startedAt": "2026-09-28T00:00:00Z",
+  "endedAt": "2026-09-28T00:01:00Z",
+  "assertions": {
+    "functional": {
+      "actual": "Synthetic failure to test recorder propagation",
+      "status": "FAIL",
+      "evidencePaths": [
+        "a.txt"
+      ],
+      "expected": "业务数据、照片与关系按规则清除"
+    },
+    "visual": {
+      "actual": "API-only synthetic fixture",
+      "status": "N_A",
+      "evidencePaths": [],
+      "expected": "N/A"
+    },
+    "negative": {
+      "actual": "Synthetic rejection observed",
+      "status": "PASS",
+      "evidencePaths": [
+        "a.txt"
+      ],
+      "expected": "不保留可读取的私有对象或有效会话"
+    }
+  },
+  "evidence": [
+    {
+      "code": "A",
+      "path": "a.txt",
+      "mimeType": "text/plain",
+      "sha256": "1d8b242c0331df81f3af5cf04418c1427e835663c322c918411c695a85bce49b"
+    }
+  ],
+  "reviewer": {
+    "kind": "human",
+    "name": "WEB-02-tool-fixture",
+    "reviewedAt": "2026-09-28T00:02:00Z",
+    "reason": "Synthetic recorder sample; not a product acceptance run"
+  }
+}

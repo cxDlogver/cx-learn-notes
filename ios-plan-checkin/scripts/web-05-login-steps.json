@@ -1,0 +1,16 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001234" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1234"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_user" },
+  { "action": "type", "selector": "#nickname", "text": "Web 验收用户" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='today']" }
+]

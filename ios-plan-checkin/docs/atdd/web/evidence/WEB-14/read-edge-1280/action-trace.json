@@ -1,0 +1,46 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T08:47:38.716Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T08:47:38.840Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T08:47:38.947Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T08:47:39.086Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T08:47:39.196Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".inbox-toolbar",
+    "expectedText": "未读 0 条",
+    "at": "2026-09-29T08:47:39.300Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".inbox-item",
+    "expectedText": "已读",
+    "at": "2026-09-29T08:47:39.409Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "desktop-inbox-read",
+    "at": "2026-09-29T08:47:39.447Z"
+  }
+]

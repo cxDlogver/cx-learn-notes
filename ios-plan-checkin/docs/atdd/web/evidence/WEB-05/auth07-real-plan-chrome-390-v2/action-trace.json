@@ -1,0 +1,64 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T19:33:26.664Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:33:26.783Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T19:33:26.887Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T19:33:27.002Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:33:27.112Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='today']",
+    "at": "2026-09-28T19:33:27.216Z"
+  },
+  {
+    "action": "advance-clock",
+    "offsetMs": 960000,
+    "at": "2026-09-28T19:33:27.333Z"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-nav a[href='/plans']",
+    "at": "2026-09-28T19:33:27.341Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plans']",
+    "at": "2026-09-28T19:33:27.456Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card .action-link",
+    "at": "2026-09-28T19:33:27.563Z"
+  },
+  {
+    "action": "click",
+    "selector": ".today-card .action-link",
+    "at": "2026-09-28T19:33:27.681Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"] h1",
+    "at": "2026-09-28T19:33:27.796Z"
+  }
+]

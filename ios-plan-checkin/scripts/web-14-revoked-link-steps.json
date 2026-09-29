@@ -1,0 +1,17 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001310" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1310"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": "[data-page-key='shared-plan-detail'] [role='alert']",
+    "text": "无法查看这项计划"
+  },
+  { "action": "snapshot", "label": "revoked-link-denied" }
+]

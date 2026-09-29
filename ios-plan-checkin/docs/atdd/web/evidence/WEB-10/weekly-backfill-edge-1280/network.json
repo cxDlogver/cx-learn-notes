@@ -1,0 +1,93 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:57.394Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:57.633Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:57.984Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:57.997Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:58.430Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:58.486Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.249Z"
+  },
+  {
+    "path": "/api/v1/plans/a4e5e7b1-dab1-4f07-9d4f-18b15ca99c13",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.267Z"
+  },
+  {
+    "path": "/api/v1/plans/a4e5e7b1-dab1-4f07-9d4f-18b15ca99c13/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.301Z"
+  },
+  {
+    "path": "/api/v1/plans/a4e5e7b1-dab1-4f07-9d4f-18b15ca99c13/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.333Z"
+  },
+  {
+    "path": "/api/v1/plans/a4e5e7b1-dab1-4f07-9d4f-18b15ca99c13/checkins/2026-09-28",
+    "method": "PUT",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.704Z"
+  },
+  {
+    "path": "/api/v1/plans/a4e5e7b1-dab1-4f07-9d4f-18b15ca99c13/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.770Z"
+  },
+  {
+    "path": "/api/v1/plans/a4e5e7b1-dab1-4f07-9d4f-18b15ca99c13/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:08:59.771Z"
+  }
+]

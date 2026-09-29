@@ -591,7 +591,7 @@ export class PlansService {
           action === "pause"
             ? old.status === "active"
             : action === "resume"
-              ? old.status === "paused"
+              ? old.status === "paused" || old.status === "archived"
               : action === "archive"
                 ? old.status === "active" || old.status === "paused"
                 : true;

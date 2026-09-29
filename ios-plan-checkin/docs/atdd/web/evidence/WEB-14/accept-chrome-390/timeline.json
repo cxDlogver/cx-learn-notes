@@ -1,0 +1,103 @@
+{
+  "capturedAt": "2026-09-29T08:41:06.178Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T08:41:04.695Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T08:41:04.770Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:41:04.890Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T08:41:04.997Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T08:41:05.122Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T08:41:05.234Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".bottom-link[href='/friends']",
+      "at": "2026-09-29T08:41:05.340Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-link[href='/friends']",
+      "at": "2026-09-29T08:41:05.458Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": "[aria-labelledby='incoming-heading']",
+      "expectedText": "web_atdd_social_a_1318",
+      "at": "2026-09-29T08:41:05.569Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "incoming-request",
+      "at": "2026-09-29T08:41:05.605Z"
+    },
+    {
+      "action": "click",
+      "selector": "[aria-labelledby='incoming-heading'] .primary-button",
+      "at": "2026-09-29T08:41:05.612Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".success-note",
+      "expectedText": "已接受好友申请",
+      "at": "2026-09-29T08:41:05.724Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "friend-accepted",
+      "at": "2026-09-29T08:41:05.751Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-link[href='/inbox']",
+      "at": "2026-09-29T08:41:05.762Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".inbox-item",
+      "at": "2026-09-29T08:41:05.874Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "inbox-after-accept",
+      "at": "2026-09-29T08:41:06.000Z"
+    },
+    {
+      "action": "click",
+      "selector": ".inbox-item .social-actions button",
+      "at": "2026-09-29T08:41:06.006Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".inbox-toolbar",
+      "expectedText": "未读 0 条",
+      "at": "2026-09-29T08:41:06.118Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "inbox-read",
+      "at": "2026-09-29T08:41:06.138Z"
+    }
+  ]
+}

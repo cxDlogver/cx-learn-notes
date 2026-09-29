@@ -1,0 +1,46 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:08:59.897Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "eb6ffc1de6ddb888f02bd1aead5ca9347fd12ffaf2b8f2bf3aa787f2269f5164",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:09:00.225Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "802f52b537be577731c28df6e198950781206e356bfac1b092cceae47b01b5fb",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:09:00.547Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:09:00.561Z"
+  },
+  {
+    "path": "/api/v1/calendar",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:09:00.636Z"
+  },
+  {
+    "path": "/api/v1/calendar/2026-09-29",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:09:00.661Z"
+  }
+]

@@ -1,0 +1,5 @@
+[
+  { "action": "type", "selector": "#phone", "text": "12900001248" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#auth-error" }
+]

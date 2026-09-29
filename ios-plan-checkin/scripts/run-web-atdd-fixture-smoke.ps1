@@ -32,6 +32,14 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'First seed failed' }
   node scripts/web-atdd-fixture-session-smoke.mjs $runId
   if ($LASTEXITCODE -ne 0) { throw 'Seeded Web session probe failed' }
+  node scripts/web-atdd-fixture.mjs set-session-expiry $runId A3 -1
+  if ($LASTEXITCODE -ne 0) { throw 'Database expiry setup failed' }
+  node scripts/web-atdd-fixture-session-smoke.mjs $runId A3
+  if ($LASTEXITCODE -ne 0) { throw 'Expired Web session was not rejected' }
+  node scripts/web-atdd-fixture.mjs set-session-expiry $runId A3 3600
+  if ($LASTEXITCODE -ne 0) { throw 'Database expiry restoration failed' }
+  node scripts/web-atdd-fixture-session-smoke.mjs $runId
+  if ($LASTEXITCODE -ne 0) { throw 'Restored Web session was not accepted' }
   node scripts/web-atdd-fixture.mjs cleanup $runId
   if ($LASTEXITCODE -ne 0) { throw 'First cleanup failed' }
   node scripts/web-atdd-fixture.mjs seed $runId $fixedNow

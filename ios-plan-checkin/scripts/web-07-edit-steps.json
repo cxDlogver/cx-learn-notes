@@ -1,0 +1,160 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "text": "13900001258"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1258"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_plan_edit"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "text": "规则编辑验收用户"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "编辑前散步"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(1) input"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(3) input"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(5) input"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-numeric-label",
+    "text": "距离"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-numeric-unit",
+    "text": "公里"
+  },
+  {
+    "action": "snapshot",
+    "label": "fixed-form"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(1)"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#edit-plan-title"
+  },
+  {
+    "action": "replace",
+    "selector": "#edit-plan-title",
+    "text": "编辑后散步"
+  },
+  {
+    "action": "click",
+    "selector": "#edit-plan-weekdays .weekday-option:nth-child(2) input"
+  },
+  {
+    "action": "click",
+    "selector": "#edit-plan-weekdays .weekday-option:nth-child(3) input"
+  },
+  {
+    "action": "snapshot",
+    "label": "edit-rule-form"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-edit-panel form:nth-of-type(1) button[type=\"submit\"]"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"][data-rule-version=\"2\"]"
+  },
+  {
+    "action": "snapshot",
+    "label": "rule-v2"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(1)"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#edit-numeric-label"
+  },
+  {
+    "action": "replace",
+    "selector": "#edit-numeric-label",
+    "text": "用时"
+  },
+  {
+    "action": "replace",
+    "selector": "#edit-numeric-unit",
+    "text": "分钟"
+  },
+  {
+    "action": "snapshot",
+    "label": "numeric-form"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-edit-panel form:nth-of-type(2) button[type=\"submit\"]"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"][data-numeric-version=\"2\"]"
+  }
+]

@@ -24,9 +24,11 @@ if (
 const profile = await loadProfile(environment);
 const manifests = buildManifests(profile, {
   image: value("image") ?? "",
+  webImage: value("web-image") ?? "",
   releaseId: value("release") ?? "",
   host: value("host") ?? "",
   tlsSecret: value("tls-secret") ?? "",
+  objectOrigin: value("object-origin") ?? "",
 });
 const resources = (items) =>
   JSON.stringify({ apiVersion: "v1", kind: "List", items });
@@ -116,7 +118,9 @@ if (mode === "deploy") {
     "--timeout=900s",
   ]);
 }
-kubectl(["apply", "-f", "-"], resources(manifests.app));
+const routing = manifests.app.filter((item) => item.kind === "Ingress");
+const workloads = manifests.app.filter((item) => item.kind !== "Ingress");
+kubectl(["apply", "-f", "-"], resources(workloads));
 kubectl(["rollout", "status", "deployment/plan-checkin-api", "--timeout=600s"]);
 kubectl([
   "rollout",
@@ -124,6 +128,8 @@ kubectl([
   "deployment/plan-checkin-worker",
   "--timeout=600s",
 ]);
+kubectl(["rollout", "status", "deployment/plan-checkin-web", "--timeout=600s"]);
+kubectl(["apply", "-f", "-"], resources(routing));
 process.stdout.write(
   `${environment} ${mode} complete for ${value("release")}.\n`,
 );

@@ -1,0 +1,51 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:06.091Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:06.494Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:06.795Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:06.808Z"
+  },
+  {
+    "path": "/api/v1/plans/1f99e3c8-1e5b-4154-bc17-f00280f83391",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:06.861Z"
+  },
+  {
+    "path": "/api/v1/plans/1f99e3c8-1e5b-4154-bc17-f00280f83391/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:06.902Z"
+  },
+  {
+    "path": "/api/v1/plans/1f99e3c8-1e5b-4154-bc17-f00280f83391/one-time-resolution",
+    "method": "PATCH",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T00:44:07.441Z"
+  }
+]

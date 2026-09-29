@@ -1,0 +1,154 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-29T00:58:39.397Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T00:58:39.521Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-29T00:58:39.626Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-29T00:58:39.746Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T00:58:39.852Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-29T00:58:39.956Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 20,
+    "at": "2026-09-29T00:58:40.071Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 4,
+    "at": "2026-09-29T00:58:40.193Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-29T00:58:40.303Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T00:58:40.406Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-29T00:58:40.548Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-29T00:58:40.656Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 6,
+    "at": "2026-09-29T00:58:40.777Z"
+  },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-27",
+    "at": "2026-09-29T00:58:40.896Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .text-button",
+    "at": "2026-09-29T00:58:41.003Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-numeric-label",
+    "characters": 2,
+    "at": "2026-09-29T00:58:41.119Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-numeric-unit",
+    "characters": 2,
+    "at": "2026-09-29T00:58:41.236Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-29T00:58:41.349Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".history-context",
+    "expectedText": "当天规则：V1",
+    "at": "2026-09-29T00:58:41.559Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "backfill-context",
+    "at": "2026-09-29T00:58:41.606Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-history .today-checkin button",
+    "at": "2026-09-29T00:58:41.622Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".plan-history .checkin-panel form",
+    "at": "2026-09-29T00:58:41.734Z"
+  },
+  {
+    "action": "type",
+    "selector": ".plan-history textarea",
+    "characters": 6,
+    "at": "2026-09-29T00:58:41.845Z"
+  },
+  {
+    "action": "type",
+    "selector": ".plan-history input[type='number']",
+    "characters": 3,
+    "at": "2026-09-29T00:58:41.962Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "backfill-ready",
+    "at": "2026-09-29T00:58:42.090Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-history .checkin-panel button[type='submit']",
+    "at": "2026-09-29T00:58:42.096Z"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-history .today-checkin [role='status']",
+    "expectedText": "记录已保存",
+    "at": "2026-09-29T00:58:42.205Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "backfill-saved",
+    "at": "2026-09-29T00:58:42.239Z"
+  }
+]

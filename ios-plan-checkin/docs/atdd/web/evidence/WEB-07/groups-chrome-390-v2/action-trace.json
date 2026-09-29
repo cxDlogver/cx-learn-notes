@@ -1,0 +1,248 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T19:07:33.334Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:07:33.461Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T19:07:33.566Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T19:07:33.693Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:07:33.805Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-28T19:07:33.921Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 18,
+    "at": "2026-09-28T19:07:34.045Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 6,
+    "at": "2026-09-28T19:07:34.163Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:07:34.284Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T19:07:34.390Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T19:07:34.525Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-28T19:07:34.636Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 5,
+    "at": "2026-09-28T19:07:34.750Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(1) input",
+    "at": "2026-09-28T19:07:34.871Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(3) input",
+    "at": "2026-09-28T19:07:34.983Z"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(5) input",
+    "at": "2026-09-28T19:07:35.139Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-28T19:07:35.265Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1",
+    "at": "2026-09-28T19:07:35.481Z"
+  },
+  {
+    "action": "click",
+    "selector": ".content-panel a[href='/plans']",
+    "at": "2026-09-28T19:07:35.611Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-manager",
+    "at": "2026-09-28T19:07:35.724Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T19:07:35.864Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-28T19:07:35.973Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 5,
+    "at": "2026-09-28T19:07:36.100Z"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "one_time",
+    "at": "2026-09-28T19:07:36.217Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type=\"submit\"]",
+    "at": "2026-09-28T19:07:36.345Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"] h1",
+    "at": "2026-09-28T19:07:36.454Z"
+  },
+  {
+    "action": "click",
+    "selector": ".content-panel a[href='/plans']",
+    "at": "2026-09-28T19:07:36.581Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-manager",
+    "at": "2026-09-28T19:07:36.695Z"
+  },
+  {
+    "action": "type",
+    "selector": "#group-new-name",
+    "characters": 4,
+    "at": "2026-09-28T19:07:36.817Z"
+  },
+  {
+    "action": "click",
+    "selector": ".group-create button",
+    "at": "2026-09-28T19:07:36.945Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-row",
+    "at": "2026-09-28T19:07:37.058Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "group-created",
+    "at": "2026-09-28T19:07:37.194Z"
+  },
+  {
+    "action": "select-option-index",
+    "selector": ".group-moves label:nth-child(2) select",
+    "index": 1,
+    "at": "2026-09-28T19:07:37.198Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card:nth-child(1):not([data-group-id=\"none\"])",
+    "at": "2026-09-28T19:07:37.424Z"
+  },
+  {
+    "action": "select-option-index",
+    "selector": ".group-moves label:nth-child(3) select",
+    "index": 1,
+    "at": "2026-09-28T19:07:37.528Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card:nth-child(2):not([data-group-id=\"none\"])",
+    "at": "2026-09-28T19:07:37.634Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "two-moved",
+    "at": "2026-09-28T19:07:37.776Z"
+  },
+  {
+    "action": "replace",
+    "selector": ".group-row input[name=\"name\"]",
+    "characters": 5,
+    "at": "2026-09-28T19:07:37.793Z"
+  },
+  {
+    "action": "click",
+    "selector": ".group-row form button",
+    "at": "2026-09-28T19:07:37.915Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-row input[value=\"运动与晨间\"]",
+    "at": "2026-09-28T19:07:38.019Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "renamed",
+    "at": "2026-09-28T19:07:38.166Z"
+  },
+  {
+    "action": "click",
+    "selector": ".group-row > .text-button",
+    "at": "2026-09-28T19:07:38.190Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-delete-confirm",
+    "at": "2026-09-28T19:07:38.299Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "delete-group-confirm",
+    "at": "2026-09-28T19:07:38.450Z"
+  },
+  {
+    "action": "click",
+    "selector": ".group-delete-confirm .secondary-button",
+    "at": "2026-09-28T19:07:38.466Z"
+  },
+  {
+    "action": "wait-for-absence",
+    "selector": ".group-row",
+    "at": "2026-09-28T19:07:38.582Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card:nth-child(2)[data-group-id=\"none\"]",
+    "at": "2026-09-28T19:07:38.584Z"
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T17:07:34.369Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:07:34.492Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T17:07:34.608Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T17:07:34.722Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:07:34.841Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-28T17:07:34.943Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 14,
+    "at": "2026-09-28T17:07:35.067Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 8,
+    "at": "2026-09-28T17:07:35.179Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:07:35.286Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='today']",
+    "at": "2026-09-28T17:07:35.389Z"
+  }
+]

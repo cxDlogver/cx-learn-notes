@@ -1,0 +1,172 @@
+{
+  "capturedAt": "2026-09-29T07:16:36.716Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T07:16:33.291Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T07:16:33.387Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T07:16:33.529Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T07:16:33.640Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T07:16:33.753Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T07:16:33.877Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T07:16:33.987Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 19,
+      "at": "2026-09-29T07:16:34.095Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 4,
+      "at": "2026-09-29T07:16:34.213Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T07:16:34.325Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T07:16:34.426Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T07:16:34.568Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T07:16:34.681Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 6,
+      "at": "2026-09-29T07:16:34.799Z"
+    },
+    {
+      "action": "set-date",
+      "selector": "#plan-start-date",
+      "value": "2026-09-27",
+      "at": "2026-09-29T07:16:34.912Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .text-button",
+      "at": "2026-09-29T07:16:35.023Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T07:16:35.150Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='plan-detail'] h1",
+      "at": "2026-09-29T07:16:35.255Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".plan-statistics .statistics-grid",
+      "at": "2026-09-29T07:16:35.357Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "statistics-before",
+      "at": "2026-09-29T07:16:35.498Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-history .today-checkin button",
+      "at": "2026-09-29T07:16:35.518Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".plan-history .checkin-panel form",
+      "at": "2026-09-29T07:16:35.626Z"
+    },
+    {
+      "action": "type",
+      "selector": ".plan-history textarea",
+      "characters": 6,
+      "at": "2026-09-29T07:16:35.755Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-history .checkin-panel button[type='submit']",
+      "at": "2026-09-29T07:16:35.880Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".plan-history .today-checkin [role='status']",
+      "expectedText": "记录已保存",
+      "at": "2026-09-29T07:16:35.986Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".plan-statistics .statistics-grid > div:nth-child(3) dd",
+      "expectedText": "1",
+      "at": "2026-09-29T07:16:36.096Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "statistics-after",
+      "at": "2026-09-29T07:16:36.132Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-link[href='/calendar']",
+      "at": "2026-09-29T07:16:36.153Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='calendar-month'] .calendar-grid",
+      "at": "2026-09-29T07:16:36.266Z"
+    },
+    {
+      "action": "click",
+      "selector": ".calendar-date[aria-label^='2026-09-28']",
+      "at": "2026-09-29T07:16:36.391Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='calendar-day'] .calendar-entry-list",
+      "at": "2026-09-29T07:16:36.493Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "calendar-recorded",
+      "at": "2026-09-29T07:16:36.632Z"
+    }
+  ]
+}

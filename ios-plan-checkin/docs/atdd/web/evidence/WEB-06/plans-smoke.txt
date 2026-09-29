@@ -1,7 +1,7 @@
 command: node scripts/plans-smoke.mjs
 exitCode: 0
 stdout:
-{"numericVersions":[{"version":1,"effective_from":"2026-09-21","label":"距离","unit":"公里"},{"version":2,"effective_from":"2026-09-29","label":"用时","unit":"分钟"}],"historicalBefore":{"numeric_value":"4.250000","numeric_unit":"公里","numeric_label":"距离","numeric_config_version_id":"f02e6387-3199-4db6-a3df-b75af16c53ac"},"historicalAfter":{"numeric_value":"4.250000","numeric_unit":"公里","numeric_label":"距离","numeric_config_version_id":"f02e6387-3199-4db6-a3df-b75af16c53ac"},"weeklyNumericItem":{"label":"时长","unit":"分钟","version":1,"effectiveFrom":"2026-09-21"},"oneTimeNumericItem":{"label":"体重","unit":"千克","version":1,"effectiveFrom":"2026-09-28"}}
+{"numericVersions":[{"version":1,"effective_from":"2026-09-22","label":"距离","unit":"公里"},{"version":2,"effective_from":"2026-09-30","label":"用时","unit":"分钟"}],"historicalBefore":{"numeric_value":"4.250000","numeric_unit":"公里","numeric_label":"距离","numeric_config_version_id":"72bda963-66bb-49f8-abc4-ef17bb63c9cf"},"historicalAfter":{"numeric_value":"4.250000","numeric_unit":"公里","numeric_label":"距离","numeric_config_version_id":"72bda963-66bb-49f8-abc4-ef17bb63c9cf"},"weeklyNumericItem":{"label":"时长","unit":"分钟","version":1,"effectiveFrom":"2026-09-22"},"oneTimeNumericItem":{"label":"体重","unit":"千克","version":1,"effectiveFrom":"2026-09-29"}}
 Plans smoke passed: ownership, idempotency, grouped CRUD, rule versions, lifecycle, numeric version history across all plan kinds and soft delete.
 
 stderr:

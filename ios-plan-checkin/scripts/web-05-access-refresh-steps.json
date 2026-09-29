@@ -1,0 +1,17 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001243" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1243"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='today']" },
+  { "action": "advance-clock", "offsetMs": 960000 },
+  { "action": "click", "selector": ".bottom-nav a[href='/plans']" },
+  { "action": "wait-for", "selector": "[data-page-key='plans']" },
+  { "action": "click", "selector": ".bottom-nav a[href='/today']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" }
+]

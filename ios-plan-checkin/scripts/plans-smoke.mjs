@@ -172,6 +172,30 @@ try {
     events.map((row) => row.business_date),
     [today, today],
   );
+  const archived = await plans.lifecycle(
+    owner,
+    created.id,
+    "archive",
+    5,
+    randomUUID(),
+  );
+  assert.equal(archived.lifecycle, "archived");
+  const restoredArchive = await plans.lifecycle(
+    owner,
+    created.id,
+    "resume",
+    6,
+    randomUUID(),
+  );
+  assert.equal(restoredArchive.lifecycle, "active");
+  assert.equal(restoredArchive.revision, 7);
+  const lifecycleActions = (
+    await pg.query(
+      "SELECT action FROM plan_lifecycle_events WHERE plan_id = $1 ORDER BY seq",
+      [created.id],
+    )
+  ).rows.map((row) => row.action);
+  assert.deepEqual(lifecycleActions, ["pause", "resume", "archive", "resume"]);
   const oneTime = await plans.create(
     owner,
     {
@@ -334,9 +358,9 @@ try {
   const removed = await groups.remove(owner, group.id, 1, randomUUID());
   assert.equal(removed.deleted, true);
   assert.equal((await plans.get(owner, created.id)).groupId, null);
-  assert.equal((await plans.get(owner, created.id)).revision, 6);
+  assert.equal((await plans.get(owner, created.id)).revision, 8);
   assert.deepEqual(
-    await plans.lifecycle(owner, created.id, "delete", 6, randomUUID()),
+    await plans.lifecycle(owner, created.id, "delete", 8, randomUUID()),
     { deleted: true },
   );
   await assert.rejects(plans.get(owner, created.id), /计划不存在/);

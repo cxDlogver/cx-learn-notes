@@ -1,0 +1,63 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T17:15:44.955Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:15:45.082Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T17:15:45.188Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T17:15:45.303Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T17:15:45.427Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='today']",
+    "at": "2026-09-28T17:15:45.541Z"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-nav a[href='/settings']",
+    "at": "2026-09-28T17:15:45.661Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='settings']",
+    "at": "2026-09-28T17:15:45.772Z"
+  },
+  {
+    "action": "click",
+    "selector": "button.secondary-button",
+    "at": "2026-09-28T17:15:45.888Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#phone",
+    "at": "2026-09-28T17:15:46.003Z"
+  },
+  {
+    "action": "history-back",
+    "at": "2026-09-28T17:15:46.122Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#phone",
+    "at": "2026-09-28T17:15:46.330Z"
+  }
+]

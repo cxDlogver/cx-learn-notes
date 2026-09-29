@@ -1,0 +1,105 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "text": "13900001317"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1317"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_timezone_1317"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "text": "日历验收"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "每日散步日历"
+  },
+  {
+    "text": "Asia/Shanghai",
+    "selector": "#plan-timezone",
+    "action": "replace"
+  },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-27"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .text-button"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1"
+  },
+  {
+    "action": "click",
+    "selector": ".bottom-link[href='/calendar']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='calendar-month'] .calendar-grid"
+  },
+  {
+    "action": "snapshot",
+    "label": "calendar-month"
+  },
+  {
+    "action": "click",
+    "selector": ".calendar-date[aria-label^='2026-09-29']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='calendar-day'] .calendar-entry-list"
+  },
+  {
+    "action": "snapshot",
+    "label": "calendar-day"
+  }
+]

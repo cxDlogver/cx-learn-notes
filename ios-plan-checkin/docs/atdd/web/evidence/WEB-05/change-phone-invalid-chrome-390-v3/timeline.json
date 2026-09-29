@@ -1,0 +1,93 @@
+{
+  "capturedAt": "2026-09-28T17:54:24.468Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T17:54:22.514Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T17:54:22.654Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:54:22.780Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T17:54:22.880Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T17:54:22.994Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T17:54:23.110Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T17:54:23.221Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-nav a[href='/settings']",
+      "at": "2026-09-28T17:54:23.341Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/settings/change-phone']",
+      "at": "2026-09-28T17:54:23.454Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#new-phone",
+      "at": "2026-09-28T17:54:23.558Z"
+    },
+    {
+      "action": "type",
+      "selector": "#new-phone",
+      "characters": 11,
+      "at": "2026-09-28T17:54:23.669Z"
+    },
+    {
+      "action": "click",
+      "selector": ".phone-change-card button[type='submit']",
+      "at": "2026-09-28T17:54:23.780Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#old-phone-code",
+      "at": "2026-09-28T17:54:23.886Z"
+    },
+    {
+      "action": "type",
+      "selector": "#old-phone-code",
+      "characters": 6,
+      "at": "2026-09-28T17:54:23.994Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#new-phone-code",
+      "characters": 6,
+      "at": "2026-09-28T17:54:24.100Z"
+    },
+    {
+      "action": "click",
+      "selector": ".phone-change-card button[type='submit']",
+      "at": "2026-09-28T17:54:24.222Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".phone-change-card [role='alert']",
+      "at": "2026-09-28T17:54:24.329Z"
+    }
+  ]
+}

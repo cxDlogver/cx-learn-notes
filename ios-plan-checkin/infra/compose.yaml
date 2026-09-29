@@ -26,6 +26,10 @@ services:
       retries: 10
   object-storage:
     image: chrislusf/seaweedfs@sha256:ce9e796f1fe6f06968f4c04bdaf8f678dad9c8acdfef3d244133d71bfa6bf882
+    command:
+      - mini
+      - -dir=/data
+      - -s3.allowedOrigins=${PLAN_CHECKIN_OBJECT_ALLOWED_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173}
     environment:
       AWS_ACCESS_KEY_ID: localdev
       AWS_SECRET_ACCESS_KEY: local_only_change_me

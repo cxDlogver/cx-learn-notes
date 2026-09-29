@@ -1,0 +1,30 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001318" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1318"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-manager",
+    "text": "日历验收"
+  },
+  { "action": "snapshot", "label": "share-before-revoke" },
+  {
+    "action": "click",
+    "selector": ".share-manager .social-person .text-button"
+  },
+  { "action": "wait-for", "selector": ".share-confirm" },
+  { "action": "snapshot", "label": "share-revoke-confirm" },
+  { "action": "click", "selector": ".share-confirm .primary-button" },
+  {
+    "action": "wait-for-text",
+    "selector": ".share-manager .success-note",
+    "text": "分享已撤销"
+  },
+  { "action": "snapshot", "label": "share-revoked" }
+]

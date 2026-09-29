@@ -1,0 +1,14 @@
+
+> @plan-checkin/web@0.1.0 build
+> tsc --noEmit -p tsconfig.json && vite build
+
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 33 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.44 kB │ gzip:  0.30 kB
+dist/assets/index-C7vnC0J1.css   17.69 kB │ gzip:  4.27 kB
+dist/assets/index-CaEIRKj2.js   296.86 kB │ gzip: 87.22 kB
+
+✓ built in 202ms

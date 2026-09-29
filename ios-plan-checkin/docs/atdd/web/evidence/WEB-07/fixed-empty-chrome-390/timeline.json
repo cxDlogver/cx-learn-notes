@@ -1,0 +1,98 @@
+{
+  "capturedAt": "2026-09-28T18:43:43.459Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T18:43:41.171Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T18:43:41.291Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T18:43:41.416Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T18:43:41.640Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T18:43:41.747Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T18:43:41.858Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-28T18:43:41.972Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 20,
+      "at": "2026-09-28T18:43:42.086Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 7,
+      "at": "2026-09-28T18:43:42.204Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T18:43:42.311Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T18:43:42.414Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-nav a[href='/plans']",
+      "at": "2026-09-28T18:43:42.531Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-28T18:43:42.642Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-28T18:43:42.796Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-28T18:43:42.912Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 6,
+      "at": "2026-09-28T18:43:43.038Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-28T18:43:43.165Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".plan-form [role='alert']",
+      "at": "2026-09-28T18:43:43.282Z"
+    }
+  ]
+}

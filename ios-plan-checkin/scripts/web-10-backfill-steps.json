@@ -1,0 +1,57 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001290" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1290"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_backfill" },
+  { "action": "type", "selector": "#nickname", "text": "补记验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "type", "selector": "#plan-title", "text": "历史晨间散步" },
+  {
+    "action": "set-date",
+    "selector": "#plan-start-date",
+    "value": "2026-09-27"
+  },
+  { "action": "click", "selector": "#plan-weekdays .text-button" },
+  { "action": "type", "selector": "#plan-numeric-label", "text": "距离" },
+  { "action": "type", "selector": "#plan-numeric-unit", "text": "公里" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".history-context",
+    "text": "当天规则：V1"
+  },
+  { "action": "snapshot", "label": "backfill-context" },
+  { "action": "click", "selector": ".plan-history .today-checkin button" },
+  { "action": "wait-for", "selector": ".plan-history .checkin-panel form" },
+  {
+    "action": "type",
+    "selector": ".plan-history textarea",
+    "text": "补记昨天散步"
+  },
+  {
+    "action": "type",
+    "selector": ".plan-history input[type='number']",
+    "text": "3.4"
+  },
+  { "action": "snapshot", "label": "backfill-ready" },
+  {
+    "action": "click",
+    "selector": ".plan-history .checkin-panel button[type='submit']"
+  },
+  {
+    "action": "wait-for-text",
+    "selector": ".plan-history .today-checkin [role='status']",
+    "text": "记录已保存"
+  },
+  { "action": "snapshot", "label": "backfill-saved" }
+]

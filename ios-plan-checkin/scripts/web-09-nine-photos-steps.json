@@ -1,0 +1,47 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001307" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1307"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#username" },
+  { "action": "type", "selector": "#username", "text": "web_atdd_nine_photos" },
+  { "action": "type", "selector": "#nickname", "text": "九张照片验收" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "a[href='/plans/new']" },
+  { "action": "click", "selector": "a[href='/plans/new']" },
+  { "action": "wait-for", "selector": "#plan-title" },
+  { "action": "select-option", "selector": "#plan-kind", "value": "one_time" },
+  { "action": "type", "selector": "#plan-title", "text": "九张允许边界任务" },
+  { "action": "click", "selector": ".plan-form button[type='submit']" },
+  { "action": "wait-for", "selector": ".one-time-result form" },
+  {
+    "action": "select-option",
+    "selector": ".one-time-result select",
+    "value": "cancelled"
+  },
+  {
+    "action": "upload-file",
+    "selector": ".one-time-result input[type='file']",
+    "file": "docs/atdd/web/fixtures/checkin-green.png",
+    "count": 9
+  },
+  { "action": "snapshot", "label": "nine-ready" },
+  { "action": "click", "selector": ".one-time-result button[type='submit']" },
+  {
+    "action": "wait-for-text",
+    "selector": ".one-time-result form [role='status']",
+    "text": "结果和照片均已保存"
+  },
+  { "action": "snapshot", "label": "nine-saved" },
+  {
+    "action": "click",
+    "selector": ".one-time-result .private-media-gallery > button"
+  },
+  { "action": "wait-for-image", "selector": ".private-media-grid img" },
+  { "action": "snapshot", "label": "nine-gallery" }
+]

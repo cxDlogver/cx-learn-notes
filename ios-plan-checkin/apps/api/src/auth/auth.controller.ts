@@ -138,6 +138,30 @@ export class AuthController {
     return this.webResponse(tokens, response, request);
   }
 
+  @Post("web/deletion-cancel")
+  async cancelDeletionWeb(
+    @Body() body: SmsVerifyRequest,
+    @Headers("origin") origin: string | undefined,
+    @Headers("host") host: string | undefined,
+    @Headers("x-device-id") deviceId: string | undefined,
+    @Headers("idempotency-key") idempotencyKey: string,
+    @Req() request: RequestLike,
+    @Res({ passthrough: true }) response: ResponseLike,
+  ): Promise<ApiSuccess<WebSessionData>> {
+    requireWebOrigin(this.config.webOrigin, origin, host, true);
+    if (!deviceId || deviceId.length > 100)
+      fail("VALIDATION_ERROR", 400, "缺少设备标识");
+    const tokens = await this.auth.verify(
+      body,
+      deviceId,
+      idempotencyKey,
+      "cancel_deletion",
+      "web",
+    );
+    await this.auth.resumeWebSession(tokens.refreshToken);
+    return this.webResponse(tokens, response, request);
+  }
+
   @Get("web/session")
   async webSession(
     @Headers("host") host: string | undefined,

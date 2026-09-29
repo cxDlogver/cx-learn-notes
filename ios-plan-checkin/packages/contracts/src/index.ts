@@ -176,6 +176,15 @@ export interface CheckinDto {
   updatedAt: UtcInstant;
   syncSequence: number;
 }
+export interface CheckinContextDto {
+  planBusinessDate: BusinessDate;
+  timezone: IanaTimezone;
+  canCreate: boolean;
+  canRevise: boolean;
+  ruleVersion: number | null;
+  numericItem: NumericItemDto | null;
+  record: CheckinDto | null;
+}
 export interface CheckinConflictDetails {
   conflictId: Uuid;
   currentRevision: number;

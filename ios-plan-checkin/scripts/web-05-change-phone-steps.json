@@ -1,0 +1,33 @@
+[
+  { "action": "type", "selector": "#phone", "text": "13900001234" },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "#sms-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1234"
+  },
+  { "action": "click", "selector": "button[type='submit']" },
+  { "action": "wait-for", "selector": "[data-page-key='today']" },
+  { "action": "click", "selector": ".bottom-nav a[href='/settings']" },
+  { "action": "wait-for", "selector": "a[href='/settings/change-phone']" },
+  { "action": "click", "selector": "a[href='/settings/change-phone']" },
+  { "action": "wait-for", "selector": "#new-phone" },
+  { "action": "type", "selector": "#new-phone", "text": "13900001243" },
+  { "action": "click", "selector": ".phone-change-card button[type='submit']" },
+  { "action": "wait-for", "selector": "#old-phone-code" },
+  {
+    "action": "type-stub-code",
+    "selector": "#old-phone-code",
+    "purpose": "change_phone_old",
+    "expectedPhoneLast4": "1234"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#new-phone-code",
+    "purpose": "change_phone_new",
+    "expectedPhoneLast4": "1243"
+  },
+  { "action": "click", "selector": ".phone-change-card button[type='submit']" },
+  { "action": "wait-for", "selector": "#phone" }
+]

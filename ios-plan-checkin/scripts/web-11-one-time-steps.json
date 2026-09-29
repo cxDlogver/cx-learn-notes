@@ -1,0 +1,120 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "text": "13900001315"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1315"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_one_time_stats_1315"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "text": "一次任务用户"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "整理书桌"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "one_time"
+  },
+  {
+    "action": "snapshot",
+    "label": "one-time-form"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1"
+  },
+  {
+    "selector": ".plan-statistics .statistics-grid",
+    "action": "wait-for"
+  },
+  {
+    "selector": ".plan-statistics-heading button",
+    "action": "click"
+  },
+  {
+    "selector": ".plan-statistics",
+    "action": "wait-for-text",
+    "text": "待处理"
+  },
+  {
+    "label": "one-time-statistics-before",
+    "action": "snapshot"
+  },
+  {
+    "selector": ".one-time-result textarea",
+    "action": "type",
+    "text": "一次性统计刷新"
+  },
+  {
+    "selector": ".one-time-result button[type='submit']",
+    "action": "click"
+  },
+  {
+    "selector": ".plan-statistics .statistics-grid > div:nth-child(2) dd",
+    "action": "wait-for-text",
+    "text": "按时完成"
+  },
+  {
+    "selector": ".plan-statistics-heading button",
+    "action": "click"
+  },
+  {
+    "selector": ".plan-statistics .statistics-grid > div:nth-child(2) dd",
+    "action": "wait-for-text",
+    "text": "按时完成"
+  },
+  {
+    "label": "one-time-statistics-after",
+    "action": "snapshot"
+  }
+]

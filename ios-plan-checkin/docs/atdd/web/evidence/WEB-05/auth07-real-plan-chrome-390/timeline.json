@@ -1,0 +1,70 @@
+{
+  "capturedAt": "2026-09-28T19:31:40.139Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T19:31:38.755Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T19:31:38.824Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T19:31:38.950Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T19:31:39.054Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T19:31:39.172Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T19:31:39.292Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='today']",
+      "at": "2026-09-28T19:31:39.404Z"
+    },
+    {
+      "action": "advance-clock",
+      "offsetMs": 960000,
+      "at": "2026-09-28T19:31:39.521Z"
+    },
+    {
+      "action": "click",
+      "selector": ".bottom-nav a[href='/plans']",
+      "at": "2026-09-28T19:31:39.529Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='plans']",
+      "at": "2026-09-28T19:31:39.643Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".today-card .action-link",
+      "at": "2026-09-28T19:31:39.754Z"
+    },
+    {
+      "action": "click",
+      "selector": ".today-card .action-link",
+      "at": "2026-09-28T19:31:39.881Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key=\"plan-detail\"] h1",
+      "at": "2026-09-28T19:31:39.995Z"
+    }
+  ]
+}

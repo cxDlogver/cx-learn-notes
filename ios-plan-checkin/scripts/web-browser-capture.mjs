@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
 import {
   mkdir,
   mkdtemp,
@@ -109,9 +110,120 @@ class Cdp {
     this.nextId = 1;
     this.pending = new Map();
     this.events = [];
+    this.requests = new Map();
+    this.network = [];
+    this.dropNextOneTimeResponse = false;
+    this.failNextMediaComplete = false;
+    this.actionTrace = null;
     socket.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
       if (!message.id) {
+        if (message.method === "Fetch.requestPaused") {
+          const paused = message.params;
+          let oneTimeWrite = false;
+          let mediaComplete = false;
+          try {
+            const path = new URL(paused.request.url).pathname;
+            oneTimeWrite =
+              /^\/api\/v1\/plans\/[a-f\d-]{36}\/one-time-resolution$/.test(
+                path,
+              ) && ["POST", "PATCH"].includes(paused.request.method);
+            mediaComplete =
+              /^\/api\/v1\/media\/[a-f\d-]{36}\/complete$/.test(path) &&
+              paused.request.method === "POST";
+          } catch {
+            /* unexpected request URL is continued below */
+          }
+          if (
+            this.failNextMediaComplete &&
+            mediaComplete &&
+            paused.responseStatusCode === undefined
+          ) {
+            this.failNextMediaComplete = false;
+            this.actionTrace?.push({
+              action: "media-complete-request-blocked",
+              at: new Date().toISOString(),
+            });
+            void this.command("Fetch.failRequest", {
+              requestId: paused.requestId,
+              errorReason: "Failed",
+            }).catch(() => {});
+          } else if (
+            this.dropNextOneTimeResponse &&
+            oneTimeWrite &&
+            paused.responseStatusCode >= 200 &&
+            paused.responseStatusCode < 300
+          ) {
+            this.dropNextOneTimeResponse = false;
+            this.actionTrace?.push({
+              action: "response-dropped-after-server",
+              serverStatus: paused.responseStatusCode,
+              at: new Date().toISOString(),
+            });
+            void this.command("Fetch.failRequest", {
+              requestId: paused.requestId,
+              errorReason: "Failed",
+            }).catch(() => {});
+          } else
+            void this.command("Fetch.continueRequest", {
+              requestId: paused.requestId,
+            }).catch(() => {});
+        }
+        if (message.method === "Network.requestWillBeSent") {
+          try {
+            const requested = new URL(message.params.request.url);
+            const path = requested.pathname;
+            if (path.startsWith("/api/v1/")) {
+              const key = Object.entries(
+                message.params.request.headers ?? {},
+              ).find(([name]) => name.toLowerCase() === "idempotency-key")?.[1];
+              this.requests.set(message.params.requestId, {
+                path,
+                method: message.params.request.method,
+                ...(typeof key === "string"
+                  ? {
+                      operationKeySha256: createHash("sha256")
+                        .update(key)
+                        .digest("hex"),
+                    }
+                  : {}),
+              });
+            } else if (
+              ["127.0.0.1", "localhost"].includes(requested.hostname) &&
+              requested.port === "19000"
+            )
+              this.requests.set(message.params.requestId, {
+                path: "[object-store]",
+                method: message.params.request.method,
+              });
+          } catch {
+            /* CDP may report a non-URL resource */
+          }
+        }
+        if (message.method === "Network.responseReceived") {
+          const request = this.requests.get(message.params.requestId);
+          if (request) {
+            this.network.push({
+              ...request,
+              status: message.params.response.status,
+              mimeType: message.params.response.mimeType,
+              at: new Date().toISOString(),
+            });
+            this.requests.delete(message.params.requestId);
+          }
+        }
+        if (message.method === "Network.loadingFailed") {
+          const request = this.requests.get(message.params.requestId);
+          if (request) {
+            this.network.push({
+              ...request,
+              status: 0,
+              mimeType: "",
+              at: new Date().toISOString(),
+            });
+            this.requests.delete(message.params.requestId);
+          }
+        }
         if (
           [
             "Runtime.consoleAPICalled",
@@ -278,9 +390,371 @@ try {
     join(output, "screen-before.png"),
     Buffer.from(before.data, "base64"),
   );
+  const capturedAtForStub = new Date().toISOString();
   const actionTrace = [];
+  cdp.actionTrace = actionTrace;
+  const intermediateFiles = [];
   for (const [index, step] of steps.entries()) {
-    if (!step || !["click", "type", "wait-for"].includes(step.action))
+    if (step?.action === "probe-private-media") {
+      if (
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1" ||
+        !/^[a-f\d-]{36}$/.test(step.mediaId ?? "") ||
+        ![200, 404].includes(step.expectedStatus)
+      )
+        throw new Error(
+          "private media probe requires isolated loopback Web ATDD",
+        );
+      const status = await cdp.evaluate(`(async () => {
+        const media = await import('/src/data/api.ts');
+        try {
+          await media.getPrivateMediaDownload(${JSON.stringify(step.mediaId)});
+          return 200;
+        } catch (error) {
+          return typeof error?.status === 'number' ? error.status : 0;
+        }
+      })()`);
+      if (status !== step.expectedStatus)
+        throw new Error(`private media status ${status} at step ${index + 1}`);
+      actionTrace.push({
+        action: step.action,
+        mediaId: "[other-user-media]",
+        status,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "fail-next-media-complete") {
+      if (
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1" ||
+        cdp.failNextMediaComplete
+      )
+        throw new Error("media failure requires isolated loopback Web ATDD");
+      await cdp.command("Fetch.enable", {
+        patterns: [
+          {
+            urlPattern: "*api/v1/media/*/complete",
+            requestStage: "Request",
+          },
+        ],
+      });
+      cdp.failNextMediaComplete = true;
+      actionTrace.push({ action: step.action, at: new Date().toISOString() });
+      continue;
+    }
+    if (step?.action === "drop-next-one-time-response") {
+      if (
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1" ||
+        cdp.dropNextOneTimeResponse
+      )
+        throw new Error("response drop requires isolated loopback Web ATDD");
+      await cdp.command("Fetch.enable", {
+        patterns: [
+          {
+            urlPattern: "*api/v1/plans/*/one-time-resolution",
+            requestStage: "Response",
+          },
+        ],
+      });
+      cdp.dropNextOneTimeResponse = true;
+      actionTrace.push({
+        action: step.action,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (
+      step?.action === "network-offline" ||
+      step?.action === "network-online"
+    ) {
+      if (
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1"
+      )
+        throw new Error("network toggle requires isolated loopback Web ATDD");
+      await cdp.command("Network.emulateNetworkConditions", {
+        offline: step.action === "network-offline",
+        latency: 0,
+        downloadThroughput: 0,
+        uploadThroughput: 0,
+      });
+      actionTrace.push({ action: step.action, at: new Date().toISOString() });
+      await delay(100);
+      continue;
+    }
+    if (step?.action === "upload-file") {
+      if (
+        typeof step.selector !== "string" ||
+        typeof step.file !== "string" ||
+        (step.count !== undefined &&
+          (!Number.isInteger(step.count) || step.count < 1 || step.count > 10))
+      )
+        throw new Error(`invalid file upload at step ${index + 1}`);
+      const filePath = await realpath(resolve(step.file));
+      if (!filePath.startsWith(workspace + sep))
+        throw new Error("file upload must be inside the project workspace");
+      if (!/\.(png|jpe?g|webp|heic)$/i.test(filePath))
+        throw new Error("file upload requires an image fixture");
+      if ((await readFile(filePath)).length > 1_000_000)
+        throw new Error("browser evidence image fixture is too large");
+      const root = await cdp.command("DOM.getDocument");
+      const node = await cdp.command("DOM.querySelector", {
+        nodeId: root.root.nodeId,
+        selector: step.selector,
+      });
+      if (!node.nodeId)
+        throw new Error(`file input unavailable at step ${index + 1}`);
+      await cdp.command("DOM.setFileInputFiles", {
+        nodeId: node.nodeId,
+        files: Array(step.count ?? 1).fill(filePath),
+      });
+      actionTrace.push({
+        action: "upload-file",
+        selector: step.selector,
+        fixture: "[workspace-image]",
+        fileCount: step.count ?? 1,
+        at: new Date().toISOString(),
+      });
+      await delay(100);
+      continue;
+    }
+    if (step?.action === "upload-oversize-fixture") {
+      if (
+        typeof step.selector !== "string" ||
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1"
+      )
+        throw new Error("oversize fixture requires isolated loopback Web ATDD");
+      const filePath = join(profile, "oversize-20mb.png");
+      const fileBytes = Buffer.alloc(20 * 1024 * 1024 + 1);
+      const validPng = await readFile(
+        join(workspace, "docs/atdd/web/fixtures/checkin-green.png"),
+      );
+      validPng.copy(fileBytes);
+      await writeFile(filePath, fileBytes);
+      const root = await cdp.command("DOM.getDocument");
+      const node = await cdp.command("DOM.querySelector", {
+        nodeId: root.root.nodeId,
+        selector: step.selector,
+      });
+      if (!node.nodeId)
+        throw new Error(`file input unavailable at step ${index + 1}`);
+      await cdp.command("DOM.setFileInputFiles", {
+        nodeId: node.nodeId,
+        files: [filePath],
+      });
+      actionTrace.push({
+        action: step.action,
+        selector: step.selector,
+        fixture: "[generated-oversize-image]",
+        bytes: fileBytes.length,
+        at: new Date().toISOString(),
+      });
+      await delay(100);
+      continue;
+    }
+    if (step?.action === "snapshot") {
+      if (!/^[a-z0-9-]{1,32}$/.test(step.label ?? ""))
+        throw new Error(`invalid snapshot label at step ${index + 1}`);
+      const filename = `screen-${step.label}.png`;
+      if (intermediateFiles.includes(filename))
+        throw new Error(`duplicate snapshot label at step ${index + 1}`);
+      const frame = await cdp.command("Page.captureScreenshot", {
+        format: "png",
+        captureBeyondViewport: false,
+      });
+      await writeFile(
+        join(output, filename),
+        Buffer.from(frame.data, "base64"),
+      );
+      intermediateFiles.push(filename);
+      actionTrace.push({
+        action: "snapshot",
+        label: step.label,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "history-back") {
+      const history = await cdp.command("Page.getNavigationHistory");
+      const prior = history.entries?.[history.currentIndex - 1];
+      if (!prior) throw new Error("No prior browser history entry");
+      await cdp.command("Page.navigateToHistoryEntry", { entryId: prior.id });
+      actionTrace.push({
+        action: "history-back",
+        at: new Date().toISOString(),
+      });
+      await delay(200);
+      continue;
+    }
+    if (step?.action === "reload") {
+      await cdp.command("Page.reload", { ignoreCache: true });
+      actionTrace.push({ action: "reload", at: new Date().toISOString() });
+      await delay(200);
+      continue;
+    }
+    if (step?.action === "advance-clock") {
+      if (
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1" ||
+        !Number.isInteger(step.offsetMs) ||
+        step.offsetMs < 0 ||
+        step.offsetMs > 3_600_000
+      )
+        throw new Error("clock advance requires isolated loopback Web ATDD");
+      await cdp.evaluate(`(() => {
+        const originalNow = Date.now.bind(Date);
+        Date.now = () => originalNow() + ${step.offsetMs};
+        return Date.now();
+      })()`);
+      actionTrace.push({
+        action: "advance-clock",
+        offsetMs: step.offsetMs,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "wait-for-absence") {
+      if (typeof step.selector !== "string" || !step.selector)
+        throw new Error(`invalid absence selector at step ${index + 1}`);
+      let absent = false;
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        absent = await cdp.evaluate(
+          `!document.querySelector(${JSON.stringify(step.selector)})`,
+        );
+        if (absent) break;
+        await delay(100);
+      }
+      if (!absent) throw new Error(`selector remained at step ${index + 1}`);
+      actionTrace.push({
+        action: "wait-for-absence",
+        selector: step.selector,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "wait-for-text") {
+      if (
+        typeof step.selector !== "string" ||
+        !step.selector ||
+        typeof step.text !== "string" ||
+        !step.text ||
+        step.text.length > 120
+      )
+        throw new Error(`invalid text wait at step ${index + 1}`);
+      let found = false;
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        found = await cdp.evaluate(`(() => {
+          const node = document.querySelector(${JSON.stringify(step.selector)});
+          return !!node && (node.textContent ?? '').includes(${JSON.stringify(step.text)});
+        })()`);
+        if (found) break;
+        await delay(100);
+      }
+      if (!found) throw new Error(`text not found at step ${index + 1}`);
+      actionTrace.push({
+        action: "wait-for-text",
+        selector: step.selector,
+        expectedText: step.text,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "wait-for-image") {
+      if (typeof step.selector !== "string" || !step.selector)
+        throw new Error(`invalid image selector at step ${index + 1}`);
+      let loaded = false;
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        loaded = await cdp.evaluate(`(() => {
+          const image = document.querySelector(${JSON.stringify(step.selector)});
+          return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+        })()`);
+        if (loaded) break;
+        await delay(100);
+      }
+      if (!loaded) throw new Error(`image did not load at step ${index + 1}`);
+      actionTrace.push({
+        action: step.action,
+        selector: step.selector,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "set-date") {
+      if (
+        typeof step.selector !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(step.value ?? "")
+      )
+        throw new Error(`invalid date input at step ${index + 1}`);
+      const changed = await cdp.evaluate(`(() => {
+        const field = document.querySelector(${JSON.stringify(step.selector)});
+        if (!(field instanceof HTMLInputElement) || field.type !== 'date') return false;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        setter.call(field, ${JSON.stringify(step.value)});
+        field.dispatchEvent(new Event('input', {bubbles: true}));
+        field.dispatchEvent(new Event('change', {bubbles: true}));
+        return field.value === ${JSON.stringify(step.value)};
+      })()`);
+      if (!changed)
+        throw new Error(`date input unavailable at step ${index + 1}`);
+      actionTrace.push({
+        action: "set-date",
+        selector: step.selector,
+        value: step.value,
+        at: new Date().toISOString(),
+      });
+      await delay(100);
+      continue;
+    }
+    if (
+      step?.action === "select-option" ||
+      step?.action === "select-option-index"
+    ) {
+      if (
+        typeof step.selector !== "string" ||
+        (step.action === "select-option" &&
+          (typeof step.value !== "string" || step.value.length > 100)) ||
+        (step.action === "select-option-index" &&
+          (!Number.isInteger(step.index) || step.index < 0 || step.index > 20))
+      )
+        throw new Error(`invalid select option at step ${index + 1}`);
+      const chosen = await cdp.evaluate(`(() => {
+        const field = document.querySelector(${JSON.stringify(step.selector)});
+        const value = ${step.action === "select-option" ? JSON.stringify(step.value) : `field?.options[${step.index}]?.value`};
+        if (!(field instanceof HTMLSelectElement) || ![...field.options].some((option) => option.value === value)) return false;
+        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+        setter.call(field, value);
+        field.dispatchEvent(new Event('input', {bubbles: true}));
+        field.dispatchEvent(new Event('change', {bubbles: true}));
+        return true;
+      })()`);
+      if (!chosen)
+        throw new Error(`select option unavailable at step ${index + 1}`);
+      actionTrace.push({
+        action: step.action,
+        selector: step.selector,
+        ...(step.action === "select-option"
+          ? { value: step.value }
+          : { index: step.index }),
+        at: new Date().toISOString(),
+      });
+      await delay(100);
+      continue;
+    }
+    if (
+      !step ||
+      !["click", "type", "replace", "wait-for", "type-stub-code"].includes(
+        step.action,
+      )
+    )
       throw new Error(`unsupported action at step ${index + 1}`);
     if (typeof step.selector !== "string" || !step.selector)
       throw new Error(`missing selector at step ${index + 1}`);
@@ -297,7 +771,12 @@ try {
       await delay(100);
     }
     if (!box) throw new Error(`selector unavailable at step ${index + 1}`);
-    if (step.action === "click" || step.action === "type") {
+    if (
+      step.action === "click" ||
+      step.action === "type" ||
+      step.action === "replace" ||
+      step.action === "type-stub-code"
+    ) {
       await cdp.command("Input.dispatchMouseEvent", {
         type: "mousePressed",
         x: box.x,
@@ -313,15 +792,73 @@ try {
         clickCount: 1,
       });
     }
-    if (step.action === "type") {
+    if (step.action === "type" || step.action === "replace") {
       if (typeof step.text !== "string")
         throw new Error(`missing text at step ${index + 1}`);
+      if (step.action === "replace") {
+        await cdp.command("Input.dispatchKeyEvent", {
+          type: "keyDown",
+          key: "a",
+          code: "KeyA",
+          windowsVirtualKeyCode: 65,
+          modifiers: 2,
+        });
+        await cdp.command("Input.dispatchKeyEvent", {
+          type: "keyUp",
+          key: "a",
+          code: "KeyA",
+          windowsVirtualKeyCode: 65,
+          modifiers: 2,
+        });
+      }
       await cdp.command("Input.insertText", { text: step.text });
+    }
+    if (step.action === "type-stub-code") {
+      const purpose = step.purpose ?? "login";
+      if (
+        !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
+        process.env.APP_ENV !== "development" ||
+        process.env.SMS_PROVIDER !== "stub" ||
+        process.env.WEB_ATDD_SMS_STUB !== "1" ||
+        !/^\d{4}$/.test(step.expectedPhoneLast4 ?? "") ||
+        !["login", "change_phone_old", "change_phone_new"].includes(purpose)
+      )
+        throw new Error(
+          "SMS stub input is restricted to isolated loopback Web ATDD",
+        );
+      const outbox = new URL(
+        `../apps/api/.local/sms-outbox-${purpose}.json`,
+        import.meta.url,
+      );
+      let message;
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        try {
+          const candidate = JSON.parse(await readFile(outbox, "utf8"));
+          if (
+            candidate.purpose === purpose &&
+            candidate.phoneE164?.endsWith(step.expectedPhoneLast4) &&
+            /^\d{6}$/.test(candidate.code ?? "") &&
+            Date.parse(candidate.createdAt) >= Date.parse(capturedAtForStub)
+          ) {
+            message = candidate;
+            break;
+          }
+        } catch {
+          /* wait for the isolated SMS stub output */
+        }
+        await delay(100);
+      }
+      if (!message)
+        throw new Error("Fresh isolated SMS stub code not available");
+      await cdp.command("Input.insertText", { text: message.code });
     }
     actionTrace.push({
       action: step.action,
       selector: step.selector,
-      ...(step.action === "type" ? { characters: step.text.length } : {}),
+      ...(["type", "replace"].includes(step.action)
+        ? { characters: step.text.length }
+        : {}),
+      ...(step.action === "type-stub-code" ? { characters: 6 } : {}),
       at: new Date().toISOString(),
     });
     await delay(100);
@@ -330,8 +867,28 @@ try {
     format: "png",
     captureBeyondViewport: false,
   });
-  const html = await cdp.evaluate("document.documentElement.outerHTML");
+  const html = await cdp.evaluate(`(() => {
+    const clone = document.documentElement.cloneNode(true);
+    for (const field of clone.querySelectorAll('input,textarea')) {
+      field.removeAttribute('value');
+      if (field.tagName === 'TEXTAREA') field.textContent = '';
+    }
+    for (const node of clone.querySelectorAll('img[src],a[href]')) {
+      const attribute = node.tagName === 'IMG' ? 'src' : 'href';
+      if (/[?&](?:X-Amz-Signature|Signature|AWSAccessKeyId)=/i.test(node.getAttribute(attribute) ?? ''))
+        node.setAttribute(attribute, '[REDACTED_SIGNED_URL]');
+    }
+    return clone.outerHTML;
+  })()`);
   const accessibility = await cdp.command("Accessibility.getFullAXTree");
+  for (const node of accessibility.nodes ?? []) {
+    if (
+      node.value &&
+      ["textField", "textBox", "searchBox"].includes(node.role?.value)
+    ) {
+      node.value = { type: node.value.type, value: "[REDACTED]" };
+    }
+  }
   const visual = await cdp.evaluate(`(() => {
     const root = document.documentElement;
     const controls = [...document.querySelectorAll('button,a,input,select,textarea')];
@@ -346,6 +903,21 @@ try {
       colorScheme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     };
   })()`);
+  const storage = await cdp.evaluate(`({
+    localStorageKeys: Object.keys(localStorage).sort(),
+    sessionStorageKeys: Object.keys(sessionStorage).sort(),
+    readableCookieNames: document.cookie.split(';').map((part) => part.trim().split('=')[0]).filter(Boolean).sort(),
+    pathname: location.pathname
+  })`);
+  const cookieResponse = await cdp.command("Network.getAllCookies");
+  const cookieMetadata = (cookieResponse.cookies ?? []).map((cookie) => ({
+    name: cookie.name,
+    domain: cookie.domain,
+    path: cookie.path,
+    secure: cookie.secure,
+    httpOnly: cookie.httpOnly,
+    sameSite: cookie.sameSite ?? null,
+  }));
   const version = await cdp.command("Browser.getVersion");
   const capturedAt = new Date().toISOString();
   const safeUrl =
@@ -379,8 +951,16 @@ try {
       cdp.events.map((entry) => JSON.stringify(entry)).join("\n") + "\n",
     ),
     writeFile(
+      join(output, "network.json"),
+      `${JSON.stringify(cdp.network, null, 2)}\n`,
+    ),
+    writeFile(
+      join(output, "browser-storage.json"),
+      `${JSON.stringify({ ...storage, cookieMetadata }, null, 2)}\n`,
+    ),
+    writeFile(
       join(output, "capture.json"),
-      `${JSON.stringify({ capturedAt, url: safeUrl, browser: version.product, userAgent: version.userAgent, os: process.platform, requestedViewport: { width, height }, observedViewport: { width: visual.innerWidth, height: visual.innerHeight }, frozenNowUtc: canonicalFrozenNow, observedPageNow, browserTimezone, files: ["screen-before.png", "screen-after.png", "action-trace.json", "timeline.json", "dom.html", "accessibility.json", "visual-result.json", "browser-log.jsonl"] }, null, 2)}\n`,
+      `${JSON.stringify({ capturedAt, url: safeUrl, observedPathname: storage.pathname, browser: version.product, userAgent: version.userAgent, os: process.platform, requestedViewport: { width, height }, observedViewport: { width: visual.innerWidth, height: visual.innerHeight }, frozenNowUtc: canonicalFrozenNow, observedPageNow, browserTimezone, files: ["screen-before.png", ...intermediateFiles, "screen-after.png", "action-trace.json", "timeline.json", "dom.html", "accessibility.json", "visual-result.json", "browser-log.jsonl", "network.json", "browser-storage.json"] }, null, 2)}\n`,
     ),
   ]);
   const image = await readFile(join(output, "screen-after.png"));

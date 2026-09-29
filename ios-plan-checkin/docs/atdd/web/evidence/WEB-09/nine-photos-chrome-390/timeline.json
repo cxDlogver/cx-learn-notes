@@ -1,0 +1,143 @@
+{
+  "capturedAt": "2026-09-29T06:37:33.862Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T06:37:30.138Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T06:37:30.232Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T06:37:30.362Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T06:37:30.477Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T06:37:30.585Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T06:37:30.696Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T06:37:30.799Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 20,
+      "at": "2026-09-29T06:37:30.914Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 6,
+      "at": "2026-09-29T06:37:31.035Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T06:37:31.147Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T06:37:31.249Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T06:37:31.386Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T06:37:31.496Z"
+    },
+    {
+      "action": "select-option",
+      "selector": "#plan-kind",
+      "value": "one_time",
+      "at": "2026-09-29T06:37:31.602Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 8,
+      "at": "2026-09-29T06:37:31.715Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T06:37:31.833Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".one-time-result form",
+      "at": "2026-09-29T06:37:32.059Z"
+    },
+    {
+      "action": "select-option",
+      "selector": ".one-time-result select",
+      "value": "cancelled",
+      "at": "2026-09-29T06:37:32.168Z"
+    },
+    {
+      "action": "upload-file",
+      "selector": ".one-time-result input[type='file']",
+      "fixture": "[workspace-image]",
+      "fileCount": 9,
+      "at": "2026-09-29T06:37:32.286Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "nine-ready",
+      "at": "2026-09-29T06:37:32.425Z"
+    },
+    {
+      "action": "click",
+      "selector": ".one-time-result button[type='submit']",
+      "at": "2026-09-29T06:37:32.436Z"
+    },
+    {
+      "action": "wait-for-text",
+      "selector": ".one-time-result form [role='status']",
+      "expectedText": "结果和照片均已保存",
+      "at": "2026-09-29T06:37:33.503Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "nine-saved",
+      "at": "2026-09-29T06:37:33.542Z"
+    },
+    {
+      "action": "click",
+      "selector": ".one-time-result .private-media-gallery > button",
+      "at": "2026-09-29T06:37:33.552Z"
+    },
+    {
+      "action": "wait-for-image",
+      "selector": ".private-media-grid img",
+      "at": "2026-09-29T06:37:33.761Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "nine-gallery",
+      "at": "2026-09-29T06:37:33.792Z"
+    }
+  ]
+}

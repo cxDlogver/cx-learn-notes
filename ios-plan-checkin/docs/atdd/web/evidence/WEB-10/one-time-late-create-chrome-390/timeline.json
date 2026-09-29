@@ -1,0 +1,105 @@
+{
+  "capturedAt": "2026-09-29T01:13:11.837Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T01:13:09.689Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T01:13:09.775Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T01:13:09.896Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T01:13:10.002Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T01:13:10.120Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T01:13:10.236Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T01:13:10.354Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 17,
+      "at": "2026-09-29T01:13:10.468Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 5,
+      "at": "2026-09-29T01:13:10.588Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T01:13:10.697Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T01:13:10.800Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T01:13:10.941Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T01:13:11.049Z"
+    },
+    {
+      "action": "select-option",
+      "selector": "#plan-kind",
+      "value": "one_time",
+      "at": "2026-09-29T01:13:11.162Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 7,
+      "at": "2026-09-29T01:13:11.285Z"
+    },
+    {
+      "action": "set-date",
+      "selector": "#plan-start-date",
+      "value": "2026-09-28",
+      "at": "2026-09-29T01:13:11.398Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T01:13:11.527Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".one-time-result form",
+      "at": "2026-09-29T01:13:11.652Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "late-before-fixture",
+      "at": "2026-09-29T01:13:11.793Z"
+    }
+  ]
+}

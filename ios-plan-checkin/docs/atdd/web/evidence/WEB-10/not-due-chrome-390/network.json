@@ -1,0 +1,86 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:29.936Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:30.211Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:30.547Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:30.564Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:31.000Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:31.036Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:31.823Z"
+  },
+  {
+    "path": "/api/v1/plans/b35244a4-986e-4ae0-89b3-6b409daab996",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:31.848Z"
+  },
+  {
+    "path": "/api/v1/plans/b35244a4-986e-4ae0-89b3-6b409daab996/checkin-context/2026-09-28",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:31.879Z"
+  },
+  {
+    "path": "/api/v1/plans/b35244a4-986e-4ae0-89b3-6b409daab996/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:31.910Z"
+  },
+  {
+    "path": "/api/v1/plans/b35244a4-986e-4ae0-89b3-6b409daab996/checkin-context/2026-09-29",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:32.033Z"
+  },
+  {
+    "path": "/api/v1/plans/b35244a4-986e-4ae0-89b3-6b409daab996/detail",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T01:06:32.038Z"
+  }
+]

@@ -5,42 +5,42 @@ TAP version 13
 # Subtest: fixed plan excludes unsubmitted today and never auto-succeeds an avoid plan
 ok 1 - fixed plan excludes unsubmitted today and never auto-succeeds an avoid plan
   ---
-  duration_ms: 22.9065
+  duration_ms: 26.5424
   ...
 # Subtest: future unselected weekdays remain absent from calendar obligations
 ok 2 - future unselected weekdays remain absent from calendar obligations
   ---
-  duration_ms: 0.783
+  duration_ms: 0.8
   ...
 # Subtest: past unrecorded date stays in denominator while skipped date does not
 ok 3 - past unrecorded date stays in denominator while skipped date does not
   ---
-  duration_ms: 1.0366
+  duration_ms: 1.2986
   ...
 # Subtest: pause immediately cancels pending duty but preserves submitted record
 ok 4 - pause immediately cancels pending duty but preserves submitted record
   ---
-  duration_ms: 1.296
+  duration_ms: 1.8442
   ...
 # Subtest: weekly attainment counts only complete closed weeks and current progress stays visible
 ok 5 - weekly attainment counts only complete closed weeks and current progress stays visible
   ---
-  duration_ms: 2.3446
+  duration_ms: 2.5177
   ...
 # Subtest: a partial week from rule change is not a failed week
 ok 6 - a partial week from rule change is not a failed week
   ---
-  duration_ms: 1.1412
+  duration_ms: 1.3016
   ...
 # Subtest: midweek start, end, pause and resume retain records without attainment credit
 ok 7 - midweek start, end, pause and resume retain records without attainment credit
   ---
-  duration_ms: 3.589
+  duration_ms: 5.2075
   ...
 # Subtest: one-time status is based on actual completion instant in plan timezone
 ok 8 - one-time status is based on actual completion instant in plan timezone
   ---
-  duration_ms: 1.2233
+  duration_ms: 1.8597
   ...
 1..8
 # tests 8
@@ -50,6 +50,6 @@ ok 8 - one-time status is based on actual completion instant in plan timezone
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 314.0868
+# duration_ms 414.1191
 
 stderr:

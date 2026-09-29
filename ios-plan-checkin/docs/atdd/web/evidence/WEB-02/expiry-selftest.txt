@@ -1,0 +1,49 @@
+Applied 0001_core.sql
+Applied 0002_social_operations.sql
+Applied 0003_plan_management.sql
+Applied 0004_record_conflicts.sql
+Applied 0005_incremental_sync.sql
+Applied 0006_conflict_resolution_link.sql
+Applied 0007_media_cleanup.sql
+Applied 0008_social_notifications.sql
+Applied 0009_data_exports.sql
+Applied 0010_deletion_audit.sql
+Applied 0011_rate_limits.sql
+Applied 0012_web_compatibility.sql
+Applied 0013_web_push_delivery.sql
+{"runId":"web02-selftest","serverNowUtc":"2026-09-28T13:00:00Z","today":"2026-09-28","users":4,"plans":10,"sessions":6,"checkins":5,"friendPairs":1,"blockedPairs":1,"shares":1,"privateSessionFile":"ignored-local-artifact"}
+(node:54484) ExperimentalWarning: CommonJS module F:\CX_notes\cx-learn-notes\ios-plan-checkin\apps\api\package.json is loading ES Module F:\CX_notes\cx-learn-notes\ios-plan-checkin\node_modules\.pnpm\@nestjs+core@12.1.0_@nestjs_64cca02103bced40e73bfea9fad68b75\node_modules\@nestjs\core\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"http_request","at":"2026-09-28T16:24:23.149Z","requestId":"1cf5b8cc-c7fd-4143-91cb-cd22aea9cf0d","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":33,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:23.163Z","requestId":"92de203b-1671-42cf-a13b-0485fe212415","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:23.169Z","requestId":"66fd04da-41ec-4e7f-977c-2cf67e3027ad","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:23.175Z","requestId":"96dff36d-35fb-43ba-b846-80a8b650ad79","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:23.180Z","requestId":"d86f33e5-0e3f-4161-8e9e-566a431c7713","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":3,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:23.185Z","requestId":"7699f69d-a3c8-4c1d-a60e-fdbbf070838a","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"runId":"web02-selftest","sessionStatuses":{"A1":200,"A2":200,"A3":200,"B1":200,"C1":200,"D1":200},"distinctUsers":4,"distinctSessions":6,"sameAccountA":true,"expiredAlias":null,"privateCacheControl":"no-store"}
+{"runId":"web02-selftest","alias":"A3","offsetSeconds":-1,"expiresAt":"2026-09-28T16:24:22.610Z","databaseNow":"2026-09-28T16:24:23.615Z"}
+(node:52396) ExperimentalWarning: CommonJS module F:\CX_notes\cx-learn-notes\ios-plan-checkin\apps\api\package.json is loading ES Module F:\CX_notes\cx-learn-notes\ios-plan-checkin\node_modules\.pnpm\@nestjs+core@12.1.0_@nestjs_64cca02103bced40e73bfea9fad68b75\node_modules\@nestjs\core\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"http_request","at":"2026-09-28T16:24:25.668Z","requestId":"d2693622-3d23-44cd-ae30-62c15b836981","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":45,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:25.685Z","requestId":"e95c8a1c-eed5-4314-b34a-365ce58a4ab5","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":5,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:25.690Z","requestId":"21bb0eeb-40b1-476b-ae10-b41b3b6bc010","method":"GET","route":"/api/v1/auth/web/session","status":401,"durationMs":3,"code":"UNAUTHENTICATED","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:25.695Z","requestId":"f8e0f60c-9439-4930-82e5-dbc4c2ca4734","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":3,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:25.701Z","requestId":"6c054474-a964-486a-98b8-95892e112777","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:25.707Z","requestId":"85b62cbd-fd14-4886-a7ee-8eb232bc4ecb","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":5,"code":"NONE","operation":"get"}
+{"runId":"web02-selftest","sessionStatuses":{"A1":200,"A2":200,"A3":401,"B1":200,"C1":200,"D1":200},"distinctUsers":4,"distinctSessions":6,"sameAccountA":true,"expiredAlias":"A3","privateCacheControl":"no-store"}
+{"runId":"web02-selftest","alias":"A3","offsetSeconds":3600,"expiresAt":"2026-09-28T17:24:26.118Z","databaseNow":"2026-09-28T16:24:26.123Z"}
+(node:38480) ExperimentalWarning: CommonJS module F:\CX_notes\cx-learn-notes\ios-plan-checkin\apps\api\package.json is loading ES Module F:\CX_notes\cx-learn-notes\ios-plan-checkin\node_modules\.pnpm\@nestjs+core@12.1.0_@nestjs_64cca02103bced40e73bfea9fad68b75\node_modules\@nestjs\core\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"event":"http_request","at":"2026-09-28T16:24:28.126Z","requestId":"afd281e3-d700-4d30-9ef3-d145063c750a","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":35,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:28.141Z","requestId":"79aa38d7-73b9-406d-801e-4ec639fd9a33","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":5,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:28.147Z","requestId":"c6635617-69e1-4bc1-8d0c-e69787b4079d","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:28.153Z","requestId":"b1a112aa-9bb8-4fea-a956-f90b08aa45b6","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":4,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:28.158Z","requestId":"3019b264-edee-4c96-99ba-34cc554b3d79","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":3,"code":"NONE","operation":"get"}
+{"event":"http_request","at":"2026-09-28T16:24:28.163Z","requestId":"06af4f2a-0e88-4e1a-9278-e5ad3845dc26","method":"GET","route":"/api/v1/auth/web/session","status":200,"durationMs":3,"code":"NONE","operation":"get"}
+{"runId":"web02-selftest","sessionStatuses":{"A1":200,"A2":200,"A3":200,"B1":200,"C1":200,"D1":200},"distinctUsers":4,"distinctSessions":6,"sameAccountA":true,"expiredAlias":null,"privateCacheControl":"no-store"}
+{"runId":"web02-selftest","cleanedUsers":4,"remainingUsers":0}
+{"runId":"web02-selftest","serverNowUtc":"2026-09-28T13:00:00Z","today":"2026-09-28","users":4,"plans":10,"sessions":6,"checkins":5,"friendPairs":1,"blockedPairs":1,"shares":1,"privateSessionFile":"ignored-local-artifact"}
+{"runId":"web02-selftest","cleanedUsers":4,"remainingUsers":0}

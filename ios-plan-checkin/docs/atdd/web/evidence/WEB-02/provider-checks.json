@@ -1,0 +1,65 @@
+{
+  "taskId": "WEB-02",
+  "increment": "persistent-sample-and-controlled-providers",
+  "generatedAt": "2026-09-28T16:32:40.723Z",
+  "checks": [
+    {
+      "name": "expiry-selftest",
+      "command": "& ./scripts/run-web-atdd-fixture-smoke.ps1",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/expiry-selftest.txt",
+      "bytes": 7360,
+      "sha256": "7912def61c5ad7795c972e076907bf2397df40a393a707a85cb310a064bbfcc0"
+    },
+    {
+      "name": "object-provider",
+      "command": "node --env-file=.env scripts/web-atdd-object-provider.mjs web02-provider",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/object-provider.txt",
+      "bytes": 382,
+      "sha256": "5d21d38d24aee895ea6a813173303e7103eb6846183f3cd41ce4529c079fda53"
+    },
+    {
+      "name": "push-provider",
+      "command": "node --env-file=.env scripts/web-atdd-push-provider.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/push-provider.txt",
+      "bytes": 287,
+      "sha256": "8c4b2937dd344de09d4863d6efe727a99c6cd9bd7b9de7fbd052614819a922e7"
+    },
+    {
+      "name": "tool-sample",
+      "command": "python docs/atdd/web/generate_tool_sample.py",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/tool-sample-run.txt",
+      "bytes": 220,
+      "sha256": "cf64bd5b40a9df13ac19edcbf9f332987f91a8fcdc144c34b7b722f41e40e0ca"
+    },
+    {
+      "name": "provider-lint",
+      "command": "node node_modules/eslint/bin/eslint.js scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-object-provider.mjs scripts/web-atdd-push-provider.mjs",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/provider-lint.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "provider-format",
+      "command": "node node_modules/prettier/bin/prettier.cjs --check scripts/web-atdd-fixture.mjs scripts/web-atdd-fixture-session-smoke.mjs scripts/web-atdd-object-provider.mjs scripts/web-atdd-push-provider.mjs infra/compose.yaml",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/provider-format.txt",
+      "bytes": 68,
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    {
+      "name": "provider-ledger",
+      "command": "python docs/atdd/web/check_execution_progress.py",
+      "exitCode": 0,
+      "path": "docs/atdd/web/evidence/WEB-02/provider-ledger.txt",
+      "bytes": 46,
+      "sha256": "b3afe4cd7b2efaa8b728d81263a5ebcef7ce8a5df7a370996b33ecbf30696132"
+    }
+  ],
+  "browserAcceptance": "NOT_RUN",
+  "note": "Provider probes and synthetic sample do not count as business F/V/N results"
+}

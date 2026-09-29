@@ -1,0 +1,135 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T19:28:22.774Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:28:22.912Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T19:28:23.018Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T19:28:23.132Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:28:23.254Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-28T19:28:23.363Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 20,
+    "at": "2026-09-28T19:28:23.479Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 5,
+    "at": "2026-09-28T19:28:23.601Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T19:28:23.709Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T19:28:23.826Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T19:28:23.963Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-28T19:28:24.075Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 6,
+    "at": "2026-09-28T19:28:24.193Z"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "weekly",
+    "at": "2026-09-28T19:28:24.311Z"
+  },
+  {
+    "action": "click",
+    "selector": "input[name='direction'][value='avoid']",
+    "at": "2026-09-28T19:28:24.422Z"
+  },
+  {
+    "action": "replace",
+    "selector": "#plan-weekly-target",
+    "characters": 1,
+    "at": "2026-09-28T19:28:24.553Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "weekly-form",
+    "at": "2026-09-28T19:28:24.709Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-28T19:28:24.721Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1",
+    "at": "2026-09-28T19:28:24.823Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-lifecycle-actions button:nth-child(1)",
+    "at": "2026-09-28T19:28:24.940Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#edit-weekly-target",
+    "at": "2026-09-28T19:28:25.086Z"
+  },
+  {
+    "action": "replace",
+    "selector": "#edit-weekly-target",
+    "characters": 1,
+    "at": "2026-09-28T19:28:25.205Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "weekly-edit-form",
+    "at": "2026-09-28T19:28:25.365Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-edit-panel form:nth-of-type(1) button[type=\"submit\"]",
+    "at": "2026-09-28T19:28:25.371Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"][data-rule-version=\"2\"]",
+    "at": "2026-09-28T19:28:25.489Z"
+  }
+]

@@ -1,0 +1,39 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:47:38.511Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "2da844d21d6be5b59db67187206adb03996fc9c2d6d2d38f60e167f0e5f7d327",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:47:38.863Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "5c20a0e7ab5de45d813ec59fcbd3054f3187c5e4f3012a89d32777dad2b3890b",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:47:39.223Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:47:39.237Z"
+  },
+  {
+    "path": "/api/v1/me/inbox",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T08:47:39.316Z"
+  }
+]

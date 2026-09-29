@@ -1,0 +1,201 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "text": "13900001256"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "expectedPhoneLast4": "1256"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "text": "web_atdd_groups_v2"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "text": "分组验收用户"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "分组计划一"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(1) input"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(3) input"
+  },
+  {
+    "action": "click",
+    "selector": "#plan-weekdays .weekday-option:nth-child(5) input"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1"
+  },
+  {
+    "action": "click",
+    "selector": ".content-panel a[href='/plans']"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-manager"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "text": "分组计划二"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "one_time"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type=\"submit\"]"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key=\"plan-detail\"] h1"
+  },
+  {
+    "action": "click",
+    "selector": ".content-panel a[href='/plans']"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-manager"
+  },
+  {
+    "action": "type",
+    "selector": "#group-new-name",
+    "text": "晨间习惯"
+  },
+  {
+    "action": "click",
+    "selector": ".group-create button"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-row"
+  },
+  {
+    "action": "snapshot",
+    "label": "group-created"
+  },
+  {
+    "action": "select-option-index",
+    "selector": ".group-moves label:nth-child(2) select",
+    "index": 1
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card:nth-child(1):not([data-group-id=\"none\"])"
+  },
+  {
+    "action": "select-option-index",
+    "selector": ".group-moves label:nth-child(3) select",
+    "index": 1
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card:nth-child(2):not([data-group-id=\"none\"])"
+  },
+  {
+    "action": "snapshot",
+    "label": "two-moved"
+  },
+  {
+    "action": "replace",
+    "selector": ".group-row input[name=\"name\"]",
+    "text": "运动与晨间"
+  },
+  {
+    "action": "click",
+    "selector": ".group-row form button"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-row input[value=\"运动与晨间\"]"
+  },
+  {
+    "action": "snapshot",
+    "label": "renamed"
+  },
+  {
+    "action": "click",
+    "selector": ".group-row > .text-button"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".group-delete-confirm"
+  },
+  {
+    "action": "snapshot",
+    "label": "delete-group-confirm"
+  },
+  {
+    "action": "click",
+    "selector": ".group-delete-confirm .secondary-button"
+  },
+  {
+    "action": "wait-for-absence",
+    "selector": ".group-row"
+  },
+  {
+    "action": "wait-for",
+    "selector": ".today-card:nth-child(2)[data-group-id=\"none\"]"
+  }
+]

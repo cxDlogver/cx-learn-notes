@@ -1,0 +1,93 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:13.237Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:13.584Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:13.922Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:13.937Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "PATCH",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:14.347Z"
+  },
+  {
+    "path": "/api/v1/today",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:14.385Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:15.668Z"
+  },
+  {
+    "path": "/api/v1/plans/3a3b544e-e50a-4aeb-8687-00ed8e9110a2",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:15.705Z"
+  },
+  {
+    "path": "/api/v1/plans/3a3b544e-e50a-4aeb-8687-00ed8e9110a2/pause",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:16.308Z"
+  },
+  {
+    "path": "/api/v1/plans/3a3b544e-e50a-4aeb-8687-00ed8e9110a2/resume",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:16.882Z"
+  },
+  {
+    "path": "/api/v1/plans/3a3b544e-e50a-4aeb-8687-00ed8e9110a2/archive",
+    "method": "POST",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:17.431Z"
+  },
+  {
+    "path": "/api/v1/plans/3a3b544e-e50a-4aeb-8687-00ed8e9110a2",
+    "method": "DELETE",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:17.975Z"
+  },
+  {
+    "path": "/api/v1/plans",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-28T18:54:18.007Z"
+  }
+]

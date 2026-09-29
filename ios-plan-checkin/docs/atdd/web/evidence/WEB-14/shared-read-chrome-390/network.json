@@ -1,0 +1,89 @@
+[
+  {
+    "path": "/api/v1/auth/web/session",
+    "method": "GET",
+    "status": 401,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:44.551Z"
+  },
+  {
+    "path": "/api/v1/auth/sms/challenges",
+    "method": "POST",
+    "operationKeySha256": "a05f5d108fab5bf70611ea90a1ab7ba3f457b0a7d12adefc13240b9f96f9a3df",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:44.860Z"
+  },
+  {
+    "path": "/api/v1/auth/web/verify",
+    "method": "POST",
+    "operationKeySha256": "f5f30be7e25314b41baa8f52ec0c9cc60985a49b031a4cbcbc92b45f29d9f5d9",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.196Z"
+  },
+  {
+    "path": "/api/v1/me",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.210Z"
+  },
+  {
+    "path": "/api/v1/friends",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.245Z"
+  },
+  {
+    "path": "/api/v1/friend-requests",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.265Z"
+  },
+  {
+    "path": "/api/v1/friends",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.296Z"
+  },
+  {
+    "path": "/api/v1/friends/3d2f5375-96d5-4121-8019-bd6586f7abfa/shared-plans",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.322Z"
+  },
+  {
+    "path": "/api/v1/shared-plans/1ee66b33-a62b-4c53-9039-34287fa86561/checkins",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.495Z"
+  },
+  {
+    "path": "/api/v1/checkins/b18aea31-27ec-4ff8-9403-8df2239ec76e/encouragements",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.645Z"
+  },
+  {
+    "path": "/api/v1/checkins/b18aea31-27ec-4ff8-9403-8df2239ec76e/encouragements",
+    "method": "POST",
+    "operationKeySha256": "26b3387864f569990c6ada9a89ad4acd4d507dd1985c5d50ded80cc7e2e26f81",
+    "status": 201,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:45.990Z"
+  },
+  {
+    "path": "/api/v1/checkins/b18aea31-27ec-4ff8-9403-8df2239ec76e/encouragements",
+    "method": "GET",
+    "status": 200,
+    "mimeType": "application/json",
+    "at": "2026-09-29T09:04:46.008Z"
+  }
+]

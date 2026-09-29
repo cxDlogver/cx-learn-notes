@@ -336,6 +336,22 @@ export class NotificationsService {
     );
   }
 
+  async getWebPushStatus(
+    userId: string,
+    browserDeviceId: string,
+  ): Promise<WebPushSubscriptionDto> {
+    const active = await this.database.query<{ id: string }>(
+      `SELECT id FROM web_push_subscriptions
+       WHERE user_id=$1 AND browser_device_id=$2 AND enabled AND revoked_at IS NULL
+         AND (expires_at IS NULL OR expires_at>now())`,
+      [userId, browserDeviceId],
+    );
+    return {
+      id: active.rows[0]?.id ?? null,
+      registered: Boolean(active.rows[0]),
+    };
+  }
+
   async registerWebPush(
     userId: string,
     browserDeviceId: string,

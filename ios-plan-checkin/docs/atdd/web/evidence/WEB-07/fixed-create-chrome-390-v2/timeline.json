@@ -1,0 +1,120 @@
+{
+  "capturedAt": "2026-09-28T18:18:43.070Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-28T18:18:40.564Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-28T18:18:40.678Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T18:18:40.796Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-28T18:18:40.902Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-28T18:18:41.015Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T18:18:41.134Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-28T18:18:41.237Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 13,
+      "at": "2026-09-28T18:18:41.357Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 6,
+      "at": "2026-09-28T18:18:41.470Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-28T18:18:41.583Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-28T18:18:41.686Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-28T18:18:41.830Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-28T18:18:41.945Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 4,
+      "at": "2026-09-28T18:18:42.066Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .weekday-option:nth-child(1) input",
+      "at": "2026-09-28T18:18:42.178Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .weekday-option:nth-child(3) input",
+      "at": "2026-09-28T18:18:42.299Z"
+    },
+    {
+      "action": "click",
+      "selector": "#plan-weekdays .weekday-option:nth-child(5) input",
+      "at": "2026-09-28T18:18:42.414Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-numeric-label",
+      "characters": 2,
+      "at": "2026-09-28T18:18:42.536Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-numeric-unit",
+      "characters": 2,
+      "at": "2026-09-28T18:18:42.649Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "fixed-form",
+      "at": "2026-09-28T18:18:42.790Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-28T18:18:42.804Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "[data-page-key='plan-detail'] h1",
+      "at": "2026-09-28T18:18:42.917Z"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+[
+  {
+    "action": "type",
+    "selector": "#phone",
+    "characters": 11,
+    "at": "2026-09-28T18:20:32.844Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:20:32.987Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#sms-code",
+    "at": "2026-09-28T18:20:33.100Z"
+  },
+  {
+    "action": "type-stub-code",
+    "selector": "#sms-code",
+    "characters": 6,
+    "at": "2026-09-28T18:20:33.213Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:20:33.338Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#username",
+    "at": "2026-09-28T18:20:33.454Z"
+  },
+  {
+    "action": "type",
+    "selector": "#username",
+    "characters": 15,
+    "at": "2026-09-28T18:20:33.571Z"
+  },
+  {
+    "action": "type",
+    "selector": "#nickname",
+    "characters": 5,
+    "at": "2026-09-28T18:20:33.691Z"
+  },
+  {
+    "action": "click",
+    "selector": "button[type='submit']",
+    "at": "2026-09-28T18:20:33.801Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T18:20:33.917Z"
+  },
+  {
+    "action": "click",
+    "selector": "a[href='/plans/new']",
+    "at": "2026-09-28T18:20:34.051Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "#plan-title",
+    "at": "2026-09-28T18:20:34.167Z"
+  },
+  {
+    "action": "type",
+    "selector": "#plan-title",
+    "characters": 6,
+    "at": "2026-09-28T18:20:34.281Z"
+  },
+  {
+    "action": "select-option",
+    "selector": "#plan-kind",
+    "value": "weekly",
+    "at": "2026-09-28T18:20:34.399Z"
+  },
+  {
+    "action": "click",
+    "selector": "input[name='direction'][value='avoid']",
+    "at": "2026-09-28T18:20:34.509Z"
+  },
+  {
+    "action": "replace",
+    "selector": "#plan-weekly-target",
+    "characters": 1,
+    "at": "2026-09-28T18:20:34.628Z"
+  },
+  {
+    "action": "snapshot",
+    "label": "weekly-form",
+    "at": "2026-09-28T18:20:34.774Z"
+  },
+  {
+    "action": "click",
+    "selector": ".plan-form button[type='submit']",
+    "at": "2026-09-28T18:20:34.782Z"
+  },
+  {
+    "action": "wait-for",
+    "selector": "[data-page-key='plan-detail'] h1",
+    "at": "2026-09-28T18:20:34.898Z"
+  }
+]

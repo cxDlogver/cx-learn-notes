@@ -1,0 +1,144 @@
+{
+  "capturedAt": "2026-09-29T00:42:52.050Z",
+  "frozenNowUtc": null,
+  "observedPageNow": "2026-09-29T00:42:48.738Z",
+  "browserTimezone": "Asia/Shanghai",
+  "actions": [
+    {
+      "action": "type",
+      "selector": "#phone",
+      "characters": 11,
+      "at": "2026-09-29T00:42:48.860Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T00:42:48.985Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#sms-code",
+      "at": "2026-09-29T00:42:49.305Z"
+    },
+    {
+      "action": "type-stub-code",
+      "selector": "#sms-code",
+      "characters": 6,
+      "at": "2026-09-29T00:42:49.423Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T00:42:49.547Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#username",
+      "at": "2026-09-29T00:42:49.665Z"
+    },
+    {
+      "action": "type",
+      "selector": "#username",
+      "characters": 17,
+      "at": "2026-09-29T00:42:49.774Z"
+    },
+    {
+      "action": "type",
+      "selector": "#nickname",
+      "characters": 5,
+      "at": "2026-09-29T00:42:49.880Z"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit']",
+      "at": "2026-09-29T00:42:50.003Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T00:42:50.114Z"
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/plans/new']",
+      "at": "2026-09-29T00:42:50.267Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": "#plan-title",
+      "at": "2026-09-29T00:42:50.375Z"
+    },
+    {
+      "action": "select-option",
+      "selector": "#plan-kind",
+      "value": "one_time",
+      "at": "2026-09-29T00:42:50.492Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-title",
+      "characters": 6,
+      "at": "2026-09-29T00:42:50.608Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-numeric-label",
+      "characters": 2,
+      "at": "2026-09-29T00:42:50.722Z"
+    },
+    {
+      "action": "type",
+      "selector": "#plan-numeric-unit",
+      "characters": 1,
+      "at": "2026-09-29T00:42:50.843Z"
+    },
+    {
+      "action": "click",
+      "selector": ".plan-form button[type='submit']",
+      "at": "2026-09-29T00:42:50.964Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".one-time-result form",
+      "at": "2026-09-29T00:42:51.180Z"
+    },
+    {
+      "action": "type",
+      "selector": ".one-time-result textarea",
+      "characters": 5,
+      "at": "2026-09-29T00:42:51.287Z"
+    },
+    {
+      "action": "type",
+      "selector": ".one-time-result input[type='number']",
+      "characters": 2,
+      "at": "2026-09-29T00:42:51.396Z"
+    },
+    {
+      "action": "upload-file",
+      "selector": ".one-time-result input[type='file']",
+      "fixture": "[workspace-image]",
+      "at": "2026-09-29T00:42:51.508Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "one-time-ready",
+      "at": "2026-09-29T00:42:51.629Z"
+    },
+    {
+      "action": "click",
+      "selector": ".one-time-result button[type='submit']",
+      "at": "2026-09-29T00:42:51.636Z"
+    },
+    {
+      "action": "wait-for",
+      "selector": ".one-time-result [role='status']",
+      "at": "2026-09-29T00:42:51.852Z"
+    },
+    {
+      "action": "snapshot",
+      "label": "one-time-saved",
+      "at": "2026-09-29T00:42:51.979Z"
+    }
+  ]
+}
