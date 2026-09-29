@@ -3975,7 +3975,7 @@ Workflow / Gate
 
 #### <u>3. BUG-42 用一条缺陷修复流程串起这些边界</u>
 
-原 `Agent学习教程 (copy).md` 中的 BUG-42 案例保留其稳定知识结构，去掉与主教程重复的大段实现说明。
+BUG-42 案例保留其稳定知识结构，用一条缺陷修复流程把 Stage、Agent、Skill、Gate、权限和人工审批串起来，同时避免重复展开前文已经说明的底层机制。
 
 ![BUG-42 执行结构](assets/agent-tutorial-BUG42执行结构.svg)
 
