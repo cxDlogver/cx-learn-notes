@@ -2,7 +2,7 @@
 
 > **适用场景**：Agent 开发学习、系统设计梳理、技术面试准备、业务 Agent 架构讨论  
 > **更新时间**：2026-08  
-> **核心视角**：不要把 Agent 开发理解成“写 Prompt + 接几个 Tool”。生产级 Agent 本质上是：**Model + Agent Harness/Runtime + Context + Tools/Skills + Execution Environment + Governance + Evals**。
+> **核心视角**：不要把 Agent 开发理解成“写 Prompt + 接几个 Tool”。生产级 Agent 需要 **Model、Agent Loop、Runtime、Harness、Context、Tools/Skills、Execution Environment、Governance、Evals** 等能力协作；其中 Loop 是执行机制，Runtime 是运行层，Harness 是支撑与装配体系，三者不要视为同义词或固定的逐级嵌套。
 
 ---
 
@@ -101,7 +101,8 @@ Think / Decide → Act → Observe → Think / Decide → ...
 
 ```mermaid
 flowchart TB
-    U[User / Business Trigger] --> R[Agent Runtime / Harness]
+    U[User / Business Trigger] --> HN[Agent Harness]
+    HN --> R[Agent Runtime]
     R --> C[Context Builder]
     C --> M[Model]
     M --> D{Next Action}
@@ -121,7 +122,7 @@ flowchart TB
     MEM[Memory / Knowledge] --> C
     MCP[MCP Servers] --> T
 
-    G[Guardrails / Policy] --> R
+    G[Guardrails / Policy] --> HN
     H[Human Approval] --> R
     TR[Tracing / Checkpoint] --> R
     EV[Evaluation] --> TR
@@ -165,11 +166,11 @@ model → tool → observation → model
 
 ### 1.4 Agent Harness
 
-Harness 比 Runtime 更宽。
+在本文采用的工程抽象里，Harness 的关注范围比 Runtime 更宽，但这不是行业统一定义。
 
 可以理解为：
 
-> **为了让一个模型稳定地表现为 Agent，围绕模型和 Loop 搭建的整套运行结构。**
+> **为了让一个模型稳定地表现为 Agent，围绕模型、Runtime 与 Loop 搭建的整套支撑和装配结构。**
 
 LangChain 当前文档直接使用：
 
@@ -179,13 +180,26 @@ Agent = Model + Harness
 
 并把 Prompt、Tools、Middleware、Context、Execution Environment 等都放进 Harness 的范畴。
 
-所以：
+因此这里不再使用 `Model < Agent Loop < Runtime < Harness` 表示严格包含关系，而改用职责关系：
 
 ```text
-Model < Agent Loop < Runtime < Harness < Production Agent System
+Model
+  → 提供推理、生成与下一步行动选择
+
+Agent Loop
+  → 定义“判断 → 行动 → 观察 → 再判断”的反复执行机制
+
+Agent Runtime
+  → 驱动 Loop，管理 State、Tool Dispatch、中断、恢复与结束
+
+Agent Harness
+  → 装配 Runtime、Context、Tool、Memory、权限、Sandbox、Trace 等支撑能力
+
+Production Agent System
+  → 在上述基础上加入业务流程、部署、评测、监控与治理
 ```
 
-不是严格标准，但非常适合作为工程心智模型。
+这是一套便于工程讨论的职责模型，不代表所有框架都采用相同边界。本文关于 Loop、Runtime 与 Harness 的主口径与 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md) 保持一致；如果其他章节出现不同表述，应优先回到该文档的概念定义进行校准。
 
 ---
 
