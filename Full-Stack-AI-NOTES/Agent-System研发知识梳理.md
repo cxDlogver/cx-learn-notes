@@ -186,6 +186,8 @@ Agent Runtime 持续读写 State
 
 Checkpoint 保存的是“继续执行所需的数据”，Trace 记录的是“这次执行发生了什么”。两者用途不同，不能互相替代。[13](https://docs.langchain.com/oss/python/langgraph/persistence) [14](https://openai.github.io/openai-agents-python/tracing/)
 
+**Trace 也不等于 Eval。** Trace 是 Runtime 产生的运行事实；Eval 会进一步结合 Trace、Outcome、最终输出和资源消耗，通过 Grader 判断一次 Trial 是否满足 Task 的成功标准。完整评测链路见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+
 ### 【开发一个 Agent System，需要建设什么】
 
 沿着前面的执行过程，可以把 Agent 开发收敛为下面几项工程工作：
@@ -1394,6 +1396,8 @@ traceBus.subscribe(event => metricsCollector.record(event));
 ~~~
 
 Trace 用来还原一次运行经过了哪些模型和 Tool 步骤。审计记录关注谁发起调用、命中了哪条规则、谁批准以及最终影响了什么资源。两者可以消费同一条 Runtime Event，但保存字段、访问权限和保留时间不同。
+
+当需要评测 Agent 的 Trajectory Quality、Tool 使用、Retry、成本或安全行为时，可以把这些 Trace Event 作为 Grader 的输入；但“记录事件”和“判断事件是否符合 Task 标准”仍然是两层职责，后者属于 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 Tool 参数可能包含文件内容、用户数据或凭证。事件里应优先记录参数摘要、资源标识和规则编号，原始参数按敏感级别脱敏。OpenAI Agents SDK 的 Trace 会记录模型、Tool、Guardrail 和 Handoff 等事件，也可以通过自定义 Trace Processor 发送到其他后端。[14](https://openai.github.io/openai-agents-python/tracing/) NIST AI RMF Playbook 也要求保留人工监督、覆盖操作、错误和升级处理记录。[35](https://airc.nist.gov/docs/AI_RMF_Playbook.pdf)
 
