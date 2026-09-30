@@ -1,3 +1,5 @@
+# Agent 学习教程
+
 ## 1. Agent 研发的两种语境
 
 今天讨论“Agent 开发”，经常会混在一起说两件事：一件是把 Agent 用到业务流程里，另一件是开发 Agent 系统本身。两者有关联，但研发对象、要解决的问题和评价方式不同。
@@ -279,6 +281,8 @@ Model 之后一定调用 Search → Search 完成后一定再次调用 Model →
 - 复杂的数据处理；
 
 它仍然可以只是 Workflow。
+
+这里的“预定义代码路径”描述的是**流程结构和控制规则由开发者显式定义**，不等于 Workflow 中所有节点都必须按照单线程串行方式运行。Microsoft Agent Framework 当前既提供 Sequential Orchestration，也提供 Concurrent Orchestration，因此一个显式 Workflow 仍然可以包含并行执行、条件分支和 Agent Executor；关键区别仍然是整体控制边界由 Workflow 明确，而不是把全部流程决策交给模型。[[9]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/sequential) [[10]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/concurrent)
 
 判断它是不是 Agent 的关键，不是：**“有没有使用 LLM？”**而是：**“LLM 有没有获得执行过程的决策权？”**
 
@@ -4038,7 +4042,7 @@ Adapter
   隔离具体 Agent 产品的调用差异
 ```
 
-从这里继续向底层理解 Agent 的实际运行机制，可以阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md)。
+从这里继续向底层理解 Agent 的实际运行机制，可以阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
 
 ## 6. 参考文献
 
