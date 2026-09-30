@@ -100,7 +100,8 @@ Task
 ├── Initial Environment
 ├── Success Criteria
 ├── Constraints
-└── Graders
+├── Graders
+└── Reference Solution
 ~~~
 
 例如 Coding Agent 的一个任务可以写成：
@@ -128,9 +129,29 @@ graders:
   - regression_test
   - diff_scope_check
   - security_rule_check
+
+reference_solution:
+  patch: "known-good-fix.diff"
+  expected: "passes all required graders"
 ~~~
 
 Task 的标准必须足够明确，让正确执行任务的 Agent 有机会通过；如果 Grader 检查了 Task 从未说明的隐藏条件，最终分数反映的可能是 Task 设计问题，而不是 Agent 能力。Anthropic 也强调 Task 与 Grader 的成功标准需要清晰且可验证。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+Reference Solution（参考解）用于证明两件事：**Task 本身可解，且当前 Grader 配置至少能够接受一个已知正确结果。** Anthropic 建议为 Task 准备一个能够通过全部关键 Grader 的已知工作解，用它检查任务规范、环境和评分器是否配置正确。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+Reference Solution 不是“Agent 必须模仿的执行路径”。它只负责验证 Task 和 Grader 的可用性：
+
+~~~text
+Reference Solution
+→ 证明 Task 可解
+→ 证明 Grader 能接受正确结果
+
+Agent Trial
+→ 可以采用其他合法路径
+→ 只要 Outcome 和必须遵守的约束正确
+~~~
+
+因此，Agent 的实现路径不应该因为与 Reference Solution 不同就自动失败。
 
 ### 【Trial 是 Task 的一次具体执行】
 
@@ -208,6 +229,50 @@ Grader（评分器）是检查 Agent 表现的评分逻辑。一个 Task 可以�
 | Human | 高价值任务、专业判断、模糊边界、Judge 校准 | 能提供专家判断 | 成本高、速度慢 |
 
 [[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+### 【Outcome、Policy Constraint 与 Implementation Path 需要分开评分】
+
+Agent Eval 可以读取完整 Trace，但**能观察路径不等于应该规定唯一路径**。更稳定的做法是先区分三类评测对象：
+
+| 评测对象 | 主要问题 | 是否适合硬性约束 |
+| --- | --- | --- |
+| Outcome | 最终任务是否真正完成 | 是 |
+| Policy / Safety Constraint | 是否满足权限、审批、安全、合规等必须规则 | 是 |
+| Implementation Path / Trajectory | Agent 具体用了什么 Tool、什么顺序、怎样规划 | 通常不是唯一答案 |
+
+例如 Coding Agent 可以要求：
+
+~~~text
+必须：
+→ 修复目标缺陷
+→ 保持回归测试通过
+→ 不修改无关模块
+→ 不越权访问资源
+
+通常不应该要求：
+→ 必须先 read_file
+→ 再 edit_file
+→ 再 run_tests
+→ 严格按唯一顺序执行
+~~~
+
+因为 Agent 可能找到设计者没有预设、但同样正确的执行路径。Anthropic 也指出，过度限定具体 Tool Call 或中间步骤容易产生脆弱评测；更可靠的方式通常是优先检查 Outcome，并只对真正属于业务、安全或合规要求的路径约束做硬性评分。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+Trajectory 仍然有价值，但更多用于解释和诊断：
+
+~~~text
+Outcome Grading
+→ 判断“有没有真正完成”
+
+Constraint Grading
+→ 判断“有没有违反必须遵守的边界”
+
+Trajectory Analysis / Trace Grading
+→ 判断“为什么成功或失败”
+→ 发现低效、循环、错误 Tool、错误 Handoff
+~~~
+
+OpenAI 当前也将 Trace Grading 定义为对一次 Agent workflow 的完整 Trace 进行结构化评分，可用于检查 Tool 选择、Handoff、Guardrail 与安全策略等 workflow-level 行为。[[6]](https://developers.openai.com/api/docs/guides/agent-evals)
 
 ### 【优先使用最确定的证据，再增加主观评分】
 
@@ -310,9 +375,29 @@ Regression Suite
 
 Anthropic 区分 Capability Eval 与 Regression Eval：前者用于探索 Agent 能做到什么以及提升空间，后者用于保护过去已经能稳定完成的能力，避免版本升级后退化。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
+两者不是永远平行的集合。一个困难 Task 可以先进入 Capability Suite，用来推动能力提升；当 Agent 对这类 Task 已经能够稳定通过后，可以把它“毕业”到 Regression Suite，持续防止后续版本退化：
+
+~~~text
+New Difficult Task
+  ↓
+Capability Suite
+  ↓
+Agent / Prompt / Tool / Harness 改进
+  ↓
+多次 Trial 稳定通过
+  ↓
+Regression Suite
+  ↓
+持续回归保护
+~~~
+
+Anthropic 将这种从 capability eval 向 regression suite 的迁移作为长期维护 Eval 的重要方式。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
 ### 【Benchmark 是更稳定、可重复的比较基准】
 
 行业并不存在唯一统一的 Benchmark 定义。本文把 Benchmark 作为一种工程组织方式理解：**固定 Task 集、环境、运行协议和评分规则，用于重复比较模型、Harness、Prompt、Tool 或版本变化。**
+
+**下面的 Public / Domain / Regression 三类只是本文为了工程理解建立的组织模型，不是行业统一标准。** 它们分别强调“外部比较、内部领域能力、历史能力保护”三个目标。
 
 可以分三层：
 
@@ -448,7 +533,38 @@ Requirement
 | Unit / Integration / E2E 可作为证据 | Test Result 也可以成为 Agent Grader 的输入 |
 | 一次确定性测试通常有稳定结果 | 同一 Agent Task 往往需要多个 Trial |
 
-因此 AI Coding 场景可以复用 Requirement / Acceptance Criteria / Test Case 作为任务成功标准，但还需要进一步评测 Agent 的路径、重试、Tool 使用、成本和多次运行稳定性。
+因此 AI Coding 场景可以复用 Requirement / Acceptance Criteria / Test Case 作为 Outcome Grader 的重要输入，但**不能把软件 Test Case 直接等同于完整的 Agent Eval Task**。Agent Eval 还需要明确 Initial Repository State、Allowed Tools、Permissions、Environment Reset、Trial Count、时间 / Token Budget 以及 Agent-level Safety Constraints，再评测 Agent 是否能够稳定、安全、低成本地产生正确的软件交付。
+
+### 【Eval 自身也需要验证，失败不能直接归因给 Agent】
+
+Eval Result 不是天然正确的测量结果。一次失败可能来自 Agent，也可能来自 Task、Grader、Environment 或 Evaluation Harness 本身。
+
+~~~text
+Eval Failure
+  ↓
+Failure Analysis
+  ├── Agent Failure
+  ├── Task Ambiguity
+  ├── Grader Error
+  ├── Environment Instability
+  └── Harness / Infrastructure Problem
+  ↓
+确认归因
+  ↓
+Agent Fix / Eval Fix
+~~~
+
+因此当某个 Task 在大量 Trial 中持续失败时，不应该立即得出“Agent 没有能力”的结论。Anthropic 特别指出，如果前沿模型在大量 Trial 中仍然是 0% 成功，通常应先重新检查 Task 规范和 Grader；Reference Solution 也用于验证这把“尺子”本身是否可用。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+Eval Validation 至少可以包含：
+
+- **Reference Solution**：证明 Task 可解、关键 Grader 可以通过；
+- **Transcript Review**：人工抽查 Trial，确认失败归因是否公平；
+- **Grader Calibration**：对 Model-based Grader 与人工判断做一致性检查；
+- **Environment Validation**：确认环境初始化、依赖、权限和资源状态稳定；
+- **Dataset Review**：检查 Task 是否过度单一、失衡或已经饱和。
+
+Anthropic 建议持续阅读失败 Trial 的 Transcript，因为它能区分“Agent 真正做错”与“Grader 拒绝了合法方案”。Capability Eval 接近 100% 后也会逐渐失去继续衡量能力增长的信号，需要增加更困难的 Task 或将已稳定任务迁入 Regression Suite。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
 ### 【生产失败应该沉淀为 Regression Case】
 
@@ -528,3 +644,5 @@ Regression Store
 [4] SWE-BENCH. [SWE-bench](https://www.swebench.com/)[EB/OL]. [2026-09-30].
 
 [5] MIALON, Grégoire; FOURRIER, Clémentine; SWIFT, Craig; WOLF, Thomas; LECUN, Yann; SCIALOM, Thomas. [GAIA: a benchmark for General AI Assistants](https://arxiv.org/abs/2311.12983)[EB/OL]. 2023-11-21[2026-09-30].
+
+[6] OPENAI. [Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals)[EB/OL]. [2026-09-30].
