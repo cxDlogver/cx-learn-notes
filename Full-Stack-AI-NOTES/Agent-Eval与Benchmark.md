@@ -318,7 +318,7 @@ Anthropic 区分 Capability Eval 与 Regression Eval：前者用于探索 Agent 
 
 | 层级 | 作用 | 示例 |
 | --- | --- | --- |
-| Public Benchmark | 与外部公开任务和其他系统比较基础能力 | SWE-bench、GAIA 等 |
+| Public Benchmark | 与外部公开任务和其他系统比较基础能力 | SWE-bench [[4]](https://www.swebench.com/)、GAIA [[5]](https://arxiv.org/abs/2311.12983) 等 |
 | Domain Benchmark / Eval Suite | 用企业真实任务评估领域能力 | 客服退款、研发缺陷修复、运营诊断 |
 | Regression Suite | 用历史失败和关键成功场景保护已获得能力 | Production Badcase、重大事故、关键权限场景 |
 
@@ -527,4 +527,4 @@ Regression Store
 
 [4] SWE-BENCH. [SWE-bench](https://www.swebench.com/)[EB/OL]. [2026-09-30].
 
-[5] MIALON, Grégoire, et al. [GAIA: a benchmark for General AI Assistants](https://arxiv.org/abs/2311.12983)[EB/OL]. 2023[2026-09-30].
+[5] MIALON, Grégoire; FOURRIER, Clémentine; SWIFT, Craig; WOLF, Thomas; LECUN, Yann; SCIALOM, Thomas. [GAIA: a benchmark for General AI Assistants](https://arxiv.org/abs/2311.12983)[EB/OL]. 2023-11-21[2026-09-30].
