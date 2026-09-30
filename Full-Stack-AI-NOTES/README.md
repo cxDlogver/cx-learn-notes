@@ -83,7 +83,7 @@ Full-Stack-AI-NOTES/
 | 框架与前端工程化 | Vue、Router、模块化、Vite、Webpack、测试、CI/CD | [Vue3进阶学习](./Vue3进阶学习.md)、[前端工程化设计全面解析](./前端工程化设计全面解析.md) |
 | 性能、监控与 SEO | Web Vitals、资源、渲染、监控、Lighthouse、Nuxt、SEO | [性能专项优化](./性能专项优化.md)、[Nuxt SEO 学习笔记](<./Nuxt SEO 学习笔记.md>) |
 | 服务端与全栈 | Node.js、HTTP、数据库、鉴权、Django、实时通信 | [NodeJS核心总结](./NodeJS核心总结.md)、[Django从0到1](./Django从0到1.md)、[DATABASE](./DATABASE.md) |
-| AI Agent 与 AI Native | Context、Tool、Memory、Skill、MCP、Runtime、Harness、AI-DLC | [01-从Prompt-Engineer到Harness-Engineer](./01-从Prompt-Engineer到Harness-Engineer.md)、[Agent学习教程](./Agent学习教程.md)、[项目工程化设计](./项目工程化设计.md) |
+| AI Agent 与 AI Native | Context、Tool、Memory、Skill、MCP、Runtime、Harness、AI-DLC | 概念与运行机制：[Agent学习教程](./Agent学习教程.md) → [Agent System 研发知识梳理](./Agent-System研发知识梳理.md) → [最小实现](./07-Agent核心原理与最小实现.md)；工程与业务落地：[01-从Prompt-Engineer到Harness-Engineer](./01-从Prompt-Engineer到Harness-Engineer.md) → [02-Agent五层架构](./02-Agent五层架构.md) → [03-Agent完整工作流](./03-Agent完整工作流.md) |
 | 项目与面试表达 | 项目复盘、技术方案、面试追问、算法与表达 | [项目概述](./项目概述.md)、[前端面试核心问题](./前端面试核心问题.md)、[项目扩展面试题](./项目扩展面试题.md) |
 
 这些主线不是彼此独立的目录，而是知识之间的依赖关系。例如：
