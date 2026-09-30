@@ -1545,367 +1545,95 @@ flowchart TD
 
 # 18. Agent Eval：为什么不能只测最终答案？
 
-普通 LLM：
+Agent 不是单轮 Input → Output。一次任务可能包含多轮 Model、Tool、环境修改、Retry、Handoff 和 Approval，因此评测需要同时看最终 Outcome、执行过程、稳定性、成本和安全，而不是只检查最后一段文本。完整知识已经独立整理到 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
-```text
-Input → Output
-```
+核心链路可以压缩为：
 
-Agent：
-
-```text
-Input
- → 20 次 Model Turn
- → 8 次 Tool Call
- → 修改环境
- → 重试
- → 人工审批
- → Final State
-```
-
-所以 Agent Eval 必须看：
-
-1. **Outcome**
-2. **Trajectory**
-3. **Efficiency**
-4. **Reliability**
-5. **Safety**
-
-Anthropic 的 Agent Eval 工程方法强调，Agent 评测应覆盖 Task、Trial、Grader、Transcript/Trace、Outcome、Evaluation Harness 与 Evaluation Suite 等对象。 [17](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-可以整理为：
-
-```text
+~~~text
 Task
-Trial
-Grader
-Transcript / Trace
-Outcome
-Evaluation Harness
-Agent Harness
-Evaluation Suite
-```
+→ Trial
+→ Trace / Transcript + Outcome
+→ Grader
+→ Evaluation Harness
+→ Evaluation Suite / Benchmark
+~~~
 
-这是非常适合面试掌握的一套术语。
+其中 Trace 记录一次 Trial 经历了什么，Outcome 记录环境最终变成什么；Eval 使用这些运行证据判断 Task 是否真正成功。Anthropic 对 Task、Trial、Grader、Transcript / Trace、Outcome、Evaluation Harness 与 Evaluation Suite 的定义和多 Trial 方法，统一在独立文档中维护。 [17](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
 ---
 
-# 19. 两类 Agent 的评测必须区分
+# 19. 业务价值评估与 Agent 能力评测属于两个层面
 
-## 第一类：业务 Agent / Agentic Workflow
+业务 Agent 最终既要看 Agent 能否完成任务，也要看它是否真正改善业务结果：
 
-最终问的是：
+~~~text
+Agent Eval
+→ Outcome / Reliability / Trajectory / Efficiency / Safety
 
-> **它有没有创造业务价值？**
-
-核心 KPI：
-
-```text
 Business KPI
-├── 时间节省
-├── 人力成本
-├── Throughput
-├── SLA
-├── 转化率
-├── 解决率
-├── 覆盖率
-├── 错误率
-└── 用户满意度
-```
+→ 时间节省 / Throughput / 人力成本 / 覆盖率 / 解决率 / 用户满意度
+~~~
 
-例如：
-
-```text
-人工平均处理：20 min
-Agent + Human：5 min
-
-Time Saving = 75%
-```
-
-或者：
-
-```text
-过去团队每天人工处理 500 cases
-Agent 后每天覆盖 3000 cases
-```
-
-这是 Agent 真正的 ROI。
+两层可以关联，但不能互相替代。Agent Eval 分数提高不直接等于业务 ROI 提高；业务 KPI 改善也不能证明 Agent 的运行机制已经稳定。具体指标与边界见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 ---
 
-## 第二类：Agent System / Harness
+# 20. Agent Eval 指标按结果、稳定性、过程、成本和安全组织
 
-则评估 Agent 自身能力。
+本文只保留指标框架，不在综合文档重复维护完整定义：
 
-推荐五维框架：
+- **Outcome / Capability**：Task Success、Goal Completion、Correct Outcome；
+- **Reliability**：Pass@1、pass@k、pass^k、多 Trial 波动、Crash / Recovery；
+- **Trajectory Quality**：无效 Tool、重复 Loop、错误 Delegation、策略违规；
+- **Efficiency**：Token、Model Call、Tool Call、Latency、Cost / Successful Task；
+- **Safety**：越权操作、审批绕过、敏感信息泄漏、Prompt Injection 等。
 
-```text
-Quality
-Reliability
-Efficiency
-Safety
-Business Value
-```
+Agent 的非确定性、多 Trial 与 pass@k / pass^k 的适用边界统一见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 ---
 
-# 20. Agent Eval 指标体系
+# 21. Benchmark 需要同时覆盖公开能力、领域任务和回归保护
 
-## 20.1 Quality / Capability
+生产 Agent 不能只依赖 Public Benchmark。工程上通常还需要企业自己的 Domain Evaluation Suite，以及由历史 Badcase 和 Production Failure 形成的 Regression Suite。
 
-- Task Success Rate
-- Goal Completion Rate
-- Correct Outcome Rate
-- Tool Selection Accuracy
-- Tool Argument Accuracy
-- Instruction Following
-- Planning Quality
-- Final Answer Quality
+~~~text
+Public Benchmark
+→ 外部可比较的基础能力
 
----
+Domain Benchmark / Eval Suite
+→ 企业真实任务
 
-## 20.2 Reliability
-
-- Pass@1
-- Pass@k
-- variance across trials
-- retry rate
-- crash rate
-- recovery rate
-- timeout rate
-
-Agent 是 stochastic system，因此同一个 Task 应运行多次 Trial。
-
----
-
-## 20.3 Efficiency
-
-- token / task；
-- model calls / task；
-- tool calls / task；
-- latency；
-- wall clock time；
-- cost / successful task。
-
-非常重要：
-
-```text
-成功率从 80% → 82%
-```
-
-如果成本从：
-
-```text
-$0.10 → $2.00
-```
-
-可能并不是更好的 Agent。
-
----
-
-## 20.4 Safety
-
-- unsafe tool execution rate；
-- unauthorized action rate；
-- prompt injection success rate；
-- secret leakage；
-- approval bypass；
-- sandbox escape；
-- destructive action rate。
-
----
-
-## 20.5 Trajectory Quality
-
-不要只问：
-
-```text
-答案对不对？
-```
-
-还要问：
-
-```text
-它是怎么得到答案的？
-```
-
-例如：
-
-```text
-正确答案
-但调用数据库 17 次
-```
-
-不是好的 trajectory。
-
-典型指标：
-
-- unnecessary tool calls；
-- repeated loops；
-- invalid actions；
-- wrong delegation；
-- excessive retries；
-- policy violations。
-
----
-
-# 21. Benchmark：怎么构建自己的 Agent 测试集？
-
-一个生产 Agent 最终不能只依赖公共 benchmark。
-
-推荐三层 Benchmark。
-
-## L1 Public Benchmark
-
-用于衡量基础能力。SWE-bench 是软件工程 Agent 的代表性 benchmark；GAIA 用于评估通用 AI assistant 在真实世界问题、推理和工具使用等方面的能力。 [22](https://www.swebench.com/) [23](https://arxiv.org/abs/2311.12983)
-
-例如：
-
-| Benchmark | 主要能力 |
-|---|---|
-| SWE-bench | 软件工程 Agent |
-| GAIA | Tool use / reasoning / web / multimodal |
-| OSWorld | Computer-use Agent |
-| τ-bench 系列 | Tool + multi-turn interaction |
-| BFCL | Function / Tool Calling |
-
----
-
-## L2 Domain Benchmark
-
-企业自己的真实任务。
-
-例如客服 Agent：
-
-```text
-refund
-cancel
-change_address
-damaged_goods
-VIP escalation
-policy conflict
-```
-
----
-
-## L3 Regression Suite
-
-来自生产失败案例。
-
-每一次严重事故：
-
-```text
-Production Failure
-      ↓
-Root Cause
-      ↓
-New Eval Case
-      ↓
 Regression Suite
-```
+→ 历史失败与关键能力保护
+~~~
 
-这是最有价值的长期 Eval Dataset。
-
----
-
-# 22. 一个 Benchmark Task 应该怎么定义？
-
-```yaml
-task_id: refund_001
-
-input:
-  user: "I want a refund for order 123"
-
-environment:
-  order_status: delivered
-  delivered_days_ago: 3
-
-expected_outcome:
-  refund_created: true
-  refund_amount: 100
-
-constraints:
-  - must_verify_order
-  - must_not_refund_shipping
-
-graders:
-  - database_outcome
-  - policy_compliance
-  - trajectory_quality
-  - cost
-
-risk:
-  level: medium
-```
-
-关键思想：
-
-> **Agent Eval 的 Ground Truth 最好是环境最终状态，而不仅是文本答案。**
-
-例如：
-
-Agent 说：
-
-> “退款已完成。”
-
-不代表成功。
-
-应该查：
-
-```sql
-SELECT refund_status FROM refunds ...
-```
-
-确认真实 Outcome。
+Benchmark、Evaluation Suite 与 Regression Case 的完整关系见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 ---
 
-# 23. Grader 怎么设计？
+# 22. Eval Task 必须把成功标准和环境结果写清楚
 
-生产级 Agent Eval 通常组合 deterministic/code-based checks、model-based graders 与 human review；应根据任务性质选择和校准 grader。 [17](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+一个 Task 不应该只有 Prompt。至少需要明确 Input、Initial Environment、Success Criteria、Constraints 与 Graders。对于能通过环境状态验证的任务，应优先检查真实 Outcome，而不是相信 Agent 自报“已完成”。
 
-## Code-based Grader
+例如 Coding Agent 的成功标准可以落到补丁、测试结果、修改范围和安全约束；业务 Agent 可以检查数据库、工单、订单或其他真实资源状态。
 
-最可靠。
-
-例如：
-
-```python
-assert refund.status == "SUCCESS"
-assert balance_change == -100
-```
+Task / Trial / Outcome 的数据链路与示例统一见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 ---
 
-## Model-based Grader
+# 23. Grader 应优先使用确定性证据，再补模型与人工判断
 
-适合：
+Agent Eval 常见三类 Grader：
 
-- 文本质量；
-- reasoning / explanation；
-- instruction following；
-- qualitative behavior。
+~~~text
+Code-based / Deterministic
++ Model-based
++ Human
+~~~
 
-但要做人工校准。
+能够通过 Test、Database State、Tool 参数或权限规则直接验证的事实，应优先使用确定性 Grader；开放式文本质量和复杂策略可以使用 Model-based Grader，并通过 Human Review 做校准。高风险安全条件更适合作为硬门禁，而不是由平均分抵消。
 
----
-
-## Human Grader
-
-适合：
-
-- 高价值任务；
-- 主观质量；
-- 复杂边界情况；
-- 校准 LLM Judge。
-
-理想组合：
-
-```text
-Deterministic Checks
-+ LLM Judge
-+ Human Calibration
-```
+完整 Grader 设计、Evaluation Harness 与持续回归方法见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 ---
 
