@@ -994,4 +994,4 @@ LangChain、LangGraph 或更完整的 Agent Harness 会封装部分实现，但�
 
 如果只保留一句话，可以记成：**Model 负责选择下一步，Context 负责提供本轮信息，Tools 负责接触环境，State 负责保存进度，Loop 负责持续推进，Memory 负责让信息可恢复和复用，Control 负责确保整个过程可执行、可停止、可验证。**
 
-理解这条最小执行链后，可以沿两条方向继续：如果要把 Loop 放回完整 Agent System，继续阅读 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md)，重点看 Agent Loop、Runtime 与 Harness 的职责边界；如果要看成熟框架怎样封装这条最小链，继续阅读 [《04-从LangChain到Deep-Agents》](./04-从LangChain到Deep-Agents.md)。
+理解这条最小执行链后，可以沿两条方向继续：如果要把 Loop 放回完整 Agent System，继续阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)，重点看 Agent Loop、Runtime 与 Harness 的职责边界；如果要看成熟框架怎样封装这条最小链，继续阅读 [《04-从LangChain到Deep-Agents》](./04-从LangChain到Deep-Agents.md)。
