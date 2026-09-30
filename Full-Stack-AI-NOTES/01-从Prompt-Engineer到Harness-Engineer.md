@@ -356,6 +356,8 @@ Feedback 负责验证和纠偏
 Harness 负责把一切装配成可托付的 Agent
 ```
 
+这篇文档采用的是**工程演进视角**：解释为什么工程对象会从 Prompt 逐步扩展到 Context、Tool、Workflow 与 Harness。如果需要从“当前一个 Agent System 由哪些运行机制组成”的**系统组成视角**重新梳理这些能力，继续阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
+
 下一章会把这些职责收敛成五层架构，并解释每一层的边界、输入、输出和工程检查点。
 
 ### 【本章引用证据】
