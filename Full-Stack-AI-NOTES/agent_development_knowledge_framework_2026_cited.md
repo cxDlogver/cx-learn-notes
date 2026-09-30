@@ -199,7 +199,7 @@ Production Agent System
   → 在上述基础上加入业务流程、部署、评测、监控与治理
 ```
 
-这是一套便于工程讨论的职责模型，不代表所有框架都采用相同边界。本文关于 Loop、Runtime 与 Harness 的主口径与 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md) 保持一致；如果其他章节出现不同表述，应优先回到该文档的概念定义进行校准。
+这是一套便于工程讨论的职责模型，不代表所有框架都采用相同边界。本文关于 Loop、Runtime 与 Harness 的主口径与 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md) 保持一致；如果其他章节出现不同表述，应优先回到该文档的概念定义进行校准。
 
 ---
 
