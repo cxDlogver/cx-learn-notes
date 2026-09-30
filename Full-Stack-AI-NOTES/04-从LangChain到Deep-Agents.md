@@ -419,6 +419,6 @@ LangGraph：精确控制有状态、可恢复的 Agent 与 Workflow 怎样运行
 Deep Agents：在通用 Loop 和 Runtime 上预装复杂长任务需要的 Harness 能力。
 ```
 
-如果这里对 Agent Loop、Runtime、Harness 三者的边界还不清楚，先回到 [《Agent System 研发知识梳理》](./agent_development_two_contexts_2026.md) 统一概念口径；如果想先手写一条最小运行链，再理解框架究竟替你封装了什么，阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)。
+如果这里对 Agent Loop、Runtime、Harness 三者的边界还不清楚，先回到 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md) 统一概念口径；如果想先手写一条最小运行链，再理解框架究竟替你封装了什么，阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)。
 
 下一章会把三者放入同一个“研发缺陷修复 Agent”，说明从技术 Demo 到业务系统还要补哪些设计。
