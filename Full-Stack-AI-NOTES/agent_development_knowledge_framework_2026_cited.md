@@ -1824,7 +1824,7 @@ Agent 需要同时评估 Outcome、Trajectory、Cost、Reliability 和 Safety。
 
 ## Q8：Agent 怎么评测？
 
-> Agent Eval 不能只看最终答案。我会建立 Task、Trial、Grader、Trace、Outcome 和 Eval Suite。指标至少覆盖任务完成度、trajectory、稳定性、成本延迟和安全；业务 Agent 还必须回到业务 KPI，看是否真正节省时间、降低成本或解决原本无法规模化处理的问题。
+> Agent Eval 不能只看最终答案。我会建立 Task、Trial、Grader、Trace、Outcome 和 Eval Suite。指标至少覆盖任务完成度、trajectory、稳定性、成本延迟和安全；业务 Agent 还必须回到业务 KPI，看是否真正节省时间、降低成本或解决原本无法规模化处理的问题。完整方法见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
 
 ---
 
