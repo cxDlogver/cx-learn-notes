@@ -536,9 +536,469 @@ Module 依赖关系逐渐不可见
 
 因此 Global 更适合基础设施能力，不应该用来逃避业务模块之间的显式 imports / exports。
 
-## 4. Provider 与 Dependency Injection 把对象创建权交给容器
+## 4. Dependency Injection 负责构建和管理应用对象关系
 
-### 【DI 的本质是对象只声明依赖，而不负责寻找或创建依赖】
+这一章不要把 `Symbol Token`、`useFactory`、`@Inject`、生命周期钩子理解成几个独立技巧。它们共同描述的是同一件事：
+
+> **NestJS 如何识别一个依赖、决定它怎样创建、解析它依赖谁，并最终把整个应用连接成运行中的对象图。**
+
+可以先建立完整主线：
+
+```text
+Provider 是什么
+    ↓
+Nest 用什么识别 Provider
+    ↓
+Token
+    ↓
+Provider 实例怎样创建
+    ↓
+Provider Definition
+    ↓
+创建它还需要哪些依赖
+    ↓
+inject / constructor
+    ↓
+DI Container 解析依赖关系
+    ↓
+Provider Object Graph
+    ↓
+Provider Lifecycle
+    ↓
+应用关闭时释放资源
+```
+
+### 【Provider 是被 Nest 容器管理的能力对象】
+
+Provider 是 Nest 依赖注入系统管理对象的基本单位。Service 是最常见的 Provider，但 Provider 并不等于 Service。[[9]](https://docs.nestjs.com/providers)
+
+例如下面这些都可以成为 Provider：
+
+```text
+UserService
+MetricsService
+Database Handle
+Redis Client
+Config Object
+Guard
+Interceptor
+Lifecycle Handler
+```
+
+普通 Service：
+
+```ts
+@Injectable()
+export class UserService {
+  findAll() {
+    return [];
+  }
+}
+```
+
+注册到 Module：
+
+```ts
+@Module({
+  providers: [UserService],
+})
+export class UserModule {}
+```
+
+此时真正发生的是：
+
+```text
+UserService
+    ↓
+注册为 Provider
+    ↓
+进入 Nest DI Container 的管理范围
+    ↓
+由容器负责创建、复用和注入
+```
+
+所以 Provider 最重要的理解不是“可以被注入的 Service”，而是：
+
+> **Provider 是一个由 Nest IoC Container 负责识别、创建、连接和管理生命周期的对象或值。**
+
+### 【Token 是 DI Container 识别 Provider 的运行时标识】
+
+容器里可能有大量 Provider，因此 Nest 必须能够回答：
+
+```text
+当前需要的是哪一个 Provider？
+```
+
+这个运行时标识就是 **DI Token**。
+
+可以抽象成：
+
+```text
+Token
+   ↓
+定位 Provider Definition
+   ↓
+得到 Provider Instance
+```
+
+例如普通 Service：
+
+```text
+Token
+UserService class
+    ↓
+Provider
+UserService
+    ↓
+Instance
+UserService instance
+```
+
+也可以显式定义：
+
+```ts
+export const DATABASE = Symbol('DATABASE');
+export const REDIS = Symbol('REDIS');
+export const API_CONFIG = Symbol('API_CONFIG');
+```
+
+形成：
+
+```text
+DATABASE
+    ↓
+Database Provider
+    ↓
+DatabaseHandle instance
+
+REDIS
+    ↓
+Redis Provider
+    ↓
+Redis client instance
+```
+
+因此需要区分两个概念：
+
+```text
+TypeScript Type
+    → 帮助编译器检查类型
+
+DI Token
+    → 帮助 Nest 在运行时定位 Provider
+```
+
+这也是理解后面 `@Inject()` 的基础。
+
+### 【Class 可以天然充当 Token，Symbol / String 用于显式定义依赖身份】
+
+普通 Service：
+
+```ts
+@Injectable()
+export class MetricsService {}
+```
+
+注册：
+
+```ts
+providers: [MetricsService]
+```
+
+可以把它理解成一种简写：
+
+```ts
+{
+  provide: MetricsService,
+  useClass: MetricsService,
+}
+```
+
+这里：
+
+```text
+MetricsService
+    ├── TypeScript Type
+    └── Runtime DI Token
+```
+
+所以使用方通常可以直接写：
+
+```ts
+constructor(
+  private readonly metrics: MetricsService,
+) {}
+```
+
+Nest 可以根据运行时类元数据解析出：
+
+```text
+需要的 Token = MetricsService
+```
+
+但并不是所有依赖都有一个合适的 Class Token。
+
+典型情况包括：
+
+1. 工厂函数返回的运行时实例；
+2. 普通配置对象；
+3. 第三方客户端；
+4. 希望把“依赖身份”和“具体实现类”解耦的抽象能力。
+
+例如：
+
+```ts
+export const DATABASE = Symbol('DATABASE');
+export const REDIS = Symbol('REDIS');
+export const API_CONFIG = Symbol('API_CONFIG');
+```
+
+这里可以得到更准确的规则：
+
+> **Class Token 适合由类自然表达的 Provider；Symbol / String Token 适合工厂实例、普通对象、第三方能力或需要显式抽象依赖身份的场景。**
+
+使用 Symbol / String Token 时，Nest 无法仅通过 TypeScript 类型知道运行时应该查找哪个 Provider，因此需要显式：
+
+```ts
+@Inject(DATABASE)
+private readonly database: DatabaseHandle
+```
+
+这里其实同时存在两个概念：
+
+```text
+DATABASE
+    → Runtime DI Token
+
+DatabaseHandle
+    → TypeScript Type
+```
+
+### 【Provider Definition 决定一个 Token 对应的实例怎样创建】
+
+有了 Token，只解决了：
+
+```text
+这个依赖叫什么？
+```
+
+还需要解决：
+
+```text
+这个依赖对应的实例从哪里来？
+```
+
+这就是 Provider Definition。
+
+Nest 常见的 Custom Provider 形式包括：[[15]](https://docs.nestjs.com/fundamentals/custom-providers)
+
+```text
+useClass
+    → 通过类创建实例
+
+useValue
+    → 直接提供一个现成值
+
+useFactory
+    → 执行工厂函数创建实例
+
+useExisting
+    → 给已有 Provider 建立别名
+```
+
+普通：
+
+```ts
+providers: [UserService]
+```
+
+可以理解为：
+
+```ts
+{
+  provide: UserService,
+  useClass: UserService,
+}
+```
+
+而数据库这类运行时资源更适合：
+
+```ts
+{
+  provide: DATABASE,
+  useFactory: () => createDatabase(),
+}
+```
+
+所以 `useFactory` 并不是另一套 DI 机制，而只是：
+
+> **Provider Definition 中的一种实例创建策略。**
+
+### 【useFactory + inject 描述“这个 Provider 怎样依赖其他 Provider”】
+
+实际创建 Provider 时，它本身也可能依赖其他 Provider。
+
+例如：
+
+```ts
+{
+  provide: API_CONFIG,
+  useFactory: (): ApiConfig => loadApiConfig(),
+},
+{
+  provide: DATABASE,
+  inject: [API_CONFIG],
+  useFactory: (config: ApiConfig) =>
+    createDatabase(config.DATABASE_URL),
+},
+{
+  provide: REDIS,
+  inject: [API_CONFIG],
+  useFactory: (config: ApiConfig) =>
+    createRedis(config.REDIS_URL),
+},
+```
+
+三个字段可以直接理解成三个问题：
+
+| 字段 | 回答的问题 |
+| --- | --- |
+| `provide` | 我要定义哪个 Provider / Token？ |
+| `inject` | 创建它之前需要先拿到哪些 Provider？ |
+| `useFactory` | 拿到依赖以后具体怎样创建实例？ |
+
+DATABASE 的创建过程可以展开为：
+
+```text
+DI Container
+    ↓
+发现 DATABASE 依赖 API_CONFIG
+    ↓
+先解析 API_CONFIG
+    ↓
+把 config instance 传给 useFactory
+    ↓
+createDatabase(config.DATABASE_URL)
+    ↓
+得到 DatabaseHandle instance
+    ↓
+注册为 DATABASE 对应实例
+```
+
+因此：
+
+```text
+API_CONFIG
+    ├──→ DATABASE
+    └──→ REDIS
+```
+
+已经是一张 Provider Dependency Graph。
+
+这里最重要的结论是：
+
+> **Provider 自己也可以依赖其他 Provider。DI 不只是 Service → Service，也可以是 Config → Database → Business Service。**
+
+具体 Redis Client 的重试、Ready Check、Lazy Connect 等参数属于 Redis 客户端运行配置，不属于 Nest DI 本身；在 DI 章节中只需要把它们理解为 `useFactory` 内部可以执行的初始化逻辑。
+
+### 【构造函数负责声明依赖，DI Container 负责解析 Token】
+
+业务对象使用依赖时，通常通过构造函数声明：
+
+```ts
+@Injectable()
+export class IngestionService {
+  constructor(
+    @Inject(DATABASE)
+    private readonly database: DatabaseHandle,
+
+    @Inject(API_CONFIG)
+    private readonly config: ApiConfig,
+
+    @Inject(REDIS)
+    private readonly redis: Redis,
+
+    private readonly limiter: IngestionRateLimiter,
+    private readonly metrics: MetricsService,
+  ) {}
+}
+```
+
+表面上看有两种写法：
+
+```ts
+@Inject(DATABASE)
+private readonly database: DatabaseHandle
+```
+
+和：
+
+```ts
+private readonly metrics: MetricsService
+```
+
+但本质都是：
+
+```text
+IngestionService
+    ↓
+声明自己需要一个 Provider
+```
+
+区别只在于 Token 如何得到。
+
+Class Token：
+
+```text
+metrics: MetricsService
+       ↓
+Class 本身就是 Runtime Token
+       ↓
+Nest 查找 MetricsService
+```
+
+Symbol Token：
+
+```text
+database: DatabaseHandle
+       ↓
+DatabaseHandle 只是 TypeScript Type
+       ↓
+运行时需要显式 @Inject(DATABASE)
+       ↓
+Nest 查找 DATABASE
+```
+
+因此比“类就自动注入，Symbol 就必须 `@Inject`”更完整的理解是：
+
+> **Nest 在运行时真正根据 Token 查找 Provider。类可以同时充当类型和 Token，而 Symbol / String Token 需要通过 `@Inject(token)` 显式告诉 Nest。**
+
+### 【DI 的核心是把对象创建权从业务对象交给 IoC Container】
+
+如果没有 DI，代码可能自己创建依赖：
+
+```ts
+class AnalyticsService {
+  private readonly projects =
+    new ProjectsService(
+      new Database(...),
+    );
+}
+```
+
+这样意味着：
+
+```text
+AnalyticsService
+    ↓
+必须知道 ProjectsService 怎么创建
+    ↓
+还必须知道 Database 怎么创建
+    ↓
+对象创建逻辑逐渐向业务代码扩散
+```
+
+使用 DI：
 
 ```ts
 @Injectable()
@@ -549,119 +1009,267 @@ export class AnalyticsService {
 }
 ```
 
-这里 `AnalyticsService` 只表达：
+业务对象只表达：
 
 ```text
 我需要 ProjectsService
 ```
 
-而不是：
+真正的创建关系变成：
 
-```ts
-this.projects = new ProjectsService(...);
+```text
+Provider Definitions
+      ↓
+DI Container
+      ↓
+解析 Constructor Dependency
+      ↓
+创建 / 获取 Provider Instance
+      ↓
+注入使用方
 ```
 
-真正的对象创建和连接由 Nest IoC Container 完成：
+这就是 Inversion of Control：对象不再主动控制依赖对象如何构造，而由框架容器负责组装。[[9]](https://docs.nestjs.com/providers)
+
+### 【Module Graph 决定去哪里找，Token 决定找谁】
+
+上一章讲的是：
 
 ```text
 Module Graph
-    ↓
-Provider Definitions
-    ↓
-DI Container
-    ↓
-解析 Constructor Dependency
-    ↓
-创建 / 复用 Provider Instance
-    ↓
-得到 Provider Object Graph
 ```
 
-这就是 Inversion of Control：业务对象不再主动控制依赖对象的构造，控制权交给容器。[[9]](https://docs.nestjs.com/providers)
+这一章讲的是：
 
-### 【类 Token 适合普通 Service，Symbol Token 适合运行时对象与抽象能力】
-
-普通 Service：
-
-```ts
-constructor(
-  private readonly projects: ProjectsService,
-) {}
+```text
+Provider Object Graph
 ```
 
-类本身可以作为 DI Token。
+两者不是两套独立机制。
 
-而数据库连接、Redis Client、配置对象通常不是简单的 `@Injectable()` 类，因此可以显式定义 Token：
+例如：
 
-```ts
-export const DATABASE = Symbol('DATABASE');
-export const REDIS = Symbol('REDIS');
-export const API_CONFIG = Symbol('API_CONFIG');
+```text
+AnalyticsModule
+    ↓ imports
+ProjectsModule
+    ↓ exports
+ProjectsService
 ```
 
-注入时：
+这是 Module Graph，它决定：
 
-```ts
-constructor(
-  @Inject(DATABASE) private readonly database: DatabaseHandle,
-  @Inject(REDIS) private readonly redis: Redis,
-) {}
+```text
+AnalyticsModule 是否有资格看到 ProjectsService
 ```
 
-于是 Token 与具体实现被分开。
+然后：
 
-### 【useFactory 描述复杂 Provider 怎样被创建】
+```text
+AnalyticsService
+      ↓
+ProjectsService
+```
+
+这是 Provider Object Graph，它决定：
+
+```text
+运行时 AnalyticsService instance
+具体依赖哪个 ProjectsService instance
+```
+
+整个解析过程可以总结为：
+
+```text
+Module Graph
+      ↓
+限定 Provider Visibility
+      ↓
+Constructor / inject 声明 Token
+      ↓
+DI Container 在可见范围内解析 Token
+      ↓
+读取 Provider Definition
+      ↓
+创建 / 获取 Provider Instance
+      ↓
+形成 Provider Object Graph
+```
+
+因此可以用一句话连接 Module 和 DI：
+
+> **Module 决定“去哪里找”，Token 决定“找谁”，Provider Definition 决定“怎么创建”，DI Container 负责把这些信息连接成真正运行的对象图。**
+
+### 【依赖关系应理解为图，而不是手工初始化顺序】
+
+开发者通常不应该自己写：
+
+```text
+第一步 loadConfig
+第二步 createDatabase
+第三步 createRedis
+第四步 new Service
+```
+
+而是声明关系：
+
+```text
+API_CONFIG
+    ├──→ DATABASE
+    └──→ REDIS
+
+DATABASE
+    ├──→ AnalyticsService
+    ├──→ ProjectsService
+    └──→ IngestionService
+
+REDIS
+    ├──→ SessionGuard
+    ├──→ AnalyticsService
+    └──→ IngestionService
+
+MetricsService
+    └──→ IngestionService
+```
+
+Nest DI Container 根据这些 Provider 定义和依赖声明解析对象关系。
+
+这就是：
+
+```text
+Dependency Graph
+        ↓
+Provider Object Graph
+```
+
+### 【Provider Lifecycle 把对象创建与资源释放连接起来】
+
+DI Container 的职责不只是：
+
+```text
+创建对象
+```
+
+它还参与对象生命周期管理。
+
+例如一个生命周期 Provider：
 
 ```ts
-{
-  provide: DATABASE,
-  inject: [API_CONFIG],
-  useFactory: (config: ApiConfig) =>
-    createDatabase(config.DATABASE_URL),
+@Injectable()
+export class InfrastructureShutdown
+  implements OnApplicationShutdown {
+
+  constructor(
+    @Inject(DATABASE)
+    private readonly database: DatabaseHandle,
+
+    @Inject(REDIS)
+    private readonly redis: Redis,
+  ) {}
+
+  async onApplicationShutdown(): Promise<void> {
+    await Promise.allSettled([
+      this.database.close(),
+      this.redis.quit(),
+    ]);
+  }
 }
 ```
 
-三个字段对应：
+只需要注册：
 
-| 字段 | 含义 |
-| --- | --- |
-| `provide` | 这个依赖以什么 Token 存在 |
-| `inject` | 创建它之前还需要哪些依赖 |
-| `useFactory` | 真正的创建逻辑 |
+```ts
+providers: [
+  InfrastructureShutdown,
+]
+```
 
-这使得对象关系可以表达成：
+它不需要有业务方法，也不一定需要被其他 Module 注入。
+
+它存在的意义是：
 
 ```text
-loadConfig()
+Provider 被 Nest 创建
+      ↓
+进入 Application Lifecycle
+      ↓
+服务运行
+      ↓
+收到 Shutdown Signal
+      ↓
+Nest 调用 onApplicationShutdown()
+      ↓
+关闭 Database / Redis
+```
+
+因此生命周期 Provider 很好地说明：
+
+> **Provider 不等于业务 Service。只要一个对象需要被 Nest 创建并在确定的生命周期阶段执行，它就可以成为 Provider。**
+
+这一机制需要与前面 `app.enableShutdownHooks()` 配合，系统信号到来时 Nest 才会进入对应关闭生命周期。[[6]](https://docs.nestjs.com/fundamentals/lifecycle-events)
+
+### 【Dependency Injection 最终形成完整闭环】
+
+可以把这一章收敛成：
+
+```text
+@Module()
     ↓
-API_CONFIG
-    ├──→ createDatabase() → DATABASE
-    └──→ createRedis()    → REDIS
+注册 Provider Definition
+    ↓
+Token
+标识 Provider
+    ↓
+useClass / useValue / useFactory / useExisting
+定义实例如何产生
+    ↓
+inject / constructor
+声明 Provider 依赖谁
+    ↓
+Module Graph
+限定 Provider 可见范围
+    ↓
+DI Container
+解析依赖并创建对象
+    ↓
+Provider Object Graph
+形成运行时对象关系
+    ↓
+Application Lifecycle
+管理对象直到应用退出
 ```
 
-容器根据依赖关系决定创建顺序，而不是开发者手工管理全局初始化顺序。
-
-### 【Provider 生命周期让资源创建和应用生命周期形成对应关系】
-
-默认情况下，很多 Provider 与 Application 生命周期关联：应用启动时解析并创建，应用关闭时可以响应生命周期 Hook。[[6]](https://docs.nestjs.com/fundamentals/lifecycle-events)
-
-因此：
+再进一步压缩：
 
 ```text
-Provider 创建
-   ↓
-持有 Database / Redis / Timer 等资源
-   ↓
-Application Running
-   ↓
-Shutdown Signal
-   ↓
-Lifecycle Hook
-   ↓
-释放资源
+Module
+    → 决定 Provider 属于哪里、对谁可见
+
+Token
+    → 决定需要找哪个 Provider
+
+Provider Definition
+    → 决定 Provider 怎样创建
+
+inject / constructor
+    → 声明 Provider 依赖谁
+
+DI Container
+    → 解析并连接所有对象
+
+Lifecycle
+    → 管理这些对象直到应用退出
 ```
 
-Module、Provider、DI 与 Lifecycle 由此构成一套连续设计，而不是四个分散功能。
+因此 NestJS DI 最重要的结论不是：
+
+```text
+“自动给 constructor 传参数”
+```
+
+而是：
+
+> **通过 Module 可见性、Token、Provider Definition 和依赖声明描述整个对象关系，再由 IoC Container 统一完成对象的创建、连接、复用和生命周期管理。**
 
 ## 5. Controller 负责 HTTP 边界，Service 负责业务能力
 
@@ -1208,3 +1816,5 @@ Runtime
 [13] Django Software Foundation. *Applications*. Django Documentation. https://docs.djangoproject.com/en/6.0/ref/applications/
 
 [14] Spring. *Dependency Injection*. Spring Framework Documentation. https://docs.spring.io/spring-framework/reference/core/beans/dependencies/factory-collaborators.html
+
+[15] NestJS. *Custom providers*. NestJS Documentation. https://docs.nestjs.com/fundamentals/custom-providers
