@@ -71,11 +71,11 @@ MySQL 整数需要同时考虑类型宽度与 `SIGNED / UNSIGNED`。Java 基本�
 
 ### 【布尔、枚举与 JSON】
 
-MySQL 中 `BOOL / BOOLEAN` 是 `TINYINT` 的同义类型，而不是独立的原生 Boolean 存储类型。[[3]](https://dev.mysql.com/doc/refman/8.4/en/other-vendor-data-types.html)
+MySQL 中 `BOOL / BOOLEAN` 会映射为 `TINYINT(1)`，而不是独立的原生 Boolean 存储类型。MySQL 官方类型映射表将 `BOOL / BOOLEAN` 映射为 `TINYINT`，实际建表后 `DESCRIBE` 显示为 `tinyint(1)`。[[3]](https://dev.mysql.com/doc/refman/8.4/en/other-vendor-data-types.html)
 
 | MySQL 数据类型 | 数据库语义 |
 | --- | --- |
-| `BOOLEAN / BOOL` | `TINYINT` 的同义类型，通常用于表达布尔语义 |
+| `BOOLEAN / BOOL` | 映射为 `TINYINT(1)`，通常用于表达布尔语义 |
 | `ENUM` | 值必须来自预定义枚举集合 |
 | `JSON` | MySQL 原生 JSON 数据类型 |
 
@@ -161,7 +161,7 @@ Boolean / Integer / byte[]
 
 旧式 JDBC 代码常见 `java.sql.Date`、`java.sql.Time`、`java.sql.Timestamp`，但它们不是现代 Java 应用唯一的选择。Connector/J 当前实现 JDBC 4.2，并支持 `java.time`。[[4]](https://dev.mysql.com/doc/connector-j/en/connector-j-overview.html)
 
-Connector/J 当前默认元数据映射中，`DATETIME` 对应 `java.time.LocalDateTime`，而 `TIMESTAMP` 对应 `java.sql.Timestamp`；同时 Driver 的时间处理 API 还支持 `LocalDate`、`LocalTime`、`Instant`、`OffsetDateTime`、`ZonedDateTime` 等类型。[[1]](https://dev.mysql.com/doc/connector-j/en/connector-j-reference-type-conversions.html)[[6]](https://dev.mysql.com/doc/connector-j/en/connector-j-query-attributes.html)
+Connector/J 当前默认元数据映射中，`DATETIME` 对应 `java.time.LocalDateTime`，而 `TIMESTAMP` 对应 `java.sql.Timestamp`。日期时间转换还需要区分 instant 与 non-instant 语义：Connector/J 官方明确说明 `TIMESTAMP` 用于保存时间线上的 instant，而 `DATETIME` 本身不表示 instant；`java.sql.Timestamp`、`java.time.OffsetDateTime` 等 instant-based 类型与 `LocalDateTime` 等 non-instant 类型不能机械互换。[[1]](https://dev.mysql.com/doc/connector-j/en/connector-j-reference-type-conversions.html)[[6]](https://dev.mysql.com/doc/connectors/en/connector-j-time-instants.html)
 
 因此应用选型应先判断数据语义：
 
@@ -240,4 +240,4 @@ Driver 是应用语言与具体 DBMS 之间的数据访问层之一；数据库�
 
 [5] Oracle / MySQL, *MySQL Connector/J Developer Guide — Configuration Properties*, Connector/J 26.7. https://dev.mysql.com/doc/connector-j/en/connector-j-reference-configuration-properties.html
 
-[6] Oracle / MySQL, *MySQL Connector/J Developer Guide — Using Query Attributes*, Connector/J 26.7. https://dev.mysql.com/doc/connector-j/en/connector-j-query-attributes.html
+[6] Oracle / MySQL, *Connectors and APIs Manual — MySQL Connector/J Developer Guide — Preserving Time Instants*. https://dev.mysql.com/doc/connectors/en/connector-j-time-instants.html
