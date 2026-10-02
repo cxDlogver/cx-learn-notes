@@ -34,15 +34,12 @@ import {
 } from "./NotificationSettings";
 import { LivePlanReminder } from "./LivePlanReminder";
 import { DataManagement } from "./DataManagement";
+import { PlanReminders } from "./PlanReminders";
 
-const navigation = [
-  { href: "/today", label: "今日", icon: "◉" },
-  { href: "/plans", label: "计划", icon: "▤" },
-  { href: "/calendar", label: "日历", icon: "▦" },
-  { href: "/friends", label: "朋友", icon: "♧" },
-  { href: "/inbox", label: "消息", icon: "✉" },
-  { href: "/settings", label: "设置", icon: "⚙" },
-] as const;
+import { uiCopy, uiNavigation } from "../design/pen.generated";
+import { Avatar, Icon, PageHeader } from "./MobileUI";
+
+const navigation = uiNavigation;
 
 function readLocation(): string {
   return `${window.location.pathname}${window.location.search}`;
@@ -52,6 +49,7 @@ function navigate(path: string, replace = false): void {
   if (replace) window.history.replaceState(null, "", path);
   else window.history.pushState(null, "", path);
   window.dispatchEvent(new PopStateEvent("popstate"));
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function destination(path: string): string {
@@ -134,15 +132,18 @@ function AppLink({
   href,
   children,
   className,
+  current,
 }: {
   href: string;
   children: ReactNode;
   className?: string;
+  current?: boolean;
 }) {
   return (
     <a
       href={href}
       className={className}
+      aria-current={current ? "page" : undefined}
       onClick={(event) => {
         if (
           event.button !== 0 ||
@@ -232,14 +233,15 @@ function LoginPage({
       className="auth-layout"
       data-page-key={challenge ? "sms-code" : "phone-login"}
     >
-      <div className="auth-intro">
-        <span className="brand-mark" aria-hidden="true">
-          ✓
-        </span>
-        <p className="eyebrow">把想做的事，慢慢做成</p>
-        <h1>计划打卡</h1>
-        <p>为每一天留下一点确实发生的进展。</p>
-      </div>
+      {!challenge && (
+        <div className="auth-intro">
+          <span className="brand-mark" aria-hidden="true">
+            <Icon name="calendar-check" />
+          </span>
+          <h1>{uiCopy.brand}</h1>
+          <p>{uiCopy.brandCaption}</p>
+        </div>
+      )}
       <section className="auth-card" aria-labelledby="auth-title">
         <OfflineBanner />
         {challenge ? (
@@ -264,22 +266,29 @@ function LoginPage({
             </p>
             <form onSubmit={verify} noValidate>
               <label htmlFor="sms-code">6 位短信验证码</label>
-              <input
-                id="sms-code"
-                name="sms-code"
-                type="password"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                pattern="[0-9]{6}"
-                value={code}
-                onChange={(event) =>
-                  setCode(event.target.value.replace(/\D/g, ""))
-                }
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? "auth-error" : undefined}
-                autoFocus
-              />
+              <div className="otp-field">
+                <div className="otp-slots" aria-hidden="true">
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <span key={index}>{code[index] ? "•" : ""}</span>
+                  ))}
+                </div>
+                <input
+                  id="sms-code"
+                  name="sms-code"
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  pattern="[0-9]{6}"
+                  value={code}
+                  onChange={(event) =>
+                    setCode(event.target.value.replace(/\D/g, ""))
+                  }
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "auth-error" : undefined}
+                  autoFocus
+                />
+              </div>
               {error && (
                 <p className="form-error" id="auth-error" role="alert">
                   {error}
@@ -308,14 +317,18 @@ function LoginPage({
           </>
         ) : (
           <>
-            <h2 id="auth-title">
+            <h2
+              id="auth-title"
+              className={purpose === "login" ? "sr-only" : undefined}
+            >
               {purpose === "cancel_deletion" ? "撤销账号注销" : "手机号登录"}
             </h2>
-            <p className="muted">
-              {purpose === "cancel_deletion"
-                ? "请使用原手机号。仅在 30 天撤销期内可恢复账号；已有分享权限不会自动恢复。"
-                : "新用户验证后即可创建账号，无需邀请码。"}
-            </p>
+            {purpose === "cancel_deletion" && (
+              <p className="muted">
+                请使用原手机号。仅在 30
+                天撤销期内可恢复账号；已有分享权限不会自动恢复。
+              </p>
+            )}
             <form
               onSubmit={(event) => {
                 event.preventDefault();
@@ -323,7 +336,7 @@ function LoginPage({
               }}
               noValidate
             >
-              <label htmlFor="phone">中国大陆手机号</label>
+              <label htmlFor="phone">{uiCopy.phoneLabel}</label>
               <div className="phone-field">
                 <span aria-hidden="true">+86</span>
                 <input
@@ -337,7 +350,7 @@ function LoginPage({
                   onChange={(event) =>
                     setPhone(event.target.value.replace(/\D/g, ""))
                   }
-                  placeholder="请输入 11 位手机号"
+                  placeholder={uiCopy.phonePlaceholder}
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "auth-error" : undefined}
                 />
@@ -347,6 +360,7 @@ function LoginPage({
                   {error}
                 </p>
               )}
+              <p className="privacy-note">{uiCopy.privacy}</p>
               <button
                 type="submit"
                 className="primary-button"
@@ -362,7 +376,7 @@ function LoginPage({
             </form>
             <button
               type="button"
-              className="text-button"
+              className="text-button recovery-link"
               onClick={() => {
                 setPurpose(purpose === "login" ? "cancel_deletion" : "login");
                 setChallenge(null);
@@ -422,16 +436,15 @@ function SetupPage({
 
   return (
     <main className="auth-layout" data-page-key="profile-setup">
-      <div className="auth-intro">
-        <span className="brand-mark" aria-hidden="true">
-          ✓
-        </span>
-        <p className="eyebrow">欢迎加入</p>
-        <h1>从一个称呼开始</h1>
-        <p>完善资料后，就能为自己创建第一个计划。</p>
-      </div>
+      <PageHeader title={uiCopy.profileTitle} />
       <section className="auth-card" aria-labelledby="setup-title">
-        <h2 id="setup-title">设置个人资料</h2>
+        <div className="profile-intro">
+          <Avatar name={nickname} />
+          <h2 id="setup-title" className="sr-only">
+            {uiCopy.profileTitle}
+          </h2>
+          <p className="muted">{uiCopy.profileCaption}</p>
+        </div>
         <form onSubmit={submit} noValidate>
           <label htmlFor="username">用户名</label>
           <input
@@ -490,8 +503,12 @@ function PendingPage({ page }: { page: string }) {
   );
 }
 
-function TodayPage() {
+function TodayPage({ profile }: { profile: UserDto }) {
   const [today, setToday] = useState<TodayDto | null>(null);
+  const [editing, setEditing] = useState<{
+    id: string;
+    section: string;
+  } | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -507,10 +524,66 @@ function TodayPage() {
       cancelled = true;
     };
   }, [attempt]);
+  const displayDate = today
+    ? new Intl.DateTimeFormat("zh-CN", {
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+        timeZone: "UTC",
+      }).format(new Date(`${today.viewDate}T00:00:00Z`))
+    : "今日";
+  // Keep the open editor mounted while saving moves its card to another section.
+  // Photo binding retries and conflict choices must survive the Today refetch.
+  const isPendingFixed = (item: TodayDto["items"][number]) =>
+    item.plan.kind === "fixed" &&
+    (editing?.id === item.plan.id
+      ? editing.section === uiCopy.pendingHeading
+      : item.status === "pending");
+  const sections = today
+    ? [
+        {
+          title: uiCopy.pendingHeading,
+          items: today.items.filter(isPendingFixed),
+        },
+        {
+          title: uiCopy.weeklyHeading,
+          caption: uiCopy.weeklyCaption,
+          items: today.items.filter((item) => item.plan.kind === "weekly"),
+        },
+        {
+          title: uiCopy.deadlineHeading,
+          items: today.items.filter((item) => item.plan.kind === "one_time"),
+        },
+        {
+          title: "已记录",
+          items: today.items.filter(
+            (item) => item.plan.kind === "fixed" && !isPendingFixed(item),
+          ),
+        },
+      ]
+    : [];
   return (
     <section className="content-panel" data-page-key="today">
-      <p className="eyebrow">每一天，都算数</p>
-      <h1>今日</h1>
+      <header className="today-heading">
+        <div>
+          <h1>{displayDate}</h1>
+          <p className="muted">
+            {today?.viewTimezone === "Asia/Shanghai"
+              ? "北京时间"
+              : today?.viewTimezone}
+          </p>
+        </div>
+        <div className="header-tools">
+          <AppLink href="/inbox" className="icon-button">
+            <span className="sr-only">消息</span>
+            <Icon name="bell" />
+          </AppLink>
+          <AppLink href="/settings" className="avatar-link">
+            <span className="sr-only">个人设置</span>
+            <Avatar name={profile.nickname ?? profile.username ?? ""} />
+          </AppLink>
+        </div>
+      </header>
       {!today && !error && <p role="status">正在读取今日计划…</p>}
       {error && (
         <div className="empty-card" role="alert">
@@ -529,39 +602,74 @@ function TodayPage() {
         </div>
       )}
       {today && today.items.length === 0 && (
-        <div className="empty-card" role="status">
-          <span className="empty-icon" aria-hidden="true">
-            ◌
-          </span>
-          <h2>还没有今日计划</h2>
-          <p>从一个想坚持的小目标开始。</p>
+        <div className="empty-card today-empty" role="status">
+          <Icon name="calendar-check" className="empty-icon" />
+          <h2>{uiCopy.todayEmptyTitle}</h2>
+          <p>{uiCopy.todayEmptyCaption}</p>
           <AppLink href="/plans/new" className="action-link">
             创建计划
           </AppLink>
         </div>
       )}
-      {today && today.items.length > 0 && (
-        <div className="today-list" aria-label="今日计划">
-          {today.items.map((item) => (
-            <article className="today-card" key={item.plan.id}>
-              <div>
-                <p className="eyebrow">
-                  {item.plan.kind === "one_time" ? "一次性任务" : "循环计划"}
-                </p>
-                <h2>{item.plan.title}</h2>
-                <p>{item.status === "pending" ? "待完成" : "查看详情与记录"}</p>
-              </div>
-              <TodayCheckin
-                item={item}
-                onSaved={() => setAttempt((value) => value + 1)}
-              />
-              <AppLink href={`/plans/${item.plan.id}`} className="action-link">
-                查看计划
-              </AppLink>
-            </article>
-          ))}
-        </div>
-      )}
+      {sections
+        .filter((section) => section.items.length > 0)
+        .map((section) => (
+          <section className="today-section" key={section.title}>
+            <h2>
+              {section.title}
+              <span className="section-count">{section.items.length}</span>
+            </h2>
+            {section.caption && <p className="hint">{section.caption}</p>}
+            <div className="today-list">
+              {section.items.map((item) => (
+                <article className="today-card" key={item.plan.id}>
+                  <AppLink
+                    href={`/plans/${item.plan.id}`}
+                    className="plan-card-link"
+                  >
+                    <div className="card-title-line">
+                      <h3>{item.plan.title}</h3>
+                      <Icon name="next" />
+                    </div>
+                  </AppLink>
+                  <p className="plan-meta">
+                    <span className="badge">
+                      {item.plan.direction === "avoid" ? "不要做" : "要做"}
+                    </span>
+                    <span>
+                      {item.plan.kind === "one_time"
+                        ? `截止 ${item.plan.dueDate}`
+                        : item.plan.kind === "weekly"
+                          ? `本周 ${item.weeklyProgress?.successes ?? 0}/${item.weeklyProgress?.target ?? "—"}`
+                          : item.reminderTimeLocal
+                            ? `提醒 ${item.reminderTimeLocal}`
+                            : "固定星期"}
+                    </span>
+                  </p>
+                  <TodayCheckin
+                    item={item}
+                    onOpenChange={(open) =>
+                      setEditing(
+                        open
+                          ? { id: item.plan.id, section: section.title }
+                          : null,
+                      )
+                    }
+                    onSaved={() => setAttempt((value) => value + 1)}
+                  />
+                  {item.plan.kind === "one_time" && (
+                    <AppLink
+                      href={`/plans/${item.plan.id}`}
+                      className="action-link"
+                    >
+                      查看任务
+                    </AppLink>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
     </section>
   );
 }
@@ -713,9 +821,9 @@ function Shell({
   const routeId = path.split("?")[0]?.split("/")[2] ?? "";
   const selected = navigation.some((item) => item.href === `/${page}`)
     ? page
-    : page === "shared-plans"
-      ? ""
-      : "today";
+    : "";
+  const rootPage =
+    navigation.some((item) => item.href === path.split("?")[0]) || path === "/";
   async function logout() {
     setBusy(true);
     setError("");
@@ -730,38 +838,8 @@ function Shell({
     }
   }
   return (
-    <div className="app-layout">
-      <aside className="sidebar" aria-label="主导航">
-        <AppLink href="/today" className="sidebar-brand">
-          <span className="brand-mark">✓</span>
-          <span>计划打卡</span>
-        </AppLink>
-        <nav aria-label="主导航" className="side-links">
-          {navigation.map((item) => (
-            <AppLink
-              key={item.href}
-              href={item.href}
-              className={
-                selected === item.href.slice(1)
-                  ? "side-link active"
-                  : "side-link"
-              }
-            >
-              <span aria-hidden="true">{item.icon}</span>
-              {item.label}
-            </AppLink>
-          ))}
-        </nav>
-        <div className="side-account">
-          <strong>{profile.nickname ?? profile.username}</strong>
-          <span>@{profile.username}</span>
-        </div>
-      </aside>
+    <div className={`app-layout${rootPage ? " with-navigation" : ""}`}>
       <main className="workspace">
-        <header className="topbar">
-          <span className="mobile-brand">计划打卡</span>
-          <span>你好，{profile.nickname ?? profile.username}</span>
-        </header>
         <OfflineBanner />
         <LivePlanReminder onNavigate={navigate} />
         {error && (
@@ -769,76 +847,137 @@ function Shell({
             {error}
           </p>
         )}
-        {selected === "settings" ? (
-          path.startsWith("/settings/change-phone") ? (
-            <ChangePhonePage
-              onChanged={() => {
-                onLoggedOut();
-              }}
-            />
-          ) : (
-            <section className="content-panel" data-page-key="settings">
-              <p className="eyebrow">账户</p>
-              <h1>设置</h1>
-              <div className="settings-card">
-                <p>
-                  已登录为{" "}
-                  <strong>{profile.nickname ?? profile.username}</strong>
-                </p>
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => void logout()}
-                  disabled={busy}
-                >
-                  {busy ? "正在退出…" : "退出登录"}
-                </button>
-                <AppLink href="/settings/change-phone" className="text-button">
-                  更换手机号
-                </AppLink>
-              </div>
+        {page === "settings" ? (
+          routeId === "change-phone" ? (
+            <ChangePhonePage onChanged={() => onLoggedOut()} />
+          ) : routeId === "notifications" ? (
+            <section
+              className="content-panel"
+              data-page-key="notification-settings"
+            >
+              <PageHeader
+                title={uiCopy.notificationTitle}
+                onBack={() => navigate("/settings")}
+              />
+              <PlanReminders />
               <NotificationSettings />
+            </section>
+          ) : routeId === "export" || routeId === "delete" ? (
+            <section
+              className="content-panel"
+              data-page-key={
+                routeId === "export" ? "data-export" : "account-deletion"
+              }
+            >
+              <PageHeader
+                title={routeId === "export" ? uiCopy.exportTitle : "注销账号"}
+                onBack={() => navigate("/settings")}
+              />
               <DataManagement
+                section={routeId === "export" ? "exports" : "deletion"}
                 onDeleted={() => onLoggedOut("/login?recovery=1")}
               />
+            </section>
+          ) : (
+            <section className="content-panel" data-page-key="settings">
+              <PageHeader
+                title={uiCopy.settingsTitle}
+                onBack={() => navigate("/today")}
+              />
+              <div className="profile-card">
+                <Avatar name={profile.nickname ?? profile.username ?? ""} />
+                <div>
+                  <h2>{profile.nickname ?? profile.username}</h2>
+                  <p className="muted">@{profile.username}</p>
+                </div>
+              </div>
+              <div className="settings-rows">
+                {[
+                  {
+                    href: "/settings/notifications",
+                    label: "通知设置",
+                    icon: "bell",
+                  },
+                  {
+                    href: "/settings/export",
+                    label: "导出数据",
+                    icon: "folder",
+                  },
+                  {
+                    href: "/settings/change-phone",
+                    label: "更换手机号",
+                    icon: "user",
+                  },
+                  { href: "/inbox", label: "消息", icon: "bell" },
+                  {
+                    href: "/settings/delete",
+                    label: "注销账号",
+                    icon: "settings",
+                  },
+                ].map((item) => (
+                  <AppLink
+                    key={item.href}
+                    href={item.href}
+                    className="settings-row"
+                  >
+                    <Icon name={item.icon} />
+                    <span>{item.label}</span>
+                    <Icon name="next" />
+                  </AppLink>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="secondary-button full-width"
+                onClick={() => void logout()}
+                disabled={busy}
+              >
+                {busy ? "正在退出…" : "退出登录"}
+              </button>
             </section>
           )
         ) : page === "shared-plans" && routeId ? (
           <SharedPlanPage planId={routeId} path={path} onNavigate={navigate} />
-        ) : selected === "today" ? (
-          <TodayPage />
-        ) : selected === "plans" ? (
+        ) : page === "today" ? (
+          <TodayPage profile={profile} />
+        ) : page === "plans" ? (
           <PlansPage path={path} onNavigate={navigate} />
-        ) : selected === "calendar" ? (
+        ) : page === "calendar" ? (
           <CalendarPage path={path} onNavigate={navigate} />
-        ) : selected === "friends" ? (
+        ) : page === "friends" ? (
           routeId ? (
             <FriendSharedPage friendId={routeId} onNavigate={navigate} />
           ) : (
             <FriendsPage onNavigate={navigate} />
           )
-        ) : selected === "inbox" ? (
-          <InboxPage onNavigate={navigate} />
+        ) : page === "inbox" ? (
+          <section>
+            <PageHeader title="消息" onBack={() => navigate("/today")} />
+            <InboxPage onNavigate={navigate} />
+          </section>
         ) : (
-          <PendingPage page={selected} />
+          <PendingPage page={page} />
         )}
       </main>
-      <nav className="bottom-nav" aria-label="手机主导航">
-        {navigation.map((item) => (
-          <AppLink
-            key={item.href}
-            href={item.href}
-            className={
-              selected === item.href.slice(1)
-                ? "bottom-link active"
-                : "bottom-link"
-            }
-          >
-            <span aria-hidden="true">{item.icon}</span>
-            <span>{item.label}</span>
-          </AppLink>
-        ))}
-      </nav>
+      {rootPage && (
+        <nav className="bottom-nav" aria-label="主导航">
+          {navigation.map((item) => (
+            <AppLink
+              key={item.href}
+              href={item.href}
+              current={selected === item.href.slice(1)}
+              className={
+                selected === item.href.slice(1)
+                  ? "bottom-link active"
+                  : "bottom-link"
+              }
+            >
+              <Icon name={item.icon} />
+              <span>{item.label}</span>
+            </AppLink>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

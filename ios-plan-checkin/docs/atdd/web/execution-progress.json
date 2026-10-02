@@ -3,17 +3,17 @@
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
   "verificationBuildCommit": null,
-  "updatedAt": "2026-09-30T02:09:00Z",
+  "updatedAt": "2026-10-02T18:50:30Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
   "sourceDigest": {
-    "webPrd": "cb401befa77eb7543906643857ca59d9cf0ffcfc7742d4f02c661702ff9c2178",
-    "webTechnical": "3f1f8d65f5242fd05ba5fe286bb3ce09c915e9d7ecba8682b9683652839fabcf",
+    "webPrd": "4bb66474a9864e03f7d9765914e47f2125eab9b6694bc5992f9c07d1a1c42c74",
+    "webTechnical": "10e5fe2b1e7d22101b3e3b223842b257253a5ff930d1fd9b9ef887f5b07e51c0",
     "iosPrd": "75f1f4b1878dc8c9b9c08e70a7391f67ca2145ef7f458b605833ed9cd43a46a7",
     "iosAcceptance": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
     "iosPen": "b1c94dbc01d577073a2c54ffa57f6953fbc4c6b07855fe4b9d829bce90479939",
-    "matrix": "c746b0469d3bf1af5951acccb246f7af8504a141aa5f2274867b1cfdc0d2b8c4"
+    "matrix": "38198a37b2b859959d4ef5ae795c36f6aa10d68ac657b5315137027cf609307c"
   },
   "allowedTaskStatuses": [
     "NOT_STARTED",
@@ -2536,15 +2536,15 @@
         "checks": [
           "API TypeScript：PASS",
           "OpenAPI 路由目录：86 个唯一操作，PASS",
-          "旧契约兼容：PASS"
-          ,"导出专项冒烟：PASS，证据 SHA-256 0ec1f2ec311c7279fb177dae5f946a7457f11780c88d80f04e200b46f081283f"
+          "旧契约兼容：PASS",
+          "导出专项冒烟：PASS，证据 SHA-256 0ec1f2ec311c7279fb177dae5f946a7457f11780c88d80f04e200b46f081283f"
         ],
         "evidence": [
           "docs/atdd/web/WEB-17-导出删除会话服务端增量记录.md",
           "docs/atdd/web/evidence/WEB-17/api-typecheck.txt",
           "docs/atdd/web/evidence/WEB-17/openapi-check.txt",
-          "docs/atdd/web/evidence/WEB-17/compat-check.txt"
-          ,"docs/atdd/web/evidence/WEB-17/export-smoke.txt"
+          "docs/atdd/web/evidence/WEB-17/compat-check.txt",
+          "docs/atdd/web/evidence/WEB-17/export-smoke.txt"
         ]
       },
       "verification": {
@@ -2609,13 +2609,13 @@
         "commit": null,
         "checks": [
           "Prettier 相关文件：完成",
-          "apps/web npm run build：PASS，Vite 33 modules，证据 SHA-256 84c37ac05ee3f3d515dee1cfa86b8ae8453ef04736b900271250fb76870e0504"
-          ,"会话订阅失效时清空内存资料；后续 Web 构建 PASS，证据 docs/atdd/web/evidence/WEB-12/web-build.txt"
+          "apps/web npm run build：PASS，Vite 33 modules，证据 SHA-256 84c37ac05ee3f3d515dee1cfa86b8ae8453ef04736b900271250fb76870e0504",
+          "会话订阅失效时清空内存资料；后续 Web 构建 PASS，证据 docs/atdd/web/evidence/WEB-12/web-build.txt"
         ],
         "evidence": [
           "docs/atdd/web/WEB-18-导出账号删除设置页面增量记录.md",
-          "docs/atdd/web/evidence/WEB-18/web-build.txt"
-          ,"docs/atdd/web/evidence/WEB-12/web-build.txt"
+          "docs/atdd/web/evidence/WEB-18/web-build.txt",
+          "docs/atdd/web/evidence/WEB-12/web-build.txt"
         ]
       },
       "verification": {
@@ -2656,7 +2656,7 @@
         "WEB-16",
         "WEB-18"
       ],
-      "scope": "依赖：WEB-05、WEB-07、WEB-10、WEB-11、WEB-14、WEB-16、WEB-18。统一 16 页面键、空/加载/错误态、浅/深色、200% 缩放、键盘/焦点/读屏、长内容与无横向溢出。主验收：`WEB-UI-01～16`。完成证据：每页键至少一个合法结果、视口/主题矩阵截图、DOM/无障碍树、布局和焦点观察；不得逐像素套 iOS 画板。",
+      "scope": "依赖：WEB-05、WEB-07、WEB-10、WEB-11、WEB-14、WEB-16、WEB-18。统一 16 页面键、空/加载/错误态、浅/深色、200% 缩放、键盘/焦点/读屏、长内容与无横向溢出。主验收：`WEB-UI-01～16`。完成证据：每页键至少一个合法结果、视口/主题矩阵截图、DOM/无障碍树、布局和焦点观察；不得逐像素套 iOS 画板。 2026-10-03新基线：Pen结构化样式来源、最大480px水平居中单列和四项底栏；无画板内容保留。",
       "ownedCaseIds": [
         "WEB-UI-01",
         "WEB-UI-02",
@@ -2680,29 +2680,135 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "四处危险确认层已接入原生模态对话框，提供焦点约束、Esc 关闭、取消后回焦及触发按钮被删除后的标题回退；窄屏允许对话框纵向滚动。",
+        "summary": "Pen样式与移动结构改造代码已实施：36个生成样式变量/24固定文案/19组页面映射，自托管Noto字体、480px居中容器、四主入口及独立详情路由，今日分区/记录弹层/日历/好友分享/设置对齐；补接现有提醒规则接口。构建和匿名登录布局观察通过，登录后联测待授权，正式WEB-UI-01～16未验收。",
         "changedPaths": [
-          "apps/web/src/app/ModalDialog.tsx",
+          "apps/web/src/app/App.tsx",
           "apps/web/src/app/Plans.tsx",
+          "apps/web/src/app/TodayCheckin.tsx",
+          "apps/web/src/app/MobileUI.tsx",
+          "apps/web/src/app/ModalDialog.tsx",
+          "apps/web/src/app/PlanReminders.tsx",
+          "apps/web/src/app/Calendar.tsx",
           "apps/web/src/app/Friends.tsx",
+          "apps/web/src/app/SharedPlans.tsx",
           "apps/web/src/app/ShareManager.tsx",
-          "apps/web/src/styles.css"
+          "apps/web/src/app/DataManagement.tsx",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/styles.css",
+          "apps/web/src/styles",
+          "apps/web/src/design",
+          "apps/web/src/assets/fonts",
+          "apps/web/src/main.tsx",
+          "apps/web/index.html",
+          "apps/web/public/font-license.txt",
+          "docs/ui/web-style-map.json",
+          "docs/ui/plan-checkin-visual-tree.json",
+          "docs/ui/Web样式对齐说明.md",
+          "scripts/build-web-design.mjs",
+          "scripts/build-design-resources.mjs",
+          "scripts/web-browser-capture.mjs",
+          "scripts/web-19-public-style-steps.json",
+          "scripts/web-19-style-steps.json",
+          "scripts/web-19-style-evidence.mjs",
+          "scripts/web-static-smoke.mjs"
         ],
         "commit": null,
         "checks": [
-          "Prettier 相关文件：完成",
-          "apps/web npm run build：PASS，Vite 34 modules，证据 SHA-256 808b3019f8f9ed0f201d3efdde1f66fbad75f831e4c2a858fce7712d74829287"
+          {
+            "name": "eslint",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/eslint-20261003.txt",
+            "sha256": "e05222033cd2c7b46b6fad5ec87b44b62f844dbb6f004476498f71d0e3c9875b"
+          },
+          {
+            "name": "typecheck",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/typecheck-20261003.txt",
+            "sha256": "e05222033cd2c7b46b6fad5ec87b44b62f844dbb6f004476498f71d0e3c9875b"
+          },
+          {
+            "name": "design",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/design-20261003.txt",
+            "sha256": "e1950a31bb114977303f256c1fe7008ba6a667c1d542180f64f392728923826d"
+          },
+          {
+            "name": "format",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/format-20261003.txt",
+            "sha256": "d6d678ecd2af7d2aec1f2e67be49274ea14bd99c1e975dc734cd84170667f676"
+          },
+          {
+            "name": "build",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/build-20261003.txt",
+            "sha256": "f0339b8dfd326eed94dabdaa70f122031c29d17cfdeeee1ecdc1d24afd0064a6"
+          },
+          {
+            "name": "static",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/static-20261003.txt",
+            "sha256": "d70cc8243aec3cd1a2d21a7188bd2a7b62518d094db9089d0918de1daccae565"
+          }
         ],
         "evidence": [
           "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md",
-          "docs/atdd/web/evidence/WEB-19/web-build.txt"
+          "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json",
+          "docs/ui/Web样式对齐说明.md"
+        ],
+        "styleChecklist": [
+          {
+            "id": "STYLE-01",
+            "status": "DONE",
+            "description": "当前Pen/视觉树/样式映射与生成门禁",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-02",
+            "status": "DONE",
+            "description": "480px居中移动容器、字体和浅深色公共样式",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-03",
+            "status": "DONE",
+            "description": "四项导航、独立详情与有画板页面结构改造",
+            "evidence": "docs/ui/Web样式对齐说明.md"
+          },
+          {
+            "id": "STYLE-04",
+            "status": "DONE",
+            "description": "类型/ESLint/格式/生成检查、生产构建、静态服务验证",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-05",
+            "status": "DONE",
+            "description": "匿名登录6个主题视口观察，PNG/布局JSON/DOM/网络/哈希",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-06",
+            "status": "BLOCKED",
+            "description": "登录后浏览器检查；自动审批拒绝扩大仅回环地址的短信桩测试边界，原限制已恢复",
+            "evidence": "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md"
+          },
+          {
+            "id": "STYLE-07",
+            "status": "NOT_STARTED",
+            "description": "正式浏览器、键盘、读屏、200%及对比度完整验收",
+            "evidence": "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md"
+          }
         ]
       },
       "verification": {
-        "summary": "WEB-UI-01～16 及 16 页面键的正式视口/主题/键盘/读屏变体尚未执行。",
+        "summary": "Chrome154隔离匿名登录6个布局观察：320/393/480/1440及浅深色，宽度/水平居中/字体加载/无横向溢出符合；受控观察不代替正式验收。LAN短信桩登录自动审批被拒绝，已恢复原安全限制；登录后、正式支持浏览器、读屏/键盘/缩放/对比度尚未验收。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json",
+          "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md"
+        ]
       },
       "review": {
         "reviewer": null,
@@ -2717,6 +2823,14 @@
         {
           "at": "2026-09-29T12:12:00Z",
           "event": "完成四处原生模态确认层、Esc/回焦与窄屏滚动，Web 构建通过；正式 UI 用例保持 NOT_RUN。"
+        },
+        {
+          "at": "2026-10-02T17:44:42Z",
+          "event": "用户完成grill-me边界确认并要求开始：按Pen结构化设计统一480px居中外壳、四项导航、字体/样式及有画板页面结构；实施前先记录，正式用例不提前签发。"
+        },
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "event": "代码改造和匿名观察完成，保留审批失败与未验证项；WEB-19 IN_PROGRESS，正式136项均未新增PASS。"
         }
       ]
     },
@@ -2832,7 +2946,7 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "用户授权后已接入 Web Deployment/Service 与同站点 Ingress，发布脚本等待 API/Worker/Web 就绪后切换入口；新增项目运行手册。本地局域网 HTTPS 入口 https://172.27.117.5:5173/ 在用户要求下再次启动，首页、登录页、同域 API live/ready 均返回 200。用户授权的 Private/LocalSubnet TCP 5173 入站规则仍在；实体设备可达性未验证。真实集群发布仍依赖上下文、仓库摘要、域名/TLS、对象域与 WEB-21 验收。",
+        "summary": "用户授权后已接入 Web Deployment/Service 与同站点 Ingress，发布脚本等待 API/Worker/Web 就绪后切换入口；新增项目运行手册。2026-10-02 WLAN IP 变化后已通过可重复启动脚本恢复本地 HTTPS 入口 https://172.27.69.153:5173/，首页、登录、计划深链、同域 API live/ready 均返回 200，签名对象代理与独立容器访问通过。Private/LocalSubnet TCP 5173 入站规则仍在；实体设备可达性未验证。真实集群发布仍依赖上下文、仓库摘要、域名/TLS、对象域与 WEB-21 验收。",
         "changedPaths": [
           "apps/web/server.mjs",
           "apps/web/package.json",
@@ -2840,6 +2954,7 @@
           "apps/api/src/main.ts",
           ".env.example",
           "scripts/lan-object-smoke.mjs",
+          "scripts/start-lan.ps1",
           "infra/deploy/Web.Dockerfile",
           "infra/deploy/manifest.mjs",
           "infra/deploy/environments/development.json",
@@ -2867,7 +2982,8 @@
           "同源签名对象路径返回精确字节；证据 SHA-256 f16550c353aba081a6d445a59c7509b7ae163234e9ef9caabbab8e0c4a3ab220",
           "用户授权的 Windows Private/LocalSubnet TCP 5173 入站规则经管理员确认创建；普通权限拒绝与成功复查证据 SHA-256 75f3d7b2b1590584d6cc2bc2253a40b442bcc86059d90526f8d6424156a2539f",
           "局域网改动后 npm run check 退出 0；证据 SHA-256 49b849db43f7dabc4446ad894a4632ac9efa447f8443f437b44afd05f3726f1b；浏览器正式验收仍未执行",
-          "2026-09-30 再次启动：Compose 依赖健康、迁移退出 0、API/Worker/Web 存活、HTTPS 首页/登录/API live/ready 200；证据 SHA-256 aff0176df3df8416853a1e3169954e3aff781c9f8cc47c0265a6b7ab4b0b1487"
+          "2026-09-30 再次启动：Compose 依赖健康、迁移退出 0、API/Worker/Web 存活、HTTPS 首页/登录/API live/ready 200；证据 SHA-256 aff0176df3df8416853a1e3169954e3aff781c9f8cc47c0265a6b7ab4b0b1487",
+          "2026-10-02 IP 变化恢复：PowerShell 7 启动脚本解析、复用、实际重启与 -Build 均通过，最终使用 Node 24.19.0；HTTPS 首页/登录/计划深链/API live/ready 200，同源签名对象与容器连接通过；证据 SHA-256 5598736eed2fbb47087d268348ca9c497e519048a72cbeeceaa78e61c9708c43；实体设备和真实短信未验证"
         ],
         "evidence": [
           "docs/atdd/web/WEB-22-Web静态站部署增量记录.md",
@@ -2884,11 +3000,12 @@
           "docs/atdd/web/evidence/WEB-22-lan-object-smoke.txt",
           "docs/atdd/web/evidence/WEB-22-firewall-rule-result.txt",
           "docs/atdd/web/evidence/WEB-22-lan-project-check.txt",
-          "docs/atdd/web/evidence/WEB-22-lan-restart-20260930.txt"
+          "docs/atdd/web/evidence/WEB-22-lan-restart-20260930.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-recovery-20261002.txt"
         ]
       },
       "verification": {
-        "summary": "本机局域网开发 HTTPS 已启动，防火墙规则已按授权范围创建，尚无实体局域网设备验证。本机无 Kubernetes 上下文且未取得仓库摘要、正式 Host/TLS/对象域；未执行真实集群发布。WEB-21 未完成；真实短信、TLS、对象 CORS、Push、回滚和浏览器发布验收均未执行。",
+        "summary": "本机局域网开发 HTTPS 已恢复到 2026-10-02 WLAN IP，防火墙规则维持授权范围，尚无实体局域网设备验证。自签证书需远端设备信任，SMS_PROVIDER=stub 不会发送手机短信。本机无 Kubernetes 上下文且未取得仓库摘要、正式 Host/TLS/对象域；未执行真实集群发布。WEB-21 未完成；真实短信、受控 Push、回滚和浏览器发布验收均未执行。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -2930,6 +3047,10 @@
         {
           "at": "2026-09-30T14:00:00Z",
           "event": "按用户要求再次启动局域网服务：Docker Desktop 与三项依赖恢复，迁移退出 0，API/Worker/Web 存活，HTTPS 首页、登录和同域 API live/ready 返回 200；实体设备与正式用例未测试。"
+        },
+        {
+          "at": "2026-10-02T15:34:00Z",
+          "event": "WLAN IP 变化导致旧入口失效；恢复本地来源、证书和服务，新增 PowerShell 7 可重复启动脚本并通过实际重启。当前 LAN HTTPS 页面、同源 API、签名对象与独立容器连接通过；真实短信、实体设备及正式用例未验证。"
         }
       ]
     }
@@ -5823,22 +5944,48 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-02",
       "ownerTask": "WEB-19",
       "baseline": {
         "given": "桌面宽视口已登录",
-        "when": "在今日、计划、日历、好友、消息和设置间切换",
-        "functional": "导航与当前路由一致",
-        "visual": "桌面导航、内容和辅助区重新排布且层级明确",
-        "negative": "不用手机窄栏机械放大或遮挡内容",
+        "when": "在四主入口、页内消息与设置入口间切换",
+        "functional": "导航与当前路由一致，所有功能可达",
+        "visual": "最大480px单列移动结构水平居中、顶部排布，外侧填主题背景",
+        "negative": "不增加桌面侧栏/并排详情，不整体缩放字体或控件，不遮挡内容",
         "requiredEvidenceCodes": [
           "S",
           "H",
@@ -5846,12 +5993,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-03",
@@ -5869,12 +6042,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-04",
@@ -5892,12 +6091,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-05",
@@ -5906,7 +6131,7 @@
         "given": "768、1024、1280、1440 像素宽度",
         "when": "调整窗口并复核关键页",
         "functional": "数据与操作连续保留",
-        "visual": "栅格、侧栏与卡片按断点自然重排",
+        "visual": "480px以上容器宽度固定并居中，以下自然收缩；单列、底栏、弹层与卡片不横向溢出",
         "negative": "不因断点切换丢输入或出现重叠",
         "requiredEvidenceCodes": [
           "S",
@@ -5915,12 +6140,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-06",
@@ -5938,12 +6189,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-07",
@@ -5961,12 +6238,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-08",
@@ -5984,12 +6287,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-09",
@@ -6007,12 +6336,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-10",
@@ -6030,12 +6385,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-11",
@@ -6053,12 +6434,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-12",
@@ -6076,12 +6483,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-13",
@@ -6100,12 +6533,38 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-14",
@@ -6124,12 +6583,38 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-15",
@@ -6147,12 +6632,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-16",
@@ -6171,12 +6682,38 @@
           "F"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-SEC-01",
@@ -6755,6 +7292,17 @@
       "evidence": [
         "docs/atdd/web/WEB-11-日历详情与统计增量记录.md",
         "docs/任务执行计划-计划打卡-Web-v1.md"
+      ]
+    },
+    {
+      "id": "WEB-19-STYLE-20261003",
+      "occurredAt": "2026-10-02T18:47:17Z",
+      "type": "IMPLEMENTATION_INCREMENT",
+      "taskId": "WEB-19",
+      "summary": "Pen样式与移动结构改造代码已实施：36个生成样式变量/24固定文案/19组页面映射，自托管Noto字体、480px居中容器、四主入口及独立详情路由，今日分区/记录弹层/日历/好友分享/设置对齐；补接现有提醒规则接口。构建和匿名登录布局观察通过，登录后联测待授权，正式WEB-UI-01～16未验收。",
+      "evidence": [
+        "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md",
+        "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
       ]
     }
   ]

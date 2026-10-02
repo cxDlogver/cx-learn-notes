@@ -1,0 +1,245 @@
+/* Shell metrics come from the Pen-derived design map. No desktop layout fork. */
+:root {
+  color-scheme: light dark;
+  font-family: var(--ui-font-family), sans-serif;
+  font-size: var(--ui-body-size);
+  line-height: var(--ui-line-height);
+  color: var(--ui-text);
+  background: var(--ui-background);
+  font-synthesis: none;
+  --pen-bg: var(--ui-background);
+  --pen-surface: var(--ui-surface);
+  --pen-primary: var(--ui-primary);
+  --pen-text: var(--ui-text);
+  --pen-secondary: var(--ui-secondary);
+  --ui-danger: #b33f3f;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 0;
+}
+#root {
+  min-height: 100svh;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+a {
+  color: var(--ui-primary);
+  text-decoration: none;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 3px;
+}
+[hidden] {
+  display: none !important;
+}
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+h1 {
+  font-size: var(--ui-title-size);
+  font-weight: 700;
+}
+h2 {
+  font-size: var(--ui-section-size);
+  font-weight: 700;
+}
+h3 {
+  font-size: var(--ui-body-size);
+  font-weight: 500;
+}
+h4 {
+  font-size: var(--ui-label-size);
+}
+p {
+  line-height: var(--ui-line-height);
+}
+ul,
+ol {
+  margin: 12px 0;
+  padding-left: 22px;
+}
+li + li {
+  margin-top: 8px;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+svg {
+  flex: none;
+}
+.app-layout,
+.auth-layout,
+.loading-screen {
+  width: min(100%, var(--ui-app-width));
+  min-height: 100svh;
+  margin-inline: auto;
+  background: var(--ui-background);
+}
+.workspace {
+  min-width: 0;
+}
+.with-navigation {
+  padding-bottom: calc(
+    var(--ui-navigation-height) + env(safe-area-inset-bottom)
+  );
+}
+.content-panel {
+  padding: 24px var(--ui-page-inset) 30px;
+  min-width: 0;
+}
+.content-panel > h1 {
+  margin-bottom: 22px;
+}
+.content-panel > p {
+  margin-bottom: 16px;
+}
+.mobile-page-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 56px;
+  margin: -12px -8px 20px;
+}
+.mobile-page-header h1 {
+  text-align: center;
+  font-size: var(--ui-header-size);
+  font-weight: 700;
+}
+.header-action {
+  min-width: 44px;
+  display: flex;
+  justify-content: flex-end;
+}
+.header-spacer {
+  width: 44px;
+}
+.header-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.page-heading,
+.today-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.page-heading > div,
+.today-heading > div {
+  min-width: 0;
+}
+.today-heading h1 {
+  font-size: 23px;
+}
+.today-heading .muted {
+  margin-top: 6px;
+  font-size: var(--ui-caption-size);
+}
+.bottom-nav {
+  position: fixed;
+  z-index: 20;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, var(--ui-app-width));
+  min-height: calc(var(--ui-navigation-height) + env(safe-area-inset-bottom));
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom));
+  background: var(--ui-surface);
+  border-top: 1px solid var(--ui-border);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.bottom-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 44px;
+  color: var(--ui-secondary);
+  font-size: var(--ui-small-size);
+}
+.bottom-link.active {
+  color: var(--ui-primary);
+  font-weight: 500;
+}
+.bottom-link .ui-icon {
+  width: var(--ui-navigation-icon);
+  height: var(--ui-navigation-icon);
+}
+.ui-icon {
+  width: 22px;
+  height: 22px;
+}
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--ui-text);
+  border-radius: var(--ui-button-radius);
+}
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: var(--ui-page-inset);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ui-danger: #f19a9a;
+  }
+}

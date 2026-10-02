@@ -1,3 +1,4 @@
+import { Avatar, PageHeader } from "./MobileUI";
 import { useEffect, useState } from "react";
 import type {
   EncouragementDto,
@@ -147,21 +148,17 @@ export function FriendSharedPage({
   }, [friendId]);
   return (
     <section className="content-panel" data-page-key="friend-shared-plans">
-      <button
-        type="button"
-        className="text-button"
-        onClick={() => onNavigate("/friends")}
-      >
-        ← 返回朋友
-      </button>
-      <h1>
-        {friend
-          ? `${friend.nickname || friend.username} 的共享计划`
-          : "共享计划"}
-      </h1>
-      <p className="muted">
-        好友关系不会自动开放计划，只显示主人单独授权的项目。
-      </p>
+      <PageHeader title="朋友" onBack={() => onNavigate("/friends")} />
+      {friend && (
+        <div className="profile-card">
+          <Avatar name={friend.nickname || friend.username || ""} />
+          <div>
+            <h2>{friend.nickname || friend.username}</h2>
+            <p className="muted">@{friend.username}</p>
+          </div>
+        </div>
+      )}
+      <h2 className="form-section-title">共享计划</h2>
       {loading && <p role="status">正在核对分享授权…</p>}
       {error && (
         <p className="form-error" role="alert">
@@ -244,15 +241,14 @@ export function SharedPlanPage({
 
   return (
     <section className="content-panel" data-page-key="shared-plan-detail">
-      <button
-        type="button"
-        className="text-button"
-        onClick={() => onNavigate("/friends")}
-      >
-        ← 返回朋友
-      </button>
-      <h1>{history?.plan.title ?? "共享计划"}</h1>
-      <p className="muted">主人授权的只读视图。照片、数值和私人统计不显示。</p>
+      <PageHeader title="共享计划" onBack={() => onNavigate("/friends")} />
+      <div className="plan-hero">
+        <h1>{history?.plan.title ?? "共享计划"}</h1>
+        <p className="plan-meta">
+          <span className="badge">只读</span>
+          <span>照片、数值和私人统计不分享</span>
+        </p>
+      </div>
       <div className="social-actions">
         <label htmlFor="shared-month">月份</label>
         <input

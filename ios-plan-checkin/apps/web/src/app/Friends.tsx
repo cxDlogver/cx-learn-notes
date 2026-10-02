@@ -1,3 +1,4 @@
+import { Icon } from "./MobileUI";
 import { useEffect, useState, type FormEvent } from "react";
 import type { FriendRequestsDto, SocialUserDto } from "@plan-checkin/contracts";
 import {
@@ -110,8 +111,17 @@ export function FriendsPage({
 
   return (
     <section className="content-panel" data-page-key="friends">
-      <p className="eyebrow">选择分享的人</p>
-      <h1>朋友</h1>
+      <div className="page-heading">
+        <h1>朋友</h1>
+        <button
+          type="button"
+          className="icon-button"
+          aria-label="消息"
+          onClick={() => onNavigate("/inbox")}
+        >
+          <Icon name="bell" />
+        </button>
+      </div>
       <p className="muted">
         成为朋友不会自动开放任何计划。每项计划都要单独预览并授权。
       </p>
@@ -126,8 +136,8 @@ export function FriendsPage({
           {notice}
         </p>
       )}
-      <section className="social-card" aria-labelledby="find-friend-heading">
-        <h2 id="find-friend-heading">查找用户</h2>
+      <details className="social-card" aria-labelledby="find-friend-heading">
+        <summary id="find-friend-heading">添加朋友</summary>
         <form
           className="social-search"
           onSubmit={(event) => void search(event)}
@@ -190,9 +200,48 @@ export function FriendsPage({
             </div>
           );
         })}
+      </details>
+      <section className="social-card" aria-labelledby="friend-list-heading">
+        <h2 id="friend-list-heading" tabIndex={-1}>
+          我的朋友
+        </h2>
+        {friends.length === 0 && (
+          <p className="muted">还没有朋友。添加后仍需逐项授权计划。</p>
+        )}
+        {friends.map((user) => (
+          <div className="social-person" key={user.id}>
+            <div>
+              <strong>{person(user)}</strong>
+              <span>@{user.username}</span>
+            </div>
+            <div className="social-actions">
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => onNavigate(`/friends/${user.id}`)}
+              >
+                查看共享
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setPending({ action: "remove", user })}
+              >
+                删除好友
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setPending({ action: "block", user })}
+              >
+                屏蔽
+              </button>
+            </div>
+          </div>
+        ))}
       </section>
-      <section className="social-card" aria-labelledby="incoming-heading">
-        <h2 id="incoming-heading">收到的申请</h2>
+      <details className="social-card" aria-labelledby="incoming-heading">
+        <summary id="incoming-heading">收到的申请</summary>
         {requests.incoming.length === 0 && (
           <p className="muted">暂无待处理申请。</p>
         )}
@@ -234,9 +283,9 @@ export function FriendsPage({
             </div>
           </div>
         ))}
-      </section>
-      <section className="social-card" aria-labelledby="outgoing-heading">
-        <h2 id="outgoing-heading">发出的申请</h2>
+      </details>
+      <details className="social-card" aria-labelledby="outgoing-heading">
+        <summary id="outgoing-heading">发出的申请</summary>
         {requests.outgoing.length === 0 && (
           <p className="muted">没有等待对方处理的申请。</p>
         )}
@@ -249,46 +298,8 @@ export function FriendsPage({
             <span>等待回应</span>
           </div>
         ))}
-      </section>
-      <section className="social-card" aria-labelledby="friend-list-heading">
-        <h2 id="friend-list-heading" tabIndex={-1}>
-          我的朋友
-        </h2>
-        {friends.length === 0 && (
-          <p className="muted">还没有朋友。添加后仍需逐项授权计划。</p>
-        )}
-        {friends.map((user) => (
-          <div className="social-person" key={user.id}>
-            <div>
-              <strong>{person(user)}</strong>
-              <span>@{user.username}</span>
-            </div>
-            <div className="social-actions">
-              <button
-                type="button"
-                className="text-button"
-                onClick={() => onNavigate(`/friends/${user.id}`)}
-              >
-                查看共享
-              </button>
-              <button
-                type="button"
-                className="text-button"
-                onClick={() => setPending({ action: "remove", user })}
-              >
-                删除好友
-              </button>
-              <button
-                type="button"
-                className="text-button"
-                onClick={() => setPending({ action: "block", user })}
-              >
-                屏蔽
-              </button>
-            </div>
-          </div>
-        ))}
-      </section>
+      </details>
+
       {pending && (
         <ModalDialog
           className="social-card"

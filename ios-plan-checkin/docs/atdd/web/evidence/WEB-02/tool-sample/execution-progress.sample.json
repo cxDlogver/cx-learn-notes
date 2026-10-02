@@ -3,17 +3,17 @@
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
   "verificationBuildCommit": null,
-  "updatedAt": "2026-09-28T17:12:49.776350Z",
+  "updatedAt": "2026-10-02T18:52:58.514108Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
   "sourceDigest": {
-    "webPrd": "cb401befa77eb7543906643857ca59d9cf0ffcfc7742d4f02c661702ff9c2178",
-    "webTechnical": "3f1f8d65f5242fd05ba5fe286bb3ce09c915e9d7ecba8682b9683652839fabcf",
+    "webPrd": "4bb66474a9864e03f7d9765914e47f2125eab9b6694bc5992f9c07d1a1c42c74",
+    "webTechnical": "10e5fe2b1e7d22101b3e3b223842b257253a5ff930d1fd9b9ef887f5b07e51c0",
     "iosPrd": "75f1f4b1878dc8c9b9c08e70a7391f67ca2145ef7f458b605833ed9cd43a46a7",
     "iosAcceptance": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
     "iosPen": "b1c94dbc01d577073a2c54ffa57f6953fbc4c6b07855fe4b9d829bce90479939",
-    "matrix": "c746b0469d3bf1af5951acccb246f7af8504a141aa5f2274867b1cfdc0d2b8c4"
+    "matrix": "38198a37b2b859959d4ef5ae795c36f6aa10d68ac657b5315137027cf609307c"
   },
   "allowedTaskStatuses": [
     "NOT_STARTED",
@@ -707,17 +707,105 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "开始 React + TypeScript SPA、Web 会话、首次资料和响应式导航。WEB-02 仍未完成，代码可先开发但不得提前勾选或签发 AUTH PASS。",
-        "changedPaths": [],
+        "summary": "React + TypeScript SPA、同站点会话/短信登录、首次资料、History 路由、响应式导航与真实今日/计划页已接入。access 本地截止值按服务端响应剩余时长计算；Chrome 真实计划续期探针一次 refresh。本地短信桩不会向手机发送，开发登录页已提示未接网关时需从运行服务的电脑获取验证码。完整 AUTH F/V/N 与 WEB-02 外部证据依赖未完成。",
+        "changedPaths": [
+          "apps/web/package.json",
+          "apps/web/tsconfig.json",
+          "apps/web/vite.config.ts",
+          "apps/web/index.html",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/main.tsx",
+          "apps/web/src/styles.css",
+          "package.json",
+          "pnpm-lock.yaml",
+          "scripts/web-browser-capture.mjs",
+          "scripts/web-05-login-steps.json",
+          "scripts/web-05-today-steps.json",
+          "scripts/web-05-today-edge-steps.json",
+          "scripts/web-05-evidence.mjs",
+          "scripts/web-05-change-phone-steps.json",
+          "scripts/web-05-change-phone-form-steps.json",
+          "scripts/web-05-new-phone-login-steps.json",
+          "scripts/web-05-change-phone-invalid-steps.json",
+          "scripts/web-05-access-refresh-steps.json",
+          "scripts/web-05-invalid-phone-steps.json",
+          "scripts/web-05-invalid-code-steps.json",
+          "scripts/run-web-atdd-browser-api.ps1",
+          "docs/atdd/web/WEB-05-SPA骨架与登录.md",
+          "scripts/web-05-auth07-real-plan-steps.json"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "node scripts/web-05-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-05/checks.json",
+            "sha256": "7ef93a8db5b1a4db161443a2a49458572f92b7114b49bb618c8ddd391f4f367a"
+          },
+          {
+            "command": "Direct installed Web TypeScript/Vite build and targeted Prettier/ESLint for local SMS notice",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-05/local-sms-stub-diagnosis.txt",
+            "sha256": "71faa9e148aa653c2b7eeb8042867a6c718c9324371aba1be5da9dfbf9990c60"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-05-SPA骨架与登录.md",
+          "docs/atdd/web/evidence/WEB-05/login-reload-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/login-flow-edge-1280/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/logout-back-chrome-390/browser-storage.json",
+          "docs/atdd/web/evidence/WEB-05/today-empty-chrome-390-v2/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/today-empty-edge-1280/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/change-phone-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/change-phone-db.txt",
+          "docs/atdd/web/evidence/WEB-05/change-phone-invalid-db.txt",
+          "docs/atdd/web/evidence/WEB-05/access-refresh-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/invalid-phone-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/invalid-code-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/checks.json",
+          "docs/atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/network.json",
+          "docs/atdd/web/evidence/WEB-05/local-sms-stub-diagnosis.txt"
+        ]
       },
       "verification": {
-        "summary": "12 项 AUTH 仍 NOT_RUN；待产品页面、受控浏览器和原始证据。",
+        "summary": "Chrome/Edge 登录、Cookie 恢复、今日空态、换号与错误路径有隔离探针；真实个人计划页的 access 到期复测只有一次 refresh 201，列表/分组/详情均 200。12 项 AUTH 均未完成正式 F/V/N，仍 NOT_RUN。",
         "runIds": [],
-        "browserMatrix": [],
-        "evidence": []
+        "browserMatrix": [
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-probe"
+          },
+          {
+            "browser": "Edge 154",
+            "viewport": "1280x800",
+            "kind": "development-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-auth07-real-plan-probe"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-05/login-chrome-390/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/login-edge-1280/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/login-reload-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/login-flow-chrome-390-v2/browser-storage.json",
+          "docs/atdd/web/evidence/WEB-05/existing-login-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/logout-back-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/today-empty-chrome-390-v2/network.json",
+          "docs/atdd/web/evidence/WEB-05/today-empty-edge-1280/network.json",
+          "docs/atdd/web/evidence/WEB-05/change-phone-form-chrome-390/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/new-phone-login-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-05/change-phone-invalid-chrome-390-v3/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/access-refresh-chrome-390/action-trace.json",
+          "docs/atdd/web/evidence/WEB-05/invalid-code-chrome-390/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/checks.json",
+          "docs/atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/screen-after.png",
+          "docs/atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/browser-storage.json"
+        ]
       },
       "review": {
         "reviewer": null,
@@ -729,6 +817,54 @@
           "at": "2026-09-28T16:38:00Z",
           "type": "STARTED_WITH_OPEN_EVIDENCE_DEPENDENCY",
           "summary": "WEB-04 完成，WEB-02 受控测试工具可用但正式浏览器矩阵与 CI 外部保留未完成；先做可逆 Web 客户端代码，不签发业务 PASS。"
+        },
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "BROWSER_AUTH_INCREMENT_CHECKED",
+          "summary": "Chrome/Edge 隔离登录、资料、Cookie 恢复、既有账号和退出返回探针记录；12 项 AUTH 未做完整 F/V/N，仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
+        },
+        {
+          "at": "2026-09-28T17:35:32Z",
+          "type": "TODAY_EMPTY_INCREMENT_CHECKED",
+          "summary": "Chrome 390×844 与 Edge 1280×800 的新用户今日 API 200、空态和创建计划入口已采集；无水平溢出；创建计划表单及 AUTH03 反向断言仍未完成。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/checks.json"
+        },
+        {
+          "at": "2026-09-28T17:45:00Z",
+          "type": "CHANGE_PHONE_SUCCESS_PROBE",
+          "summary": "Chrome 双码换号 201、Web 退出 201、新号独立登录及数据库账号数 1、旧会话撤销 3 条；错误路径尚缺，AUTH11 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
+        },
+        {
+          "at": "2026-09-28T17:53:00Z",
+          "type": "CHANGE_PHONE_INVALID_AND_PRIVACY_RECHECK",
+          "summary": "错误旧号验证码返回 400，请求未消耗且尝试加一；修复字段遮挡与 DOM/AX 脱敏，删除两份未提交的敏感旧采集并完成 v3 复测。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/change-phone-invalid-chrome-390-v3/network.json"
+        },
+        {
+          "at": "2026-09-28T18:03:00Z",
+          "type": "ACCESS_REFRESH_BROWSER_PROBE",
+          "summary": "Chrome 页面时钟推进 16 分钟后 refresh 201、今日 GET 200，未回登录；计划详情及旧 token 重放缺失，AUTH07 仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/access-refresh-chrome-390/network.json"
+        },
+        {
+          "at": "2026-09-28T18:07:00Z",
+          "type": "SMS_INVALID_BROWSER_PROBES",
+          "summary": "非法号码无短信请求；错误六位码验证 400、无刷新 Cookie、仍留登录页。空号/重发/过期/已用变体未齐，AUTH02/05 保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
+        },
+        {
+          "at": "2026-09-28T19:34:00Z",
+          "type": "AUTH07_REAL_PLAN_REFRESH_PROBED",
+          "summary": "首轮页面时钟前进导致三次顺序续期；按服务端 serverTime 计算本地 TTL 后 Chrome 个人计划页复测仅一次 refresh，计划/分组/详情 GET 200。旧 refresh 重放与正式 F/V/N 未合并，AUTH07 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
+        },
+        {
+          "at": "2026-09-30T03:18:00Z",
+          "type": "LOCAL_SMS_STUB_NOTICE",
+          "summary": "当前本地开发环境 SMS_PROVIDER=stub，不发送真实短信；纠正开发登录页误导性文案，运行手册写明 outbox 与 5 分钟有效期。验证码未进入网页响应或验收证据；正式 AUTH 用例仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
         }
       ]
     },
@@ -747,7 +883,7 @@
       "completedAt": "2026-09-28T13:56:00Z",
       "owner": "Codex",
       "implementation": {
-        "summary": "三类计划可配置一个数值项；POST/PATCH 版本追加、计划时区次日生效、历史数值/名称/单位/版本快照不改写；部分周统计口径已验证。",
+        "summary": "三类计划单项数值配置、历史版本、分组与生命周期 API 已完成；归档后显式恢复的服务端校验在 WEB-07 联调中修正，并重跑 11 项 WEB-06 契约/服务/HTTP/统计/静态检查全部通过。",
         "changedPaths": [
           "apps/api/src/plans/plans.service.ts",
           "apps/api/src/plans/plans.controller.ts",
@@ -783,7 +919,7 @@
             "command": "node scripts/build-openapi.mjs --check",
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-06/openapi.txt",
-            "sha256": "1ddc2f85b0e3628249e1b3592f7cef2c4ead087beed514c713579a3e18830e9a"
+            "sha256": "d2dc3f31316a180650e0a64effa71a8fed27008ae5b6bc44405a03988abac4c4"
           },
           {
             "command": "node scripts/check-contract-compat.mjs",
@@ -795,19 +931,19 @@
             "command": "node scripts/plans-smoke.mjs",
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-06/plans-smoke.txt",
-            "sha256": "62f74575d1ddd358513fc4570d6497692a41ae05f5e77ccee56a94df6ff38100"
+            "sha256": "6a9459d719a22f0c13887d5c92dfeedba33692f7c8750df4a3d489ac72ac50d3"
           },
           {
             "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-web-plans-http-smoke.ps1",
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-06/plans-http.txt",
-            "sha256": "f4b7646b4479a8274f4680370e943a9586bf74c776b3c4790b07b0cf10abd4ab"
+            "sha256": "c07f447fde9a7df13889469d5b4e4b71b88e89eb47364e3fb6f8476ec9c6553c"
           },
           {
             "command": "node --test packages/domain/test/statistics.test.mjs",
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-06/statistics.txt",
-            "sha256": "de04e4f91ea588afba252494301dd81252a0b9134f92983715adfb1120e8559b"
+            "sha256": "9b73e9014da3abd2104b502ffb82134f9d7b3e6b389d3131531c7a69b53a431e"
           },
           {
             "command": "node node_modules/eslint/bin/eslint.js apps/api/src/plans/plans.service.ts apps/api/src/plans/plans.controller.ts packages/contracts/src/index.ts packages/contracts/src/routes.ts scripts/build-openapi.mjs scripts/plans-smoke.mjs scripts/web-plans-http-smoke.mjs packages/domain/test/statistics.test.mjs scripts/web-06-evidence.mjs",
@@ -835,7 +971,7 @@
         ]
       },
       "verification": {
-        "summary": "11 项源码、契约、PGlite、隔离 PostgreSQL 17 真实 HTTP、固定时钟部分周与台账检查全部通过；提交 Git blob 中 11 个原始输出 SHA 均匹配。产品浏览器 F/V/N 未执行，136 项仍 NOT_RUN。",
+        "summary": "WEB-06 11 项服务端检查在归档恢复修正后重新运行全 PASS；旧数值记录保留和部分周口径已有 DB/领域回归，Web 页面正式 F/V/N 由 WEB-07 后续负责。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": [
@@ -860,6 +996,12 @@
           "type": "DONE",
           "summary": "11 项检查及提交后 SHA 复核通过，WEB-06 checklist 勾选；136 项浏览器业务用例未执行。",
           "commit": "a389d52cae36ef7e3070eccc30a49db38339bcc2",
+          "evidencePath": "docs/atdd/web/evidence/WEB-06/checks.json"
+        },
+        {
+          "at": "2026-09-28T19:38:00Z",
+          "type": "POST_COMPLETION_ARCHIVE_RESUME_REGRESSION",
+          "summary": "WEB-07 联调补归档态显式恢复；WEB-06 11 项完整服务端证据重跑 PASS，检查输出及 SHA 已更新，原完成提交记录保留供对比。",
           "evidencePath": "docs/atdd/web/evidence/WEB-06/checks.json"
         }
       ]
@@ -892,29 +1034,187 @@
         "WEB-PLAN-17",
         "WEB-PLAN-18"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T18:11:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "计划列表、三类创建、详情、生命周期、分组及编辑接入真实 API；Chrome/Edge 十次完整浏览器探针覆盖固定/周目标规则 V2、数值项 V2 和归档恢复。旧历史、部分周统计及正式 F/V/N 未完成。",
+        "changedPaths": [
+          "docs/atdd/web/WEB-07-计划页面增量记录.md",
+          "apps/web/src/app/Plans.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/styles.css",
+          "scripts/web-browser-capture.mjs",
+          "scripts/web-07-fixed-create-steps.json",
+          "scripts/web-07-weekly-create-steps.json",
+          "scripts/web-07-one-time-create-steps.json",
+          "scripts/web-07-fixed-empty-steps.json",
+          "scripts/run-web-atdd-browser-api.ps1",
+          "scripts/web-07-evidence.mjs",
+          "scripts/web-07-lifecycle-steps.json",
+          "scripts/web-07-lifecycle-v2-steps.json",
+          "scripts/web-07-groups-steps.json",
+          "scripts/web-07-groups-v2-steps.json",
+          "apps/api/src/plans/plans.service.ts",
+          "scripts/plans-smoke.mjs",
+          "scripts/web-07-archive-resume-steps.json",
+          "scripts/web-07-edit-steps.json",
+          "scripts/web-07-weekly-edit-steps.json"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "node scripts/web-07-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-07/checks.json",
+            "sha256": "e23124b2ec0452da9ac66a1c4fc9848582aa356e2766a1f17dba59da1e3cd2d4"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-07-计划页面增量记录.md",
+          "docs/atdd/web/evidence/WEB-07/fixed-create-chrome-390-v2/network.json",
+          "docs/atdd/web/evidence/WEB-07/weekly-create-edge-1280/network.json",
+          "docs/atdd/web/evidence/WEB-07/one-time-create-chrome-360/network.json",
+          "docs/atdd/web/evidence/WEB-07/fixed-create-db.txt",
+          "docs/atdd/web/evidence/WEB-07/weekly-create-db.txt",
+          "docs/atdd/web/evidence/WEB-07/one-time-create-db.txt",
+          "docs/atdd/web/evidence/WEB-07/checks.json",
+          "docs/atdd/web/evidence/WEB-07/fixed-empty-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-07/lifecycle-chrome-390-v2/network.json",
+          "docs/atdd/web/evidence/WEB-07/lifecycle-v2-db.txt",
+          "docs/atdd/web/evidence/WEB-07/groups-chrome-390-v2/network.json",
+          "docs/atdd/web/evidence/WEB-07/groups-db.txt",
+          "docs/atdd/web/evidence/WEB-07/archive-resume-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-07/archive-resume-db.txt",
+          "docs/atdd/web/evidence/WEB-07/archive-resume-service.txt",
+          "docs/atdd/web/evidence/WEB-07/edit-chrome-390/network.json",
+          "docs/atdd/web/evidence/WEB-07/edit-db.txt",
+          "docs/atdd/web/evidence/WEB-07/weekly-edit-edge-1280/network.json",
+          "docs/atdd/web/evidence/WEB-07/weekly-edit-db.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "十次完整 Chrome/Edge 浏览器开发探针、九份隔离 DB 聚合、PGlite 服务回归及 SHA-256 已保存；固定/周目标/数值项版本追加已核对。完整 18 项 PLAN F/V/N 仍 NOT_RUN。",
         "runIds": [],
-        "browserMatrix": [],
-        "evidence": []
+        "browserMatrix": [
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-probe"
+          },
+          {
+            "browser": "Edge 154",
+            "viewport": "1280x800",
+            "kind": "development-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "360x800",
+            "kind": "development-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-negative-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-lifecycle-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-group-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-archive-resume-probe"
+          },
+          {
+            "browser": "Chrome 153",
+            "viewport": "390x844",
+            "kind": "development-rule-edit-probe"
+          },
+          {
+            "browser": "Edge 154",
+            "viewport": "1280x800",
+            "kind": "development-weekly-edit-probe"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-07/fixed-create-chrome-390-v2/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/weekly-create-edge-1280/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/one-time-create-chrome-360/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/fixed-empty-chrome-390/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/lifecycle-chrome-390-v2/screen-archived.png",
+          "docs/atdd/web/evidence/WEB-07/lifecycle-chrome-390-v2/screen-delete-confirm.png",
+          "docs/atdd/web/evidence/WEB-07/groups-chrome-390-v2/screen-delete-group-confirm.png",
+          "docs/atdd/web/evidence/WEB-07/groups-chrome-390-v2/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/archive-resume-chrome-390/screen-archived.png",
+          "docs/atdd/web/evidence/WEB-07/archive-resume-chrome-390/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/edit-chrome-390/screen-after.png",
+          "docs/atdd/web/evidence/WEB-07/weekly-edit-edge-1280/screen-after.png"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T18:11:00Z",
+          "type": "STARTED_WITH_AUTH_CROSS_DEPENDENCY",
+          "summary": "WEB-06 已完成，WEB-05 AUTH07 需要真实计划页；先开发可逆 UI，完成门槛和全部 PLAN 用例仍不提前签发。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T18:23:00Z",
+          "type": "THREE_PLAN_TYPES_BROWSER_PROBED_WITH_APPROVAL_BLOCK",
+          "summary": "固定、周目标、一次性三类计划的 Chrome/Edge 浏览器创建和隔离 DB 聚合已有证据；后续空星期探针因自动审批用量上限未执行，全部 18 项仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T18:47:00Z",
+          "type": "RESUMED_WITH_NEGATIVE_BROWSER_PROBE",
+          "summary": "Windows PowerShell API 就绪探针已修正；Chrome 390 空星期提交未发 POST，四次浏览器与三份 DB 证据有 SHA-256；根检查和 Web 构建通过，PLAN 用例仍全部 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T18:56:00Z",
+          "type": "LIFECYCLE_BROWSER_PROBED",
+          "summary": "Chrome 手机创建、暂停、恢复、归档、删除的请求与隔离库审计一致；中文状态和删除确认复测通过。正式 WEB-PLAN-12～16 仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T19:08:00Z",
+          "type": "GROUP_BROWSER_PROBED",
+          "summary": "首轮隐藏侧栏选择器中断后换新账号重跑；两计划创建、分组创建、两次移组、重命名、删除均成功，DB 为 2|2|0。无历史打卡，WEB-PLAN-15 仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T19:17:00Z",
+          "type": "ARCHIVED_RESUME_BACKEND_GAP_FIXED",
+          "summary": "WEB-PLAN-14 发现归档态恢复被服务端拒绝；修正后 PGlite 与 Chrome 手机隔离库证实 archive,resume 事件、修订号 3 和最终 active，仍缺完整 F/V/N。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T19:26:00Z",
+          "type": "PLAN_EDIT_VERSIONS_BROWSER_PROBED",
+          "summary": "Chrome 手机计划 PATCH 和数值项 PATCH 均 200；DB 保留 V1 规则/单位并追加次日生效 V2。旧打卡历史、周目标编辑与正式 F/V/N 尚缺。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        },
+        {
+          "at": "2026-09-28T19:28:00Z",
+          "type": "WEEKLY_EDIT_DESKTOP_PROBED",
+          "summary": "Edge 桌面将周目标 7 改 1，PATCH 200，DB V1/V2 次日生效；该周已有记录和部分周统计未测，WEB-PLAN-11 仍 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-07-计划页面增量记录.md"
+        }
+      ]
     },
     {
       "id": "WEB-08",
@@ -1068,29 +1368,157 @@
       ],
       "scope": "依赖：WEB-03、WEB-08。对象直传、签名时效、CORS、类型/数量/大小限制、缩略图与删除清理，兼容一次性任务结果。关联：CHECK、DATA、SEC。完成证据：真实浏览器上传/失败重试截图、网络预检、对象权限与清理文件清单。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T19:40:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "对象域/API、浏览器直传/回顾、失败恢复、跨账号拒绝、短签名到期及 9 张允许/10 张拒绝、20 MB+1 拒绝均有证据；格式、20 MB 正向、派生缩略图和清理仍待验。",
+        "changedPaths": [
+          "docs/atdd/web/WEB-09-私人媒体链路.md",
+          "scripts/local-http-acceptance.mjs",
+          "scripts/web-09-evidence.mjs",
+          "apps/web/src/app/PrivateMediaGallery.tsx",
+          "apps/web/src/app/TodayCheckin.tsx",
+          "apps/web/src/app/OneTimeResult.tsx",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/styles.css",
+          "scripts/web-browser-capture.mjs",
+          "scripts/web-09-private-gallery-steps.json",
+          "scripts/web-09-private-owner-steps.json",
+          "scripts/web-09-private-other-user-steps.json",
+          "scripts/web-atdd-object-provider.mjs",
+          "scripts/web-09-tenth-photo-rejected-steps.json",
+          "scripts/web-09-oversize-photo-steps.json",
+          "scripts/web-09-nine-photos-steps.json"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "command": "node scripts/web-09-evidence.mjs",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-09/checks.json",
+            "sha256": "1473346780843326a297659e31c487b66aa3d8d9aea6697ac410f7b8fc624d77"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-09-私人媒体链路.md",
+          "docs/atdd/web/evidence/WEB-09/object-provider.txt",
+          "docs/atdd/web/evidence/WEB-09/local-http-smoke.txt",
+          "docs/atdd/web/evidence/WEB-09/local-http-smoke-v2.txt",
+          "docs/atdd/web/evidence/WEB-09/local-http-report.json",
+          "docs/atdd/web/evidence/WEB-09/checks.json",
+          "docs/atdd/web/evidence/WEB-10/checks.json",
+          "docs/atdd/web/evidence/WEB-10/media-complete-retry-chrome-390-v3/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-media-complete-retry-v3.txt",
+          "docs/atdd/web/evidence/WEB-09/private-gallery-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/private-gallery-chrome-390/screen-private-gallery-loaded.png",
+          "docs/atdd/web/evidence/WEB-09/private-owner-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/private-other-edge-1280/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-cross-account-media.txt",
+          "docs/atdd/web/evidence/WEB-09/object-expiry.txt",
+          "docs/atdd/web/evidence/WEB-09/tenth-photo-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-tenth-photo-pure-result.txt",
+          "docs/atdd/web/evidence/WEB-09/oversize-photo-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-oversize-pure-result.txt",
+          "docs/atdd/web/evidence/WEB-09/nine-photos-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-nine-photos.txt"
+        ]
       },
       "verification": {
-        "summary": null,
-        "runIds": [],
-        "browserMatrix": [],
-        "evidence": []
+        "summary": "六组浏览器运行含九张意图/PUT/完成/回顾各 9、DB 九张全 ready；十张及超大拒绝后纯结果，A/B 权限和对象一秒签名到期通过。完整 CHECK-13/SEC-07 未执行。",
+        "runIds": [
+          "media-complete-retry-chrome-390-v3",
+          "private-gallery-chrome-390",
+          "private-owner-chrome-390",
+          "private-other-edge-1280",
+          "tenth-photo-chrome-390",
+          "oversize-photo-chrome-390",
+          "nine-photos-chrome-390"
+        ],
+        "browserMatrix": [
+          "Chrome 153 / 390×844 / light / one-time media completion retry",
+          "Chrome 153 / 390×844 / light / private media gallery",
+          "Chrome 153 / 390×844 / light / owner private media",
+          "Edge 154 / 1280×800 / light / other user media denied",
+          "Chrome 153 / 390×844 / light / tenth photo rejected and pure result saved",
+          "Chrome 153 / 390×844 / light / 20 MB+1 photo rejected and pure result saved",
+          "Chrome 153 / 390×844 / light / nine ready media and private gallery"
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-09/object-provider.txt",
+          "docs/atdd/web/evidence/WEB-09/local-http-report.json",
+          "docs/atdd/web/evidence/WEB-10/checks.json",
+          "docs/atdd/web/evidence/WEB-09/private-gallery-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/private-gallery-chrome-390/screen-private-gallery-loaded.png",
+          "docs/atdd/web/evidence/WEB-09/checks.json",
+          "docs/atdd/web/evidence/WEB-09/private-owner-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/private-other-edge-1280/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-cross-account-media.txt",
+          "docs/atdd/web/evidence/WEB-09/object-expiry.txt",
+          "docs/atdd/web/evidence/WEB-09/tenth-photo-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-tenth-photo-pure-result.txt",
+          "docs/atdd/web/evidence/WEB-09/oversize-photo-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-oversize-pure-result.txt",
+          "docs/atdd/web/evidence/WEB-09/nine-photos-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/db-nine-photos.txt"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T19:40:00Z",
+          "type": "STARTED_WITH_MEDIA_AUDIT",
+          "summary": "WEB-03/08 已完成；先审计现有服务端与对象存储，锁定 CORS/签名/私有访问和 Web UI 缺口。",
+          "evidencePath": "docs/atdd/web/WEB-09-私人媒体链路.md"
+        },
+        {
+          "at": "2026-09-28T19:47:00Z",
+          "type": "OBJECT_AND_MEDIA_HTTP_PROBED",
+          "summary": "SeaweedFS CORS/签名/未签名/清理 HTTP 探针通过；首次完整 smoke 因内部 metrics 走 Vite fallback 退出1，改独立回环 metrics 后 10/10 PASS。真实浏览器与缩略图尚缺。",
+          "evidencePath": "docs/atdd/web/WEB-09-私人媒体链路.md"
+        },
+        {
+          "at": "2026-09-28T20:07:00Z",
+          "event": "跨任务复用 WEB-10 Chrome/Edge 实际浏览器对象预检、PUT 和媒体绑定证据；WEB-09 仍 IN_PROGRESS。"
+        },
+        {
+          "at": "2026-09-29T00:46:00Z",
+          "event": "WEB-10 一次性完成附照片的 Chrome 浏览器预检/PUT/绑定通过，原始运行和 SHA 在 WEB-10/checks.json；WEB-09 未完成。"
+        },
+        {
+          "at": "2026-09-29T01:47:00Z",
+          "event": "跨任务复用 WEB-10 Chrome 浏览器媒体完成请求失败、单独重试、禁用终态写入及 DB ready 证据；WEB-09 仍 IN_PROGRESS。"
+        },
+        {
+          "at": "2026-09-29T06:05:00Z",
+          "event": "Chrome 私人照片回顾：签名 API GET 200、对象图片 GET 200、naturalWidth>0、DOM 签名 URL 遮盖；隔离 DB 已停，无本次 DB 快照，正式用例未签发。"
+        },
+        {
+          "at": "2026-09-29T06:17:00Z",
+          "event": "A Chrome 本人照片 URL/对象 GET 200；B Edge 独立会话 URL 404 且无对象 GET；隔离 DB 确认 A ready、B 不拥有，41 文件 SHA 通过。"
+        },
+        {
+          "at": "2026-09-29T06:22:00Z",
+          "event": "本地对象供应端一秒签名 GET 200→403、无签名 403、对象清理，42 文件 SHA；实际 API 300 秒浏览器过期仍未测。"
+        },
+        {
+          "at": "2026-09-29T06:28:00Z",
+          "event": "Chrome 十张合成照片触发最多九张提示，移除后纯结果 POST 201；零媒体请求，DB 唯一终态/审计和零关联，56 文件 SHA 通过。"
+        },
+        {
+          "at": "2026-09-29T06:35:00Z",
+          "event": "Chrome 临时 20 MB+1 字节 PNG 被前端拒绝；移除后纯终态 POST 201，无媒体请求，DB 唯一终态/审计/零媒体，70 文件 SHA。"
+        },
+        {
+          "at": "2026-09-29T06:41:00Z",
+          "event": "Chrome 九张合成 PNG 上传/完成/回顾各九次成功，DB 唯一终态及九张全 ready；与十张拒绝组成边界，85 文件 SHA 通过。"
+        }
+      ]
     },
     {
       "id": "WEB-10",
@@ -1121,29 +1549,199 @@
         "WEB-CHECK-17",
         "WEB-CHECK-18"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-28T19:52:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "今日循环记录/修正、一次性终态、历史上下文/补记和页面内未知结果同键重试已完成增量；媒体、跨刷新/多标签与正式 F/V/N 仍待完成。",
+        "changedPaths": [
+          "apps/web/src/app/TodayCheckin.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/styles.css",
+          "scripts/web-browser-capture.mjs",
+          "scripts/web-10-evidence.mjs",
+          "scripts/web-10-photo-checkin-steps.json",
+          "scripts/web-10-desktop-correction-steps.json",
+          "docs/atdd/web/fixtures/checkin-green.png",
+          "apps/web/src/app/OneTimeResult.tsx",
+          "scripts/web-10-one-time-complete-steps.json",
+          "scripts/web-10-one-time-correct-steps.json",
+          "apps/api/src/records/records.service.ts",
+          "apps/api/src/records/records.controller.ts",
+          "packages/contracts/src/index.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs",
+          "apps/web/src/app/PlanHistory.tsx",
+          "scripts/web-10-backfill-steps.json",
+          "scripts/web-10-backfill-v2-steps.json",
+          "docs/API-兼容变更记录.md",
+          "scripts/web-10-not-due-steps.json",
+          "scripts/web-10-weekly-backfill-steps.json",
+          "scripts/web-10-one-time-cancel-steps.json",
+          "scripts/web-10-one-time-late-create-steps.json",
+          "scripts/web-10-one-time-late-complete-steps.json",
+          "scripts/web-10-retry-steps.json",
+          "scripts/web-10-one-time-retry-steps.json",
+          "scripts/web-10-one-time-response-loss-steps.json",
+          "scripts/web-10-media-complete-retry-steps.json",
+          "apps/web/src/app/PrivateMediaGallery.tsx",
+          "scripts/web-09-private-gallery-steps.json"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "npm run check（仓库根目录）：全部通过，含 85 个 OpenAPI 操作、API 兼容、TypeScript/ESLint/静态检查",
+          "npm run build（apps/web）：生产构建通过",
+          "node scripts/web-10-evidence.mjs：11 完整浏览器运行；脱敏幂等键哈希同值、循环/一次性/补记/迟完成与 DB 唯一行/审计通过"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-10-今日打卡页面增量记录.md",
+          "docs/atdd/web/evidence/WEB-10/checks.json",
+          "docs/atdd/web/evidence/WEB-10/photo-checkin-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-10/correction-edge-1280/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-record.txt",
+          "docs/atdd/web/evidence/WEB-10/db-revisions.txt",
+          "docs/atdd/web/evidence/WEB-10/one-time-complete-chrome-390-v2/capture.json",
+          "docs/atdd/web/evidence/WEB-10/one-time-correct-edge-1280/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-one-time-result.txt",
+          "docs/atdd/web/evidence/WEB-10/db-one-time-revisions.txt",
+          "docs/atdd/web/evidence/WEB-10/backfill-chrome-390-v2/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-backfill.txt",
+          "docs/atdd/web/evidence/WEB-10/not-due-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-not-due.txt",
+          "docs/atdd/web/evidence/WEB-10/weekly-backfill-edge-1280/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-weekly-backfill.txt",
+          "docs/atdd/web/evidence/WEB-10/one-time-cancel-chrome-360/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-one-time-cancel.txt",
+          "docs/atdd/web/evidence/WEB-10/one-time-late-create-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-late-fixture.txt",
+          "docs/atdd/web/evidence/WEB-10/one-time-late-complete-edge-1280-v2/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-one-time-late.txt",
+          "docs/atdd/web/evidence/WEB-10/retry-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-retry.txt",
+          "docs/atdd/web/evidence/WEB-10/one-time-retry-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-one-time-retry.txt",
+          "docs/atdd/web/evidence/WEB-10/one-time-response-loss-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-one-time-response-loss.txt",
+          "docs/atdd/web/evidence/WEB-10/media-complete-retry-chrome-390-v3/capture.json",
+          "docs/atdd/web/evidence/WEB-10/db-media-complete-retry-v3.txt",
+          "docs/atdd/web/evidence/WEB-09/private-gallery-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/tenth-photo-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/oversize-photo-chrome-390/capture.json",
+          "docs/atdd/web/evidence/WEB-09/nine-photos-chrome-390/capture.json"
+        ]
       },
       "verification": {
-        "summary": null,
-        "runIds": [],
-        "browserMatrix": [],
-        "evidence": []
+        "summary": "增量探针：11 次完整 Chrome/Edge 浏览器运行覆盖循环、一次性、历史补记、非应执行日和断网请求未送达后同键重试；DB 唯一行/审计和媒体快照一致。跨刷新、响应丢失和全部正式 F/V/N 尚未完成。",
+        "runIds": [
+          "photo-checkin-chrome-390",
+          "correction-edge-1280",
+          "one-time-complete-chrome-390-v2",
+          "one-time-correct-edge-1280",
+          "backfill-chrome-390-v2",
+          "not-due-chrome-390",
+          "weekly-backfill-edge-1280",
+          "one-time-cancel-chrome-360",
+          "one-time-late-create-chrome-390",
+          "one-time-late-complete-edge-1280-v2",
+          "retry-chrome-390",
+          "one-time-retry-chrome-390",
+          "one-time-response-loss-chrome-390",
+          "media-complete-retry-chrome-390-v3"
+        ],
+        "browserMatrix": [
+          "Chrome 153 / 390×844 / light",
+          "Edge 154 / 1280×800 / light",
+          "Chrome 153 / 390×844 / light / one-time",
+          "Edge 154 / 1280×800 / light / one-time",
+          "Chrome 153 / 390×844 / light / historical backfill",
+          "Chrome 153 / 390×844 / light / fixed non-due negative",
+          "Edge 154 / 1280×800 / light / weekly blank-day backfill",
+          "Chrome 153 / 360×780 / light / one-time cancel",
+          "Chrome 153 / 390×844 / light / late fixture setup",
+          "Edge 154 / 1280×800 / light / controlled late completion",
+          "Chrome 153 / 390×844 / light / controlled offline retry",
+          "Chrome 153 / 390×844 / light / one-time controlled offline retry",
+          "Chrome 153 / 390×844 / light / one-time committed response loss",
+          "Chrome 153 / 390×844 / light / media complete failure and retry"
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-10/checks.json"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T19:52:00Z",
+          "event": "任务启动，按验收基线记录代码和浏览器证据；主验收仍未执行。"
+        },
+        {
+          "at": "2026-09-28T20:07:00Z",
+          "event": "循环计划照片与修正浏览器增量通过；DB 一条记录、修订 1→2、两张 ready 媒体。WEB-CHECK 全部仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T00:46:00Z",
+          "event": "一次性完成附照片和终态修正浏览器增量通过；恢复后使用新隔离 DB，保存首次连接失败截图。主验收仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:00:00Z",
+          "event": "历史业务日上下文 API/OpenAPI 与补记页面落地；首跑发现保存提示卸载，修复后新账号浏览器/DB 复测通过。主验收仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:02:00Z",
+          "event": "技术方案为锁定验收来源；直接同步摘要被自动审批拒绝，已撤回源文件增量，说明保留在 WEB-10 和 API 兼容记录；136 条基线完整性校验通过。"
+        },
+        {
+          "at": "2026-09-29T01:08:00Z",
+          "event": "固定计划非应执行日浏览器无打卡入口/无 PUT，DB 零行；Web 生产构建和根目录完整质量门禁通过。WEB-CHECK 保持 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:11:00Z",
+          "event": "每周目标空白历史日经权威日期上下文补记成功，DB is_backfilled=true；主验收保持 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:17:00Z",
+          "event": "一次性取消唯一终态与受控隔离 DB 迟完成经浏览器/DB 核对；第一次复登录频率限制后冷却重试。主验收仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:24:00Z",
+          "event": "浏览器离线 PUT 0、在线同键 PUT 200；哈希一致且 DB 唯一记录/审计。未覆盖提交后响应丢失及跨刷新，CHECK/ONLINE 主验收仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:34:00Z",
+          "event": "一次性终态断网 POST 0→联网同键 POST 201，DB 唯一终态/修订/审计均为 1；刷新和响应丢失仍待测，CHECK 全部 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:39:00Z",
+          "event": "隔离 CDP 在终态 201 响应阶段丢弃页面响应，页面同键 POST 重放，DB 唯一终态/审计均为 1；刷新/多标签未测，CHECK 全 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T01:47:00Z",
+          "event": "媒体完成首次请求受控失败后，页面禁用终态写入并单独重试；浏览器 0→201，DB 唯一结果和 ready 照片。前两轮定位器及按钮状态问题保留记录。"
+        },
+        {
+          "at": "2026-09-29T06:05:00Z",
+          "event": "跨任务复用 WEB-09 私人照片回顾 Chrome 图片加载证据；WEB-10 其余 CHECK F/V/N 仍未完成。"
+        },
+        {
+          "at": "2026-09-29T06:28:00Z",
+          "event": "跨任务复用 WEB-09 第十张拒绝后仍可纯结果提交的 Chrome/DB 探针；CHECK 全组合仍未签发。"
+        },
+        {
+          "at": "2026-09-29T06:35:00Z",
+          "event": "跨任务复用 WEB-09 超大照片拒绝后可保存纯结果的 Chrome/DB 探针；CHECK 全组合仍未完成。"
+        },
+        {
+          "at": "2026-09-29T06:41:00Z",
+          "event": "跨任务复用 WEB-09 一次性结果九张附件正向浏览器/DB 证据；CHECK 完整 F/V/N 仍未签发。"
+        }
+      ]
     },
     {
       "id": "WEB-11",
@@ -1168,29 +1766,102 @@
         "WEB-STAT-11",
         "WEB-STAT-12"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T06:43:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "已实现月/日日历、三类权威统计与保存后自动刷新；周日历依计划时区区分未来、进行中和部分周。跨时区增量探针通过，正式冻结时钟验收待执行。",
+        "changedPaths": [
+          "apps/web/src/app/Calendar.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/app/PlanStatistics.tsx",
+          "apps/web/src/app/Plans.tsx",
+          "apps/web/src/app/TodayCheckin.tsx",
+          "apps/web/src/app/OneTimeResult.tsx",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/styles.css"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "npm run check PASS",
+          "apps/web npm run build PASS",
+          "node scripts/web-11-evidence.mjs PASS: 7 runs, 97 hashed files",
+          "python docs/atdd/web/check_execution_progress.py PASS: 22 tasks, 136 cases"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-11-日历详情与统计增量记录.md",
+          "docs/atdd/web/evidence/WEB-11/calendar-chrome-390-v3/",
+          "docs/atdd/web/evidence/WEB-11/statistics-chrome-390-v2/",
+          "docs/atdd/web/evidence/WEB-11/statistics-edge-1280/",
+          "docs/atdd/web/evidence/WEB-11/weekly-chrome-390/",
+          "docs/atdd/web/evidence/WEB-11/one-time-chrome-390/",
+          "docs/atdd/web/evidence/WEB-11/checks.json",
+          "docs/atdd/web/evidence/WEB-11/db-statistics.txt",
+          "docs/atdd/web/evidence/WEB-11/weekly-chrome-390-v2/",
+          "docs/atdd/web/evidence/WEB-11/timezone-honolulu-390/",
+          "docs/atdd/web/evidence/WEB-11/timezone-shanghai-390/",
+          "docs/atdd/web/evidence/WEB-11/db-timezone.txt"
+        ]
       },
       "verification": {
-        "summary": null,
-        "runIds": [],
-        "browserMatrix": [],
-        "evidence": []
+        "summary": "手机 Chrome、桌面 Edge 三类统计增量探针通过；同账号 Honolulu/上海浏览器均显示相同上海计划业务日期。7 组运行、97 个哈希；正式 WEB-STAT-01～12 仍 NOT_RUN。",
+        "runIds": [
+          "WEB-11-calendar-chrome-390-v3",
+          "WEB-11-statistics-chrome-390-v2",
+          "WEB-11-statistics-edge-1280",
+          "WEB-11-weekly-chrome-390",
+          "WEB-11-one-time-chrome-390",
+          "WEB-11-weekly-chrome-390-v2",
+          "WEB-11-timezone-honolulu-390",
+          "WEB-11-timezone-shanghai-390"
+        ],
+        "browserMatrix": [
+          "Chrome 153 / 390x844 / light: incremental PASS",
+          "Edge 154 / 1280x800 / light: incremental PASS",
+          "Chrome 153 / 390x844 / Pacific/Honolulu: cross-timezone incremental PASS"
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-11/calendar-chrome-390-v3/screen-calendar-day.png",
+          "docs/atdd/web/evidence/WEB-11/statistics-chrome-390-v2/screen-statistics-after.png",
+          "docs/atdd/web/evidence/WEB-11/statistics-edge-1280/screen-calendar-recorded.png",
+          "docs/atdd/web/evidence/WEB-11/weekly-chrome-390/screen-weekly-statistics.png",
+          "docs/atdd/web/evidence/WEB-11/one-time-chrome-390/screen-one-time-statistics-after.png",
+          "docs/atdd/web/evidence/WEB-11/checks.json",
+          "docs/atdd/web/evidence/WEB-11/db-statistics.txt",
+          "docs/atdd/web/evidence/WEB-11/weekly-chrome-390-v2/screen-weekly-calendar.png",
+          "docs/atdd/web/evidence/WEB-11/timezone-honolulu-390/screen-calendar-day.png",
+          "docs/atdd/web/evidence/WEB-11/timezone-shanghai-390/screen-timezone-shanghai-day.png",
+          "docs/atdd/web/evidence/WEB-11/db-timezone.txt"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T06:43:00Z",
+          "event": "建立 WEB-11 实时增量文档并审计 Web 路由/API 统计契约；开始页面增量，WEB-STAT 正式用例未执行。"
+        },
+        {
+          "at": "2026-09-29T06:59:00Z",
+          "event": "月/日日历接入；手机探针先发现查询参数路由缺陷并修复，Chrome 390x844 重跑通过，截图/网络/布局留证。正式 WEB-STAT 用例不签发。"
+        },
+        {
+          "at": "2026-09-29T07:04:00Z",
+          "event": "接入三类权威统计与保存后自动刷新；Chrome 手机和 Edge 桌面增量探针通过，正式 WEB-STAT 用例保持 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T07:48:00Z",
+          "event": "增量证据脚本校验五组浏览器运行和 71 个 SHA-256；隔离库只读事实对照；根质量门禁、Web 生产构建和 JSON 账本检查通过，正式用例仍未签发。"
+        },
+        {
+          "at": "2026-09-29T08:11:00Z",
+          "event": "周日历按计划时区区分未来、进行中与历史部分周；同账号 Honolulu/上海浏览器业务日一致；证据增至 7 组 97 哈希，正式验收状态不变。"
+        }
+      ]
     },
     {
       "id": "WEB-12",
@@ -1211,19 +1882,37 @@
         "WEB-ONLINE-07",
         "WEB-ONLINE-08"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T11:40:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "API 错误层保留冲突详情，循环打卡展示服务器/本机版本并显式选择保留或带冲突 ID、当前修订及新幂等键二次确认覆盖。局域网连接提示改用同源健康检查，不再以 navigator.onLine 判定；请求标识支持安全随机 UUID v4 回退，避免误报断网。",
+        "changedPaths": [
+          "apps/web/src/data/api.ts",
+          "apps/web/src/data/uuid.ts",
+          "apps/web/src/app/TodayCheckin.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/app/OneTimeResult.tsx",
+          "apps/web/src/app/LivePlanReminder.tsx",
+          "apps/web/src/app/DataManagement.tsx",
+          "apps/web/src/styles.css"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "Prettier 相关文件：完成",
+          "改动 TypeScript 文件 ESLint：PASS",
+          "apps/web npm run build：PASS，Vite 33 modules，最终证据 SHA-256 657032ab68cb27ca3587aa50e4aa3fff6e9cdbe584d87f4d17f81b307727fd97",
+          "局域网误报修正：Web TypeScript、Vite 35 modules、定向 ESLint、UUID v4 回退及同源入口检查通过；证据 SHA-256 12620d4d91d13fc0dda970d4dfa8734176dae5db207376ae608ce61dd782e1b6"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-12-在线并发冲突增量记录.md",
+          "docs/atdd/web/evidence/WEB-12/web-build.txt",
+          "docs/atdd/web/evidence/WEB-12-lan-online-fix.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "WEB-ONLINE-01～08 尚未执行正式浏览器网络/并发验收。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -1233,7 +1922,24 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T11:40:00Z",
+          "event": "建立 WEB-12 编码前记录，确认 409 冲突详情前端缺口；正式网络/并发验收后置。"
+        },
+        {
+          "at": "2026-09-29T11:49:00Z",
+          "event": "接入 409 双版本选择和离线状态提醒，Web 生产构建与改动文件 lint 通过，正式网络用例仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T11:58:00Z",
+          "event": "冲突对照改为显示实际提交快照，最终 Web 构建通过；正式用例仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-30T03:45:00Z",
+          "event": "局域网误报修正：同源 API 健康探测替代 navigator.onLine，安全随机 UUID v4 回退避免将浏览器 API 缺失误报为网络断开；本机检查通过，实体设备与正式 WEB-ONLINE 用例仍待执行。"
+        }
+      ]
     },
     {
       "id": "WEB-13",
@@ -1415,29 +2121,79 @@
         "WEB-SOCIAL-13",
         "WEB-SOCIAL-14"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T08:12:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "好友/消息页与逐计划预览授权、共享只读历史、鼓励及撤销界面已接入；跨月默认以计划时区或服务端为准。完整社交矩阵待验。",
+        "changedPaths": [
+          "apps/web/src/data/api.ts",
+          "apps/web/src/app/Friends.tsx",
+          "apps/web/src/app/Inbox.tsx",
+          "apps/web/src/app/ShareManager.tsx",
+          "apps/web/src/app/SharedPlans.tsx",
+          "apps/web/src/app/Plans.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/styles.css"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "Web TypeScript: tsc --noEmit -p apps/web/tsconfig.json PASS",
+          "node scripts/web-14-evidence.mjs PASS: 7 runs, 96 hashed files"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-14-好友分享消息增量记录.md",
+          "docs/atdd/web/evidence/WEB-14/checks.json",
+          "docs/atdd/web/evidence/WEB-14/db-request-accept.txt",
+          "docs/atdd/web/evidence/WEB-14/db-share-revoke.txt"
+        ]
       },
       "verification": {
-        "summary": null,
-        "runIds": [],
-        "browserMatrix": [],
-        "evidence": []
+        "summary": "两账号手机申请/接受、同账号桌面已读、主人预览授权、好友只读留言、撤销后 Edge 旧深链 403 增量探针通过；正式 WEB-SOCIAL-01～14 仍 NOT_RUN。",
+        "runIds": [
+          "WEB-14-request-chrome-390",
+          "WEB-14-accept-chrome-390",
+          "WEB-14-read-edge-1280",
+          "WEB-14-share-grant-chrome-390",
+          "WEB-14-shared-read-chrome-390",
+          "WEB-14-share-revoke-chrome-390",
+          "WEB-14-revoked-link-edge-1280"
+        ],
+        "browserMatrix": [
+          "Chrome 153 / 390x844 / light: incremental PASS",
+          "Edge 154 / 1280x800 / light: read sync and revoked link incremental PASS"
+        ],
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-14/checks.json",
+          "docs/atdd/web/evidence/WEB-14/request-chrome-390/screen-search-result.png",
+          "docs/atdd/web/evidence/WEB-14/accept-chrome-390/screen-inbox-read.png",
+          "docs/atdd/web/evidence/WEB-14/read-edge-1280/screen-desktop-inbox-read.png",
+          "docs/atdd/web/evidence/WEB-14/share-grant-chrome-390/screen-share-preview.png",
+          "docs/atdd/web/evidence/WEB-14/shared-read-chrome-390/screen-shared-history-readonly.png",
+          "docs/atdd/web/evidence/WEB-14/revoked-link-edge-1280/screen-revoked-link-denied.png",
+          "docs/atdd/web/evidence/WEB-14/db-share-revoke.txt"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T08:12:00Z",
+          "event": "编码前建立 WEB-14 实时增量记录并审计社交与消息 API；开始 Web 页面实现。"
+        },
+        {
+          "at": "2026-09-29T08:41:00Z",
+          "event": "甲乙两个账号手机浏览器跑通搜索/申请/接受/已读；只读 DB 核对好友关系和消息，正式用例未签发。"
+        },
+        {
+          "at": "2026-09-29T09:17:00Z",
+          "event": "新增预览后授权、共享只读历史和鼓励；撤销后旧深链 403 且无私人 DOM；7 轮浏览器 96 哈希和只读 DB 留证，正式用例未签发。"
+        }
+      ]
     },
     {
       "id": "WEB-15",
@@ -1682,19 +2438,45 @@
         "WEB-NOTIFY-15",
         "WEB-NOTIFY-16"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T11:12:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "Web 设置页已接入分端偏好、权限与 Push 订阅取消及服务端真实状态；Service Worker 仅展示通用提示并限定站内跳转；网页在线可见时按计划时区显示即时提醒并做跨标签领取去重，退出时清理浏览器订阅。按用户要求暂缓密集浏览器验收。",
+        "changedPaths": [
+          "apps/web/src/data/api.ts",
+          "apps/web/src/app/NotificationSettings.tsx",
+          "apps/web/src/app/LivePlanReminder.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/styles.css",
+          "apps/web/public/notification-sw.js",
+          "apps/api/src/social/notifications.service.ts",
+          "apps/api/src/social/notifications.controller.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "Prettier 相关文件：完成",
+          "apps/web npm run typecheck：PASS",
+          "apps/web npm run build：PASS，Vite 33 modules，证据 SHA-256 038072c5a825bb7da97be466ff24d862b82a6cabf1280410f0bf3fca04f7dc2f",
+          "API/Web TypeScript：PASS；OpenAPI 87 项：PASS；旧契约兼容：PASS",
+          "项目 npm run check 第三轮：PASS，SHA-256 a0a832a1518a493dd0f0683d370dbb140176639bbaa1e9225caf470ecb1e2f46；前两轮失败记录保留"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-16-站内提醒与浏览器通知增量记录.md",
+          "docs/atdd/web/evidence/WEB-16/web-build.txt",
+          "docs/atdd/web/evidence/WEB-16/openapi-check.txt",
+          "docs/atdd/web/evidence/code-first/project-check-first.txt",
+          "docs/atdd/web/evidence/code-first/project-check-format.txt",
+          "docs/atdd/web/evidence/code-first/project-check.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "正式 WEB-NOTIFY-01～16 尚未运行，均 NOT_RUN；待功能齐备后集中验收。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -1704,7 +2486,24 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T11:12:00Z",
+          "event": "建立 WEB-16 编码前增量文档并审计通知 API；按用户最新指令改为代码开发优先、验收集中后置。"
+        },
+        {
+          "at": "2026-09-29T11:23:00Z",
+          "event": "完成通知设置、Push 订阅 UI/Service Worker、计划即时提示与退出清理；Web 类型及生产构建通过，正式浏览器用例继续 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T11:59:00Z",
+          "event": "补跨标签即时提示领取与服务端真实 Push 订阅状态；API/Web 类型、87 项 OpenAPI 与 Web 构建通过。"
+        },
+        {
+          "at": "2026-09-29T12:03:00Z",
+          "event": "项目级静态检查第三轮通过，前两轮 Service Worker lint/格式失败与修复证据均保留；未签发浏览器用例。"
+        }
+      ]
     },
     {
       "id": "WEB-17",
@@ -1718,19 +2517,38 @@
       ],
       "scope": "依赖：WEB-03、WEB-08、WEB-09、WEB-13、WEB-15。完善导出任务、ZIP/照片清单、签名下载、计划删除、账号 30 天撤销期与最终清理，并撤销会话/分享/Push。关联：DATA、SEC。完成证据：Worker、ZIP 校验、私有对象拒绝、删除前后 DB/文件清单及恢复演练。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T11:26:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "新增 Web 注销撤销端点，按 Web 会话规则用安全 Cookie 返回刷新会话；注销事务立即撤销 Web Push 订阅。导出与删除 Worker 已做代码审计，正式数据验收待执行。",
+        "changedPaths": [
+          "apps/api/src/auth/auth.controller.ts",
+          "apps/api/src/deletion/deletion.service.ts",
+          "apps/worker/src/dataExport.ts",
+          "packages/contracts/src/routes.ts",
+          "packages/contracts/openapi.json",
+          "packages/contracts/src/openapi.generated.ts",
+          "scripts/build-openapi.mjs"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "API TypeScript：PASS",
+          "OpenAPI 路由目录：86 个唯一操作，PASS",
+          "旧契约兼容：PASS",
+          "导出专项冒烟：PASS，证据 SHA-256 0ec1f2ec311c7279fb177dae5f946a7457f11780c88d80f04e200b46f081283f"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-17-导出删除会话服务端增量记录.md",
+          "docs/atdd/web/evidence/WEB-17/api-typecheck.txt",
+          "docs/atdd/web/evidence/WEB-17/openapi-check.txt",
+          "docs/atdd/web/evidence/WEB-17/compat-check.txt",
+          "docs/atdd/web/evidence/WEB-17/export-smoke.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "按代码优先顺序暂缓正式数据管理浏览器用例；WEB-DATA-01～10 仍 NOT_RUN。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -1740,7 +2558,20 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T11:26:00Z",
+          "event": "审计现有导出/删除 API 和 Worker，建立 WEB-17 编码前记录；发现 Web 注销撤销缺安全 Cookie 入口。"
+        },
+        {
+          "at": "2026-09-29T11:28:00Z",
+          "event": "补齐 Web 撤销注销安全 Cookie 入口和注销时 Web Push 订阅撤销；API 类型、86 项契约及兼容检查通过。"
+        },
+        {
+          "at": "2026-09-29T11:58:00Z",
+          "event": "导出 ZIP 补入 Web 通知、消息和数值配置/历史字段；专项导出冒烟通过。"
+        }
+      ]
     },
     {
       "id": "WEB-18",
@@ -1763,19 +2594,32 @@
         "WEB-DATA-09",
         "WEB-DATA-10"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T11:29:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "设置页已接入导出创建/进度/按需签名下载及注销二次确认；登录页已接入独立短信撤销流程，注销后清除私人 UI 和内存会话。正式浏览器矩阵后置。",
+        "changedPaths": [
+          "apps/web/src/data/api.ts",
+          "apps/web/src/app/DataManagement.tsx",
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/styles.css"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "Prettier 相关文件：完成",
+          "apps/web npm run build：PASS，Vite 33 modules，证据 SHA-256 84c37ac05ee3f3d515dee1cfa86b8ae8453ef04736b900271250fb76870e0504",
+          "会话订阅失效时清空内存资料；后续 Web 构建 PASS，证据 docs/atdd/web/evidence/WEB-12/web-build.txt"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-18-导出账号删除设置页面增量记录.md",
+          "docs/atdd/web/evidence/WEB-18/web-build.txt",
+          "docs/atdd/web/evidence/WEB-12/web-build.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "WEB-DATA-01～10 尚未执行正式浏览器验收。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -1785,7 +2629,20 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T11:29:00Z",
+          "event": "在编码前建立导出、注销与恢复页面增量记录，正式用例保持 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T11:36:00Z",
+          "event": "完成导出/注销/短信撤销 Web 页面代码，保存生产构建输出及 SHA-256；正式用例仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-29T11:58:00Z",
+          "event": "补齐跨标签会话失效时的资料内存清理，后续 Web 构建通过；正式多标签验收后置。"
+        }
+      ]
     },
     {
       "id": "WEB-19",
@@ -1799,7 +2656,7 @@
         "WEB-16",
         "WEB-18"
       ],
-      "scope": "依赖：WEB-05、WEB-07、WEB-10、WEB-11、WEB-14、WEB-16、WEB-18。统一 16 页面键、空/加载/错误态、浅/深色、200% 缩放、键盘/焦点/读屏、长内容与无横向溢出。主验收：`WEB-UI-01～16`。完成证据：每页键至少一个合法结果、视口/主题矩阵截图、DOM/无障碍树、布局和焦点观察；不得逐像素套 iOS 画板。",
+      "scope": "依赖：WEB-05、WEB-07、WEB-10、WEB-11、WEB-14、WEB-16、WEB-18。统一 16 页面键、空/加载/错误态、浅/深色、200% 缩放、键盘/焦点/读屏、长内容与无横向溢出。主验收：`WEB-UI-01～16`。完成证据：每页键至少一个合法结果、视口/主题矩阵截图、DOM/无障碍树、布局和焦点观察；不得逐像素套 iOS 画板。 2026-10-03新基线：Pen结构化样式来源、最大480px水平居中单列和四项底栏；无画板内容保留。",
       "ownedCaseIds": [
         "WEB-UI-01",
         "WEB-UI-02",
@@ -1818,29 +2675,164 @@
         "WEB-UI-15",
         "WEB-UI-16"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T12:06:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "Pen样式与移动结构改造代码已实施：36个生成样式变量/24固定文案/19组页面映射，自托管Noto字体、480px居中容器、四主入口及独立详情路由，今日分区/记录弹层/日历/好友分享/设置对齐；补接现有提醒规则接口。构建和匿名登录布局观察通过，登录后联测待授权，正式WEB-UI-01～16未验收。",
+        "changedPaths": [
+          "apps/web/src/app/App.tsx",
+          "apps/web/src/app/Plans.tsx",
+          "apps/web/src/app/TodayCheckin.tsx",
+          "apps/web/src/app/MobileUI.tsx",
+          "apps/web/src/app/ModalDialog.tsx",
+          "apps/web/src/app/PlanReminders.tsx",
+          "apps/web/src/app/Calendar.tsx",
+          "apps/web/src/app/Friends.tsx",
+          "apps/web/src/app/SharedPlans.tsx",
+          "apps/web/src/app/ShareManager.tsx",
+          "apps/web/src/app/DataManagement.tsx",
+          "apps/web/src/data/api.ts",
+          "apps/web/src/styles.css",
+          "apps/web/src/styles",
+          "apps/web/src/design",
+          "apps/web/src/assets/fonts",
+          "apps/web/src/main.tsx",
+          "apps/web/index.html",
+          "apps/web/public/font-license.txt",
+          "docs/ui/web-style-map.json",
+          "docs/ui/plan-checkin-visual-tree.json",
+          "docs/ui/Web样式对齐说明.md",
+          "scripts/build-web-design.mjs",
+          "scripts/build-design-resources.mjs",
+          "scripts/web-browser-capture.mjs",
+          "scripts/web-19-public-style-steps.json",
+          "scripts/web-19-style-steps.json",
+          "scripts/web-19-style-evidence.mjs",
+          "scripts/web-static-smoke.mjs"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          {
+            "name": "eslint",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/eslint-20261003.txt",
+            "sha256": "e05222033cd2c7b46b6fad5ec87b44b62f844dbb6f004476498f71d0e3c9875b"
+          },
+          {
+            "name": "typecheck",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/typecheck-20261003.txt",
+            "sha256": "e05222033cd2c7b46b6fad5ec87b44b62f844dbb6f004476498f71d0e3c9875b"
+          },
+          {
+            "name": "design",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/design-20261003.txt",
+            "sha256": "e1950a31bb114977303f256c1fe7008ba6a667c1d542180f64f392728923826d"
+          },
+          {
+            "name": "format",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/format-20261003.txt",
+            "sha256": "d6d678ecd2af7d2aec1f2e67be49274ea14bd99c1e975dc734cd84170667f676"
+          },
+          {
+            "name": "build",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/build-20261003.txt",
+            "sha256": "f0339b8dfd326eed94dabdaa70f122031c29d17cfdeeee1ecdc1d24afd0064a6"
+          },
+          {
+            "name": "static",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-19/static-20261003.txt",
+            "sha256": "d70cc8243aec3cd1a2d21a7188bd2a7b62518d094db9089d0918de1daccae565"
+          }
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md",
+          "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json",
+          "docs/ui/Web样式对齐说明.md"
+        ],
+        "styleChecklist": [
+          {
+            "id": "STYLE-01",
+            "status": "DONE",
+            "description": "当前Pen/视觉树/样式映射与生成门禁",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-02",
+            "status": "DONE",
+            "description": "480px居中移动容器、字体和浅深色公共样式",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-03",
+            "status": "DONE",
+            "description": "四项导航、独立详情与有画板页面结构改造",
+            "evidence": "docs/ui/Web样式对齐说明.md"
+          },
+          {
+            "id": "STYLE-04",
+            "status": "DONE",
+            "description": "类型/ESLint/格式/生成检查、生产构建、静态服务验证",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-05",
+            "status": "DONE",
+            "description": "匿名登录6个主题视口观察，PNG/布局JSON/DOM/网络/哈希",
+            "evidence": "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
+          },
+          {
+            "id": "STYLE-06",
+            "status": "BLOCKED",
+            "description": "登录后浏览器检查；自动审批拒绝扩大仅回环地址的短信桩测试边界，原限制已恢复",
+            "evidence": "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md"
+          },
+          {
+            "id": "STYLE-07",
+            "status": "NOT_STARTED",
+            "description": "正式浏览器、键盘、读屏、200%及对比度完整验收",
+            "evidence": "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md"
+          }
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "Chrome154隔离匿名登录6个布局观察：320/393/480/1440及浅深色，宽度/水平居中/字体加载/无横向溢出符合；受控观察不代替正式验收。LAN短信桩登录自动审批被拒绝，已恢复原安全限制；登录后、正式支持浏览器、读屏/键盘/缩放/对比度尚未验收。",
         "runIds": [],
         "browserMatrix": [],
-        "evidence": []
+        "evidence": [
+          "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json",
+          "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md"
+        ]
       },
       "review": {
         "reviewer": null,
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T12:06:00Z",
+          "event": "建立 WEB-19 编码前记录，定位四处危险确认层的模态焦点缺口；正式浏览器 UI 验收后置。"
+        },
+        {
+          "at": "2026-09-29T12:12:00Z",
+          "event": "完成四处原生模态确认层、Esc/回焦与窄屏滚动，Web 构建通过；正式 UI 用例保持 NOT_RUN。"
+        },
+        {
+          "at": "2026-10-02T17:44:42Z",
+          "event": "用户完成grill-me边界确认并要求开始：按Pen结构化设计统一480px居中外壳、四项导航、字体/样式及有画板页面结构；实施前先记录，正式用例不提前签发。"
+        },
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "event": "代码改造和匿名观察完成，保留审批失败与未验证项；WEB-19 IN_PROGRESS，正式136项均未新增PASS。"
+        }
+      ]
     },
     {
       "id": "WEB-20",
@@ -1868,19 +2860,26 @@
         "WEB-SEC-11",
         "WEB-SEC-12"
       ],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T12:18:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "页面离开前同步移除私人视图，BFCache 恢复时强制服务端会话验证及资料重取；登录切换账号前清空旧资料。",
+        "changedPaths": [
+          "apps/web/src/app/App.tsx"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "apps/web npm run build：PASS，Vite 34 modules，证据 SHA-256 77f43fb6d4794b40c41dfb5f6bf1fa3388c46c522cc43ad6574d4a2894c71834"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-20-安全隐私故障注入增量记录.md",
+          "docs/atdd/web/evidence/WEB-20/web-build.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "代码优先阶段未执行 WEB-SEC-01～12 的正式浏览器故障注入。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -1890,7 +2889,16 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T12:18:00Z",
+          "event": "建立 WEB-20 编码前记录，定位 BFCache 恢复时的私人页面再显示风险；正式安全验收后置。"
+        },
+        {
+          "at": "2026-09-29T12:21:00Z",
+          "event": "完成 pagehide 私人视图清除与 pageshow 持久化页会话重验；Web 构建通过，正式安全用例仍 NOT_RUN。"
+        }
+      ]
     },
     {
       "id": "WEB-21",
@@ -1933,19 +2941,71 @@
       ],
       "scope": "依赖：WEB-21。验证真实短信、HTTPS 同站点入口、对象直传、受控 Web Push、部署/回滚、监控告警、迁移恢复，汇总需求差异、风险例外和证据清单。完成证据：可复核的 Web 候选清单、部署/回滚记录、所有阻断项关闭和负责人签核；仅形成候选，不凭计划文档宣称已上线。",
       "ownedCaseIds": [],
-      "status": "NOT_STARTED",
-      "startedAt": null,
+      "status": "IN_PROGRESS",
+      "startedAt": "2026-09-29T12:24:00Z",
       "completedAt": null,
-      "owner": null,
+      "owner": "Codex",
       "implementation": {
-        "summary": null,
-        "changedPaths": [],
+        "summary": "用户授权后已接入 Web Deployment/Service 与同站点 Ingress，发布脚本等待 API/Worker/Web 就绪后切换入口；新增项目运行手册。2026-10-02 WLAN IP 变化后已通过可重复启动脚本恢复本地 HTTPS 入口 https://172.27.69.153:5173/，首页、登录、计划深链、同域 API live/ready 均返回 200，签名对象代理与独立容器访问通过。Private/LocalSubnet TCP 5173 入站规则仍在；实体设备可达性未验证。真实集群发布仍依赖上下文、仓库摘要、域名/TLS、对象域与 WEB-21 验收。",
+        "changedPaths": [
+          "apps/web/server.mjs",
+          "apps/web/package.json",
+          "apps/web/vite.config.ts",
+          "apps/api/src/main.ts",
+          ".env.example",
+          "scripts/lan-object-smoke.mjs",
+          "scripts/start-lan.ps1",
+          "infra/deploy/Web.Dockerfile",
+          "infra/deploy/manifest.mjs",
+          "infra/deploy/environments/development.json",
+          "infra/deploy/environments/staging.json",
+          "infra/deploy/environments/production.json",
+          "scripts/deploy.mjs",
+          "scripts/deployment-static-check.mjs",
+          "scripts/web-static-smoke.mjs",
+          "package.json",
+          "docs/项目运行手册-计划打卡-Web-v1.md",
+          "docs/OPS-05-部署与恢复手册.md"
+        ],
         "commit": null,
-        "checks": [],
-        "evidence": []
+        "checks": [
+          "Web 静态服务定向 ESLint：PASS",
+          "npm run web:static:smoke：PASS，证据 SHA-256 f7ddead8252a9cdea0b227c4f4a093c0e194230e443b34f48132589ea527c057",
+          "历史检查：用户授权前 npm run check PASS，仅包含原 API/Worker 清单；证据 SHA-256 408a0dea4885de8ebd785745c1225e08d0e813462ddf9d886660e8e95e57bf4a",
+          "授权后部署静态检查 PASS，证据 SHA-256 7f786942784518d6f95a2d3515aa37e4ef39771b5c577efe003f475dbac9c175",
+          "staging 示例清单 render PASS，证据 SHA-256 6e82b4db9d152096ba7a8a137424cbfab337fa77b8bec59a610dc42e70d96b3a",
+          "Web Docker 镜像本机构建 PASS，证据 SHA-256 d5edbac181eeb3d3cbd3397b5a563f192a4f05ca67b0591330d57a2602f42a24",
+          "Web 本地容器 /healthz 与首页 200、CSP 存在，观察证据 SHA-256 4c18174eb8a4c61e9df4d95a8f3bd2a1215e89c18f4699a6c06ad1ef0fa21d1b",
+          "授权后 npm run check PASS，证据 SHA-256 1c3e67d4a4e705d39e48a29b5a67f1dccb8067d5effb24c92855c78d6419fe28；不含浏览器验收",
+          "localhost 本地启动：首页/深链/同域 API 200、API ready 200、Web 构建 PASS；证据 SHA-256 308a4f11680cdbcb1341c979c5adc11f368dcf4716397ca3358cbaa86e962b52",
+          "局域网 HTTPS：首页/深链/同域 API 200，未授权会话 401，未签名对象 403；证据 SHA-256 a1d8d59e34fa462fa6e21b4860fb65f78ec043d3032eb2e566a0d873e35537f5",
+          "同源签名对象路径返回精确字节；证据 SHA-256 f16550c353aba081a6d445a59c7509b7ae163234e9ef9caabbab8e0c4a3ab220",
+          "用户授权的 Windows Private/LocalSubnet TCP 5173 入站规则经管理员确认创建；普通权限拒绝与成功复查证据 SHA-256 75f3d7b2b1590584d6cc2bc2253a40b442bcc86059d90526f8d6424156a2539f",
+          "局域网改动后 npm run check 退出 0；证据 SHA-256 49b849db43f7dabc4446ad894a4632ac9efa447f8443f437b44afd05f3726f1b；浏览器正式验收仍未执行",
+          "2026-09-30 再次启动：Compose 依赖健康、迁移退出 0、API/Worker/Web 存活、HTTPS 首页/登录/API live/ready 200；证据 SHA-256 aff0176df3df8416853a1e3169954e3aff781c9f8cc47c0265a6b7ab4b0b1487",
+          "2026-10-02 IP 变化恢复：PowerShell 7 启动脚本解析、复用、实际重启与 -Build 均通过，最终使用 Node 24.19.0；HTTPS 首页/登录/计划深链/API live/ready 200，同源签名对象与容器连接通过；证据 SHA-256 5598736eed2fbb47087d268348ca9c497e519048a72cbeeceaa78e61c9708c43；实体设备和真实短信未验证"
+        ],
+        "evidence": [
+          "docs/atdd/web/WEB-22-Web静态站部署增量记录.md",
+          "docs/atdd/web/evidence/WEB-22-static-smoke.txt",
+          "docs/atdd/web/evidence/WEB-22-project-check.txt",
+          "docs/atdd/web/evidence/WEB-22-deployment-static.txt",
+          "docs/atdd/web/evidence/WEB-22-staging-render.json",
+          "docs/atdd/web/evidence/WEB-22-web-image-build.txt",
+          "docs/atdd/web/evidence/WEB-22-container-observation.txt",
+          "docs/atdd/web/evidence/WEB-22-deploy-prereqs.txt",
+          "docs/atdd/web/evidence/WEB-22-authorized-project-check.txt",
+          "docs/atdd/web/evidence/WEB-22-localhost-start.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-https-start.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-object-smoke.txt",
+          "docs/atdd/web/evidence/WEB-22-firewall-rule-result.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-project-check.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-restart-20260930.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-recovery-20261002.txt"
+        ]
       },
       "verification": {
-        "summary": null,
+        "summary": "本机局域网开发 HTTPS 已恢复到 2026-10-02 WLAN IP，防火墙规则维持授权范围，尚无实体局域网设备验证。自签证书需远端设备信任，SMS_PROVIDER=stub 不会发送手机短信。本机无 Kubernetes 上下文且未取得仓库摘要、正式 Host/TLS/对象域；未执行真实集群发布。WEB-21 未完成；真实短信、受控 Push、回滚和浏览器发布验收均未执行。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -1955,7 +3015,44 @@
         "reviewedAt": null,
         "decision": null
       },
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T12:24:00Z",
+          "event": "按用户代码优先要求，提前开始 Web 静态站部署代码；正式环境验收依赖 WEB-21，任务保持未完成。"
+        },
+        {
+          "at": "2026-09-29T12:30:00Z",
+          "event": "静态服务、Dockerfile 和单次冒烟完成；自动审批拒绝生产 Ingress/Deployment 清单修改，已请求用户授权。"
+        },
+        {
+          "at": "2026-09-29T12:33:00Z",
+          "event": "项目完整静态门禁退出 0；现有部署清单仍仅包含 API/Worker，正式浏览器验收未执行。"
+        },
+        {
+          "at": "2026-09-29T12:38:00Z",
+          "event": "用户明确授权部署清单变更并要求项目运行手册，解除此前自动审批阻断的授权条件。"
+        },
+        {
+          "at": "2026-09-29T12:51:00Z",
+          "event": "Web Deployment/Ingress、发布脚本和运行手册完成；静态清单、本机镜像/容器及项目门禁通过，但无集群上下文和发布参数，真实部署未执行。"
+        },
+        {
+          "at": "2026-09-30T02:09:00Z",
+          "event": "按用户要求启动 localhost：本地基础设施、API、Worker 和 Web 存活，首页/深链/同域 API 健康返回 200；正式浏览器业务验收仍未运行。"
+        },
+        {
+          "at": "2026-09-30T02:37:00Z",
+          "event": "按用户要求切换局域网 HTTPS，同源 API 与对象代理通过最小检查；普通权限曾无法创建用户授权的防火墙规则，随后通过 Windows 管理员确认创建并核对 Private/LocalSubnet TCP 5173 范围。实体设备访问未验证。"
+        },
+        {
+          "at": "2026-09-30T14:00:00Z",
+          "event": "按用户要求再次启动局域网服务：Docker Desktop 与三项依赖恢复，迁移退出 0，API/Worker/Web 存活，HTTPS 首页、登录和同域 API live/ready 返回 200；实体设备与正式用例未测试。"
+        },
+        {
+          "at": "2026-10-02T15:34:00Z",
+          "event": "WLAN IP 变化导致旧入口失效；恢复本地来源、证书和服务，新增 PowerShell 7 可重复启动脚本并通过实际重启。当前 LAN HTTPS 页面、同源 API、签名对象与独立容器连接通过；真实短信、实体设备及正式用例未验证。"
+        }
+      ]
     }
   ],
   "caseLedger": [
@@ -1976,12 +3073,21 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-02",
@@ -2001,12 +3107,27 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        },
+        {
+          "at": "2026-09-28T18:07:00Z",
+          "type": "INVALID_PHONE_BROWSER_PROBE",
+          "summary": "非法 11 位号码就地提示且无短信请求；空号和过快重发变体未齐，保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/invalid-phone-chrome-390/network.json"
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-03",
@@ -2025,12 +3146,27 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        },
+        {
+          "at": "2026-09-28T17:35:32Z",
+          "type": "TODAY_EMPTY_BROWSER_PROBE",
+          "summary": "Chrome/Edge 新用户注册后 GET /today 200，真实空态和创建计划入口可见；尚无账号唯一性 DB 断言和完整创建表单，保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/today-empty-chrome-390-v2/network.json"
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-04",
@@ -2049,12 +3185,21 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-05",
@@ -2073,12 +3218,27 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        },
+        {
+          "at": "2026-09-28T18:07:00Z",
+          "type": "INVALID_CODE_BROWSER_PROBE",
+          "summary": "错误六位验证码 400、界面可修正、无 Cookie；过期和已使用变体未齐，保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/invalid-code-chrome-390/network.json"
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-06",
@@ -2097,12 +3257,21 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-07",
@@ -2122,12 +3291,26 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        },
+        {
+          "at": "2026-09-28T18:03:00Z",
+          "type": "ACCESS_REFRESH_BROWSER_PROBE",
+          "summary": "受控 Chrome 时间前进 16 分钟后 refresh 201、本人今日 GET 200，未重登；计划详情和旧 refresh 重放尚缺，保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/access-refresh-chrome-390/network.json"
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-08",
@@ -2146,12 +3329,21 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-09",
@@ -2171,12 +3363,20 @@
           "T"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-10",
@@ -2196,12 +3396,21 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-11",
@@ -2221,12 +3430,28 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:45:00Z",
+          "type": "CHANGE_PHONE_SUCCESS_PROBE",
+          "summary": "旧号/新号验证码成功路径、新号登录和 DB 撤销聚合已有开发证据；错误码和完整变体未验证，保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/change-phone-db.txt"
+        },
+        {
+          "at": "2026-09-28T17:53:00Z",
+          "type": "CHANGE_PHONE_INVALID_PROBE",
+          "summary": "错误旧号验证码返回 400 且数据库请求未消耗；视觉字段与 DOM/AX 已遮挡，但占用/过期和正式浏览器变体未齐，保持 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/evidence/WEB-05/change-phone-invalid-chrome-390-v3/screen-after.png"
+        }
+      ]
     },
     {
       "caseId": "WEB-AUTH-12",
@@ -2243,12 +3468,21 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/data/api.ts",
+        "scripts/web-browser-capture.mjs"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-28T17:16:00Z",
+          "type": "IMPLEMENTATION_STARTED",
+          "summary": "Web auth code and isolated browser development probe exist; full F/V/N not yet recorded."
+        }
+      ]
     },
     {
       "caseId": "WEB-PLAN-01",
@@ -2267,8 +3501,11 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
@@ -2339,8 +3576,11 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
@@ -2388,8 +3628,11 @@
           "N"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
@@ -2436,8 +3679,11 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
@@ -2659,8 +3905,11 @@
           "D"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/data/api.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
@@ -4660,7 +5909,7 @@
       ],
       "history": [
         {
-          "at": "2026-09-28T17:12:49.776350Z",
+          "at": "2026-10-02T18:52:58.514108Z",
           "type": "CASE_RECORDED",
           "summary": "api-fixture FAIL; F/V/N observed and evidence hashed",
           "evidencePath": "evidence/synthetic-tool/WEB-DATA-09/api-fixture/result.json"
@@ -4709,22 +5958,48 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-02",
       "ownerTask": "WEB-19",
       "baseline": {
         "given": "桌面宽视口已登录",
-        "when": "在今日、计划、日历、好友、消息和设置间切换",
-        "functional": "导航与当前路由一致",
-        "visual": "桌面导航、内容和辅助区重新排布且层级明确",
-        "negative": "不用手机窄栏机械放大或遮挡内容",
+        "when": "在四主入口、页内消息与设置入口间切换",
+        "functional": "导航与当前路由一致，所有功能可达",
+        "visual": "最大480px单列移动结构水平居中、顶部排布，外侧填主题背景",
+        "negative": "不增加桌面侧栏/并排详情，不整体缩放字体或控件，不遮挡内容",
         "requiredEvidenceCodes": [
           "S",
           "H",
@@ -4732,12 +6007,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-03",
@@ -4755,12 +6056,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-04",
@@ -4778,12 +6105,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-05",
@@ -4792,7 +6145,7 @@
         "given": "768、1024、1280、1440 像素宽度",
         "when": "调整窗口并复核关键页",
         "functional": "数据与操作连续保留",
-        "visual": "栅格、侧栏与卡片按断点自然重排",
+        "visual": "480px以上容器宽度固定并居中，以下自然收缩；单列、底栏、弹层与卡片不横向溢出",
         "negative": "不因断点切换丢输入或出现重叠",
         "requiredEvidenceCodes": [
           "S",
@@ -4801,12 +6154,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-06",
@@ -4824,12 +6203,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-07",
@@ -4847,12 +6252,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-08",
@@ -4870,12 +6301,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-09",
@@ -4893,12 +6350,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-10",
@@ -4916,12 +6399,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-11",
@@ -4939,12 +6448,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-12",
@@ -4962,12 +6497,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-13",
@@ -4986,12 +6547,38 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-14",
@@ -5010,12 +6597,38 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-15",
@@ -5033,12 +6646,38 @@
           "A"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-UI-16",
@@ -5057,12 +6696,38 @@
           "F"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/app/Plans.tsx",
+        "apps/web/src/app/TodayCheckin.tsx",
+        "apps/web/src/app/MobileUI.tsx",
+        "apps/web/src/app/ModalDialog.tsx",
+        "apps/web/src/app/PlanReminders.tsx",
+        "apps/web/src/app/Calendar.tsx",
+        "apps/web/src/app/Friends.tsx",
+        "apps/web/src/app/SharedPlans.tsx",
+        "apps/web/src/app/ShareManager.tsx",
+        "apps/web/src/app/DataManagement.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/src/styles.css",
+        "apps/web/src/styles",
+        "apps/web/src/design",
+        "apps/web/src/assets/fonts",
+        "apps/web/src/main.tsx",
+        "apps/web/index.html",
+        "apps/web/public/font-license.txt"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-02T18:47:17Z",
+          "type": "IMPLEMENTATION_INCREMENT",
+          "summary": "Pen样式与480px移动结构已实施；仅匿名登录布局观察，正式F/V/N未签发。"
+        }
+      ]
     },
     {
       "caseId": "WEB-SEC-01",
@@ -5193,12 +6858,20 @@
           "T"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/server.mjs",
+        "apps/web/src/app/App.tsx"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T12:30:00Z",
+          "event": "静态站代码加入 CSP；用户文本及真实浏览器脚本注入仍待验证，部署入口尚未接入。"
+        }
+      ]
     },
     {
       "caseId": "WEB-SEC-06",
@@ -5218,12 +6891,22 @@
           "L"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/src/app/App.tsx",
+        "apps/web/src/data/api.ts",
+        "apps/web/server.mjs",
+        "apps/api/src/observability.ts"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T12:21:00Z",
+          "event": "已实现 BFCache 离开时隐藏私人 DOM 及恢复时服务端会话重验；真实后退/刷新/离线和 HTTP 缓存尚未运行。"
+        }
+      ]
     },
     {
       "caseId": "WEB-SEC-07",
@@ -5382,12 +7065,27 @@
           "T"
         ]
       },
-      "implementationStatus": "NOT_STARTED",
-      "implementationPaths": [],
+      "implementationStatus": "IN_PROGRESS",
+      "implementationPaths": [
+        "apps/web/server.mjs",
+        "infra/deploy/Web.Dockerfile",
+        "infra/deploy/manifest.mjs",
+        "scripts/deploy.mjs",
+        "docs/项目运行手册-计划打卡-Web-v1.md"
+      ],
       "implementationCommit": null,
       "verificationStatus": "NOT_RUN",
       "variants": [],
-      "history": []
+      "history": [
+        {
+          "at": "2026-09-29T12:30:00Z",
+          "event": "Web 静态服务与独立 Dockerfile 已存在；同站点 Kubernetes 路由与真实环境验收未完成。"
+        },
+        {
+          "at": "2026-09-29T12:51:00Z",
+          "event": "用户授权后，同站点 Kubernetes 路由和先就绪后切换的发布脚本已实现；无集群上下文，真实 HTTPS/回滚未验证。"
+        }
+      ]
     }
   ],
   "events": [
@@ -5481,6 +7179,144 @@
       "evidence": [
         "docs/atdd/web/evidence/WEB-02/browser-captures.json",
         "docs/atdd/web/WEB-02-证据工具进展.md"
+      ]
+    },
+    {
+      "id": "WEB-10-ONE-TIME-RETRY-20260929",
+      "occurredAt": "2026-09-29T01:34:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-10",
+      "summary": "一次性终态浏览器断网重试同键，唯一 DB 结果；不签发正式 CHECK 用例。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-10/checks.json",
+        "docs/atdd/web/evidence/WEB-10/one-time-retry-chrome-390/capture.json",
+        "docs/atdd/web/evidence/WEB-10/db-one-time-retry.txt",
+        "docs/atdd/web/WEB-10-今日打卡页面增量记录.md"
+      ]
+    },
+    {
+      "id": "WEB-10-COMMITTED-RESPONSE-LOSS-20260929",
+      "occurredAt": "2026-09-29T01:39:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-10",
+      "summary": "一次性终态已提交但浏览器响应丢失，同键恢复与 DB 唯一行增量通过；正式 CHECK 未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-10/checks.json",
+        "docs/atdd/web/evidence/WEB-10/one-time-response-loss-chrome-390/action-trace.json",
+        "docs/atdd/web/evidence/WEB-10/db-one-time-response-loss.txt",
+        "docs/atdd/web/WEB-10-今日打卡页面增量记录.md"
+      ]
+    },
+    {
+      "id": "WEB-09-10-MEDIA-RETRY-20260929",
+      "occurredAt": "2026-09-29T01:47:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-10",
+      "summary": "一次性照片媒体完成失败后单独重试，终态唯一且媒体 ready；WEB-09/10 均未完成。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-10/checks.json",
+        "docs/atdd/web/evidence/WEB-10/media-complete-retry-chrome-390-v3/capture.json",
+        "docs/atdd/web/evidence/WEB-10/db-media-complete-retry-v3.txt",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-09-PRIVATE-GALLERY-20260929",
+      "occurredAt": "2026-09-29T06:05:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-09",
+      "summary": "本人照片短时签名回顾在 Chrome 手机浏览器加载成功，DOM 证据脱敏；正式用例未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-09/checks.json",
+        "docs/atdd/web/evidence/WEB-09/private-gallery-chrome-390/capture.json",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-09-CROSS-ACCOUNT-MEDIA-20260929",
+      "occurredAt": "2026-09-29T06:17:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-09",
+      "summary": "跨账号照片下载 URL 拒绝：A 本人可看，B 独立浏览器 404，无对象 GET，DB 归属确认；正式用例未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-09/checks.json",
+        "docs/atdd/web/evidence/WEB-09/private-owner-chrome-390/capture.json",
+        "docs/atdd/web/evidence/WEB-09/private-other-edge-1280/capture.json",
+        "docs/atdd/web/evidence/WEB-09/db-cross-account-media.txt",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-09-SIGNED-EXPIRY-20260929",
+      "occurredAt": "2026-09-29T06:22:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-09",
+      "summary": "一秒 SigV4 对象链接到期前 200、到期后 403，测试对象清理；正式媒体安全用例未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-09/object-expiry.txt",
+        "docs/atdd/web/evidence/WEB-09/checks.json",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-09-TENTH-PHOTO-20260929",
+      "occurredAt": "2026-09-29T06:28:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-09",
+      "summary": "十张照片被拒绝后可移除并提交纯结果；无媒体请求，DB 唯一终态；正式 CHECK-13 未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-09/checks.json",
+        "docs/atdd/web/evidence/WEB-09/tenth-photo-chrome-390/capture.json",
+        "docs/atdd/web/evidence/WEB-09/db-tenth-photo-pure-result.txt",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-09-OVERSIZE-PHOTO-20260929",
+      "occurredAt": "2026-09-29T06:35:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-09",
+      "summary": "20 MB+1 字节 PNG 被拒，移除后纯结果成功且无媒体写入；正式 CHECK-13 未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-09/checks.json",
+        "docs/atdd/web/evidence/WEB-09/oversize-photo-chrome-390/capture.json",
+        "docs/atdd/web/evidence/WEB-09/db-oversize-pure-result.txt",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-09-NINE-PHOTOS-20260929",
+      "occurredAt": "2026-09-29T06:41:00Z",
+      "type": "PARTIAL_VERIFICATION",
+      "taskId": "WEB-09",
+      "summary": "九张照片的浏览器直传、绑定、回顾与 DB ready 正向通过；正式 CHECK-13 未签发。",
+      "evidence": [
+        "docs/atdd/web/evidence/WEB-09/checks.json",
+        "docs/atdd/web/evidence/WEB-09/nine-photos-chrome-390/capture.json",
+        "docs/atdd/web/evidence/WEB-09/db-nine-photos.txt",
+        "docs/atdd/web/WEB-09-私人媒体链路.md"
+      ]
+    },
+    {
+      "id": "WEB-11-START-20260929",
+      "occurredAt": "2026-09-29T06:43:00Z",
+      "type": "TASK_STARTED",
+      "taskId": "WEB-11",
+      "summary": "日历路由和三类权威统计页面开始增量开发，正式统计用例未运行。",
+      "evidence": [
+        "docs/atdd/web/WEB-11-日历详情与统计增量记录.md",
+        "docs/任务执行计划-计划打卡-Web-v1.md"
+      ]
+    },
+    {
+      "id": "WEB-19-STYLE-20261003",
+      "occurredAt": "2026-10-02T18:47:17Z",
+      "type": "IMPLEMENTATION_INCREMENT",
+      "taskId": "WEB-19",
+      "summary": "Pen样式与移动结构改造代码已实施：36个生成样式变量/24固定文案/19组页面映射，自托管Noto字体、480px居中容器、四主入口及独立详情路由，今日分区/记录弹层/日历/好友分享/设置对齐；补接现有提醒规则接口。构建和匿名登录布局观察通过，登录后联测待授权，正式WEB-UI-01～16未验收。",
+      "evidence": [
+        "docs/atdd/web/WEB-19-响应式主题无障碍增量记录.md",
+        "docs/atdd/web/evidence/WEB-19/style-alignment-20261003.json"
       ]
     }
   ]

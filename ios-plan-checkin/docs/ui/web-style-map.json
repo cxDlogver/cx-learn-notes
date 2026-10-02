@@ -1,0 +1,693 @@
+{
+  "schemaVersion": "1.0",
+  "authority": "plan-checkin.pen",
+  "sourceTree": "plan-checkin-visual-tree.json",
+  "layout": {
+    "maxWidth": 480,
+    "alignment": "horizontal-center-top",
+    "structure": "mobile-single-column",
+    "outside": "theme-background",
+    "scaleTypography": false,
+    "allowVerticalScroll": true
+  },
+  "tokens": {
+    "font-family": {
+      "nodeId": "f4QKy",
+      "property": "fontFamily"
+    },
+    "body-size": {
+      "nodeId": "f4QKy",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "line-height": {
+      "nodeId": "f4QKy",
+      "property": "lineHeight"
+    },
+    "title-size": {
+      "nodeId": "aQplb",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "header-size": {
+      "nodeId": "vNB0w",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "section-size": {
+      "nodeId": "T7lH5s",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "label-size": {
+      "nodeId": "w4iSY2",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "caption-size": {
+      "nodeId": "bfIsK",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "small-size": {
+      "nodeId": "r2oHMz",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "page-inset": {
+      "nodeId": "OuhiW",
+      "property": "x",
+      "unit": "px"
+    },
+    "card-radius": {
+      "nodeId": "OuhiW",
+      "property": "cornerRadius",
+      "unit": "px"
+    },
+    "control-radius": {
+      "nodeId": "XZ0UH",
+      "property": "cornerRadius",
+      "unit": "px"
+    },
+    "button-radius": {
+      "nodeId": "BUguK",
+      "property": "cornerRadius",
+      "unit": "px"
+    },
+    "control-height": {
+      "nodeId": "XZ0UH",
+      "property": "height",
+      "unit": "px"
+    },
+    "button-height": {
+      "nodeId": "BUguK",
+      "property": "height",
+      "unit": "px"
+    },
+    "border": {
+      "nodeId": "OuhiW",
+      "property": "stroke"
+    },
+    "subtle": {
+      "nodeId": "gYIjk",
+      "property": "fill"
+    },
+    "primary-soft": {
+      "nodeId": "xfSVV",
+      "property": "fill"
+    },
+    "navigation-height": {
+      "nodeId": "eHZH5",
+      "property": "height",
+      "unit": "px"
+    },
+    "navigation-icon": {
+      "nodeId": "uGh6w",
+      "property": "width",
+      "unit": "px"
+    },
+    "brand-size": {
+      "nodeId": "N9FLj8",
+      "property": "width",
+      "unit": "px"
+    },
+    "brand-radius": {
+      "nodeId": "N9FLj8",
+      "property": "cornerRadius",
+      "unit": "px"
+    },
+    "brand-title-size": {
+      "nodeId": "R1f73",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "phone-label-size": {
+      "nodeId": "H7WCT",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "detail-title-size": {
+      "nodeId": "GVYFg",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "stat-primary-size": {
+      "nodeId": "R0EUnm",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "stat-secondary-size": {
+      "nodeId": "JUUGi",
+      "property": "fontSize",
+      "unit": "px"
+    },
+    "brand-top": {
+      "nodeId": "N9FLj8",
+      "property": "y",
+      "unit": "px"
+    },
+    "phone-height": {
+      "nodeId": "Qh2xX",
+      "property": "height",
+      "unit": "px"
+    }
+  },
+  "copy": {
+    "brand": "R1f73",
+    "brandCaption": "bfIsK",
+    "phoneLabel": "H7WCT",
+    "privacy": "S1WME",
+    "codeTitle": "Jg6kt",
+    "profileTitle": "vNB0w",
+    "profileCaption": "L949G8",
+    "todayEmptyTitle": "fnEI4",
+    "todayEmptyCaption": "upc9D",
+    "pendingHeading": "T7lH5s",
+    "weeklyHeading": "r5raY",
+    "weeklyCaption": "IaGQk",
+    "deadlineHeading": "eCSPi",
+    "plansTitle": "aQplb",
+    "createTitle": "o1qOkt",
+    "nameDirection": "w4iSY2",
+    "optionalHeading": "TSGZH",
+    "historyHeading": "TGTtH",
+    "phonePlaceholder": "jLtxH",
+    "settingsTitle": "Q5JT7z",
+    "notificationTitle": "vpVnF",
+    "exportTitle": "m00G4",
+    "doSuccess": "zo8Pz",
+    "readonlyHistory": "ZaqFf"
+  },
+  "navigation": [
+    {
+      "href": "/today",
+      "label": "今日",
+      "icon": "home",
+      "source": "today-active"
+    },
+    {
+      "href": "/calendar",
+      "label": "日历",
+      "icon": "calendar",
+      "source": "calendar"
+    },
+    {
+      "href": "/plans",
+      "label": "计划",
+      "icon": "list-checks",
+      "source": "plan-list"
+    },
+    {
+      "href": "/friends",
+      "label": "朋友",
+      "icon": "user",
+      "source": "friends-list"
+    }
+  ],
+  "darkColors": {
+    "background": "#101A14",
+    "surface": "#1B2920",
+    "primary": "#82CDA4",
+    "text": "#EDF3EE",
+    "secondary": "#ACBAAF",
+    "border": "#405247",
+    "subtle": "#26372C",
+    "primary-soft": "#253F30"
+  },
+  "pages": [
+    {
+      "route": "/login",
+      "sources": [
+        "phone-login",
+        "sms-code"
+      ],
+      "component": "App.LoginPage",
+      "structure": [
+        "brand-mark",
+        "brand-title",
+        "brand-caption",
+        "phone-field",
+        "submit",
+        "privacy-note"
+      ]
+    },
+    {
+      "route": "/setup",
+      "sources": [
+        "profile-setup"
+      ],
+      "component": "App.SetupPage",
+      "structure": [
+        "page-header",
+        "profile-avatar",
+        "profile-caption",
+        "profile-form",
+        "submit"
+      ]
+    },
+    {
+      "route": "/today",
+      "sources": [
+        "today-empty",
+        "today-active"
+      ],
+      "component": "App.TodayPage",
+      "structure": [
+        "date-timezone-avatar-header",
+        "pending-section",
+        "weekly-section",
+        "deadline-section",
+        "bottom-navigation"
+      ]
+    },
+    {
+      "route": "record-dialog",
+      "sources": [
+        "checkin-do",
+        "checkin-avoid",
+        "edit-record",
+        "backfill-record",
+        "record-conflict"
+      ],
+      "component": "TodayCheckin",
+      "structure": [
+        "bottom-sheet-header",
+        "business-date",
+        "result-selector",
+        "failure-reason-if-needed",
+        "optional-note-numeric-photos",
+        "save"
+      ]
+    },
+    {
+      "route": "/calendar",
+      "sources": [
+        "calendar"
+      ],
+      "component": "CalendarPage",
+      "structure": [
+        "title-today-action",
+        "month-switcher",
+        "seven-column-weekdays-dates",
+        "status-legend",
+        "bottom-navigation"
+      ]
+    },
+    {
+      "route": "/plans",
+      "sources": [
+        "plan-list"
+      ],
+      "component": "Plans.PlanList",
+      "structure": [
+        "title-create-menu",
+        "lifecycle-segments",
+        "group-heading",
+        "single-column-plan-cards",
+        "bottom-navigation"
+      ]
+    },
+    {
+      "route": "/plans/new",
+      "sources": [
+        "create-fixed",
+        "create-weekly",
+        "create-one-time"
+      ],
+      "component": "Plans.PlanCreate",
+      "structure": [
+        "page-header-save",
+        "name-direction",
+        "execution-method",
+        "schedule-dates",
+        "optional-settings",
+        "save"
+      ]
+    },
+    {
+      "route": "/plans/groups",
+      "sources": [
+        "group-management"
+      ],
+      "component": "Plans.GroupManagementPage",
+      "structure": [
+        "page-header",
+        "group-create",
+        "group-list",
+        "plan-group-moves"
+      ]
+    },
+    {
+      "route": "/plans/:id/edit",
+      "sources": [
+        "edit-plan"
+      ],
+      "component": "Plans.PlanEdit",
+      "structure": [
+        "page-header",
+        "history-impact-note",
+        "name-direction",
+        "execution-dates",
+        "numeric-settings",
+        "save"
+      ]
+    },
+    {
+      "route": "/plans/:id",
+      "sources": [
+        "plan-detail-fixed",
+        "plan-detail-weekly",
+        "plan-detail-one-time"
+      ],
+      "component": "Plans.PlanDetail",
+      "structure": [
+        "page-header-edit",
+        "title-badges-description",
+        "statistics",
+        "history-or-task-result",
+        "share-entry",
+        "lifecycle-actions"
+      ]
+    },
+    {
+      "route": "plan-confirmation-dialog",
+      "sources": [
+        "plan-confirmations"
+      ],
+      "component": "ModalDialog",
+      "structure": [
+        "modal-title",
+        "consequence-copy",
+        "confirm",
+        "safe-cancel"
+      ]
+    },
+    {
+      "route": "/friends",
+      "sources": [
+        "friends-list"
+      ],
+      "component": "FriendsPage",
+      "structure": [
+        "title-search-message-entry",
+        "friend-list",
+        "requests-sections",
+        "bottom-navigation"
+      ]
+    },
+    {
+      "route": "/friends/:id",
+      "sources": [
+        "friend-profile"
+      ],
+      "component": "FriendSharedPage",
+      "structure": [
+        "page-header",
+        "avatar-nickname-username",
+        "shared-plan-list"
+      ]
+    },
+    {
+      "route": "/shared-plans/:id",
+      "sources": [
+        "friend-readonly-detail"
+      ],
+      "component": "SharedPlanPage",
+      "structure": [
+        "page-header",
+        "owner-plan-title",
+        "readonly-rule-and-history",
+        "encouragement"
+      ]
+    },
+    {
+      "route": "/plans/:id/share",
+      "sources": [
+        "select-share-friend",
+        "share-preview",
+        "share-permissions"
+      ],
+      "component": "ShareManager",
+      "structure": [
+        "page-header",
+        "current-permissions",
+        "friend-selection",
+        "server-sanitized-preview",
+        "confirm-or-revoke"
+      ]
+    },
+    {
+      "route": "/settings",
+      "sources": [
+        "settings-home"
+      ],
+      "component": "App.SettingsPage",
+      "structure": [
+        "page-header",
+        "profile-card",
+        "account-rows",
+        "data-rows",
+        "logout"
+      ]
+    },
+    {
+      "route": "/settings/notifications",
+      "sources": [
+        "reminders"
+      ],
+      "component": "NotificationSettings",
+      "structure": [
+        "page-header",
+        "delivery-switches",
+        "per-plan-reminder-rules",
+        "browser-permission"
+      ]
+    },
+    {
+      "route": "/settings/export",
+      "sources": [
+        "export-data"
+      ],
+      "component": "DataManagement.ExportsSection",
+      "structure": [
+        "page-header",
+        "format-content-description",
+        "export-action",
+        "download-progress"
+      ]
+    },
+    {
+      "route": "/settings/delete",
+      "sources": [
+        "delete-account"
+      ],
+      "component": "DataManagement.DeletionSection",
+      "structure": [
+        "page-header",
+        "consequence-notice",
+        "export-entry",
+        "confirmation-fields",
+        "submit"
+      ]
+    }
+  ],
+  "exceptions": {
+    "unmapped": [
+      "/inbox",
+      "/settings/change-phone",
+      "calendar-day-detail",
+      "browser-push-capabilities",
+      "account-deletion-waiting"
+    ],
+    "unmappedPolicy": "existing-content-shared-shell-and-components",
+    "excludedNative": [
+      "system-status-bar",
+      "native-number-keyboard",
+      "sync-feedback"
+    ],
+    "dynamicContent": [
+      "date",
+      "timezone",
+      "count",
+      "nickname",
+      "plan-title",
+      "notes",
+      "record-result",
+      "statistics"
+    ],
+    "businessAuthority": "PRD-计划打卡-Web-v1.md",
+    "copyOverrides": {
+      "navigation.today": "用户明确四项主入口使用今日，Pen部分节点为今天",
+      "profile.username": "Web注册必需用户名与现有40字符昵称校验保留",
+      "web-feedback": "保留在线/短信桩/通知权限/安全会话等真实Web反馈",
+      "plan-immutable-fields": "现有服务端禁止更改计划种类、方向、时区与开始日期；编辑页只读显示，不创建虚假的可编辑选项。",
+      "delete-account": "Pen为立即永久删除，已确认Web PRD为30天可撤销注销；保留注销用词、等待期与确认输入规则。",
+      "export-data": "Pen有可选导出设置；现有PRD/API固定导出完整ZIP，保留全量导出与下载状态。",
+      "settings-native": "原生同步状态不适用于在线Web；未实现且无PRD要求的资料/隐私/关于入口不创建空链接。",
+      "share-preview": "服务器现有隐私裁剪协议不共享个人统计；不展示Pen中的私人完成率。",
+      "friends-search": "朋友搜索及申请交互使用现有权限/接口；文案与列表样式继承Pen，按钮不呈现未经接口支持的分享数量。"
+    }
+  },
+  "derivedTokens": {
+    "brand-title-gap": {
+      "terms": [
+        {
+          "nodeId": "R1f73",
+          "properties": [
+            "y"
+          ],
+          "factor": 1
+        },
+        {
+          "nodeId": "N9FLj8",
+          "properties": [
+            "y"
+          ],
+          "factor": -1
+        },
+        {
+          "nodeId": "N9FLj8",
+          "properties": [
+            "height"
+          ],
+          "factor": -1
+        }
+      ],
+      "unit": "px"
+    },
+    "brand-caption-gap": {
+      "terms": [
+        {
+          "nodeId": "bfIsK",
+          "properties": [
+            "y"
+          ],
+          "factor": 1
+        },
+        {
+          "nodeId": "R1f73",
+          "properties": [
+            "y"
+          ],
+          "factor": -1
+        },
+        {
+          "nodeId": "R1f73",
+          "properties": [
+            "fontSize",
+            "lineHeight"
+          ],
+          "factor": -1
+        }
+      ],
+      "unit": "px"
+    },
+    "intro-form-gap": {
+      "terms": [
+        {
+          "nodeId": "H7WCT",
+          "properties": [
+            "y"
+          ],
+          "factor": 1
+        },
+        {
+          "nodeId": "bfIsK",
+          "properties": [
+            "y"
+          ],
+          "factor": -1
+        },
+        {
+          "nodeId": "bfIsK",
+          "properties": [
+            "fontSize",
+            "lineHeight"
+          ],
+          "factor": -1
+        }
+      ],
+      "unit": "px"
+    },
+    "phone-label-gap": {
+      "terms": [
+        {
+          "nodeId": "Qh2xX",
+          "properties": [
+            "y"
+          ],
+          "factor": 1
+        },
+        {
+          "nodeId": "H7WCT",
+          "properties": [
+            "y"
+          ],
+          "factor": -1
+        },
+        {
+          "nodeId": "H7WCT",
+          "properties": [
+            "fontSize",
+            "lineHeight"
+          ],
+          "factor": -1
+        }
+      ],
+      "unit": "px"
+    },
+    "phone-privacy-gap": {
+      "terms": [
+        {
+          "nodeId": "S1WME",
+          "properties": [
+            "y"
+          ],
+          "factor": 1
+        },
+        {
+          "nodeId": "Qh2xX",
+          "properties": [
+            "y"
+          ],
+          "factor": -1
+        },
+        {
+          "nodeId": "Qh2xX",
+          "properties": [
+            "height"
+          ],
+          "factor": -1
+        }
+      ],
+      "unit": "px"
+    },
+    "privacy-submit-gap": {
+      "terms": [
+        {
+          "nodeId": "BUguK",
+          "properties": [
+            "y"
+          ],
+          "factor": 1
+        },
+        {
+          "nodeId": "S1WME",
+          "properties": [
+            "y"
+          ],
+          "factor": -1
+        },
+        {
+          "nodeId": "S1WME",
+          "properties": [
+            "fontSize",
+            "lineHeight"
+          ],
+          "factor": -1
+        }
+      ],
+      "unit": "px"
+    }
+  }
+}

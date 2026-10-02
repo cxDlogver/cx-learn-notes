@@ -6,6 +6,8 @@ import type {
 } from "@plan-checkin/contracts";
 import { getCalendarDay, getCalendarMonth } from "../data/api";
 
+import { Icon } from "./MobileUI";
+
 const weekdays = ["一", "二", "三", "四", "五", "六", "日"];
 const statusLabels: Record<CalendarStatus, string> = {
   success: "已完成",
@@ -160,26 +162,33 @@ export function CalendarPage({
 
   return (
     <section className="content-panel" data-page-key="calendar-month">
-      <p className="eyebrow">历史与安排</p>
-      <h1>日历</h1>
-      <p className="muted">
-        按各计划的业务日期显示，跨时区记录不会随设备日期移动。
-      </p>
+      <div className="page-heading">
+        <h1>日历</h1>
+        <button
+          className="text-button"
+          type="button"
+          onClick={() => onNavigate(`/calendar?month=${localMonth()}`)}
+        >
+          今天
+        </button>
+      </div>
       <div className="calendar-toolbar">
         <button
-          className="secondary-button"
+          className="icon-button"
+          aria-label="上个月"
           type="button"
           onClick={() => onNavigate(`/calendar?month=${nextMonth(month, -1)}`)}
         >
-          上个月
+          <Icon name="back" />
         </button>
         <h2>{title}</h2>
         <button
-          className="secondary-button"
+          className="icon-button"
+          aria-label="下个月"
           type="button"
           onClick={() => onNavigate(`/calendar?month=${nextMonth(month, 1)}`)}
         >
-          下个月
+          <Icon name="next" />
         </button>
       </div>
       {error && (
@@ -199,7 +208,7 @@ export function CalendarPage({
           <div className="calendar-grid" aria-label={`${title}日历`}>
             {weekdays.map((weekday) => (
               <strong className="calendar-weekday" key={weekday}>
-                周{weekday}
+                {weekday}
               </strong>
             ))}
             {Array.from({ length: leading }, (_, index) => (
@@ -219,10 +228,21 @@ export function CalendarPage({
                 }
               >
                 <span>{Number(day.businessDate.slice(-2))}</span>
-                <small>{countLabel(day)}</small>
+                <span className="calendar-dots" aria-hidden="true">
+                  {day.counts.success > 0 && <i />}
+                  {day.counts.failure > 0 && <i className="failure" />}
+                  {(day.counts.skip > 0 || day.counts.unrecorded > 0) && (
+                    <i className="skip" />
+                  )}
+                </span>
               </button>
             ))}
           </div>
+          <p className="calendar-legend">
+            <span>● 完成</span>
+            <span>■ 未完成</span>
+            <span>● 跳过 / 未记录</span>
+          </p>
           {calendar.days.every((day) => day.entries.length === 0) && (
             <p className="muted">本月没有计划记录或应执行日。</p>
           )}

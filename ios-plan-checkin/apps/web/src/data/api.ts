@@ -25,6 +25,8 @@ import type {
   PlanStatisticsDto,
   PlanShareDto,
   PutCheckinRequest,
+  PutReminderRequest,
+  ReminderDto,
   SmsChallengeDto,
   SocialUserDto,
   SharePreviewDto,
@@ -484,6 +486,22 @@ export function getSharePreview(
 export function listPlanShares(planId: string): Promise<PlanShareDto[]> {
   return apiRequest<PlanShareDto[]>(
     `plans/${encodeURIComponent(planId)}/shares`,
+  );
+}
+
+export function getPlanReminder(planId: string): Promise<ReminderDto> {
+  return apiRequest<ReminderDto>(
+    `plans/${encodeURIComponent(planId)}/reminder`,
+  );
+}
+
+export function savePlanReminder(
+  planId: string,
+  body: PutReminderRequest,
+): Promise<ReminderDto> {
+  return apiRequest<ReminderDto>(
+    `plans/${encodeURIComponent(planId)}/reminder`,
+    { method: "PUT", body },
   );
 }
 

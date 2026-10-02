@@ -1,0 +1,498 @@
+/* Mapped pages keep one mobile hierarchy on phone, tablet and desktop. */
+.auth-layout {
+  padding: 0 var(--ui-page-inset) 32px;
+}
+.auth-intro {
+  text-align: center;
+  padding-top: clamp(40px, 12svh, var(--ui-brand-top));
+  margin-bottom: var(--ui-intro-form-gap);
+}
+.brand-mark {
+  display: flex;
+  width: var(--ui-brand-size);
+  height: var(--ui-brand-size);
+  margin: 0 auto var(--ui-brand-title-gap);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ui-brand-radius);
+  color: var(--ui-surface);
+  background: var(--ui-primary);
+}
+.brand-mark .ui-icon {
+  width: 36px;
+  height: 36px;
+}
+.auth-intro h1 {
+  font-size: var(--ui-brand-title-size);
+  margin-bottom: var(--ui-brand-caption-gap);
+}
+.auth-intro p {
+  font-size: var(--ui-caption-size);
+  color: var(--ui-secondary);
+}
+.auth-card {
+  min-width: 0;
+}
+.auth-card form {
+  gap: 14px;
+}
+.auth-card .primary-button {
+  width: 100%;
+  margin-top: 10px;
+}
+.auth-card > h2 {
+  margin-top: 48px;
+  margin-bottom: 12px;
+  font-size: var(--ui-title-size);
+}
+.auth-card > .muted {
+  font-size: var(--ui-label-size);
+  margin-bottom: 26px;
+}
+.auth-card > .text-button {
+  margin-top: 12px;
+}
+.auth-layout[data-page-key="sms-code"] {
+  padding-top: 30px;
+}
+.auth-layout[data-page-key="profile-setup"] {
+  padding-top: 24px;
+}
+.phone-field {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-control-radius);
+  background: var(--ui-surface);
+}
+.phone-field > span {
+  padding-left: 15px;
+  color: var(--ui-text);
+  font-size: var(--ui-label-size);
+}
+.phone-field input:not([type="checkbox"]) {
+  border: 0;
+  background: transparent;
+}
+.phone-field:focus-within {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+.privacy-note {
+  font-size: var(--ui-small-size);
+  color: var(--ui-secondary);
+  text-align: center;
+  margin-top: 20px;
+}
+.recovery-link {
+  font-size: var(--ui-caption-size);
+  width: 100%;
+  text-align: center;
+}
+.otp-field {
+  position: relative;
+}
+.otp-slots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 9px;
+}
+.otp-slots span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 51px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-button-radius);
+  background: var(--ui-surface);
+  font-size: 23px;
+}
+.otp-field input:not([type="checkbox"]) {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  height: 100%;
+  padding: 0;
+}
+.otp-field:focus-within {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 4px;
+  border-radius: var(--ui-button-radius);
+}
+.profile-intro {
+  text-align: center;
+  margin: 38px 0 30px;
+}
+.profile-intro .avatar {
+  width: 78px;
+  height: 78px;
+  font-size: 30px;
+  margin-bottom: 18px;
+}
+.profile-intro p {
+  font-size: var(--ui-caption-size);
+}
+.today-empty {
+  border: 0;
+  background: transparent;
+  padding-top: 96px;
+}
+.plan-form {
+  background: var(--ui-surface);
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-card-radius);
+  margin-bottom: 18px;
+}
+.plan-form > label {
+  margin-top: 4px;
+}
+.form-section-title {
+  font-size: var(--ui-section-size);
+  margin: 8px 0 0;
+}
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+.weekday-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ui-border);
+  min-height: 38px;
+  padding: 10px 0;
+  border-radius: 8px;
+  font-size: var(--ui-caption-size);
+}
+.weekday-option:has(input:checked) {
+  background: var(--ui-primary-soft);
+  border-color: var(--ui-primary);
+  color: var(--ui-primary);
+}
+.weekday-option {
+  position: relative;
+}
+.weekday-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.weekday-option:focus-within {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+.group-create,
+.group-moves {
+  background: var(--ui-surface);
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-card-radius);
+  margin: 16px 0;
+}
+.group-row .text-button {
+  margin-top: 8px;
+}
+.group-moves label {
+  margin-top: 14px;
+}
+.plan-detail-card dl {
+  display: grid;
+  grid-template-columns: minmax(70px, 1fr) minmax(0, 2fr);
+  gap: 12px;
+  margin: 12px 0 0;
+  font-size: var(--ui-label-size);
+}
+.plan-detail-card dt {
+  color: var(--ui-secondary);
+}
+.plan-detail-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.plan-hero {
+  margin-bottom: 22px;
+}
+.plan-hero h1 {
+  font-size: var(--ui-detail-title-size);
+  margin: 14px 0 10px;
+}
+.plan-hero > p {
+  color: var(--ui-secondary);
+  font-size: var(--ui-label-size);
+}
+.plan-lifecycle-actions {
+  margin: 20px 0;
+}
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.statistics-grid > div {
+  padding: 12px 8px;
+  text-align: center;
+  border-radius: 8px;
+  background: var(--ui-background);
+}
+.statistics-grid dt {
+  color: var(--ui-secondary);
+  font-size: var(--ui-caption-size);
+}
+.statistics-grid dd {
+  font-size: var(--ui-stat-secondary-size);
+  font-weight: 700;
+  margin: 6px 0 0;
+  color: var(--ui-primary);
+}
+.statistics-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.statistics-weeks,
+.history-context,
+.history-recent {
+  margin-top: 16px;
+}
+.history-recent article,
+.share-entry-list article,
+.calendar-entry-list article {
+  padding: 14px 0;
+  border-top: 1px solid var(--ui-border);
+}
+.history-recent article > * + *,
+.calendar-entry-list article > * + * {
+  margin-top: 8px;
+}
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.calendar-toolbar h2 {
+  font-size: 18px;
+  font-weight: 500;
+  flex: 1;
+  text-align: center;
+}
+.calendar-toolbar button {
+  padding: 8px;
+  min-width: 44px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  padding: 12px 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-card-radius);
+  background: var(--ui-surface);
+  margin-bottom: 16px;
+}
+.calendar-weekday {
+  text-align: center;
+  font-size: var(--ui-caption-size);
+  font-weight: 400;
+  color: var(--ui-secondary);
+  padding: 6px 0 10px;
+}
+.calendar-date {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  min-width: 0;
+  min-height: 46px;
+  padding: 6px 0;
+  border-radius: 9px;
+  color: var(--ui-text);
+  font-size: var(--ui-label-size);
+}
+.calendar-date.selected {
+  background: var(--ui-primary);
+  color: var(--ui-surface);
+}
+.calendar-dots {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+}
+.calendar-dots i {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ui-primary);
+}
+.calendar-dots .failure {
+  background: var(--ui-danger);
+  border-radius: 0;
+}
+.calendar-dots .skip {
+  background: var(--ui-secondary);
+}
+.calendar-date.selected .calendar-dots i {
+  background: currentColor;
+}
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  font-size: var(--ui-small-size);
+  color: var(--ui-secondary);
+  margin-bottom: 22px;
+}
+.social-search {
+  margin-top: 12px;
+}
+.social-person {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+  border-top: 1px solid var(--ui-border);
+}
+.social-person > div {
+  min-width: 0;
+}
+.social-person strong,
+.social-person span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.social-person span {
+  color: var(--ui-secondary);
+  font-size: var(--ui-caption-size);
+  margin-top: 6px;
+}
+.social-person .social-actions {
+  flex-wrap: wrap;
+}
+.share-selectors {
+  display: grid;
+  gap: 14px;
+}
+.share-confirm {
+  background: var(--ui-primary-soft);
+  padding: 16px;
+  border-radius: var(--ui-card-radius);
+}
+.inbox-list,
+.export-list {
+  list-style: none;
+  padding: 0;
+}
+.inbox-item,
+.export-list li {
+  border: 1px solid var(--ui-border);
+  padding: 16px;
+  background: var(--ui-surface);
+  border-radius: var(--ui-card-radius);
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+.inbox-item.unread {
+  border-left: 3px solid var(--ui-primary);
+}
+.inbox-item > * + * {
+  margin-top: 8px;
+}
+.notification-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.notification-toggles label {
+  display: flex;
+  gap: 12px;
+  min-height: 44px;
+}
+.encouragements {
+  margin-top: 12px;
+}
+.encouragements form {
+  margin-top: 14px;
+}
+@media (max-width: 359px) {
+  .content-panel,
+  .auth-layout {
+    padding-inline: 16px;
+  }
+  .record-options label {
+    flex-basis: 100%;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .brand-mark,
+  .calendar-date.selected {
+    color: var(--ui-background);
+  }
+}
+
+.create-menu {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-card-radius);
+  margin-bottom: 20px;
+}
+.auth-card label[for="phone"] {
+  font-size: var(--ui-phone-label-size);
+  font-weight: 700;
+}
+.auth-layout[data-page-key="phone-login"] .auth-card form {
+  gap: 0;
+}
+.auth-layout[data-page-key="phone-login"] label[for="phone"] {
+  margin-bottom: var(--ui-phone-label-gap);
+}
+.auth-layout[data-page-key="phone-login"] .phone-field {
+  min-height: var(--ui-phone-height);
+}
+.auth-layout[data-page-key="phone-login"] .privacy-note {
+  margin: var(--ui-phone-privacy-gap) 0 var(--ui-privacy-submit-gap);
+}
+.auth-layout[data-page-key="phone-login"] .primary-button {
+  margin: 0;
+}
+.auth-layout[data-page-key="phone-login"] form > .muted {
+  margin-top: 14px;
+  font-size: var(--ui-caption-size);
+}
+.record-sheet .plan-form {
+  border: 0;
+  padding: 0;
+}
+.plan-detail-card > summary {
+  padding: 0;
+  min-height: 24px;
+}
+.plan-hero + .plan-statistics .statistics-grid > div:first-child {
+  grid-column: 1 / -1;
+  background: transparent;
+}
+.plan-hero + .plan-statistics .statistics-grid > div:first-child dd {
+  font-size: var(--ui-stat-primary-size);
+}
+
+.reminder-card {
+  margin-top: 16px;
+}
+.switch-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+}

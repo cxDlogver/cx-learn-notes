@@ -1,6 +1,6 @@
 # Synthetic recorder fixture; no business acceptance
 
-### 2026-09-28T17:12:49.776350Z｜WEB-DATA-09｜api-fixture｜FAIL
+### 2026-10-02T18:52:58.514108Z｜WEB-DATA-09｜api-fixture｜FAIL
 
 - 运行：`synthetic-tool`；构建 `abcdef0`；数据 `synthetic-tool-fixture`；评审 `WEB-02-tool-fixture`。
 - 环境：`{"businessDate": "2026-09-28", "kind": "api", "network": "online", "osName": "synthetic", "osVersion": "synthetic", "planTimezone": "Asia/Shanghai", "serverNowUtc": "2026-09-28T00:00:00Z"}`。

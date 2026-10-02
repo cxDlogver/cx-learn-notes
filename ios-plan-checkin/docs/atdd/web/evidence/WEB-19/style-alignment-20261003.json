@@ -1,0 +1,336 @@
+{
+  "schemaVersion": "1.0",
+  "scope": "WEB-19 implementation increment; public login layout observations only",
+  "capturedAt": "2026-10-02T18:38:02.113Z",
+  "browser": "Chrome/154.0.8037.58",
+  "sources": [
+    {
+      "path": "docs/ui/plan-checkin.pen",
+      "sha256": "b1c94dbc01d577073a2c54ffa57f6953fbc4c6b07855fe4b9d829bce90479939"
+    },
+    {
+      "path": "docs/ui/plan-checkin-visual-tree.json",
+      "sha256": "b0106a716153261053c3a9d140d3eac027131dfd78be7f7d40f917cab47782b4"
+    },
+    {
+      "path": "docs/ui/web-style-map.json",
+      "sha256": "10dcd9323787d2698215238c36394578eec239c0774e42d789558768ac0afe78"
+    },
+    {
+      "path": "apps/web/src/design/pen.generated.ts",
+      "sha256": "6177c11a3a96f4101586aaa1a62467564bbfe2cc83f6d4ff2f3dc42b23a3b8f6"
+    },
+    {
+      "path": "apps/web/src/styles/pen.generated.css",
+      "sha256": "42f5a41eaa4b45a1c06669c5e18eef3b48f7b24a5c10600185249fef6bbbfe6e"
+    },
+    {
+      "path": "apps/web/src/styles/layout.css",
+      "sha256": "dadd154d26a0f8f2d0749b238fa13d35ada494a97581902429fa31874434f0a8"
+    },
+    {
+      "path": "apps/web/src/styles/components.css",
+      "sha256": "6a5839804030e18d24350677c3d6ebb34c751225743b2ffb554200b46765af55"
+    },
+    {
+      "path": "apps/web/src/styles/pages.css",
+      "sha256": "306f3290b681e59b554557e56ebba8c573ba1ba97fcb7467fbd8d183349dbc39"
+    },
+    {
+      "path": "apps/web/src/assets/fonts/NotoSansSC.woff2",
+      "sha256": "1189a8d6235d662b124d0c37136a9f19f1b5298de294123e596a375102beb0e3"
+    },
+    {
+      "path": "apps/web/src/assets/fonts/OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+    },
+    {
+      "path": "apps/web/src/app/App.tsx",
+      "sha256": "e141237b362fb33560c2588c0cd5859f0716157812f75b06e45c6aaf6de2e659"
+    },
+    {
+      "path": "apps/web/src/app/Plans.tsx",
+      "sha256": "55c0746a84de8f9d06e7491530e191322059f119957e9553c600c48ceb8fb508"
+    },
+    {
+      "path": "apps/web/src/app/TodayCheckin.tsx",
+      "sha256": "749c2c1da7260bbc5a1e7c735d436695a521e00e03209b823cce87e9464723f0"
+    },
+    {
+      "path": "apps/web/src/app/PlanReminders.tsx",
+      "sha256": "98b668fe91206180047e32f0651e8e2cb2ce1e9735f0a9d1ce2d0c6442af842f"
+    },
+    {
+      "path": "apps/web/src/app/ShareManager.tsx",
+      "sha256": "9a6d3c472af563368b05908460fe09d0e9761c4234fa81cb62fb41ecc2ca0e48"
+    },
+    {
+      "path": "apps/web/src/app/MobileUI.tsx",
+      "sha256": "4ea3d9d7f49495c4ddfde61b862eb41cacd0a888040c4e879f902951d0d4834f"
+    }
+  ],
+  "checks": [
+    {
+      "name": "eslint",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-19/eslint-20261003.txt",
+      "sha256": "e05222033cd2c7b46b6fad5ec87b44b62f844dbb6f004476498f71d0e3c9875b"
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-19/typecheck-20261003.txt",
+      "sha256": "e05222033cd2c7b46b6fad5ec87b44b62f844dbb6f004476498f71d0e3c9875b"
+    },
+    {
+      "name": "design",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-19/design-20261003.txt",
+      "sha256": "e1950a31bb114977303f256c1fe7008ba6a667c1d542180f64f392728923826d"
+    },
+    {
+      "name": "format",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-19/format-20261003.txt",
+      "sha256": "d6d678ecd2af7d2aec1f2e67be49274ea14bd99c1e975dc734cd84170667f676"
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-19/build-20261003.txt",
+      "sha256": "f0339b8dfd326eed94dabdaa70f122031c29d17cfdeeee1ecdc1d24afd0064a6"
+    },
+    {
+      "name": "static",
+      "exitCode": 0,
+      "outputPath": "docs/atdd/web/evidence/WEB-19/static-20261003.txt",
+      "sha256": "d70cc8243aec3cd1a2d21a7188bd2a7b62518d094db9089d0918de1daccae565"
+    }
+  ],
+  "observations": [
+    {
+      "label": "login-light-320",
+      "status": "OBSERVED",
+      "layout": {
+        "pathname": "/login",
+        "viewport": {
+          "width": 320,
+          "height": 800
+        },
+        "documentWidth": 320,
+        "horizontalOverflow": false,
+        "controlsOutsideViewportWidth": 0,
+        "container": {
+          "width": 320,
+          "left": 0,
+          "right": 320,
+          "top": 0
+        },
+        "bodyFont": "\"Noto Sans SC\", sans-serif",
+        "fontLoaded": true,
+        "background": "rgb(248, 249, 246)",
+        "surface": "#ffffff",
+        "navigationLabels": [],
+        "theme": "light",
+        "modalOpen": false
+      },
+      "screenshot": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/screen-login-light-320.png",
+        "sha256": "1007d5711d2ee8d613c6284a0094ae49852eb9f68d9527c716e6da438bba7618"
+      },
+      "metrics": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/layout-login-light-320.json",
+        "sha256": "e51d480722afb1307449ca39b85ae066e7961ec5130ca8146cd0ef85ed04b354"
+      }
+    },
+    {
+      "label": "login-light-393",
+      "status": "OBSERVED",
+      "layout": {
+        "pathname": "/login",
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "horizontalOverflow": false,
+        "controlsOutsideViewportWidth": 0,
+        "container": {
+          "width": 393,
+          "left": 0,
+          "right": 393,
+          "top": 0
+        },
+        "bodyFont": "\"Noto Sans SC\", sans-serif",
+        "fontLoaded": true,
+        "background": "rgb(248, 249, 246)",
+        "surface": "#ffffff",
+        "navigationLabels": [],
+        "theme": "light",
+        "modalOpen": false
+      },
+      "screenshot": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/screen-login-light-393.png",
+        "sha256": "011d86c0832cd2a46284df4d37498219dc1e9e43e5e6cc22405cbc1083c61c59"
+      },
+      "metrics": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/layout-login-light-393.json",
+        "sha256": "32c03970659047a4ee3148829ccb773108c36eb4294e1a9d04c8416aa6bdddec"
+      }
+    },
+    {
+      "label": "login-light-480",
+      "status": "OBSERVED",
+      "layout": {
+        "pathname": "/login",
+        "viewport": {
+          "width": 480,
+          "height": 900
+        },
+        "documentWidth": 480,
+        "horizontalOverflow": false,
+        "controlsOutsideViewportWidth": 0,
+        "container": {
+          "width": 480,
+          "left": 0,
+          "right": 480,
+          "top": 0
+        },
+        "bodyFont": "\"Noto Sans SC\", sans-serif",
+        "fontLoaded": true,
+        "background": "rgb(248, 249, 246)",
+        "surface": "#ffffff",
+        "navigationLabels": [],
+        "theme": "light",
+        "modalOpen": false
+      },
+      "screenshot": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/screen-login-light-480.png",
+        "sha256": "7760b7101039fd262293c80740d8ffaccfbbd688b8e61a0ff8bb73ddfa3b9814"
+      },
+      "metrics": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/layout-login-light-480.json",
+        "sha256": "e471058ba8d636476367cda8b37822a723577868a37b36e870b1d4d36ddd26e2"
+      }
+    },
+    {
+      "label": "login-light-1440",
+      "status": "OBSERVED",
+      "layout": {
+        "pathname": "/login",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "documentWidth": 1440,
+        "horizontalOverflow": false,
+        "controlsOutsideViewportWidth": 0,
+        "container": {
+          "width": 480,
+          "left": 480,
+          "right": 960,
+          "top": 0
+        },
+        "bodyFont": "\"Noto Sans SC\", sans-serif",
+        "fontLoaded": true,
+        "background": "rgb(248, 249, 246)",
+        "surface": "#ffffff",
+        "navigationLabels": [],
+        "theme": "light",
+        "modalOpen": false
+      },
+      "screenshot": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/screen-login-light-1440.png",
+        "sha256": "70e2b934570fb458d7d0f9c7fb9f9246ab052208d2e9fe716a4a3d43056838c4"
+      },
+      "metrics": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/layout-login-light-1440.json",
+        "sha256": "12c14a67acf2aeeb292bb6552f844144a78600c9ddc125e7c4ce5011a7faecc3"
+      }
+    },
+    {
+      "label": "login-dark-1440",
+      "status": "OBSERVED",
+      "layout": {
+        "pathname": "/login",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "documentWidth": 1440,
+        "horizontalOverflow": false,
+        "controlsOutsideViewportWidth": 0,
+        "container": {
+          "width": 480,
+          "left": 480,
+          "right": 960,
+          "top": 0
+        },
+        "bodyFont": "\"Noto Sans SC\", sans-serif",
+        "fontLoaded": true,
+        "background": "rgb(16, 26, 20)",
+        "surface": "#1b2920",
+        "navigationLabels": [],
+        "theme": "dark",
+        "modalOpen": false
+      },
+      "screenshot": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/screen-login-dark-1440.png",
+        "sha256": "0db580ae3023c29b6bb15557b0d51f077de48998d4eca5b12474d488c0892c27"
+      },
+      "metrics": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/layout-login-dark-1440.json",
+        "sha256": "7e42fea87fd147f4af76923b8ed6beebfb6223eb614a8f4a32479339ff97b459"
+      }
+    },
+    {
+      "label": "login-dark-320",
+      "status": "OBSERVED",
+      "layout": {
+        "pathname": "/login",
+        "viewport": {
+          "width": 320,
+          "height": 800
+        },
+        "documentWidth": 320,
+        "horizontalOverflow": false,
+        "controlsOutsideViewportWidth": 0,
+        "container": {
+          "width": 320,
+          "left": 0,
+          "right": 320,
+          "top": 0
+        },
+        "bodyFont": "\"Noto Sans SC\", sans-serif",
+        "fontLoaded": true,
+        "background": "rgb(16, 26, 20)",
+        "surface": "#1b2920",
+        "navigationLabels": [],
+        "theme": "dark",
+        "modalOpen": false
+      },
+      "screenshot": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/screen-login-dark-320.png",
+        "sha256": "ec0e0336d462e67ea0c6585decceaae794771e9c0c7f79fe017ec4cf412adeab"
+      },
+      "metrics": {
+        "path": "docs/atdd/web/evidence/WEB-19/public-style-20261003-final/layout-login-dark-320.json",
+        "sha256": "9c76e961f24a9160bc96ecbd8ee5c86b6bb160969740965cb072b01aee02c537"
+      }
+    }
+  ],
+  "acceptanceIdsReferenced": [
+    "WEB-UI-01",
+    "WEB-UI-02",
+    "WEB-UI-04",
+    "WEB-UI-05",
+    "WEB-UI-11"
+  ],
+  "formalAcceptanceStatus": "NOT_RUN",
+  "limitations": [
+    "No authenticated browser flow executed",
+    "No Safari/Firefox/Edge/mobile device, screen reader or 200% acceptance",
+    "Automatic approval rejected broadening loopback-only SMS fixture authentication; original safeguard restored",
+    "Pen secondary text contrast requires the formal accessibility/design review; these observations assert layout and font loading only"
+  ]
+}

@@ -4,6 +4,7 @@ import { createServer } from "node:net";
 import process from "node:process";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath, URL } from "node:url";
+import { TextDecoder } from "node:util";
 
 const freePort = await new Promise((resolve, reject) => {
   const probe = createServer();
@@ -67,6 +68,21 @@ try {
   const asset = await globalThis.fetch(`${base}${assetPath}`);
   assert.equal(asset.status, 200);
   assert.match(asset.headers.get("cache-control"), /immutable/);
+  const cssPath = html.match(/href="(\/assets\/[^"]+\.css)"/)?.[1];
+  assert.ok(cssPath, "Built HTML must reference the shared design CSS.");
+  const css = await globalThis.fetch(`${base}${cssPath}`);
+  const fontPath = (await css.text()).match(
+    /url\(["']?(\/assets\/[^)"']+\.woff2)/,
+  )?.[1];
+  assert.ok(fontPath, "Design CSS must reference a self-hosted font.");
+  const font = await globalThis.fetch(`${base}${fontPath}`);
+  assert.equal(font.status, 200);
+  assert.equal(font.headers.get("content-type"), "font/woff2");
+  assert.match(font.headers.get("cache-control"), /immutable/);
+  assert.equal(
+    new TextDecoder().decode((await font.arrayBuffer()).slice(0, 4)),
+    "wOF2",
+  );
   const deepLink = await globalThis.fetch(`${base}/plans/example`, {
     headers: { Accept: "text/html" },
   });

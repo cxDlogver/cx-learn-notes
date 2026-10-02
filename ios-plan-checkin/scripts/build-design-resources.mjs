@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import process from "node:process";
 import { URL } from "node:url";
 import prettier from "prettier";
@@ -8,6 +9,13 @@ const resolve = (path) => new URL(path, root);
 const readJson = async (path) =>
   JSON.parse(await readFile(resolve(path), "utf8"));
 const source = await readJson("docs/ui/plan-checkin-visual-tree.json");
+const designFile = await readFile(resolve("docs/ui/plan-checkin.pen"));
+if (
+  createHash("sha256").update(designFile).digest("hex") !==
+  source.source.designFileSha256
+) {
+  throw new Error("Pen source digest differs from its structured visual tree.");
+}
 const pageMap = await readJson("docs/ui/plan-checkin-page-map.json");
 const mapScreens = pageMap.groups.flatMap((group) =>
   group.screens.map((screen) => ({ ...screen, groupId: group.id })),
@@ -120,3 +128,4 @@ if (process.argv.includes("--write")) {
 } else {
   throw new Error("Use --write or --check.");
 }
+await import("./build-web-design.mjs");

@@ -4,12 +4,12 @@
   "schemaVersion": "1.0.0",
   "caseCount": 136,
   "sourceDigest": {
-    "webPrd": "cb401befa77eb7543906643857ca59d9cf0ffcfc7742d4f02c661702ff9c2178",
-    "webTechnical": "3f1f8d65f5242fd05ba5fe286bb3ce09c915e9d7ecba8682b9683652839fabcf",
+    "webPrd": "4bb66474a9864e03f7d9765914e47f2125eab9b6694bc5992f9c07d1a1c42c74",
+    "webTechnical": "10e5fe2b1e7d22101b3e3b223842b257253a5ff930d1fd9b9ef887f5b07e51c0",
     "iosPrd": "75f1f4b1878dc8c9b9c08e70a7391f67ca2145ef7f458b605833ed9cd43a46a7",
     "iosAcceptance": "94b2aec480ad13de8a5ec7c41e101ab2acf55f584b7f7848c449b1456864c7ff",
     "iosPen": "b1c94dbc01d577073a2c54ffa57f6953fbc4c6b07855fe4b9d829bce90479939",
-    "matrix": "c746b0469d3bf1af5951acccb246f7af8504a141aa5f2274867b1cfdc0d2b8c4"
+    "matrix": "38198a37b2b859959d4ef5ae795c36f6aa10d68ac657b5315137027cf609307c"
   },
   "sourcePaths": {
     "webPrd": "PRD-计划打卡-Web-v1.md",
@@ -2895,11 +2895,11 @@
       "id": "WEB-UI-02",
       "domain": "UI",
       "given": "桌面宽视口已登录",
-      "when": "在今日、计划、日历、好友、消息和设置间切换",
+      "when": "在四主入口、页内消息与设置入口间切换",
       "then": {
-        "functional": "导航与当前路由一致",
-        "visual": "桌面导航、内容和辅助区重新排布且层级明确",
-        "negative": "不用手机窄栏机械放大或遮挡内容"
+        "functional": "导航与当前路由一致，所有功能可达",
+        "visual": "最大480px单列移动结构水平居中、顶部排布，外侧填主题背景",
+        "negative": "不增加桌面侧栏/并排详情，不整体缩放字体或控件，不遮挡内容"
       },
       "evidenceCodes": [
         "S",
@@ -2973,7 +2973,7 @@
       "when": "调整窗口并复核关键页",
       "then": {
         "functional": "数据与操作连续保留",
-        "visual": "栅格、侧栏与卡片按断点自然重排",
+        "visual": "480px以上容器宽度固定并居中，以下自然收缩；单列、底栏、弹层与卡片不横向溢出",
         "negative": "不因断点切换丢输入或出现重叠"
       },
       "evidenceCodes": [

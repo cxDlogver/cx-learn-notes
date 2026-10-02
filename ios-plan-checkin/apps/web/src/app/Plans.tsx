@@ -27,6 +27,8 @@ import { ModalDialog } from "./ModalDialog";
 import { PlanHistory } from "./PlanHistory";
 import { PlanStatistics } from "./PlanStatistics";
 import { ShareManager } from "./ShareManager";
+import { uiCopy } from "../design/pen.generated";
+import { Icon, PageHeader } from "./MobileUI";
 
 const weekdays: { value: Weekday; label: string }[] = [
   { value: 1, label: "周一" },
@@ -99,13 +101,21 @@ function PlanLink({
 
 function PlanList({ onNavigate }: { onNavigate: (path: string) => void }) {
   const [plans, setPlans] = useState<PlanDto[] | null>(null);
+  const [groups, setGroups] = useState<GroupDto[]>([]);
+  const [lifecycle, setLifecycle] = useState<"active" | "paused" | "archived">(
+    "active",
+  );
+  const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let cancelled = false;
-    void listPlans()
-      .then((result) => {
-        if (!cancelled) setPlans(result);
+    void Promise.all([listPlans(), listGroups()])
+      .then(([items, folders]) => {
+        if (!cancelled) {
+          setPlans(items);
+          setGroups(folders);
+        }
       })
       .catch((caught: unknown) => {
         if (!cancelled) setError(message(caught));
@@ -114,25 +124,72 @@ function PlanList({ onNavigate }: { onNavigate: (path: string) => void }) {
       cancelled = true;
     };
   }, [attempt]);
+  const visible = plans?.filter((plan) => plan.lifecycle === lifecycle) ?? [];
+  const sections = [
+    ...groups.map((group) => ({ id: group.id, name: group.name })),
+    { id: null, name: "未分组" },
+  ];
   return (
     <section className="content-panel" data-page-key="plans">
       <div className="page-heading">
-        <div>
-          <p className="eyebrow">按自己的节奏，认真生活</p>
-          <h1>我的计划</h1>
+        <h1>{uiCopy.plansTitle}</h1>
+        <div className="header-tools">
+          <PlanLink
+            href="/plans/groups"
+            onNavigate={onNavigate}
+            className="icon-button"
+          >
+            <span className="sr-only">分组管理</span>
+            <Icon name="folder" />
+          </PlanLink>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="新建计划"
+            aria-expanded={showCreate}
+            onClick={() => setShowCreate((value) => !value)}
+          >
+            <Icon name="plus" />
+          </button>
         </div>
-        <PlanLink
-          href="/plans/new"
-          onNavigate={onNavigate}
-          className="action-link"
-        >
-          创建计划
-        </PlanLink>
+      </div>
+      {showCreate && (
+        <div className="create-menu" aria-label="选择计划类型">
+          {[
+            { kind: "fixed", label: "固定星期" },
+            { kind: "weekly", label: "每周目标" },
+            { kind: "one_time", label: "一次性任务" },
+          ].map((item) => (
+            <PlanLink
+              key={item.kind}
+              href={`/plans/new?kind=${item.kind}`}
+              onNavigate={onNavigate}
+              className="settings-row"
+            >
+              <Icon
+                name={item.kind === "one_time" ? "list-checks" : "calendar"}
+              />
+              <span>{item.label}</span>
+              <Icon name="next" />
+            </PlanLink>
+          ))}
+        </div>
+      )}
+      <div className="segmented-control" aria-label="计划状态">
+        {(["active", "paused", "archived"] as const).map((state) => (
+          <button
+            key={state}
+            type="button"
+            aria-pressed={state === lifecycle}
+            onClick={() => setLifecycle(state)}
+          >
+            {lifecycleLabels[state]}
+          </button>
+        ))}
       </div>
       {!plans && !error && <p role="status">正在读取计划…</p>}
       {error && (
         <div className="empty-card" role="alert">
-          <h2>暂时无法读取计划</h2>
           <p>{error}</p>
           <button
             type="button"
@@ -146,57 +203,131 @@ function PlanList({ onNavigate }: { onNavigate: (path: string) => void }) {
           </button>
         </div>
       )}
-      {plans?.length === 0 && (
+      {plans && visible.length === 0 && (
         <div className="empty-card" role="status">
-          <span className="empty-icon" aria-hidden="true">
-            ◌
-          </span>
-          <h2>还没有计划</h2>
+          <Icon name="list-checks" className="empty-icon" />
+          <h2>
+            {plans.length === 0
+              ? "还没有计划"
+              : `暂无${lifecycleLabels[lifecycle]}的计划`}
+          </h2>
           <p>先从一个小目标开始。</p>
-          <PlanLink
-            href="/plans/new"
-            onNavigate={onNavigate}
-            className="action-link"
-          >
-            创建第一个计划
-          </PlanLink>
-        </div>
-      )}
-      {plans && plans.length > 0 && (
-        <div className="today-list" aria-label="我的计划列表">
-          {plans.map((plan) => (
-            <article
-              className="today-card"
-              key={plan.id}
-              data-group-id={plan.groupId ?? "none"}
+          {plans.length === 0 && (
+            <PlanLink
+              href="/plans/new"
+              onNavigate={onNavigate}
+              className="action-link"
             >
-              <div>
-                <p className="eyebrow">
-                  {plan.kind === "one_time"
-                    ? "一次性任务"
-                    : plan.kind === "weekly"
-                      ? "周目标"
-                      : "固定星期"}
-                  {plan.lifecycle !== "active"
-                    ? ` · ${lifecycleLabels[plan.lifecycle]}`
-                    : ""}
-                </p>
-                <h2>{plan.title}</h2>
-                <p>
-                  {plan.timezone} · 从 {plan.startDate} 开始
-                </p>
-              </div>
-              <PlanLink
-                href={`/plans/${plan.id}`}
-                onNavigate={onNavigate}
-                className="action-link"
-              >
-                查看计划
-              </PlanLink>
-            </article>
-          ))}
+              创建第一个计划
+            </PlanLink>
+          )}
         </div>
       )}
+      {sections.map((group) => {
+        const items = visible.filter(
+          (plan) =>
+            plan.groupId === group.id ||
+            (group.id === null &&
+              !groups.some((known) => known.id === plan.groupId)),
+        );
+        return (
+          items.length > 0 && (
+            <section className="today-section" key={group.id ?? "none"}>
+              <h2>
+                {group.name}
+                <span className="section-count">{items.length}</span>
+              </h2>
+              <div className="today-list">
+                {items.map((plan) => (
+                  <article
+                    className="today-card"
+                    key={plan.id}
+                    data-group-id={plan.groupId ?? "none"}
+                  >
+                    <PlanLink
+                      href={`/plans/${plan.id}`}
+                      onNavigate={onNavigate}
+                      className="plan-card-link"
+                    >
+                      <div className="card-title-line">
+                        <h3>{plan.title}</h3>
+                        <Icon name="next" />
+                      </div>
+                      <p className="plan-meta">
+                        <span className="badge">
+                          {plan.direction === "avoid" ? "不要做" : "要做"}
+                        </span>
+                        <span>
+                          {plan.kind === "one_time"
+                            ? `截止 ${plan.dueDate}`
+                            : plan.kind === "weekly" &&
+                                plan.rule &&
+                                "weeklyTarget" in plan.rule
+                              ? `每周 ${plan.rule.weeklyTarget} 次`
+                              : plan.rule && "weekdays" in plan.rule
+                                ? plan.rule.weekdays
+                                    .map(
+                                      (day) =>
+                                        weekdays.find(
+                                          (item) => item.value === day,
+                                        )?.label,
+                                    )
+                                    .join("、")
+                                : "固定星期"}
+                        </span>
+                      </p>
+                    </PlanLink>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      })}
+    </section>
+  );
+}
+
+function GroupManagementPage({
+  onNavigate,
+}: {
+  onNavigate: (path: string) => void;
+}) {
+  const [plans, setPlans] = useState<PlanDto[] | null>(null);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    void listPlans()
+      .then((items) => {
+        if (!cancelled) setPlans(items);
+      })
+      .catch((caught: unknown) => {
+        if (!cancelled) setError(message(caught));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
+  return (
+    <section className="content-panel" data-page-key="group-management">
+      <PageHeader title="分组管理" onBack={() => onNavigate("/plans")} />
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => {
+              setError("");
+              setAttempt((value) => value + 1);
+            }}
+          >
+            重试
+          </button>
+        </p>
+      )}
+      {!plans && !error && <p role="status">正在读取分组…</p>}
       {plans && (
         <GroupManager
           plans={plans}
@@ -248,7 +379,7 @@ function GroupManager({
   }
   return (
     <section className="group-manager" aria-labelledby="group-heading">
-      <h2 id="group-heading" tabIndex={-1}>
+      <h2 id="group-heading" tabIndex={-1} className="sr-only">
         计划分组
       </h2>
       <p className="hint">
@@ -428,6 +559,8 @@ function PlanEdit({
   plan: PlanDto;
   onSaved: (next: PlanDto) => void;
 }) {
+  const [groups, setGroups] = useState<GroupDto[]>([]);
+  const [groupId, setGroupId] = useState(plan.groupId ?? "");
   const [title, setTitle] = useState(plan.title);
   const [description, setDescription] = useState(plan.description ?? "");
   const [endDate, setEndDate] = useState(plan.endDate ?? "");
@@ -447,6 +580,20 @@ function PlanEdit({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    void listGroups()
+      .then((items) => {
+        if (!cancelled) setGroups(items);
+      })
+      .catch((caught: unknown) => {
+        if (!cancelled) setError(message(caught));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function savePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = title.trim();
@@ -455,6 +602,7 @@ function PlanEdit({
       return;
     }
     const input: UpdatePlanRequest = { baseRevision: plan.revision };
+    if ((groupId || null) !== plan.groupId) input.groupId = groupId || null;
     if (name !== plan.title) input.title = name;
     if (description.trim() !== (plan.description ?? ""))
       input.description = description.trim() || null;
@@ -547,6 +695,19 @@ function PlanEdit({
         onSubmit={(event) => void savePlan(event)}
         noValidate
       >
+        <h2 className="form-section-title">{uiCopy.nameDirection}</h2>
+        <p className="plan-meta">
+          <span className="badge">
+            {plan.direction === "avoid" ? "不要做" : "要做"}
+          </span>
+          <span>
+            {plan.kind === "fixed"
+              ? "固定日期循环"
+              : plan.kind === "weekly"
+                ? "每周目标N天"
+                : "一次性任务"}
+          </span>
+        </p>
         <label htmlFor="edit-plan-title">计划名称</label>
         <input
           id="edit-plan-title"
@@ -561,12 +722,30 @@ function PlanEdit({
           maxLength={1000}
           onChange={(event) => setDescription(event.target.value)}
         />
+        <label htmlFor="edit-plan-group">分组</label>
+        <select
+          id="edit-plan-group"
+          value={groupId}
+          onChange={(event) => setGroupId(event.target.value)}
+        >
+          <option value="">未分组</option>
+          {groups.map((group) => (
+            <option key={group.id} value={group.id}>
+              {group.name}
+            </option>
+          ))}
+        </select>
+        <h2 className="form-section-title">执行方式与日期</h2>
         {plan.kind === "fixed" && (
           <fieldset className="plan-fieldset" id="edit-plan-weekdays">
             <legend>固定星期</legend>
             <div className="weekday-grid">
               {weekdays.map((day) => (
-                <label key={day.value} className="weekday-option">
+                <label
+                  key={day.value}
+                  className="weekday-option"
+                  aria-label={day.label}
+                >
                   <input
                     type="checkbox"
                     checked={selectedWeekdays.includes(day.value)}
@@ -578,7 +757,7 @@ function PlanEdit({
                       )
                     }
                   />
-                  {day.label}
+                  {day.label.slice(1)}
                 </label>
               ))}
             </div>
@@ -654,10 +833,18 @@ function PlanEdit({
   );
 }
 
-function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
+function PlanCreate({
+  onNavigate,
+  initialKind = "fixed",
+}: {
+  onNavigate: (path: string) => void;
+  initialKind?: PlanKind;
+}) {
   const initialZone =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Shanghai";
-  const [kind, setKind] = useState<PlanKind>("fixed");
+  const [groups, setGroups] = useState<GroupDto[]>([]);
+  const [groupId, setGroupId] = useState("");
+  const [kind, setKind] = useState<PlanKind>(initialKind);
   const [direction, setDirection] = useState<Direction>("do");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -672,6 +859,20 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
   const [error, setError] = useState("");
   const [errorField, setErrorField] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void listGroups()
+      .then((items) => {
+        if (!cancelled) setGroups(items);
+      })
+      .catch((caught: unknown) => {
+        if (!cancelled) setError(message(caught));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function invalid(field: string, text: string): void {
     setErrorField(field);
@@ -726,6 +927,7 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
       description: description.trim() || null,
       timezone,
       startDate,
+      groupId: groupId || null,
       ...(numericLabel.trim()
         ? {
             numericItem: {
@@ -773,13 +975,27 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
 
   return (
     <section className="content-panel" data-page-key="plan-create">
-      <p className="eyebrow">为自己定个可行的目标</p>
-      <h1>创建计划</h1>
+      <PageHeader
+        title={uiCopy.createTitle}
+        onBack={() => onNavigate("/plans")}
+        action={
+          <button
+            type="submit"
+            form="plan-create-form"
+            className="text-button"
+            disabled={busy}
+          >
+            {busy ? "保存中…" : "保存"}
+          </button>
+        }
+      />
       <form
         className="plan-form"
+        id="plan-create-form"
         onSubmit={(event) => void submit(event)}
         noValidate
       >
+        <h2 className="form-section-title">{uiCopy.nameDirection}</h2>
         <label htmlFor="plan-title">计划名称</label>
         <input
           id="plan-title"
@@ -795,16 +1011,6 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
           onChange={(event) => setDescription(event.target.value)}
           maxLength={1000}
         />
-        <label htmlFor="plan-kind">计划类型</label>
-        <select
-          id="plan-kind"
-          value={kind}
-          onChange={(event) => setKind(event.target.value as PlanKind)}
-        >
-          <option value="fixed">固定星期</option>
-          <option value="weekly">每周目标</option>
-          <option value="one_time">一次性任务</option>
-        </select>
         {kind !== "one_time" && (
           <fieldset className="plan-fieldset">
             <legend>方向</legend>
@@ -830,6 +1036,41 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
             </label>
           </fieldset>
         )}
+        <label htmlFor="plan-group">分组</label>
+        <select
+          id="plan-group"
+          value={groupId}
+          onChange={(event) => setGroupId(event.target.value)}
+        >
+          <option value="">未分组</option>
+          {groups.map((group) => (
+            <option key={group.id} value={group.id}>
+              {group.name}
+            </option>
+          ))}
+        </select>
+        <h2 className="form-section-title">执行方式</h2>
+        <div className="segmented-control" aria-label="计划类型">
+          {(
+            [
+              { kind: "fixed", label: "固定日期循环" },
+              { kind: "weekly", label: "每周目标N天" },
+              { kind: "one_time", label: "一次性任务" },
+            ] as const
+          ).map((item) => (
+            <button
+              type="button"
+              key={item.kind}
+              aria-pressed={kind === item.kind}
+              onClick={() => setKind(item.kind)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <h2 className="form-section-title">
+          {kind === "one_time" ? "截止日期" : "执行安排"}
+        </h2>
         <label htmlFor="plan-timezone">计划时区</label>
         <input
           id="plan-timezone"
@@ -863,7 +1104,11 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
             <legend>每周哪几天</legend>
             <div className="weekday-grid">
               {weekdays.map((day) => (
-                <label key={day.value} className="weekday-option">
+                <label
+                  key={day.value}
+                  className="weekday-option"
+                  aria-label={day.label}
+                >
                   <input
                     type="checkbox"
                     checked={selectedWeekdays.includes(day.value)}
@@ -875,7 +1120,7 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
                       )
                     }
                   />
-                  {day.label}
+                  {day.label.slice(1)}
                 </label>
               ))}
             </div>
@@ -930,6 +1175,7 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
             />
           </>
         )}
+        <h2 className="form-section-title">{uiCopy.optionalHeading}</h2>
         <fieldset className="plan-fieldset">
           <legend>数值记录（可选）</legend>
           <p className="hint">
@@ -976,9 +1222,11 @@ function PlanCreate({ onNavigate }: { onNavigate: (path: string) => void }) {
 function PlanDetail({
   id,
   onNavigate,
+  view = "detail",
 }: {
   id: string;
   onNavigate: (path: string) => void;
+  view?: "detail" | "edit" | "share";
 }) {
   const [plan, setPlan] = useState<PlanDto | null>(null);
   const [error, setError] = useState("");
@@ -986,7 +1234,6 @@ function PlanDetail({
     "pause" | "resume" | "archive" | "delete" | null
   >(null);
   const [busy, setBusy] = useState(false);
-  const [editing, setEditing] = useState(false);
   useEffect(() => {
     let cancelled = false;
     void getPlan(id)
@@ -1029,31 +1276,81 @@ function PlanDetail({
   return (
     <section
       className="content-panel"
-      data-page-key="plan-detail"
+      data-page-key={
+        view === "detail"
+          ? "plan-detail"
+          : view === "edit"
+            ? "plan-edit"
+            : "share-plan"
+      }
       data-lifecycle={plan?.lifecycle}
       data-rule-version={plan?.ruleVersion}
       data-numeric-version={plan?.numericItem?.version}
     >
-      <PlanLink href="/plans" onNavigate={onNavigate} className="text-button">
-        ← 返回计划
-      </PlanLink>
+      {view !== "share" && (
+        <PageHeader
+          title={view === "edit" ? "编辑计划" : "计划"}
+          onBack={() =>
+            onNavigate(view === "detail" ? "/plans" : `/plans/${id}`)
+          }
+          action={
+            view === "detail" && plan && plan.lifecycle !== "archived" ? (
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => onNavigate(`/plans/${id}/edit`)}
+              >
+                编辑
+              </button>
+            ) : undefined
+          }
+        />
+      )}
       {!plan && !error && <p role="status">正在读取计划…</p>}
       {error && (
         <p className="form-error" role="alert">
           {error}
         </p>
       )}
-      {plan && (
+      {plan &&
+        view === "edit" &&
+        (plan.lifecycle !== "archived" ? (
+          <PlanEdit
+            key={`${plan.id}-${plan.revision}`}
+            plan={plan}
+            onSaved={(next) => {
+              setPlan(next);
+              onNavigate(`/plans/${id}`);
+            }}
+          />
+        ) : (
+          <p className="hint">归档计划需先恢复后编辑。</p>
+        ))}
+      {plan && view === "share" && (
+        <ShareManager plan={plan} onBack={() => onNavigate(`/plans/${id}`)} />
+      )}
+      {plan && view === "detail" && (
         <>
-          <p className="eyebrow">
-            {plan.kind === "one_time"
-              ? "一次性任务"
-              : plan.kind === "weekly"
-                ? "周目标"
-                : "固定星期"}
-          </p>
-          <h1>{plan.title}</h1>
-          <div className="settings-card plan-detail-card">
+          <div className="plan-hero">
+            <p className="eyebrow">
+              {plan.kind === "one_time"
+                ? "一次性任务"
+                : plan.kind === "weekly"
+                  ? "周目标"
+                  : "固定星期"}
+            </p>
+            <h1>{plan.title}</h1>
+            <p className="plan-meta">
+              <span className="badge">
+                {plan.direction === "avoid" ? "不要做" : "要做"}
+              </span>
+              <span>{lifecycleLabels[plan.lifecycle]}</span>
+            </p>
+            {plan.description && <p>{plan.description}</p>}
+          </div>
+          <PlanStatistics planId={plan.id} revision={plan.revision} />
+          <details className="settings-card plan-detail-card">
+            <summary>计划信息与规则</summary>
             <dl>
               <dt>状态</dt>
               <dd>{lifecycleLabels[plan.lifecycle]}</dd>
@@ -1111,20 +1408,25 @@ function PlanDetail({
                 V{plan.ruleVersion}，{plan.ruleEffectiveDate} 生效
               </dd>
             </dl>
-            {plan.description && <p>{plan.description}</p>}
-          </div>
+          </details>
           {plan.kind === "one_time" && <OneTimeResult plan={plan} />}
           {plan.kind !== "one_time" && <PlanHistory plan={plan} />}
-          <PlanStatistics planId={plan.id} revision={plan.revision} />
-          <ShareManager plan={plan} />
+          <PlanLink
+            href={`/plans/${plan.id}/share`}
+            onNavigate={onNavigate}
+            className="settings-row"
+          >
+            <span>分享设置</span>
+            <Icon name="next" />
+          </PlanLink>
           <div className="plan-lifecycle-actions" aria-label="计划状态操作">
             {plan.lifecycle !== "archived" && (
               <button
                 type="button"
                 className="secondary-button"
-                onClick={() => setEditing((value) => !value)}
+                onClick={() => onNavigate(`/plans/${plan.id}/edit`)}
               >
-                {editing ? "收起编辑" : "编辑计划"}
+                编辑计划
               </button>
             )}
             {plan.lifecycle === "active" && (
@@ -1162,16 +1464,6 @@ function PlanDetail({
               删除
             </button>
           </div>
-          {editing && plan.lifecycle !== "archived" && (
-            <PlanEdit
-              key={`${plan.id}-${plan.revision}`}
-              plan={plan}
-              onSaved={(next) => {
-                setPlan(next);
-                setEditing(false);
-              }}
-            />
-          )}
           {pendingAction && (
             <ModalDialog
               className="plan-confirm"
@@ -1235,13 +1527,25 @@ export function PlansPage({
   path: string;
   onNavigate: (path: string) => void;
 }) {
-  if (path === "/plans/new") return <PlanCreate onNavigate={onNavigate} />;
-  if (path.startsWith("/plans/"))
+  const [pathname = "", query = ""] = path.split("?");
+  if (pathname === "/plans/groups")
+    return <GroupManagementPage onNavigate={onNavigate} />;
+  if (pathname === "/plans/new") {
+    const requested = new URLSearchParams(query).get("kind");
+    const initialKind =
+      requested === "weekly" || requested === "one_time" ? requested : "fixed";
+    return <PlanCreate initialKind={initialKind} onNavigate={onNavigate} />;
+  }
+  if (pathname.startsWith("/plans/")) {
+    const [, , id = "", child] = pathname.split("/");
     return (
       <PlanDetail
-        id={path.slice("/plans/".length).split("?")[0] ?? ""}
+        key={id}
+        id={id}
+        view={child === "edit" || child === "share" ? child : "detail"}
         onNavigate={onNavigate}
       />
     );
+  }
   return <PlanList onNavigate={onNavigate} />;
 }

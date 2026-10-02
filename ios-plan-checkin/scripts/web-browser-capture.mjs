@@ -348,6 +348,18 @@ try {
     cdp.command("Log.enable"),
     cdp.command("Network.enable"),
   ]);
+  if (args.get("--allow-local-certificate") === "true") {
+    if (!(
+      ["localhost", "127.0.0.1"].includes(parsedUrl.hostname) ||
+      /^(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)/.test(
+        parsedUrl.hostname,
+      )
+    ))
+      throw new Error(
+        "Certificate exception is restricted to isolated local network probes",
+      );
+    await cdp.command("Security.setIgnoreCertificateErrors", { ignore: true });
+  }
   await cdp.command("Emulation.setDeviceMetricsOverride", {
     width,
     height,
@@ -382,6 +394,7 @@ try {
     throw new Error(
       "browser page clock was not frozen at the requested instant",
     );
+  await cdp.evaluate("document.fonts.ready.then(() => true)");
   const before = await cdp.command("Page.captureScreenshot", {
     format: "png",
     captureBeyondViewport: false,
@@ -395,6 +408,42 @@ try {
   cdp.actionTrace = actionTrace;
   const intermediateFiles = [];
   for (const [index, step] of steps.entries()) {
+    if (step?.action === "viewport") {
+      if (
+        !Number.isInteger(step.width) ||
+        step.width < 240 ||
+        !Number.isInteger(step.height) ||
+        step.height < 320
+      )
+        throw new Error("Invalid responsive probe viewport");
+      await cdp.command("Emulation.setDeviceMetricsOverride", {
+        width: step.width,
+        height: step.height,
+        deviceScaleFactor: 1,
+        mobile: step.width < 768,
+      });
+      actionTrace.push({
+        action: step.action,
+        width: step.width,
+        height: step.height,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+    if (step?.action === "color-scheme") {
+      if (!["light", "dark"].includes(step.value))
+        throw new Error("Invalid probe color scheme");
+      await cdp.command("Emulation.setEmulatedMedia", {
+        features: [{ name: "prefers-color-scheme", value: step.value }],
+      });
+      actionTrace.push({
+        action: step.action,
+        value: step.value,
+        at: new Date().toISOString(),
+      });
+      continue;
+    }
+
     if (step?.action === "probe-private-media") {
       if (
         !["127.0.0.1", "localhost"].includes(parsedUrl.hostname) ||
@@ -566,6 +615,29 @@ try {
       const filename = `screen-${step.label}.png`;
       if (intermediateFiles.includes(filename))
         throw new Error(`duplicate snapshot label at step ${index + 1}`);
+      await cdp.evaluate("document.fonts.ready.then(() => true)");
+      const layout = await cdp.evaluate(`(() => {
+        const root = document.documentElement;
+        const container = document.querySelector('.app-layout,.auth-layout,.loading-screen');
+        const bounds = container?.getBoundingClientRect();
+        const navigation = document.querySelector('.bottom-nav');
+        const controls = [...document.querySelectorAll('button,a,input,select,textarea')];
+        const outside = controls.filter((node) => { const box = node.getBoundingClientRect(); return box.width > 0 && box.height > 0 && (box.right > innerWidth + .5 || box.left < -.5); });
+        return { pathname: location.pathname, viewport: { width: innerWidth, height: innerHeight }, documentWidth: root.scrollWidth,
+          horizontalOverflow: root.scrollWidth > innerWidth, controlsOutsideViewportWidth: outside.length,
+          container: bounds ? { width: bounds.width, left: bounds.left, right: bounds.right, top: bounds.top } : null,
+          bodyFont: getComputedStyle(document.body).fontFamily, fontLoaded: [...document.fonts].some((font) => font.family === 'Noto Sans SC' && font.status === 'loaded'),
+          background: getComputedStyle(root).backgroundColor, surface: getComputedStyle(root).getPropertyValue('--ui-surface').trim(),
+          navigationLabels: navigation ? [...navigation.querySelectorAll('.bottom-link')].map((link) => link.textContent.trim()) : [],
+          theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+          modalOpen: Boolean(document.querySelector('dialog[open]')) };
+      })()`);
+      const layoutFilename = `layout-${step.label}.json`;
+      await writeFile(
+        join(output, layoutFilename),
+        `${JSON.stringify(layout, null, 2)}\n`,
+      );
+      intermediateFiles.push(layoutFilename);
       const frame = await cdp.command("Page.captureScreenshot", {
         format: "png",
         captureBeyondViewport: false,

@@ -1,0 +1,1303 @@
+{
+  "nodes": [
+    {
+      "nodeId": "2",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "RootWebArea"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 144
+      },
+      "name": {
+        "type": "computedString",
+        "value": "行迹 · 计划打卡",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label",
+            "superseded": true
+          },
+          {
+            "type": "relatedElement",
+            "value": {
+              "type": "computedString",
+              "value": "行迹 · 计划打卡"
+            },
+            "nativeSource": "title"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "focusable",
+          "value": {
+            "type": "booleanOrUndefined",
+            "value": true
+          }
+        },
+        {
+          "name": "url",
+          "value": {
+            "type": "string",
+            "value": "https://172.27.69.153:5173/login"
+          }
+        }
+      ],
+      "childIds": [
+        "4"
+      ],
+      "backendDOMNodeId": 2,
+      "frameId": "F61623B0875A902E7D49FA19D5F004A6"
+    },
+    {
+      "nodeId": "4",
+      "ignored": true,
+      "ignoredReasons": [
+        {
+          "name": "uninteresting",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ],
+      "role": {
+        "type": "role",
+        "value": "none"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 0
+      },
+      "parentId": "2",
+      "childIds": [
+        "12"
+      ],
+      "backendDOMNodeId": 4
+    },
+    {
+      "nodeId": "12",
+      "ignored": true,
+      "ignoredReasons": [
+        {
+          "name": "uninteresting",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ],
+      "role": {
+        "type": "role",
+        "value": "none"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 0
+      },
+      "parentId": "4",
+      "childIds": [
+        "13"
+      ],
+      "backendDOMNodeId": 12
+    },
+    {
+      "nodeId": "13",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "generic"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 88
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "12",
+      "childIds": [
+        "36"
+      ],
+      "backendDOMNodeId": 13
+    },
+    {
+      "nodeId": "36",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "main"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 118
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "attribute",
+            "attribute": "title"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "13",
+      "childIds": [
+        "34",
+        "35"
+      ],
+      "backendDOMNodeId": 36
+    },
+    {
+      "nodeId": "34",
+      "ignored": true,
+      "ignoredReasons": [
+        {
+          "name": "uninteresting",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ],
+      "role": {
+        "type": "role",
+        "value": "none"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 0
+      },
+      "parentId": "36",
+      "childIds": [
+        "20",
+        "21"
+      ],
+      "backendDOMNodeId": 34
+    },
+    {
+      "nodeId": "20",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "heading"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 96
+      },
+      "name": {
+        "type": "computedString",
+        "value": "行迹",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "行迹"
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "level",
+          "value": {
+            "type": "integer",
+            "value": 1
+          }
+        }
+      ],
+      "parentId": "34",
+      "childIds": [
+        "37"
+      ],
+      "backendDOMNodeId": 20
+    },
+    {
+      "nodeId": "21",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "paragraph"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 133
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "34",
+      "childIds": [
+        "38"
+      ],
+      "backendDOMNodeId": 21
+    },
+    {
+      "nodeId": "35",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "region"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 143
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号登录",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "value": {
+              "type": "computedString",
+              "value": "手机号登录"
+            },
+            "attribute": "aria-labelledby",
+            "attributeValue": {
+              "type": "idrefList",
+              "value": "auth-title",
+              "relatedNodes": [
+                {
+                  "backendDOMNodeId": 31,
+                  "idref": "auth-title",
+                  "text": "手机号登录"
+                }
+              ]
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label",
+            "superseded": true
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "labelledby",
+          "value": {
+            "type": "nodeList",
+            "relatedNodes": [
+              {
+                "backendDOMNodeId": 31,
+                "idref": "auth-title",
+                "text": "手机号登录"
+              }
+            ]
+          }
+        }
+      ],
+      "parentId": "36",
+      "childIds": [
+        "31",
+        "32",
+        "33"
+      ],
+      "backendDOMNodeId": 35
+    },
+    {
+      "nodeId": "37",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "行迹",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "行迹"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "20",
+      "childIds": [
+        "-1000000066"
+      ],
+      "backendDOMNodeId": 37
+    },
+    {
+      "nodeId": "38",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "安静地记录，诚实地回顾",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "安静地记录，诚实地回顾"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "21",
+      "childIds": [
+        "-1000000067"
+      ],
+      "backendDOMNodeId": 38
+    },
+    {
+      "nodeId": "31",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "heading"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 96
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号登录",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "手机号登录"
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "level",
+          "value": {
+            "type": "integer",
+            "value": 2
+          }
+        }
+      ],
+      "parentId": "35",
+      "childIds": [
+        "46"
+      ],
+      "backendDOMNodeId": 31
+    },
+    {
+      "nodeId": "32",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "form"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 87
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "attribute",
+            "attribute": "title"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "35",
+      "childIds": [
+        "26",
+        "27",
+        "28",
+        "29",
+        "30"
+      ],
+      "backendDOMNodeId": 32
+    },
+    {
+      "nodeId": "33",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "button"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 9
+      },
+      "name": {
+        "type": "computedString",
+        "value": "已申请注销？撤销账号注销",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "relatedElement",
+            "nativeSource": "label"
+          },
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "已申请注销？撤销账号注销"
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "invalid",
+          "value": {
+            "type": "token",
+            "value": "false"
+          }
+        },
+        {
+          "name": "focusable",
+          "value": {
+            "type": "booleanOrUndefined",
+            "value": true
+          }
+        }
+      ],
+      "parentId": "35",
+      "childIds": [
+        "45"
+      ],
+      "backendDOMNodeId": 33
+    },
+    {
+      "nodeId": "-1000000066",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "行迹"
+      },
+      "properties": [],
+      "parentId": "37",
+      "childIds": []
+    },
+    {
+      "nodeId": "-1000000067",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "安静地记录，诚实地回顾"
+      },
+      "properties": [],
+      "parentId": "38",
+      "childIds": []
+    },
+    {
+      "nodeId": "46",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号登录",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "手机号登录"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "31",
+      "childIds": [
+        "-1000000073"
+      ],
+      "backendDOMNodeId": 46
+    },
+    {
+      "nodeId": "26",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "LabelText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 104
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "attribute",
+            "attribute": "title"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "32",
+      "childIds": [
+        "39"
+      ],
+      "backendDOMNodeId": 26
+    },
+    {
+      "nodeId": "27",
+      "ignored": true,
+      "ignoredReasons": [
+        {
+          "name": "uninteresting",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ],
+      "role": {
+        "type": "role",
+        "value": "none"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 0
+      },
+      "parentId": "32",
+      "childIds": [
+        "25"
+      ],
+      "backendDOMNodeId": 27
+    },
+    {
+      "nodeId": "25",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "textbox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 170
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "relatedElement",
+            "value": {
+              "type": "computedString",
+              "value": "手机号"
+            },
+            "nativeSource": "labelfor",
+            "nativeSourceValue": {
+              "type": "nodeList",
+              "relatedNodes": [
+                {
+                  "backendDOMNodeId": 26,
+                  "text": "手机号"
+                }
+              ]
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          },
+          {
+            "type": "placeholder",
+            "value": {
+              "type": "computedString",
+              "value": "请输入手机号"
+            },
+            "attribute": "placeholder",
+            "attributeValue": {
+              "type": "string",
+              "value": "请输入手机号"
+            },
+            "superseded": true
+          },
+          {
+            "type": "placeholder",
+            "attribute": "aria-placeholder",
+            "superseded": true
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "invalid",
+          "value": {
+            "type": "token",
+            "value": "false"
+          }
+        },
+        {
+          "name": "focusable",
+          "value": {
+            "type": "booleanOrUndefined",
+            "value": true
+          }
+        },
+        {
+          "name": "editable",
+          "value": {
+            "type": "token",
+            "value": "plaintext"
+          }
+        },
+        {
+          "name": "settable",
+          "value": {
+            "type": "booleanOrUndefined",
+            "value": true
+          }
+        },
+        {
+          "name": "multiline",
+          "value": {
+            "type": "boolean",
+            "value": false
+          }
+        },
+        {
+          "name": "readonly",
+          "value": {
+            "type": "boolean",
+            "value": false
+          }
+        },
+        {
+          "name": "required",
+          "value": {
+            "type": "boolean",
+            "value": false
+          }
+        },
+        {
+          "name": "labelledby",
+          "value": {
+            "type": "nodeList",
+            "relatedNodes": [
+              {
+                "backendDOMNodeId": 26,
+                "text": "手机号"
+              }
+            ]
+          }
+        }
+      ],
+      "parentId": "27",
+      "childIds": [
+        "23",
+        "22"
+      ],
+      "backendDOMNodeId": 25
+    },
+    {
+      "nodeId": "28",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "paragraph"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 133
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "32",
+      "childIds": [
+        "42"
+      ],
+      "backendDOMNodeId": 28
+    },
+    {
+      "nodeId": "29",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "button"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 9
+      },
+      "name": {
+        "type": "computedString",
+        "value": "获取验证码",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          },
+          {
+            "type": "relatedElement",
+            "nativeSource": "label"
+          },
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "获取验证码"
+            }
+          },
+          {
+            "type": "attribute",
+            "attribute": "title",
+            "superseded": true
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "disabled",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        },
+        {
+          "name": "invalid",
+          "value": {
+            "type": "token",
+            "value": "false"
+          }
+        }
+      ],
+      "parentId": "32",
+      "childIds": [
+        "43"
+      ],
+      "backendDOMNodeId": 29
+    },
+    {
+      "nodeId": "30",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "paragraph"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 133
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "32",
+      "childIds": [
+        "44"
+      ],
+      "backendDOMNodeId": 30
+    },
+    {
+      "nodeId": "45",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "已申请注销？撤销账号注销",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "已申请注销？撤销账号注销"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "33",
+      "childIds": [
+        "-1000000072"
+      ],
+      "backendDOMNodeId": 45
+    },
+    {
+      "nodeId": "-1000000073",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号登录"
+      },
+      "properties": [],
+      "parentId": "46",
+      "childIds": []
+    },
+    {
+      "nodeId": "39",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "手机号"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "26",
+      "childIds": [
+        "-1000000068"
+      ],
+      "backendDOMNodeId": 39
+    },
+    {
+      "nodeId": "23",
+      "ignored": true,
+      "ignoredReasons": [],
+      "role": {
+        "type": "role",
+        "value": "none"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 0
+      },
+      "parentId": "25",
+      "childIds": [],
+      "backendDOMNodeId": 23
+    },
+    {
+      "nodeId": "22",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "generic"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 88
+      },
+      "name": {
+        "type": "computedString",
+        "value": "",
+        "sources": [
+          {
+            "type": "relatedElement",
+            "attribute": "aria-labelledby"
+          },
+          {
+            "type": "attribute",
+            "attribute": "aria-label"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "editable",
+          "value": {
+            "type": "token",
+            "value": "plaintext"
+          }
+        }
+      ],
+      "parentId": "25",
+      "childIds": [],
+      "backendDOMNodeId": 22
+    },
+    {
+      "nodeId": "42",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "继续即代表同意《服务协议》和《隐私政策》",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "继续即代表同意《服务协议》和《隐私政策》"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "28",
+      "childIds": [
+        "-1000000069"
+      ],
+      "backendDOMNodeId": 42
+    },
+    {
+      "nodeId": "43",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "获取验证码",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "获取验证码"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "29",
+      "childIds": [
+        "-1000000070"
+      ],
+      "backendDOMNodeId": 43
+    },
+    {
+      "nodeId": "44",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "StaticText"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 158
+      },
+      "name": {
+        "type": "computedString",
+        "value": "本地测试若未接入短信网关，验证码不会发送到手机。",
+        "sources": [
+          {
+            "type": "contents",
+            "value": {
+              "type": "computedString",
+              "value": "本地测试若未接入短信网关，验证码不会发送到手机。"
+            }
+          }
+        ]
+      },
+      "properties": [],
+      "parentId": "30",
+      "childIds": [
+        "-1000000071"
+      ],
+      "backendDOMNodeId": 44
+    },
+    {
+      "nodeId": "-1000000072",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "已申请注销？撤销账号注销"
+      },
+      "properties": [],
+      "parentId": "45",
+      "childIds": []
+    },
+    {
+      "nodeId": "-1000000068",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "手机号"
+      },
+      "properties": [],
+      "parentId": "39",
+      "childIds": []
+    },
+    {
+      "nodeId": "-1000000069",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "继续即代表同意《服务协议》和《隐私政策》"
+      },
+      "properties": [],
+      "parentId": "42",
+      "childIds": []
+    },
+    {
+      "nodeId": "-1000000070",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "获取验证码"
+      },
+      "properties": [],
+      "parentId": "43",
+      "childIds": []
+    },
+    {
+      "nodeId": "-1000000071",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "InlineTextBox"
+      },
+      "chromeRole": {
+        "type": "internalRole",
+        "value": 101
+      },
+      "name": {
+        "type": "computedString",
+        "value": "本地测试若未接入短信网关，验证码不会发送到手机。"
+      },
+      "properties": [],
+      "parentId": "44",
+      "childIds": []
+    }
+  ]
+}

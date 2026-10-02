@@ -1,0 +1,35 @@
+WEB-22 local LAN recovery observation
+Date: 2026-10-02 23:14-23:45 CST
+Workspace: F:\CX_notes\cx-learn-notes\ios-plan-checkin
+Scope: local development runtime and LAN transport only; not formal browser acceptance.
+
+Initial state
+- WLAN IPv4 changed from 172.27.117.5 to 172.27.69.153.
+- The previous .env Web/object origins and development certificate still used the old IP.
+- Web/API/dependency listeners and Docker Desktop Linux engine were stopped.
+- Existing user-authorized firewall rule remained Private + LocalSubnet + TCP 5173.
+
+Repair
+- Started Docker Desktop; PostgreSQL, Redis and object-storage Compose services became healthy.
+- Updated only WEB_ORIGIN, OBJECT_PUBLIC_ENDPOINT, PLAN_CHECKIN_OBJECT_ALLOWED_ORIGINS and API_HOST in ignored local .env. A full local backup was kept under ignored apps/api/.local; no secret value is copied here.
+- Regenerated ignored local certificate/key for 172.27.69.153, 127.0.0.1 and localhost. Certificate SHA-256 fingerprint: 8B:5B:BB:29:4C:76:42:60:1C:7C:30:F3:26:3D:4A:F1:45:2F:9B:FE:5B:E7:35:9D:6C:82:CB:93:6B:6B:1B:0E. Expires 2026-11-01 23:19:19 CST.
+- Database migration command exited 0.
+- Added scripts/start-lan.ps1 for repeatable IP/config/certificate/dependency/process health recovery.
+- PowerShell parser returned no syntax errors. PowerShell 5.1 execution correctly reported that PowerShell 7 is required; PowerShell 7.6.5 execution reused healthy processes and exited 0.
+- The system PATH Node is v22.12.0, below the project requirement. The startup script selects the highest available compatible Node; it selected the bundled Node v24.19.0. PowerShell 7 -Restart stopped and relaunched API/Worker/Web, exiting 0.
+- The system pnpm shim currently fails inside old Corepack with a registry signing-key mismatch. Added -Build to compile installed workspace packages directly with compatible Node, TypeScript and Vite. Actual -Build run compiled contracts/domain/design tokens/API/Worker and typechecked/built Web, then stopped and relaunched API PID 17428, Worker PID 54220 and Web PID 15628. It exited 0 and printed LAN_URL=https://172.27.69.153:5173/. Fresh dependency installation still needs a working pnpm; this is a host tooling limit, not an observed Web route failure.
+
+Transport and route checks after recovery
+- HTTPS GET /, /login, /plans, /api/v1/health/live and /api/v1/health/ready each returned 200 from the host. Host-side probe bypassed the self-signed certificate warning; it does not prove remote-device trust.
+- node --env-file=.env scripts/lan-object-smoke.mjs exited 0: temporary signed object fetched through the same-origin HTTPS proxy with exact bytes, then deleted.
+- A Docker container reached https://172.27.69.153:5173/api/v1/health/live, showing that the entrance is reachable from a non-loopback network namespace. No physical phone/second computer was tested.
+- Project listeners: Web 0.0.0.0:5173; API 127.0.0.1:3000; Compose PostgreSQL 127.0.0.1:15432, Redis 127.0.0.1:16379, object storage 127.0.0.1:19000. Docker Compose ps confirmed those three loopback mappings.
+- WLAN profile Private. Existing firewall rule Plan Checkin Web LAN 5173: enabled, inbound, allow, Private, TCP 5173, RemoteAddress LocalSubnet.
+
+Current limitations and evidence boundary
+- A second physical LAN device and full browser workflow were not observed, so remote-browser reachability and Web ATDD cases remain unverified.
+- The development certificate is self-signed. Each remote browser/device must trust the public certificate for secure-context features such as Web Push; bypassing a warning alone is insufficient.
+- Local SMS_PROVIDER=stub does not send a phone SMS. OTP is stored only in ignored apps/api/.local/sms-outbox-login.json for local development; real SMS needs gateway URL/token and delivery verification. No OTP or token appears in this file.
+- Web intentionally requires an active network connection. Web Push background delivery remains best effort per Web PRD.
+- LAN URL changes when the WLAN IP changes; rerun scripts/start-lan.ps1 and use its new LAN_URL.
+- This is not evidence of production Kubernetes deployment, complete Web acceptance, or iOS cross-device verification.

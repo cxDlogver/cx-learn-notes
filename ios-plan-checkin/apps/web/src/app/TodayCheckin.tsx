@@ -16,6 +16,8 @@ import {
 } from "../data/api";
 import { newUuid } from "../data/uuid";
 import { PrivateMediaGallery } from "./PrivateMediaGallery";
+import { ModalDialog } from "./ModalDialog";
+import { Icon } from "./MobileUI";
 
 const allowedMime = new Set<CreateUploadIntentRequest["mime"]>([
   "image/jpeg",
@@ -85,12 +87,18 @@ export function TodayCheckin({
   item,
   onSaved,
   mode = "today",
+  onOpenChange,
 }: {
   item: TodayItemDto;
   onSaved: () => void;
   mode?: "today" | "history";
+  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
+  function changeOpen(next: boolean) {
+    setOpen(next);
+    onOpenChange?.(next);
+  }
   const [record, setRecord] = useState<CheckinDto | null>(null);
   const [result, setResult] = useState<CheckinResult>("success");
   const [note, setNote] = useState("");
@@ -318,21 +326,90 @@ export function TodayCheckin({
   if (item.plan.kind === "one_time") return null;
   return (
     <div className="today-checkin">
-      <button
-        className="secondary-button"
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-controls={`checkin-${item.plan.id}`}
-      >
-        {item.record
-          ? "查看或修正记录"
-          : mode === "history"
-            ? "补记这一天"
-            : "今日打卡"}
-      </button>
+      {!item.record && mode === "today" && item.plan.kind === "fixed" ? (
+        <div className="quick-record-actions" aria-label="选择本次结果">
+          {(
+            [
+              "success",
+              "failure",
+              ...(item.plan.direction === "do" ? ["skip"] : []),
+            ] as CheckinResult[]
+          ).map((value) => (
+            <button
+              className="secondary-button"
+              type="button"
+              key={value}
+              disabled={!canEdit}
+              onClick={() => {
+                setResult(value);
+                changeOpen(true);
+              }}
+            >
+              {value === "success"
+                ? item.plan.direction === "avoid"
+                  ? "守住了"
+                  : "完成"
+                : value === "failure"
+                  ? item.plan.direction === "avoid"
+                    ? "发生了"
+                    : "未完成"
+                  : "跳过"}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button
+          className="secondary-button"
+          id={`record-trigger-${item.plan.id}`}
+          type="button"
+          onClick={() => changeOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={`checkin-${item.plan.id}`}
+        >
+          {item.record
+            ? "查看或修正记录"
+            : mode === "history"
+              ? "补记这一天"
+              : "记录一次"}
+        </button>
+      )}
       {open && (
-        <div id={`checkin-${item.plan.id}`} className="checkin-panel">
+        <ModalDialog
+          id={`checkin-${item.plan.id}`}
+          className="record-sheet"
+          role="dialog"
+          fallbackFocusId={`record-trigger-${item.plan.id}`}
+          label={
+            mode === "history" && !item.record
+              ? "补记历史日期"
+              : item.record
+                ? "修改记录"
+                : "记录"
+          }
+          onClose={() => {
+            if (!busy) changeOpen(false);
+          }}
+        >
+          <header className="sheet-header">
+            <h2>
+              {mode === "history" && !item.record
+                ? "补记历史日期"
+                : item.record
+                  ? "修改记录"
+                  : "记录"}
+            </h2>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="关闭记录"
+              data-initial-focus
+              disabled={busy}
+              onClick={() => changeOpen(false)}
+            >
+              <Icon name="close" />
+            </button>
+          </header>
           <p className="checkin-date">
             业务日期：{item.planBusinessDate} · {item.plan.timezone}
           </p>
@@ -350,7 +427,7 @@ export function TodayCheckin({
                 }
               >
                 <legend>本次结果</legend>
-                <div className="checkin-options">
+                <div className="record-options">
                   <label>
                     <input
                       type="radio"
@@ -359,7 +436,7 @@ export function TodayCheckin({
                       checked={result === "success"}
                       onChange={() => setResult("success")}
                     />
-                    {item.plan.direction === "avoid" ? "守住目标" : "已完成"}
+                    {item.plan.direction === "avoid" ? "守住了" : "完成"}
                   </label>
                   <label>
                     <input
@@ -369,7 +446,7 @@ export function TodayCheckin({
                       checked={result === "failure"}
                       onChange={() => setResult("failure")}
                     />
-                    {item.plan.direction === "avoid" ? "未守住" : "未完成"}
+                    {item.plan.direction === "avoid" ? "发生了" : "未完成"}
                   </label>
                   <label>
                     <input
@@ -562,7 +639,7 @@ export function TodayCheckin({
               </div>
             </form>
           )}
-        </div>
+        </ModalDialog>
       )}
     </div>
   );

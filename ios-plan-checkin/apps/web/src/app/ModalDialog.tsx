@@ -8,6 +8,8 @@ export function ModalDialog({
   label,
   fallbackFocusId,
   onClose,
+  role = "alertdialog",
+  id,
 }: {
   children: ReactNode;
   className?: string;
@@ -16,6 +18,8 @@ export function ModalDialog({
   label?: string;
   fallbackFocusId?: string;
   onClose: () => void;
+  role?: "dialog" | "alertdialog";
+  id?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const onCloseRef = useRef(onClose);
@@ -38,8 +42,9 @@ export function ModalDialog({
   return (
     <dialog
       ref={dialog}
+      id={id}
       className={`modal-dialog ${className ?? ""}`.trim()}
-      role="alertdialog"
+      role={role}
       aria-modal="true"
       aria-label={label}
       aria-labelledby={labelledBy}

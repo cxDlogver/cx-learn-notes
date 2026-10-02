@@ -283,11 +283,17 @@ function DeletionSection({ onDeleted }: { onDeleted: () => void }) {
   );
 }
 
-export function DataManagement({ onDeleted }: { onDeleted: () => void }) {
+export function DataManagement({
+  onDeleted,
+  section,
+}: {
+  onDeleted: () => void;
+  section?: "exports" | "deletion";
+}) {
   return (
     <>
-      <ExportsSection />
-      <DeletionSection onDeleted={onDeleted} />
+      {section !== "deletion" && <ExportsSection />}
+      {section !== "exports" && <DeletionSection onDeleted={onDeleted} />}
     </>
   );
 }
