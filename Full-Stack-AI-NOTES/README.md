@@ -46,7 +46,7 @@ Full-Stack-AI-NOTES/
 ├── QA.md
 │
 ├── *.md
-│   └── 知识教程、专题笔记、项目复盘、面试与工程文档
+│   └── 知识教程、专题笔记、工程知识与知识索引入口；知识点正文保持脱离具体项目上下文
 │
 ├── skills/
 │   └── knowledge-document-organizer/
@@ -70,6 +70,21 @@ Full-Stack-AI-NOTES/
 - **完整代码资源必须放在 `source/`。** Markdown 正文可以保留用于解释的短代码片段，但独立 Demo、脚本、HTML 示例、可运行项目和测试代码都进入 `source/`。
 - **PDF 等附件必须放在 `resource/`。** PDF、简历导出、资料附件、Prompt 或其他不适合作为知识正文维护的文件统一放入该目录。
 - **根目录优先保留 Markdown 知识正文和入口文件。**
+- **知识点正文必须能够脱离具体项目独立阅读。** 项目仓库可以提供实践证据和真实实现，但不能成为通用知识正文的默认上下文。
+- **知识体系索引只直接链接 `Full-Stack-AI-NOTES` 内部内容。** 如果需要关联其他项目目录，先建立或使用本目录中的通用知识正文，再由正文提供“项目实践入口”；索引不直接跨目录链接项目文档。
+- **通用知识与项目实现避免重复维护。** 已有完整项目文档时，通用正文保留稳定原理、机制、边界和通用示例，项目目录保留真实代码、配置、版本和工程取舍。
+
+推荐关系：
+
+```text
+知识体系索引
+    ↓
+Full-Stack-AI-NOTES 通用知识正文
+    ↓
+项目实践入口
+    ↓
+其他项目目录的真实实现文档
+```
 
 移动文件后，必须同步检查并修正正文链接、知识体系索引和 QA 中的引用。
 
@@ -80,7 +95,7 @@ Full-Stack-AI-NOTES/
 | 主线 | 主要内容 | 推荐入口 |
 | --- | --- | --- |
 | 浏览器与前端基础 | 网络、浏览器渲染、JavaScript、TypeScript、CSS、异步、V8 | [计算机网络连接概述](./计算机网络连接概述.md)、[JavaScript核心总结](./JavaScript核心总结.md)、[基于Chrome浏览器渲染原理](./基于Chrome浏览器渲染原理.md) |
-| 框架与前端工程化 | Vue、Router、模块化、Vite、Webpack、测试、CI/CD | [Vue3进阶学习](./Vue3进阶学习.md)、[前端工程化设计全面解析](./前端工程化设计全面解析.md) |
+| 框架与前端工程化 | Vue、Router、模块化、Monorepo、Vite、Webpack、测试、CI/CD | [Vue3进阶学习](./Vue3进阶学习.md)、[Monorepo工程体系](./Monorepo工程体系.md)、[前端工程化设计全面解析](./前端工程化设计全面解析.md) |
 | 性能、监控与 SEO | Web Vitals、资源、渲染、监控、Lighthouse、Nuxt、SEO | [性能专项优化](./性能专项优化.md)、[Nuxt SEO 学习笔记](<./Nuxt SEO 学习笔记.md>) |
 | 服务端与全栈 | Node.js、HTTP、数据库、鉴权、Django、实时通信 | [NodeJS核心总结](./NodeJS核心总结.md)、[Django从0到1](./Django从0到1.md)、[DATABASE](./DATABASE.md) |
 | AI Agent 与 AI Native | Context、Tool、Memory、Skill、MCP、Runtime、Harness、AI-DLC | 概念与运行机制：[Agent学习教程](./Agent学习教程.md) → [Agent System 研发知识梳理](./Agent-System研发知识梳理.md) → [最小实现](./07-Agent核心原理与最小实现.md)；工程与业务落地：[01-从Prompt-Engineer到Harness-Engineer](./01-从Prompt-Engineer到Harness-Engineer.md) → [02-Agent五层架构](./02-Agent五层架构.md) → [03-Agent完整工作流](./03-Agent完整工作流.md) |
@@ -190,10 +205,11 @@ QA.md 索引
 
 新增、移动或实质修改文件后，至少检查四件事：
 
-1. **知识关系**：是否需要进入 `知识体系索引.md`，以及它与哪些知识存在依赖或延伸。
-2. **QA 关系**：是否影响已有问题，或者暴露了新的知识缺口。
-3. **资源关系**：图片是否位于 `assets/`、代码是否位于 `source/`、PDF 等附件是否位于 `resource/`。
-4. **证据关系**：关键事实是否有可靠来源，代码结论是否有实现、测试或运行证据。
+1. **知识关系**：是否需要进入 `知识体系索引.md`，以及它与哪些知识存在依赖或延伸；索引只能直接连接 `Full-Stack-AI-NOTES` 内部内容。
+2. **上下文边界**：知识正文是否可以脱离具体项目独立阅读；项目实现是否通过正文中的实践入口关联，而不是直接写进索引。
+3. **QA 关系**：是否影响已有问题，或者暴露了新的知识缺口。
+4. **资源关系**：图片是否位于 `assets/`、代码是否位于 `source/`、PDF 等附件是否位于 `resource/`。
+5. **证据关系**：关键事实是否有可靠来源，代码结论是否有实现、测试或运行证据。
 
 最终目标不是让仓库拥有更多文件，而是让任何一个知识点都能沿着：
 
