@@ -62,7 +62,7 @@ function ExportsSection() {
     )
       return;
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible" && navigator.onLine)
+      if (document.visibilityState === "visible")
         void refresh().catch((caught) => setError(problem(caught)));
     }, 5000);
     return () => window.clearInterval(timer);

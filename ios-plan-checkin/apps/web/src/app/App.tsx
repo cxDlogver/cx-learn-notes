@@ -73,26 +73,59 @@ function errorMessage(error: unknown): string {
   return "操作未完成，请稍后重试";
 }
 
-function useOnlineStatus(): boolean {
-  const [online, setOnline] = useState(navigator.onLine);
+function useServiceReachability(): boolean {
+  const [reachable, setReachable] = useState(true);
   useEffect(() => {
-    const update = () => setOnline(navigator.onLine);
-    window.addEventListener("online", update);
-    window.addEventListener("offline", update);
+    let active = true;
+    let pending: AbortController | null = null;
+    const probe = async () => {
+      pending?.abort();
+      const controller = new AbortController();
+      pending = controller;
+      const timeout = window.setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch("/api/v1/health/live", {
+          cache: "no-store",
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+        if (active && pending === controller) setReachable(response.ok);
+      } catch {
+        if (active && pending === controller) setReachable(false);
+      } finally {
+        window.clearTimeout(timeout);
+        if (pending === controller) pending = null;
+      }
+    };
+    const onResume = () => void probe();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void probe();
+    };
+    void probe();
+    const interval = window.setInterval(() => void probe(), 30_000);
+    window.addEventListener("online", onResume);
+    window.addEventListener("offline", onResume);
+    window.addEventListener("focus", onResume);
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
-      window.removeEventListener("online", update);
-      window.removeEventListener("offline", update);
+      active = false;
+      pending?.abort();
+      window.clearInterval(interval);
+      window.removeEventListener("online", onResume);
+      window.removeEventListener("offline", onResume);
+      window.removeEventListener("focus", onResume);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
-  return online;
+  return reachable;
 }
 
 function OfflineBanner() {
-  const online = useOnlineStatus();
-  if (online) return null;
+  const reachable = useServiceReachability();
+  if (reachable) return null;
   return (
     <p className="connection-banner" role="alert">
-      网络不可用。当前页面内容可能不是最新，无法保存或下载；连接网络后请重新核对。
+      暂时无法连接计划打卡服务。当前内容可能不是最新，无法保存或下载；恢复连接后请重新核对。
     </p>
   );
 }
@@ -224,7 +257,11 @@ function LoginPage({
             <h2 id="auth-title">
               {purpose === "cancel_deletion" ? "撤销注销验证" : "输入验证码"}
             </h2>
-            <p className="muted">验证码已发送至尾号 {phone.slice(-4)} 的手机</p>
+            <p className="muted">
+              {import.meta.env.DEV
+                ? `尾号 ${phone.slice(-4)} 的验证码请求已提交。本地测试若未接入短信网关，请在运行服务的电脑获取验证码。`
+                : `验证码已发送至尾号 ${phone.slice(-4)} 的手机`}
+            </p>
             <form onSubmit={verify} noValidate>
               <label htmlFor="sms-code">6 位短信验证码</label>
               <input
@@ -317,6 +354,11 @@ function LoginPage({
               >
                 {busy ? "正在发送…" : "获取验证码"}
               </button>
+              {import.meta.env.DEV && (
+                <p className="muted">
+                  本地测试若未接入短信网关，验证码不会发送到手机。
+                </p>
+              )}
             </form>
             <button
               type="button"

@@ -1,0 +1,7 @@
+2026-09-30 22:00 CST | User-requested LAN restart
+WLAN IPv4 remains 172.27.117.5. The existing LAN certificate and ignored .env still target https://172.27.117.5:5173; no secret values were copied here.
+Before restart, none of ports 5173, 3000, 15432, 16379 or 19000 was listening. Docker Desktop Linux engine was unavailable.
+Started installed Docker Desktop; docker info returned server version 29.8.0. Ran docker compose --env-file .env -f infra/compose.yaml up -d --wait; PostgreSQL, Redis and object storage started, and Compose reported all healthy. Ran node --env-file=.env scripts/migrate.mjs; exit code 0.
+Started compiled API PID 36696, Worker PID 12780 and Vite Web PID 45564 in hidden background processes. All three PIDs remained alive at the final check. Docker ports remain bound only to 127.0.0.1:15432, 16379 and 19000.
+HTTPS LAN checks from the host with the development certificate accepted: GET / = 200; GET /login = 200; GET /api/v1/health/live = 200; GET /api/v1/health/ready = 200.
+The user-authorized Windows firewall rule Plan Checkin Web LAN 5173 still exists. No physical LAN device, SMS delivery or formal Web acceptance case was tested in this restart.

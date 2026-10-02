@@ -14,6 +14,7 @@ import {
   getCheckin,
   putCheckin,
 } from "../data/api";
+import { newUuid } from "../data/uuid";
 import { PrivateMediaGallery } from "./PrivateMediaGallery";
 
 const allowedMime = new Set<CreateUploadIntentRequest["mime"]>([
@@ -194,7 +195,7 @@ export function TodayCheckin({
       if (!write) {
         const stagedIds: string[] = [];
         for (const photo of photos) stagedIds.push(await stagePhoto(photo));
-        const operationId = crypto.randomUUID();
+        const operationId = newUuid();
         write = {
           key: operationId,
           stagedIds,
@@ -295,7 +296,7 @@ export function TodayCheckin({
 
   function prepareMine() {
     if (!conflict || !pendingWrite.current) return;
-    const operationId = crypto.randomUUID();
+    const operationId = newUuid();
     pendingWrite.current = {
       ...pendingWrite.current,
       key: operationId,

@@ -42,6 +42,7 @@ import type {
   WebPushSubscriptionDto,
   WebPushConfigDto,
 } from "@plan-checkin/contracts";
+import { newUuid } from "./uuid";
 
 interface Envelope<T> {
   data: T;
@@ -134,6 +135,16 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 async function fetchJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  let requestId: string;
+  try {
+    requestId = newUuid();
+  } catch {
+    throw new ApiError(
+      0,
+      "INSECURE_CONTEXT",
+      "当前浏览器无法生成安全请求标识，请信任此 HTTPS 站点后重试",
+    );
+  }
   let response: Response;
   try {
     response = await fetch(`/api/v1/${path}`, {
@@ -142,12 +153,16 @@ async function fetchJson<T>(path: string, init: RequestInit = {}): Promise<T> {
       cache: "no-store",
       headers: {
         ...(init.body ? { "content-type": "application/json" } : {}),
-        "x-client-request-id": crypto.randomUUID(),
+        "x-client-request-id": requestId,
         ...init.headers,
       },
     });
   } catch {
-    throw new ApiError(0, "NETWORK_UNAVAILABLE", "网络不可用，请连接后重试");
+    throw new ApiError(
+      0,
+      "NETWORK_UNAVAILABLE",
+      "无法连接服务，请检查局域网连接及 HTTPS 证书后重试",
+    );
   }
   return parseResponse<T>(response);
 }
@@ -159,7 +174,7 @@ function mutation(
   return {
     method: "POST",
     body: JSON.stringify(body),
-    headers: { "idempotency-key": crypto.randomUUID(), ...headers },
+    headers: { "idempotency-key": newUuid(), ...headers },
   };
 }
 
@@ -167,7 +182,7 @@ function deviceId(): string {
   const key = "plan-checkin-web-device";
   const prior = sessionStorage.getItem(key);
   if (prior) return prior;
-  const fresh = crypto.randomUUID();
+  const fresh = newUuid();
   sessionStorage.setItem(key, fresh);
   return fresh;
 }
@@ -316,7 +331,7 @@ export async function apiRequest<T>(
   const method = input.method ?? "GET";
   const session = await refreshWebSession();
   if (!session) throw new ApiError(401, "UNAUTHENTICATED", "请重新登录");
-  const idempotencyKey = input.idempotencyKey ?? crypto.randomUUID();
+  const idempotencyKey = input.idempotencyKey ?? newUuid();
   const issue = (accessToken: string) =>
     fetchJson<T>(path, {
       method,

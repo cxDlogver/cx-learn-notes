@@ -1,0 +1,14 @@
+2026-09-30 10:09 CST | localhost local startup observation
+WEB_ORIGIN configured to http://localhost:5173 in existing ignored .env; secrets not copied into evidence.
+Existing object-storage container retained; postgres and redis started with docker compose --env-file .env -f infra/compose.yaml up -d --wait postgres redis.
+Local ports: postgres 127.0.0.1:15432; redis 127.0.0.1:16379; object storage 127.0.0.1:19000.
+Migration command: node --env-file=.env scripts/migrate.mjs; applied 0012_web_compatibility.sql and 0013_web_push_delivery.sql.
+API and Worker TypeScript builds exited 0. Processes started with node --env-file=.env apps/api/dist/main.js and node --env-file=.env apps/worker/dist/main.js.
+Web process started in apps/web using the default Vite config. Vite printed Local: http://localhost:5173/.
+GET http://localhost:5173/ = 200 text/html
+GET http://localhost:5173/plans = 200 text/html
+GET http://localhost:5173/api/v1/health/live = 200 application/json
+GET http://127.0.0.1:3000/api/v1/health/ready = 200 application/json
+API, Worker and Web error log files in system temp directory were empty at observation. Web TypeScript and production build exited 0.
+Observed process IDs at the time: API 42672, Worker 49980, Web 47920. These IDs are transient and should not be used as a persistent service manager.
+Scope: HTTP startup and health only. No login, feature workflow, browser screenshot, object upload or formal ATDD result was executed.

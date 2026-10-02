@@ -1,0 +1,8 @@
+2026-09-30 11:21 CST | Local LAN SMS diagnosis (redacted)
+APP_ENV=development; SMS_PROVIDER=stub. SMS_GATEWAY_URL and SMS_GATEWAY_TOKEN are unset.
+The login outbox file exists under ignored apps/api/.local and had a recent write after the user's request. No phone number, code, challenge ID, token or file body is included in this evidence.
+The stub provider writes the generated OTP to the local outbox and does not call an SMS gateway. Auth challenge expiry is five minutes.
+The development login page now warns that a local environment without an SMS gateway does not deliver to a phone, both before and after requesting a code. Production build keeps the normal SMS wording.
+The first npm run web:build attempt failed due the host Corepack signature/key mismatch, before compiling project code. Direct installed TypeScript type check exited 0; direct installed Vite production build exited 0 (34 modules, index-qatEIkOr.js). Production JS has no development-only notice or unresolved global.
+Targeted Prettier and ESLint exited 0. Running LAN Vite module GET returned 200 and includes the new notice; no unresolved global remains.
+No real SMS gateway or physical mobile delivery was tested. No formal WEB-AUTH case status changed.

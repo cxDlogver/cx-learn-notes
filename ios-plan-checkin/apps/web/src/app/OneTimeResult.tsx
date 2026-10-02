@@ -11,6 +11,7 @@ import {
   getPlanDetail,
   saveOneTimeResolution,
 } from "../data/api";
+import { newUuid } from "../data/uuid";
 import { stagePhoto } from "./TodayCheckin";
 import { PrivateMediaGallery } from "./PrivateMediaGallery";
 
@@ -141,7 +142,7 @@ export function OneTimeResult({ plan }: { plan: PlanDto }) {
         const stagedIds: string[] = [];
         for (const photo of photos) stagedIds.push(await stagePhoto(photo));
         write = {
-          key: crypto.randomUUID(),
+          key: newUuid(),
           correction: saved !== null,
           stagedIds,
           input: {

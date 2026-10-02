@@ -1,0 +1,15 @@
+2026-09-30 10:23 CST | LAN HTTPS startup observation
+WLAN IPv4: 172.27.117.5/16; Vite reports Network: https://172.27.117.5:5173/.
+Certificate: self-signed development certificate; SAN IP 172.27.117.5, 127.0.0.1; DNS localhost; expires 2026-10-30 02:20:35 UTC. Public certificate SHA-256 fingerprint F6:A9:59:89:EB:61:BE:66:3E:78:CD:49:57:17:99:0A:EF:6B:0F:B2:91:1E:53:43:69:DF:29:F5:95:8F:7D:AB. Private key is in ignored apps/api/.local, not copied here.
+WEB_ORIGIN and OBJECT_PUBLIC_ENDPOINT set to https://172.27.117.5:5173 in ignored .env; OBJECT_ENDPOINT remains loopback http://127.0.0.1:19000.
+Listening ports: Web 0.0.0.0:5173; API 127.0.0.1:3000; PostgreSQL 127.0.0.1:15432; Redis 127.0.0.1:16379; object storage 127.0.0.1:19000.
+GET https://172.27.117.5:5173/ = 200 text/html.
+GET https://172.27.117.5:5173/plans = 200 text/html.
+GET https://172.27.117.5:5173/api/v1/health/live = 200 application/json.
+GET http://127.0.0.1:3000/api/v1/health/ready = 200 application/json.
+GET /api/v1/auth/web/session without cookie = 401; POST /api/v1/auth/web/refresh with matching Origin and no cookie = 401. Both indicate source validation was passed and authentication remained required.
+GET /plan-checkin-local without signature = 403 (not SPA HTML). A signed GET over the HTTPS proxy returned exact bytes of a temporary object; object was removed afterward. See WEB-22-lan-object-smoke.txt.
+Container network client reached https://172.27.117.5:5173/ using the development certificate warning override.
+Windows WLAN network profile is Private. The initial firewall change was rejected by automatic approval review pending explicit authorization. The user then authorized a Private/LocalSubnet TCP 5173 inbound rule. Standard privilege failed with Access denied, but subsequent Windows administrator elevation succeeded; Get-NetFirewallRule and filters confirmed the exact scoped rule. See WEB-22-firewall-rule-result.txt.
+OpenSSL initially failed because its system openssl.cnf was missing; a minimal ignored config was provided before certificate generation. First object smoke lint run found missing Buffer import; fixed before successful run.
+Scope: local development startup and one signed object-path check. Another physical LAN device, certificate trust, login UI, Push and full ATDD browser matrix have not been verified.

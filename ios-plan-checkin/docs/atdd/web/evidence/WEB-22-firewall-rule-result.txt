@@ -1,0 +1,8 @@
+2026-09-30 10:33 CST
+User explicitly authorized a Windows Defender Firewall inbound rule for Private profile, TCP 5173, remote LocalSubnet.
+The New-NetFirewallRule command failed with Access denied because the current process lacks administrator rights.
+Follow-up Get-NetFirewallRule found no rule named Plan Checkin Web LAN 5173.
+Physical LAN device reachability remains unverified. The HTTPS service is listening on 0.0.0.0:5173, and a Docker container reached the LAN URL.
+2026-09-30 10:44 CST
+After explicit user authorization, a Windows administrator elevation was accepted for the same scoped rule. Follow-up Get-NetFirewallRule and its port/address filters returned: Enabled=True; Direction=Inbound; Action=Allow; Profile=Private; Protocol=TCP; LocalPort=5173; RemoteAddress=LocalSubnet.
+The rule now exists. A separate physical LAN device has still not been tested.

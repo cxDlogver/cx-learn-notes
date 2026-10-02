@@ -3,7 +3,7 @@
   "schemaVersion": "1.0.0",
   "state": "IN_PROGRESS",
   "verificationBuildCommit": null,
-  "updatedAt": "2026-09-29T06:43:00Z",
+  "updatedAt": "2026-09-30T02:09:00Z",
   "planPath": "docs/任务执行计划-计划打卡-Web-v1.md",
   "caseManifestPath": "docs/atdd/web/acceptance-cases.json",
   "resultSchemaPath": "docs/atdd/web/acceptance-result.schema.json",
@@ -707,7 +707,7 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "React + TypeScript SPA、同站点会话/短信登录、首次资料、History 路由、响应式导航与真实今日/计划页已接入。access 本地截止值按服务端响应剩余时长计算；Chrome 真实计划续期探针一次 refresh。完整 AUTH F/V/N 与 WEB-02 外部证据依赖未完成。",
+        "summary": "React + TypeScript SPA、同站点会话/短信登录、首次资料、History 路由、响应式导航与真实今日/计划页已接入。access 本地截止值按服务端响应剩余时长计算；Chrome 真实计划续期探针一次 refresh。本地短信桩不会向手机发送，开发登录页已提示未接网关时需从运行服务的电脑获取验证码。完整 AUTH F/V/N 与 WEB-02 外部证据依赖未完成。",
         "changedPaths": [
           "apps/web/package.json",
           "apps/web/tsconfig.json",
@@ -742,6 +742,12 @@
             "exitCode": 0,
             "outputPath": "docs/atdd/web/evidence/WEB-05/checks.json",
             "sha256": "7ef93a8db5b1a4db161443a2a49458572f92b7114b49bb618c8ddd391f4f367a"
+          },
+          {
+            "command": "Direct installed Web TypeScript/Vite build and targeted Prettier/ESLint for local SMS notice",
+            "exitCode": 0,
+            "outputPath": "docs/atdd/web/evidence/WEB-05/local-sms-stub-diagnosis.txt",
+            "sha256": "71faa9e148aa653c2b7eeb8042867a6c718c9324371aba1be5da9dfbf9990c60"
           }
         ],
         "evidence": [
@@ -758,7 +764,8 @@
           "docs/atdd/web/evidence/WEB-05/invalid-phone-chrome-390/network.json",
           "docs/atdd/web/evidence/WEB-05/invalid-code-chrome-390/network.json",
           "docs/atdd/web/evidence/WEB-05/checks.json",
-          "docs/atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/network.json"
+          "docs/atdd/web/evidence/WEB-05/auth07-real-plan-chrome-390-v2/network.json",
+          "docs/atdd/web/evidence/WEB-05/local-sms-stub-diagnosis.txt"
         ]
       },
       "verification": {
@@ -851,6 +858,12 @@
           "at": "2026-09-28T19:34:00Z",
           "type": "AUTH07_REAL_PLAN_REFRESH_PROBED",
           "summary": "首轮页面时钟前进导致三次顺序续期；按服务端 serverTime 计算本地 TTL 后 Chrome 个人计划页复测仅一次 refresh，计划/分组/详情 GET 200。旧 refresh 重放与正式 F/V/N 未合并，AUTH07 NOT_RUN。",
+          "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
+        },
+        {
+          "at": "2026-09-30T03:18:00Z",
+          "type": "LOCAL_SMS_STUB_NOTICE",
+          "summary": "当前本地开发环境 SMS_PROVIDER=stub，不发送真实短信；纠正开发登录页误导性文案，运行手册写明 outbox 与 5 分钟有效期。验证码未进入网页响应或验收证据；正式 AUTH 用例仍 NOT_RUN。",
           "evidencePath": "docs/atdd/web/WEB-05-SPA骨架与登录.md"
         }
       ]
@@ -1874,22 +1887,28 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "API 错误层保留冲突详情，循环打卡展示服务器/本机版本并显式选择保留或带冲突 ID、当前修订及新幂等键二次确认覆盖；登录与私人页面显示离线状态。",
+        "summary": "API 错误层保留冲突详情，循环打卡展示服务器/本机版本并显式选择保留或带冲突 ID、当前修订及新幂等键二次确认覆盖。局域网连接提示改用同源健康检查，不再以 navigator.onLine 判定；请求标识支持安全随机 UUID v4 回退，避免误报断网。",
         "changedPaths": [
           "apps/web/src/data/api.ts",
+          "apps/web/src/data/uuid.ts",
           "apps/web/src/app/TodayCheckin.tsx",
           "apps/web/src/app/App.tsx",
+          "apps/web/src/app/OneTimeResult.tsx",
+          "apps/web/src/app/LivePlanReminder.tsx",
+          "apps/web/src/app/DataManagement.tsx",
           "apps/web/src/styles.css"
         ],
         "commit": null,
         "checks": [
           "Prettier 相关文件：完成",
           "改动 TypeScript 文件 ESLint：PASS",
-          "apps/web npm run build：PASS，Vite 33 modules，最终证据 SHA-256 657032ab68cb27ca3587aa50e4aa3fff6e9cdbe584d87f4d17f81b307727fd97"
+          "apps/web npm run build：PASS，Vite 33 modules，最终证据 SHA-256 657032ab68cb27ca3587aa50e4aa3fff6e9cdbe584d87f4d17f81b307727fd97",
+          "局域网误报修正：Web TypeScript、Vite 35 modules、定向 ESLint、UUID v4 回退及同源入口检查通过；证据 SHA-256 12620d4d91d13fc0dda970d4dfa8734176dae5db207376ae608ce61dd782e1b6"
         ],
         "evidence": [
           "docs/atdd/web/WEB-12-在线并发冲突增量记录.md",
-          "docs/atdd/web/evidence/WEB-12/web-build.txt"
+          "docs/atdd/web/evidence/WEB-12/web-build.txt",
+          "docs/atdd/web/evidence/WEB-12-lan-online-fix.txt"
         ]
       },
       "verification": {
@@ -1915,6 +1934,10 @@
         {
           "at": "2026-09-29T11:58:00Z",
           "event": "冲突对照改为显示实际提交快照，最终 Web 构建通过；正式用例仍 NOT_RUN。"
+        },
+        {
+          "at": "2026-09-30T03:45:00Z",
+          "event": "局域网误报修正：同源 API 健康探测替代 navigator.onLine，安全随机 UUID v4 回退避免将浏览器 API 缺失误报为网络断开；本机检查通过，实体设备与正式 WEB-ONLINE 用例仍待执行。"
         }
       ]
     },
@@ -2809,10 +2832,14 @@
       "completedAt": null,
       "owner": "Codex",
       "implementation": {
-        "summary": "用户授权后已接入 Web Deployment/Service 与同站点 Ingress，发布脚本等待 API/Worker/Web 就绪后切换入口；新增项目运行手册。预发清单渲染、Web 镜像本机构建/容器启动及完整静态门禁通过。真实集群发布仍依赖上下文、仓库摘要、域名/TLS、对象域与 WEB-21 验收。",
+        "summary": "用户授权后已接入 Web Deployment/Service 与同站点 Ingress，发布脚本等待 API/Worker/Web 就绪后切换入口；新增项目运行手册。本地局域网 HTTPS 入口 https://172.27.117.5:5173/ 在用户要求下再次启动，首页、登录页、同域 API live/ready 均返回 200。用户授权的 Private/LocalSubnet TCP 5173 入站规则仍在；实体设备可达性未验证。真实集群发布仍依赖上下文、仓库摘要、域名/TLS、对象域与 WEB-21 验收。",
         "changedPaths": [
           "apps/web/server.mjs",
           "apps/web/package.json",
+          "apps/web/vite.config.ts",
+          "apps/api/src/main.ts",
+          ".env.example",
+          "scripts/lan-object-smoke.mjs",
           "infra/deploy/Web.Dockerfile",
           "infra/deploy/manifest.mjs",
           "infra/deploy/environments/development.json",
@@ -2834,7 +2861,13 @@
           "staging 示例清单 render PASS，证据 SHA-256 6e82b4db9d152096ba7a8a137424cbfab337fa77b8bec59a610dc42e70d96b3a",
           "Web Docker 镜像本机构建 PASS，证据 SHA-256 d5edbac181eeb3d3cbd3397b5a563f192a4f05ca67b0591330d57a2602f42a24",
           "Web 本地容器 /healthz 与首页 200、CSP 存在，观察证据 SHA-256 4c18174eb8a4c61e9df4d95a8f3bd2a1215e89c18f4699a6c06ad1ef0fa21d1b",
-          "授权后 npm run check PASS，证据 SHA-256 1c3e67d4a4e705d39e48a29b5a67f1dccb8067d5effb24c92855c78d6419fe28；不含浏览器验收"
+          "授权后 npm run check PASS，证据 SHA-256 1c3e67d4a4e705d39e48a29b5a67f1dccb8067d5effb24c92855c78d6419fe28；不含浏览器验收",
+          "localhost 本地启动：首页/深链/同域 API 200、API ready 200、Web 构建 PASS；证据 SHA-256 308a4f11680cdbcb1341c979c5adc11f368dcf4716397ca3358cbaa86e962b52",
+          "局域网 HTTPS：首页/深链/同域 API 200，未授权会话 401，未签名对象 403；证据 SHA-256 a1d8d59e34fa462fa6e21b4860fb65f78ec043d3032eb2e566a0d873e35537f5",
+          "同源签名对象路径返回精确字节；证据 SHA-256 f16550c353aba081a6d445a59c7509b7ae163234e9ef9caabbab8e0c4a3ab220",
+          "用户授权的 Windows Private/LocalSubnet TCP 5173 入站规则经管理员确认创建；普通权限拒绝与成功复查证据 SHA-256 75f3d7b2b1590584d6cc2bc2253a40b442bcc86059d90526f8d6424156a2539f",
+          "局域网改动后 npm run check 退出 0；证据 SHA-256 49b849db43f7dabc4446ad894a4632ac9efa447f8443f437b44afd05f3726f1b；浏览器正式验收仍未执行",
+          "2026-09-30 再次启动：Compose 依赖健康、迁移退出 0、API/Worker/Web 存活、HTTPS 首页/登录/API live/ready 200；证据 SHA-256 aff0176df3df8416853a1e3169954e3aff781c9f8cc47c0265a6b7ab4b0b1487"
         ],
         "evidence": [
           "docs/atdd/web/WEB-22-Web静态站部署增量记录.md",
@@ -2845,11 +2878,17 @@
           "docs/atdd/web/evidence/WEB-22-web-image-build.txt",
           "docs/atdd/web/evidence/WEB-22-container-observation.txt",
           "docs/atdd/web/evidence/WEB-22-deploy-prereqs.txt",
-          "docs/atdd/web/evidence/WEB-22-authorized-project-check.txt"
+          "docs/atdd/web/evidence/WEB-22-authorized-project-check.txt",
+          "docs/atdd/web/evidence/WEB-22-localhost-start.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-https-start.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-object-smoke.txt",
+          "docs/atdd/web/evidence/WEB-22-firewall-rule-result.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-project-check.txt",
+          "docs/atdd/web/evidence/WEB-22-lan-restart-20260930.txt"
         ]
       },
       "verification": {
-        "summary": "本机无 Kubernetes 上下文且未取得仓库摘要、正式 Host/TLS/对象域；未执行真实集群发布。WEB-21 未完成；真实短信、TLS、对象 CORS、Push、回滚和浏览器发布验收均未执行。",
+        "summary": "本机局域网开发 HTTPS 已启动，防火墙规则已按授权范围创建，尚无实体局域网设备验证。本机无 Kubernetes 上下文且未取得仓库摘要、正式 Host/TLS/对象域；未执行真实集群发布。WEB-21 未完成；真实短信、TLS、对象 CORS、Push、回滚和浏览器发布验收均未执行。",
         "runIds": [],
         "browserMatrix": [],
         "evidence": []
@@ -2879,6 +2918,18 @@
         {
           "at": "2026-09-29T12:51:00Z",
           "event": "Web Deployment/Ingress、发布脚本和运行手册完成；静态清单、本机镜像/容器及项目门禁通过，但无集群上下文和发布参数，真实部署未执行。"
+        },
+        {
+          "at": "2026-09-30T02:09:00Z",
+          "event": "按用户要求启动 localhost：本地基础设施、API、Worker 和 Web 存活，首页/深链/同域 API 健康返回 200；正式浏览器业务验收仍未运行。"
+        },
+        {
+          "at": "2026-09-30T02:37:00Z",
+          "event": "按用户要求切换局域网 HTTPS，同源 API 与对象代理通过最小检查；普通权限曾无法创建用户授权的防火墙规则，随后通过 Windows 管理员确认创建并核对 Private/LocalSubnet TCP 5173 范围。实体设备访问未验证。"
+        },
+        {
+          "at": "2026-09-30T14:00:00Z",
+          "event": "按用户要求再次启动局域网服务：Docker Desktop 与三项依赖恢复，迁移退出 0，API/Worker/Web 存活，HTTPS 首页、登录和同域 API live/ready 返回 200；实体设备与正式用例未测试。"
         }
       ]
     }

@@ -91,3 +91,10 @@ Chrome 存储采集只保留名称和标志，不含 Cookie 值：[browser-stora
 - 在已有个人计划的隔离账号中，Chrome 153、390×844 登录后仅把浏览器页面时钟推进 16 分钟，再打开计划列表和详情。首轮[网络](./evidence/WEB-05/auth07-real-plan-chrome-390/network.json)出现三次顺序 refresh：服务端时钟未推进，客户端继续把每个新 access 的服务端绝对过期时间与已推进的浏览器时钟相比；页面始终可用，但这不是理想的单次续期结果。此首轮保留为问题证据，不纳入有效清单。
 - `apps/web/src/data/api.ts` 改为使用 Web 会话响应的 `serverTime` 计算 access 剩余有效期，再按本地时钟记录截止值。复测[网络](./evidence/WEB-05/auth07-real-plan-chrome-390-v2/network.json)只有一次 refresh 201，随后计划 GET 200、分组 GET 200、本人计划详情 GET 200；[详情截图](./evidence/WEB-05/auth07-real-plan-chrome-390-v2/screen-after.png)显示本人计划，[布局](./evidence/WEB-05/auth07-real-plan-chrome-390-v2/visual-result.json)无横向溢出。[存储元数据](./evidence/WEB-05/auth07-real-plan-chrome-390-v2/browser-storage.json)无可读 Cookie 和 localStorage，刷新 Cookie 带 Secure、HttpOnly。
 - [WEB-05 SHA-256 清单](./evidence/WEB-05/checks.json)现收录 18 次完整浏览器探针和八份旧检查输出。旧 refresh 重放拒绝、多标签竞态及正式 F/V/N 尚未与这次浏览器探针合并，`WEB-AUTH-07` 保持 `NOT_RUN`，WEB-05 `[ ]`。
+
+### 2026-09-30 11:18 CST｜局域网本地短信桩说明
+
+- 用户反馈手机收不到登录验证码。核查本机 `.env` 为 `APP_ENV=development`、`SMS_PROVIDER=stub`，且未配置 HTTP 短信网关；`SmsProvider` 将六位验证码写到被 Git 忽略的本机 outbox，而不调用真实短信运营服务。11:12 的登录请求已产生 outbox 文件；没有将完整手机号或验证码写入本记录。
+- 现有 Web 页面无论发送方式都显示“已发送至手机”，与本地短信桩的实际行为不符。开发模式现提示：未接入短信网关时不会向手机发送，需从运行服务的电脑获取；生产构建保留真实短信文案。运行手册补充本机 outbox 路径、5 分钟有效期及真实短信网关的配置前提。
+- 本次仅修正开发环境提示与操作说明，不扩展公开 API，也不在网页返回验证码。`WEB-AUTH-01～12` 仍保持 `NOT_RUN`；完整浏览器验收未执行。
+- 本机 Web TypeScript 与 Vite 生产构建、定向 Prettier/ESLint 均退出 0；运行中的局域网 Vite 模块已返回新提示且无未替换的全局变量。系统 Corepack 的 pnpm 签名错误导致 `npm run web:build` 首轮在编译前失败，直接调用已安装工具完成复核。[脱敏诊断与检查记录](./evidence/WEB-05/local-sms-stub-diagnosis.txt) SHA-256 `71faa9e148aa653c2b7eeb8042867a6c718c9324371aba1be5da9dfbf9990c60`。

@@ -1,0 +1,9 @@
+2026-09-30 11:45 CST | LAN false-offline correction, redacted development evidence
+Before change: GET /login and GET /api/v1/health/live over https://172.27.117.5:5173 both returned 200. Web/API listeners remained 0.0.0.0:5173 and 127.0.0.1:3000.
+Source inspection found that the global offline banner depended only on navigator.onLine, which does not test the same-origin API. The API fetch try block also called crypto.randomUUID and mapped any exception, including an unavailable browser crypto API, to NETWORK_UNAVAILABLE.
+After change: banner probes the same-origin /api/v1/health/live route and rechecks on resume/network events and a 30-second interval. API requests use a secure-random UUID v4 fallback; lack of secure random now has an explicit HTTPS trust error. LAN fetch failures mention connection and certificate checks. Export polling and live reminder no longer skip requests solely because navigator.onLine is false.
+Initial Web TypeScript check found two strict typed-array indexing errors in the new UUID helper; non-null assertions for its fixed 16-byte array resolved them. Final Web TypeScript check exited 0.
+Vite production build exited 0: 35 modules, JS index-CxT3fhXd.js. Targeted ESLint exited 0. A controlled UUID fallback with deterministic getRandomValues returned 00010203-0405-4607-8809-0a0b0c0d0e0f and exited 0.
+LAN GET /login, /src/data/uuid.ts, /api/v1/health/live all returned 200; the served helper contains getRandomValues.
+One headless Chrome dump-DOM attempt did not complete within the bounded wait and was stopped; it does not establish a browser result. No physical mobile-browser retest or formal WEB-ONLINE case was performed.
+The in-app browser control and native computer-use helper both failed to initialize with windows sandbox helper_unknown_error; no screenshot or live user-browser result was obtained from those tools.

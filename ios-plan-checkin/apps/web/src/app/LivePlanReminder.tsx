@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { TodayItemDto } from "@plan-checkin/contracts";
 import { getToday, getWebNotificationPreferences } from "../data/api";
+import { newUuid } from "../data/uuid";
 
 function planLocalClock(timezone: string): { date: string; time: string } {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -75,7 +76,7 @@ export function LivePlanReminder({
   onNavigate: (path: string) => void;
 }) {
   const dismissed = useRef(new Set<string>());
-  const tabId = useRef(crypto.randomUUID());
+  const tabId = useRef(newUuid());
   const claimedStorageKey = useRef<string | null>(null);
   const [prompt, setPrompt] = useState<{ key: string; count: number } | null>(
     null,
@@ -84,7 +85,7 @@ export function LivePlanReminder({
   useEffect(() => {
     let cancelled = false;
     async function check() {
-      if (document.visibilityState !== "visible" || !navigator.onLine) return;
+      if (document.visibilityState !== "visible") return;
       try {
         const [preferences, today] = await Promise.all([
           getWebNotificationPreferences(),
