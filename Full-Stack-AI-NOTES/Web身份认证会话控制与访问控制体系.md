@@ -815,6 +815,52 @@ Token ≠ JWT
 
 一个 Token 必须结合 Purpose、Lifetime、Storage、Transport、Validation 与 Revocation 才有完整含义。
 
+
+理解这四个概念时，可以用一个真实请求来区分：
+
+~~~text
+Server 内部真正想保存的登录状态
+Session
+{
+  userId,
+  expiresAt,
+  csrfToken
+}
+
+Client 不应该直接拿整份 Session
+        ↓
+Server 给 Client 一个随机引用
+Session Identifier
+        ↓
+Browser 需要把这个引用保存并自动带回
+        ↓
+Cookie
+        ↓
+这个随机引用本身也可以被称为一种 Session Token
+~~~
+
+所以关系是：
+
+~~~text
+Session
+= Server 想维持的登录上下文
+
+Session Identifier
+= Client 引用 Session 的随机 Credential
+
+Cookie
+= Browser 保存并自动传输 Credential 的 HTTP 机制
+
+Token
+= 对各种 Credential / Proof 的广义称呼
+~~~
+
+如果把 Cookie 删除，Session 概念仍然存在；Client 也可以通过其他 Header 携带 Session Identifier。
+
+如果把 Redis 换成 Database，Session 概念仍然存在；只是 Session Store 实现变了。
+
+这就是为什么学习时不能把 Cookie、Redis、Session 和 Token 画成同一层。
+
 ### 【会话持续可以先建立两种主要工程模型】
 
 ~~~text
@@ -908,6 +954,69 @@ OWASP 建议 Session Identifier 应不可预测，不应包含敏感业务语义
 参考：
 
 https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+
+可以把一次 Server-side Session 的真实数据流展开成：
+
+~~~text
+① Login 认证成功
+Current User = user_10001
+
+② Server 生成
+rawSessionToken = 256-bit Random
+
+③ Server 保存
+hash(rawSessionToken)
+      ↓
+{
+  userId: user_10001,
+  expiresAt: ...,
+  csrfToken: ...
+}
+
+④ Browser 得到
+Set-Cookie: session=<rawSessionToken>
+
+⑤ 下一次 Request
+Cookie: session=<rawSessionToken>
+
+⑥ Server
+hash(rawSessionToken)
+      ↓
+Lookup Session Store
+      ↓
+找到 user_10001
+      ↓
+Request Context.currentUser = user_10001
+~~~
+
+这里真正决定登录是否有效的是：
+
+~~~text
+Server 是否仍然接受这个 Credential
+~~~
+
+而不是 Browser 有没有某个 UI 状态。
+
+如果 Browser Cookie 还在，但是 Server Session 已经删除：
+
+~~~text
+Cookie exists
++
+Session Store miss
+      ↓
+Authentication Failed
+~~~
+
+反过来，如果 Server Session 还存在，但 Browser 已经删除 Cookie：
+
+~~~text
+Browser 不再提交 Credential
+      ↓
+当前 Browser 也无法恢复登录
+~~~
+
+所以完整登录态由 Client Credential 与 Server Session State 共同构成。
 
 ### 【模型二：Access Token + Refresh Token 拆分短期访问与长期续期】
 
@@ -1121,6 +1230,70 @@ JWT = 先进
 
 应该根据系统边界选择状态模型。
 
+
+选择时可以先问系统形态，而不是先问“要不要 JWT”。
+
+如果是典型后台系统：
+
+~~~text
+Browser
+   ↓
+Single Web Backend
+   ↓
+Database
+~~~
+
+要求：
+
+~~~text
+Logout 立即生效
+权限变更立即生效
+没有第三方 Client
+~~~
+
+Server-side Session 往往更直接。
+
+如果是：
+
+~~~text
+Mobile App
+Browser SPA
+Third-party Client
+        ↓
+Authorization Server
+        ↓
+多个 Resource Server
+~~~
+
+需要：
+
+~~~text
+不同 Audience
+不同 Scope
+跨服务验证
+Delegated Authorization
+~~~
+
+OAuth Access Token 模型通常更加自然。
+
+所以两者的区别不是：
+
+~~~text
+传统技术
+vs
+现代技术
+~~~
+
+而是：
+
+~~~text
+集中式 Server Session State
+vs
+Token-based Resource Access Model
+~~~
+
+设计依据是系统拓扑、信任边界和撤销需求。
+
 ### 【Cookie 与 Authorization Header 是 Credential Transport，不是第三种会话模型】
 
 Cookie Transport：
@@ -1313,6 +1486,56 @@ Server 与 Session 中 Token 比较
 
 自动发送的 Session Credential 与显式发送的 CSRF Proof 被拆成两条通道。
 
+
+这里也能解释为什么 CSRF Token 与 Session Token 的安全角色不同。
+
+Session Token：
+
+~~~text
+证明：
+“这个 Request 属于哪个已认证 Session”
+~~~
+
+如果攻击者得到有效 Session Token，通常就能够冒充这个 Session。
+
+CSRF Token：
+
+~~~text
+证明：
+“这个状态修改 Request
+还拥有当前合法页面上下文中的额外随机值”
+~~~
+
+单独得到 CSRF Token，通常无法恢复 User，因为请求仍然需要先通过 Session Authentication。
+
+因此常见实现可以在 Session State 中直接保存原始 CSRF Token：
+
+~~~text
+Session
+├── userId
+└── csrfToken
+~~~
+
+收到写请求以后直接比较：
+
+~~~text
+request.csrfToken
+==
+session.csrfToken
+~~~
+
+它并不像 Password 那样必须使用昂贵 KDF，也不像主要 Session Credential 那样强烈需要通过 Hash 降低存储泄露后的直接重放风险。
+
+当然也可以保存：
+
+~~~text
+hash(csrfToken)
+~~~
+
+然后 Request Token 先 Hash 再比较。
+
+这属于额外 Defense in Depth，而不是 Synchronizer Token Pattern 成立的必要条件。
+
 ### 【Synchronizer Token 通常保护 Unsafe Request，而不是普通 GET】
 
 RFC 9110 将 GET、HEAD、OPTIONS、TRACE 定义为 Safe Method。
@@ -1415,6 +1638,80 @@ OWASP 要求访问权限在服务端对每个受保护请求进行验证。
 
 https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
 
+
+先看一个最典型的资源级权限问题。
+
+用户 Alice 已经成功登录：
+
+~~~text
+Current Subject = Alice
+~~~
+
+她请求：
+
+~~~text
+GET /projects/100
+~~~
+
+如果 Server 只做：
+
+~~~text
+Session Valid?
+      ↓
+Yes
+      ↓
+SELECT project WHERE id = 100
+~~~
+
+那么 Alice 把 URL 改成：
+
+~~~text
+GET /projects/101
+~~~
+
+Server 仍然只能知道：
+
+~~~text
+Alice 已经登录
+~~~
+
+却没有证明：
+
+~~~text
+Alice 有权访问 Project 101
+~~~
+
+正确链路应该是：
+
+~~~text
+Current Subject = Alice
+        +
+Requested Resource = Project 101
+        +
+Action = Read
+        ↓
+查询 Ownership / Membership / Policy
+        ↓
+Allow?
+        │
+        ├── No → Reject
+        └── Yes
+              ↓
+真正读取 Resource
+~~~
+
+这就是 Authentication 和 Authorization 最重要的边界：
+
+~~~text
+Authentication
+证明“你是谁”
+
+Authorization
+证明“这个身份能不能操作这个 Resource”
+~~~
+
+“只验证已经登录，却没有验证具体 Resource 权限”的问题，就是 IDOR / BOLA 类漏洞最常见的来源之一。
+
 ### 【常见权限模型的区别在于决策主要依赖什么信息】
 
 应用开发中最值得掌握：
@@ -1486,6 +1783,77 @@ Grant 很多
 
 管理成本会快速增长。
 
+
+ACL 可以直接理解成“Resource 自己维护一张访问名单”。
+
+例如数据库可以有：
+
+~~~text
+documents
+
+id
+title
+owner_id
+
+
+document_acl
+
+document_id
+subject_type
+subject_id
+permission
+~~~
+
+其中 document_acl 可能出现：
+
+~~~text
+document_100
+user
+alice
+read
+
+document_100
+user
+alice
+write
+
+document_100
+team
+finance
+read
+~~~
+
+当 Bob 请求：
+
+~~~text
+Edit Document 100
+~~~
+
+Server 不是只看 Bob 是否登录，而是查询：
+
+~~~text
+Document 100 的 ACL
+      ↓
+有没有：
+subject = Bob
+permission = write
+      ↓
+没有
+      ↓
+Deny
+~~~
+
+ACL 的优势是非常直观，适合表达：
+
+~~~text
+“这一个具体资源
+额外分享给谁”
+~~~
+
+但如果系统有大量用户、大量资源和大量独立 Grant，ACL 会迅速变成很庞大的授权关系集合。
+
+所以 ACL 往往适合作为资源级直接授权，而不是承担整个大型组织权限体系。
+
 ### 【RBAC 通过 Role 解耦 User 与 Permission】
 
 RBAC：
@@ -1553,6 +1921,110 @@ Editor
 
 如果仍全部编码成 Role，容易发生 Role Explosion。
 
+
+RBAC 真正的结构通常不是简单：
+
+~~~text
+users.role = admin
+~~~
+
+而是：
+
+~~~text
+User
+  ↓
+User-Role Assignment
+  ↓
+Role
+  ↓
+Role-Permission Assignment
+  ↓
+Permission
+~~~
+
+可以落成：
+
+~~~text
+users
+id
+
+roles
+id
+name
+
+permissions
+id
+resource
+action
+
+user_roles
+user_id
+role_id
+
+role_permissions
+role_id
+permission_id
+~~~
+
+例如：
+
+~~~text
+Alice
+      ↓
+Editor
+      ↓
+project.read
+project.update
+report.read
+~~~
+
+Alice 不需要自己直接保存三个 Permission。
+
+如果 Alice 从 Editor 调整为 Viewer，只需要改 User-Role Relationship，不需要逐条修改所有 Permission。
+
+这就是 RBAC 最大的工程价值：
+
+> 用稳定的组织角色作为 User 和 Permission 之间的中间层，降低权限管理成本。
+
+Role 还可以存在 Hierarchy（角色层级）：
+
+~~~text
+Viewer
+  ↓
+read
+
+Editor
+  ↓
+inherits Viewer
++
+update
+
+Admin
+  ↓
+inherits Editor
++
+manage
+~~~
+
+但如果为了表达业务条件不断创建：
+
+~~~text
+FinanceEditor
+FinanceProjectAEditor
+FinanceProjectANightEditor
+FinanceProjectANightTrustedDeviceEditor
+~~~
+
+说明这些条件已经不是稳定“组织角色”，而是在混入：
+
+~~~text
+Attribute
+Relationship
+Environment Context
+~~~
+
+此时继续增加 Role 就会导致 Role Explosion（角色爆炸）。
+
 ### 【ABAC 用 Attribute 与 Policy 处理动态上下文】
 
 ABAC（Attribute-Based Access Control）综合：
@@ -1611,6 +2083,88 @@ NIST SP 800-162 将 ABAC 定义为根据 Subject、Object、Operation 以及可�
 https://www.nist.gov/publications/guide-attribute-based-access-control-abac-definition-and-considerations
 
 ABAC 适合规则动态、Context 较多的系统，但 Policy、Attribute Source、Debug 与测试成本也更高。
+
+
+ABAC 最容易被忽略的问题是：Attribute 不是凭空存在的。
+
+例如 Policy 写：
+
+~~~text
+subject.department
+==
+resource.department
+~~~
+
+Server 必须继续回答：
+
+~~~text
+subject.department
+从哪里来？
+
+resource.department
+从哪里来？
+
+这些值能不能相信？
+~~~
+
+Subject Attribute 应来自可信来源，例如：
+
+~~~text
+User Profile
+HR Directory
+Identity Provider
+Organization Membership
+~~~
+
+而不是直接相信 Client Body：
+
+~~~text
+department = finance
+~~~
+
+Resource Attribute 应由 Server 从 Resource Metadata 中得到。
+
+Environment Attribute 则可能由：
+
+~~~text
+Request Time
+Network Zone
+Device Trust Service
+Risk Engine
+~~~
+
+实时计算。
+
+因此一次真正的 ABAC Decision 更像：
+
+~~~text
+Authentication
+      ↓
+得到 Subject ID
+      ↓
+Load Subject Attributes
+      ↓
+Load Resource Attributes
+      ↓
+Collect Environment Context
+      ↓
+Policy Evaluation
+      ↓
+Allow / Deny
+~~~
+
+系统越复杂，就越需要处理：
+
+~~~text
+Attribute Source
+Attribute Freshness
+Missing Attribute
+Policy Conflict
+Audit Explainability
+Test Matrix
+~~~
+
+所以 ABAC 的代价不是“多写几个 if”，而是整个 Policy Data Pipeline 都会变复杂。
 
 ### 【ReBAC 用关系图表达 Owner、Member、Parent 等资源关系】
 
@@ -1675,6 +2229,114 @@ Organization / Team / Project
 资源层级继承
 多租户组织树
 ~~~
+
+
+ReBAC 与 RBAC 最容易混淆的地方是：
+
+~~~text
+RBAC 问：
+“Bob 是什么 Role？”
+
+
+ReBAC 问：
+“Bob 和这个 Resource
+之间存在什么 Relationship？”
+~~~
+
+例如：
+
+~~~text
+Bob
+member_of
+Team A
+
+Team A
+member_of
+Organization X
+
+Project P
+belongs_to
+Organization X
+
+Document D
+belongs_to
+Project P
+~~~
+
+如果 Policy 是：
+
+~~~text
+Organization Member
+可以读取 Organization 下的 Document
+~~~
+
+系统真正要判断的不是：
+
+~~~text
+Bob.role == member
+~~~
+
+而是是否存在满足 Policy 的关系路径：
+
+~~~text
+Bob
+  ↓ member_of
+Team A
+  ↓ member_of
+Organization X
+  ↓ contains
+Project P
+  ↓ contains
+Document D
+~~~
+
+复杂 ReBAC 系统经常把关系保存成：
+
+~~~text
+subject
+relation
+object
+~~~
+
+例如：
+
+~~~text
+user:bob
+member
+team:a
+
+team:a
+member
+org:x
+
+project:p
+parent
+org:x
+
+document:d
+parent
+project:p
+~~~
+
+授权查询本质上是在判断：
+
+~~~text
+从 Subject 到 Resource
+是否存在一条符合 Policy 的 Relationship Path
+~~~
+
+随着关系变复杂，还要处理：
+
+~~~text
+Relationship Inheritance
+Cycle
+Query Cost
+Cache
+Consistency
+Explainability
+~~~
+
+所以 ReBAC 不是简单“多加一张 membership 表”，而是一种以关系图为核心的权限建模方式。
 
 ### 【RBAC、ABAC、ReBAC 和 ACL 可以组合】
 
