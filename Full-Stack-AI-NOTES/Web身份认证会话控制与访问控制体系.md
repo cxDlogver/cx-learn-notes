@@ -1783,6 +1783,77 @@ Grant 很多
 
 管理成本会快速增长。
 
+
+ACL 可以直接理解成“Resource 自己维护一张访问名单”。
+
+例如数据库可以有：
+
+~~~text
+documents
+
+id
+title
+owner_id
+
+
+document_acl
+
+document_id
+subject_type
+subject_id
+permission
+~~~
+
+其中 document_acl 可能出现：
+
+~~~text
+document_100
+user
+alice
+read
+
+document_100
+user
+alice
+write
+
+document_100
+team
+finance
+read
+~~~
+
+当 Bob 请求：
+
+~~~text
+Edit Document 100
+~~~
+
+Server 不是只看 Bob 是否登录，而是查询：
+
+~~~text
+Document 100 的 ACL
+      ↓
+有没有：
+subject = Bob
+permission = write
+      ↓
+没有
+      ↓
+Deny
+~~~
+
+ACL 的优势是非常直观，适合表达：
+
+~~~text
+“这一个具体资源
+额外分享给谁”
+~~~
+
+但如果系统有大量用户、大量资源和大量独立 Grant，ACL 会迅速变成很庞大的授权关系集合。
+
+所以 ACL 往往适合作为资源级直接授权，而不是承担整个大型组织权限体系。
+
 ### 【RBAC 通过 Role 解耦 User 与 Permission】
 
 RBAC：
