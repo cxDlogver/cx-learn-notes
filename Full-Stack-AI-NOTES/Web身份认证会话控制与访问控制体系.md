@@ -41,88 +41,217 @@ RBAC / ABAC / ReBAC / ACL
 
 ---
 
-## 1. 身份认证体系从账号建立到可信身份形成
+## 1. 身份认证体系从账号建立、凭据验证到可信身份形成
 
-Authentication（身份认证）的最终目标是把：
+身份认证（Authentication）最核心的问题不是“有没有登录页面”，而是：
 
-~~~text
-用户声明
-“我是 Alice”
-~~~
+> 服务器怎样把“用户自己声明的身份”转换成“服务器能够信任的身份”。
 
-转换成：
+用户在 Login Form 中输入：
 
 ~~~text
-Server 可以信任的结论
-Current Principal = Alice
+Email
+alice@example.com
+
+Password
+********
 ~~~
 
-它不是一次 Login API，而是一条完整账号生命周期：
+其中 Email 更像一种 Identity Claim（身份声明）：
+
+~~~text
+“我要以 Alice 这个账号登录”
+~~~
+
+Password 才是 Credential（凭据）：
+
+~~~text
+“我拿什么证明我真的是 Alice”
+~~~
+
+服务器真正需要完成的过程是：
+
+~~~text
+Identity Claim
+        +
+Credential
+        ↓
+Verification
+        ↓
+可信 Principal
+~~~
+
+Principal（认证主体）可以理解成：身份认证完成以后，后端业务代码可以信任的“当前用户”。
+
+例如：
+
+~~~text
+Authenticated Principal
+
+userId = user_10001
+~~~
+
+后续 Service、Authorization、Audit Log 应该使用这个已经认证过的 userId，而不是直接相信前端 Request Body 中随便传来的 userId。
+
+OWASP 将 Authentication 定义为：通过验证 Password、Security Token、生物特征等 Authenticator 的有效性，确认一个主体是否确实是它所声称的身份。[[1]](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+
+### 【身份认证不是一个 Login API，而是一段账号生命周期】
+
+一个基础账号从创建到长期使用，通常会经历：
 
 ~~~text
 Register
-注册账号
-  ↓
+创建账号
+        ↓
 Credential Enrollment
-建立 Password / Passkey / MFA 等认证凭据
-  ↓
+建立 Password / Passkey / MFA
+        ↓
 Identity Verification
 验证 Email / Phone 等身份属性
-  ↓
+        ↓
 Login
 验证 Credential
-  ↓
-Authenticated Principal
-  ↓
+        ↓
+Authentication Success
+形成可信 Principal
+        ↓
 Re-authentication
-高风险操作再次确认身份
-  ↓
+高风险操作重新确认身份
+        ↓
 Credential Change / Recovery
 修改密码、找回账号
-  ↓
+        ↓
 Credential Revocation
 旧凭据失效
 ~~~
 
-### 【注册阶段建立稳定 Identity 与长期 Credential】
-
-最基础的 User Record 可以包含：
+因此下面几个状态必须区分：
 
 ~~~text
-User
-├── id
-├── email
-├── passwordHash
-├── emailVerifiedAt
-├── status
-├── createdAt
-└── updatedAt
+账号已经存在
+≠
+Email 已经验证
+
+Email 已经验证
+≠
+当前 Browser 已经登录
+
+当前 Browser 已经登录
+≠
+拥有所有 Resource 的访问权限
 ~~~
 
-其中 User ID 是系统内部稳定身份；Email 更像登录标识和可验证联系方式。
+身份认证体系只负责把“你是谁”确认清楚。
 
-因此：
+持续登录属于后面的会话控制；具体资源权限属于访问控制。
+
+### 【注册阶段首先建立稳定的用户身份记录】
+
+假设注册请求：
 
 ~~~text
-User ID
-应该稳定
-
-Email
-可以修改
+email       = alice@example.com
+password    = MyPassword...
+displayName = Alice
 ~~~
 
-业务数据关系应优先绑定稳定 User ID，而不是把 Email 当成永久身份主键。
-
-Password 也不应该被加密后等待未来解密。Server 只需要验证：
+Server 最终可能建立：
 
 ~~~text
-这次输入的 Password
-是否与注册时建立的 Credential 一致
+users
+
+id
+email
+password_hash
+email_verified_at
+status
+display_name
+created_at
+updated_at
 ~~~
 
-因此 Password 采用单向 Password Hash / KDF：
+这些字段不是同一种东西。
 
 ~~~text
+id
+=
+系统内部稳定身份
+
+email
+=
+登录 Identifier + 联系方式
+
+password_hash
+=
+Password Credential 的验证材料
+
+email_verified_at
+=
+这个 Email 是否已经证明由当前账号控制
+~~~
+
+User ID 通常应该稳定。
+
+例如用户把：
+
+~~~text
+alice@old.com
+~~~
+
+改成：
+
+~~~text
+alice@new.com
+~~~
+
+过去的订单、项目和评论仍然应该属于同一个 User。
+
+所以业务关系更适合绑定：
+
+~~~text
+orders.user_id
+projects.owner_id
+comments.user_id
+~~~
+
+而不是把可变化的 Email 当成整个系统唯一、永久的身份。
+
+### 【Password 不能明文保存，也不应该设计成以后可以解密】
+
+一个常见错误思路是：
+
+~~~text
+Password
+   ↓
+AES Encrypt
+   ↓
+Database
+~~~
+
+这种设计的问题是：
+
+~~~text
+只要 Server 能够解密
+就一定存在某个 Decryption Key
+
+攻击者同时拿到 Database + Key
+就能恢复所有 Password
+~~~
+
+Login 并不需要知道原始 Password。
+
+Server 真正需要解决的是：
+
+~~~text
+本次输入的 Password
+是否和注册时建立的 Password Credential 一致
+~~~
+
+因此正确方向是 Password Hash / Password KDF（密码派生函数）：
+
+~~~text
+Register
+
 Password
   ↓
 Random Salt
@@ -134,151 +263,431 @@ Derived Hash
 Database
 ~~~
 
-登录时重新计算并比较。
+Login：
 
-OWASP 当前优先推荐 Argon2id；无法使用时可以采用满足参数要求的 scrypt。SHA-256 这类快速通用 Hash 不适合直接保存 Password。
+~~~text
+Input Password
+      ↓
+读取已保存的 Salt / Parameters
+      ↓
+重新执行相同 Password KDF
+      ↓
+Compare
+      ↓
+Match / Mismatch
+~~~
 
-参考：
+Password KDF 会故意增加 CPU / Memory Cost。
 
-https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+原因是 Database 泄露以后，攻击者通常会进行离线猜测：
 
-### 【邮箱验证确认的是联系方式控制权，不是登录状态】
+~~~text
+password123
+12345678
+qwerty...
+      ↓
+不断计算 Hash
+      ↓
+和泄露数据比较
+~~~
 
-注册以后常见：
+如果使用普通 SHA-256，计算速度太快，攻击者可以进行非常大量的猜测。
+
+OWASP 当前优先推荐 Argon2id；无法使用 Argon2id 时，可以使用满足安全参数要求的 scrypt。[[2]](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+
+### 【Salt 解决相同 Password 产生相同结果的问题】
+
+如果没有 Salt：
+
+~~~text
+Alice password = 123456
+Bob   password = 123456
+
+可能得到：
+
+Alice hash = ABC
+Bob   hash = ABC
+~~~
+
+攻击者即使暂时不知道 Password，也能看出：
+
+~~~text
+Alice 和 Bob 使用了同一个 Password
+~~~
+
+加入随机 Salt：
+
+~~~text
+Alice
+123456 + salt_A
+      ↓
+hash_A
+
+Bob
+123456 + salt_B
+      ↓
+hash_B
+~~~
+
+即使 Password 相同：
+
+~~~text
+hash_A != hash_B
+~~~
+
+Salt 不要求保密。
+
+它通常与 Hash 一起保存。
+
+关键是每个 Credential 使用独立随机 Salt。
+
+### 【邮箱验证确认的是邮箱控制权，不等于已经登录】
+
+用户注册时填写：
+
+~~~text
+alice@example.com
+~~~
+
+这只能说明：
+
+~~~text
+用户声称自己拥有这个 Email
+~~~
+
+Server 还不知道这个 Inbox 是否真的属于这个用户。
+
+因此需要 Email Verification：
 
 ~~~text
 Create User
-  ↓
-emailVerified = false
-  ↓
-Generate Verification Token
-  ↓
-Send Email
-  ↓
-User Submit Token
-  ↓
-Verify
-  ↓
-emailVerified = true
+email_verified_at = NULL
+        ↓
+Generate Random Verification Token
+        ↓
+保存 Token 状态
+        ↓
+Send Verification Email
+        ↓
+User Click Link
+        ↓
+Browser Submit Token
+        ↓
+Server Verify Token
+        ↓
+email_verified_at = now()
 ~~~
 
-Verification Token 的作用是证明：
+Verification Token 解决的是：
 
 ~~~text
-当前操作人
-能够访问这个 Email Address
+“当前用户是否能够访问这个邮箱”
 ~~~
 
-它不等于：
+它没有解决：
 
 ~~~text
-当前 Browser 已经建立 Session
+“当前 Browser 是否已经建立持续登录会话”
 ~~~
 
-一次性 Verification Token 通常需要：
+所以：
 
 ~~~text
-Random Token
-Purpose = verify-email
-Expires At
-Consumed At
-User ID
+Email Verification
+属于 Identity / Account Lifecycle
+
+Session
+属于 Authentication 成功后的会话控制
+~~~
+
+### 【Verification Token 与 Password 的安全处理方式不同】
+
+一次性 Verification Token 常见设计：
+
+~~~text
+rawToken
+=
+CSPRNG 生成的高熵随机值
+~~~
+
+发送给 Client：
+
+~~~text
+Email Link
+包含 rawToken
+~~~
+
+Database 保存：
+
+~~~text
+token_hash
+=
+SHA-256(rawToken)
 ~~~
 
 验证时：
 
 ~~~text
-Token 匹配
-AND Purpose 正确
-AND 未使用
-AND 未过期
+Client 提交 rawToken
+        ↓
+Server SHA-256
+        ↓
+查询 token_hash
+        ↓
+同时检查：
+Purpose
+Expires At
+Consumed At
 ~~~
 
-成功后 Token 被消费，Email 状态变为 Verified。
+为什么 Password 不推荐直接 SHA-256，而随机 Token 可以？
 
-### 【Login 负责验证 Credential，成功结果只是可信 Principal】
+因为输入熵不同。
 
-典型 Password Login：
+用户 Password：
 
 ~~~text
-Email + Password
+用户自己选择
+可预测
+可进行字典猜测
+~~~
+
+256-bit Random Token：
+
+~~~text
+CSPRNG 生成
+现实中不可枚举
+~~~
+
+因此：
+
+~~~text
+Password
+需要昂贵 Password KDF
+
+High-entropy Random Token
+可以使用 SHA-256 作为不可逆索引
+~~~
+
+### 【Login 实际上连续验证账号、Credential 与账号状态】
+
+Login 不只是：
+
+~~~text
+SELECT user
+verify password
+return success
+~~~
+
+更完整的链路：
+
+~~~text
+1. Parse Input
+        ↓
+2. Normalize Identifier
+        ↓
+3. Lookup Account
+        ↓
+4. Verify Credential
+        ↓
+5. Check Account State
+        ↓
+6. Optional MFA / Risk Check
+        ↓
+7. Authentication Success
+        ↓
+8. Produce Authenticated Principal
+~~~
+
+Account State 可能包括：
+
+~~~text
+email_verified?
+disabled?
+locked?
+password_expired?
+organization_disabled?
+risk_check_passed?
+~~~
+
+因此：
+
+~~~text
+Password Correct
+不一定等于
+Authentication Accepted
+~~~
+
+例如：
+
+~~~text
+Password Match
++
+Account Disabled
       ↓
-Input Validation
-      ↓
-Lookup User
-      ↓
-Verify Password
-      ↓
-Check Account State
-├── Disabled?
-├── Locked?
-├── Email Verified?
-└── Other Policy?
-      ↓
-Optional MFA
-      ↓
-Authentication Success
+Reject Login
+~~~
+
+### 【Authentication Factor 解释 MFA 为什么不是简单的“验证两次”】
+
+常见认证因子：
+
+~~~text
+Knowledge Factor
+你知道什么
+例如 Password / PIN
+
+Possession Factor
+你拥有什么
+例如 Security Key / Authenticator Device
+
+Inherence Factor
+你是什么
+例如 Fingerprint / Face
+~~~
+
+MFA（Multi-Factor Authentication，多因素认证）强调的是：
+
+~~~text
+多个不同 Factor Category
+共同完成身份验证
+~~~
+
+例如：
+
+~~~text
+Password
++
+Hardware Security Key
+~~~
+
+是 Knowledge + Possession。
+
+而：
+
+~~~text
+Password
++
+Security Question
+~~~
+
+本质上仍然都是 Knowledge Factor，并不能简单等同于真正多因素认证。
+
+### 【Authentication Success 只证明这一次请求是谁，还没有解决持续登录】
+
+假设 Server 已经完成：
+
+~~~text
+Email 正确
+Password 正确
+Account Active
+MFA 正确
       ↓
 Authenticated Principal
+userId = user_10001
 ~~~
 
-Login 到这里解决的是：
+到这里身份认证已经成功。
+
+但 Browser 下一次发：
+
+~~~http
+GET /projects
+~~~
+
+这是新的 HTTP Request。
+
+Server 不能要求用户每次 Request 都重新提交：
 
 ~~~text
-“本次请求者是谁？”
+Email
+Password
+MFA
 ~~~
 
-它还没有解决：
+也不能凭空知道这个 Request 属于刚才的 user_10001。
+
+因此 Authentication Success 之后，自然出现下一个问题：
+
+> 怎样把“刚才已经确认的身份”安全地带到后续几十、几百次 Request？
+
+这就是 Session Management（会话控制）。
+
+### 【Password Reset 是重新建立长期 Credential，安全级别高于普通资料修改】
+
+Forgot Password 的本质不是“修改一个字段”。
+
+它允许用户：
 
 ~~~text
-“下一次 Request 如何继续证明还是这个人？”
+不知道旧 Password
+      ↓
+通过 Recovery Channel
+      ↓
+建立一个新的 Password
+      ↓
+重新获得账号控制权
 ~~~
 
-后者属于会话控制。
-
-### 【Password Reset 是重新建立 Credential，而不是普通资料修改】
-
-Forgot Password 链路通常是：
+典型链路：
 
 ~~~text
 Forgot Password
-  ↓
+      ↓
 Generate Reset Token
-  ↓
-Send to Verified Channel
-  ↓
+      ↓
+Send to Verified Email / Phone
+      ↓
+User Submit Token + New Password
+      ↓
 Validate Token
-  ↓
-Set New Password
-  ↓
+      ↓
+Update Password Hash
+      ↓
 Consume Reset Token
-  ↓
-Revoke Old Credential / Sessions when needed
+      ↓
+必要时 Revoke Existing Sessions
 ~~~
 
-Reset Token 可以在不知道旧密码的情况下建立新 Password，因此属于高敏感一次性凭据。
-
-应至少考虑：
+Reset Token 应至少考虑：
 
 ~~~text
 高熵随机
 短生命周期
 Purpose Binding
 一次性消费
-避免数据库长期保存可直接重放的明文 Token
+避免明文长期存储
 ~~~
 
-### 【Re-authentication 用于高风险操作重新确认当前身份】
+同时 Forgot Password API 还要避免明显暴露：
 
-已有 Session 只能说明用户已经登录，不意味着任何敏感操作都无需再次确认。
+~~~text
+这个 Email 是否存在
+~~~
+
+否则攻击者可以进行 Account Enumeration（账号枚举）。
+
+### 【Re-authentication 解决已经登录但操作风险特别高的场景】
+
+Session 有效只能说明：
+
+~~~text
+这个 Request 来自一个已经登录的会话
+~~~
+
+并不意味着：
+
+~~~text
+任何高风险操作都可以直接执行
+~~~
 
 例如：
 
 ~~~text
 修改 Password
-新增 MFA
-修改支付信息
-导出敏感数据
+关闭 MFA
+修改支付账户
+导出所有数据
 删除账号
 ~~~
 
@@ -286,17 +695,48 @@ Purpose Binding
 
 ~~~text
 Existing Session
-      +
-Password / MFA
+      ↓
+Sensitive Action
+      ↓
+再次输入 Password / MFA
       ↓
 Recent Authentication
       ↓
-Sensitive Operation
+Allow
 ~~~
 
-因此 Authentication System 的输出最终是可信 Principal，而不是 Cookie 或 Session。
+Re-authentication 与 Authorization 的职责不同：
 
----
+~~~text
+Re-authentication
+重新确认“现在操作的人仍然真的是本人”
+
+Authorization
+判断“这个身份是否具有执行当前操作的权限”
+~~~
+
+OWASP 也建议在 Password Change、账号恢复、可疑设备等高风险事件之后要求重新认证。[[1]](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+
+身份认证这一部分最终可以收束成：
+
+~~~text
+Register
+建立 Digital Identity
+        ↓
+Credential Enrollment
+建立认证材料
+        ↓
+Identity Verification
+验证邮箱等身份属性
+        ↓
+Login
+验证 Credential
+        ↓
+Authenticated Principal
+        ↓
+Recovery / Re-authentication
+维护身份可信度
+~~~
 
 ## 2. 会话控制体系让认证结果跨多个 HTTP Request 持续成立
 
