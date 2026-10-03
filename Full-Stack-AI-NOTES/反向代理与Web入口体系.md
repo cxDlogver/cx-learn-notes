@@ -1066,45 +1066,11 @@ Proxy 删除以后哪些职责必须迁移
 
 ---
 
-## 11. Browser Monitor 提供 Caddy 反向代理的项目实践入口
+## 11. 实战分析入口
 
-本篇只维护通用知识，不复制具体项目配置。
-
-Browser Monitor 的真实实现已经单独记录：
+通用知识正文不展开具体仓库的配置、目录和实现取舍。需要把本篇知识映射到真实源码时，可继续阅读：
 
 - [Browser Monitor：反向代理与 Caddy 源码学习](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E4%B8%8ECaddy%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md)
-
-该实践文档进一步展示：
-
-~~~text
-Dockerfile.web
-        ↓
-Vite Build
-        ↓
-dist
-        ↓
-Caddy Runtime
-        ↓
-Static Web + Reverse Proxy
-        ↓
-Backend Private Address
-~~~
-
-以及 Caddyfile 中 API、Health、Internal、SPA Fallback、Forwarded Header 和部署地址抽象等真实工程实现。
-
-通用知识与项目实践保持：
-
-~~~text
-知识体系索引
-        ↓
-本篇通用知识
-        ↓
-Browser Monitor 实践文档
-        ↓
-真实 Dockerfile / Caddyfile / Runtime Topology
-~~~
-
----
 
 ## 12. 参考文献
 
