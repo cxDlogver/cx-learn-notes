@@ -290,6 +290,8 @@ COPY --from=build /app/dist /srv
 
 这样 Final Image 不需要保留 Node、源码和构建依赖。[[4]](https://docs.docker.com/build/building/multi-stage/)
 
+当 Final Stage 使用 Caddy / Nginx 时，还要继续区分三个层级：Vite 属于 Build Time，Caddy / Nginx 属于 Server Runtime，React / Vue 生产 JavaScript 最终运行在 Browser Runtime。静态文件服务、SPA Fallback 与 API Reverse Proxy 的完整关系见 [反向代理与 Web 入口体系](./反向代理与Web入口体系.md)。
+
 ---
 
 ## 3. Container Runtime 从 Image 创建隔离环境并启动 Process
