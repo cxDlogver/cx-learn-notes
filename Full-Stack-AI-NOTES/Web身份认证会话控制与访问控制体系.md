@@ -3137,7 +3137,7 @@ ACL / RBAC / ABAC / ReBAC
 
 #### <u>1. DAC 的核心是 Resource Owner 拥有一定自主授权权</u>
 
-NIST 对 DAC 的定义强调：对象 Owner 或被授权管理该对象访问权限的人，可以决定谁能访问这个对象，以及拥有什么访问权。
+NIST 对 DAC 的定义强调：对象 Owner 或被授权管理该对象访问权限的人，可以决定谁能访问这个对象，以及拥有什么访问权。[15]
 
 直观理解就是：
 
@@ -3207,7 +3207,7 @@ Resource 保存授权名单
 
 #### <u>3. MAC 的核心是中央安全 Policy 强制决定权限</u>
 
-NIST 对 MAC 的描述强调：访问控制决策由中央 Authority / Policy 决定，而不是由单个 Resource Owner 自己决定；普通用户不能随意改变访问权。
+NIST 对 MAC 的描述强调：访问控制决策由中央 Authority / Policy 决定，而不是由单个 Resource Owner 自己决定；普通用户不能随意改变访问权。[16]
 
 可以理解成：
 
@@ -3350,6 +3350,7 @@ Access Control
 ~~~
 
 这样就不会把 DAC / MAC 和 RBAC / ABAC 等模型机械堆在同一层。
+
 ### 【Authorization Enforcement 必须发生在可信 Server Boundary】
 
 完整链：
@@ -3574,7 +3575,7 @@ PAP 回答的是：
 
 PDP（Policy Decision Point，策略决策点）负责真正计算 Authorization Decision。
 
-NIST 将 PDP 描述为：根据适用的 Digital Policy 计算访问决策的组件。
+NIST 将 PDP 描述为：根据适用的 Digital Policy 计算访问决策的组件。[17]
 
 假设 Request：
 
@@ -3629,7 +3630,7 @@ Allow / Deny
 
 PEP（Policy Enforcement Point，策略执行点）是实际保护 Resource 的位置。
 
-NIST 对 PEP 的定义强调：它负责执行 PDP 给出的访问控制决策。
+NIST 对 PEP 的定义强调：它负责执行 PDP 给出的访问控制决策。[18]
 
 例如：
 
@@ -3739,7 +3740,7 @@ PEP
 我真的把请求挡下来。”
 ~~~
 
-OWASP Authorization Patterns Cheat Sheet 也采用类似职责划分：PAP 管理规则，PDP 评估 Policy，PEP 保护操作并执行 Decision。
+OWASP Authorization Patterns Cheat Sheet 也采用类似职责划分：PAP 管理规则，PDP 评估 Policy，PEP 保护操作并执行 Decision。[19]
 
 #### <u>6. PAP / PDP / PEP 和 RBAC / ABAC / ReBAC 属于两个不同维度</u>
 
