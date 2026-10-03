@@ -1921,6 +1921,110 @@ Editor
 
 如果仍全部编码成 Role，容易发生 Role Explosion。
 
+
+RBAC 真正的结构通常不是简单：
+
+~~~text
+users.role = admin
+~~~
+
+而是：
+
+~~~text
+User
+  ↓
+User-Role Assignment
+  ↓
+Role
+  ↓
+Role-Permission Assignment
+  ↓
+Permission
+~~~
+
+可以落成：
+
+~~~text
+users
+id
+
+roles
+id
+name
+
+permissions
+id
+resource
+action
+
+user_roles
+user_id
+role_id
+
+role_permissions
+role_id
+permission_id
+~~~
+
+例如：
+
+~~~text
+Alice
+      ↓
+Editor
+      ↓
+project.read
+project.update
+report.read
+~~~
+
+Alice 不需要自己直接保存三个 Permission。
+
+如果 Alice 从 Editor 调整为 Viewer，只需要改 User-Role Relationship，不需要逐条修改所有 Permission。
+
+这就是 RBAC 最大的工程价值：
+
+> 用稳定的组织角色作为 User 和 Permission 之间的中间层，降低权限管理成本。
+
+Role 还可以存在 Hierarchy（角色层级）：
+
+~~~text
+Viewer
+  ↓
+read
+
+Editor
+  ↓
+inherits Viewer
++
+update
+
+Admin
+  ↓
+inherits Editor
++
+manage
+~~~
+
+但如果为了表达业务条件不断创建：
+
+~~~text
+FinanceEditor
+FinanceProjectAEditor
+FinanceProjectANightEditor
+FinanceProjectANightTrustedDeviceEditor
+~~~
+
+说明这些条件已经不是稳定“组织角色”，而是在混入：
+
+~~~text
+Attribute
+Relationship
+Environment Context
+~~~
+
+此时继续增加 Role 就会导致 Role Explosion（角色爆炸）。
+
 ### 【ABAC 用 Attribute 与 Policy 处理动态上下文】
 
 ABAC（Attribute-Based Access Control）综合：
