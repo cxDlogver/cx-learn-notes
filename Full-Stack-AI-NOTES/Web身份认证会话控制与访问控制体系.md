@@ -815,6 +815,52 @@ Token ≠ JWT
 
 一个 Token 必须结合 Purpose、Lifetime、Storage、Transport、Validation 与 Revocation 才有完整含义。
 
+
+理解这四个概念时，可以用一个真实请求来区分：
+
+~~~text
+Server 内部真正想保存的登录状态
+Session
+{
+  userId,
+  expiresAt,
+  csrfToken
+}
+
+Client 不应该直接拿整份 Session
+        ↓
+Server 给 Client 一个随机引用
+Session Identifier
+        ↓
+Browser 需要把这个引用保存并自动带回
+        ↓
+Cookie
+        ↓
+这个随机引用本身也可以被称为一种 Session Token
+~~~
+
+所以关系是：
+
+~~~text
+Session
+= Server 想维持的登录上下文
+
+Session Identifier
+= Client 引用 Session 的随机 Credential
+
+Cookie
+= Browser 保存并自动传输 Credential 的 HTTP 机制
+
+Token
+= 对各种 Credential / Proof 的广义称呼
+~~~
+
+如果把 Cookie 删除，Session 概念仍然存在；Client 也可以通过其他 Header 携带 Session Identifier。
+
+如果把 Redis 换成 Database，Session 概念仍然存在；只是 Session Store 实现变了。
+
+这就是为什么学习时不能把 Cookie、Redis、Session 和 Token 画成同一层。
+
 ### 【会话持续可以先建立两种主要工程模型】
 
 ~~~text
@@ -908,6 +954,69 @@ OWASP 建议 Session Identifier 应不可预测，不应包含敏感业务语义
 参考：
 
 https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+
+可以把一次 Server-side Session 的真实数据流展开成：
+
+~~~text
+① Login 认证成功
+Current User = user_10001
+
+② Server 生成
+rawSessionToken = 256-bit Random
+
+③ Server 保存
+hash(rawSessionToken)
+      ↓
+{
+  userId: user_10001,
+  expiresAt: ...,
+  csrfToken: ...
+}
+
+④ Browser 得到
+Set-Cookie: session=<rawSessionToken>
+
+⑤ 下一次 Request
+Cookie: session=<rawSessionToken>
+
+⑥ Server
+hash(rawSessionToken)
+      ↓
+Lookup Session Store
+      ↓
+找到 user_10001
+      ↓
+Request Context.currentUser = user_10001
+~~~
+
+这里真正决定登录是否有效的是：
+
+~~~text
+Server 是否仍然接受这个 Credential
+~~~
+
+而不是 Browser 有没有某个 UI 状态。
+
+如果 Browser Cookie 还在，但是 Server Session 已经删除：
+
+~~~text
+Cookie exists
++
+Session Store miss
+      ↓
+Authentication Failed
+~~~
+
+反过来，如果 Server Session 还存在，但 Browser 已经删除 Cookie：
+
+~~~text
+Browser 不再提交 Credential
+      ↓
+当前 Browser 也无法恢复登录
+~~~
+
+所以完整登录态由 Client Credential 与 Server Session State 共同构成。
 
 ### 【模型二：Access Token + Refresh Token 拆分短期访问与长期续期】
 
@@ -1121,6 +1230,70 @@ JWT = 先进
 
 应该根据系统边界选择状态模型。
 
+
+选择时可以先问系统形态，而不是先问“要不要 JWT”。
+
+如果是典型后台系统：
+
+~~~text
+Browser
+   ↓
+Single Web Backend
+   ↓
+Database
+~~~
+
+要求：
+
+~~~text
+Logout 立即生效
+权限变更立即生效
+没有第三方 Client
+~~~
+
+Server-side Session 往往更直接。
+
+如果是：
+
+~~~text
+Mobile App
+Browser SPA
+Third-party Client
+        ↓
+Authorization Server
+        ↓
+多个 Resource Server
+~~~
+
+需要：
+
+~~~text
+不同 Audience
+不同 Scope
+跨服务验证
+Delegated Authorization
+~~~
+
+OAuth Access Token 模型通常更加自然。
+
+所以两者的区别不是：
+
+~~~text
+传统技术
+vs
+现代技术
+~~~
+
+而是：
+
+~~~text
+集中式 Server Session State
+vs
+Token-based Resource Access Model
+~~~
+
+设计依据是系统拓扑、信任边界和撤销需求。
+
 ### 【Cookie 与 Authorization Header 是 Credential Transport，不是第三种会话模型】
 
 Cookie Transport：
@@ -1312,6 +1485,56 @@ Server 与 Session 中 Token 比较
 ~~~
 
 自动发送的 Session Credential 与显式发送的 CSRF Proof 被拆成两条通道。
+
+
+这里也能解释为什么 CSRF Token 与 Session Token 的安全角色不同。
+
+Session Token：
+
+~~~text
+证明：
+“这个 Request 属于哪个已认证 Session”
+~~~
+
+如果攻击者得到有效 Session Token，通常就能够冒充这个 Session。
+
+CSRF Token：
+
+~~~text
+证明：
+“这个状态修改 Request
+还拥有当前合法页面上下文中的额外随机值”
+~~~
+
+单独得到 CSRF Token，通常无法恢复 User，因为请求仍然需要先通过 Session Authentication。
+
+因此常见实现可以在 Session State 中直接保存原始 CSRF Token：
+
+~~~text
+Session
+├── userId
+└── csrfToken
+~~~
+
+收到写请求以后直接比较：
+
+~~~text
+request.csrfToken
+==
+session.csrfToken
+~~~
+
+它并不像 Password 那样必须使用昂贵 KDF，也不像主要 Session Credential 那样强烈需要通过 Hash 降低存储泄露后的直接重放风险。
+
+当然也可以保存：
+
+~~~text
+hash(csrfToken)
+~~~
+
+然后 Request Token 先 Hash 再比较。
+
+这属于额外 Defense in Depth，而不是 Synchronizer Token Pattern 成立的必要条件。
 
 ### 【Synchronizer Token 通常保护 Unsafe Request，而不是普通 GET】
 
