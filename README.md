@@ -1,6 +1,6 @@
 # cx-learn-notes
 
-学习笔记与项目实践。Browser Monitor 独立维护在 [cxDlogver/browser-monitor](https://github.com/cxDlogver/browser-monitor)，本仓库通过 Git 子模块保留 `browser-monitor/` 目录及固定版本引用。
+学习笔记与项目实践。Browser Monitor 独立维护在 [cxDlogver/browser-monitor](https://github.com/cxDlogver/browser-monitor)，本仓库通过 Git 子模块保留 `browser-monitor/` 目录及固定版本引用。走航车平台独立维护在 [cxDlogver/qhzhc-realtime-platform](https://github.com/cxDlogver/qhzhc-realtime-platform)，通过子模块保留 `qhzhc-realtime-platform/` 目录及固定版本引用。
 
 ## 获取完整项目
 
@@ -15,7 +15,7 @@ cd cx-learn-notes
 git submodule update --init --recursive
 ```
 
-`official-network` 和 `browser-monitor` 都由各自仓库管理；修改子模块代码后，先提交并推送子模块，再在本仓库提交对应的版本指针。
+`official-network`、`browser-monitor` 和 `qhzhc-realtime-platform` 都由各自仓库管理；修改子模块代码后，先提交并推送子模块，再在本仓库提交对应的版本指针。
 
 ## 保持 SDK 调用
 
@@ -45,5 +45,15 @@ git -C browser-monitor switch main
 git -C browser-monitor pull --ff-only origin main
 git add browser-monitor
 git commit -m "chore: update browser-monitor submodule"
+git push
+```
+
+## 更新走航车项目版本
+
+```bash
+git -C qhzhc-realtime-platform switch main
+git -C qhzhc-realtime-platform pull --ff-only origin main
+git add qhzhc-realtime-platform
+git commit -m "chore: update qhzhc submodule"
 git push
 ```
