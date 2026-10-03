@@ -1,1284 +1,1710 @@
-# Web 身份认证、Session 与访问控制体系
+# Web 身份认证、会话控制与访问控制体系
 
-Web 应用的登录系统并不是“校验一次用户名密码”这么简单。用户第一次提交密码以后，后续几十次、几百次 HTTP 请求都不能再次要求输入密码；与此同时，服务器又必须确保这些请求确实属于已经登录的用户，并且这个用户只能访问自己有权限操作的资源。
-
-因此一个完整的 Web 身份与访问控制系统，实际要连续解决下面几个问题：
+Web 身份系统不是一个“登录功能”，而是三个职责连续但边界不同的系统：
 
 ~~~text
-用户提交登录凭据
+Authentication（身份认证）
+证明“你是谁”
         ↓
-服务器确认“你是谁”
+Session Management（会话控制）
+让这个身份在后续 Request 中持续成立
         ↓
-建立可持续的登录状态
-        ↓
-浏览器在后续请求中携带会话标识
-        ↓
-服务器恢复当前用户身份
-        ↓
-写请求还要确认不是跨站伪造
-        ↓
-根据当前用户 + 当前资源 + 当前操作判断权限
-        ↓
-执行业务
-        ↓
-退出登录、密码重置或过期时撤销会话
+Authorization（访问控制）
+判断“你能对什么资源做什么”
 ~~~
 
-Authentication（身份认证）解决“请求者是谁”，Session Management（会话管理）解决“多次 HTTP 请求如何持续关联到同一个身份”，CSRF 防护解决“浏览器自动携带登录凭据时，怎样避免其他网站借用这个身份发起状态修改”，Authorization（访问授权）解决“已经知道你是谁以后，你是否有权操作当前资源”。
+三个系统分别回答不同问题：
 
-OWASP 也明确把 Authentication、Session Management 和 Access Control 视为彼此连接但不能混为一谈的三个安全模块。[[1]](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) [[2]](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+| 系统 | 核心输入 | 核心问题 | 主要输出 |
+| --- | --- | --- | --- |
+| 身份认证 | Identity + Credential | 请求者是否真的是其声称的身份 | Authenticated Principal |
+| 会话控制 | 已认证身份 | HTTP 无状态下怎样持续登录 | Session / Access Credential |
+| 访问控制 | Subject + Resource + Action + Context | 当前身份是否允许执行当前操作 | Allow / Deny |
 
-本文使用 Server-side Session（服务端会话）作为主要模型。Cookie 的单独安全属性继续参考 [Cookie 安全性概述笔记](./Cookie安全性概述笔记.md)，Access Token / Refresh Token 的令牌体系继续参考 [Access Token 与 Refresh Token 核心知识点笔记](./Access%20Token与Refresh%20Token核心知识点笔记.md)。
+因此 Cookie、Session、JWT、Refresh Token、RBAC 不能放在同一层并列理解。
+
+~~~text
+Cookie
+是 Browser 的 Credential 传递机制之一
+
+Session
+是跨 Request 维持登录状态的模型
+
+Access Token / Refresh Token
+是另一类会话持续与授权凭据模型
+
+RBAC / ABAC / ReBAC / ACL
+是 Authorization 使用的权限决策模型
+~~~
+
+全文按照“身份认证 → 会话控制 → 访问控制”建立完整框架。
 
 ---
 
-## 1. 身份认证把用户声明转换成服务器可以信任的用户身份
+## 1. 身份认证体系从账号建立到可信身份形成
 
-### 【登录请求中的邮箱只是身份声明，密码验证以后服务器才接受这个身份】
-
-假设用户提交：
-
-~~~http
-POST /login
-
-{
-  "email": "alice@example.com",
-  "password": "..."
-}
-~~~
-
-这里的邮箱只能表达：
+Authentication（身份认证）的最终目标是把：
 
 ~~~text
-Client 声称：
-“我是 alice@example.com”
+用户声明
+“我是 Alice”
 ~~~
 
-服务器不能因为 Request Body 中写了这个邮箱，就直接把当前请求当成 Alice。任何人都可以构造同样的 Request Body。
-
-Authentication 真正发生在服务器验证 Credential（身份凭据）的阶段：
+转换成：
 
 ~~~text
-email
-  ↓
-找到 User Record
-  ↓
-password
-  ↓
-使用 Password Hash Algorithm 验证
-  │
-  ├── 不匹配 → Authentication Failed
-  │
-  └── 匹配
-        ↓
-检查账号状态
-        ↓
-Authenticated User
+Server 可以信任的结论
+Current Principal = Alice
 ~~~
 
-因此身份认证不是“读取用户 ID”，而是建立：
-
-~~~text
-外部输入
-“我是 User A”
-        ↓
-Credential Verification
-        ↓
-服务器内部可信结论
-Current User = User A
-~~~
-
-OWASP 对 Authentication 的定义也是验证某个主体是否确实是其声称的身份。[[1]](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
-
-### 【密码不能直接存储，登录时比较的是重新计算出的 Password Hash】
-
-注册时如果直接保存原始密码，一旦数据库泄露，攻击者立即获得所有用户凭据。密码因此需要经过专门的 Password Hash（密码哈希）算法处理。
-
-正确模型不是可逆加密：
-
-~~~text
-Password
-  ↓
-Encrypt
-  ↓
-以后再 Decrypt
-~~~
-
-而是单向验证：
+它不是一次 Login API，而是一条完整账号生命周期：
 
 ~~~text
 Register
+注册账号
+  ↓
+Credential Enrollment
+建立 Password / Passkey / MFA 等认证凭据
+  ↓
+Identity Verification
+验证 Email / Phone 等身份属性
+  ↓
+Login
+验证 Credential
+  ↓
+Authenticated Principal
+  ↓
+Re-authentication
+高风险操作再次确认身份
+  ↓
+Credential Change / Recovery
+修改密码、找回账号
+  ↓
+Credential Revocation
+旧凭据失效
+~~~
 
+### 【注册阶段建立稳定 Identity 与长期 Credential】
+
+最基础的 User Record 可以包含：
+
+~~~text
+User
+├── id
+├── email
+├── passwordHash
+├── emailVerifiedAt
+├── status
+├── createdAt
+└── updatedAt
+~~~
+
+其中 User ID 是系统内部稳定身份；Email 更像登录标识和可验证联系方式。
+
+因此：
+
+~~~text
+User ID
+应该稳定
+
+Email
+可以修改
+~~~
+
+业务数据关系应优先绑定稳定 User ID，而不是把 Email 当成永久身份主键。
+
+Password 也不应该被加密后等待未来解密。Server 只需要验证：
+
+~~~text
+这次输入的 Password
+是否与注册时建立的 Credential 一致
+~~~
+
+因此 Password 采用单向 Password Hash / KDF：
+
+~~~text
 Password
   ↓
-Password Hash Algorithm
-+ Random Salt
+Random Salt
   ↓
-Encoded Password Hash
+Argon2id / scrypt
+  ↓
+Derived Hash
   ↓
 Database
-
-
-Login
-
-Input Password
-  ↓
-按照已保存参数重新计算
-  ↓
-Computed Hash
-        ↘
-          Compare
-        ↗
-Stored Hash
 ~~~
 
-Password Hash 应故意让大量猜测成本较高。OWASP 当前优先推荐 Argon2id，在无法使用 Argon2id 时可以使用正确配置的 scrypt；不建议使用 SHA-256 这类快速通用 Hash 直接保存密码。[[3]](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+登录时重新计算并比较。
 
-Password 与高熵随机 Token 都可能使用 Hash，但目标不同：
+OWASP 当前优先推荐 Argon2id；无法使用时可以采用满足参数要求的 scrypt。SHA-256 这类快速通用 Hash 不适合直接保存 Password。
 
-| 数据 | 目标 | 合适的处理方式 |
-| --- | --- | --- |
-| Password | 数据库泄露后增加离线猜密码成本 | Argon2id / scrypt 等专用慢速算法 + Salt |
-| 高熵随机 Session Token | 数据库泄露后不能直接拿存储值冒充 Client | 保存随机 Token 的单向摘要，例如 SHA-256 |
+参考：
 
-因此不能因为二者都叫 Hash，就使用同一套算法选择逻辑。
+https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-### 【邮箱验证属于账号生命周期，不等于已经建立登录会话】
+### 【邮箱验证确认的是联系方式控制权，不是登录状态】
 
-常见注册过程是：
+注册以后常见：
 
 ~~~text
-Register
+Create User
   ↓
-创建 User
+emailVerified = false
   ↓
-生成 Email Verification Token
+Generate Verification Token
   ↓
-发送验证链接
+Send Email
   ↓
-用户提交 Token
+User Submit Token
   ↓
-标记 Email Verified
+Verify
+  ↓
+emailVerified = true
 ~~~
 
-Verification Token 证明的是持有者能够访问对应邮箱，不表示当前 Browser 已经拥有登录 Session。
-
-因此应明确区分：
+Verification Token 的作用是证明：
 
 ~~~text
-创建账号
-  ↓
-确认邮箱控制权
-  ↓
-允许登录认证
-  ↓
-建立 Session
+当前操作人
+能够访问这个 Email Address
 ~~~
 
----
-
-## 2. HTTP 请求之间没有天然用户关系，Session 用来把多次请求绑定到同一个登录身份
-
-### 【登录成功只说明当前请求通过认证，不会让后续 HTTP 请求自动认识这个用户】
-
-第一次请求：
+它不等于：
 
 ~~~text
-POST /login
-email + password
-        ↓
-Authentication Success
+当前 Browser 已经建立 Session
 ~~~
 
-几秒以后：
+一次性 Verification Token 通常需要：
 
 ~~~text
-GET /projects
+Random Token
+Purpose = verify-email
+Expires At
+Consumed At
+User ID
 ~~~
 
-第二个 HTTP Request 本身不会天然包含“这个请求就是刚才登录成功的 Alice 发来的”。
-
-因此系统需要在登录成功后创建 Session：
+验证时：
 
 ~~~text
-Login Success
-     ↓
-Create Session
-     ↓
-Session ID / Session Token
-     ↓
-返回 Client
-     ↓
-后续 Request 携带 Session ID
-     ↓
-Server Lookup Session
-     ↓
-恢复 Current User
+Token 匹配
+AND Purpose 正确
+AND 未使用
+AND 未过期
 ~~~
 
-OWASP 将 Web Session 描述为与同一用户关联的一系列 HTTP Request / Response，并指出 Session Identifier 用来在多个请求之间保持和恢复状态。[[2]](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+成功后 Token 被消费，Email 状态变为 Verified。
 
-### 【Session Token 是查找会话的凭据，不应该等同于用户业务数据】
+### 【Login 负责验证 Credential，成功结果只是可信 Principal】
 
-Server-side Session 可以理解为：
+典型 Password Login：
 
 ~~~text
-Browser
-┌─────────────────────────────┐
-│ session_token = random...   │
-└──────────────┬──────────────┘
-               │
-               │ Request Cookie
-               ↓
-Server
-               │
-               │ lookup
-               ↓
-Session Store
-┌─────────────────────────────┐
-│ session_id                  │
-│ user_id                     │
-│ expires_at                  │
-│ csrf_token                  │
-│ other session state         │
-└─────────────────────────────┘
-~~~
-
-Browser 不需要持有整个 Session Object，只需要持有不可预测的 Session Identifier。
-
-所以需要明确：
-
-~~~text
-Session
-= 跨请求保存的服务器状态
-
-Cookie
-= Browser 保存和发送 Session Identifier 的一种 HTTP 机制
-~~~
-
-Cookie 可以保存语言偏好、实验值，也可以保存 Session Identifier；Cookie 本身并不等于登录状态。
-
----
-
-## 3. Cookie 自动携带 Session Identifier，同时建立浏览器侧的安全边界
-
-### 【服务器通过 Set-Cookie 建立 Browser 侧会话标识】
-
-登录成功后常见响应：
-
-~~~http
-HTTP/1.1 200 OK
-Set-Cookie: session=RANDOM_TOKEN; HttpOnly; Secure; SameSite=Lax; Path=/
-~~~
-
-浏览器保存 Cookie，在满足 Domain、Path、Secure、SameSite 等规则时，后续请求自动带上：
-
-~~~http
-Cookie: session=RANDOM_TOKEN
-~~~
-
-MDN 对 Cookie 的基本行为就是：服务器用 Set-Cookie 发送 Cookie，User Agent 在后续符合条件的请求中再把 Cookie 发送回服务器。[[4]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
-
-“自动携带”让用户无需每次重新登录，但它同时也是后续 CSRF 风险产生的重要原因。
-
-### 【HttpOnly、Secure 和 SameSite 分别限制不同攻击路径】
-
-HttpOnly 改变的是 JavaScript 读取路径：
-
-~~~text
-JavaScript
-document.cookie
-      ✕
-      │
-Session Cookie
-
-HTTP Request
+Email + Password
       ↓
-仍然可以自动发送
+Input Validation
+      ↓
+Lookup User
+      ↓
+Verify Password
+      ↓
+Check Account State
+├── Disabled?
+├── Locked?
+├── Email Verified?
+└── Other Policy?
+      ↓
+Optional MFA
+      ↓
+Authentication Success
+      ↓
+Authenticated Principal
 ~~~
 
-MDN 明确说明 HttpOnly 会阻止 JavaScript 通过 document.cookie 读取 Cookie，但 Cookie 仍会随 fetch / XMLHttpRequest 产生的 HTTP 请求发送。[[4]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
-
-因此 HttpOnly 主要降低 XSS 直接读取 Session Token 的风险，但不能让整个应用免受 XSS，也不能阻止已经运行在站点内的恶意脚本直接调用站内 API。
-
-Secure 限制传输路径：
+Login 到这里解决的是：
 
 ~~~text
-HTTP
-  ✕ Session Cookie
-
-HTTPS
-  ✓ Session Cookie
+“本次请求者是谁？”
 ~~~
 
-它降低凭据通过明文 HTTP 发送的风险。[[4]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
+它还没有解决：
 
-SameSite 控制 Cookie 是否跟随不同站点上下文发出的请求，可提供一层 CSRF 防御，但 MDN 与 OWASP 都把它视为防御的一部分，而不是所有情况下 CSRF Token 的替代。[[4]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie) [[5]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
+~~~text
+“下一次 Request 如何继续证明还是这个人？”
+~~~
 
-### 【Path 和 Domain 决定 Cookie 的发送范围，不代表业务权限】
+后者属于会话控制。
+
+### 【Password Reset 是重新建立 Credential，而不是普通资料修改】
+
+Forgot Password 链路通常是：
+
+~~~text
+Forgot Password
+  ↓
+Generate Reset Token
+  ↓
+Send to Verified Channel
+  ↓
+Validate Token
+  ↓
+Set New Password
+  ↓
+Consume Reset Token
+  ↓
+Revoke Old Credential / Sessions when needed
+~~~
+
+Reset Token 可以在不知道旧密码的情况下建立新 Password，因此属于高敏感一次性凭据。
+
+应至少考虑：
+
+~~~text
+高熵随机
+短生命周期
+Purpose Binding
+一次性消费
+避免数据库长期保存可直接重放的明文 Token
+~~~
+
+### 【Re-authentication 用于高风险操作重新确认当前身份】
+
+已有 Session 只能说明用户已经登录，不意味着任何敏感操作都无需再次确认。
 
 例如：
 
-~~~http
-Set-Cookie: session=...; Path=/api
+~~~text
+修改 Password
+新增 MFA
+修改支付信息
+导出敏感数据
+删除账号
 ~~~
 
-表示浏览器只在 Path 满足规则时发送 Cookie，但不表示用户被授权访问所有 /api 资源。
+可以要求：
 
-Cookie Scope 解决“浏览器什么时候发送 Cookie”，Authorization 解决“服务器收到请求后是否允许这个身份操作资源”，两者属于不同层。
+~~~text
+Existing Session
+      +
+Password / MFA
+      ↓
+Recent Authentication
+      ↓
+Sensitive Operation
+~~~
+
+因此 Authentication System 的输出最终是可信 Principal，而不是 Cookie 或 Session。
 
 ---
 
-## 4. Server-side Session 的核心是随机客户端凭据与服务端状态存储之间的映射
+## 2. 会话控制体系让认证结果跨多个 HTTP Request 持续成立
 
-### 【Session 创建需要同时形成客户端 Token、服务端记录与过期规则】
-
-典型过程：
+HTTP Request 默认彼此独立。
 
 ~~~text
-Authenticated User
-       ↓
-Generate Cryptographically Random Token
-       ↓
-token = 给 Browser 的凭据
-       │
-       ├── Hash(token)
-       │      ↓
-       │   Server-side Session Record
-       │
-       └── Set-Cookie(token)
-              ↓
-           Browser
+POST /login
+Authentication Success
+
+几秒后：
+
+GET /dashboard
 ~~~
 
-Session Record 可以保存：
+第二个 Request 本身不会天然携带“这是刚才登录成功的 Alice”这一事实。
+
+会话控制因此承担：
 
 ~~~text
-userId
+Authenticated Principal
+        ↓
+Create Session / Issue Token
+        ↓
+Client 持有 Credential
+        ↓
+后续每次 Request 携带
+        ↓
+Server Validate
+        ↓
+Restore Current Principal
+~~~
+
+### 【Cookie、Session 与 Token 位于不同层级】
+
+Session 描述的是：
+
+~~~text
+一段时间内
+多个 Request
+共享同一个已认证上下文
+~~~
+
+Session Identifier 是：
+
+~~~text
+Client 用来引用这个 Session 的 Credential
+~~~
+
+Cookie 是：
+
+~~~text
+Browser 保存并自动发送某个值的 HTTP 机制
+~~~
+
+Token 则是更广义的 Credential 形式：
+
+~~~text
+Session Token
+Access Token
+Refresh Token
+Verification Token
+Reset Token
+API Key
+CSRF Token
+~~~
+
+所以：
+
+~~~text
+Cookie ≠ Session
+
+Session ≠ Redis
+
+Token ≠ JWT
+~~~
+
+一个 Token 必须结合 Purpose、Lifetime、Storage、Transport、Validation 与 Revocation 才有完整含义。
+
+### 【会话持续可以先建立两种主要工程模型】
+
+~~~text
+模型 A
+Server-side Session
+服务端保存主要 Session State
+
+模型 B
+Access Token + Refresh Token
+短期访问凭据 + 长期续期凭据
+~~~
+
+两者目标相同：
+
+~~~text
+用户只在必要时重新认证
+而不是每个 Request 都提交 Password
+~~~
+
+但状态位置、续期方式、撤销方式和多服务扩展方式不同。
+
+
+### 【模型一：Server-side Session 由 Server 保存主要会话状态】
+
+基本结构：
+
+~~~text
+Login Success
+      ↓
+Generate Random Session Identifier
+      ↓
+Server Session Store
+      ↓
+Session ID 返回 Client
+      ↓
+后续 Request 携带 Session ID
+      ↓
+Server Lookup Session
+      ↓
+Restore Principal
+~~~
+
+Session Store 可以保存：
+
+~~~text
 sessionId
+userId
+createdAt
 expiresAt
+lastSeenAt
 csrfToken
-lastSeen / device / risk context（按业务需要）
+device / risk metadata
 ~~~
 
-OWASP 指出 Session ID 的泄露、捕获、预测或固定都可能导致 Session Hijacking（会话劫持），因此 Session Identifier 必须具有足够随机性和不可预测性。[[2]](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+Client 通常只持有一个 Opaque Session Identifier（不透明会话标识符），不需要在 Identifier 内编码 User ID、Role 或 Permission。
 
-### 【数据库保存 Token Hash 可以降低数据库泄露直接产生可重放凭据的风险】
-
-如果服务器直接保存 Session Token 明文：
+Session Store 可以位于：
 
 ~~~text
-Database
-token = REAL_SESSION_SECRET
-~~~
-
-数据库泄露后，攻击者可能直接把该值作为 Cookie 使用。
-
-保存 Hash 时：
-
-~~~text
-Browser
-REAL_SESSION_SECRET
-        ↓ Request
-Server
-        ↓
-Hash
-        ↓
-Database / Redis
-token_hash
-~~~
-
-泄露的 Store 中没有原始 Token。
-
-这一做法依赖 Token 本身已经是高熵随机值。对于用户自己选择的低熵 Password，SHA-256 仍然不适合直接作为 Password Hash。
-
-### 【Redis 和 Database 双存储必须明确哪个是在线认证权威】
-
-每个受保护 Request 都可能读取 Session：
-
-~~~text
-Request
-  ↓
-Read Session
-  ↓
-Restore User
-~~~
-
-Redis 适合高频在线 Session Lookup，Database 更适合保存持久关系、批量撤销与审计。
-
-一种组合可以是：
-
-~~~text
-Database
-保存 Session 持久关系
-
+Memory
 Redis
-保存在线 Session Lookup
+Database
+Distributed Cache
+Dedicated Session Store
 ~~~
 
-但双存储会立即产生一致性问题：
+所以 Session 是状态模型，Redis 只是常见实现。
+
+Server-side Session 的一个明显特点是 Server 可以直接控制有效性：
 
 ~~~text
-Database 有 Session
-Redis 没有
-
-Redis 有 Session
-Database 已删除
-
-退出登录时只删成功一边
-
-Redis 丢失以后是否允许回源 Database
+Logout
+  ↓
+Delete Session
+  ↓
+Credential 立即失效
 ~~~
 
-因此真正需要回答的是：
+或者：
 
-> 在线 Request 以哪个 Store 为最终判断依据？另一个 Store 是否允许回源？删除失败如何恢复？
+~~~text
+Security Incident
+  ↓
+Find All User Sessions
+  ↓
+Revoke
+~~~
 
-只有明确这些规则，Redis + Database 才是一套完整设计，而不是两个组件的简单叠加。
+OWASP 建议 Session Identifier 应不可预测，不应包含敏感业务语义，并应在服务端维护真正的 Session State。
 
----
+参考：
 
-## 5. Session 生命周期必须覆盖创建、使用、过期、退出和安全事件后的撤销
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
 
-### 【会话是有生命周期的安全对象】
+### 【模型二：Access Token + Refresh Token 拆分短期访问与长期续期】
 
-完整过程：
+双 Token 模型：
+
+~~~text
+Authentication Success
+        ↓
+Issue Access Token
++
+Issue Refresh Token
+        ↓
+Client
+~~~
+
+业务请求：
+
+~~~text
+Access Token
+      ↓
+Resource Server
+      ↓
+Validate
+      ↓
+Access Protected Resource
+~~~
+
+Access Token 过期：
+
+~~~text
+Refresh Token
+      ↓
+Authorization Server
+      ↓
+Validate
+      ↓
+Issue New Access Token
+~~~
+
+两个 Credential 分工：
+
+| Credential | 用途 | 一般生命周期 |
+| --- | --- | --- |
+| Access Token | 访问 Resource API | 短 |
+| Refresh Token | 获取新的 Access Token | 相对长 |
+
+RFC 6749 明确指出 Access Token 可以是 Opaque Identifier，也可以是 Self-contained Token，并不要求必须使用 JWT。
+
+参考：
+
+https://www.rfc-editor.org/rfc/rfc6749.html
+
+### 【Bearer Access Token 的安全边界是“持有即可使用”】
+
+Bearer Token 表示：
+
+~~~text
+谁持有 Token
+谁就拥有对应访问能力
+~~~
+
+所以 Token 泄露就可能直接变成权限泄露。
+
+RFC 6750 推荐通过：
+
+~~~http
+Authorization: Bearer <access-token>
+~~~
+
+传输，并要求在存储与传输中保护 Bearer Token。
+
+参考：
+
+https://www.rfc-editor.org/rfc/rfc6750.html
+
+### 【Refresh Token 让 Access Token 可以保持短生命周期】
+
+如果只有：
+
+~~~text
+Access Token
+有效 30 天
+~~~
+
+一旦泄露，攻击窗口可能很长。
+
+双 Token 模型希望形成：
+
+~~~text
+Access Token
+短生命周期
+日常请求使用
+
+Refresh Token
+更长生命周期
+只用于 Token Renewal
+~~~
+
+这样频繁暴露在业务请求中的 Access Token 权限与生命周期可以更加受限。
+
+Refresh Token 本身价值很高，因为它可以持续铸造新的 Access Token。
+
+RFC 9700 要求 Public Client 使用 Refresh Token 时，通过 Sender-constrained Token 或 Refresh Token Rotation 等机制处理重放风险。
+
+参考：
+
+https://www.rfc-editor.org/rfc/rfc9700.html
+
+### 【Refresh Token Rotation 建立 Token Chain 与 Replay Detection】
+
+Rotation：
+
+~~~text
+RT1
+ ↓ Refresh
+AT2 + RT2
+ ↓
+RT1 Invalid
+
+RT2
+ ↓ Refresh
+AT3 + RT3
+ ↓
+RT2 Invalid
+~~~
+
+如果旧 RT1 再次出现：
+
+~~~text
+Invalidated Refresh Token Reuse
+      ↓
+可能发生 Replay
+      ↓
+Revoke Token Family
+      ↓
+Require Re-authentication
+~~~
+
+Rotation 不是单纯延长登录：
+
+~~~text
+Refresh
++
+Credential Replacement
++
+Replay Detection
+~~~
+
+### 【JWT 与双 Token 是两个不同维度】
+
+错误等式：
+
+~~~text
+Access Token = JWT
+Refresh Token = JWT
+双 Token = JWT Login
+~~~
+
+实际上：
+
+~~~text
+Access Token
+可以是 JWT
+也可以是 Opaque Token
+
+Refresh Token
+也可以是 Opaque Token
+~~~
+
+JWT 解决：
+
+~~~text
+Token 如何携带 Claims
+以及如何通过 Signature 验证
+~~~
+
+双 Token 解决：
+
+~~~text
+短期访问凭据
+和长期续期凭据
+如何分工
+~~~
+
+因此常见组合完全可以是：
+
+~~~text
+Access Token = JWT
+Refresh Token = Opaque Random Token
+~~~
+
+### 【Server-side Session 与双 Token 的核心差异是状态位置】
+
+| 维度 | Server-side Session | Access + Refresh Token |
+| --- | --- | --- |
+| 在线身份状态 | 主要存在 Server Session Store | Access Token 可自包含部分状态 |
+| Client 日常 Credential | Session Identifier | Access Token |
+| 长期续期 Credential | 通常没有独立第二 Token | Refresh Token |
+| 每请求验证 | Lookup Session | Validate / Introspect Access Token |
+| 即时撤销 | 通常直接 | 取决于 Token TTL、Revocation、Introspection 等 |
+| 水平扩展 | 常需共享 Session Store | Self-contained Access Token 可降低共享 Lookup |
+| 多 Resource Server | 可以实现 | OAuth Token 模型更自然 |
+| Browser 安全 | 常见 Cookie + CSRF | 取决于 SPA / BFF / Token Storage |
+
+所以不存在：
+
+~~~text
+Session = 落后
+JWT = 先进
+~~~
+
+应该根据系统边界选择状态模型。
+
+### 【Cookie 与 Authorization Header 是 Credential Transport，不是第三种会话模型】
+
+Cookie Transport：
+
+~~~text
+Set-Cookie
+      ↓
+Browser Cookie Store
+      ↓
+满足 Domain / Path / SameSite / Secure 等规则
+      ↓
+Browser 自动附加
+~~~
+
+Authorization Header：
+
+~~~http
+Authorization: Bearer <token>
+~~~
+
+如果 Credential 由 JavaScript 管理，则 JavaScript 必须能够读取它。
+
+因此安全关注点不同：
+
+~~~text
+HttpOnly Cookie
+降低 JS 直接读取 Credential 风险
+但自动发送带来 CSRF 关注点
+
+JavaScript-readable Bearer Token
+通常不被 Browser 自动附加到跨站请求
+但 XSS 可直接读取并外带 Token
+~~~
+
+两种方式只是攻击面不同，不是简单的安全与不安全。
+
+### 【Browser Storage 的选择不能只看持久时间】
+
+常见位置：
+
+~~~text
+HttpOnly Cookie
+localStorage
+sessionStorage
+In-memory
+~~~
+
+HttpOnly Cookie：
+
+~~~text
+JavaScript
+无法直接读取 Credential
+~~~
+
+localStorage / sessionStorage：
+
+~~~text
+JavaScript 可读
+      ↓
+XSS 可以直接读取并 Exfiltrate
+~~~
+
+sessionStorage 只改变生命周期与 Tab Scope，不改变“JavaScript 可读”的本质。
+
+In-memory：
+
+~~~text
+仅存当前 JS Runtime
+Reload 后丢失
+~~~
+
+可以缩小长期持久化暴露面，但需要新的续期或恢复策略。
+
+IETF 2026 发布的 RFC 10017 专门讨论 Browser-based OAuth Application 的 Token 暴露面、BFF 等架构选择。
+
+参考：
+
+https://www.rfc-editor.org/rfc/rfc10017.html
+
+### 【Session Lifecycle 必须管理创建、过期、续期、轮换与撤销】
+
+完整生命周期：
 
 ~~~text
 Create
   ↓
 Active
   ↓
-Request Validation
+Use
   ↓
-Continue Active
-  │
-  ├── Expired
-  ├── Logout
-  ├── Password Reset
-  ├── Account Disabled
-  └── Security Revocation
-          ↓
-       Invalid
+Refresh / Renew
+  ↓
+Expire
+  ↓
+Revoke
+  ↓
+Re-authenticate
 ~~~
 
-如果系统只实现 Login → Create Session，而没有可靠 Revocation（撤销），就无法处理密码重置、账号被盗和管理员禁用账号等后续事件。
-
-### 【客户端 Cookie 过期与服务端 Session 失效需要分别判断】
-
-Cookie 可以通过 Expires / Max-Age 控制浏览器什么时候停止发送。
-
-Server-side Session 也要通过：
+Idle Timeout：
 
 ~~~text
-expiresAt
-TTL
-Revocation
-~~~
-
-控制服务端是否继续接受。
-
-即使 Browser 仍带着旧 Cookie：
-
-~~~text
-Cookie Token
+长时间无 Activity
       ↓
-Server Store 已不存在
+Session Invalid
+~~~
+
+Absolute Timeout：
+
+~~~text
+即使持续活跃
+超过最大 Session Lifetime
       ↓
-Reject
+Require Re-authentication
 ~~~
 
-服务端才是 Session 是否有效的最终决策者。
-
-### 【Logout 的目标是撤销服务器会话，而不只是清除浏览器 Cookie】
-
-只执行 clearCookie 只能让当前 Browser 不再主动发送 Token。
-
-如果 Token 已被复制，攻击者仍可能继续使用。因此完整 Logout 应同时：
+Renewal / Rotation：
 
 ~~~text
-Resolve Session
+Old Credential
       ↓
-Delete / Revoke Server-side Session
+New Credential
       ↓
-Clear Browser Cookie
+Old Credential Invalid
 ~~~
 
-### 【密码重置等高风险事件通常需要处理既有 Session】
+OWASP 建议至少从 Idle Timeout 与 Absolute Timeout 两个维度控制 Session Expiration，并可以增加 Renewal Timeout。
 
-Password Reset 改变账号的核心 Authentication Credential。
+### 【Logout 的本质是 Server 不再接受旧 Credential】
 
-安全设计通常需要考虑：
+只在 UI：
 
 ~~~text
-Reset Password
-       ↓
-Update Password Hash
-       ↓
-Invalidate Reset Token
-       ↓
-Revoke Existing Sessions
-       ↓
-要求重新登录
+clear local state
+redirect /login
 ~~~
 
-这样可以限制已经泄露的旧 Session 继续存活。
+并不等于真正 Logout。
 
----
-
-## 6. CSRF 的根源是浏览器可能自动携带登录 Cookie，而不是攻击者必须先读到 Cookie
-
-### 【攻击者不知道 Session Token，也可能诱导已登录 Browser 发出请求】
-
-假设用户已经登录：
+Server-side Session 需要：
 
 ~~~text
-Browser
-Cookie:
-session=SECRET
+Revoke / Delete Server Session
++
+Clear Client Identifier
 ~~~
 
-随后访问恶意站点。
-
-关键风险不是攻击站点一定可以读取 SECRET，而是 Browser 可能按照 Cookie 规则自动把它附加到目标请求。
-
-因此 CSRF（Cross-Site Request Forgery，跨站请求伪造）的核心是：
-
-> 攻击者让已经认证的 Browser 替自己发送状态修改请求。
-
-这和 XSS 不同：
+Refresh Token Model 需要：
 
 ~~~text
-XSS
-恶意代码进入目标站点执行
-        ↓
-读取页面数据 / 调 API / 修改页面
-
-
-CSRF
-攻击者控制另一个请求来源
-        ↓
-诱导已登录 Browser
-        ↓
-向目标站点发送请求
+Revoke Refresh Credential
++
+必要时 Revoke Token Family
++
+处理尚未过期的 Access Token
 ~~~
 
-### 【Synchronizer Token 让写请求额外证明自己知道当前 Session 对应的随机值】
+### 【CSRF 主要出现在 Browser 自动发送 Credential 的模型中】
 
-对于 Stateful Session，OWASP 推荐 Synchronizer Token Pattern（同步 Token 模式）作为常见 CSRF 防御方式。[[5]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
+Cookie-based Session：
 
-Session 建立时：
+~~~text
+User 已登录 target.example
+      ↓
+访问 evil.example
+      ↓
+恶意页面诱导 Browser
+      ↓
+POST target.example/change-email
+      ↓
+Browser 可能自动携带 target.example Cookie
+~~~
+
+攻击者并不需要先读取 Session Cookie。
+
+Synchronizer Token Pattern：
 
 ~~~text
 Session
-├── userId
-└── csrfToken = RANDOM_VALUE
-~~~
+└── csrfToken = Random
 
-页面通过可信响应获得 CSRF Token，状态修改请求显式发送：
-
-~~~http
-POST /api/projects/123
-Cookie: session=SESSION_TOKEN
-X-CSRF-Token: CSRF_TOKEN
-~~~
-
-服务器：
-
-~~~text
-Session Cookie
+合法页面
+获取 csrfToken
       ↓
-恢复 Session
+写请求显式发送
+X-CSRF-Token
       ↓
-session.csrfToken
-
-Request Header
-x-csrf-token
-      ↓
-比较
-      │
-      ├── Match → Continue
-      └── Missing / Mismatch → 403
+Server 与 Session 中 Token 比较
 ~~~
 
-攻击页面即使能诱导 Browser 自动附带 Session Cookie，也不能自然构造正确的 CSRF Token。
+自动发送的 Session Credential 与显式发送的 CSRF Proof 被拆成两条通道。
 
-### 【Safe Method 的前提是业务没有错误地让 GET 修改状态】
+### 【Synchronizer Token 通常保护 Unsafe Request，而不是普通 GET】
 
-常见 Guard 会对：
+RFC 9110 将 GET、HEAD、OPTIONS、TRACE 定义为 Safe Method。
 
-~~~text
-GET / HEAD / OPTIONS
-~~~
-
-不要求 CSRF Token，而对：
+正常设计：
 
 ~~~text
-POST / PUT / PATCH / DELETE
-~~~
-
-执行 CSRF 检查。
-
-但这建立在业务遵守 HTTP 语义的前提上。如果 GET 实际执行删除、修改或转账，那么“GET 不校验 CSRF”就会直接变成安全缺口。
-
-### 【SameSite 是纵深防御，而不是把 CSRF 问题交给一个 Cookie 属性】
-
-SameSite=Lax / Strict 可以减少部分 Cross-site Request 携带 Session Cookie。
-
-系统仍然需要考虑：
-
-~~~text
-Same-site 子域
-错误 Domain 配置
-Client-side CSRF
-部署变化
-浏览器行为差异
-~~~
-
-OWASP 因此把 SameSite 作为 Defense in Depth（纵深防御）的一部分。[[5]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
-
-### 【GET 通常不要求 Synchronizer Token，前提是它保持 Safe Method 的只读语义】
-
-Synchronizer Token 的主要目标是阻止攻击者借已登录 Browser 发起会产生业务副作用的请求，因此保护重点通常是 POST、PUT、PATCH、DELETE 等状态修改操作。
-
-RFC 9110 把 GET、HEAD、OPTIONS、TRACE 定义为 Safe Method：从协议语义上，Client 不应通过这些方法请求服务器改变目标资源状态。[[7]](https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods)
-
-因此常见 CSRF 检查会形成：
-
-~~~text
-GET / HEAD / OPTIONS
-        ↓
-按照 Safe Method 语义只读取
-        ↓
-通常不要求 CSRF Token
-
+GET
+读取 Resource
 
 POST / PUT / PATCH / DELETE
-        ↓
-可能改变服务端状态
-        ↓
-要求 CSRF Token
+修改 Server State
 ~~~
 
-如果一个接口设计成：
+因此 CSRF Token 重点用于状态修改请求。
+
+如果设计成：
 
 ~~~text
 GET /delete-account
-GET /transfer-money
 ~~~
 
-问题首先是它违反了 Safe Method 语义。即使增加 CSRF Token，也不应该把“用 GET 修改状态”当作正常设计。
+首先说明 API 违反 Safe Method 语义。
 
-### 【GET 不要求 CSRF Token 不等于跨站读取完全没有信息泄露风险】
+参考：
 
-这里必须区分两个问题：
+https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
+
+GET 不要求 CSRF Token 不意味着完全没有跨站信息泄露。
+
+Same-Origin Policy 通常允许部分 Cross-origin Write / Navigation / Embedding，同时限制 Cross-origin Read。
+
+仍需单独处理：
 
 ~~~text
-CSRF
-重点：
-攻击者借用户身份执行请求
-
-
-Cross-origin Read / XS-Leak
-重点：
-攻击者能否从跨站响应推断或读取信息
+XS-Leak
+CORS Misconfiguration
+Cross-origin Embedding
+Timing Side Channel
+Resource Existence Leak
 ~~~
 
-Same-Origin Policy（同源策略）通常允许一部分 Cross-origin Write、Navigation 和 Embedding，但限制攻击页面 JavaScript 直接读取另一个 Origin 的 Response Body。MDN 明确把跨源行为区分为：Cross-origin writes 通常允许、Cross-origin embedding 通常允许、Cross-origin reads 通常受限。[[8]](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy)
+参考：
 
-因此典型跨站 GET：
+https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
 
-~~~text
-evil.example
-        ↓
-GET account.example/profile
-        ↓
-Browser 可能发送请求
-        ↓
-account.example 返回敏感内容
-        ↓
-evil.example JavaScript
-通常不能直接读取 Response Body
-~~~
-
-但“不能直接读正文”并不代表完全没有信息泄露。跨源 Embedding 仍可能通过：
-
-~~~text
-load / error
-图片尺寸
-资源是否存在
-Redirect
-Timing
-Cache
-Iframe 行为
-~~~
-
-泄露部分状态，这类问题通常称为 XS-Leaks（Cross-Site Leaks，跨站侧信道泄露）。
-
-因此安全边界应理解为：
-
-> Synchronizer Token 主要解决伪造状态修改请求；敏感 GET 的跨站读取与侧信道泄露，还需要依靠 Same-Origin Policy、正确 CORS、SameSite Cookie、CORP、CSP / frame-ancestors、Fetch Metadata 等机制共同治理。
-
-另外，CSRF Token 本身不应该放进 GET URL 或 Query String。OWASP 明确提醒，URL 中的 Token 可能进入 Browser History、日志、网络诊断工具和 Referer，反而扩大 Token 泄露面。[[5]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
 
 ---
 
-## 7. Authorization 在身份认证之后重新判断当前用户能否对当前资源执行当前操作
+## 3. 访问控制体系在可信身份之上决定具体资源操作是否允许
 
-### 【Authentication 成功不代表拥有系统中的全部权限】
-
-登录以后服务器得到：
+Authentication 已经得到：
 
 ~~~text
-Current User = user_123
+Subject = User A
 ~~~
 
-这里只回答“你是谁”。
-
-访问：
-
-~~~http
-GET /projects/project_A
-~~~
-
-还必须继续判断：
+Authorization 还要继续回答：
 
 ~~~text
-user_123
-是否可以读取
-project_A？
+User A
+能否
+Edit
+Document 123
+在当前 Context 下？
 ~~~
 
-这才是 Authorization（授权）。OWASP 明确区分 Authentication 与 Authorization：一个用户已经通过身份认证，并不意味着他被允许访问所有资源。[[6]](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
-
-### 【资源级授权必须把当前身份与当前 Resource 放在同一次判断中】
-
-只写：
-
-~~~ts
-if (request.user) {
-  return projectById(request.params.projectId);
-}
-~~~
-
-只能证明用户已经登录。
-
-如果用户把：
+因此一个完整权限判断至少可以抽象为：
 
 ~~~text
-/projects/project_A
+Subject
+   +
+Resource
+   +
+Action
+   +
+Context
+   ↓
+Access Policy
+   ↓
+Allow / Deny
 ~~~
 
-改成：
+Authorization 不是：
 
 ~~~text
-/projects/project_B
+“用户有没有登录”
 ~~~
 
-服务器仍必须重新检查：
+而是：
 
 ~~~text
-Authenticated userId
-+
-Requested projectId
-        ↓
-Membership / Ownership Query
-        ↓
-Access Decision
+“已经确认身份以后，
+这个 Subject 能否执行当前 Resource Action”
 ~~~
 
-OWASP 建议对每一次资源请求验证权限，不能依赖之前页面曾经成功读取过这个资源。[[6]](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+OWASP 要求访问权限在服务端对每个受保护请求进行验证。
 
-### 【Membership 和 Role 是两层不同授权条件】
+参考：
+
+https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+
+### 【常见权限模型的区别在于决策主要依赖什么信息】
+
+应用开发中最值得掌握：
+
+~~~text
+ACL
+Resource 直接记录谁能做什么
+
+RBAC
+Role 决定 Permission
+
+ABAC
+Subject / Resource / Action / Environment Attribute 决定
+
+ReBAC
+Subject 与 Resource 的 Relationship 决定
+~~~
+
+它们不是必须四选一。
+
+真实系统经常组合。
+
+### 【ACL 以 Resource 为中心保存直接授权关系】
 
 例如：
 
 ~~~text
-Project A
-│
-├── User 1 → owner
-└── User 2 → member
+Document 123
+
+Alice
+→ read
+→ write
+
+Bob
+→ read
+
+Team Finance
+→ read
 ~~~
 
-读取项目详情可能只要求：
+判断：
 
 ~~~text
-User ∈ Project
+Subject
+  ↓
+Resource ACL
+  ↓
+是否存在所需 Permission
 ~~~
 
-而修改成员、轮换写入密钥可能要求：
+ACL 适合：
 
 ~~~text
-User ∈ Project
+文件共享
+单文档 Sharing
+Object Storage
+资源级 Grant
+~~~
+
+优势是直观、细粒度。
+
+问题是当：
+
+~~~text
+User 很多
+Resource 很多
+Grant 很多
+~~~
+
+管理成本会快速增长。
+
+### 【RBAC 通过 Role 解耦 User 与 Permission】
+
+RBAC：
+
+~~~text
+User
+  ↓
+Role Assignment
+  ↓
+Role
+  ↓
+Permission Assignment
+  ↓
+Permission
+  ↓
+Resource + Action
+~~~
+
+例如：
+
+~~~text
+Alice
+  ↓
+Editor
+
+Editor
+├── document:read
+├── document:create
+└── document:update
+~~~
+
+User 不需要直接挂三个 Permission，只需要成为 Editor。
+
+NIST 对 RBAC 的核心描述就是把 Permission 关联到 Role，再让 User 成为 Role Member，从而降低权限管理复杂度。
+
+参考：
+
+https://www.nist.gov/publications/role-based-access-control-rbac-features-and-motivations
+
+RBAC 适合：
+
+~~~text
+Admin
+Operator
+Auditor
+Editor
+Viewer
+~~~
+
+这类组织职责稳定的系统。
+
+但当规则变成：
+
+~~~text
+Editor
+只能编辑
+自己 Department
++
+自己 Project
++
+可信 Device
++
+特定 Time
+~~~
+
+如果仍全部编码成 Role，容易发生 Role Explosion。
+
+### 【ABAC 用 Attribute 与 Policy 处理动态上下文】
+
+ABAC（Attribute-Based Access Control）综合：
+
+~~~text
+Subject Attributes
+├── department
+├── clearance
+├── location
+└── employmentType
+
+Resource Attributes
+├── owner
+├── tenant
+├── classification
+└── project
+
+Action
+├── read
+├── edit
+└── delete
+
+Environment
+├── time
+├── network
+├── deviceTrust
+└── riskScore
+~~~
+
+Policy 示例：
+
+~~~text
+ALLOW edit IF
+
+subject.department
+=
+resource.department
+
 AND
-Role = owner
+
+subject.clearance
+>=
+resource.classification
+
+AND
+
+environment.deviceTrusted
+=
+true
 ~~~
 
-因此授权方法可以自然形成：
+NIST SP 800-162 将 ABAC 定义为根据 Subject、Object、Operation 以及可能存在的 Environment Condition 属性，通过 Policy 决定访问。
+
+参考：
+
+https://www.nist.gov/publications/guide-attribute-based-access-control-abac-definition-and-considerations
+
+ABAC 适合规则动态、Context 较多的系统，但 Policy、Attribute Source、Debug 与测试成本也更高。
+
+### 【ReBAC 用关系图表达 Owner、Member、Parent 等资源关系】
+
+ReBAC（Relationship-Based Access Control）适合：
 
 ~~~text
-requireAccess(userId, projectId)
-        ↓
-确认资源成员关系
-
-
-requireOwner(userId, projectId)
-        ↓
-先确认成员关系
-        ↓
-再确认 Role
+权限取决于
+“你和这个资源是什么关系”
 ~~~
 
-这才是 RBAC（Role-Based Access Control，基于角色的访问控制）在真实资源上下文中的使用。Role 不是孤立字符串，而要与 Subject、Resource、Action 共同组成授权判断。
-
-### 【Deny by Default 要求没有明确允许依据时默认拒绝】
-
-更安全的访问控制方向是：
+例如：
 
 ~~~text
-Default = Deny
-        ↓
-找到明确允许条件
-        ↓
-Allow
+Alice
+  ↓ owns
+Document A
+
+Bob
+  ↓ member_of
+Team X
+  ↓ owns
+Folder B
 ~~~
 
-而不是：
+授权规则：
 
 ~~~text
-默认 Allow
-只有遇到禁止条件才 Deny
+Document Owner
+→ edit
+
+Folder Member
+→ read
+
+Organization Admin
+→ manage descendant Project
 ~~~
 
-OWASP 明确建议 Deny by Default，并要求对每个 Request 验证权限。[[6]](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
-
-### 【401、403 与 404 表达不同的失败阶段】
-
-可以先建立：
+关系天然形成 Graph：
 
 ~~~text
-没有有效 Authentication
-        ↓
-401
-
-
-Authentication 有效
-但没有执行当前 Action 的权限
-        ↓
-403
+User
+  ↓ relationship
+Team
+  ↓ relationship
+Project
+  ↓ relationship
+Resource
 ~~~
 
-资源级系统还可能对无权限用户返回 404，从而不暴露“这个资源确实存在”。是否采用该策略取决于业务安全设计，但应该统一，不应由每个接口临时决定。
+OWASP Authorization Cheat Sheet 将 ReBAC 与 RBAC、ABAC 一起作为现代应用常见模型。
 
----
+参考：
 
-## 8. 一次受保护写请求会连续经过 Session、CSRF 和资源授权三次不同判断
+https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
 
-假设请求：
+ReBAC 特别适合：
 
-~~~http
-POST /api/projects/project_A/settings
-Cookie: session=SESSION_TOKEN
-X-CSRF-Token: CSRF_TOKEN
+~~~text
+协作文档
+Organization / Team / Project
+社交关系
+资源层级继承
+多租户组织树
 ~~~
 
-服务器并不是执行一个笼统的“权限校验”，而是在逐层建立信任：
+### 【RBAC、ABAC、ReBAC 和 ACL 可以组合】
+
+真实 SaaS 可能同时存在：
+
+~~~text
+RBAC
+Organization Role = Admin
+
++
+
+ReBAC
+User member_of Project A
+
++
+
+ABAC
+resource.tenantId == subject.tenantId
+
++
+
+ACL
+Document 单独 Share 给 Bob
+~~~
+
+最终允许规则可能是：
+
+~~~text
+Allow IF
+
+organizationRole == admin
+
+OR
+
+(
+  user member_of project
+  AND resource.projectId == project.id
+)
+
+OR
+
+resource ACL contains user
+~~~
+
+所以架构设计首先应该问：
+
+> 权限事实主要来自 Role、Attribute、Relationship，还是 Resource-specific Grant？
+
+而不是先决定“所有权限都必须使用 RBAC”。
+
+### 【DAC 与 MAC 更适合作为传统访问控制背景】
+
+DAC（Discretionary Access Control）强调 Resource Owner 可以决定把 Resource 授予谁。
+
+MAC（Mandatory Access Control）强调中央 Policy 根据 Security Label / Clearance 强制决定访问，普通用户不能自由修改规则。
+
+例如：
+
+~~~text
+Subject Clearance = Secret
+Resource Classification = Top Secret
+      ↓
+Deny
+~~~
+
+MAC 常见于操作系统、政府或强分级安全系统。
+
+一般 Web SaaS 日常架构更常直接讨论 ACL、RBAC、ABAC 与 ReBAC。
+
+### 【Authorization Enforcement 必须发生在可信 Server Boundary】
+
+完整链：
 
 ~~~text
 Request
   ↓
-Session Authentication
+Session / Token Validation
+  ↓
+Current Subject
+  ↓
+Load Resource Metadata
+  ↓
+Authorization Decision
+  ↓
+Allow?
   │
-  │ Session Token 有效？
-  ├── No → 401
+  ├── No → Reject
+  │
   └── Yes
         ↓
-Current User = user_123
-        ↓
-CSRF Validation
-  │
-  │ Header Token 是否属于当前 Session？
-  ├── No → 403
-  └── Yes
-        ↓
-Resource Authorization
-  │
-  │ user_123 是否允许修改 project_A？
-  ├── No → 403 / 404
-  └── Yes
-        ↓
-Business Validation
-        ↓
-Mutation
+Business Operation
 ~~~
 
-三层不能互相替代：
+前端：
 
 ~~~text
-Session 有效
-只证明当前请求拥有有效登录身份
-
-CSRF 有效
-只证明状态修改请求携带当前 Session 对应的防伪值
-
-Authorization 成功
-才证明当前身份被允许执行当前资源操作
+隐藏 Button
+禁用 Menu
+不渲染 Page
 ~~~
 
----
+只属于 UX。
 
-## 9. Verification Token、Reset Token 和 Session Token 虽然都叫 Token，但生命周期完全不同
+攻击者仍然可以自己构造 HTTP Request，因此真正的 Permission Check 必须在服务端执行。
 
-### 【Session Token 会在一个会话期间被多个 Request 重复使用】
+### 【复杂系统可以把 Policy Definition、Decision 与 Enforcement 分离】
+
+小型系统：
 
 ~~~text
-Login
-  ↓
-Session Token
-  ↓
-多个后续 Request
-  ↓
-Expire / Logout / Revocation
+if (user.role !== 'admin') {
+  deny
+}
 ~~~
 
-### 【Email Verification Token 用于一次账号状态转换】
+已经足够。
+
+权限复杂后可以拆成：
 
 ~~~text
-Register
-  ↓
-Verification Token
-  ↓
-提交一次
-  ↓
-Email Verified
-  ↓
-Token Consumed
+Policy Definition
+定义允许规则
+
+Policy Decision
+输入 Subject / Resource / Action / Context
+计算 Allow / Deny
+
+Policy Enforcement
+在 Request / Service 边界真正阻断
 ~~~
 
-服务器需要同时验证：
+安全架构中常分别称为 PAP、PDP、PEP。
+
+重点不是一开始就引入 Policy Engine，而是避免大量不一致权限判断散落在业务代码中。
+
+### 【Deny by Default 与 Least Privilege 是访问控制基础约束】
+
+Deny by Default：
 
 ~~~text
-Purpose
-Expires At
-Consumed At
+Default
+= Deny
+
+只有明确满足 Allow Policy
+才 Allow
 ~~~
 
-### 【Password Reset Token 具有重新建立账号凭据的高敏感能力】
-
-Reset Token 可以在不知道旧密码的情况下创建新 Password Credential，因此应该具有：
+Least Privilege：
 
 ~~~text
-高熵随机
-短生命周期
-明确 Purpose
-一次性消费
-成功后不可复用
-必要时撤销已有 Session
+Subject
+只拥有完成工作所需的最小 Permission
 ~~~
 
-不能因为 Verification Token 和 Reset Token 都是一段随机字符串，就忽略 Purpose。
-
-### 【高熵一次性 Token 可以让 Server 只保存 Hash】
+而不是为了方便：
 
 ~~~text
-Generate Random Token
-        ↓
-Plain Token
-        ├── Email / Client
-        └── Server
+所有用户
+都赋予 Admin
+~~~
+
+OWASP 建议：
+
+~~~text
+Least Privilege
+Deny by Default
+Validate Permission on Every Request
+~~~
+
+### 【401、403 与 404 表达不同失败阶段】
+
+401：
+
+~~~text
+没有有效 Authentication Credential
+~~~
+
+403：
+
+~~~text
+身份有效
+但当前 Action 不允许
+~~~
+
+404：
+
+某些系统为了不暴露 Resource Existence，对无权知道资源存在的 Subject 返回 404。
+
+这属于资源隐藏策略，需要保持一致。
+
+### 【四类应用级模型可以通过业务特征选择】
+
+| 业务特征 | 更自然的模型 |
+| --- | --- |
+| 某个资源直接分享给若干用户 | ACL |
+| 权限主要来自稳定组织职责 | RBAC |
+| 权限依赖部门、时间、设备、数据等级 | ABAC |
+| 权限来自 Owner、Member、Parent、Team 等关系 | ReBAC |
+| 同时依赖角色、关系与环境 | 组合模型 |
+
+判断路径：
+
+~~~text
+权限主要由稳定岗位决定？
+        ├── Yes → RBAC
+        └── No
               ↓
-          Hash(Token)
+是否是单资源直接 Grant？
+        ├── Yes → ACL
+        └── No
               ↓
-          Database
+是否主要来自资源关系图？
+        ├── Yes → ReBAC
+        └── No
+              ↓
+是否依赖大量动态 Attribute / Context？
+        └── Yes → ABAC
 ~~~
 
-Client 提交以后：
+这不是严格算法，但可以帮助建立选型框架。
 
-~~~text
-Submitted Token
-      ↓
-Hash
-      ↓
-Lookup token_hash
-      ↓
-检查 Purpose / Expires / Consumed
-~~~
-
-这样数据库中不长期保存可以直接重放的 Token 明文。
 
 ---
 
-## 10. Server-side Session 与 JWT / Access Token 是不同状态模型，不存在天然的高低级关系
+## 4. 身份认证、会话控制与访问控制最终组成一条完整安全链
 
-Server-side Session：
-
-~~~text
-Client
-  ↓
-Opaque Session ID
-  ↓
-Server Session Store
-  ↓
-User / Permission Context
-~~~
-
-Self-contained Access Token，例如 JWT：
-
-~~~text
-Client
-  ↓
-Signed Token
-  ↓
-Server Verify Signature + Claims
-  ↓
-Identity / Scope
-~~~
-
-核心差异是状态主要保存在哪里：
-
-| 维度 | Server-side Session | Self-contained Access Token |
-| --- | --- | --- |
-| Client 持有 | 随机 Session Identifier | 携带 Claims 的 Token |
-| 身份状态 | Server Store 为主 | Token 自身携带部分状态 |
-| Request 校验 | 通常查询 Session Store | 通常验签并校验 Claims |
-| 即时撤销 | 删除 Session 即可 | 通常需要 Revocation、短 TTL 或其他设计 |
-| 多服务扩展 | 需要共享 Session State 或其他一致性方案 | 多个资源服务可独立验签，但密钥和 Claims 治理更复杂 |
-| Browser 安全 | 仍需设计 Cookie / Header 存储 | 同样要处理 Token 存储、XSS、CSRF 等问题 |
-
-所以选择方案时应该先看 Caller、部署结构、撤销需求和跨服务验证需求，而不是先决定“必须 JWT”。
-
----
-
-## 11. 不同调用者需要与自身能力匹配的凭据和授权方式
-
-身份系统设计不应该先问：
-
-~~~text
-这个接口用 Cookie 还是 JWT？
-~~~
-
-应该先问：
-
-~~~text
-谁在调用？
-      ↓
-它能够安全持有什么 Credential？
-      ↓
-服务器需要验证什么 Identity / Capability？
-      ↓
-Credential 泄露后的权限范围应该多大？
-~~~
-
-不同调用者的身份能力并不相同，例如：
-
-| 调用者 | 典型场景 | 更适合的安全模型 |
-| --- | --- | --- |
-| 人类用户浏览器 | 管理后台、个人中心 | Session Cookie / Token + CSRF + Resource Authorization |
-| 公开 Browser SDK | 遥测、埋点、公开写入能力 | Scope 受限的 Public Write Key + Origin / Rate Limit 等约束 |
-| Server-to-Server Client | 内部服务调用、自动化任务 | Service Credential、mTLS、OAuth Client Credential 或私网边界 |
-
-真正需要先判断的是 Caller 的信任能力、凭据保存能力、泄露后的权限范围和撤销需求，再选择 Credential 与 Authorization Model。公开浏览器环境中可以看到的 Key 不能被当成只有服务器知道的高权限 Secret。
-
----
-
-## 12. 安全评审应该沿失败路径检查整条链，而不是只检查有没有某个配置项
-
-### 【数据库泄露以后要分别判断 Password、Session 和一次性 Token 的后果】
-
-检查：
-
-~~~text
-password_hash
-session token_hash
-reset token_hash
-project role
-user data
-~~~
-
-并继续问：
-
-~~~text
-哪些值可以直接重放？
-哪些值只能离线猜测？
-哪些值泄露后可以提升权限？
-~~~
-
-### 【Session Token 被盗以后要检查撤销和影响窗口】
-
-需要回答：
-
-~~~text
-Session TTL 多长？
-Logout 是否服务器撤销？
-Password Reset 是否撤销旧 Session？
-是否支持按用户批量撤销？
-Redis 丢失以后会发生什么？
-~~~
-
-### 【用户修改 URL 中的资源 ID 时必须重新授权】
-
-~~~text
-/projects/A
-      ↓
-改成
-/projects/B
-~~~
-
-不能因为已经登录就允许访问。
-
-服务器必须重新执行：
-
-~~~text
-Authenticated User
-+
-Requested Resource
-+
-Requested Action
-        ↓
-Authorization
-~~~
-
-### 【前端隐藏按钮属于 UX，不属于服务端 Authorization】
-
-前端可以让 member 看不到“删除项目”按钮，但攻击者可以直接构造 DELETE Request。
-
-真正的安全边界仍然必须在 Server：
-
-~~~text
-Session
-  ↓
-User
-  ↓
-Membership
-  ↓
-Role
-  ↓
-Authorization
-~~~
-
-OWASP 要求访问控制在服务端执行，并建议每次 Request 都验证权限。[[6]](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
-
-### 【多层安全控制应该理解为不同攻击面的组合防线】
-
-~~~text
-HTTPS
-  ↓
-保护传输
-
-Secure Cookie
-  ↓
-限制 Cookie 通过 HTTPS 发送
-
-HttpOnly
-  ↓
-降低 JavaScript 读取 Session Token 风险
-
-SameSite
-  ↓
-减少部分跨站自动携带 Cookie
-
-CSRF Token
-  ↓
-验证状态修改请求的额外证明
-
-Session Revocation
-  ↓
-使退出或被撤销的 Session 失效
-
-Resource Authorization
-  ↓
-限制当前身份真正能操作的数据
-~~~
-
-没有哪个单一属性能够替代整条安全链。
-
----
-
-## 13. 面试与架构说明需要能够从一次请求完整解释身份和权限
-
-如果被问“用户登录以后，后续请求服务器怎么知道他是谁”，回答应沿真实执行链展开：
-
-~~~text
-用户提交 Credential
-        ↓
-Server 验证 Password Hash
-        ↓
-Authentication Success
-        ↓
-生成高熵 Session Token
-        ↓
-Server 保存 Session State
-        ↓
-Browser 保存 HttpOnly Cookie
-        ↓
-后续 Request 自动携带 Cookie
-        ↓
-Server Hash Token 并查询 Session Store
-        ↓
-恢复 Current User
-        ↓
-写请求继续检查 CSRF
-        ↓
-资源接口继续检查 Membership / Role
-        ↓
-最终执行业务
-~~~
-
-如果继续追问“已经有 Session Cookie 为什么还需要 CSRF Token”，核心是：
-
-~~~text
-Cookie 会由 Browser 自动发送
-        ↓
-攻击者不一定要读取 Cookie
-也可能诱导 Browser 携带它请求目标站点
-        ↓
-状态修改再要求一份
-攻击者无法自然构造的 Session-specific Token
-~~~
-
-如果继续追问“登录以后为什么还要 Authorization”，则回到：
+三个系统最终连接：
 
 ~~~text
 Authentication
-确定 Subject 是谁
-
+│
+├── Register
+├── Credential Enrollment
+├── Identity Verification
+├── Login
+└── Recovery / Re-authentication
+        ↓
+Authenticated Principal
+        ↓
+Session Management
+        │
+        ├── Server-side Session
+        │       ↓
+        │   Session Identifier
+        │
+        └── Access + Refresh Token
+                ↓
+            Access Credential
+        ↓
+Credential Transport / Storage
+Cookie / Header / BFF / Memory
+        ↓
+Request Principal
+        ↓
 Authorization
-判断这个 Subject
-是否能对当前 Resource
-执行当前 Action
+Subject + Resource + Action + Context
+        ↓
+ACL / RBAC / ABAC / ReBAC
+        ↓
+Allow / Deny
+        ↓
+Business Action
 ~~~
 
-工程评审还需要能够回答具体取舍：
+一次受保护 Request 可以按顺序分析：
 
 ~~~text
-为什么 Session 查 Redis？
-Database 为什么还要保存 user_sessions？
-Redis Miss 是否回源？
-为什么 Password 与随机 Token 使用不同 Hash 思路？
-为什么 member 能读取但不能执行 owner 操作？
-为什么 Password Reset 后要撤销旧 Session？
-Password Hash 参数是否显式达到目标安全基线？
+1. Extract Credential
+   Cookie / Authorization Header
+        ↓
+2. Validate Session / Access Token
+        ↓
+3. Restore Current Subject
+        ↓
+4. 如果是 Cookie-based Unsafe Request
+   执行 CSRF Protection
+        ↓
+5. Load Resource
+        ↓
+6. Authorization Decision
+        ↓
+7. Allow / Deny
+        ↓
+8. Business Operation
 ~~~
 
-能够解释这些因果和失败路径，才说明真正理解身份与访问控制系统，而不是只会复述 Cookie、Session、CSRF、RBAC 几个术语。
+这样以后遇到“鉴权”这个模糊词，应继续追问：
+
+~~~text
+这里指的是：
+
+Authentication？
+Session Validation？
+还是 Authorization？
+~~~
 
 ---
 
-## 14. 参考资料
+## 5. 安全问题也应该按三个体系分别定位
 
-1. OWASP Cheat Sheet Series, Authentication Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
-2. OWASP Cheat Sheet Series, Session Management Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
-3. OWASP Cheat Sheet Series, Password Storage Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-4. MDN, Set-Cookie header：https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
-5. OWASP Cheat Sheet Series, Cross-Site Request Forgery Prevention Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
-6. OWASP Cheat Sheet Series, Authorization Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
-7. RFC 9110, HTTP Semantics — Safe Methods：https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
-8. MDN, Same-origin policy：https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
+Authentication Failure：
+
+~~~text
+Credential Stuffing
+Brute Force
+Weak Password Hash
+Account Enumeration
+Reset Token Leakage
+MFA Bypass
+~~~
+
+Session Failure：
+
+~~~text
+Session Hijacking
+Session Fixation
+Long-lived Credential
+Refresh Token Replay
+Missing Revocation
+Unsafe Browser Storage
+CSRF
+~~~
+
+Authorization Failure：
+
+~~~text
+IDOR / BOLA
+Privilege Escalation
+Missing Resource Check
+Role Misconfiguration
+Tenant Isolation Failure
+Front-end-only Permission Check
+~~~
+
+分层以后，安全问题就不会全部被笼统归为“登录鉴权问题”。
+
+---
+
+## 6. 面试与架构说明应先讲三个系统，再进入具体技术
+
+如果被问：
+
+~~~text
+一个 Web 登录和权限系统应该怎么设计？
+~~~
+
+回答路径可以是：
+
+> Web 身份体系可以拆成 Authentication、Session Management 和 Authorization 三层。Authentication 通过 Password、Passkey、MFA 等 Credential 确认用户身份，并覆盖注册、身份验证、登录、恢复与重新认证等生命周期；Authentication 成功以后，再通过 Server-side Session 或 Access Token + Refresh Token 等模型让身份跨 HTTP Request 持续；每个 Request 恢复当前 Subject 后，再根据 Resource、Action 和 Context 做 Authorization。稳定组织角色适合 RBAC，单资源直接授权适合 ACL，动态属性条件适合 ABAC，复杂 Owner / Member / Parent 等关系适合 ReBAC，真实系统也可以组合使用。
+
+如果继续追问：
+
+~~~text
+Cookie、Session、Token 什么关系？
+~~~
+
+可以回答：
+
+~~~text
+Session
+是跨 Request 的状态模型
+
+Session Identifier / Access Token
+是 Credential
+
+Cookie
+是 Browser 保存和自动传递 Credential 的一种机制
+
+Token
+是 Credential 的广义形式
+~~~
+
+如果继续追问：
+
+~~~text
+Session 和双 Token 怎么选？
+~~~
+
+需要从：
+
+~~~text
+Server State
+Immediate Revocation
+Multi-service
+OAuth Integration
+Browser Security
+Deployment Topology
+~~~
+
+比较，而不是简单说：
+
+~~~text
+Session 传统
+JWT 现代
+~~~
+
+如果继续追问：
+
+~~~text
+权限系统是不是 RBAC 就够了？
+~~~
+
+则要先判断权限事实来自：
+
+~~~text
+Role
+Attribute
+Relationship
+Resource-specific Grant
+~~~
+
+再决定 RBAC、ABAC、ReBAC、ACL 或组合模型。
+
+---
+
+## 7. 参考资料
+
+### 【身份认证】
+
+1. OWASP Authentication Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+
+2. OWASP Password Storage Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+
+### 【会话控制】
+
+3. OWASP Session Management Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+4. MDN Set-Cookie  
+   https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
+
+5. OWASP CSRF Prevention Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+
+6. RFC 9110 — Safe Methods  
+   https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
+
+7. MDN Same-Origin Policy  
+   https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
+
+8. RFC 6749 — OAuth 2.0 Authorization Framework  
+   https://www.rfc-editor.org/rfc/rfc6749.html
+
+9. RFC 6750 — Bearer Token Usage  
+   https://www.rfc-editor.org/rfc/rfc6750.html
+
+10. RFC 9700 — Best Current Practice for OAuth 2.0 Security  
+    https://www.rfc-editor.org/rfc/rfc9700.html
+
+11. RFC 10017 — OAuth 2.0 for Browser-Based Applications  
+    https://www.rfc-editor.org/rfc/rfc10017.html
+
+### 【访问控制】
+
+12. OWASP Authorization Cheat Sheet  
+    https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+
+13. NIST — Role-Based Access Control: Features and Motivations  
+    https://www.nist.gov/publications/role-based-access-control-rbac-features-and-motivations
+
+14. NIST SP 800-162 — Guide to Attribute Based Access Control  
+    https://www.nist.gov/publications/guide-attribute-based-access-control-abac-definition-and-considerations
 
 ### 【相关知识文档】
 
 - [Cookie 安全性概述笔记](./Cookie安全性概述笔记.md)
 - [Access Token 与 Refresh Token 核心知识点笔记](./Access%20Token与Refresh%20Token核心知识点笔记.md)
+- [浏览器存储方式](./浏览器存储方式.md)
 - [浏览器网络面试题](./浏览器网络面试题.md)
 - [NestJS 快速上手](./NestJS快速上手.md)
 
