@@ -4182,7 +4182,688 @@ Adapter
 
 从这里继续向底层理解 Agent 的实际运行机制，可以阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
 
-## 6. 参考文献
+## 6. 从 Prompt Engineering 到 Harness Engineering 是工程对象逐层扩大的过程
+
+### 【Prompt Engineering 解决单轮表达，Context Engineering 解决本轮信息供给】
+
+Agent 工程最早往往从 Prompt 开始：
+
+~~~text
+Goal
+↓
+Prompt
+↓
+Model
+↓
+Output
+~~~
+
+Prompt Engineering 关注怎样把任务、约束、示例和输出格式表达清楚；当任务开始依赖动态文件、历史状态、工具结果和外部知识时，问题会升级成 Context Engineering：
+
+~~~text
+Model Context
+=
+Instructions
++ User Input
++ Relevant History
++ Retrieved Knowledge
++ Tool Definitions
++ Current State
++ Recent Observations
+~~~
+
+Context 的关键不是“越多越好”，而是让模型在当前 Step 看到足够、相关、可信且不过载的信息。Anthropic 将 Context Engineering 作为 Agent 在有限 Context Window 下选择、组织和维护信息的工程问题。[[23]](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+
+### 【Tool Calling 让模型从生成内容走向真实行动】
+
+只有 Model 时，系统主要产生文本或结构化候选结果。接入 Tool 后形成：
+
+~~~text
+Model
+→ Tool Call
+→ Runtime 校验
+→ Tool 执行
+→ Observation
+→ Model
+~~~
+
+Tool 应被理解为受控行动接口，而不是“模型自己执行代码”。真正的 API、文件、数据库、浏览器或命令执行仍然发生在外部 Runtime。
+
+MCP 则进一步标准化 Agent 与外部 Tools、Resources、Prompts 等能力之间的连接方式。[[24]](https://modelcontextprotocol.io/docs/getting-started/intro)
+
+### 【Memory、Skills、Artifact 与 State 解决不同连续性问题】
+
+随着任务变长，只依赖当前 Context 会遇到上下文窗口和跨 Session 连续性问题，需要把信息外置：
+
+| 对象 | 主要职责 |
+| --- | --- |
+| Context | 当前这一轮真正进入模型的信息 |
+| Memory | 跨步骤或跨任务仍值得找回的信息 |
+| Skill | 某类任务可复用的方法、步骤和资源 |
+| Artifact | 当前任务已经产生的稳定结果 |
+| State | 当前 Run 的执行快照 |
+
+它们不应全部塞进永久 System Prompt。Skills 更适合按任务逐步披露；Memory 也需要召回、准入、作用域和失效策略。
+
+### 【Spec 把目标、执行和验证连接成稳定任务合同】
+
+Agent 不应该只知道“做什么”，还要知道：
+
+~~~text
+Goal
+Scope
+Constraints
+Inputs
+Expected Artifacts
+Acceptance Criteria
+Risk / Approval Boundary
+~~~
+
+Spec 同时为上下文、编排和验证提供稳定事实：
+
+~~~text
+Spec
+├── Context Source
+├── Planning Contract
+├── Stage Input
+└── Completion Criteria
+~~~
+
+因此输出已经生成，不等于任务已经完成；是否完成必须回到 Acceptance Criteria 和 Evidence。
+
+### 【Harness Engineering 是包住五层的总装工程】
+
+Harness 不是一个新的业务能力层，而是让 Agent 能长期可靠工作的工程外壳：
+
+~~~text
+Harness
+=
+Context Assembly
++ Tool Runtime
++ State / Workflow
++ Memory / Skills
++ Sandbox / Permission / Approval
++ Checkpoint / Recovery
++ Eval / Completion
++ Trace / Cost / Operations
+~~~
+
+工程对象因此从一次模型输入逐渐扩大到整个运行环境。OpenAI 当前也用 Harness Engineering 描述围绕 Agent 设计环境、意图和反馈循环的工程方式。[[25]](https://openai.com/index/harness-engineering/)
+
+更稳妥的建设顺序是：
+
+1. 先用明确 Prompt 和结构化输出验证任务；
+2. 接入少量高质量 Tool，形成最小 Agent Loop；
+3. 增加 Context Retrieval 和压缩；
+4. 把稳定知识外置成 Memory，把特定任务方法沉淀为 Skill；
+5. 建立显式 State、完成条件和失败路径；
+6. 把关键阶段固化成 Workflow；
+7. 只有上下文隔离、专业分工或并行收益明确时再使用 Subagent / Multi-Agent；
+8. 最后补齐 Trace、Eval、成本、权限和生产运营。
+
+## 7. 五层架构把 Agent System 拆成稳定职责域
+
+### 【五层架构解决职责归属，而不是运行顺序】
+
+~~~text
+Agent System
+│
+├── Model Layer
+├── Context Layer
+├── Execution Layer
+├── Orchestration Layer
+└── Feedback & Control Layer
+~~~
+
+五层不是一次从上到下执行的调用栈，而是任务运行过程中反复协作的职责域。
+
+| 层 | 核心职责 | 典型对象 |
+| --- | --- | --- |
+| Model | 处理不确定性决策 | LLM、Structured Output |
+| Context | 决定本轮看见什么 | Prompt、RAG、Memory、State Projection |
+| Execution | 连接真实环境 | Tool、API、CLI、MCP、Sandbox |
+| Orchestration | 管理全局阶段与路由 | Workflow、State Machine、Scheduler |
+| Feedback & Control | 判断能否执行、是否完成 | Guardrail、Validator、Eval、Approval |
+
+### 【Model 只负责候选决策，不承担系统全部职责】
+
+稳定边界是：
+
+~~~text
+Model
+→ 提议下一步
+
+Runtime / Control
+→ 判断能不能执行
+
+Tool
+→ 执行真实动作
+
+State
+→ 记录结果
+
+Validator
+→ 判断结果是否满足要求
+~~~
+
+模型能力不能替代权限、状态、恢复和验证。
+
+### 【Context 与 Memory 不能等价】
+
+Context 是当前模型输入；Memory 是未来 Step 或 Run 可以召回的信息来源。Memory 只有被检索、筛选并装入当前 Context 后，才真正影响这一轮 Model Decision。
+
+### 【Execution Layer 必须把 Tool Contract 和真实副作用写清楚】
+
+每个 Tool 至少需要明确：
+
+~~~text
+Name
+Description
+Input Schema
+Output / Error
+Permission
+Side Effect
+Idempotency
+Timeout / Retry Boundary
+~~~
+
+高风险 Tool 还需要连接 Sandbox、Authentication / Authorization 和 Human Approval。
+
+### 【Orchestration Layer 管全局推进，Agent Loop 管局部探索】
+
+~~~text
+Outer Workflow
+↓
+Agent Node
+↓
+Agent Loop
+Model → Action → Observation → Model
+↓
+Node Result
+↓
+Outer Workflow
+~~~
+
+Workflow、Orchestration 与 Agent Loop 可以嵌套，不是三选一。
+
+### 【Feedback & Control 把概率执行变成可验证执行】
+
+这一层主要负责：
+
+~~~text
+Pre-action Control
+→ Permission / Guardrail / Budget
+
+Post-action Validation
+→ Test / Rule / Evaluator / Human Review
+
+Completion Control
+→ Acceptance Criteria + Evidence
+~~~
+
+没有反馈和完成条件，Agent Loop 容易无限重试、过早结束，或者把“已经产生输出”误判成“已经完成任务”。
+
+## 8. 完整 Agent Workflow 用 State、双循环和恢复机制持续收敛
+
+### 【完整任务从显式 State 开始，而不是只依赖聊天记录】
+
+长任务至少需要：
+
+~~~text
+TaskState
+├── Goal / Spec
+├── Current Stage
+├── Artifacts
+├── Evidence
+├── Attempts
+├── Errors
+├── Approval State
+└── Completion Status
+~~~
+
+Conversation History 可以是 Context 来源，但不能替代整个任务 State。
+
+### 【完整执行可以压缩成四个稳定动作】
+
+真实实现可以细分成接收目标、初始化 State、选择步骤、组装 Context、模型决策、执行前控制、Tool Execution、执行后验证、State 回写。
+
+入门先记住：
+
+~~~text
+定义目标
+↓
+决定下一步
+↓
+执行动作
+↓
+验证结果
+↓
+State 更新
+↓
+继续 / 结束
+~~~
+
+### 【内循环负责局部探索，外循环负责全局收敛】
+
+内循环：
+
+~~~text
+Model
+↓
+Action
+↓
+Observation
+↓
+Model
+~~~
+
+解决“当前这一步接下来做什么”。
+
+外循环：
+
+~~~text
+Spec
+↓
+Stage
+↓
+Artifact
+↓
+Validation
+↓
+Next Stage / Repair / Complete
+~~~
+
+解决“整个任务是否正在朝目标收敛”。
+
+### 【确定性外壳和自主内核是更稳定的生产结构】
+
+~~~text
+Deterministic Shell
+├── Stage
+├── Permission
+├── Budget
+├── Acceptance
+├── Retry / Recovery
+└── Human Gate
+
+Agentic Core
+├── Search
+├── Reason
+├── Select Tool
+├── Generate Candidate
+└── Adapt from Observation
+~~~
+
+生产 Agent 通常不是 Code Orchestration 与 Model Orchestration 的二选一，而是 Hybrid：确定性外壳控制必须稳定的边界，Agent 自主内核处理不可预先写死的部分。
+
+### 【Checkpoint、Artifact 和 Context 分别承担不同连续性】
+
+~~~text
+Context
+→ 当前 Step 的短期工作信息
+
+Artifact
+→ Stage 已产生的稳定交付物
+
+Checkpoint
+→ Runtime 可以恢复的执行状态
+~~~
+
+任务跨度越长，越不能只依赖 Conversation History。
+
+### 【失败恢复要先分类再决定下一步】
+
+~~~text
+Technical Failure
+API Timeout / Temporary Error
+→ Retry same Stage
+
+Business Validation Failure
+Tests Failed / Artifact Invalid
+→ Return to producing Stage
+
+Permission / Risk Block
+→ Human Approval / Blocked
+
+Irrecoverable Failure
+→ Failed / Escalation
+~~~
+
+技术重试次数与业务返工轮次应分开记录。
+
+## 9. Framework、Runtime 与 Harness 解决不同抽象层的问题
+
+### 【LangChain、LangGraph、Deep Agents 不按“谁更高级”排序】
+
+稳定判断应先看抽象层：
+
+~~~text
+Framework / Components
+→ Model、Tool、Prompt、Retriever、Agent API
+
+Runtime / Orchestration
+→ State、Graph、Checkpoint、Interrupt、Durable Execution
+
+Harness
+→ Planning、Filesystem、Context Offloading、Skills、Memory、
+   Subagents、Sandbox、Approval 等长任务能力
+~~~
+
+LangChain 当前提供模型、工具与高层 Agent 组件；LangGraph 提供低层有状态编排和 Durable Execution；Deep Agents 则在 Runtime 之上预装更多长任务 Harness 能力。[[26]](https://docs.langchain.com/oss/python/langchain/agents) [[27]](https://docs.langchain.com/oss/python/langgraph/overview) [[28]](https://docs.langchain.com/oss/python/deepagents/overview)
+
+### 【选型从失败模式和控制需求出发】
+
+| 当前需求 | 更轻的起点 |
+| --- | --- |
+| 固定转换、分类、抽取 | 普通代码 / Runnable |
+| 少量 Tools、开放式局部任务 | 通用 Agent Loop |
+| 多阶段、State、循环、审批、恢复 | LangGraph 一类 Runtime |
+| 长任务、多产物、上下文卸载、Subagent | Harness / Deep Agents 类能力 |
+
+升级信号应该是当前方案出现了明确失败，而不是“更复杂的框架更先进”。
+
+### 【框架 API 会变化，职责模型才是稳定知识】
+
+学习任何框架时持续回到：
+
+~~~text
+Model 在哪里？
+Context 怎样构建？
+Tool 谁执行？
+State 保存什么？
+Loop 谁驱动？
+Memory 怎样召回？
+Control 怎样验收？
+Checkpoint 怎样恢复？
+~~~
+
+这样框架升级时，知识体系不会跟着 API 名称一起失效。
+
+## 10. 业务 Agent 把通用运行能力落到领域事实、工具和验收标准
+
+### 【先定义业务问题，而不是先选 Agent 框架】
+
+以研发缺陷修复为例，真正业务目标不是“运行一个 Coding Agent”，而是：
+
+~~~text
+Bug / Requirement
+↓
+收集上下文
+↓
+诊断
+↓
+最小修改
+↓
+测试
+↓
+独立 Review
+↓
+Approval
+↓
+PR / Release
+~~~
+
+不同 Stage 不应全部 Agent 化：
+
+~~~text
+Diagnose
+→ Agent
+
+Implement
+→ Agent
+
+Verify
+→ Deterministic Test Runner
+
+Risk Review
+→ Independent Agent / Rule
+
+Release
+→ Tool + Human Gate
+~~~
+
+### 【业务 Agent 至少需要五类业务补充】
+
+~~~text
+Generic Agent Runtime
++
+Domain Tools
++
+Domain Skills / Knowledge
++
+Explicit Business State / Workflow
++
+Acceptance / Permission / Eval
+~~~
+
+框架只能提供通用能力，不能替业务定义“什么是正确修复”“谁有权限发布”“测试失败后回哪里”。
+
+### 【从 MVP 到 Production 应由失败数据推动升级】
+
+~~~text
+MVP 0
+确定性脚本 / 人工流程
+
+MVP 1
+只读 Agent
+
+MVP 2
+受控修改 + Test Gate
+
+MVP 3
+State / Checkpoint / Long-task Harness
+
+Production
+Permission / Eval / Trace / SLA / Human Takeover
+~~~
+
+没有证明单 Agent 的价值之前，不应直接建设庞大的 Multi-Agent 平台。
+
+### 【业务案例最终回到一个稳定公式】
+
+~~~text
+Business Agent
+=
+通用决策和运行能力
++ 领域事实
++ 受控行动接口
++ 显式流程
++ 可验证完成条件
++ 与风险匹配的治理
+~~~
+
+## 11. Agent 控制范式与 Multi-Agent Orchestration 是两条正交维度
+
+### 【ReAct、Plan-and-Execute、Reflexion、Tree of Thoughts 控制不同粒度】
+
+| 范式 | 主要控制粒度 | 核心问题 |
+| --- | --- | --- |
+| ReAct | Action | 下一步做什么 |
+| Plan-and-Execute | Task / Step | 多阶段任务怎样拆和推进 |
+| Reflexion | Trial | 一次完整尝试失败后怎样改进下一次 |
+| Tree of Thoughts | Candidate | 多个候选路径怎样生成、评价和搜索 |
+
+ReAct 的核心来自推理、行动、环境观察的交错循环。[[29]](https://arxiv.org/abs/2210.03629) Reflexion 使用语言反馈和 episodic memory 改进后续 Trial，而不是直接更新模型权重。[[30]](https://arxiv.org/abs/2303.11366) Tree of Thoughts 把候选 Thought State 显式化并进行搜索。[[31]](https://arxiv.org/abs/2305.10601)
+
+### 【四种范式不是四套互斥 Agent 架构】
+
+一个系统完全可以：
+
+~~~text
+Outer Workflow
+↓
+Plan-and-Execute
+↓
+某个开放 Step
+↓
+ReAct
+↓
+Outcome Validator
+↓
+失败后新 Trial
+↓
+Reflexion
+~~~
+
+ToT 还可以只嵌在某个高价值规划节点，用来比较多个候选方案。
+
+### 【Reasoning Pattern 与 Multi-Agent Pattern 可以组合】
+
+~~~text
+Reasoning / Control Pattern
+├── ReAct
+├── Plan-and-Execute
+├── Reflexion
+└── Tree of Thoughts
+
+Multi-Agent Orchestration
+├── Sequential
+├── Concurrent
+├── Manager
+├── Handoff
+└── Group Collaboration
+~~~
+
+两条轴彼此正交。例如 Manager Agent 内部可以使用 Plan-and-Execute，Specialist Agent 内部可以使用 ReAct；多 Agent 并不自动说明内部采用哪种推理范式。
+
+### 【从最小机制开始而不是默认叠满所有范式】
+
+~~~text
+路径未知且需要 Tool Feedback
+→ ReAct
+
+存在清晰阶段和依赖
+→ Plan-and-Execute
+
+完整 Trial 有可靠失败反馈
+→ Reflexion
+
+多个候选都值得探索且能评价
+→ ToT
+~~~
+
+复杂度只在当前失败需要时增加。
+
+## 12. 七个组成把 Agent 核心原理落成最小可运行实现
+
+### 【最小 Agent 可以拆成七个组成】
+
+~~~text
+Model
+→ 决定候选下一步
+
+Context
+→ 构造本轮模型可见信息
+
+Tools
+→ 执行真实动作
+
+State
+→ 保存任务运行快照
+
+Loop
+→ 持续推进 Step
+
+Memory
+→ 跨步骤 / 跨 Run 召回信息
+
+Control
+→ 校验行动、预算、权限和完成条件
+~~~
+
+七个组成与五层不是一一对应：
+
+~~~text
+五层
+→ 职责架构视角
+
+七个组成
+→ 一次 Agent Run 的运行组件视角
+~~~
+
+### 【最小 Run 展示七个组成怎样连续协作】
+
+~~~text
+Task
+↓
+Initialize State
+↓
+Build Context
+↓
+Model Decision
+├── Tool Call
+│    ↓
+│ Control Check
+│    ↓
+│ Tool
+│    ↓
+│ Observation + Evidence
+│    ↓
+│ Update State
+│    ↓
+│ Next Loop
+│
+└── Final Candidate
+     ↓
+   Completion Check
+     ├── Pass → Completed
+     └── Fail → Continue / Blocked
+~~~
+
+最小实现最重要的不是得到一个漂亮答案，而是把“谁决策、谁执行、谁记状态、谁判断完成”拆开。
+
+### 【Control 必须能够拒绝行动和拒绝过早完成】
+
+至少需要：
+
+~~~text
+Unknown Tool
+→ Reject
+
+Invalid Arguments
+→ Reject
+
+Permission Denied
+→ Reject / Approval
+
+No Evidence
+→ Completion Rejected
+
+Max Steps
+→ Blocked
+~~~
+
+这样才能证明 Loop 是受控执行，而不是无限 Tool Calling。
+
+### 【最小源码继续作为教程的可运行证据】
+
+原 07 章对应的可运行代码继续保留在：
+
+[Minimal Agent 源码](./source/minimal-agent/)
+
+建议按 State → Context Builder → Model Adapter → Tool Registry → Control → Loop → Tests / Trace 的顺序阅读源码，并用测试确认边界，而不是只看最终输出。
+
+### 【从最小实现继续进入完整 Agent System】
+
+最小 Agent 解决“一条 Agent Loop 怎样真实运行”，完整生产系统还需要：
+
+~~~text
+Workflow
+Checkpoint
+Long-term Memory
+Skills
+Subagents
+Sandbox
+Permission
+Human Approval
+Observability
+Eval
+Cost / SLA
+~~~
+
+这些能力分别回到前面的五层、Workflow、Harness 与治理模型中。
+
+## 13. 参考文献
 
 [1] ANTHROPIC. [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)[EB/OL]. 2024-12-19[2026-08-29].
 
@@ -4223,3 +4904,26 @@ Adapter
 [19] ANTHROPIC. [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps)[EB/OL]. 2026-03-24[2026-08-30].
 
 [20] MICROSOFT. [Microsoft Agent Framework Workflows - Checkpoints](https://learn.microsoft.com/en-us/agent-framework/workflows/checkpoints)[EB/OL]. 2026-08-25[2026-08-30].
+
+
+[21] MICROSOFT. [Workflow orchestrations](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/)[EB/OL]. [2026-10-03].
+
+[22] MICROSOFT. [Group chat orchestration](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/group-chat)[EB/OL]. [2026-10-03].
+
+[23] ANTHROPIC. [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)[EB/OL].
+
+[24] MODEL CONTEXT PROTOCOL. [What is MCP?](https://modelcontextprotocol.io/docs/getting-started/intro)[EB/OL].
+
+[25] OPENAI. [Harness engineering](https://openai.com/index/harness-engineering/)[EB/OL].
+
+[26] LANGCHAIN. [Agents](https://docs.langchain.com/oss/python/langchain/agents)[EB/OL].
+
+[27] LANGCHAIN. [LangGraph overview](https://docs.langchain.com/oss/python/langgraph/overview)[EB/OL].
+
+[28] LANGCHAIN. [Deep Agents overview](https://docs.langchain.com/oss/python/deepagents/overview)[EB/OL].
+
+[29] YAO, S. et al. [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629). 2022.
+
+[30] SHINN, N. et al. [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366). 2023.
+
+[31] YAO, S. et al. [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601). 2023.
