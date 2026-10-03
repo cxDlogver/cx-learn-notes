@@ -246,7 +246,7 @@ describe('登录集成测试', () => {
 
 前端E2E测试主流工具为**Playwright**和**Cypress**：
 
-- Playwright：微软推出，支持多浏览器（Chrome、Firefox、Safari），API设计更现代，自动等待能力强，稳定性高，适合复杂项目的E2E测试。
+- Playwright：微软推出，原生覆盖 Chromium、Firefox 和 WebKit 三类浏览器引擎，并可通过 Browser Channel 使用部分已安装的 Chrome、Edge 等浏览器。WebKit 可用于覆盖 WebKit 引擎相关行为，但不能简单等同为“运行真实 Safari”。API 具备自动等待等能力，适合复杂项目的 E2E 测试。[[1]](https://playwright.dev/docs/browsers)
 
 - Cypress：上手简单，生态完善，但对多浏览器支持不如Playwright，更适合中小型项目或简单E2E场景。
 
@@ -408,6 +408,26 @@ E2E测试：检查“整台机器（含前端、后端、数据库）能不能�
 两者互补，而非替代：集成测试保障前端内部逻辑的正确性，E2E测试保障整个系统的可用性。
 
 **对应问题**：集成测试和E2E测试的核心区别有哪些？请从测试范围、外部依赖处理、执行成本三个方面说明。
+
+## CI/CD 中的测试定位
+
+Unit Test、Integration Test 与 E2E Test 是 Verification Strategy，不等于 CI/CD 本身。它们可以作为不同 Pipeline Stage / Job 中的 Quality Check，由执行成本和反馈速度决定运行时机。
+
+~~~text
+Pull Request
+↓
+Fast Checks
+├── Lint / Type Check
+├── Unit Test
+└── Selected Integration Test
+↓
+Merge / Build Artifact
+↓
+Environment Verification
+└── E2E / Smoke / Acceptance
+~~~
+
+完整的 Trigger → Pipeline → Artifact → Release → Deployment → Production Verification 链路见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
 
 ## 面试重点回答总结
 
