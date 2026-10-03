@@ -1035,7 +1035,7 @@ Container
 Running Service
 ~~~
 
-Docker 与 CI/CD 的连接点通常包括 Build Image、Test Image、Scan Image、Tag、Push Registry、Deploy 和 Rollback。所以 Docker 是 Runtime / Deployment Model 的重要组成，但不是 CI/CD 本身。
+Docker 与 CI/CD 的连接点通常包括 Build Image、Test Image、Scan Image、Tag、Push Registry、Deploy 和 Rollback。所以 Docker 是 Runtime / Deployment Model 的重要组成，但不是 CI/CD 本身。Artifact、Release、Deployment、Production Verification 与 Recovery 的完整边界见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
 
 ### 【Compose 与 Kubernetes 管理规模不同】
 
