@@ -1,6 +1,6 @@
 # Agent 完整学习教程：从业务 Agent 化到 Harness、Workflow 与最小实现
 
-## 0. 一篇文档建立 Agent 的完整学习地图
+## 1. 一篇文档建立 Agent 的完整学习地图
 
 本文是 Full-Stack-AI-NOTES 中 **Agent 通用知识的单一主入口**。原 01～07 系列已经整合到本文，不再要求按七个文件来回跳转。
 
@@ -36,13 +36,13 @@ Eval / Production Governance
 
 | 原系列 | 整合后的知识职责 |
 | --- | --- |
-| 01 从 Prompt Engineer 到 Harness Engineer | 第 6 章：工程对象怎样从 Prompt 扩展到完整 Harness |
-| 02 Agent 五层架构 | 第 7 章：模型、上下文、执行、编排、反馈与控制五类职责 |
-| 03 Agent 完整工作流 | 第 8 章：State、内外双循环、Checkpoint、Recovery |
-| 04 从 LangChain 到 Deep Agents | 第 9 章：Framework、Runtime、Harness 的框架映射 |
-| 05 研发缺陷修复 Agent | 第 10 章：通用知识如何进入真实业务 Agent |
-| 06 Agent 四种范式 | 第 11 章：不同粒度的动态决策与控制机制 |
-| 07 Agent 核心原理与最小实现 | 第 12 章：七个组成与最小 Agent Run |
+| 01 从 Prompt Engineer 到 Harness Engineer | 第 7 章：工程对象怎样从 Prompt 扩展到完整 Harness |
+| 02 Agent 五层架构 | 第 8 章：模型、上下文、执行、编排、反馈与控制五类职责 |
+| 03 Agent 完整工作流 | 第 9 章：State、内外双循环、Checkpoint、Recovery |
+| 04 从 LangChain 到 Deep Agents | 第 10 章：Framework、Runtime、Harness 的框架映射 |
+| 05 研发缺陷修复 Agent | 第 11 章：通用知识如何进入真实业务 Agent |
+| 06 Agent 四种范式 | 第 12 章：不同粒度的动态决策与控制机制 |
+| 07 Agent 核心原理与最小实现 | 第 13 章：七个组成与最小 Agent Run |
 
 本文与 [Agent System 研发知识梳理](./Agent-System研发知识梳理.md) 的关系是：
 
@@ -57,7 +57,7 @@ Agent System 研发知识梳理
 
 Agent Eval 仍由 [Agent Eval 与 Benchmark](./Agent-Eval与Benchmark.md) 作为独立主入口，因为 Eval 本身已经形成独立知识域，不再重复塞入本文。
 
-## 1. Agent 研发的两种语境
+## 2. Agent 研发的两种语境
 
 今天讨论“Agent 开发”，经常会混在一起说两件事：一件是把 Agent 用到业务流程里，另一件是开发 Agent 系统本身。两者有关联，但研发对象、要解决的问题和评价方式不同。
 
@@ -86,7 +86,7 @@ Agent Eval 仍由 [Agent Eval 与 Benchmark](./Agent-Eval与Benchmark.md) 作为
 | 业务流程 Agent 化 | 已有业务 SOP 或工程链路 | Agent 应该放在哪里，能解决什么问题，风险如何控制 | 业务价值，以及结果质量 |
 | Agent System 开发 | Agent 系统本身          | 怎样让模型配合工具完成目标                       | 任务完成能力           |
 
-## 2. `Agents in Workflows` -- 在现有业务流程中引入 Agent
+## 3. `Agents in Workflows` -- 在现有业务流程中引入 Agent
 
 ### 【`Agents in Workflows` 的定义】
 
@@ -267,7 +267,7 @@ Microsoft 当前把 Agent 的业务价值主要归纳为四类：Efficiency（�
 再进入 Agent 方案设计
 ```
 
-## 3. Agentic System 的三类执行与编排形态
+## 4. Agentic System 的三类执行与编排形态
 
 今天我们通常会比较宽泛地把“接收一个任务，经过模型推理、工具调用或流程处理，最终返回结果”的系统都称为 Agent。但从系统内部的执行方式来看，它们其实并不相同。
 
@@ -1571,7 +1571,7 @@ Microsoft 当前的 Workflow 能力体系也很好地印证了这种组合关系
 >
 > 第三类是 Multi-Agent：多个 Agent 共同完成一个任务，每个 Agent 内部仍然具有自己的 Agent Loop，而 Agent 之间还需要 Orchestration 来管理执行关系。OpenAI 将 Agent Orchestration 定义为决定哪些 Agent 运行、按照什么顺序运行以及下一步如何决定，并把编排主要分为 Code Orchestration 和 LLM Orchestration。模型编排中又可以采用 Manager / Agents-as-Tools 或 Handoff 等典型方式。 [[8]](https://openai.github.io/openai-agents-js/guides/multi-agent/)
 
-## 4. Workflow 从固定编排到 Agents in Workflows
+## 5. Workflow 从固定编排到 Agents in Workflows
 
 在 Agent 体系的发展过程中，`Workflow` 这个词的使用范围发生了明显变化。
 
@@ -2330,7 +2330,7 @@ Workflow Runtime
 
 这三层一旦拆开，即使 Coding Agent 的 Session 被清空、模型切换或者 Runtime 中断，外层 Workflow 仍然可以根据 Checkpoint 和已经沉淀的 Artifact 恢复执行。
 
-## 5. `Agents in Workflows` —— 业务 Agent 的研发重点
+## 6. `Agents in Workflows` —— 业务 Agent 的研发重点
 
 企业在已有业务流程中引入 Agent 时，研发目标通常不是重新建设一套通用的 Agent System（智能体系统，即模型调用、Agent Loop、工具调用、会话管理、Handoff、Tracing 等底层运行机制），而是**基于成熟的 Agent SDK、Agent Framework 或企业 Agent Platform，完成具体业务智能体的建设**。
 
@@ -4180,9 +4180,9 @@ Adapter
   隔离具体 Agent 产品的调用差异
 ```
 
-从这里继续向底层理解 Agent 的实际运行机制，直接阅读本文第 12 章“七个组成与最小可运行实现”；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
+从这里继续向底层理解 Agent 的实际运行机制，直接阅读本文第 13 章“七个组成与最小可运行实现”；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
 
-## 6. 从 Prompt Engineering 到 Harness Engineering 是工程对象逐层扩大的过程
+## 7. 从 Prompt Engineering 到 Harness Engineering 是工程对象逐层扩大的过程
 
 ### 【Prompt Engineering 解决单轮表达，Context Engineering 解决本轮信息供给】
 
@@ -4301,7 +4301,7 @@ Context Assembly
 7. 只有上下文隔离、专业分工或并行收益明确时再使用 Subagent / Multi-Agent；
 8. 最后补齐 Trace、Eval、成本、权限和生产运营。
 
-## 7. 五层架构把 Agent System 拆成稳定职责域
+## 8. 五层架构把 Agent System 拆成稳定职责域
 
 ### 【五层架构解决职责归属，而不是运行顺序】
 
@@ -4403,7 +4403,7 @@ Completion Control
 
 没有反馈和完成条件，Agent Loop 容易无限重试、过早结束，或者把“已经产生输出”误判成“已经完成任务”。
 
-## 8. 完整 Agent Workflow 用 State、双循环和恢复机制持续收敛
+## 9. 完整 Agent Workflow 用 State、双循环和恢复机制持续收敛
 
 ### 【完整任务从显式 State 开始，而不是只依赖聊天记录】
 
@@ -4531,7 +4531,7 @@ Irrecoverable Failure
 
 技术重试次数与业务返工轮次应分开记录。
 
-## 9. Framework、Runtime 与 Harness 解决不同抽象层的问题
+## 10. Framework、Runtime 与 Harness 解决不同抽象层的问题
 
 ### 【LangChain、LangGraph、Deep Agents 不按“谁更高级”排序】
 
@@ -4579,7 +4579,7 @@ Checkpoint 怎样恢复？
 
 这样框架升级时，知识体系不会跟着 API 名称一起失效。
 
-## 10. 业务 Agent 把通用运行能力落到领域事实、工具和验收标准
+## 11. 业务 Agent 把通用运行能力落到领域事实、工具和验收标准
 
 ### 【先定义业务问题，而不是先选 Agent 框架】
 
@@ -4672,7 +4672,7 @@ Business Agent
 + 与风险匹配的治理
 ~~~
 
-## 11. Agent 控制范式与 Multi-Agent Orchestration 是两条正交维度
+## 12. Agent 控制范式与 Multi-Agent Orchestration 是两条正交维度
 
 ### 【ReAct、Plan-and-Execute、Reflexion、Tree of Thoughts 控制不同粒度】
 
@@ -4744,7 +4744,7 @@ Multi-Agent Orchestration
 
 复杂度只在当前失败需要时增加。
 
-## 12. 七个组成把 Agent 核心原理落成最小可运行实现
+## 13. 七个组成把 Agent 核心原理落成最小可运行实现
 
 ### 【最小 Agent 可以拆成七个组成】
 
@@ -4863,7 +4863,7 @@ Cost / SLA
 
 这些能力分别回到前面的五层、Workflow、Harness 与治理模型中。
 
-## 13. 参考文献
+## 14. 参考文献
 
 [1] ANTHROPIC. [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)[EB/OL]. 2024-12-19[2026-08-29].
 
