@@ -1638,6 +1638,80 @@ OWASP 要求访问权限在服务端对每个受保护请求进行验证。
 
 https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
 
+
+先看一个最典型的资源级权限问题。
+
+用户 Alice 已经成功登录：
+
+~~~text
+Current Subject = Alice
+~~~
+
+她请求：
+
+~~~text
+GET /projects/100
+~~~
+
+如果 Server 只做：
+
+~~~text
+Session Valid?
+      ↓
+Yes
+      ↓
+SELECT project WHERE id = 100
+~~~
+
+那么 Alice 把 URL 改成：
+
+~~~text
+GET /projects/101
+~~~
+
+Server 仍然只能知道：
+
+~~~text
+Alice 已经登录
+~~~
+
+却没有证明：
+
+~~~text
+Alice 有权访问 Project 101
+~~~
+
+正确链路应该是：
+
+~~~text
+Current Subject = Alice
+        +
+Requested Resource = Project 101
+        +
+Action = Read
+        ↓
+查询 Ownership / Membership / Policy
+        ↓
+Allow?
+        │
+        ├── No → Reject
+        └── Yes
+              ↓
+真正读取 Resource
+~~~
+
+这就是 Authentication 和 Authorization 最重要的边界：
+
+~~~text
+Authentication
+证明“你是谁”
+
+Authorization
+证明“这个身份能不能操作这个 Resource”
+~~~
+
+“只验证已经登录，却没有验证具体 Resource 权限”的问题，就是 IDOR / BOLA 类漏洞最常见的来源之一。
+
 ### 【常见权限模型的区别在于决策主要依赖什么信息】
 
 应用开发中最值得掌握：
