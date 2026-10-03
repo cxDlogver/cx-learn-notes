@@ -4232,6 +4232,21 @@ Resource-specific Grant
 14. NIST SP 800-162 — Guide to Attribute Based Access Control  
     https://www.nist.gov/publications/guide-attribute-based-access-control-abac-definition-and-considerations
 
+15. NIST — Discretionary Access Control (DAC)  
+    https://csrc.nist.gov/glossary/term/discretionary_access_control
+
+16. NIST — Mandatory Access Control (MAC)  
+    https://csrc.nist.gov/glossary/term/mandatory_access_control
+
+17. NIST — Policy Decision Point (PDP)  
+    https://csrc.nist.gov/glossary/term/PDP
+
+18. NIST — Policy Enforcement Point (PEP)  
+    https://csrc.nist.gov/glossary/term/policy_enforcement_point
+
+19. OWASP Authorization Patterns Cheat Sheet  
+    https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Patterns_Cheat_Sheet.html
+
 ### 【相关知识文档】
 
 - [Cookie 安全性概述笔记](./Cookie安全性概述笔记.md)
