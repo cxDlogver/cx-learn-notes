@@ -3116,25 +3116,240 @@ Final Allow / Deny
 
 > 真正复杂的 Authorization 往往是多个权限事实共同参与，而不是某一个模型独立解决所有问题。
 
-### 【DAC 与 MAC 更适合作为传统访问控制背景】
+### 【DAC 与 MAC 回答的是“谁掌握授权控制权”，不要和 ACL、RBAC、ABAC、ReBAC 直接并列】
 
-DAC（Discretionary Access Control）强调 Resource Owner 可以决定把 Resource 授予谁。
+DAC（Discretionary Access Control，自主访问控制）与 MAC（Mandatory Access Control，强制访问控制）最容易让人困惑，是因为它们和前面的 ACL、RBAC、ABAC、ReBAC 并不完全处在同一个分类维度。
 
-MAC（Mandatory Access Control）强调中央 Policy 根据 Security Label / Clearance 强制决定访问，普通用户不能自由修改规则。
+可以先把两组问题分开：
+
+~~~text
+DAC / MAC
+主要回答：
+“最终谁有权决定授权？”
+
+
+ACL / RBAC / ABAC / ReBAC
+主要回答：
+“系统根据什么权限事实做判断？”
+~~~
+
+所以不能简单理解成六种完全并列的权限模型。更准确的是：DAC / MAC 强调授权控制权的归属；ACL / RBAC / ABAC / ReBAC 更偏向应用系统如何表达和计算权限。
+
+#### <u>1. DAC 的核心是 Resource Owner 拥有一定自主授权权</u>
+
+NIST 对 DAC 的定义强调：对象 Owner 或被授权管理该对象访问权限的人，可以决定谁能访问这个对象，以及拥有什么访问权。
+
+直观理解就是：
+
+~~~text
+“这是我的资源，
+我可以决定分享给谁。”
+~~~
+
+例如 Alice 创建：
+
+~~~text
+Document 100
+Owner = Alice
+~~~
+
+Alice 可以决定：
+
+~~~text
+Bob
+→ read
+
+Carol
+→ read + write
+~~~
+
+这里真正重要的是：
+
+~~~text
+授权决定权
+主要掌握在 Resource Owner 手中
+~~~
+
+这就是 Discretionary（自主决定）的含义。文件系统、网盘、协作文档等场景中经常能看到这种思想。
+
+#### <u>2. DAC 经常使用 ACL 表达，但 DAC 不等于 ACL</u>
+
+前面已经讲过 ACL：Resource 保存“谁拥有什么 Permission”的直接授权关系。
 
 例如：
 
 ~~~text
-Subject Clearance = Secret
-Resource Classification = Top Secret
+Document 100 ACL
+
+Alice → owner
+Bob   → read
+Carol → write
+~~~
+
+如果这张 ACL 主要由 Document Owner 自己修改，那么可以理解成：
+
+~~~text
+DAC
+=
+上层控制思想：
+Owner 可以决定授权
+
+
+ACL
+=
+具体权限表达方式：
+Resource 保存授权名单
+~~~
+
+因此 DAC 不等于 ACL，但二者经常一起出现。
+
+同一个 ACL 也完全可以由中央管理员维护，此时它并不一定体现典型 DAC 思想。所以判断是不是 DAC，重点不是“有没有 ACL 表”，而是：谁拥有改变访问权限的权力。
+
+#### <u>3. MAC 的核心是中央安全 Policy 强制决定权限</u>
+
+NIST 对 MAC 的描述强调：访问控制决策由中央 Authority / Policy 决定，而不是由单个 Resource Owner 自己决定；普通用户不能随意改变访问权。
+
+可以理解成：
+
+~~~text
+“这个资源虽然是你创建的，
+但你不能绕过系统安全规则
+随便分享给别人。”
+~~~
+
+典型 MAC 会出现 Security Label（安全标签）和 Clearance（安全许可等级）。
+
+例如：
+
+~~~text
+Alice Clearance
+=
+Secret
+
+Document Classification
+=
+Top Secret
+~~~
+
+中央 Policy 规定：
+
+~~~text
+只有 Subject Clearance
+满足 Resource Classification
+才能访问
+~~~
+
+于是：
+
+~~~text
+Alice = Secret
+
+Document = Top Secret
+
+Secret < Top Secret
       ↓
 Deny
 ~~~
 
-MAC 常见于操作系统、政府或强分级安全系统。
+即使 Document Owner 说“我愿意把它分享给 Alice”，中央 Policy 仍然可以 Deny，因为 Owner 无权覆盖强制安全策略。
 
-一般 Web SaaS 日常架构更常直接讨论 ACL、RBAC、ABAC 与 ReBAC。
+#### <u>4. DAC 与 MAC 真正区别是“谁说了算”</u>
 
+| 问题 | DAC | MAC |
+| --- | --- | --- |
+| 谁主要控制授权 | Resource Owner / 被授权管理者 | Central Security Policy |
+| Owner 能否主动分享 | 通常可以 | 不能绕过中央规则 |
+| 权限是否可由普通 Owner 修改 | 可以有一定自主权 | 通常不允许 |
+| 常见场景 | 文件分享、协作资源、普通商业系统 | 高安全等级系统、操作系统、政府/军事分级 |
+| 典型理解 | “我的文件，我决定给谁” | “系统安全规则最终说了算” |
+
+所以最容易记的一句话：
+
+~~~text
+DAC
+=
+Owner 可以决定一部分权限
+
+
+MAC
+=
+中央安全规则强制决定权限
+~~~
+
+#### <u>5. MAC 看起来会使用 Attribute，但 MAC 不等于 ABAC</u>
+
+MAC 中经常出现：
+
+~~~text
+subject.clearance
+resource.classification
+~~~
+
+这看起来很像 ABAC，但两者关注点不同。
+
+ABAC 回答：
+
+~~~text
+“使用哪些 Attribute
+来计算 Allow / Deny？”
+~~~
+
+MAC 回答：
+
+~~~text
+“这套安全规则是否由中央系统强制执行，
+普通 Resource Owner 能不能绕过？”
+~~~
+
+所以一个 MAC 系统完全可能使用 Attribute 进行判断，但让它成为 MAC 的关键是 Central Mandatory Policy，而不是“出现了 Attribute”。
+
+#### <u>6. 普通 Web SaaS 更常直接使用 ACL、RBAC、ABAC、ReBAC 描述业务授权</u>
+
+在普通 Web 应用里，我们更常面对：
+
+~~~text
+这个 User 是什么 Role？
+→ RBAC
+
+这个 User 和 Project 是什么关系？
+→ ReBAC
+
+这个 Resource 是否单独分享给某个 User？
+→ ACL
+
+Department / Tenant / Device / Time
+是否满足条件？
+→ ABAC
+~~~
+
+这些模型更直接映射到业务代码和数据结构。
+
+但从更高层看，其中仍可能体现 DAC 思想。例如 Document Owner 点击 Share，把 read Permission 给 Bob：具体机制可以是 ACL，而更高层控制思想体现了 DAC。
+
+所以这一组概念最好按两层理解：
+
+~~~text
+Access Control
+│
+├── 授权控制权由谁掌握
+│   ├── DAC
+│   │   Owner 有一定自主授权能力
+│   │
+│   └── MAC
+│       Central Policy 强制控制
+│
+└── 权限依据什么事实计算
+    ├── ACL
+    │   Resource-specific Grant
+    ├── RBAC
+    │   Role
+    ├── ABAC
+    │   Attribute
+    └── ReBAC
+        Relationship
+~~~
+
+这样就不会把 DAC / MAC 和 RBAC / ABAC 等模型机械堆在同一层。
 ### 【Authorization Enforcement 必须发生在可信 Server Boundary】
 
 完整链：
