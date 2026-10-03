@@ -288,13 +288,7 @@ CI常见操作：自动安装依赖、执行lint检查（代码规范校验）�
 
 #### 4. CD（Continuous Delivery / Continuous Deployment，持续交付/持续部署）
 
-CD包含两层含义，面试中需明确区分，二者核心都是“在CI通过后，自动完成交付或部署”，区别在于是否需要人工确认。
-
-- Continuous Delivery（持续交付）：CI通过后，代码已具备上线条件，生成可部署产物（如dist目录、Docker镜像），但最终上线动作需人工确认，适合对稳定性要求极高的项目（如金融、医疗）。
-
-- Continuous Deployment（持续部署）：CI通过后，系统自动完成部署流程，无需人工干预，直接将代码部署到生产环境，适合迭代频繁、对迭代速度要求高的项目（如互联网产品）。
-
-核心目的：减少人工操作，提升发布效率，确保代码快速、安全地落地到线上。
+CD 在面试中需要区分 Continuous Delivery 与 Continuous Deployment。Continuous Delivery 的核心是通过可重复的 Build、Test、Environment Verification 与 Release Process，让变化持续保持可安全发布状态；生产 Release 可以保留显式人工或业务 Gate。Continuous Deployment 则把通过既定 Gate 的变化继续自动推进到 Production。完整定义、Artifact / Release / Deployment 边界与 Pipeline 模型统一见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
 
 ### 核心区别与联系
 
@@ -312,11 +306,11 @@ CD包含两层含义，面试中需明确区分，二者核心都是“在CI通�
 
 2. 发起PR/MR，请求合并到目标分支。
 
-3. 触发CI流程，自动完成校验，校验通过后才能进入评审环节。
+3. PR/MR 同时进入 Human Review 与 Automated CI Checks；两者都可以成为 Merge Gate 的组成条件，具体强制规则和先后关系由团队策略决定。
 
-4. PR/MR评审通过，合并到目标分支。
+4. Review 与 Required Checks 满足仓库规则后，合并到目标分支。
 
-5. 触发CD流程，自动构建产物、部署到对应环境（测试/预发/生产），完成上线。
+5. 后续 Pipeline 继续使用经过验证的 Artifact 进入 Release / Deployment / Production Verification；具体是否自动进入生产取决于 Continuous Delivery / Continuous Deployment 策略。
 
 ### 高频追问点
 
@@ -354,7 +348,7 @@ PR和MR本质都是代码合并请求，用于分支协作和Code Review，仅�
 
 ### 标准面试回答
 
-代码合并到主干分支（如main）后，并不意味着直接上线，需经过“自动化校验→环境验证→审批→部署→监控”的一系列流程，确保上线版本稳定，具体步骤如下：
+代码合并到主干分支（如main）后，并不意味着直接上线。典型交付链会继续经过“自动化校验 → Build Artifact → 环境验证 → Release Gate → Deployment → Production Verification / Recovery”。下面保留的是面试场景下的一种常见实现，不应理解为所有团队唯一的固定顺序；完整通用模型见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
 
 #### 1. 触发CI流程（自动校验）
 
