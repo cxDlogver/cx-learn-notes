@@ -1,4 +1,61 @@
-# Agent 学习教程
+# Agent 完整学习教程：从业务 Agent 化到 Harness、Workflow 与最小实现
+
+## 0. 一篇文档建立 Agent 的完整学习地图
+
+本文是 Full-Stack-AI-NOTES 中 **Agent 通用知识的单一主入口**。原 01～07 系列已经整合到本文，不再要求按七个文件来回跳转。
+
+完整学习链压缩为：
+
+~~~text
+业务问题
+↓
+是否需要 Agent
+↓
+Prompt / Context / Tool
+↓
+Agent Loop
+↓
+State / Memory / Control
+↓
+五层架构
+↓
+Workflow / Orchestration / Runtime
+↓
+Framework / Runtime / Harness
+↓
+业务 Agent
+↓
+ReAct / Plan-and-Execute / Reflexion / ToT
+↓
+最小可运行实现
+↓
+Eval / Production Governance
+~~~
+
+原 01～07 的知识职责在本文中重新映射为：
+
+| 原系列 | 整合后的知识职责 |
+| --- | --- |
+| 01 从 Prompt Engineer 到 Harness Engineer | 第 6 章：工程对象怎样从 Prompt 扩展到完整 Harness |
+| 02 Agent 五层架构 | 第 7 章：模型、上下文、执行、编排、反馈与控制五类职责 |
+| 03 Agent 完整工作流 | 第 8 章：State、内外双循环、Checkpoint、Recovery |
+| 04 从 LangChain 到 Deep Agents | 第 9 章：Framework、Runtime、Harness 的框架映射 |
+| 05 研发缺陷修复 Agent | 第 10 章：通用知识如何进入真实业务 Agent |
+| 06 Agent 四种范式 | 第 11 章：不同粒度的动态决策与控制机制 |
+| 07 Agent 核心原理与最小实现 | 第 12 章：七个组成与最小 Agent Run |
+
+本文与 [Agent System 研发知识梳理](./Agent-System研发知识梳理.md) 的关系是：
+
+~~~text
+Agent 完整学习教程
+→ 建立从业务到工程实现的完整学习链
+
+Agent System 研发知识梳理
+→ 对 Loop / Runtime / Harness / Context / Memory / Tool / Skill / MCP
+  做概念校准和横向对比
+~~~
+
+Agent Eval 仍由 [Agent Eval 与 Benchmark](./Agent-Eval与Benchmark.md) 作为独立主入口，因为 Eval 本身已经形成独立知识域，不再重复塞入本文。
 
 ## 1. Agent 研发的两种语境
 
@@ -519,6 +576,43 @@ Orchestrator
 
 > **不一定需要一个独立的 Orchestrator Agent。**
 
+### 【编排必须拆成 Decision Authority、Execution Topology 与 Control Ownership】
+
+过去最容易混淆的一点，是把 Code / LLM、Sequential / Concurrent、Manager / Handoff 全部放进同一棵“编排模式”分类树。它们实际上回答三个不同问题。
+
+| 维度 | 回答的问题 | 常见取值 |
+| --- | --- | --- |
+| Decision Authority | 谁决定下一步 | Code-controlled / Model-controlled / Hybrid |
+| Execution Topology | 多个执行单元怎样连接 | Sequential / Concurrent / Group Collaboration |
+| Control Ownership | 当前任务控制权由谁持有 | Centralized Manager / Handoff Transfer |
+
+因此同一个系统可以同时是：
+
+~~~text
+Hybrid Decision Authority
++
+Concurrent Execution
++
+Centralized Manager
+~~~
+
+也可以是：
+
+~~~text
+Code-controlled Workflow
++
+Sequential Execution
++
+没有独立 Orchestrator Agent
+~~~
+
+这三个维度是可组合的，不是互斥选项。
+
+OpenAI 当前明确说明 Agent 可以通过 LLM 决策或代码编排，而且两者可以混合使用。[[11]](https://openai.github.io/openai-agents-python/multi_agent/) Microsoft Agent Framework 则把 Sequential、Concurrent、Handoff、Group Chat、Magentic 分别作为不同协作拓扑提供。[[21]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/)
+
+所以后文的 Code Orchestration / Model Orchestration 只是在解释 **Decision Authority**；Manager / Handoff 主要解释 **Control Ownership**；Sequential / Concurrent / Group Chat 主要解释 **Execution Topology**。
+
+
 因为编排职责既可以由程序承担，也可以由模型 Agent 承担。它可以有两种典型实现：
 
 ```text
@@ -531,7 +625,7 @@ Orchestrator
      → LLM Orchestration
 ```
 
-#### <u>1. Code Orchestration：确定性编排</u>
+#### <u>1. Code-controlled：由代码承担主要路由决策</u>
 
 第一类 Multi-Agent 编排方式是：
 
@@ -666,7 +760,7 @@ Check
 
 > **节点之间怎么流转，是由 Code / Workflow Engine 预先写好的规则决定的。**
 
-#### <u>2. LLM Orchestration：由模型动态决定 Agent 的流转</u>
+#### <u>2. Model-controlled：由模型承担主要动态路由决策</u>
 
 另一类是：
 
@@ -710,6 +804,24 @@ Research → Research → Review → Coding → Testing
 因此这类系统属于：
 
 **<u>LLM-orchestrated Multi-Agent（模型编排的多 Agent 系统）</u>**。
+
+生产系统通常采用 **Hybrid Orchestration**：
+
+~~~text
+Code / Workflow
+→ 固定 Stage、Budget、Permission、Gate
+
+Model
+→ 处理开放式判断、Routing、Planning
+
+Runtime
+→ 校验 Policy、State、Checkpoint、Retry
+
+Human
+→ 处理高风险审批
+~~~
+
+因此“代码编排”和“模型编排”不是必须全局二选一。更稳定的原则是：**让代码固定必须确定的边界，让模型处理真正不确定的决策。**
 
 ##### ==模型编排的第一种典型模式：Manager==
 
@@ -1331,6 +1443,32 @@ Agent → Manager → Agent → Manager
 所以 Manager 更适合：
 
 > **需要集中控制、并行调度、结果汇总、阶段门禁或者独立 Review 的任务。**
+
+### 【Group Collaboration 解决多 Agent 的共享协作】
+
+Sequential、Concurrent、Manager 和 Handoff 之外，还存在一类需要多轮共享讨论和反复改进的协作拓扑。
+
+~~~text
+Writer
+  ↓
+Shared Conversation
+  ↑        ↓
+Reviewer  Fact Checker
+  \        /
+    Coordinator
+~~~
+
+Microsoft Agent Framework 当前把 Group Chat 作为正式 Orchestration Pattern：多个 Agent 围绕同一 Conversation History 协作，由 Orchestrator 根据策略选择下一位参与者，并在轮次之间同步上下文。[[22]](https://learn.microsoft.com/en-us/agent-framework/workflows/orchestrations/group-chat)
+
+它适合 Writer ↔ Reviewer 的多轮改稿、多角色共同分析，以及需要相互看到其他 Agent 观点的协作任务。它和 Concurrent 的区别是：Concurrent 更强调独立并行后汇总；Group Collaboration 强调共享上下文和多轮互动。
+
+~~~text
+Execution Topology
+≠
+Decision Authority
+≠
+Control Ownership
+~~~
 
 ### 【Orchestration vs Agent Loop】
 
