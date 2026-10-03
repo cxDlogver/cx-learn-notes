@@ -2230,6 +2230,114 @@ Organization / Team / Project
 多租户组织树
 ~~~
 
+
+ReBAC 与 RBAC 最容易混淆的地方是：
+
+~~~text
+RBAC 问：
+“Bob 是什么 Role？”
+
+
+ReBAC 问：
+“Bob 和这个 Resource
+之间存在什么 Relationship？”
+~~~
+
+例如：
+
+~~~text
+Bob
+member_of
+Team A
+
+Team A
+member_of
+Organization X
+
+Project P
+belongs_to
+Organization X
+
+Document D
+belongs_to
+Project P
+~~~
+
+如果 Policy 是：
+
+~~~text
+Organization Member
+可以读取 Organization 下的 Document
+~~~
+
+系统真正要判断的不是：
+
+~~~text
+Bob.role == member
+~~~
+
+而是是否存在满足 Policy 的关系路径：
+
+~~~text
+Bob
+  ↓ member_of
+Team A
+  ↓ member_of
+Organization X
+  ↓ contains
+Project P
+  ↓ contains
+Document D
+~~~
+
+复杂 ReBAC 系统经常把关系保存成：
+
+~~~text
+subject
+relation
+object
+~~~
+
+例如：
+
+~~~text
+user:bob
+member
+team:a
+
+team:a
+member
+org:x
+
+project:p
+parent
+org:x
+
+document:d
+parent
+project:p
+~~~
+
+授权查询本质上是在判断：
+
+~~~text
+从 Subject 到 Resource
+是否存在一条符合 Policy 的 Relationship Path
+~~~
+
+随着关系变复杂，还要处理：
+
+~~~text
+Relationship Inheritance
+Cycle
+Query Cost
+Cache
+Consistency
+Explainability
+~~~
+
+所以 ReBAC 不是简单“多加一张 membership 表”，而是一种以关系图为核心的权限建模方式。
+
 ### 【RBAC、ABAC、ReBAC 和 ACL 可以组合】
 
 真实 SaaS 可能同时存在：
