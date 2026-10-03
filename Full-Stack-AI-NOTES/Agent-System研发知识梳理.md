@@ -2,7 +2,7 @@
 
 本文只讨论 **Agent System 本身怎样运行、怎样组织能力以及怎样形成可恢复、可治理的执行系统**。如果还没有区分“在业务流程中接入 Agent”和“开发 Agent System 本身”这两种研发语境，先阅读 [《Agent 学习教程》](./Agent学习教程.md)。
 
-本文采用“系统组成与运行机制”的视角回答 Agent 由哪些部分构成、这些部分怎样协作。若要理解为什么工程对象会从 Prompt Engineering 逐步扩展到 Context、Tool、Workflow 与 Harness，可以继续阅读 [《01 从 Prompt Engineer 到 Harness Engineer》](./01-从Prompt-Engineer到Harness-Engineer.md)。
+本文采用“系统组成与运行机制”的视角回答 Agent 由哪些部分构成、这些部分怎样协作。若要沿着业务 Agent 化、Prompt → Harness、五层架构、Workflow、框架映射、控制范式和最小实现建立完整学习链，统一阅读 [《Agent 完整学习教程》](./Agent学习教程.md)。
 
 ## 1. Agent System 的运行机制
 
