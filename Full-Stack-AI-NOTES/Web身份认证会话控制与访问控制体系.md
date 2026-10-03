@@ -1373,83 +1373,753 @@ IETF 2026 发布的 RFC 10017 专门讨论 Browser-based OAuth Application 的 T
 
 https://www.rfc-editor.org/rfc/rfc10017.html
 
-### 【Session Lifecycle 必须管理创建、过期、续期、轮换与撤销】
+### 【Session Lifecycle 管理的不是一个 expiresAt，而是会话从创建到失效的完整状态】
 
-完整生命周期：
+Session Lifecycle（会话生命周期）解决的是：一个已经登录的 Session 从什么时候建立、什么时候仍然有效、什么时候需要更新 Credential、什么时候自然过期，以及什么时候必须被 Server 主动撤销。
+
+可以先把它理解成一条状态链：
 
 ~~~text
+Authentication Success
+        ↓
 Create
-  ↓
+创建 Session
+        ↓
 Active
-  ↓
+Session 当前有效
+        ↓
 Use
-  ↓
-Refresh / Renew
-  ↓
+后续 Request 持续使用
+        ↓
+Renew / Rotate
+必要时更新 Session Credential
+        ↓
 Expire
-  ↓
+因为时间规则自然失效
+        ↓
 Revoke
-  ↓
+因为 Logout / Security Event 主动失效
+        ↓
 Re-authenticate
+必要时重新证明身份
 ~~~
 
-Idle Timeout：
+因此一个 Server-side Session 往往不只需要：
 
 ~~~text
-长时间无 Activity
+sessionId
+userId
+~~~
+
+还可能维护：
+
+~~~text
+createdAt
+lastActivityAt
+absoluteExpiresAt
+status / revokedAt
+csrfToken
+device / risk metadata
+~~~
+
+这些字段分别服务于不同的生命周期判断。
+
+#### <u>1. Create：Authentication 成功以后才建立 Session</u>
+
+用户完成 Password、MFA 等身份验证：
+
+~~~text
+Authentication Success
+        ↓
+Generate Session Identifier
+        ↓
+Create Server Session State
+        ↓
+把 Session Identifier 交给 Client
+~~~
+
+例如：
+
+~~~text
+Session
+
+userId            = user_10001
+createdAt         = 09:00
+lastActivityAt    = 09:00
+absoluteExpiresAt = 17:00
+status            = active
+~~~
+
+如果使用 Cookie，Browser 只是通过 Cookie 保存和自动携带 Session Identifier。
+
+所以：
+
+~~~text
+Cookie
+不是 Session 本身
+
+Session State
+才是 Server 对当前登录状态的真实记录
+~~~
+
+#### <u>2. Use：每个 Request 都要重新判断 Session 是否仍然有效</u>
+
+Session 创建以后，用户可能不断发送：
+
+~~~text
+GET /projects
+GET /profile
+POST /orders
+PATCH /settings
+~~~
+
+每一次 Request 都应该经过类似判断：
+
+~~~text
+Request
+  ↓
+Extract Session Credential
+  ↓
+Lookup Session
+  ↓
+Session Exists?
+  │
+  ├── No → 401
+  └── Yes
+        ↓
+Revoked?
+  │
+  ├── Yes → 401
+  └── No
+        ↓
+Idle Timeout Exceeded?
+  │
+  ├── Yes → Expire
+  └── No
+        ↓
+Absolute Timeout Exceeded?
+  │
+  ├── Yes → Expire
+  └── No
+        ↓
+Restore Current User
+        ↓
+Continue Request
+~~~
+
+因此：
+
+~~~text
+Session Record Exists
+≠
+Session Is Valid
+~~~
+
+真正的 Active Session 是多个条件共同成立的结果。
+
+#### <u>3. Idle Timeout 限制“这个 Session 已经多久没有被使用”</u>
+
+Idle Timeout（空闲超时）关注：
+
+> 距离上一次有效 Activity 已经过了多久。
+
+假设：
+
+~~~text
+Idle Timeout = 30 min
+~~~
+
+用户：
+
+~~~text
+09:00 Login
+09:20 Request
+~~~
+
+09:20 时：
+
+~~~text
+09:20 - 09:00
+=
+20 min
+<
+30 min
+~~~
+
+Session 仍然有效，并可以更新：
+
+~~~text
+lastActivityAt = 09:20
+~~~
+
+如果用户一直没有操作，直到：
+
+~~~text
+10:00
+~~~
+
+此时：
+
+~~~text
+10:00 - 09:20
+=
+40 min
+>
+30 min
+~~~
+
+则：
+
+~~~text
+Idle Timeout Exceeded
       ↓
 Session Invalid
+      ↓
+Require Login Again
 ~~~
 
-Absolute Timeout：
+因此 Idle Timeout 本质上是一个基于 Last Activity 的滑动窗口。
+
+它主要处理：
 
 ~~~text
-即使持续活跃
-超过最大 Session Lifetime
+用户离开设备
+忘记 Logout
+Session Credential 仍然保留在 Browser
+~~~
+
+这类风险。
+
+#### <u>4. Absolute Timeout 限制“这一次登录最多可以持续多久”</u>
+
+Idle Timeout 有一个明显缺陷：
+
+~~~text
+只要一直有 Activity
+lastActivityAt 就不断更新
+~~~
+
+如果攻击者已经获得 Session Credential，并持续发送 Request，Idle Timeout 可能永远不会触发。
+
+因此还需要 Absolute Timeout（绝对超时）。
+
+例如：
+
+~~~text
+createdAt = 09:00
+absoluteTimeout = 8 h
+absoluteExpiresAt = 17:00
+~~~
+
+即使用户：
+
+~~~text
+16:59
+刚刚发送过 Request
+~~~
+
+到了：
+
+~~~text
+17:00
+~~~
+
+仍然必须：
+
+~~~text
+Session Invalid
       ↓
 Require Re-authentication
 ~~~
 
-Renewal / Rotation：
+两种 Timeout 的区别：
+
+| 机制 | 计算起点 | Activity 是否延长 | 解决的问题 |
+| --- | --- | --- | --- |
+| Idle Timeout | Last Activity | 会 | Session 长时间无人使用 |
+| Absolute Timeout | Session Created At | 不会 | 一个 Session 整体存活过久 |
+
+可以简单记成：
 
 ~~~text
-Old Credential
-      ↓
-New Credential
-      ↓
-Old Credential Invalid
+Idle Timeout
+问：
+“你多久没操作了？”
+
+
+Absolute Timeout
+问：
+“你这次登录已经持续多久了？”
 ~~~
 
-OWASP 建议至少从 Idle Timeout 与 Absolute Timeout 两个维度控制 Session Expiration，并可以增加 Renewal Timeout。
+OWASP Session Management Cheat Sheet 也将 Idle Timeout 和 Absolute Timeout 作为两个独立的 Session Expiration 控制维度。
 
-### 【Logout 的本质是 Server 不再接受旧 Credential】
+#### <u>5. Server Timeout 才是真正安全边界，Cookie Expiration 只是 Client 辅助</u>
 
-只在 UI：
+假设 Cookie 设置：
+
+~~~text
+Expires = 17:00
+~~~
+
+这只能控制 Browser 什么时候停止自动发送这个 Cookie。
+
+攻击者完全可以绕过 Browser，自己构造：
+
+~~~http
+Cookie: session=<stolen-session-token>
+~~~
+
+因此 Server 仍然必须判断：
+
+~~~text
+now > absoluteExpiresAt ?
+lastActivityAt + idleTimeout < now ?
+status == revoked ?
+~~~
+
+所以真正安全边界是：
+
+~~~text
+Server Session Validation
+~~~
+
+而不是：
+
+~~~text
+Browser Cookie 还在不在
+~~~
+
+#### <u>6. Renewal / Rotation 用于减少同一个 Session Credential 长期不变</u>
+
+假设：
+
+~~~text
+Session ID = S1
+~~~
+
+如果 S1 在整个 Session 生命周期内始终不变，一旦攻击者较早拿到 S1，就可能一直使用到 Session 最终失效。
+
+Renewal / Rotation 可以：
+
+~~~text
+S1
+  ↓
+Generate New Session Identifier
+  ↓
+S2
+  ↓
+S1 Invalid
+~~~
+
+常见 Rotation Point 包括：
+
+~~~text
+Login Success
+Privilege Elevation
+Re-authentication
+Periodic Renewal
+~~~
+
+尤其在：
+
+~~~text
+Anonymous Session
+      ↓
+Login Success
+~~~
+
+之后重新生成 Session Identifier，可以避免继续沿用认证前的 Session ID，从而降低 Session Fixation 风险。
+
+这里的 Session ID Renewal 与前文的 Refresh Token Rotation 思想相似，但不是同一个机制：
+
+~~~text
+Server-side Session Renewal
+主要更新 Session Identifier
+
+Refresh Token Rotation
+主要更新长期 Refresh Credential
+并可结合 Token Family / Replay Detection
+~~~
+
+#### <u>7. Expire 与 Revoke 都会让 Session 失效，但原因不同</u>
+
+Expire（过期）表示 Session 因时间规则自然结束：
+
+~~~text
+Idle Timeout
+Absolute Timeout
+~~~
+
+Revoke（撤销）表示 Session 原本可能仍在有效期内，但 Server 主动宣布它失效：
+
+~~~text
+Logout
+Password Reset
+Account Disabled
+Security Incident
+Admin Force Logout
+~~~
+
+可以简单记成：
+
+~~~text
+Expire
+=
+时间到了
+
+
+Revoke
+=
+现在就不再信任这个 Session
+~~~
+
+因此 Session Lifecycle 最终可以归纳成：
+
+~~~text
+Session Lifecycle
+│
+├── 建立与使用
+│   ├── Create
+│   ├── Active
+│   └── Use
+│
+├── 更新 Credential
+│   └── Renewal / Rotation
+│
+└── 结束 Session
+    ├── Expiration
+    │   ├── Idle Timeout
+    │   └── Absolute Timeout
+    │
+    └── Revocation
+        ├── Logout
+        ├── Password Reset
+        └── Security Event
+~~~
+
+### 【Logout 的本质是撤销 Server 对旧 Credential 的信任】
+
+Logout 不能只理解成：
 
 ~~~text
 clear local state
 redirect /login
 ~~~
 
-并不等于真正 Logout。
+这些操作只会让当前页面看起来“退出了”。
 
-Server-side Session 需要：
+真正需要确认的是：
 
-~~~text
-Revoke / Delete Server Session
-+
-Clear Client Identifier
-~~~
+> 如果旧 Session Token / Refresh Token 再次提交给 Server，Server 还会不会接受？
 
-Refresh Token Model 需要：
+如果答案仍然是 Yes，那么安全意义上的 Logout 就没有完成。
+
+完整 Logout 可以理解成：
 
 ~~~text
-Revoke Refresh Credential
-+
-必要时 Revoke Token Family
-+
-处理尚未过期的 Access Token
+User Click Logout
+        ↓
+Client Send Logout Request
+        ↓
+Server Identify Current Session
+        ↓
+Revoke / Delete Server Credential State
+        ↓
+Old Credential Cannot Authenticate Again
+        ↓
+Client Clear Cookie / Token / UI State
 ~~~
+
+其中真正建立安全边界的是：
+
+~~~text
+Server Revocation
+~~~
+
+Client Cleanup 只是收尾。
+
+#### <u>1. Server-side Session 可以直接删除或撤销当前 Session</u>
+
+假设：
+
+~~~text
+Browser
+Cookie: session=S1
+
+Server
+S1 → user_10001
+~~~
+
+Logout：
+
+~~~text
+POST /logout
+      ↓
+Server 找到 S1
+      ↓
+Delete Session
+
+或者：
+
+status = revoked
+revokedAt = now()
+      ↓
+Clear Client Cookie
+~~~
+
+之后旧 Credential 再次出现：
+
+~~~text
+S1
+  ↓
+Lookup
+  ↓
+Not Found / Revoked
+  ↓
+401
+~~~
+
+这就是 Server-side Session 能比较直接实现即时 Logout 的原因：每次 Request 本来就要查询或验证 Server Session State。
+
+Delete 与 Revoke 都能让 Session 失效，区别主要在于是否需要保留 Audit、Device History、Revocation Reason 等生命周期记录。
+
+#### <u>2. Client Cookie 清除失败不会重新让 Session 有效，但 Server 没撤销才是真正风险</u>
+
+Logout 通常还会清 Cookie：
+
+~~~http
+Set-Cookie: session=; Max-Age=0; Path=/; HttpOnly; Secure
+~~~
+
+清除时 Cookie 的 Name、Domain、Path 需要与原 Cookie Scope 对应，否则 Browser 可能仍保留旧 Cookie。
+
+但即使 Client Cookie 没有成功清掉，只要：
+
+~~~text
+Server Session 已经 Revoked
+~~~
+
+后续携带旧 Cookie 也只会得到：
+
+~~~text
+401
+~~~
+
+反过来：
+
+~~~text
+Client 已经删除 Cookie
++
+Server Session 仍然 Active
+~~~
+
+才是安全问题，因为已经被复制出去的 Credential 仍然可以继续使用。
+
+所以优先级是：
+
+~~~text
+Server Revocation
+>
+Client Cleanup
+~~~
+
+#### <u>3. Access + Refresh Token 模型需要分别处理“续期能力”和“已经发出去的访问能力”</u>
+
+假设：
+
+~~~text
+Access Token  AT1
+TTL = 10 min
+
+Refresh Token RT1
+TTL = 30 days
+~~~
+
+Logout 首先应该撤销：
+
+~~~text
+RT1
+~~~
+
+因为如果 Refresh Token 仍然有效：
+
+~~~text
+Attacker Has RT1
+      ↓
+Refresh
+      ↓
+Get AT2
+      ↓
+重新获得访问能力
+~~~
+
+如果使用 Refresh Token Rotation，通常撤销当前 Token Family，表示这一整次 Login Session 都已经结束。
+
+但这里还有一个独立问题：
+
+~~~text
+RT1 已经撤销
+≠
+AT1 一定立即失效
+~~~
+
+如果 AT1 是 Self-contained Access Token，并且 Resource Server 只做：
+
+~~~text
+Verify Signature
++
+Check exp
+~~~
+
+那么 Logout 时 AT1 如果还有几分钟有效期，它可能继续被接受直到自然过期。
+
+因此常见设计是：
+
+~~~text
+Short-lived Access Token
++
+Revocable Refresh Token
+~~~
+
+如果业务要求 Access Token 也立即失效，则需要增加额外机制，例如：
+
+~~~text
+Revocation / Deny List
+Token Introspection
+Central Session Version
+其他在线状态检查
+~~~
+
+代价是重新引入共享状态查询和额外复杂度。
+
+所以 Server-side Session 与 Self-contained Access Token 的 Logout 差异，本质仍然来自前面已经讲过的“状态放在哪里”。
+
+#### <u>4. Current Session Logout 与 Logout All Devices 是两个不同操作</u>
+
+假设同一个 User 有：
+
+~~~text
+Laptop
+Session S1
+
+Phone
+Session S2
+
+Office PC
+Session S3
+~~~
+
+普通 Logout：
+
+~~~text
+Revoke S1
+~~~
+
+只结束当前设备的 Session。
+
+而：
+
+~~~text
+Logout All Devices
+~~~
+
+需要：
+
+~~~text
+Find All Sessions By User
+      ↓
+Revoke S1
+Revoke S2
+Revoke S3
+~~~
+
+这也是为什么一些 Session Store 除了：
+
+~~~text
+sessionId → Session
+~~~
+
+还需要支持：
+
+~~~text
+userId → Sessions
+~~~
+
+的反向索引。
+
+同样，Password Reset、Account Compromise、MFA Reset、Account Disabled 等高风险事件，也可能需要触发 User-level Session Revocation，而不是只处理当前设备。
+
+#### <u>5. Logout API 适合设计成 Idempotent</u>
+
+Idempotent（幂等）表示同一个 Logout 请求因为网络重试执行多次，最终结果仍然应该是：
+
+~~~text
+Old Credential Invalid
+~~~
+
+例如第一次：
+
+~~~text
+POST /logout
+      ↓
+Revoke S1
+      ↓
+Success
+~~~
+
+第二次重复请求时，即使 S1 已经不存在，也可以继续返回成功语义，因为目标状态已经达成。
+
+Logout 关心的是：
+
+~~~text
+Session 最终是否已经失效
+~~~
+
+而不是要求 Delete 操作必须只执行一次。
+
+#### <u>6. Logout 不能保证已经进入业务逻辑的并发 Request 被瞬间取消</u>
+
+用户点击 Logout 时，可能同时存在：
+
+~~~text
+Request A
+GET /profile
+
+Request B
+POST /save
+
+Request C
+POST /logout
+~~~
+
+如果 A、B 已经在 C 之前完成 Session Validation，并进入 Business Logic，那么 C 删除 Session 后，它们不一定会被自动中断。
+
+因此普通 Web 系统所谓“Logout 立即生效”通常表示：
+
+> Logout 完成以后，新到达的 Request 不能继续使用旧 Credential。
+
+如果某些高风险业务要求更强保证，可以在 Critical Operation 执行前再次检查 Session / Account Security State。
+
+最终可以把 Logout 压缩成：
+
+~~~text
+Logout
+│
+├── Server
+│   ├── Revoke Session
+│   ├── Revoke Refresh Credential
+│   └── 必要时处理 Access Token / All Sessions
+│
+└── Client
+    ├── Clear Cookie / Token
+    ├── Clear Local User State
+    └── Redirect Login
+~~~
+
+其中最关键的一句是：
+
+> Logout 的核心不是“回到登录页”，而是让旧 Credential 无法再次恢复用户身份。
 
 ### 【CSRF 主要出现在 Browser 自动发送 Credential 的模型中】
 
