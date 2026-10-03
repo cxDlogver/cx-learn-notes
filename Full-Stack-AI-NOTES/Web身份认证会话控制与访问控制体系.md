@@ -2387,6 +2387,65 @@ resource ACL contains user
 
 而不是先决定“所有权限都必须使用 RBAC”。
 
+
+一个更具体的组合例子：
+
+~~~text
+请求：
+Alice 要 export Report 100
+~~~
+
+Server 可以连续做四层判断。
+
+第一层，ReBAC：
+
+~~~text
+Alice 是否 member_of
+Report 100 所属 Project？
+      ↓
+No → Deny
+Yes → Continue
+~~~
+
+第二层，RBAC：
+
+~~~text
+Alice 在这个 Project 中
+是否拥有 Analyst / Admin Role？
+      ↓
+No → Deny
+Yes → Continue
+~~~
+
+第三层，ABAC：
+
+~~~text
+Alice.clearance
+是否 >=
+Report.classification？
+
+Current Device
+是否 trusted？
+      ↓
+No → Deny
+Yes → Continue
+~~~
+
+第四层，ACL：
+
+~~~text
+Report 100
+是否存在显式 Special Grant / Deny？
+      ↓
+合并 Policy
+      ↓
+Final Allow / Deny
+~~~
+
+这个例子说明：
+
+> 真正复杂的 Authorization 往往是多个权限事实共同参与，而不是某一个模型独立解决所有问题。
+
 ### 【DAC 与 MAC 更适合作为传统访问控制背景】
 
 DAC（Discretionary Access Control）强调 Resource Owner 可以决定把 Resource 授予谁。
@@ -2441,6 +2500,64 @@ Business Operation
 只属于 UX。
 
 攻击者仍然可以自己构造 HTTP Request，因此真正的 Permission Check 必须在服务端执行。
+
+
+服务端权限检查通常还要区分“粗粒度入口限制”和“资源级业务限制”。
+
+第一层可以位于：
+
+~~~text
+Router
+Guard
+Middleware
+~~~
+
+做：
+
+~~~text
+是否已经 Authentication？
+是否拥有某个全局 Role / Scope？
+~~~
+
+例如：
+
+~~~text
+只有 Platform Admin
+可以进入 /admin/*
+~~~
+
+但很多权限必须在 Service 中判断，因为它依赖真实业务数据。
+
+例如：
+
+~~~text
+PATCH /projects/123
+~~~
+
+只有 Service 加载 Project 123 以后，才能知道：
+
+~~~text
+Owner 是谁？
+当前 User 是否 Member？
+属于哪个 Tenant？
+Project 当前状态是什么？
+~~~
+
+因此常见分层：
+
+~~~text
+Guard
+做粗粒度入口控制
+        ↓
+Service
+加载 Resource
+        ↓
+做资源级 Authorization
+        ↓
+Business Mutation
+~~~
+
+不能把所有资源权限都强行塞进一个全局 Guard，也不能只在 Controller 前做“用户已登录”就认为权限完成。
 
 ### 【复杂系统可以把 Policy Definition、Decision 与 Enforcement 分离】
 
