@@ -4180,7 +4180,7 @@ Adapter
   隔离具体 Agent 产品的调用差异
 ```
 
-从这里继续向底层理解 Agent 的实际运行机制，可以阅读 [《07-Agent核心原理与最小实现》](./07-Agent核心原理与最小实现.md)；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
+从这里继续向底层理解 Agent 的实际运行机制，直接阅读本文第 12 章“七个组成与最小可运行实现”；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
 
 ## 6. 从 Prompt Engineering 到 Harness Engineering 是工程对象逐层扩大的过程
 
