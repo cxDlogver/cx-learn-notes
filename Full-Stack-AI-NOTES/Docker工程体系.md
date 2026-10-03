@@ -1095,29 +1095,11 @@ Volume / Network / Healthcheck
 - [Git 分支、发布流程与 CI/CD](<./Git分支操作、发布流程及CI_CD相关面试笔记（完整版）.md>)
 - [DATABASE](./DATABASE.md)
 
-### 【Browser Monitor 提供 Docker 全链路项目实践】
+### 【实战分析入口】
 
-通用知识正文只负责 Docker 的定义、模型和通用工程规则。Browser Monitor 项目已经有独立实践文档，包含真实 Dockerfile、Compose、Build Context、Backend/Web/Audit Worker Image、TimescaleDB/Redis Volume、Network、Profile、Override Compose、tmpfs、环境变量和启动命令等源码映射。
+通用知识正文不展开具体项目的 Dockerfile、Compose、Volume、Network 和运行拓扑。需要把本篇知识映射到真实源码时，可继续阅读：
 
-项目实践入口：
-
-- [Browser Monitor · Docker 体系源码学习](../browser-monitor/docs/Docker体系源码学习.md)
-
-推荐顺序：
-
-~~~text
-Docker 工程体系
-↓
-先建立通用模型
-
-Browser Monitor Docker 体系源码学习
-↓
-再看真实工程配置和设计取舍
-~~~
-
-这样可以避免把某个项目的实现方式误认为 Docker 的通用规则。
-
----
+- [Browser Monitor：Docker 体系源码学习](https://github.com/cxDlogver/browser-monitor/blob/main/docs/Docker%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md)
 
 ## 10. 参考资料
 
