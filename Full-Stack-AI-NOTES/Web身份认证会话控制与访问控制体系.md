@@ -3444,9 +3444,11 @@ Business Mutation
 
 不能把所有资源权限都强行塞进一个全局 Guard，也不能只在 Controller 前做“用户已登录”就认为权限完成。
 
-### 【复杂系统可以把 Policy Definition、Decision 与 Enforcement 分离】
+### 【复杂权限系统可以把 Policy 管理、Decision 与 Enforcement 分离】
 
-小型系统：
+小型系统通常不需要一开始就设计独立 Policy Engine。
+
+例如：
 
 ~~~text
 if (user.role !== 'admin') {
@@ -3454,26 +3456,452 @@ if (user.role !== 'admin') {
 }
 ~~~
 
-已经足够。
-
-权限复杂后可以拆成：
+虽然只有几行代码，但实际上已经同时完成三件事：
 
 ~~~text
 Policy Definition
-定义允许规则
-
+定义：
+只有 Admin 可以执行
+        ↓
 Policy Decision
-输入 Subject / Resource / Action / Context
-计算 Allow / Deny
-
+判断：
+当前 User 是不是 Admin
+        ↓
 Policy Enforcement
-在 Request / Service 边界真正阻断
+如果不是：
+真正阻断业务执行
 ~~~
 
-安全架构中常分别称为 PAP、PDP、PEP。
+所以 PAP、PDP、PEP 首先是一种“权限职责拆分思想”，并不代表必须部署三个独立服务。
 
-重点不是一开始就引入 Policy Engine，而是避免大量不一致权限判断散落在业务代码中。
+只有当权限规则逐渐复杂、分散和不一致时，把这三个职责分开才更有价值。
 
+#### <u>1. Policy Definition 先回答“什么条件下应该 Allow”</u>
+
+假设业务规定：
+
+~~~text
+Project Owner
+或者
+Organization Admin
+
+可以删除 Project
+~~~
+
+这本身就是一条 Policy：
+
+~~~text
+Allow project.delete
+
+IF
+
+subject is project.owner
+
+OR
+
+subject has organization_admin role
+~~~
+
+Policy Definition 关注的是：规则是什么。它还没有处理某一个具体 Request。
+
+例如完整系统中可能同时存在：
+
+~~~text
+Viewer
+→ read
+
+Editor
+→ read + update
+
+Admin
+→ manage
+~~~
+
+以及：
+
+~~~text
+tenantId 必须一致
+
+Sensitive Resource
+要求 MFA
+
+Untrusted Device
+禁止 export
+~~~
+
+如果这些规则全部散落在几十个 Controller / Service 的 if 语句里，就很难知道某个 Action 的完整权限规则到底是什么。
+
+#### <u>2. PAP 负责管理 Policy，而不是处理每一次业务请求</u>
+
+PAP（Policy Administration Point，策略管理点）可以理解成：Policy 在哪里被创建、修改、组织和维护。
+
+例如权限后台配置：
+
+~~~text
+Role = Editor
+
+Permissions
+✓ project.read
+✓ project.update
+✕ project.delete
+~~~
+
+或者代码配置：
+
+~~~text
+Editor
+→ project.read
+→ project.update
+~~~
+
+这些都属于 Policy Administration。
+
+PAP 回答的是：
+
+~~~text
+“系统当前有哪些规则？”
+~~~
+
+而不是：
+
+~~~text
+“Alice 现在能不能删除 Project 100？”
+~~~
+
+后一个问题属于 PDP。
+
+#### <u>3. PDP 负责根据 Policy 计算这一次 Request 的 Allow / Deny</u>
+
+PDP（Policy Decision Point，策略决策点）负责真正计算 Authorization Decision。
+
+NIST 将 PDP 描述为：根据适用的 Digital Policy 计算访问决策的组件。
+
+假设 Request：
+
+~~~text
+Subject
+Alice
+
+Resource
+Project 100
+
+Action
+delete
+
+Context
+tenant = A
+~~~
+
+PDP 获取这些信息以后执行 Policy：
+
+~~~text
+Alice 是 Project Owner？
+      ↓
+No
+
+Alice 是 Organization Admin？
+      ↓
+Yes
+~~~
+
+于是：
+
+~~~text
+Decision = Allow
+~~~
+
+可以把 PDP 理解成一个权限计算器：
+
+~~~text
+canAccess(
+  Subject,
+  Resource,
+  Action,
+  Context
+)
+      ↓
+Allow / Deny
+~~~
+
+它负责给出答案，但不负责真正执行 deleteProject。
+
+#### <u>4. PEP 负责把 PDP 的结果真正落实到业务边界</u>
+
+PEP（Policy Enforcement Point，策略执行点）是实际保护 Resource 的位置。
+
+NIST 对 PEP 的定义强调：它负责执行 PDP 给出的访问控制决策。
+
+例如：
+
+~~~text
+DELETE /projects/100
+        ↓
+PEP 发起 Authorization Check
+        ↓
+PDP
+        ↓
+Decision = Deny
+        ↓
+PEP
+        ↓
+403 Forbidden
+        ↓
+deleteProject()
+不执行
+~~~
+
+如果 PDP 返回 Allow：
+
+~~~text
+Decision = Allow
+        ↓
+PEP 放行
+        ↓
+Business Operation
+~~~
+
+所以：
+
+~~~text
+PDP
+负责“算”
+
+
+PEP
+负责“挡”
+~~~
+
+如果只有 PDP 得出 Deny，但业务代码继续执行 deleteProject，那么整个权限系统仍然没有意义。
+
+#### <u>5. 一次真实 Authorization Request 可以把 PAP、PDP、PEP 串起来</u>
+
+先由 PAP 管理：
+
+~~~text
+Policy
+
+project.delete
+允许：
+Project Owner
+OR
+Organization Admin
+~~~
+
+然后 Alice 请求：
+
+~~~text
+DELETE /projects/100
+~~~
+
+完整链路：
+
+~~~text
+Request
+  ↓
+Authentication / Session Validation
+  ↓
+Current Subject = Alice
+  ↓
+Load Project 100
+  ↓
+PEP
+发起权限判断
+  ↓
+PDP
+读取 / 执行 Policy
+  ↓
+判断：
+Alice 是 Owner？
+Alice 是 Org Admin？
+  ↓
+Allow / Deny
+  ↓
+PEP
+真正放行或阻断
+  ↓
+Business Logic
+~~~
+
+可以用三个问题记住：
+
+~~~text
+PAP
+“规则是什么？”
+
+
+PDP
+“按照这些规则，
+这一次能不能？”
+
+
+PEP
+“如果不能，
+我真的把请求挡下来。”
+~~~
+
+OWASP Authorization Patterns Cheat Sheet 也采用类似职责划分：PAP 管理规则，PDP 评估 Policy，PEP 保护操作并执行 Decision。
+
+#### <u>6. PAP / PDP / PEP 和 RBAC / ABAC / ReBAC 属于两个不同维度</u>
+
+这是最容易混淆的地方。
+
+PAP / PDP / PEP 回答：
+
+~~~text
+Authorization System
+内部职责怎么拆？
+~~~
+
+RBAC / ABAC / ReBAC / ACL 回答：
+
+~~~text
+PDP 到底依据什么权限事实计算？
+~~~
+
+例如 PDP 可以使用 RBAC：
+
+~~~text
+Alice.role = Editor
+      ↓
+Editor has project.update
+      ↓
+Allow
+~~~
+
+也可以使用 ABAC：
+
+~~~text
+subject.department
+==
+resource.department
+
+AND
+
+deviceTrusted = true
+      ↓
+Allow
+~~~
+
+也可以使用 ReBAC：
+
+~~~text
+Alice
+member_of
+Project 100
+      ↓
+Allow
+~~~
+
+还可以组合 ACL。
+
+所以整体结构更准确地画成：
+
+~~~text
+                Authorization Architecture
+
+PAP
+管理 Policy
+        ↓
+
+PEP
+拦截受保护操作
+        ↓
+
+PDP
+根据权限事实计算 Allow / Deny
+│
+├── ACL
+├── RBAC
+├── ABAC
+└── ReBAC
+        ↓
+
+PEP
+执行结果
+        ↓
+Business Operation
+~~~
+
+不要把 PAP、PDP、PEP、RBAC、ABAC、ReBAC 理解成六种并列权限模型。
+
+#### <u>7. 为什么系统小的时候不需要强行拆开</u>
+
+例如只有：
+
+~~~text
+Project Owner
+才允许 Update
+~~~
+
+直接：
+
+~~~text
+if (project.ownerId !== user.id) {
+  deny
+}
+~~~
+
+已经非常清楚。
+
+这里 Policy、Decision、Enforcement 虽然写在一起，但复杂度很低。
+
+如果此时为了“架构完整”立刻引入 Policy Database、Independent PDP Service、External Policy Engine、Complex PAP，反而会增加不必要复杂度。
+
+真正值得拆分的信号通常是：
+
+~~~text
+权限规则越来越多
+
+同一规则散落在多个 Service
+
+不同接口出现不同版本的权限判断
+
+新增 API 容易漏掉 Authorization
+
+需要统一审计和解释 Decision
+
+需要多个服务共享同一套 Policy
+~~~
+
+此时才需要逐步把 Policy Definition、Policy Decision、Policy Enforcement 从大量零散 if 中抽离出来。
+
+#### <u>8. PEP 仍然应该尽量靠近真正被保护的 Resource</u>
+
+即使已经有统一 PDP，也不能认为“有一个中央权限服务，业务 Service 就不用关心 Enforcement”。
+
+PEP 最终仍然要确保 Business Operation 不会绕过 Decision。
+
+例如：
+
+~~~text
+Guard
+可以做：
+是否登录
+是否有全局 Admin Role
+
+        ↓
+
+Project Service
+仍然需要在修改 Project 100 前
+确保 Resource-level Authorization 已经完成
+~~~
+
+OWASP 建议 Authorization Enforcement 尽量靠近被保护的 Resource，并对每个受保护请求执行权限验证。
+
+因此这一节最终可以收束成：
+
+~~~text
+PAP
+管理规则
+      ↓
+PDP
+计算结果
+      ↓
+PEP
+执行结果
+~~~
+
+它们解决的是“权限系统内部职责如何组织”；至于 PDP 使用 Role、Attribute、Relationship 还是 ACL，则属于另一层权限模型选择。
 ### 【Deny by Default 与 Least Privilege 是访问控制基础约束】
 
 Deny by Default：
