@@ -965,212 +965,7 @@ Identity / Scope
 
 ---
 
-## 11. Browser Monitor 的管理后台把认证、Session、CSRF 与资源授权串成一条完整实现
-
-这一节只映射项目真实实现，不把项目方案当成行业唯一标准。
-
-### 【登录成功后创建随机 Session Token，并同时建立数据库与 Redis 状态】
-
-当前 platform/apps/api/src/auth/auth.service.ts 的登录流程：
-
-~~~text
-email + password
-      ↓
-查询 users
-      ↓
-verifyPassword()
-      ↓
-检查 email_verified_at
-      ↓
-createOpaqueToken("bm_session_")
-      ↓
-hashToken(token)
-      ↓
-生成 csrfToken
-      ↓
-写 user_sessions
-      ↓
-写 Redis session:{tokenHash}
-      ↓
-返回 token + user + expiresAt
-~~~
-
-随后 auth.controller.ts 设置：
-
-~~~ts
-reply.setCookie('bm_session', session.token, {
-  httpOnly: true,
-  secure: this.config.NODE_ENV === 'production',
-  sameSite: 'lax',
-  path: '/',
-  expires: session.expiresAt,
-});
-~~~
-
-因此 Browser 保存原始随机 Session Token，而服务端持久记录使用 Token Hash。
-
-### 【当前在线 Session Authentication 实际以 Redis 为读取路径】
-
-SessionGuard 的请求路径是：
-
-~~~text
-request.cookies.bm_session
-        ↓
-hashToken(token)
-        ↓
-Redis GET session:{hash}
-        ↓
-没有 → 401 session_expired
-有
-        ↓
-JSON.parse
-        ↓
-request.auth = AuthenticatedUser
-~~~
-
-当前 Guard 在 Redis Miss 时不会继续查询 PostgreSQL 的 user_sessions 回源。
-
-因此：
-
-~~~text
-PostgreSQL 中仍存在 Session Row
-但 Redis Session Key 丢失
-        ↓
-当前请求仍然会被判定为 Session Expired
-~~~
-
-这意味着 Redis 在当前实现中不是普通“可丢失后回源”的 Cache，而是在线认证关键状态。Redis 数据丢失会让在线用户重新登录，这是当前设计的可用性取舍。
-
-### 【数据库 Session Row 仍然承担持久关系和批量撤销】
-
-user_sessions 包含：
-
-~~~text
-user_id
-token_hash
-csrf_token
-expires_at
-last_seen_at
-created_at
-~~~
-
-Logout 同时删除 Redis Key 与 Database Row。
-
-Password Reset 成功后，项目会按 user_id 删除全部 user_sessions，并根据返回的 token_hash 批量删除 Redis Session Keys。
-
-所以数据库能够支持：
-
-~~~text
-User
-  ↓
-找到全部 Session
-  ↓
-安全事件
-  ↓
-批量撤销
-~~~
-
-### 【Web Client 把 Session Cookie 与 CSRF Token 分成两个传递通道】
-
-platform/apps/web/src/api/client.ts 的实际行为：
-
-~~~text
-Session Token
-        ↓
-HttpOnly Cookie
-        ↓
-credentials: include
-        ↓
-Browser 自动发送
-
-
-CSRF Token
-        ↓
-Login / me Response
-        ↓
-sessionStorage
-        ↓
-JavaScript 读取
-        ↓
-状态修改请求
-        ↓
-x-csrf-token Header
-~~~
-
-服务端 CsrfGuard 再把 Header 与 request.auth.csrfToken 比较。
-
-因此 Session Credential 和 CSRF Proof 没有放在同一个自动发送通道里。
-
-### 【Project 授权使用认证后的 userId 与请求资源 ID 查询真实成员关系】
-
-ProjectsService.requireAccess() 查询：
-
-~~~text
-projects
-JOIN project_members
-        ↓
-WHERE
-project_id = Requested Project
-AND
-user_id = Authenticated User
-~~~
-
-只有查询到成员关系才返回访问结果。
-
-requireOwner() 则继续：
-
-~~~text
-requireAccess()
-      ↓
-access.role === owner ?
-      │
-      ├── No → 403
-      └── Yes → Continue
-~~~
-
-Role 因此来自 Server-side Data，而不是相信前端提交的 role 字段。
-
-### 【当前 Password Hash 选用了 scrypt，但 Cost 参数仍需要生产安全评审】
-
-platform/packages/shared/src/crypto.ts 当前使用：
-
-~~~text
-Random 16-byte Salt
-        ↓
-node:crypto scrypt(password, salt, 64)
-        ↓
-保存 scrypt + salt + derivedKey
-~~~
-
-算法方向属于专门 Password KDF，并使用随机 Salt。
-
-但代码没有显式传入 scrypt Cost 参数。Node.js 当前文档给出的默认值是：
-
-~~~text
-N / cost = 16384
-r        = 8
-p        = 1
-~~~
-
-[[7]](https://nodejs.org/api/crypto.html)
-
-OWASP 当前 Password Storage Cheat Sheet 对 scrypt 给出的最低推荐组合之一是：
-
-~~~text
-N = 2^17
-r = 8
-p = 1
-~~~
-
-[[3]](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
-
-因此不能简单用“项目使用了 scrypt”推出“当前参数已经达到最新生产安全基线”。
-
-更准确的工程处理应该是：显式选择 Cost 参数，在目标服务器上做登录延迟与资源消耗 Benchmark，再把安全参数固化为可审查配置。
-
----
-
-## 12. 不同调用者需要与自身能力匹配的凭据和授权方式
+## 11. 不同调用者需要与自身能力匹配的凭据和授权方式
 
 身份系统设计不应该先问：
 
@@ -1190,23 +985,19 @@ p = 1
 Credential 泄露后的权限范围应该多大？
 ~~~
 
-Browser Monitor 当前存在三类不同调用者：
+不同调用者的身份能力并不相同，例如：
 
-| 调用者 | 操作 | 当前安全模型 |
+| 调用者 | 典型场景 | 更适合的安全模型 |
 | --- | --- | --- |
-| 管理后台登录用户 | 查看和管理 Project | Session Cookie + CSRF + Project Membership / Role |
-| 业务页面 SDK | 上传遥测事件 | Ingestion Key + Origin Check + Rate Limit |
-| 内部监控调用方 | 读取 Internal Endpoint | 网络入口访问限制 |
+| 人类用户浏览器 | 管理后台、个人中心 | Session Cookie / Token + CSRF + Resource Authorization |
+| 公开 Browser SDK | 遥测、埋点、公开写入能力 | Scope 受限的 Public Write Key + Origin / Rate Limit 等约束 |
+| Server-to-Server Client | 内部服务调用、自动化任务 | Service Credential、mTLS、OAuth Client Credential 或私网边界 |
 
-这里真正可迁移的原则是：
-
-> Caller 的信任能力不同，Credential 和 Authorization Model 也应该不同。
-
-例如放在公开 Browser SDK 中的写入 Key 天然可被终端用户看到，因此不能把它当作只有 Server 知道的管理员 Secret。它需要被限制在“只能写入遥测”这一能力范围，并配合 Origin、Rate Limit 等其他边界。
+真正需要先判断的是 Caller 的信任能力、凭据保存能力、泄露后的权限范围和撤销需求，再选择 Credential 与 Authorization Model。公开浏览器环境中可以看到的 Key 不能被当成只有服务器知道的高权限 Secret。
 
 ---
 
-## 13. 安全评审应该沿失败路径检查整条链，而不是只检查有没有某个配置项
+## 12. 安全评审应该沿失败路径检查整条链，而不是只检查有没有某个配置项
 
 ### 【数据库泄露以后要分别判断 Password、Session 和一次性 Token 的后果】
 
@@ -1319,7 +1110,7 @@ Resource Authorization
 
 ---
 
-## 14. 面试与答辩需要能够从一次请求完整解释身份和权限
+## 13. 面试与架构说明需要能够从一次请求完整解释身份和权限
 
 如果被问“用户登录以后，后续请求服务器怎么知道他是谁”，回答应沿真实执行链展开：
 
@@ -1373,7 +1164,7 @@ Authorization
 执行当前 Action
 ~~~
 
-项目答辩还需要能够回答具体取舍：
+工程评审还需要能够回答具体取舍：
 
 ~~~text
 为什么 Session 查 Redis？
@@ -1382,14 +1173,14 @@ Redis Miss 是否回源？
 为什么 Password 与随机 Token 使用不同 Hash 思路？
 为什么 member 能读取但不能执行 owner 操作？
 为什么 Password Reset 后要撤销旧 Session？
-当前 scrypt 参数是否显式达到安全基线？
+Password Hash 参数是否显式达到目标安全基线？
 ~~~
 
 能够解释这些因果和失败路径，才说明真正理解身份与访问控制系统，而不是只会复述 Cookie、Session、CSRF、RBAC 几个术语。
 
 ---
 
-## 15. 参考资料
+## 14. 参考资料
 
 1. OWASP Cheat Sheet Series, Authentication Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
 2. OWASP Cheat Sheet Series, Session Management Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
@@ -1406,13 +1197,6 @@ Redis Miss 是否回源？
 - [浏览器网络面试题](./浏览器网络面试题.md)
 - [NestJS 快速上手](./NestJS快速上手.md)
 
-### 【Browser Monitor 项目实践】
+### 【实战分析入口】
 
-- [Authentication Controller](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/api/src/auth/auth.controller.ts)
-- [Authentication Service](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/api/src/auth/auth.service.ts)
-- [Session Guard](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/api/src/auth/session.guard.ts)
-- [CSRF Guard](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/api/src/auth/csrf.guard.ts)
-- [Project Authorization Service](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/api/src/projects/projects.service.ts)
-- [Web API Client](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/web/src/api/client.ts)
-- [Cryptography Helpers](https://github.com/cxDlogver/browser-monitor/blob/main/platform/packages/shared/src/crypto.ts)
-- [Database Schema](https://github.com/cxDlogver/browser-monitor/blob/main/platform/packages/database/src/schema.ts)
+- [Browser Monitor：账号认证、Session 与 CSRF 源码实战分析](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E8%B4%A6%E5%8F%B7%E8%AE%A4%E8%AF%81Session%E4%B8%8ECSRF%E6%BA%90%E7%A0%81%E5%AE%9E%E6%88%98%E5%88%86%E6%9E%90.md)
