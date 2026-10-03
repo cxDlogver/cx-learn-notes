@@ -351,6 +351,24 @@ Runtime command
 
 CMD 仍然保留在 Image 中，其他没有覆盖的 Container 仍然可以使用它。[[5]](https://docs.docker.com/reference/compose-file/services/)
 
+### 【异步 Worker 是 Runtime Service 角色而不是 Worker Thread】
+
+服务端异步体系中的 Worker Process / Worker Service 可以作为独立 Container 或 Compose Service 运行；它描述的是系统级后台任务消费者。Node.js Worker Thread 则是单个 Process 内的并行执行机制，两者不属于同一抽象层。
+
+~~~text
+Queue / Job Store
+    ↓
+Worker Service
+    ↓
+Container / Process
+
+Worker Service 内部
+    ↓
+必要时还可以使用 Worker Thread
+~~~
+
+Task Lifecycle、Retry、Idempotency 与 Outbox 继续阅读 [服务端异步任务与消息处理体系](./服务端异步任务与消息处理体系.md)。Docker 本文只负责这些运行单元如何进入 Image / Container / Compose Runtime。
+
 ### 【One-shot Job 与 Long-running Service 来自主进程生命周期】
 
 Compose 没有 `type: job` 这样的类型字段。真正区别首先来自 Main Process：
