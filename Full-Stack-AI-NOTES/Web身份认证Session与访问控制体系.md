@@ -637,6 +637,90 @@ Client-side CSRF
 
 OWASP 因此把 SameSite 作为 Defense in Depth（纵深防御）的一部分。[[5]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
 
+### 【GET 通常不要求 Synchronizer Token，前提是它保持 Safe Method 的只读语义】
+
+Synchronizer Token 的主要目标是阻止攻击者借已登录 Browser 发起会产生业务副作用的请求，因此保护重点通常是 POST、PUT、PATCH、DELETE 等状态修改操作。
+
+RFC 9110 把 GET、HEAD、OPTIONS、TRACE 定义为 Safe Method：从协议语义上，Client 不应通过这些方法请求服务器改变目标资源状态。[[7]](https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods)
+
+因此常见 CSRF 检查会形成：
+
+~~~text
+GET / HEAD / OPTIONS
+        ↓
+按照 Safe Method 语义只读取
+        ↓
+通常不要求 CSRF Token
+
+
+POST / PUT / PATCH / DELETE
+        ↓
+可能改变服务端状态
+        ↓
+要求 CSRF Token
+~~~
+
+如果一个接口设计成：
+
+~~~text
+GET /delete-account
+GET /transfer-money
+~~~
+
+问题首先是它违反了 Safe Method 语义。即使增加 CSRF Token，也不应该把“用 GET 修改状态”当作正常设计。
+
+### 【GET 不要求 CSRF Token 不等于跨站读取完全没有信息泄露风险】
+
+这里必须区分两个问题：
+
+~~~text
+CSRF
+重点：
+攻击者借用户身份执行请求
+
+
+Cross-origin Read / XS-Leak
+重点：
+攻击者能否从跨站响应推断或读取信息
+~~~
+
+Same-Origin Policy（同源策略）通常允许一部分 Cross-origin Write、Navigation 和 Embedding，但限制攻击页面 JavaScript 直接读取另一个 Origin 的 Response Body。MDN 明确把跨源行为区分为：Cross-origin writes 通常允许、Cross-origin embedding 通常允许、Cross-origin reads 通常受限。[[8]](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy)
+
+因此典型跨站 GET：
+
+~~~text
+evil.example
+        ↓
+GET account.example/profile
+        ↓
+Browser 可能发送请求
+        ↓
+account.example 返回敏感内容
+        ↓
+evil.example JavaScript
+通常不能直接读取 Response Body
+~~~
+
+但“不能直接读正文”并不代表完全没有信息泄露。跨源 Embedding 仍可能通过：
+
+~~~text
+load / error
+图片尺寸
+资源是否存在
+Redirect
+Timing
+Cache
+Iframe 行为
+~~~
+
+泄露部分状态，这类问题通常称为 XS-Leaks（Cross-Site Leaks，跨站侧信道泄露）。
+
+因此安全边界应理解为：
+
+> Synchronizer Token 主要解决伪造状态修改请求；敏感 GET 的跨站读取与侧信道泄露，还需要依靠 Same-Origin Policy、正确 CORS、SameSite Cookie、CORP、CSP / frame-ancestors、Fetch Metadata 等机制共同治理。
+
+另外，CSRF Token 本身不应该放进 GET URL 或 Query String。OWASP 明确提醒，URL 中的 Token 可能进入 Browser History、日志、网络诊断工具和 Referer，反而扩大 Token 泄露面。[[5]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
+
 ---
 
 ## 7. Authorization 在身份认证之后重新判断当前用户能否对当前资源执行当前操作
@@ -1188,7 +1272,8 @@ Password Hash 参数是否显式达到目标安全基线？
 4. MDN, Set-Cookie header：https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
 5. OWASP Cheat Sheet Series, Cross-Site Request Forgery Prevention Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
 6. OWASP Cheat Sheet Series, Authorization Cheat Sheet：https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
-7. Node.js Documentation, crypto.scrypt：https://nodejs.org/api/crypto.html
+7. RFC 9110, HTTP Semantics — Safe Methods：https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
+8. MDN, Same-origin policy：https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
 
 ### 【相关知识文档】
 
