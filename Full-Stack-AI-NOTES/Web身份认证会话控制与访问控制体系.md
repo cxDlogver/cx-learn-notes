@@ -2084,6 +2084,88 @@ https://www.nist.gov/publications/guide-attribute-based-access-control-abac-defi
 
 ABAC 适合规则动态、Context 较多的系统，但 Policy、Attribute Source、Debug 与测试成本也更高。
 
+
+ABAC 最容易被忽略的问题是：Attribute 不是凭空存在的。
+
+例如 Policy 写：
+
+~~~text
+subject.department
+==
+resource.department
+~~~
+
+Server 必须继续回答：
+
+~~~text
+subject.department
+从哪里来？
+
+resource.department
+从哪里来？
+
+这些值能不能相信？
+~~~
+
+Subject Attribute 应来自可信来源，例如：
+
+~~~text
+User Profile
+HR Directory
+Identity Provider
+Organization Membership
+~~~
+
+而不是直接相信 Client Body：
+
+~~~text
+department = finance
+~~~
+
+Resource Attribute 应由 Server 从 Resource Metadata 中得到。
+
+Environment Attribute 则可能由：
+
+~~~text
+Request Time
+Network Zone
+Device Trust Service
+Risk Engine
+~~~
+
+实时计算。
+
+因此一次真正的 ABAC Decision 更像：
+
+~~~text
+Authentication
+      ↓
+得到 Subject ID
+      ↓
+Load Subject Attributes
+      ↓
+Load Resource Attributes
+      ↓
+Collect Environment Context
+      ↓
+Policy Evaluation
+      ↓
+Allow / Deny
+~~~
+
+系统越复杂，就越需要处理：
+
+~~~text
+Attribute Source
+Attribute Freshness
+Missing Attribute
+Policy Conflict
+Audit Explainability
+Test Matrix
+~~~
+
+所以 ABAC 的代价不是“多写几个 if”，而是整个 Policy Data Pipeline 都会变复杂。
+
 ### 【ReBAC 用关系图表达 Owner、Member、Parent 等资源关系】
 
 ReBAC（Relationship-Based Access Control）适合：
