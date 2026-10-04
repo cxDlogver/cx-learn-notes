@@ -486,261 +486,6 @@ Lease 过期或 Broker Redelivery 后：
 
 因此安全消费的下一层问题不是“怎样彻底避免 Redelivery”，而是“Redelivery 发生时怎样仍然保持业务正确”。
 
-## 5. 重复执行正确性依靠 Delivery Semantics 与 Idempotency 共同建立
-
-### 【消息交付语义与业务 Side Effect（副作用）的执行语义必须分层】
-
-常见 Delivery Semantics（交付语义）有三种，它们**只描述「消息系统」这一层如何投递**，并不保证业务副作用只发生一次：
-
-| 语义 | 直观含义 | 主要风险 |
-| --- | --- | --- |
-| At-most-once（最多一次） | 最多投递一次，发送失败就直接丢弃，不再重试 | Lost Work（工作丢失） |
-| At-least-once（至少一次） | 至少尝试投递一次，失败会重试，可能多次送达 | Duplicate Processing（重复处理） |
-| Exactly-once Capability（精确一次能力） | 某些系统在「特定边界内」提供一次性处理能力 | 不能自动外推到所有外部 Side Effect（副作用） |
-
-逐条展开，看清每种语义下风险到底是怎么产生的：
-
-- **At-most-once（最多一次）**：生产者发出后若 ack 丢失、或 Broker 在持久化前宕机，这条消息就直接被丢弃，且不再重试。后果是任务**可能永远不执行（Lost Work）**。它适合「丢了也无所谓」的场景，例如指标打点、非关键日志；但绝不能用在扣款、发券这类不能丢失的业务上。
-
-- **At-least-once（至少一次）**：Broker 先持久化再向生产者确认，消费者处理完后回 ack；若消费者在「处理成功」与「回 ack」之间崩溃，Broker 会认为没收到确认而重新投递，于是**同一条消息被处理了多次（Duplicate Processing）**。这是 Kafka / RabbitMQ 等绝大多数 Broker 的默认（也是唯一能在不加分布式事务前提下稳定实现）的语义。
-
-- **Exactly-once Capability（精确一次能力）**：以 Kafka 为例，靠「幂等生产者 + 事务 + 流处理事务」做到在 **Kafka 自己管辖的边界内**读—处理—写是原子的，对外表现为「恰好一次」。但关键点在于——这个边界**只覆盖 Broker 拥有事务的那一段**；一旦你的处理逻辑要写另一个数据库、调支付网关、发邮件，这个保证就**到此为止**，因为 Broker 无法跨系统协调提交。
-
-  场景：用户注册后，发一封欢迎邮件。
-
-  - **情况一（在边界内）**：处理逻辑是「从 `user-registered` 主题读 → 往 `email-queued` 主题写」。这两步都在 Kafka 里，Kafka 可以把它们放进**同一个事务**。中途崩溃，Kafka 把读和写一起回滚，事件既不丢也不重，看起来就是「恰好一次」。
-
-  - **情况二（出了边界）**：处理逻辑改成「从 `user-registered` 主题读 → **调用外部邮件 API 发信**」。这时候「发邮件」这一步已经不在 Kafka 的事务里了，因为 Kafka 管不了别人的系统。于是两种尴尬都会发生：
-    - 先提交了 Kafka 事务（不会再重投），再去调邮件 API，结果 API 调完、记录「已发」前崩溃 → 重启后 Kafka 不重投 → **邮件永远没发出（丢失）**；
-    - 先调邮件 API 且成功了，但提交 Kafka 事务前崩溃 → 重启后 Kafka 重投这条事件 → **邮件 API 又被调了一次（用户收到两封）**。
-
-真正容易产生误解的正是最后一项：它说的是**消息层的能力边界**，而不是整条业务链路。把上面三层叠起来看：
-
-~~~text
-Messaging Layer（消息层）
-↓
-某种 Delivery Guarantee（交付保证：at-most / at-least / exactly-once）
-
-Application Layer（应用层）
-↓
-Database / Payment / Email / External API Side Effect（数据库/支付/邮件/外部 API 副作用）
-↓
-仍然存在 Transaction Boundary（事务边界）、Crash Window（崩溃窗口）和外部系统自身语义
-~~~
-
-为什么叠起来之后「精确一次」会破功，核心有两处断点：
-
-1. **Crash Window（崩溃窗口）**：从「Broker 把消息交给消费者」到「副作用真正提交」之间，进程随时可能崩溃。恢复后消息被重投，副作用就跑了第二次。消息层的交付保证管不到这个窗口。
-2. **外部系统自身语义**：支付扣款、邮件发送这类外部 Side Effect 由对方系统决定成败与可重入性，Broker 既不知道、也无法回滚。即便消息只投了一次，外部调用也可能因超时重试而执行多次。
-
-因此「消息系统支持 Exactly Once（精确一次）」**不能直接推导为**「整个分布式业务的副作用绝对只发生一次」。工程上的正确结论见下一节：既然重复交付无法从根上消除，就应当把**消费端设计成幂等（Idempotent）**，用业务主键或消息去重表来吸收重复，而不是寄希望于端到端的恰好一次。
-
-在通用工程设计中，更稳妥的模型通常是：
-
-~~~text
-任务可能重复交付
-        ↓
-Consumer 接受 Redelivery
-        ↓
-业务操作设计为 Idempotent
-        ↓
-重复尝试不产生额外错误副作用
-~~~
-
-AWS Transactional Outbox 文档也明确提醒 Outbox Processor 可能发送重复消息，并建议 Consumer 设计为 Idempotent。[[4]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
-
-### 【Idempotency 保护的是业务结果，不只是“代码没有报错”】
-
-幂等（Idempotency）：同一个逻辑操作重复执行多次，不应该因为重复执行产生额外的业务结果。
-
-例如：
-
-~~~text
-Task: charge order-123
-
-第一次执行
-↓
-已经成功扣款
-
-Worker Crash
-↓
-Task Redelivery
-
-第二次执行
-↓
-不能再次扣款
-~~~
-
-常见实现手段包括：
-
-| 方法 | 适用思想 |
-| --- | --- |
-| Idempotency Key | 同一个逻辑请求共享稳定标识 |
-| Unique Constraint | 由数据库阻止重复业务记录 |
-| Processed Message Record | 记录某个 Message / Task 是否已处理 |
-| State Check | 只允许合法状态转换，例如 pending → paid |
-| Version / Sequence | 只接受更新版本，拒绝旧结果覆盖新状态 |
-
-这些手段可以组合。真正需要判断的是：
-
-~~~text
-如果同一个 Task 在任何时间再次出现
-它可能重复产生哪些 Side Effect？
-系统在哪一层阻止重复结果？
-~~~
-
-### 【并发与顺序要求会限制 Worker 并行度】
-
-异步系统还可能面对：
-
-~~~text
-Task A: Order 1 version 1
-Task B: Order 1 version 2
-~~~
-
-如果 B 先完成、A 后完成，旧结果可能覆盖新状态。
-
-因此某些业务需要：
-
-~~~text
-Per-key Ordering
-Sequence Check
-Version Check
-Partition by Business Key
-~~~
-
-而不是简单把 Worker Concurrency 无限增大。
-
-顺序保证通常只应该缩小到真正需要的业务 Key 范围，否则全局串行会直接牺牲吞吐。
-
-## 6. 失败恢复通过 Retry、Backoff 与 Dead Letter 建立受控闭环
-
-### 【Retry 之前先区分 Transient Failure 与 Permanent Failure】
-
-并不是所有失败都值得重试。
-
-~~~text
-Failure
-│
-├── Transient Failure
-│   ├── Network Timeout
-│   ├── Temporary Unavailable
-│   ├── Rate Limit
-│   └── Short-lived Dependency Failure
-│
-└── Permanent / Business Failure
-    ├── Invalid Input
-    ├── Permission Denied
-    ├── Unsupported State
-    └── Permanent Conflict
-~~~
-
-Transient Failure 通常适合 Retry。
-
-Permanent Failure 如果不改变输入、代码或业务状态，重复执行往往只会重复失败，应尽早进入 Terminal Failure、人工处理或明确的业务冲突流程。
-
-因此：
-
-~~~text
-Retry
-不是
-catch 后再执行一次
-
-而是
-Failure Classification
-+
-Retry Policy
-~~~
-
-### 【Retry Policy 同时决定次数、持续时间与下一次执行时间】
-
-完整 Retry Policy 至少需要回答：
-
-~~~text
-什么错误可以 Retry？
-最多尝试多少次？
-总共允许重试多久？
-下一次什么时候执行？
-最大等待多久？
-服务端是否提供 Retry-After？
-最终失败去哪里？
-~~~
-
-Google Cloud Tasks 的 RetryConfig 也把 maxAttempts、maxRetryDuration、minBackoff、maxBackoff、maxDoublings 等作为独立配置，说明 Retry 本身就是一套策略，而不是一个固定循环。[[7]](https://cloud.google.com/tasks/docs/reference/rest/v2/RetryConfig)
-
-### 【Exponential Backoff 与 Jitter 防止故障期间形成 Retry Storm】
-
-如果下游已经故障，而大量 Worker 立即重复请求：
-
-~~~text
-Dependency Failure
-↓
-Immediate Retry
-↓
-More Load
-↓
-Dependency 更难恢复
-↓
-More Failure
-↓
-More Retry
-~~~
-
-就会形成 Retry Storm。
-
-Exponential Backoff（指数退避）通过逐渐拉大重试间隔降低持续压力。
-
-Jitter（抖动）再给等待时间加入随机性，避免大量任务在完全相同的时间点一起恢复请求。
-
-~~~text
-Retry Delay
-=
-Backoff
-+
-Jitter
-+
-Maximum Delay Boundary
-~~~
-
-AWS Builders' Library 的 Timeouts, retries, and backoff with jitter 也强调 Retry 会放大下游负载，并使用 Backoff 与 Jitter 降低同步重试和过载风险。[[8]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
-
-### 【Dead Letter 是自动恢复失败后的终止状态与人工入口】
-
-自动 Retry 不能无限持续。
-
-~~~text
-Task
-↓
-Retry
-↓
-Retry Budget Exhausted
-↓
-Dead Letter / Terminal Failed
-↓
-Inspect
-↓
-Repair
-↓
-Replay / Discard
-~~~
-
-Dead Letter Queue / Dead Letter State 不只是“另一个 Retry Queue”，它表示：
-
-> 当前自动恢复策略已经无法继续，需要保存失败事实并进入诊断或人工决策。
-
-至少应该保留能够定位问题的信息：
-
-~~~text
-Task / Message ID
-Attempt Count
-Last Failure Reason
-Failed At
-Correlation / Trace Context
-必要的 Payload Reference
-~~~
-
-Replay 之前必须先确认导致失败的代码、数据或依赖已经被修复；否则人工 Replay 只是在重新制造同一个失败。
-
 ## 4. 任务承载基础设施决定任务如何存储、分发与扩展
 
 前面三章先回答了三个问题：**为什么要异步、任务怎样可靠产生、Worker 怎样安全拥有处理权。** 下一步才进入基础设施选择：这些 Task / Event 到底由业务数据库自己承载，还是交给独立 Message Broker（消息代理）或 Event Streaming Platform（事件流平台）。
@@ -1490,6 +1235,261 @@ Broker
 ~~~
 
 因此 Outbox 与 Broker 不是互斥替代关系：**Outbox 解决 Database → Broker 的可靠交接，Broker 解决 Message / Event → Consumers 的可靠分发。**
+
+## 5. 重复执行正确性依靠 Delivery Semantics 与 Idempotency 共同建立
+
+### 【消息交付语义与业务 Side Effect（副作用）的执行语义必须分层】
+
+常见 Delivery Semantics（交付语义）有三种，它们**只描述「消息系统」这一层如何投递**，并不保证业务副作用只发生一次：
+
+| 语义 | 直观含义 | 主要风险 |
+| --- | --- | --- |
+| At-most-once（最多一次） | 最多投递一次，发送失败就直接丢弃，不再重试 | Lost Work（工作丢失） |
+| At-least-once（至少一次） | 至少尝试投递一次，失败会重试，可能多次送达 | Duplicate Processing（重复处理） |
+| Exactly-once Capability（精确一次能力） | 某些系统在「特定边界内」提供一次性处理能力 | 不能自动外推到所有外部 Side Effect（副作用） |
+
+逐条展开，看清每种语义下风险到底是怎么产生的：
+
+- **At-most-once（最多一次）**：生产者发出后若 ack 丢失、或 Broker 在持久化前宕机，这条消息就直接被丢弃，且不再重试。后果是任务**可能永远不执行（Lost Work）**。它适合「丢了也无所谓」的场景，例如指标打点、非关键日志；但绝不能用在扣款、发券这类不能丢失的业务上。
+
+- **At-least-once（至少一次）**：Broker 先持久化再向生产者确认，消费者处理完后回 ack；若消费者在「处理成功」与「回 ack」之间崩溃，Broker 会认为没收到确认而重新投递，于是**同一条消息被处理了多次（Duplicate Processing）**。这是 Kafka / RabbitMQ 等绝大多数 Broker 的默认（也是唯一能在不加分布式事务前提下稳定实现）的语义。
+
+- **Exactly-once Capability（精确一次能力）**：以 Kafka 为例，靠「幂等生产者 + 事务 + 流处理事务」做到在 **Kafka 自己管辖的边界内**读—处理—写是原子的，对外表现为「恰好一次」。但关键点在于——这个边界**只覆盖 Broker 拥有事务的那一段**；一旦你的处理逻辑要写另一个数据库、调支付网关、发邮件，这个保证就**到此为止**，因为 Broker 无法跨系统协调提交。
+
+  场景：用户注册后，发一封欢迎邮件。
+
+  - **情况一（在边界内）**：处理逻辑是「从 `user-registered` 主题读 → 往 `email-queued` 主题写」。这两步都在 Kafka 里，Kafka 可以把它们放进**同一个事务**。中途崩溃，Kafka 把读和写一起回滚，事件既不丢也不重，看起来就是「恰好一次」。
+
+  - **情况二（出了边界）**：处理逻辑改成「从 `user-registered` 主题读 → **调用外部邮件 API 发信**」。这时候「发邮件」这一步已经不在 Kafka 的事务里了，因为 Kafka 管不了别人的系统。于是两种尴尬都会发生：
+    - 先提交了 Kafka 事务（不会再重投），再去调邮件 API，结果 API 调完、记录「已发」前崩溃 → 重启后 Kafka 不重投 → **邮件永远没发出（丢失）**；
+    - 先调邮件 API 且成功了，但提交 Kafka 事务前崩溃 → 重启后 Kafka 重投这条事件 → **邮件 API 又被调了一次（用户收到两封）**。
+
+真正容易产生误解的正是最后一项：它说的是**消息层的能力边界**，而不是整条业务链路。把上面三层叠起来看：
+
+~~~text
+Messaging Layer（消息层）
+↓
+某种 Delivery Guarantee（交付保证：at-most / at-least / exactly-once）
+
+Application Layer（应用层）
+↓
+Database / Payment / Email / External API Side Effect（数据库/支付/邮件/外部 API 副作用）
+↓
+仍然存在 Transaction Boundary（事务边界）、Crash Window（崩溃窗口）和外部系统自身语义
+~~~
+
+为什么叠起来之后「精确一次」会破功，核心有两处断点：
+
+1. **Crash Window（崩溃窗口）**：从「Broker 把消息交给消费者」到「副作用真正提交」之间，进程随时可能崩溃。恢复后消息被重投，副作用就跑了第二次。消息层的交付保证管不到这个窗口。
+2. **外部系统自身语义**：支付扣款、邮件发送这类外部 Side Effect 由对方系统决定成败与可重入性，Broker 既不知道、也无法回滚。即便消息只投了一次，外部调用也可能因超时重试而执行多次。
+
+因此「消息系统支持 Exactly Once（精确一次）」**不能直接推导为**「整个分布式业务的副作用绝对只发生一次」。工程上的正确结论见下一节：既然重复交付无法从根上消除，就应当把**消费端设计成幂等（Idempotent）**，用业务主键或消息去重表来吸收重复，而不是寄希望于端到端的恰好一次。
+
+在通用工程设计中，更稳妥的模型通常是：
+
+~~~text
+任务可能重复交付
+        ↓
+Consumer 接受 Redelivery
+        ↓
+业务操作设计为 Idempotent
+        ↓
+重复尝试不产生额外错误副作用
+~~~
+
+AWS Transactional Outbox 文档也明确提醒 Outbox Processor 可能发送重复消息，并建议 Consumer 设计为 Idempotent。[[4]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+
+### 【Idempotency 保护的是业务结果，不只是“代码没有报错”】
+
+幂等（Idempotency）：同一个逻辑操作重复执行多次，不应该因为重复执行产生额外的业务结果。
+
+例如：
+
+~~~text
+Task: charge order-123
+
+第一次执行
+↓
+已经成功扣款
+
+Worker Crash
+↓
+Task Redelivery
+
+第二次执行
+↓
+不能再次扣款
+~~~
+
+常见实现手段包括：
+
+| 方法 | 适用思想 |
+| --- | --- |
+| Idempotency Key | 同一个逻辑请求共享稳定标识 |
+| Unique Constraint | 由数据库阻止重复业务记录 |
+| Processed Message Record | 记录某个 Message / Task 是否已处理 |
+| State Check | 只允许合法状态转换，例如 pending → paid |
+| Version / Sequence | 只接受更新版本，拒绝旧结果覆盖新状态 |
+
+这些手段可以组合。真正需要判断的是：
+
+~~~text
+如果同一个 Task 在任何时间再次出现
+它可能重复产生哪些 Side Effect？
+系统在哪一层阻止重复结果？
+~~~
+
+### 【并发与顺序要求会限制 Worker 并行度】
+
+异步系统还可能面对：
+
+~~~text
+Task A: Order 1 version 1
+Task B: Order 1 version 2
+~~~
+
+如果 B 先完成、A 后完成，旧结果可能覆盖新状态。
+
+因此某些业务需要：
+
+~~~text
+Per-key Ordering
+Sequence Check
+Version Check
+Partition by Business Key
+~~~
+
+而不是简单把 Worker Concurrency 无限增大。
+
+顺序保证通常只应该缩小到真正需要的业务 Key 范围，否则全局串行会直接牺牲吞吐。
+
+## 6. 失败恢复通过 Retry、Backoff 与 Dead Letter 建立受控闭环
+
+### 【Retry 之前先区分 Transient Failure 与 Permanent Failure】
+
+并不是所有失败都值得重试。
+
+~~~text
+Failure
+│
+├── Transient Failure
+│   ├── Network Timeout
+│   ├── Temporary Unavailable
+│   ├── Rate Limit
+│   └── Short-lived Dependency Failure
+│
+└── Permanent / Business Failure
+    ├── Invalid Input
+    ├── Permission Denied
+    ├── Unsupported State
+    └── Permanent Conflict
+~~~
+
+Transient Failure 通常适合 Retry。
+
+Permanent Failure 如果不改变输入、代码或业务状态，重复执行往往只会重复失败，应尽早进入 Terminal Failure、人工处理或明确的业务冲突流程。
+
+因此：
+
+~~~text
+Retry
+不是
+catch 后再执行一次
+
+而是
+Failure Classification
++
+Retry Policy
+~~~
+
+### 【Retry Policy 同时决定次数、持续时间与下一次执行时间】
+
+完整 Retry Policy 至少需要回答：
+
+~~~text
+什么错误可以 Retry？
+最多尝试多少次？
+总共允许重试多久？
+下一次什么时候执行？
+最大等待多久？
+服务端是否提供 Retry-After？
+最终失败去哪里？
+~~~
+
+Google Cloud Tasks 的 RetryConfig 也把 maxAttempts、maxRetryDuration、minBackoff、maxBackoff、maxDoublings 等作为独立配置，说明 Retry 本身就是一套策略，而不是一个固定循环。[[7]](https://cloud.google.com/tasks/docs/reference/rest/v2/RetryConfig)
+
+### 【Exponential Backoff 与 Jitter 防止故障期间形成 Retry Storm】
+
+如果下游已经故障，而大量 Worker 立即重复请求：
+
+~~~text
+Dependency Failure
+↓
+Immediate Retry
+↓
+More Load
+↓
+Dependency 更难恢复
+↓
+More Failure
+↓
+More Retry
+~~~
+
+就会形成 Retry Storm。
+
+Exponential Backoff（指数退避）通过逐渐拉大重试间隔降低持续压力。
+
+Jitter（抖动）再给等待时间加入随机性，避免大量任务在完全相同的时间点一起恢复请求。
+
+~~~text
+Retry Delay
+=
+Backoff
++
+Jitter
++
+Maximum Delay Boundary
+~~~
+
+AWS Builders' Library 的 Timeouts, retries, and backoff with jitter 也强调 Retry 会放大下游负载，并使用 Backoff 与 Jitter 降低同步重试和过载风险。[[8]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
+### 【Dead Letter 是自动恢复失败后的终止状态与人工入口】
+
+自动 Retry 不能无限持续。
+
+~~~text
+Task
+↓
+Retry
+↓
+Retry Budget Exhausted
+↓
+Dead Letter / Terminal Failed
+↓
+Inspect
+↓
+Repair
+↓
+Replay / Discard
+~~~
+
+Dead Letter Queue / Dead Letter State 不只是“另一个 Retry Queue”，它表示：
+
+> 当前自动恢复策略已经无法继续，需要保存失败事实并进入诊断或人工决策。
+
+至少应该保留能够定位问题的信息：
+
+~~~text
+Task / Message ID
+Attempt Count
+Last Failure Reason
+Failed At
+Correlation / Trace Context
+必要的 Payload Reference
+~~~
+
+Replay 之前必须先确认导致失败的代码、数据或依赖已经被修复；否则人工 Replay 只是在重新制造同一个失败。
 
 ## 7. 容量与运行治理决定异步系统能否长期稳定工作
 
