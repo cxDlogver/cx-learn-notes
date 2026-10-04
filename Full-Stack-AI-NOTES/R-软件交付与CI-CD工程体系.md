@@ -61,6 +61,16 @@ Production Healthy
 
 这个边界让构建、版本管理、Docker 和运行时部署可以进入同一条知识链。
 
+当 Source Repository 本身采用 Monorepo 时，多个 Project 怎样被 Workspace 发现、怎样形成 Project / Task Graph，以及怎样分别产生 Artifact，属于 [Monorepo 工程体系](./M-Monorepo工程体系.md) 的职责；本文从这些 Artifact 和交付任务继续向 Release、Deployment 与 Production Verification 延伸。
+
+```text
+Monorepo
+Project / Task / Artifact
+↓
+CI/CD
+Verification / Release / Deployment / Production Recovery
+```
+
 ### 【Build Once、Promote Artifact 是重要的工程目标】
 
 更稳定的交付链倾向于：
