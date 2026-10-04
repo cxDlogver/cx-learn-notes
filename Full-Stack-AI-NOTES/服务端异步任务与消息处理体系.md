@@ -963,13 +963,37 @@ Docker / Service Runtime / Observability
 
 ### 【项目实践只承担真实实现验证，不反向定义通用知识】
 
-项目实践入口：
+项目实践入口首先连接到对应的专项源码学习，再由专项文档继续进入更细的数据库、Redis 与端到端链路：
 
-- [Browser Monitor 服务端全链路](../browser-monitor/docs/浏览器监控平台-服务端全链路.md)：观察 Ingestion API → Durable Raw Data / Outbox → Worker → Projection → Analytics 的真实异步数据链。
-- [Browser Monitor 服务端数据管理源码学习-2](../browser-monitor/docs/服务端数据管理源码学习-2.md)：观察 Database Transaction、Concurrency Control 与 Transactional Outbox 怎样连接。
-- [Browser Monitor Redis 体系源码学习](../browser-monitor/docs/Redis体系源码学习.md)：观察 Runtime State、Cache 与异步处理链之间的边界。
-- [计划打卡 iOS Worker](../ios-plan-checkin/apps/worker/src/planReminders.ts)：PostgreSQL-backed Job Queue 的代码实践入口。
+- [Browser Monitor 异步任务与 Worker 可靠消费体系源码学习](../browser-monitor/docs/异步任务与Worker可靠消费体系源码学习.md)：本体系的主要项目映射。沿 API 202 异步边界 → Transactional Outbox → FOR UPDATE SKIP LOCKED → Lease / Reclaim → At-least-once + Idempotent Projection → Retry / Dead Letter → Queue Observability 对照真实源码。
+- [Browser Monitor 服务端数据管理源码学习-2](../browser-monitor/docs/服务端数据管理源码学习-2.md)：补充 Database Transaction、Concurrency Control、Advisory Lock 与 Transactional Outbox 的数据库前置知识。
+- [Browser Monitor Redis 体系源码学习](../browser-monitor/docs/Redis体系源码学习.md)：补充 Analytics Version Cache、Runtime State 与 Worker / Redis 的边界。
+- [Browser Monitor 服务端全链路](../browser-monitor/platform/docs/浏览器监控平台-服务端全链路.md)：把 Worker 专题重新放回 SDK → API → Storage → Worker → Analytics → Web 的完整数据生命周期。
+- [计划打卡 iOS Worker](../ios-plan-checkin/apps/worker/src/planReminders.ts)：PostgreSQL-backed Job Queue 的另一类代码实践入口。
 - [计划打卡 Mobile Outbox Runner](../ios-plan-checkin/apps/mobile/src/data/outboxRunner.ts)：客户端 Durable Outbox、Retry、Backoff 与 Jitter 的代码实践入口。
+
+Browser Monitor 专题与本文六阶段主线对应如下：
+
+| 通用知识阶段 | Browser Monitor 专题对应位置 |
+| --- | --- |
+| 异步边界 | 第 1 章：API 202、API / Worker Process 分离 |
+| 可靠交接 | 第 2 章：telemetry_events + outbox_tasks 同事务 |
+| 安全消费 | 第 3 章：Task State、SKIP LOCKED、Lease、Graceful Shutdown |
+| 重复执行正确性 | 第 4 章：At-least-once、Unique Key、Advisory Lock、sequence |
+| 失败恢复 | 第 5 章：Retry、Exponential Backoff、Dead Letter、Manual Replay |
+| 容量与运行治理 | 第 6～7 章：Cache Version、后台维护、Batch / Concurrency、Service Status、Metrics 与 Queue Lag 演进 |
+
+这里保持明确边界：
+
+~~~text
+Full-Stack-AI-NOTES
+负责
+通用定义 / 机制 / 判断方法 / 方案边界
+
+Browser Monitor 专题
+负责
+真实表结构 / 代码路径 / 参数 / 故障窗口 / 项目取舍 / 演进复盘
+~~~
 
 这些项目实现用于验证通用模型，不代表所有异步系统都应该采用相同状态字段、重试次数、Lease 时长或基础设施。
 
