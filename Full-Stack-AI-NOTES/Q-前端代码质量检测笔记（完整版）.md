@@ -1,795 +1,129 @@
-# 前端代码质量检测笔记（完整版）
+# 前端代码质量与质量验证体系
 
-### 一句话结论
+前端代码质量不是某一个工具能够给出的单一结果，而是对一次代码变化在**正确性、类型安全、一致性、可维护性、变更安全与可交付性**等维度进行持续验证。ESLint、TypeScript、Prettier、Stylelint、测试、Code Review、CI 和运行时监控解决的是不同问题；工程体系需要把这些机制放到合适的阶段，再把结果转换为是否允许继续交付的质量决策。
 
-前端代码质量检测不是只靠 ESLint 一项工具，而是通过多层机制协同作用，在开发前、提交前、构建时、上线后等各个环节拦截问题，形成全流程质量保障。实践中通常组合使用静态检查、类型检查、代码规范、测试、构建校验、运行时监控等手段，全方位提升代码质量。
+可以把完整链路理解为：
 
-**对应问题**：前端代码质量检测的核心思路是什么？实践中主要依靠哪些手段实现全流程保障？
+```text
+Source Change
+    ↓
+Quality Concern：明确代码变化可能在哪些维度出问题
+    ↓
+Verification Mechanism：选择静态分析、类型检查、格式化、测试、构建、Review 等机制
+    ↓
+Execution Stage：把验证放到编辑期、本地、提交前、Pull Request / CI 等阶段
+    ↓
+Quality Signal：产生 Error、Warning、Test Result、Build Result、Review Result
+    ↓
+Quality Gate：根据质量策略决定是否允许合并、构建或发布
+    ↓
+Artifact / Release
+    ↓
+Runtime Feedback：用真实运行环境中的错误、性能和用户影响补充上线前验证
+    └────────────────────→ 反馈到下一轮 Source Change
+```
 
-### 代码质量的核心定义
+上游输入是一次 Source Change。质量体系首先判断“可能出什么问题”，再选择能够验证这些问题的机制；验证结果本身只是 Signal，只有结合团队策略后才形成 Gate。通过 Gate 的代码继续进入构建和交付，但上线前验证无法覆盖真实用户环境中的全部状态，因此 Runtime Feedback 会重新回流到开发阶段，形成持续质量闭环。
 
-代码质量并非单一维度的概念，而是涵盖规范、潜在 Bug、类型安全、功能正确性、工程质量五个核心层面，每个层面对应不同的问题场景，也是质量检测的重点方向。
+## 1. 代码质量由多个质量关注点共同构成
 
-#### 规范问题
+“代码质量”不应把工具、执行流程和质量属性混在同一层。更稳定的理解方式是先回答：**一次代码变化需要在哪些方面保持可靠？**
 
-核心是代码风格统一，减少无意义争议，提升可维护性，常见问题包括：
+| 质量关注点 | 主要问题 | 典型验证方式 |
+| --- | --- | --- |
+| Correctness（正确性） | 功能是否符合需求，边界和异常路径是否正确 | 测试、Review、运行时验证 |
+| Type Safety（类型安全） | 参数、返回值、可空值和数据结构是否满足类型约束 | TypeScript |
+| Consistency（一致性） | 格式、样式和团队约定是否一致 | Prettier、ESLint、Stylelint |
+| Maintainability（可维护性） | 代码是否存在过高复杂度、重复、难以理解或扩展的问题 | ESLint、SonarQube、Code Review |
+| Change Safety（变更安全） | 一次修改是否破坏已有行为或其他模块 | Test Suite、Regression、CI |
+| Deliverability（可交付性） | 代码是否能够在目标环境安装依赖、构建并形成有效产物 | Build Verification、CI |
+| Runtime Reliability（运行可靠性） | 真实环境中是否出现异常、资源失败、兼容性或性能问题 | Monitoring、Production Verification |
 
-- 命名不统一（如变量用驼峰、函数用帕斯卡，或反之）；
+这些关注点存在交叉，但不能相互替代。例如 TypeScript 能证明一部分静态类型约束成立，却不能证明登录流程一定正确；测试可以验证给定场景的行为，却不能证明所有代码都具有统一格式；构建成功说明当前构建链路能够产生 Artifact，也不等于业务行为已经完全正确。
 
-- 代码格式混乱（缩进不一致、换行不规范）；
+因此质量体系的核心不是“工具越多越好”，而是让重要风险都有与之匹配的验证机制。
 
-- import 导入顺序混乱（未按第三方库、本地模块分类）；
+### 【代码规范和一致性降低协作与维护成本】
 
-- 符号使用不规范（缺少分号、多余空格、引号混用）；
+一致性关注代码是否按照稳定规则表达。常见问题包括命名不统一、缩进和换行混乱、import 顺序无约束、样式规则不一致等。它们通常不会直接证明业务错误，但会增加 Review 噪声、合并冲突和长期维护成本。
 
-- 重复代码过多（相同逻辑在多个地方重复编写，未封装复用）。
+格式一致性主要交给 Formatter；可静态判断的代码约束交给 Linter。两者职责应分开理解。
 
-#### 语法和潜在 Bug
+### 【潜在缺陷需要在运行前尽可能暴露】
 
-核心是避免代码运行时出现异常，提前发现隐性问题，常见场景包括：
+未定义变量、不可达代码、错误 API 用法、危险模式、框架 Hook 规则等问题，可以在程序真正运行前通过静态分析发现。静态分析的价值是反馈快、覆盖面广，但它只能判断规则能够描述的问题。
 
-- 变量未定义就使用（如未声明直接赋值）；
+### 【类型安全约束数据在代码中的传播】
 
-- 闭包引用错误（如循环中使用闭包导致变量取值异常）；
+函数参数、返回值、接口数据、组件 Props、可空值和泛型约束等问题属于类型层。类型系统能够在编译或检查阶段发现一部分数据契约不一致，尤其适合跨模块重构和多人协作。
 
-- 条件判断逻辑错误（如把 `===` 写成 `==`、逻辑与或混用）；
+### 【功能正确性必须通过行为验证补足】
 
-- Promise 异常未处理（如未写 `catch`，导致报错未捕获）；
+按钮是否触发预期回调、表单校验是否正确、异步流程是否按预期执行、权限是否生效、跨模块流程是否完整，都属于动态行为问题。静态分析和类型系统无法单独证明这些行为，因此需要测试和必要的人工验证。
 
-- React Hooks 使用不规范（如在条件语句中使用 Hooks、依赖项缺失）；
+### 【工程质量还包括变化能否安全进入交付链】
 
-- Vue 响应式用法错误（如直接修改数组索引、对象属性未触发响应式更新）。
+Git 变更是否经过 Review、测试是否通过、依赖能否安装、Build 是否成功、质量门禁是否满足，都属于变更治理和交付可靠性问题。它们不是新的“代码属性”，而是围绕 Source Change 建立的工程控制机制。
 
-#### 类型安全问题
+## 2. 静态分析与类型系统在运行前发现可判定问题
 
-核心是避免类型不匹配导致的运行时错误，常见于中大型项目，主要问题包括：
+Static Analysis（静态分析）是在不实际执行完整业务流程的情况下分析源代码、语法树、类型或规则约束。它的优势是反馈速度快，可以在编辑期、本地和 CI 重复执行。
 
-- 函数参数类型不明确（如预期传入数字，实际传入字符串）；
+### 【ESLint 通过规则系统检查 JavaScript 与 TypeScript 代码】
 
-- 接口返回值误用（如接口返回数组，却按对象取值）；
+ESLint 的核心不是“格式化代码”，而是把可静态描述的问题编码为规则。它可以覆盖未使用变量、危险语法、部分潜在 Bug、团队约束以及 React / Vue 等生态规则。
 
-- `any` 类型滥用（失去类型校验意义，埋下隐性 Bug）；
+现代 ESLint 使用 Flat Config，通过 `eslint.config.*` 组织配置。ESLint v10 已移除旧 eslintrc 配置系统，忽略规则也应在 Flat Config 中使用 `ignores` 或 `globalIgnores()` 表达，而不是继续把 `.eslintignore` 作为当前配置方式。[[1]](https://eslint.org/blog/2026/02/eslint-v10.0.0-released/) [[2]](https://eslint.org/docs/latest/use/configure/migration-guide)
 
-- `undefined`/`null` 未处理（如直接访问 `null.xxx`、`undefined.xxx`）。
-
-#### 功能正确性问题
-
-核心是确保代码实现的功能符合预期，避免逻辑偏差，常见场景包括：
-
-- 组件交互不符合预期（如按钮点击未触发回调、表单提交无响应）；
-
-- 表单校验逻辑有漏洞（如必填项未校验、格式校验错误）；
-
-- 异步逻辑出错（如接口请求顺序错误、数据渲染时机偏差）；
-
-- 路由跳转异常（如权限拦截失效、路由参数传递错误）。
-
-#### 工程质量问题
-
-核心是保障开发流程规范，避免因流程疏漏导致线上问题，常见问题包括：
-
-- Git 提交信息不规范（未按约定格式填写，难以追溯提交目的）；
-
-- 构建失败（本地能运行，线上构建报错，如依赖缺失、配置错误）；
-
-- 代码覆盖率低（测试用例不完善，核心逻辑未被覆盖）；
-
-- 线上报错多（未做运行时监控，异常无法及时发现）。
-
-**对应问题**：前端代码质量主要包含哪些层面？每个层面的核心问题的是什么？
-
-### 前端常见的代码质量检测方式（含细节与实践）
-
-#### ESLint：静态代码检查（基础核心）
-
-ESLint 是前端静态代码检查的基础工具，核心作用是提前发现代码中的语法错误、潜在 Bug、不符合规范的写法和最佳实践问题，支持自定义规则，适配不同项目需求。
-
-##### 核心检测范围
-
-- 语法错误：如未定义变量、重复声明、括号不匹配等；
-
-- 潜在风险：如 `eval()` 使用、`with` 语句、未处理的异步错误；
-
-- 代码规范：如命名规则、import 顺序、注释要求；
-
-- 框架适配：如 React Hooks 规则、Vue 模板语法规则；
-
-- 最佳实践：如避免 `var` 声明、优先使用 `const`/`let`、禁止无用代码。
-
-##### 常见配置（适配 TS/JS/Vue 项目）
-
-新建 `eslint.config.js` 文件（ESLint 8.23+ 推荐配置方式），支持多环境、多框架适配：
+一个最小结构可以写成：
 
 ```javascript
-// eslint.config.js
 import js from '@eslint/js'
-import tseslint from 'typescript-eslint'
-import vueEslintParser from 'vue-eslint-parser'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default [
-  // 基础 JS 推荐规则
+export default defineConfig([
+  globalIgnores(['dist/**', 'coverage/**']),
   js.configs.recommended,
-  // TS 推荐规则（适配 TypeScript 项目）
-  ...tseslint.configs.recommended,
   {
-    // 指定检测的文件范围
-    files: ['**/*.{js,ts,tsx,vue}'],
-    // 解析器配置（适配 Vue 单文件组件）
-    languageOptions: {
-      parser: vueEslintParser,
-      parserOptions: {
-        parser: '@typescript-eslint/parser', // TS 解析器
-        sourceType: 'module',
-        ecmaVersion: 'latest'
-      }
-    },
-    // 自定义规则（优先级高于推荐规则）
+    files: ['src/**/*.{js,mjs,cjs}'],
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }], // 忽略下划线开头的参数
-      'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off', // 生产环境禁止 console
-      'eqeqeq': 'error', // 强制使用 ===/!==，避免隐式类型转换
-      'no-var': 'error', // 禁止使用 var 声明变量
-      'prefer-const': 'error', // 优先使用 const（值不变的变量）
-      '@typescript-eslint/no-explicit-any': 'warn' // 警告 any 类型使用
+      eqeqeq: 'error',
+      'no-var': 'error',
+      'prefer-const': 'error'
     }
   }
-]
-
+])
 ```
 
-##### 常用命令（package.json 配置）
+这里的 `files` 决定配置应用范围，`rules` 表达规则策略，`globalIgnores()` 表达全局忽略范围。框架项目可以继续组合 TypeScript、Vue、React 等生态提供的 Flat Config；具体插件应按照对应插件当前文档配置，而不是假设所有框架共享同一个 Parser 组合。
+
+常见脚本：
 
 ```json
 {
   "scripts": {
-    // 检测 src 目录下指定后缀的文件
-    "lint": "eslint src --ext .js,.ts,.tsx,.vue",
-    // 自动修复可修复的 lint 错误（如格式问题、简单语法问题）
-    "lint:fix": "eslint src --ext .js,.ts,.tsx,.vue --fix"
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   }
 }
 ```
 
-##### 实践细节
+`--fix` 只修复规则明确声明为可自动修复的问题。自动修复成功并不代表功能行为已经正确。
 
-1. 忽略不需要检测的文件：新建 `.eslintignore` 文件，写入不需要检测的路径，如 `node_modules/`、`dist/`、`*.config.js`；
+### 【TypeScript 通过类型系统验证静态数据契约】
 
-2. 规则优先级：自定义规则 > 推荐规则，可根据项目需求调整规则级别（`error`：阻断提交/构建；`warn`：仅警告，不阻断）；
-
-3. 框架适配：Vue 项目需安装 `vue-eslint-parser`、`eslint-plugin-vue`，React 项目需安装 `eslint-plugin-react`、`eslint-plugin-react-hooks`。
-
-**对应问题**：ESLint 的核心作用是什么？如何配置适配 TS+Vue 项目的 ESLint 规则？常用命令有哪些？
-
-#### Prettier：代码格式统一（辅助规范）
-
-Prettier 专注于代码格式统一，不负责检测语法错误或潜在 Bug，核心价值是减少团队因代码格式产生的争议，让 Code Review 更聚焦逻辑本身，而非格式细节。
-
-##### 核心作用范围
-
-- 缩进统一（如 2 空格/4 空格）；
-
-- 引号统一（单引号/双引号）；
-
-- 换行统一（如每行最大长度、语句末尾换行）；
-
-- 尾逗号统一（如对象、数组末尾是否加逗号）；
-
-- 其他格式：如箭头函数括号、空格使用、注释格式等。
-
-##### 常见配置（.prettierrc 或 prettier.config.js）
-
-```json
-{
-  "singleQuote": true, // 统一使用单引号
-  "semi": false, // 语句末尾不加分号
-  "trailingComma": "es5", // 仅在 ES5 允许的场景加尾逗号（对象、数组）
-  "printWidth": 120, // 每行最大长度 120 字符
-  "tabWidth": 2, // 缩进 2 空格
-  "useTabs": false, // 不使用 Tab 缩进
-  "arrowParens": "avoid", // 箭头函数只有一个参数时省略括号
-  "proseWrap": "never", // 不自动换行（避免影响代码可读性）
-  "htmlWhitespaceSensitivity": "ignore" // 忽略 HTML 空格敏感度
-}
-```
-
-##### 常用命令（package.json 配置）
-
-```json
-{
-  "scripts": {
-    // 格式化所有文件（排除 .prettierignore 中的文件）
-    "format": "prettier --write .",
-    // 检查文件格式是否符合规范（不自动修复）
-    "format:check": "prettier --check ."
-  }
-}
-```
-
-##### 实践细节（解决 ESLint 与 Prettier 冲突）
-
-ESLint 部分规则（如缩进、引号）与 Prettier 冲突，需安装 `eslint-config-prettier` 和 `eslint-plugin-prettier`，将 Prettier 规则集成到 ESLint 中，统一校验：
-
-```javascript
-// eslint.config.js 中添加 Prettier 配置
-import prettier from 'eslint-plugin-prettier'
-import prettierConfig from 'eslint-config-prettier'
-
-export default [
-  // ... 其他配置
-  prettierConfig, // 禁用 ESLint 中与 Prettier 冲突的规则
-  {
-    plugins: { prettier },
-    rules: {
-      'prettier/prettier': 'error' // 将 Prettier 格式问题设为 error 级别
-    }
-  }
-]
-```
-
-**对应问题**：Prettier 与 ESLint 的核心区别是什么？如何解决两者的规则冲突？
-
-#### TypeScript：类型检查（中大型项目必备）
-
-TypeScript 是 JavaScript 的超集，核心作用是提供静态类型校验，提前发现类型不匹配问题，提升代码可维护性和可读性，尤其适合多人协作的中大型项目。
-
-##### 核心解决的问题
-
-- 参数/返回值类型不匹配（如函数预期传入数字，实际传入字符串）；
-
-- 接口返回值误用（如接口返回 `{ name: string }`，却按 `{ username: string }` 取值）；
-
-- 可空值未处理（如 `null`/`undefined` 未做判空，直接访问属性）；
-
-- 组件 Props 类型不清晰（如 Vue/React 组件 Props 未定义类型，传参混乱）；
-
-- 代码重构风险（如修改函数参数类型，未同步修改所有调用处）。
-
-##### 基础示例（类型校验效果）
+TypeScript 是 JavaScript 的类型化超集。它可以在代码执行前检查参数和返回值不匹配、错误属性访问、可空值处理、组件 Props 和跨模块契约等问题。[[3]](https://www.typescriptlang.org/docs/)
 
 ```typescript
-// 定义函数，指定参数和返回值类型
 function add(a: number, b: number): number {
   return a + b
 }
 
-// 正确调用：参数类型匹配
-add(1, 2) // 正常执行，返回 3
-
-// 错误调用：第二个参数为字符串，TS 会直接报错（静态检查阶段）
-add(1, '2') // 报错：Argument of type 'string' is not assignable to parameter of type 'number'
+add(1, 2)
+add(1, '2') // 类型检查失败
 ```
 
-##### 常用命令（package.json 配置）
-
-```json
-{
-  "scripts": {
-    // 仅做类型校验，不生成构建产物（推荐用于 CI/提交前校验）
-    "type-check": "tsc --noEmit",
-    // 类型校验并生成构建产物（开发/构建阶段使用）
-    "tsc": "tsc"
-  }
-}
-```
-
-##### 实践细节
-
-1. `--noEmit` 参数说明：仅执行类型检查，不生成 `.js` 或 `.d.ts` 文件，避免冗余产物，适合用于质量检测环节；
-
-2. 配置文件 `tsconfig.json`：核心配置 `strict: true`（开启严格模式，强制进行类型校验）、`target`（指定编译目标版本）、`include`/`exclude`（指定检测文件范围）；
-
-3. 避免 `any` 滥用：尽量使用具体类型、联合类型、泛型替代 `any`，如需临时忽略类型校验，可使用 `// @ts-ignore` 注释（谨慎使用）；
-
-4. 接口类型定义：对于接口返回值、组件 Props，优先使用 `interface` 或 `type` 定义类型，提升可读性。
-
-**对应问题**：TypeScript 在代码质量检测中的核心作用是什么？`tsc --noEmit` 命令的作用是什么？实践中如何避免 `any` 滥用？
-
-#### Stylelint：样式质量检测（样式规范）
-
-Stylelint 是专门用于检测 CSS/SCSS/Less 样式文件的工具，核心作用是规范样式写法、避免样式错误，提升样式代码的可维护性，尤其适合样式文件较多的项目。
-
-##### 核心检测范围
-
-- 语法错误：如非法 CSS 属性、无效选择器、括号不匹配；
-
-- 规范问题：如选择器命名不统一、样式属性顺序混乱；
-
-- 冗余问题：如重复选择器、重复样式属性；
-
-- 性能问题：如过深的选择器嵌套（影响渲染性能）；
-
-- 最佳实践：如禁止使用 `!important`、避免无效单位（如 `px` 用于字体大小之外的场景）。
-
-##### 常见配置（stylelint.config.js）
-
-```javascript
-module.exports = {
-  // 继承官方推荐规则
-  extends: [
-    'stylelint-config-standard', // 基础 CSS 推荐规则
-    'stylelint-config-standard-scss' // SCSS 推荐规则（如需支持 SCSS）
-  ],
-  // 自定义规则
-  rules: {
-    'color-no-invalid-hex': true, // 禁止无效的十六进制颜色
-    'declaration-block-no-duplicate-properties': true, // 禁止声明块中重复的属性
-    'selector-max-depth': 4, // 选择器最大嵌套深度为 4
-    'declaration-block-single-line-max-declarations': 1, // 单行声明块最多一个属性
-    'no-unknown-animations': true, // 禁止未知的动画名称
-    'selector-no-vendor-prefix': true, // 禁止选择器使用厂商前缀
-    'property-no-vendor-prefix': [true, { ignoreProperties: ['box-sizing'] }] // 忽略特定属性的厂商前缀
-  },
-  // 指定检测的文件范围
-  files: ['src/**/*.{css,scss,less,vue}'],
-  // 忽略不需要检测的文件
-  ignoreFiles: ['node_modules/**/*.css', 'dist/**/*.css']
-}
-```
-
-##### 常用命令（package.json 配置）
-
-```json
-{
-  "scripts": {
-    // 检测样式文件
-    "lint:style": "stylelint \"src/**/*.{css,scss,less,vue}\"",
-    // 自动修复可修复的样式错误
-    "lint:style:fix": "stylelint \"src/**/*.{css,scss,less,vue}\" --fix"
-  }
-}
-```
-
-**对应问题**：Stylelint 的核心作用是什么？常见的样式检测规则有哪些？如何配置适配 SCSS 和 Vue 项目？
-
-#### 测试：功能正确性检测（核心保障）
-
-静态检查（ESLint/TS）只能发现代码写法问题，无法保证功能逻辑正确，测试则是验证功能正确性的核心手段，分为单元测试、组件测试、E2E 测试三个层面，覆盖不同的测试场景。
-
-##### 单元测试（验证独立逻辑）
-
-核心是测试独立的函数、工具类、Hooks 等，验证其输入输出是否符合预期，常用工具：Jest、Vitest（Vite 生态，更快）。
-
-测试场景：工具函数、自定义 Hooks、表单校验逻辑、边界条件（如空值、异常输入）。
-
-```typescript
-// 示例：测试工具函数 sum（Vitest）
-import { describe, it, expect } from 'vitest'
-import { sum } from './utils/sum'
-
-// 测试套件（描述要测试的模块）
-describe('sum 工具函数', () => {
-  // 测试用例（单个测试场景）
-  it('两个正数相加，返回正确结果', () => {
-    expect(sum(1, 2)).toBe(3)
-  })
-
-  it('正数与负数相加，返回正确结果', () => {
-    expect(sum(5, -3)).toBe(2)
-  })
-
-  it('传入非数字参数，返回 0', () => {
-    // @ts-ignore 临时忽略类型校验，测试异常场景
-    expect(sum(1, '2')).toBe(0)
-  })
-})
-```
-
-##### 组件测试（验证组件交互）
-
-核心是测试 Vue/React 组件的渲染效果和交互逻辑，验证组件在不同状态下的表现是否符合预期，常用工具：Vitest + Testing Library、Jest + React Testing Library。
-
-测试场景：组件渲染是否正常、按钮点击是否触发回调、输入框输入是否更新状态、异步数据加载后是否渲染。
-
-```vue
-// 示例：Vue 组件测试（Vitest + @testing-library/vue）
-import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/vue'
-import Button from './Button.vue'
-
-describe('Button 组件', () => {
-  it('渲染按钮，显示正确文本', () => {
-    render(Button, { props: { label: '提交' } })
-    // 验证按钮文本是否存在
-    expect(screen.getByText('提交')).toBeInTheDocument()
-  })
-
-  it('点击按钮，触发 click 回调', async () => {
-    const mockClick = vi.fn() // 模拟回调函数
-    render(Button, { props: { label: '提交', onClick: mockClick } })
-    
-    // 模拟点击按钮
-    await fireEvent.click(screen.getByText('提交'))
-    // 验证回调函数被调用
-    expect(mockClick).toHaveBeenCalledTimes(1)
-  })
-})
-```
-
-##### E2E 测试（验证业务流程）
-
-核心是模拟真实用户操作，验证完整的业务流程是否正常，覆盖从页面跳转、表单提交到数据展示的全流程，常用工具：Playwright、Cypress。
-
-测试场景：用户登录、表单提交、路由跳转、权限拦截、下单流程等核心业务流程。
-
-```javascript
-// 示例：Playwright 测试登录流程
-import { test, expect } from '@playwright/test'
-
-test('登录流程：输入正确账号密码，跳转至首页', async ({ page }) => {
-  // 1. 访问登录页
-  await page.goto('/login')
-
-  // 2. 输入账号密码
-  await page.fill('#username', 'test-user')
-  await page.fill('#password', 'test-123456')
-
-  // 3. 点击登录按钮
-  await page.click('button[type="submit"]')
-
-  // 4. 验证是否跳转至首页
-  await expect(page).toHaveURL('/home')
-  // 验证首页是否显示用户信息
-  await expect(page.getByText('欢迎您，test-user')).toBeVisible()
-})
-```
-
-##### 实践细节
-
-1. 测试覆盖率：通过 `vitest --coverage` 或 `jest --coverage` 查看测试覆盖率，核心逻辑覆盖率建议不低于 80%；
-
-2. 测试优先级：优先测试核心逻辑（如工具函数、表单校验、登录流程），再测试非核心逻辑；
-
-3. 异步测试：对于异步逻辑（如接口请求），需使用 `async/await` 或 `done` 回调，确保测试等待异步操作完成。
-
-**对应问题**：前端测试分为哪几个层面？每个层面的核心测试场景是什么？常用的测试工具有哪些？
-
-#### Git Hooks：提交前拦截（流程前置）
-
-Git Hooks 用于在 Git 操作（如 commit、push）前执行指定脚本，提前拦截不符合质量要求的代码，避免问题代码进入代码仓库，常用方案：Husky + lint-staged。
-
-##### 核心作用
-
-在 `git commit` 前自动执行 ESLint、Prettier、Stylelint 等校验，只校验本次改动的文件，提升效率，避免开发者手动遗漏校验步骤。
-
-##### 配置步骤与示例
-
-1. 安装依赖：
-
-```bash
-npm install husky lint-staged --save-dev
-```
-
-2. 启用 Husky：
-
-```bash
-npx husky install
-npx husky add .husky/pre-commit "npx lint-staged"
-```
-
-3. 配置 lint-staged（package.json 中添加）：
-
-```json
-{
-  "lint-staged": {
-    // 匹配 JS/TS/TSX/Vue 文件，执行 ESLint 修复和 Prettier 格式化
-    "*.{js,ts,tsx,vue}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    // 匹配 CSS/SCSS/Less 文件，执行 Stylelint 修复和 Prettier 格式化
-    "*.{css,scss,less}": [
-      "stylelint --fix",
-      "prettier --write"
-    ],
-    // 匹配 JSON/MD 文件，仅执行 Prettier 格式化
-    "*.{json,md}": [
-      "prettier --write"
-    ]
-  }
-}
-```
-
-##### 实践细节
-
-1. 仅校验改动文件：lint-staged 只会处理本次 `git add` 的文件，避免全量校验耗时过长；
-
-2. 阻断提交：若校验失败（如存在无法自动修复的 ESLint 错误），会阻断 `git commit`，需开发者手动修复后再提交；
-
-3. 扩展配置：可在 pre-commit 钩子中添加 `npm run type-check`（视项目大小，小型项目可省略，避免提交过慢）。
-
-**对应问题**：Git Hooks 在代码质量检测中的作用是什么？如何通过 Husky + lint-staged 实现提交前校验？
-
-#### CI：流程固化（兜底保障）
-
-CI（持续集成）是将代码质量检测流程固化到项目部署流程中的核心手段，通过 CI 工具（如 GitHub Actions、GitLab CI）在代码合并（PR/Merge）前执行全量质量检测，确保主分支代码质量，避免“本地能跑，线上挂掉”的问题。
-
-##### 核心检测流程（CI 执行步骤）
-
-1. 安装依赖：`npm install` 或 `pnpm install`；
-
-2. 静态检查：`npm run lint`（ESLint）、`npm run lint:style`（Stylelint）；
-
-3. 类型检查：`npm run type-check`（TypeScript）；
-
-4. 测试：`npm run test`（单元测试/组件测试）；
-
-5. 构建校验：`npm run build`（验证构建是否正常，避免构建失败）。
-
-##### 示例配置（GitHub Actions，.github/workflows/ci.yml）
-
-```yaml
-name: 前端代码质量检测 CI
-
-on:
-  # 当有 PR 提交到 main 分支时触发
-  pull_request:
-    branches: [main]
-  # 当代码合并到 main 分支时触发
-  push:
-    branches: [main]
-
-jobs:
-  quality-check:
-    runs-on: ubuntu-latest
-    steps:
-      # 1. 拉取代码
-      - name: 拉取代码
-        uses: actions/checkout@v4
-
-      # 2. 安装 Node.js
-      - name: 安装 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # 3. 安装依赖
-      - name: 安装依赖
-        run: npm install
-
-      # 4. ESLint 校验
-      - name: ESLint 静态检查
-        run: npm run lint
-
-      # 5. Stylelint 校验
-      - name: Stylelint 样式检查
-        run: npm run lint:style
-
-      # 6. TypeScript 类型检查
-      - name: TypeScript 类型校验
-        run: npm run type-check
-
-      # 7. 单元测试
-      - name: 执行单元测试
-        run: npm run test
-
-      # 8. 构建校验
-      - name: 验证构建
-        run: npm run build
-```
-
-##### 核心价值
-
-- 标准化流程：确保所有开发者提交的代码都经过统一的质量检测，避免人为遗漏；
-
-- 主分支兜底：阻止不符合质量要求的代码合并到主分支，保障主分支稳定性；
-
-- 减少线上问题：提前发现构建失败、测试不通过等问题，避免上线后暴露。
-
-**对应问题**：CI 在前端代码质量检测中的核心作用是什么？CI 流程中通常包含哪些质量检测步骤？
-
-#### SonarQube / Code Review：团队级质量治理
-
-适合中大型团队，用于更高级的质量分析和团队协作治理，补充基础检测工具的不足，实现全方位质量管控。
-
-##### SonarQube 核心功能
-
-- 重复代码检测：识别项目中重复的代码片段，提示封装复用；
-
-- 圈复杂度分析：检测代码逻辑复杂度（如 if-else 嵌套过深），提示简化逻辑；
-
-- 可维护性评估：根据代码结构、注释率等指标，评估代码可维护性；
-
-- 安全风险检测：识别潜在的安全漏洞（如 XSS 风险、敏感信息泄露）；
-
-- 测试覆盖率统计：整合单元测试覆盖率数据，监控测试完善度；
-
-- Bug 风险预警：根据代码写法，预警潜在的 Bug（如空指针、逻辑错误）。
-
-##### Code Review 规范
-
-SonarQube 是工具层面的治理，Code Review 则是人工层面的质量把控，核心规范包括：
-
-- 代码提交前，需指定至少 1 名同事进行 Review；
-
-- Review 重点：逻辑正确性、代码规范、性能优化、安全性、可维护性；
-
-- 发现问题后，需提交者修改完善，再重新 Review，直至通过；
-
-- 定期开展团队 Code Review 复盘，总结常见问题，优化团队规范。
-
-**对应问题**：SonarQube 在代码质量检测中的核心作用是什么？中大型团队如何结合 SonarQube 和 Code Review 实现质量治理？
-
-#### 运行时监控：线上质量补充（闭环保障）
-
-前面的检测手段均聚焦于“上线前”，而部分问题（如浏览器兼容性、偶发资源加载失败）只有在线上真实用户环境中才会暴露，运行时监控则用于补充线上异常发现，形成“上线前检测 + 上线后监控”的完整闭环。
-
-##### 核心监控场景
-
-- JS 运行时错误（如 `Uncaught TypeError`）；
-
-- Promise 未处理异常（如接口请求失败未 `catch`）；
-
-- 资源加载失败（如 JS/CSS/图片加载 404、CDN 失效）；
-
-- 浏览器兼容性问题（如某些 API 在低版本浏览器中不支持）；
-
-- 页面性能问题（如首屏加载过慢、白屏、长任务阻塞）；
-
-- 接口异常（如接口超时、返回错误状态码）。
-
-##### 核心监控代码（基础版）
-
-```javascript
-// 1. 监听全局 JS 运行时错误
-window.onerror = function (message, source, lineno, colno, error) {
-  // 收集错误信息（实际项目中需上报至监控平台，如 Sentry）
-  console.log('JS 运行时错误:', {
-    message: message.toString(),
-    source: source, // 错误所在文件路径
-    line: lineno, // 错误行号
-    column: colno, // 错误列号
-    stack: error?.stack // 错误堆栈（便于定位问题）
-  });
-  // 阻止浏览器默认报错提示
-  return true;
-};
-
-// 2. 监听未处理的 Promise 异常（如接口请求失败未 catch）
-window.addEventListener('unhandledrejection', (event) => {
-  console.log('Promise 未处理异常:', {
-    reason: event.reason, // 异常原因
-    promise: event.promise // 对应的 Promise 对象
-  });
-  // 阻止浏览器默认报错提示
-  event.preventDefault();
-});
-
-// 3. 监听资源加载失败（JS、CSS、图片等）
-window.addEventListener(
-  'error',
-  (event) => {
-    const target = event.target;
-    // 筛选出有 src 或 href 的资源（排除非资源类错误）
-    if (target && (target.src || target.href)) {
-      console.log('资源加载失败:', {
-        url: target.src || target.href,
-        tagName: target.tagName, // 资源标签（如 script、link、img）
-        status: target.status // 加载状态（部分资源有）
-      });
-    }
-  },
-  true // 捕获阶段监听，避免冒泡导致遗漏
-);
-
-// 4. 监听页面白屏（补充页面性能异常）
-let whiteScreenTimer = setTimeout(() => {
-  const body = document.body;
-  // 若页面加载 3 秒后，body 仍无内容，判定为白屏
-  if (body.innerHTML.trim() === '' || body.clientHeight === 0) {
-    console.log('页面可能出现白屏');
-    // 上报白屏异常
-  }
-}, 3000);
-```
-
-##### 实践细节
-
-1. 监控平台集成：实际项目中，不会只打印日志，而是将异常上报至专业监控平台（如 Sentry、Fundebug），便于查看异常趋势、定位问题；
-
-2. 异常分级：将异常分为致命错误（如页面崩溃）、严重错误（如核心功能异常）、普通警告（如非核心资源加载失败），优先处理致命和严重错误；
-
-3. 用户环境采集：上报异常时，同步采集用户浏览器版本、设备类型、系统版本等信息，便于定位兼容性问题。
-
-**对应问题**：运行时监控在代码质量检测中的作用是什么？常见的线上异常监控场景有哪些？如何实现基础的运行时异常监听？
-
-### 实践落地方案（项目实战版）
-
-结合前面的检测手段，形成“本地开发 → 提交前 → CI → 线上监控”的全流程落地方案，适配大多数前端项目，尤其适合中大型团队协作。
-
-#### 方案一：本地开发阶段（即时反馈）
-
-核心是让开发者在写代码时就能获得即时反馈，提前发现问题，减少后续修改成本：
-
-- 编辑器配置：VS Code 安装 ESLint、Prettier、Stylelint 插件，开启“保存自动格式化”“实时 lint 报错提示”；
-
-- TypeScript 实时校验：开启 TS 实时报错，在编写代码时及时发现类型问题；
-
-- 本地调试：开发过程中，定期执行 `npm run lint:fix`、`npm run format`，确保代码规范；
-
-- 本地测试：编写完核心逻辑后，执行单元测试，验证功能正确性。
-
-#### 方案二：提交前拦截（前置过滤）
-
-通过 Husky + lint-staged 拦截问题代码，避免低级错误进入代码仓库：
-
-- 提交前自动执行：ESLint 修复、Prettier 格式化、Stylelint 修复；
-
-- 可选配置：中大型项目可添加 `type-check`，小型项目可省略，提升提交速度；
-
-- 异常处理：若校验失败，阻断提交，提示开发者手动修复后再提交。
-
-#### 方案三：CI 阶段兜底（流程固化）
-
-通过 CI 工具执行全量质量检测，确保主分支代码质量：
-
-- 全量校验：执行 ESLint、Stylelint、TypeScript 类型检查，确保无遗漏；
-
-- 测试验证：执行单元测试、组件测试，确保核心功能正常；
-
-- 构建校验：执行 `npm run build`，验证构建是否正常，避免线上构建失败；
-
-- 结果反馈：CI 执行失败时，通知提交者和 Review 者，修改后重新提交。
-
-#### 方案四：线上监控补充（闭环保障）
-
-上线后通过监控平台采集异常，及时发现线上问题，形成闭环：
-
-- 异常采集：集成监控平台（如 Sentry），采集 JS 错误、Promise 异常、资源加载失败等；
-
-- 异常分析：定期查看监控数据，分析异常原因（如兼容性问题、接口异常）；
-
-- 问题修复：针对高频异常，及时修复代码，发布补丁版本；
-
-- 复盘优化：总结线上异常，优化上线前检测流程（如补充对应测试用例）。
-
-**对应问题**：前端代码质量检测的全流程落地方案包含哪些阶段？每个阶段的核心任务是什么？
-
-### 面试高频回答（可直接使用）
-
-前端代码质量检测我一般会分成多个层次协同落地，不是单一工具能解决的。首先是静态检查层，用 ESLint 检查语法错误、潜在 Bug 和团队规范，用 Prettier 统一代码格式，用 Stylelint 规范样式写法，这一层主要解决“代码写得规范、无明显错误”的问题。
-
-其次是类型检查层，使用 TypeScript 做静态类型校验，尤其是中大型项目，能有效避免类型不匹配、接口误用、可空值未处理等问题，提升代码可维护性。
-
-再往上是测试层，单元测试验证工具函数、Hooks 等独立逻辑，组件测试验证组件交互，E2E 测试验证核心业务流程，这一层能保证“功能逻辑正确”，弥补静态检查的不足。
-
-工程流程上，我会用 Husky + lint-staged 在提交前拦截问题代码，再通过 CI 工具固化全量检测流程，确保主分支质量，避免“本地能跑、线上挂掉”。最后，通过运行时监控采集线上异常，比如 JS 报错、资源加载失败等，因为有些问题只有真实用户环境才会暴露，这样形成“上线前检测 + 上线后监控”的完整闭环。
-
-整体来说，我理解的代码质量检测是多层防线，每个工具和流程都有其侧重点，协同作用才能全方位保障代码质量。
-
-### 面试精简背诵版（易记版）
-
-#### 核心思路
-
-前端代码质量检测分四层，层层递进，形成全流程保障：
-
-- 规范检查：ESLint（语法、规范）、Prettier（格式）、Stylelint（样式）；
-
-- 类型检查：TypeScript（静态类型，避免类型错误）；
-
-- 功能检查：单元测试（独立逻辑）、E2E 测试（业务流程）；
-
-- 流程保障：Husky + lint-staged（提交前）、CI（主分支兜底）、线上监控（闭环）。
-
-#### 关键工具与作用
-
-- ESLint：查语法风险、坏味道、最佳实践；
-
-- Prettier：统一代码格式，减少争议；
-
-- TypeScript：类型安全，避免类型不匹配；
-
-- Stylelint：样式规范，避免样式错误；
-
-- 测试工具：Vitest/Jest（单元/组件测试）、Playwright/Cypress（E2E 测试）；
-
-- 流程工具：Husky + lint-staged（提交前校验）、CI（流程固化）；
-
-- 监控工具：Sentry（线上异常采集）。
-
-#### 关键代码（面试常考）
-
-##### 1. TypeScript 类型检查命令
+质量验证中常见的命令是：
 
 ```json
 {
@@ -799,39 +133,327 @@ let whiteScreenTimer = setTimeout(() => {
 }
 ```
 
-##### 2. 提交前校验（lint-staged 配置）
+`--noEmit` 表示执行类型检查但不生成 JavaScript 等输出文件，适合把 Type Check 作为独立 Verification Signal。[[4]](https://www.typescriptlang.org/tsconfig/noEmit.html)
+
+工程中通常还会开启 `strict` 并减少无约束的 `any`。但类型正确只表示静态类型关系满足约束，不代表网络数据一定符合声明，也不代表业务逻辑一定正确；外部输入仍需要运行时校验，行为仍需要测试。
+
+### 【Stylelint 把静态规则扩展到样式代码】
+
+Stylelint 对 CSS 及相关语法执行静态分析，用于发现无效值、重复声明、选择器和团队样式约束等问题。当前配置使用 `stylelint.config.*`；需要针对不同文件应用配置时，应通过 `overrides[].files` 表达文件范围，而不是把根级 `files` 当作配置属性。[[5]](https://stylelint.io/user-guide/configure/)
+
+```javascript
+export default {
+  extends: ['stylelint-config-standard'],
+  rules: {
+    'color-no-invalid-hex': true,
+    'declaration-block-no-duplicate-properties': true,
+    'selector-max-specificity': '0,4,0'
+  },
+  overrides: [
+    {
+      files: ['**/*.scss'],
+      extends: ['stylelint-config-standard-scss']
+    }
+  ],
+  ignoreFiles: ['dist/**']
+}
+```
+
+文件选择也可以直接由 CLI 输入：
 
 ```json
 {
-  "lint-staged": {
-    "*.{js,ts,tsx,vue}": ["eslint --fix", "prettier --write"]
+  "scripts": {
+    "lint:style": "stylelint \"src/**/*.{css,scss}\"",
+    "lint:style:fix": "stylelint \"src/**/*.{css,scss}\" --fix"
   }
 }
 ```
 
-##### 3. 线上异常捕获核心代码
+Stylelint 与 ESLint 的共同点是“规则驱动的静态分析”，区别在于分析对象和生态不同。
 
-```javascript
-// 监听全局 JS 错误
-window.onerror = function(message, source, lineno, colno, error) {
-  console.log('JS 错误:', message, error?.stack);
-  return true;
-};
+## 3. Formatter 统一代码表示但不证明行为正确
 
-// 监听未处理 Promise 异常
-window.addEventListener('unhandledrejection', (event) => {
-  console.log('Promise 异常:', event.reason);
-  event.preventDefault();
-});
+Formatter（代码格式化器）负责把代码转换成一致的文本表示。Prettier 的核心价值是减少缩进、换行、引号、尾逗号等格式选择，让 Review 更聚焦逻辑。[[6]](https://prettier.io/docs/)
+
+### 【Prettier 与 ESLint 解决不同问题】
+
+可以用一句关系区分：
+
+```text
+Prettier → How code looks：代码怎样排版
+ESLint   → What patterns are allowed：哪些代码模式被允许
 ```
 
-#### 处理思路（精简版）
+例如：
 
-- 规范/类型/功能：用 ESLint、TS、测试工具提前发现问题；
+```json
+{
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  }
+}
+```
 
-- 流程保障：提交前拦截、CI 兜底，确保问题不进主分支；
+Prettier 官方建议让格式化器与 Linter 各自承担职责，并通过 `eslint-config-prettier` 关闭与 Prettier 冲突的 ESLint 格式规则。把 Prettier 作为 ESLint Rule 运行的 `eslint-plugin-prettier` 可以使用，但不应被当作默认必需集成。[[7]](https://prettier.io/docs/integrating-with-linters)
 
-- 线上闭环：运行时监控，及时发现并修复线上异常。
+典型关系是：
 
-**对应问题**：请简要说明前端代码质量检测的核心思路、关键工具及处理流程（面试
-> （注：文档部分内容可能由 AI 生成）
+```text
+ESLint
+  └─ 检查代码模式与潜在问题
+
+Prettier
+  └─ 独立执行格式化
+
+eslint-config-prettier
+  └─ 关闭与 Prettier 冲突的 ESLint stylistic rules
+```
+
+这一区分很重要：格式完全一致的代码仍然可能存在类型错误和业务 Bug。
+
+## 4. 测试、构建与 Review 补足静态验证无法证明的部分
+
+静态分析解决“源码中可静态判断的问题”，但 Source Change 最终还必须回答两个问题：**行为是否符合预期，以及变化是否真的能够形成可交付产物。**
+
+### 【Testing 验证可观察行为而不是代码格式】
+
+测试通过输入、环境、操作和断言验证行为。Unit、Component、Integration、E2E 的差异来自验证边界、依赖真实性和运行环境，而不是简单的工具分类。
+
+质量体系只需要理解测试在这里提供 `Test Result`：静态检查通过之后，测试继续验证功能和回归风险。完整的测试边界、Fixture、Mock、Isolation、Coverage 与 CI Gate 设计统一由 [前端测试体系从验证边界到工程质量门禁](<./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md>) 维护。
+
+Coverage（覆盖率）是测试执行范围的信号，不等于 Confidence（可信度）。不能把“核心逻辑必须达到固定 80%”写成通用质量事实；阈值应结合风险、历史缺陷、关键路径和团队门禁策略确定。
+
+### 【Build Verification 验证代码能否形成目标产物】
+
+Build Verification 关注依赖解析、类型或编译约束、Bundler 配置、环境变量和资源处理等是否能够完成，从 Source 生成预期 Artifact。
+
+```text
+Source
+  ↓
+Install / Resolve Dependencies
+  ↓
+Compile / Transform / Bundle
+  ↓
+Artifact
+```
+
+Build 成功只证明构建链路在当前环境和输入下成功，不证明全部业务行为正确，因此 Build Result 与 Test Result 是不同的质量信号。
+
+### 【Code Review 验证自动化规则难以完整表达的工程判断】
+
+自动化工具擅长重复、确定、可编码的规则，但设计合理性、抽象边界、可读性、需求理解、复杂业务风险和长期维护成本很难完全转换为 Lint Rule。
+
+Code Review 因而重点关注：
+
+- 逻辑和需求理解是否正确；
+- 模块职责和依赖方向是否合理；
+- 是否引入不必要复杂度或重复实现；
+- 性能、安全、兼容性等风险是否被考虑；
+- 测试是否覆盖了真正重要的变化。
+
+SonarQube 等平台可以提供重复代码、复杂度、静态问题、安全热点和 Coverage 等辅助 Signal，但这些信号仍需结合项目上下文解释，不能替代人工 Review。[[8]](https://docs.sonarsource.com/sonarqube-server/)
+
+## 5. 验证机制需要分布到不同反馈阶段
+
+同一个 Verification Mechanism 可以在多个阶段执行。阶段设计的核心权衡是：**越早反馈成本越低，但越接近合并和交付越需要完整、统一、不可绕过的验证。**
+
+```text
+Editor / Local
+    ↓ 快速反馈
+Pre-commit
+    ↓ 过滤当前变更
+Pull Request / CI
+    ↓ 统一全量验证
+Build / Release
+    ↓ 验证可交付性
+Production
+    ↓ 真实环境反馈
+```
+
+### 【编辑期和本地阶段优先追求快速反馈】
+
+编辑器可以实时提供 ESLint、TypeScript、Prettier、Stylelint 等反馈；开发者也可以运行 `lint`、`type-check`、测试和 Build。这里的目标是尽早发现问题，而不是建立最终可信门禁。
+
+### 【Git Hook 把高频低成本检查前置到提交边界】
+
+Git Hook 可以在 `commit` 或 `push` 等 Git 操作前运行脚本。Husky 常用于管理项目级 Hook，lint-staged 用于只对已经 Staged 的文件运行任务。[[9]](https://typicode.github.io/husky/) [[10]](https://github.com/lint-staged/lint-staged)
+
+```json
+{
+  "lint-staged": {
+    "*.{js,ts,tsx,vue}": ["eslint --fix", "prettier --write"],
+    "*.{css,scss}": ["stylelint --fix", "prettier --write"],
+    "*.{json,md}": ["prettier --write"]
+  }
+}
+```
+
+lint-staged 降低了提交前全仓扫描的成本，但本地 Hook 可以被跳过，也可能因为开发环境差异而产生不同结果，所以它适合快速过滤，不应成为唯一质量边界。
+
+### 【CI 提供统一环境中的可重复验证】
+
+CI 将 Lint、Type Check、Test、Build 等命令放到统一环境中执行，从而减少“开发者忘记运行”或本地环境不同造成的差异。
+
+```yaml
+steps:
+  - run: npm ci
+  - run: npm run lint
+  - run: npm run type-check
+  - run: npm run test
+  - run: npm run build
+```
+
+这里的重点不是某个 CI 产品，而是让同一套 Verification 能够自动、可重复执行。Pipeline、Job、Artifact、Delivery、Deployment 和 Production Verification 的完整关系由 [软件交付与 CI/CD 工程体系](<./R-软件交付与CI-CD工程体系.md>) 统一维护。
+
+## 6. Quality Signal 只有经过策略判断才形成 Quality Gate
+
+Lint Error、Type Error、Test Failure、Coverage、Build Result、Review Result 都只是 Quality Signal（质量信号）。Quality Gate（质量门禁）是在特定阶段根据这些信号决定“是否允许继续”的策略。
+
+```text
+Verification
+    ↓
+Signal
+    ├─ lint: pass / fail
+    ├─ type-check: pass / fail
+    ├─ test: pass / fail
+    ├─ coverage: metric
+    ├─ build: pass / fail
+    └─ review: approved / changes requested
+    ↓
+Policy
+    ↓
+Gate Decision
+    ├─ Pass  → Merge / Build / Release
+    └─ Block → Fix → Verify Again
+```
+
+例如“测试失败”是 Signal；“Required Check 中测试失败则禁止 Merge”才是 Gate。类似地，Coverage 是度量，是否设置阈值、阈值是多少、对哪些目录生效属于团队策略。
+
+### 【不同阶段的门禁强度应该不同】
+
+本地阶段可以允许 Warning，以换取快速反馈；Pull Request 阶段通常需要对关键检查设置 Required Check；Release 阶段还可能加入 Artifact、安全、部署和生产验证。
+
+这形成一种分层控制：
+
+| 阶段 | 主要目标 | 常见策略 |
+| --- | --- | --- |
+| Editor / Local | 快速发现 | 即时提示、自动修复 |
+| Pre-commit | 过滤明显问题 | Staged Files Lint / Format |
+| Pull Request / CI | 统一验证 | Lint / Type / Test / Build Required Checks |
+| Release | 确认可交付 | Artifact、发布策略、审批 |
+| Production | 验证真实结果 | Error / Performance / Business Signals |
+
+## 7. Runtime Feedback 补充上线前验证无法覆盖的真实环境
+
+上线前验证只能覆盖已知输入、测试环境和可模拟场景。真实用户环境还会引入浏览器版本、设备、网络、CDN、第三方资源、服务端异常和长时间运行状态，因此运行时监控属于质量闭环的反馈层，而不是“最后一个 Lint 工具”。
+
+### 【运行时错误和资源失败提供生产环境证据】
+
+浏览器可以通过全局错误和 Promise 拒绝事件捕获部分运行时异常：
+
+```javascript
+window.addEventListener('error', event => {
+  // 采集脚本错误或捕获阶段中的资源加载错误
+})
+
+window.addEventListener('unhandledrejection', event => {
+  // 采集未处理的 Promise rejection
+})
+```
+
+真实监控还需要记录 Version、Route、Session、Device、Request / Operation Context 等上下文，并进行采样、去重、聚合和上报。简单的 `console.log` 只能说明事件被监听，不能构成完整可观测性系统。
+
+### 【运行时反馈需要回流到开发验证体系】
+
+线上发现的问题只有回到 Source Change 和 Verification 才能形成闭环：
+
+```text
+Production Issue
+    ↓
+定位影响范围与触发条件
+    ↓
+修复 Source Change
+    ↓
+补充静态规则 / Regression Test / Gate
+    ↓
+重新交付
+    ↓
+Production Verification
+```
+
+如果某类问题能够在上线前稳定检测，就应尽量把它前移为 Lint Rule、Type Constraint、Test Case 或 CI Check；如果问题依赖真实环境，则保留运行时监控和生产验证。
+
+## 8. 前端质量体系通过分层验证形成完整工程闭环
+
+把前面的知识重新放回一次代码变化，可以得到完整路径：
+
+```text
+开发者修改代码
+    ↓
+Editor / Local
+    ├─ ESLint / Stylelint：静态规则
+    ├─ TypeScript：类型约束
+    ├─ Prettier：格式统一
+    └─ Focused Test：快速行为反馈
+    ↓
+Pre-commit
+    └─ lint-staged：只处理当前 Staged Change
+    ↓
+Pull Request / CI
+    ├─ Lint
+    ├─ Type Check
+    ├─ Test
+    ├─ Build
+    └─ Code Review
+    ↓
+Quality Gate
+    ├─ Pass → Merge / Delivery
+    └─ Fail → Fix / Re-run
+    ↓
+Artifact / Release / Deployment
+    ↓
+Production Verification / Monitoring
+    ↓
+新的缺陷证据重新进入开发与测试
+```
+
+这条链路中有三个不能混淆的维度：
+
+1. **Quality Concern** 回答“我们担心什么问题”；
+2. **Verification Mechanism** 回答“用什么方式发现或证明问题”；
+3. **Execution Stage** 回答“在什么时候执行这些验证”。
+
+工具只是 Mechanism 的具体实现，CI 是执行和编排环境，Quality Gate 是基于 Signal 的决策层，Monitoring 是生产环境的反馈层。只有把这些层次分开，才能根据项目风险重新组合工具，而不是依赖固定工具清单。
+
+### 【与测试体系和 CI/CD 体系的知识边界】
+
+本篇负责解释“质量风险如何映射到验证机制、信号和门禁”。相邻知识继续由各自主入口展开：
+
+- [前端测试体系从验证边界到工程质量门禁](<./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md>)：继续深入 Unit / Component / Integration / E2E、Dependency Fidelity、Fixture、Isolation、Coverage 与 Testing Strategy。
+- [软件交付与 CI/CD 工程体系](<./R-软件交付与CI-CD工程体系.md>)：继续深入 Pipeline、Job、Artifact、Continuous Delivery / Deployment、Release、Deployment Strategy 与 Production Verification。
+- [前端工程化设计全面解析](<./Q-前端工程化设计全面解析.md>)：从更上位的工程组织视角理解规范、工具链、构建、测试和自动化如何组合。
+
+## 9. 面试表达围绕“风险—验证—门禁—反馈”组织
+
+完整回答可以表述为：
+
+前端代码质量不是靠 ESLint 单点保证，而是先明确代码变化可能带来的质量风险，再用不同验证机制分层处理。ESLint 和 Stylelint 负责可静态判断的代码规则，TypeScript 负责类型约束，Prettier 负责格式一致性；这些机制解决的是源码层问题，但不能证明业务行为正确，所以还需要测试验证行为、Build 验证可交付性、Code Review 补充自动化难以判断的设计问题。
+
+工程上会把这些检查放到不同反馈阶段：编辑期和本地追求快速反馈，Git Hook 过滤当前变更，CI 在统一环境执行 Lint、Type Check、Test 和 Build。检查产生的是 Quality Signal，只有结合 Required Check 等策略才形成 Quality Gate，决定代码是否允许合并或继续交付。
+
+上线后仍需要 Monitoring 和 Production Verification，因为真实浏览器、设备、网络和服务依赖会暴露上线前无法完全模拟的问题。线上问题再回流成新的规则、测试或门禁，最终形成 Source Change → Verification → Gate → Delivery → Runtime Feedback 的质量闭环。
+
+## 10. 参考文献
+
+1. [ESLint v10.0.0 released](https://eslint.org/blog/2026/02/eslint-v10.0.0-released/) — ESLint，2026-02。
+2. [Configuration Migration Guide](https://eslint.org/docs/latest/use/configure/migration-guide) — ESLint。
+3. [TypeScript Documentation](https://www.typescriptlang.org/docs/) — TypeScript。
+4. [TSConfig: noEmit](https://www.typescriptlang.org/tsconfig/noEmit.html) — TypeScript。
+5. [Configure](https://stylelint.io/user-guide/configure/) — Stylelint。
+6. [Prettier Documentation](https://prettier.io/docs/) — Prettier。
+7. [Integrating with Linters](https://prettier.io/docs/integrating-with-linters) — Prettier。
+8. [SonarQube Server Documentation](https://docs.sonarsource.com/sonarqube-server/) — SonarSource。
+9. [Husky Documentation](https://typicode.github.io/husky/) — Husky。
+10. [lint-staged](https://github.com/lint-staged/lint-staged) — lint-staged。
