@@ -4024,6 +4024,8 @@ Response
 
 当前阶段重点建立 **Runtime → Process → Thread → Event Loop → I/O → Server → Request** 的关系，暂不深入 V8 编译器、libuv 内部结构和操作系统调度算法。
 
+Node.js Runtime 的 Process Lifecycle、Runtime API、Event Loop、异步 I/O、Worker Thread 与 Child Process 属于独立运行时知识层，继续参考 [Node.js Runtime 完整知识体系](./N-NodeJS核心总结.md)。本节只负责说明这些能力怎样进入完整服务端运行链。
+
 ### 【Runtime、Process 和 Server 描述程序运行的不同层级】
 
 #### <u>1. Runtime 是代码能够运行所依赖的执行环境</u>
