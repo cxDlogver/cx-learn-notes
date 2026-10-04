@@ -1,28 +1,24 @@
 # Agent 治理通过身份、授权、审批与隔离约束工具执行
 
-Agent Governance 的核心边界是：**模型可以提出动作，但不能决定真实动作是否有权执行。** 因此治理不能只依赖 Prompt、Guardrail 或某一个审批节点，而要沿着动作从“模型意图”变成“真实业务副作用”的全过程设置可信控制点。
+## 回答要点
 
-一次 Tool Call 真正执行前，系统需要确认发起身份、当前允许暴露的能力、该身份对具体资源的动作权限，以及高风险操作是否需要人工批准；执行阶段还要限制可访问的环境和资源，并由真实业务后端做最终校验；执行以后再通过 Trace / Audit 保存治理证据。
+Agent Governance 应围绕“**模型产生的执行意图怎样经过可信系统控制，最终才允许转化为真实副作用**”构建。治理不是一句安全 Prompt，而是贯穿身份、能力、权限、审批、隔离和审计的控制链。
+
+1. **Authentication 确认 Agent 代表谁执行。** 用户身份、服务身份和 Session 必须由可信系统建立，不能由模型自行声明。
+2. **Tool Exposure 控制当前能看到哪些能力。** 根据场景、角色和阶段缩小 Tool 面可以降低误用概率，但 Tool 不可见不能替代真正授权。
+3. **Authorization 判断具体动作是否允许。** Tool Call 产生后，要结合用户、资源、动作和业务状态校验权限；真实资源权限最终必须由可信 Runtime / Backend 执行。
+4. **Guardrail / Policy 检查参数和风险条件。** 它们解决策略校验，但不等同于身份认证和业务资源授权。
+5. **HITL 为高风险动作增加人工决策。** 删除、退款、发布等动作可在执行前暂停；批准后恢复时仍需重新核验身份、权限和资源状态。
+6. **Sandbox / Resource Boundary 限制影响范围。** 对代码、Shell、文件和浏览器能力限制目录、网络、凭证和资源，降低模型误判后的影响。
+7. **Backend Revalidation 是真实副作用前的最终安全边界。** 即使 Runtime、Guardrail 和审批已通过，资源服务仍应按自身规则再次校验。
+8. **Trace / Audit 保存可追责证据。** 记录谁发起、模型提出什么动作、命中什么策略、谁批准、最终执行结果如何。
+9. **各治理机制不能互相替代。** Prompt / Skill 是行为指导，Exposure 是能力收敛，Authorization 是权限判断，HITL 是风险审批，Sandbox 是隔离，Audit 是事后证据。
 
 ```text
-Model 提出 Tool Call
-        ↓
-Authentication：谁在发起？
-        ↓
-Tool Exposure：当前可以看到哪些能力？
-        ↓
-Authorization：能否对该资源执行该动作？
-        ↓
-Human Approval：高风险动作是否需要批准？
-        ↓
-Sandbox / Resource Boundary：允许在哪里执行？
-        ↓
-Backend Revalidation：真实副作用是否最终允许？
-        ↓
-Trace / Audit：怎样证明发生过什么？
+Identity → Model Tool Call → Tool Exposure
+→ Authorization / Policy → HITL
+→ Sandbox → Backend Revalidation → Trace / Audit
 ```
-
-因此后文会把 Prompt / Skill 的行为指导、Tool 可见性、业务授权、HITL、Sandbox、后端校验和审计拆成不同控制职责，并说明恢复任务时为什么还需要重新核验关键安全条件。
 ## 1. 治理规则贯穿身份、动作与执行边界
 
 ### 【Agent Governance 的定位与治理目标】
