@@ -1,26 +1,31 @@
 # Harness、Runtime 与 Loop 分别承担运行支撑、执行管理和决策循环
 
-Agent Harness、Agent Runtime 和 Agent Loop 不是三个需要孤立记忆的定义，而是对同一次 Agent 执行从不同层次进行抽象：**Loop 描述持续决策机制，Runtime 负责把机制实际运行起来，Harness 提供完整的工程支撑。**
+## 回答要点
 
-理解三者关系的起点是“一次模型调用为什么不足以构成 Agent”。模型要持续完成动态任务，必须根据执行结果继续判断，因此需要 Loop；循环机制本身不能自动运行，因此需要 Runtime 调用模型、执行 Tool、更新 State 并控制生命周期；Runtime 进入真实工程环境后，还需要 Context、Memory、权限、Checkpoint、Trace 等公共能力，因此进一步形成 Harness 层面的运行支撑。
+这组概念应该从“**一次 Agent 任务怎样从模型推理变成可持续、可控制的工程执行**”来理解，而不是分别背定义。
+
+1. **Loop 解决持续推进问题。** 单次模型调用只能完成一次推理；任务需要调用 Tool、读取结果并继续判断时，就需要“Model 判断 → Action → Observation → 再判断”的循环。Loop 回答“任务为什么能够继续往下走”。
+2. **Runtime 解决循环如何真正执行的问题。** Loop 只是机制描述，真正运行还需要构建 Context、调用 Model、解析 Tool Call、执行 Tool、更新 State，并处理超时、中断、恢复和停止条件。Runtime 是一次 Agent Run 的执行载体。
+3. **Harness 解决 Runtime 如何进入完整工程环境的问题。** Runtime 稳定工作还依赖 Model Adapter、Context、Memory、Tool / Skill / MCP、Permission / HITL、Sandbox、Checkpoint、Trace 等公共能力。Harness 强调这些能力怎样被组织成运行支撑体系。
+4. **三者最终要放回同一次 Agent Run 验证。** Runtime 从 Harness 获取模型、工具、上下文和治理能力，驱动 Model 与 Tool 执行；Tool Result 更新 State 后，Loop 决定是否进入下一轮，直到得到 Final Output 或触发停止条件。
+5. **职责关系不等于固定代码包含关系。** 可以用“Loop 是循环机制、Runtime 是执行载体、Harness 是工程支撑”建立认知，但不同框架可能使用 Runner、Graph、Engine、Harness 等不同命名，也可能组合这些职责。
+6. **Loop 不能与 Workflow 混淆。** Loop 解决 Agent 如何根据反馈持续决策；Workflow 解决业务步骤怎样组织和约束。确定性 Workflow 内部也可以运行 Agent Loop。
+
+因此整篇正文的主线是：
 
 ```text
-一次模型调用不足以持续完成任务
+单次模型调用无法持续完成动态任务
         ↓
-需要根据结果继续判断
-→ Loop：判断 → 行动 → 观察 → 再判断
+Loop：建立“判断—行动—观察—再判断”的持续推进机制
         ↓
-循环需要真正的执行载体
-→ Runtime：Model Call / Tool / State / Lifecycle
+Runtime：把模型调用、Tool 执行、State 与生命周期真正运行起来
         ↓
-执行进入工程环境需要公共能力
-→ Harness：Context / Memory / Permission / Checkpoint / Trace ...
+Harness：补齐 Context、Memory、Tool、权限、Checkpoint、Trace 等工程支撑
         ↓
-一次 Agent Run
-Context → Model → Tool Call → Tool Result → State → 下一轮 / 结束
+放回一次 Agent Run 验证三者如何协作
+        ↓
+补充边界：职责抽象 ≠ 行业统一代码层级；Loop ≠ Workflow
 ```
-
-因此后文不按三个术语分别背定义，而是先建立职责，再放回一次 Agent Run 验证协作关系，最后说明不同框架在命名和代码组织上的边界。
 ## 1. 三者按支撑体系、执行管理和循环机制划分职责
 
 ### 【Agent Harness：强调 Agent 的整体运行支撑体系】
