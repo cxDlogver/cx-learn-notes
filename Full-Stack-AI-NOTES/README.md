@@ -97,7 +97,7 @@ Full-Stack-AI-NOTES 通用知识正文
 | 浏览器与前端基础 | 网络、浏览器渲染、JavaScript、TypeScript、CSS、异步、V8 | [计算机网络连接概述](./计算机网络连接概述.md)、[JavaScript核心总结](./JavaScript核心总结.md)、[基于Chrome浏览器渲染原理](./基于Chrome浏览器渲染原理.md) |
 | 框架与前端工程化 | Vue、Router、模块化、Monorepo、Vite、Webpack、测试、CI/CD | [Vue3进阶学习](./Vue3进阶学习.md)、[Monorepo工程体系](./Monorepo工程体系.md)、[前端工程化设计全面解析](./前端工程化设计全面解析.md) |
 | 性能、监控与 SEO | Web Vitals、资源、渲染、监控、Lighthouse、Nuxt、SEO | [性能专项优化](./性能专项优化.md)、[Nuxt SEO 学习笔记](<./Nuxt SEO 学习笔记.md>) |
-| 服务端与全栈 | Node.js、HTTP、数据库、鉴权、Django、实时通信 | [NodeJS核心总结](./NodeJS核心总结.md)、[Django从0到1](./Django从0到1.md)、[DATABASE](./DATABASE.md) |
+| 服务端与全栈 | Node.js、HTTP、数据库、鉴权、Django、实时通信 | [服务端完整框架体系](./服务端完整框架体系.md)、[WebSocket完整知识体系](./WebSocket完整知识体系.md)、[Web身份认证会话控制与访问控制体系](./Web身份认证会话控制与访问控制体系.md) |
 | AI Agent 与 AI Native | Context、Tool、Memory、Skill、MCP、Loop、Runtime、Harness、Workflow、Orchestration、Eval | [Agent完整学习教程](./Agent学习教程.md) → [Agent System 研发知识梳理](./Agent-System研发知识梳理.md) → [Agent Eval 与 Benchmark](./Agent-Eval与Benchmark.md)；可运行证据：[Minimal Agent 源码](./source/minimal-agent/) |
 | 项目与面试表达 | 项目复盘、技术方案、面试追问、算法与表达 | [项目概述](./项目概述.md)、[前端面试核心问题](./前端面试核心问题.md)、[项目扩展面试题](./项目扩展面试题.md) |
 
