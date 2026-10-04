@@ -964,6 +964,8 @@ Production Verification
 
 项目中的 ATDD / BDD、验收矩阵、Fixture、浏览器矩阵、证据 Schema 等内容可以作为 Testing Strategy 的工程实践，但项目特定账号、业务状态、Viewport、接口数据和目录结构不应成为通用定义。
 
+计划打卡 Web 项目已经把这些通用概念落成一份可执行验收矩阵，可继续阅读 [计划打卡 Web V1 ATDD / BDD 验收测试矩阵](../ios-plan-checkin/docs/ATDD-BDD-计划打卡-Web-v1-验收矩阵.md)。该文档属于项目实践证据，负责保存具体业务 Scenario、Fixture、浏览器矩阵和 Evidence Contract；本文只维护可迁移的通用测试模型。
+
 通用知识只抽象：
 
 ~~~text
