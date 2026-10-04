@@ -2499,93 +2499,217 @@ Replication / Failover
 
 同一个 Redis Instance 可能混合不同 Reliability Class，因此未来可能需要 Instance Splitting、不同 Persistence、不同 Eviction、不同 HA 和不同 Access Control。
 
-## 7. Replication、Sentinel 与 Cluster 分别解决不同层级的问题
+## 7. Redis 的水平扩展需要理解 Replication、Sharding、Cluster 与 Hash Slot
 
-### 【Replication 先提供副本，不自动等于完整 Failover】
-
-Redis Replication（复制）使用 Primary / Replica 模型，让 Replica 尽量保持 Primary Dataset 的副本。官方文档说明，Primary 会把 Dataset 变化传播给 Replica，断线后会尝试部分或完整重新同步。[5]
-
-Replication 主要提供：
+第 6 章已经从可靠性角度解释了 Replication 与 Sentinel。进入规模化以后，问题变成：
 
 ~~~text
-数据副本
-+
-读取扩展的基础
-+
-高可用的前提
+单节点 CPU 到顶怎么办？
+单节点 Memory 不够怎么办？
+单节点 Network 饱和怎么办？
+写入吞吐需要继续增加怎么办？
 ~~~
 
-但“存在 Replica”不等于已经拥有完整自动 Failover。
+这时才进入 Horizontal Scaling（水平扩展）。
 
-### 【Sentinel 面向非 Cluster Redis 提供监控与自动故障转移】
+### 【Vertical Scaling 与 Horizontal Scaling 解决的层级不同】
 
-Redis Sentinel 主要用于：
+Vertical Scaling：
 
 ~~~text
-Monitor
-↓
-Failure Detection
-↓
-Leader Election / Failover
-↓
-让 Replica 提升为新的 Primary
+更大的 CPU
+更多 Memory
+更快 Network
+更快 Disk
 ~~~
 
-所以：
+优点是简单，不改变 Key Distribution。
+
+但单机总有上限。
+
+Horizontal Scaling：
 
 ~~~text
-Replication
-解决“有没有副本”
-
-Sentinel
-解决“单主复制架构中主节点故障后谁接管”
+多个 Redis Node
+↓
+把 Keyspace 分散
 ~~~
 
-### 【Redis Cluster 同时处理分片与节点故障】
+需要新的问题：
 
-Redis Cluster 通过 Hash Slot 将 Keyspace 分散到多个 Master：
+~~~text
+一个 Key 应该去哪台 Node？
+多 Key Command 怎么办？
+Transaction 怎么办？
+Lua Script 怎么办？
+Node 加减以后 Key 如何迁移？
+~~~
+
+### 【Replica 可以扩展部分读取，但不能分散全部写入】
+
+Primary / Replica：
+
+~~~text
+Writes
+↓
+Primary
+
+Reads
+↓
+Primary / Replica
+~~~
+
+在允许读副本、允许一定复制延迟的场景，Replica 可以承担部分 Read Traffic。
+
+但所有 Writes 仍然集中到 Primary，因此 Replica 不是通用 Write Scaling 方案。
+
+### 【Redis Cluster 通过 Hash Slot 把 Keyspace 分片到多个 Master】
+
+Redis Cluster 引入固定数量的 Hash Slot：
 
 ~~~text
 Key
 ↓
+CRC16
+↓
 Hash Slot
 ↓
-Shard / Master
+负责该 Slot 的 Master
 ~~~
 
-核心价值：
+Redis Cluster Specification 定义 16384 个 Slot。[38]
+
+逻辑：
 
 ~~~text
-单机容量上限
-↓
-多个 Shard 分担 Keyspace
-
-单机写吞吐上限
-↓
-不同 Slot 可以落到不同节点
+Cluster
+├── Master A
+│   └── Slots 0 ... 5000
+├── Master B
+│   └── Slots 5001 ... 10000
+└── Master C
+    └── Slots 10001 ... 16383
 ~~~
 
-但 Cluster 也会反过来约束多 Key Command、MULTI / EXEC、Lua Script、Key 命名与 Hash Tag。
+当扩容时，迁移的是 Slot Responsibility，而不是简单修改所有 Client 的取模公式。
 
-如果一个 Script 需要访问多个 Key，在 Cluster 中必须考虑这些 Key 是否位于允许的 Slot 范围。Redis EVAL 官方文档要求脚本访问的 Key 必须显式通过 KEYS 参数声明。[6]
+### 【Cluster 解决 Keyspace 分片，但不能自动解决 Hot Key】
 
-### 【Cluster 不能自动消灭 Hot Key】
+假设很多 Key 已经均匀分布到多个 Master，但其中一个 Key 每秒承担极高访问量，它仍然只属于一个 Slot，也只落在一个 Master。
 
-即使很多 Key 被均匀分布到多个 Shard，某一个 Key 如果承担极高比例请求，它仍然只会落在某个具体 Shard。
-
-因此：
+所以：
 
 ~~~text
 Sharding
-解决 Keyspace / 总容量分布
+=
+分散大量 Key 的整体负载
 
 Hot Key
-是访问集中度问题
+=
+单个 Key 的访问集中问题
 ~~~
 
-二者不能混为一谈。
+不能混为一谈。
 
----
+### 【Cluster 会反过来约束多 Key Command、Transaction 与 Lua】
+
+单节点 Redis 中：
+
+~~~text
+MGET keyA keyB
+MULTI 操作 keyA / keyB
+Lua 访问 keyA / keyB
+~~~
+
+只要都在同一个 Server，执行边界比较直接。
+
+Cluster 中：
+
+~~~text
+keyA → Slot 100
+keyB → Slot 9000
+~~~
+
+可能位于不同 Node。
+
+很多需要同时操作多个 Key 的能力要求相关 Key 位于同一个 Slot，否则会遇到 Cross-slot 限制。
+
+### 【Hash Tag 用花括号显式控制相关 Key 落到同一 Slot】
+
+例如：
+
+~~~text
+user:{42}:profile
+user:{42}:session
+user:{42}:counter
+~~~
+
+Cluster 计算 Slot 时只使用：
+
+~~~text
+{42}
+~~~
+
+因此这些 Key 会落到相同 Slot。
+
+Hash Tag 适合真正需要一起执行 Multi-key Command / Transaction / Script 的相关 Key。
+
+但不能滥用。
+
+如果大量 Key 都使用同一个 Tag：
+
+~~~text
+{global}:...
+~~~
+
+就会把很多流量重新压回同一个 Slot，形成 Hot Slot。
+
+### 【Lua Script 在 Cluster 中必须显式声明 Key，并考虑 Slot】
+
+EVAL：
+
+~~~text
+EVAL script numkeys key1 key2 ... arg1 arg2 ...
+~~~
+
+脚本访问的 Redis Key 应通过 KEYS 声明。[6]
+
+在 Cluster 下，多 Key Script 还要考虑这些 Key 是否可在同一个执行节点完成。
+
+所以从单机迁移 Cluster 前，应重新审查：
+
+~~~text
+Multi-key Commands
+MULTI / EXEC
+Lua
+Pipeline
+Key Naming
+Hash Tag
+~~~
+
+而不是只改 Redis Connection String。
+
+### 【Cluster 与 Sentinel 不是同一个维度】
+
+可以先建立：
+
+~~~text
+Sentinel
+↓
+主要围绕一组 Primary / Replica
+做 High Availability
+
+Cluster
+↓
+主要解决 Keyspace Sharding
+同时也包含分片节点的故障转移机制
+~~~
+
+如果单节点容量足够但需要更短 Failover，可以使用 Sentinel / Managed HA。
+
+如果单节点容量和吞吐本身不够，才需要 Sharding / Cluster。
+
+不要因为“生产要高可用”就自动得出“必须上 Cluster”。
 
 ## 8. Redis 的规模化运行需要同时治理 Memory、Hot Key、Big Key 与 Observability
 
