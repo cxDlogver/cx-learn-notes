@@ -1,54 +1,30 @@
 # Agent 评测通过任务、执行证据与评分器形成质量闭环
 
-**原问题：** 如何构建一个完整的 Agent 评测体系？
+Agent Eval 的核心不是给模型输出“打一个分”，而是判断 **Agent 是否在真实环境中完成了预先定义的任务目标**。因此评测必须从成功标准开始，经真实执行、证据采集和评分，再形成可用于版本比较的指标与 Benchmark。
 
-**回答要点：**
-
-- 先定义 Task 的成功条件，再对多次 Trial 收集真实 Outcome、最终 Output 与执行 Trajectory，模型自报完成不能替代验收。
-- 可确定的条件使用代码评分，开放质量使用带 Rubric 的模型评分，复杂和争议情况引入人工复核。
-- 成功率与 pass@k、pass^k 分别反映完成质量、探索能力和重复运行稳定性，比较前需固定样本、预算与聚合口径。
-- 通过评分器校准、评测集版本和回归运行形成持续质量闭环；Trace 提供证据，Eval 据此作出判断。
-
-本题与[Agent Eval 与 Benchmark](<../A-Agent-Eval与Benchmark.md>)相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-这个问题不适合从某一个具体指标或某一种评分器开始讲，而应该先回答一个更基础的问题：**Agent 的执行具有非确定性，因此不能把 Agent 自己输出的“任务已完成”当成任务真正完成的证明。**
-
-一个完整的 Agent 评测体系，需要依次解决下面几个问题：
+模型自己声称“任务已完成”不能成为完成证明。Task 需要先定义 Success Criteria；一次真实执行形成 Trial；执行结束后收集 Output、Outcome、Trace / Trajectory、Cost 等证据；Grader 再根据证据判断结果；最后把大量 Trial 聚合成 Success Rate、pass@k、pass^k、成本和稳定性等指标，并通过固定 Suite / Benchmark 做持续回归。
 
 ```text
-为什么需要独立评测
+什么叫成功？
+→ Task + Success Criteria
         ↓
-评测什么
+让 Agent 真实执行
+→ Trial
         ↓
-Outcome / Output / Trajectory
+用什么证明结果？
+→ Output + Outcome + Trace / Trajectory + Cost
         ↓
-怎么评
+谁来判断是否成功？
+→ Code Grader / Rubric Model / Human
         ↓
-Code / Model / Human
+怎样衡量系统能力？
+→ Metrics
         ↓
-复杂任务按什么标准评
-        ↓
-Rubric
-        ↓
-多条标准如何组合
-        ↓
-Hard Gate / Weighted Score / Hybrid
-        ↓
-怎样把多次 Trial 转成指标
-        ↓
-Success Rate / Rubric Score / pass@k / pass^k / Cost / Latency / Safety ...
-        ↓
-最终从哪些维度衡量 Agent
-        ↓
-Effectiveness / Reliability / Efficiency / Safety
-        ↓
-线上 Failure 回流 Evaluation Suite
+怎样比较不同版本？
+→ Eval Suite / Benchmark → Regression
 ```
 
-其中最重要的边界是：
-
-> **评测对象、评分方式、Rubric 和 Metric 不是同一个概念。评测对象回答“评什么”，Grader 回答“怎么判断”，Rubric 回答“什么叫做对”，Metric 回答“怎样把大量 Trial 的结果量化和比较”。**
-
+后文沿这条“定义成功 → 执行 → 取证 → 评分 → 聚合 → 回归”的链路展开，并重点区分评测对象、证据、Grader、Rubric、Metric 和 Benchmark 的职责。
 ## 1. 评测以真实任务结果和执行证据为对象
 
 ### 【核心判断：Agent 的自我报告不能作为任务完成证明】
