@@ -1,34 +1,26 @@
 # Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复
 
-Agent 长任务的关键不是让一次模型调用持续几个小时，而是把长期目标转化为**可分解、可验收、可持久化、可恢复**的执行过程。任务时间越长，中断、错误累积、上下文耗尽和外部状态变化越不可避免，因此系统必须主动建立可信的阶段边界。
+## 回答要点
 
-首先把长期目标拆成可独立推进和验收的工作单元；执行过程中用 State 记录当前计划和结果；阶段结果经过 Verification 后才能成为后续可信前置；通过验收的状态、产物和可复用信息分别由 Checkpoint、Artifact、Memory 持久化；发生中断时还要核对外部副作用，再从可信位置 Resume。
+Agent 长任务的核心不是维持一个永不结束的进程，而是把长期目标设计成**可以分段提交可信进度，并在任意一次运行中断后继续推进**的系统。
+
+1. **Task Decomposition 建立可恢复边界。** 长任务拆成可独立执行和验收的工作单元，否则系统即使有 Checkpoint，也难判断哪些工作已经可信完成。
+2. **State 记录当前执行事实。** 当前计划、已完成任务、当前子任务、Tool Result 和待处理事项形成后续判断与恢复基础。
+3. **Verification 决定哪些进度可以被信任。** 子任务执行结束不等于完成，Test、Rule、Evaluator 或人工审批确认后，结果才能成为后续稳定前置。
+4. **Artifact 保存交付结果。** 代码、文档、报告等独立持久化，不能只存在 Context 或对话中；Artifact 是成果，不等同于运行状态。
+5. **Checkpoint 保存恢复所需快照。** 它记录节点、State 和必要元数据，解决中断后从哪里继续，但不能自动保证外部副作用只发生一次。
+6. **Memory 保存未来可复用信息。** Memory 服务跨轮次或跨任务复用；Context 只是当前 Model Call 实际可见的信息，因此 Context、State、Checkpoint、Artifact、Memory 要区分。
+7. **Interruption 后先核对再 Resume。** 中断期间外部状态可能变化，恢复前要检查已完成节点、待审批动作和真实副作用，必要时 Reconciliation。
+8. **Idempotency / Operation Record 保护真实业务动作。** 数据库写入、消息、订单、支付等动作不能仅靠内部 State 防止重复执行。
+9. **Agent Run 与业务长任务生命周期不同。** RunState 解决一次 Run 的暂停恢复；跨小时、跨天、跨进程任务通常还需要 Durable Workflow / Job System 管理阶段、等待和调度。
 
 ```text
-Long-running Goal
-        ↓
-Task Decomposition
-建立可推进、可验收的工作单元
-        ↓
-State
-记录当前执行事实
-        ↓
-Execution + Verification
-确认阶段结果可信
-        ↓
-Persistence
-Checkpoint / Artifact / Memory
-        ↓
-Interruption / Failure
-        ↓
-Reconciliation
-核对外部真实状态和副作用
-        ↓
-Resume
-从可信边界继续
+Goal → Task Decomposition → State
+→ Execution → Verification
+→ Artifact / Checkpoint / Memory
+→ Interruption → Reconciliation + Idempotency
+→ Resume from Trusted Boundary
 ```
-
-后文会进一步区分 Context、State、Checkpoint、Artifact、Memory 的职责，并说明为什么 Agent 内部状态恢复仍不能替代业务级持久编排、幂等和对账。
 ## 1. 任务分解与 State 让长任务进度可以独立推进和验收
 
 ### 【核心目标：运行可以中断，但任务进度不能丢失】
