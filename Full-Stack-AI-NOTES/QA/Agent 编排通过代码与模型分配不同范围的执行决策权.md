@@ -1,28 +1,32 @@
 # Agent 编排通过代码与模型分配不同范围的执行决策权
 
-## 回答要点
+## 【知识概述】
 
-Agent Orchestration 应从“**哪些决策必须确定，哪些决策只有运行时才能做，以及这些决策由谁拥有**”开始，而不是先选 Manager、Handoff 或 Multi-Agent。最终目标是形成确定性业务骨架与局部模型自主性的组合。
+这篇知识点想讲清楚的是：**复杂任务由多个阶段、多个 Tool 或多个 Agent 共同完成时，哪些执行关系应该提前由代码确定，哪些决策才需要在运行时交给模型，以及这些执行单元应该怎样协作。**
 
-1. **先识别 Business Workflow 中不可让渡的确定性结构。** 法定顺序、发布流程、审批节点、权限边界、验收条件等如果已经明确，就应由代码或规则固定。
-2. **再识别真正需要模型动态决策的局部任务。** 搜索文件、选择 Tool、拆解开放问题、根据反馈调整方案等无法提前穷举的步骤，才适合交给模型。
-3. **Planning / Replanning 管理模型的方案调整权。** 模型可以修改 Plan、Subtask、执行顺序和 Tool 选择，但 Goal、Business Constraint、Security Policy、Acceptance Criteria 应保持外部约束。
-4. **决策权确定后再选择执行拓扑。** Single Agent、Manager + Specialists、Handoff、Parallel、Graph 描述执行单元如何连接和协作，不等于系统是否由模型控制。
-5. **Manager 表示中央决策权保留。** Specialist 完成局部任务后把结果返回 Manager，后续 Planning 和最终输出仍由 Manager 控制。
-6. **Handoff 表示当前处理控制权发生转移。** Agent A 把后续处理交给 Agent B；关键区别是结果是否回到中央控制者。
-7. **Parallelism 只描述并发关系。** 并行可以由代码控制，也可以由 Manager 动态发起，与是否 Multi-Agent、是否模型编排是不同维度。
-8. **Graph 主要表达执行结构和状态转移。** Graph 可以承载确定性 Workflow，也可以在节点内部运行 Agent，不能直接等同于 Agent 自主编排。
-9. **Hybrid Orchestration 是常见生产组合。** 外层固定业务阶段和 Gate，内部开放任务交给 Agent Planning；只有确实需要专业分工时再引入 Manager / Handoff。
-10. **自主性越高，控制边界越要明确。** Goal、Permission、Budget、Timeout、Verification、HITL 和 Trace 限制模型能够决定的范围。
+面对复杂任务时，第一步不应该直接选择 Manager、Handoff 或 Multi-Agent。应该先看业务中哪些关系本身已经确定。例如发布前必须测试、高风险操作必须审批、某些阶段必须按顺序发生，这些属于业务约束，代码和 Workflow 可以更稳定地控制。
+
+只有那些无法提前穷举、必须根据当前环境才能决定的局部问题，例如搜索哪些文件、选择哪个 Tool、怎样拆解开放任务、失败以后怎样调整 Plan，才适合把 **Planning / Replanning** 权交给模型。
 
 ```text
-Business Goal
-→ 确定结构：Code / Rule / Workflow / Gate
-→ 动态局部：Model Planning / Replanning
-→ 执行拓扑：Single / Manager / Handoff / Parallel / Graph
-→ 控制边界：Goal / Permission / Budget / Verification / HITL
-→ Hybrid Orchestration
+Complex Goal
+        ↓
+先判断哪些关系已经确定
+→ Code / Rule / Workflow
+        ↓
+再判断哪些局部步骤必须运行时决定
+→ Model Planning / Tool Selection
+        ↓
+最后才考虑多个执行单元怎样协作
+→ Single Agent / Manager / Handoff / Parallel / Graph
 ```
+
+到了多个 Agent 协作这一层，还要继续区分不同关系。**Manager** 表示中央 Agent 保留后续决策权，Specialist 完成局部任务后返回结果；**Handoff** 表示当前处理权从一个 Agent 转移给另一个 Agent；**Parallel** 只说明任务能否并发执行；**Graph** 主要描述节点和状态转移。这些概念处在不同维度，不能简单归为“多 Agent 越多，自主性越高”。
+
+实际系统通常会形成 Hybrid Orchestration：外层用确定性 Workflow 固定业务阶段、权限和验收 Gate，局部开放任务再交给模型动态判断。模型自主范围还要受到 Goal、Permission、Budget、Timeout、Verification 和 HITL 的约束。
+
+因此这篇知识点真正讨论的是 **执行结构与决策权如何分配**。它会连接 Agent Loop / Runtime，因为动态决策最终需要 Runtime 执行；连接 Governance，因为决策权不能突破权限边界；连接 Long-running Task，因为跨阶段任务需要持久编排；也连接 Eval，因为不同编排方式最终仍要通过任务结果验证效果。
+
 ## 1. 编排先划分执行结构与下一步决策权
 
 ### 【Orchestration 的核心：分配执行控制权】
