@@ -210,6 +210,233 @@ DPoP（Demonstrating Proof of Possession）：实现Sender-Constrained的核心�
 
 - DPoP与Sender-Constrained Refresh Token的关系是什么？
 
+### Refresh Token Family、Rotation 与 Reuse Detection 的完整状态模型
+
+Refresh Token Rotation 不是简单地“旧字符串换成新字符串”，而是维护一条能够被服务端追踪的 Token 世代关系。RFC 9700 明确要求：采用 Rotation 检测重放时，授权服务器在签发新 Refresh Token 后使旧 Token 失效，同时保留两者之间的关系；如果已经失效的旧 Token 再次出现，就可以识别凭证链可能已经泄漏。[[1]](https://www.rfc-editor.org/rfc/rfc9700.html)
+
+可以把一次登录产生的所有 Refresh Token 看成一个 Token Family（令牌家族）：
+
+```text
+Login
+  ↓
+Family F1
+  ↓
+Refresh A
+  ↓ Rotation
+Refresh B
+  ↓ Rotation
+Refresh C
+```
+
+Token Family 是一种逻辑会话边界，不要求必须存在独立 `token_families` 表。小型系统可以让每条 Refresh Token 记录携带相同的 `family_id`；复杂系统也可以把 Family 独立成 Session / Token Family 表。
+
+一条可支持 Rotation、Reuse Detection 和撤销的通用 Refresh Token 记录可以包含：
+
+| 字段 | 作用 |
+| --- | --- |
+| `token_hash` | Token 的哈希，不保存长期凭证明文 |
+| `family_id` / `session_id` | 标识同一次登录会话产生的整个 Token Family |
+| `user_id` | 会话属于哪个主体 |
+| `parent_token_hash` | 当前 Token 由哪一代 Token 轮换而来 |
+| `replaced_by_hash` | 当前 Token 被哪一代新 Token 替代 |
+| `created_at` | 当前 Token 创建时间 |
+| `expires_at` | 当前 Token / Family 的有效期边界 |
+| `consumed_at` | 当前 Token 是否已经成功完成过一次 Rotation |
+| `revoked_at` | 系统是否已经主动终止对当前 Token / Family 的信任 |
+
+其中最重要的是区分 `consumed` 和 `revoked`。
+
+```text
+consumed
+回答：
+“这枚 Token 是否已经被正常使用过？”
+
+revoked
+回答：
+“系统是否已经决定不再信任这枚 Token / 这个会话？”
+```
+
+因此正常 Rotation 后，旧 Token 应该是：
+
+```text
+Refresh A
+consumed_at != null
+revoked_at  = null
+```
+
+它不是发生了安全事件，而只是正常完成了自己的生命周期。新的 Refresh B 则是：
+
+```text
+Refresh B
+consumed_at = null
+revoked_at  = null
+```
+
+如果之后 A 再次被提交：
+
+```text
+A 已经 consumed
+        +
+A 再次出现
+        ↓
+Reuse Detected
+        ↓
+整个 Family 不再可信
+        ↓
+Revoke Family
+```
+
+为什么不能只拒绝 A？因为服务器已经无法可靠判断攻击者只持有 A，还是同时已经获得后续的 B / C。Rotation 的安全价值正来自“旧 Token 再次出现”这个异常信号，因此通常需要终止整条会话链。
+
+`revoked` 还可以由完全正常的安全操作触发，例如：
+
+- 用户 Logout；
+- 管理员强制下线；
+- 修改密码后要求旧会话失效；
+- 账号冻结；
+- Reuse Detection。
+
+所以 `consumed` 和 `revoked` 不能合并成同一个字段。如果正常 Rotation 也直接标记为 revoked，之后再次看到旧 Token 时只能知道“它无效”，却无法区分它是正常被轮换掉，还是由于 Logout / 管理员策略被撤销。
+
+一个常见状态可以概括为：
+
+```text
+ACTIVE
+consumed = null
+revoked  = null
+     ↓ 正常 Rotation
+
+CONSUMED
+consumed != null
+revoked  = null
+     ↓ 旧 Token 再次被使用 / Logout / Security Event
+
+REVOKED
+revoked != null
+```
+
+注意：`consumed != null` 并不意味着 Token 仍然允许刷新，它只是保留“曾经正常消费过”的历史事实，用于 Reuse Detection 和审计。
+
+Rotation 必须把下面三件事放进一个原子事务：
+
+```text
+检查旧 Token 是否仍可消费
+        +
+把旧 Token 标记 consumed
+        +
+创建下一代 Refresh Token
+```
+
+否则两个并发 Refresh 都可能同时观察到旧 Token 未消费，从同一 Token 分叉出两个后继 Token。
+
+同时还要区分 Revoke 与 Delete：
+
+```text
+Revoke
+= 立即终止信任
+但记录可以继续保留，用于审计和识别后续重放
+
+Delete
+= 物理删除记录
+通常在超过保留期 / 绝对过期后由清理任务完成
+```
+
+如果 Logout 时直接删除整个 Family，之后攻击者再拿旧 Refresh Token 请求时，服务器只能得到“未知 Token”；保留 revoked 状态则可以明确知道它属于一个已经终止的会话。
+
+### Refresh Token 的过期模型需要同时考虑活跃体验和最大安全边界
+
+Refresh Token 的寿命不能只理解成一个 `expires_at`。常见需要区分三种时间概念：
+
+| 模型 | 含义 | 主要作用 |
+| --- | --- | --- |
+| Idle Expiration（空闲过期） | 连续一段时间没有使用就失效 | 清理长期不活跃会话 |
+| Absolute Expiration（绝对过期） | 从会话创建开始计算最大寿命，不因活跃而延长 | 防止被盗会话被无限维持 |
+| Sliding Expiration（滑动续期） | 每次有效活动后把空闲截止时间向后移动 | 提升持续活跃用户体验 |
+
+Sliding Expiration 不应该等价于“每次 Refresh 都重新获得一个无限可续的完整生命周期”。浏览器 OAuth BCP RFC 10017 要求浏览器客户端的 Refresh Token 要么有 Maximum Lifetime（最大生命周期），要么在一段时间未使用后过期；如果已经为初始 Refresh Token 设定最大寿命，Rotation 后的新 Token 不得把寿命延长到这个初始上限之外。[[2]](https://www.rfc-editor.org/rfc/rfc10017.html)
+
+因此更稳妥的混合模型是：
+
+```text
+Idle Window
+随着有效活动滑动
+        +
+Absolute Maximum
+从登录 / 授权开始固定
+```
+
+可以抽象为：
+
+```text
+effectiveExpiresAt = min(
+  lastActivityAt + idleTTL,
+  familyCreatedAt + absoluteTTL
+)
+```
+
+OWASP Session Management Cheat Sheet 同样建议会话同时考虑 Idle Timeout 和 Absolute Timeout；Absolute Timeout 的意义就是即使会话持续活跃，也仍然存在一个不可无限突破的最大寿命。[[3]](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+
+这也解释了长期实时展示场景的设计边界：
+
+```text
+普通 Human Session
+需要周期性重新认证
+→ 保留 Absolute Maximum
+
+真正 7×24 无人值守 Display / Kiosk
+不应该简单通过“无限滑动用户 Refresh Token”实现
+→ 更适合独立的低权限终端身份、只读 Scope、设备绑定和独立撤销策略
+```
+
+也就是说，长期在线需求首先是身份模型问题，而不是简单把 Absolute Expiration 删除。
+
+### JWT Access Token、Opaque Token 与 Server-side Session 是不同的状态模型
+
+Access Token 常见两条路线：
+
+```text
+JWT Access Token
+Token 自包含 Claims
+Resource Server 可以本地验签
+
+Opaque Access Token
+Token 本身只是高熵随机标识
+真实会话状态保存在 Server-side Store
+```
+
+JWT 是自包含格式，不代表整个系统一定 Stateless（无状态）。如果 JWT 验签以后仍然查询 Token Family、Session Store、用户状态或 Revocation List，那么整体架构实际上是：
+
+```text
+JWT
+负责表达和证明短期 Claims
+        +
+Server-side Session State
+负责立即撤销、用户状态和会话控制
+```
+
+这种 Hybrid Model（混合模型）是合法且常见的，只是 JWT “完全不回源即可验证”的优势会被削弱。
+
+Opaque Token 则可以使用 CSPRNG（Cryptographically Secure Pseudorandom Number Generator，密码学安全伪随机数生成器）生成高熵随机值，客户端只持有无业务含义的 Token，服务端保存其哈希及会话状态。OWASP 对 Session Identifier 的通用建议也是：标识值应随机、不可预测、无业务含义，真实状态保存在服务端。[[3]](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+
+选择时不要简单认为“随机字符串一定比 JWT 高级”：
+
+| 场景 | 更自然的模型 |
+| --- | --- |
+| 多个 Resource Server 希望独立验签、减少中心查询 | JWT Access Token |
+| 中心化后台、强制下线、权限和 Session 状态要求实时生效 | Opaque Token + Server-side Session |
+| 既希望 JWT 表达 Claims，又需要立即撤销 | JWT + Server-side Session State |
+
+Opaque Token 还可以通过 Token Introspection 查询权威状态；RFC 7662 定义了资源服务器查询 Token 是否 active 及相关元数据的标准接口。[[4]](https://www.rfc-editor.org/rfc/rfc7662.html)
+
+核心判断不是 Token 长什么样，而是：
+
+```text
+系统更需要
+Decentralized Validation（分散验证）
+还是
+Centralized Session Control（集中会话控制）？
+```
+
 ### 两种Token的服务器认证方式区别
 
 核心区别：Access Token追求高频访问性能，偏无状态；Refresh Token追求会话控制力，偏有状态，二者认证目标和流程完全不同。
@@ -295,4 +522,14 @@ Refresh Token偏有状态的原因：需支持撤销、轮换、复用检测、�
 - Session ID与Refresh Token本质不同，分别对应传统会话和OAuth授权两种体系。
 
 - 前端落地方案需结合项目架构选择，核心是平衡安全性和开发复杂度。
+### 参考资料
+
+1. RFC 9700 — Best Current Practice for OAuth 2.0 Security  
+   https://www.rfc-editor.org/rfc/rfc9700.html
+2. RFC 10017 — OAuth 2.0 for Browser-Based Applications  
+   https://www.rfc-editor.org/rfc/rfc10017.html
+3. OWASP — Session Management Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+4. RFC 7662 — OAuth 2.0 Token Introspection  
+   https://www.rfc-editor.org/rfc/rfc7662.html
 > （注：文档部分内容可能由 AI 生成）
