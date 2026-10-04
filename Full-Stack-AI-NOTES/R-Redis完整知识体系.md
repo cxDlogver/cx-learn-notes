@@ -3481,77 +3481,370 @@ Failure / Maintenance Headroom
 | Observability | 是否能定位 Latency / Memory / Hot Key？ |
 | Operations | 配置、Secret、升级、备份是否受控？ |
 
-## 10. Redis 选型最终回到“状态—访问—并发—生命周期—恢复”五个问题
+## 10. Redis 设计最终回到“状态—结构—并发—生命周期—一致性—恢复”六个问题
 
-### 【一份状态进入 Redis 前先回答五个问题】
+前面所有知识最终都要收敛到一个工程判断：
 
-| 问题 | 需要回答什么 |
-| --- | --- |
-| State | 这是什么状态？谁是 Source of Truth？ |
-| Access | Key 怎么设计？用什么 Data Type？读写模式是什么？ |
-| Concurrency | 单命令够不够？需要 MULTI / WATCH / Lua 吗？ |
-| Lifecycle | TTL 多久？什么时候失效？会不会无限增长？ |
-| Recovery | Redis 丢失、重启、Failover 后怎么恢复？ |
+> 面对一份新的服务端状态，怎样判断它是否应该进入 Redis，以及进入以后该怎样设计？
 
-然后再进入第二层：
+不要从“Redis 能不能做”出发，而要按六层决策。
+
+### 【第一问：State——这到底是什么状态，谁是 Source of Truth】
+
+先分类：
 
 ~~~text
-单机够不够？
+Authoritative Business State
+Derived State
+Runtime State
+Control State
+Operational State
+~~~
+
+如果它是订单、余额、支付结果等长期权威事实，通常不应该只依赖 Redis。
+
+如果它是：
+
+~~~text
+Cache
+Session
+Rate Limit
+Counter
+Temporary Coordination
+Recent Window
+~~~
+
+Redis 才进入候选。
+
+### 【第二问：Structure / Access——Key 怎样设计，访问模式是什么】
+
+依次问：
+
+~~~text
+Scope 是什么？
 ↓
-Persistence 需要多强？
+哪些请求应该访问同一份状态？
 ↓
-是否需要 Replica / Sentinel？
+整体读写还是字段级修改？
+↓
+需要唯一成员、排序、范围查询还是消费？
+~~~
+
+映射：
+
+~~~text
+整体值 / Counter
+→ String
+
+对象字段
+→ Hash
+
+顺序队列
+→ List
+
+唯一成员
+→ Set
+
+排序 / 时间窗口
+→ Sorted Set
+
+持久记录流
+→ Stream
+~~~
+
+再检查：
+
+~~~text
+Key 是否会成为 Hot Key？
+Value 是否会成为 Big Key？
+Key 数量是否会爆炸？
+~~~
+
+### 【第三问：Concurrency——并发修改需要什么原子边界】
+
+决策顺序：
+
+~~~text
+单 Command 能完成？
+├── Yes
+│   → 优先原生命令
+│
+└── No
+    ↓
+命令序列是否预先确定？
+├── Yes
+│   → MULTI / EXEC
+│
+└── No
+    ↓
+是否需要 Client 读取后计算？
+├── Yes
+│   → WATCH + Retry
+│
+└── No / 适合 Server-side
+    → Lua / Function
+~~~
+
+同时区分：
+
+~~~text
+Pipeline
+=
+性能优化
+
+Atomic Command / MULTI / WATCH / Lua
+=
+并发正确性
+~~~
+
+### 【第四问：Lifecycle——这份状态应该存在多久】
+
+需要明确：
+
+~~~text
+TTL 多久？
+↓
+TTL 是否刷新？
+↓
+固定 TTL 还是 Sliding TTL？
+↓
+内部 Member 是否还要单独清理？
+↓
+Key 会不会无限增长？
+~~~
+
+例如 Sorted Set 时间窗口：
+
+~~~text
+Member Cleanup
++
+Key TTL
+~~~
+
+是两层不同生命周期。
+
+### 【第五问：Consistency——Redis 与其他 Store 怎样保持可接受一致】
+
+先确定：
+
+~~~text
+Redis 是 Source of Truth？
+还是 Derived State？
+还是 Runtime Read Authority？
+~~~
+
+然后识别：
+
+~~~text
+Database + Redis
+↓
+是否形成 Dual Write？
+~~~
+
+按状态语义选择：
+
+~~~text
+Cache
+→ Invalidation / TTL / Version / Rebuild
+
+Session Revocation
+→ 更强失败处理 / Retry / Durable Intent
+
+必须完成的外部 Side Effect
+→ Transactional Outbox
+~~~
+
+不能把所有场景统一成“写完数据库后 DEL Redis”。
+
+### 【第六问：Recovery——Redis 丢失、变慢、重启或节点故障后怎么办】
+
+继续拆：
+
+~~~text
+Dataset 丢失
+→ RDB / AOF / Rebuild
+
+Memory 满
+→ Cleanup / maxmemory / Eviction
+
+Node Down
+→ Replica / Sentinel / Cluster / Managed HA
+
+误删
+→ Backup / Point-in-time Recovery
+
+Redis 不可用
+→ Fail-open / Fail-closed / Graceful Degradation
+~~~
+
+最后再用 RPO / RTO 判断需要多强的 Persistence 与 HA。
+
+### 【单机设计完成以后，再进入规模化和生产治理】
+
+~~~text
+State Model 正确
+↓
+单机容量够不够？
+↓
+是否出现 Hot Key / Big Key？
+↓
+是否需要 Replica？
+↓
+是否需要 Sentinel？
 ↓
 是否需要 Cluster？
 ↓
-Hot Key / Big Key 风险在哪里？
+Multi-key / Lua 是否受 Slot 约束？
 ↓
-如何监控和压测？
+Observability 是否能定位问题？
+↓
+ACL / TLS / Secret / Config 是否受控？
 ~~~
 
 ### 【常见场景可以用状态职责快速判断】
 
-| 场景 | Redis 是否适合 | 核心原因 |
-| --- | --- | --- |
-| 查询 Cache | 很适合 | 可派生 + TTL + 高频读取 |
-| Session | 常见 | 多实例共享 + TTL |
-| Rate Limit | 很适合 | 高频小状态 + 原子操作 + TTL |
-| Counter | 常见 | INCR / HINCRBY 原子增量 |
-| 排行榜 | 很适合 | Sorted Set |
-| 瞬时广播 | 可用 Pub/Sub | 简单低延迟，但无历史 |
-| 轻量持久流 | 可用 Streams | Consumer Group + ACK |
-| 复杂订单事实 | 通常不应只放 Redis | 强事务、长期权威历史 |
-| 跨表复杂查询 | 不适合 | 不是 Redis 的数据模型优势 |
+| 场景 | Redis 是否适合 | 核心原因 | 需要额外注意 |
+| --- | --- | --- | --- |
+| 查询 Cache | 很适合 | 可派生 + TTL + 高频读取 | Stampede、Invalidation |
+| Session | 常见 | 多实例共享 + TTL | Revocation、HA、Eviction |
+| Rate Limit | 很适合 | 高频小状态 + 原子操作 | Hot Key、Fail-open / closed |
+| Counter | 常见 | INCR / HINCRBY | 是否允许统计丢失 |
+| 排行榜 | 很适合 | Sorted Set | Big Key、范围查询规模 |
+| Sliding Window | 很适合 | Score = Time | Member Cleanup + TTL |
+| 瞬时广播 | 可用 Pub/Sub | 简单低延迟 | 无离线历史 |
+| 轻量持久流 | 可用 Streams | Consumer Group + ACK | 与 Broker 的边界 |
+| 复杂订单事实 | 通常不应只放 Redis | 强事务、长期权威历史 | Database Source of Truth |
+| 跨表复杂查询 | 不适合 | Redis 非关系查询模型 | 关系数据库 / Analytics Store |
+
+### 【面试和答辩回答 Redis 选型时不要只说“因为快”】
+
+更完整的回答路径：
+
+~~~text
+先说明状态职责
+↓
+为什么需要跨实例共享 / 高频访问
+↓
+为什么选择某个 Data Type
+↓
+怎样保证并发正确
+↓
+TTL / Persistence / Recovery 怎么设计
+↓
+Redis 与 Database 谁是 Source of Truth
+↓
+规模上来后 Hot Key / Cluster / HA 怎么处理
+~~~
+
+例如 Rate Limit：
+
+> 限流预算属于高频、短生命周期、需要跨 API 实例共享的 Control State，所以适合 Redis；Bucket 内 tokens 与 updated 可以用 Hash 表达，请求需要 Read → Refill → Check → Deduct → Write，因此用 Lua 收进 Redis Server 原子执行；Bucket 长时间不活跃后通过 TTL 清理；如果 Redis 故障，还需要根据业务选择 Fail-open 或 Fail-closed，并评估 Project Scope 是否会形成 Hot Key。
+
+这比“Redis 快，所以用 Redis 做限流”完整得多。
 
 ### 【项目实践只负责验证通用知识，不承担通用定义】
 
 Browser Monitor 是这套 Redis 体系的一个真实工程映射：
 
-- [Browser Monitor · Redis 体系源码学习](../browser-monitor/docs/Redis体系源码学习.md)：从 Redis Server / Client、Hash、Sorted Set、TTL、Lua、Session、Rate Limit、Cache、Version Key、AOF、Hot Key、Cluster 与生产治理逐层映射当前源码。
-- [Browser Monitor · 服务端全链路](../browser-monitor/docs/浏览器监控平台-服务端全链路.md)：查看 Redis Token Bucket 在“采集请求 → 限流 → 逐条校验 → PostgreSQL Transaction → 202”中的真实位置。
+- [Browser Monitor · Redis 体系源码学习](../browser-monitor/docs/Redis体系源码学习.md)：逐层验证 Redis Server / Client、String / Hash / Sorted Set、TTL、Lua、Session、Rate Limit、Recent Window、Cache、Version Key、AOF、Eviction、Sentinel / Cluster 边界、Hot Key、Observability 与生产治理。
+- [Browser Monitor · 服务端全链路](../browser-monitor/docs/浏览器监控平台-服务端全链路.md)：查看 Redis Token Bucket 在“采集请求 → Project / Origin → 限流 → Event 校验 → PostgreSQL Transaction → 202”中的真实位置。
 - [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)：继续区分 Redis Stream、Database Job Store、RabbitMQ、SQS 与 Kafka。
-- [数据库完整框架体系](./S-数据库完整框架体系.md)：继续理解 Redis 与关系数据库在 Source of Truth、Transaction 与 Concurrency Control 上的边界。
-
----
+- [数据库完整框架体系](./S-数据库完整框架体系.md)：继续理解 Redis 与关系数据库在 Source of Truth、Transaction、Constraint 与 Concurrency Control 上的职责边界。
 
 ## 11. 参考资料
 
-[1] Redis. Rate limiter. https://redis.io/docs/latest/develop/use-cases/rate-limiter/
+[1] Redis. Redis Data Types. https://redis.io/docs/latest/develop/data-types/
 
-[2] Redis. Scripting with Lua. https://redis.io/docs/latest/develop/programmability/eval-intro/
+[2] Redis. Keys and values / Key expiration. https://redis.io/docs/latest/develop/use/keyspace/
 
-[3] Redis. Redis Functions. https://redis.io/docs/latest/develop/programmability/functions-intro/
+[3] Redis. Redis Persistence. https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/
 
-[4] Redis. Redis persistence. https://redis.io/docs/latest/management/persistence/
+[4] Redis. Scripting with Lua. https://redis.io/docs/latest/develop/programmability/eval-intro/
 
-[5] Redis. Redis replication. https://redis.io/docs/latest/manual/replication/
+[5] Redis/ioredis. RedisOptions.ts. https://github.com/redis/ioredis/blob/main/lib/redis/RedisOptions.ts
 
 [6] Redis. EVAL command. https://redis.io/docs/latest/commands/eval/
 
-[7] Redis. Data types. https://redis.io/docs/latest/develop/data-types/
+[7] Redis. Compare data types. https://redis.io/docs/latest/develop/data-types/compare-data-types/
 
-[8] Redis. Transactions. https://redis.io/docs/latest/develop/using-commands/transactions/
+[8] Redis. Redis Strings. https://redis.io/docs/latest/develop/data-types/strings/
 
-[9] Redis. Redis Cluster specification. https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/
+[9] Redis. Redis Hashes. https://redis.io/docs/latest/develop/data-types/hashes/
 
-[10] Redis. Redis security. https://redis.io/docs/latest/operate/oss_and_stack/management/security/
+[10] Redis. Redis Sorted Sets. https://redis.io/docs/latest/develop/data-types/sorted-sets/
+
+[11] Redis. HINCRBY Command. https://redis.io/docs/latest/commands/hincrby/
+
+[12] Redis. ZADD Command. https://redis.io/docs/latest/commands/zadd/
+
+[13] Redis. ZRANGEBYSCORE Command. https://redis.io/docs/latest/commands/zrangebyscore/
+
+[14] Redis. ZREMRANGEBYSCORE Command. https://redis.io/docs/latest/commands/zremrangebyscore/
+
+[15] Redis. Redis Lists. https://redis.io/docs/latest/develop/data-types/lists/
+
+[16] Redis. Redis Sets. https://redis.io/docs/latest/develop/data-types/sets/
+
+[17] Redis. Redis Streams. https://redis.io/docs/latest/develop/data-types/streams/
+
+[18] Redis. Transactions. https://redis.io/docs/latest/interact/transactions/
+
+[19] Redis. EXEC Command. https://redis.io/docs/latest/commands/exec/
+
+[20] Redis. Redis Pipelining. https://redis.io/docs/latest/develop/using-commands/pipelining/
+
+[21] Redis. Scripting with Lua. https://redis.io/docs/latest/develop/programmability/eval-intro/
+
+[22] Redis. Redis Lua API Reference. https://redis.io/docs/latest/develop/interact/programmability/lua-api/
+
+[23] Redis. You Don’t Need Transaction Rollbacks in Redis. https://redis.io/blog/you-dont-need-transaction-rollbacks-in-redis/
+
+[24] Redis. Persistence. https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/
+
+[25] Redis. RDB Persistence. https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/#rdb-advantages
+
+[26] Redis. AOF Persistence. https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/#aof-advantages
+
+[27] Redis. Session Store. https://redis.io/docs/latest/develop/use-cases/session-store/
+
+[28] Redis. Rate Limiting. https://redis.io/docs/latest/develop/use-cases/rate-limiter/
+
+[29] Redis. Cache-Aside. https://redis.io/docs/latest/develop/use-cases/cache-aside/
+
+[30] PostgreSQL. Database Physical Storage. https://www.postgresql.org/docs/current/storage.html
+
+[31] PostgreSQL. Write-Ahead Logging. https://www.postgresql.org/docs/current/wal-intro.html
+
+[32] AWS. Transactional Outbox Pattern. https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html
+
+[33] Redis. Persistence. https://redis.io/docs/latest/management/persistence/
+
+[34] Redis. Key Eviction. https://redis.io/docs/latest/reference/eviction/
+
+[35] Redis. Replication. https://redis.io/docs/latest/operate/oss_and_stack/management/replication/
+
+[36] Redis. High Availability with Sentinel. https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/
+
+[37] Redis. Pipelining. https://redis.io/docs/latest/develop/using-commands/pipelining/
+
+[38] Redis. Redis Cluster Specification. https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/
+
+[39] Redis. CLUSTER KEYSLOT. https://redis.io/docs/latest/commands/cluster-keyslot/
+
+[40] Redis. INFO. https://redis.io/docs/latest/commands/info/
+
+[41] Redis. MEMORY STATS. https://redis.io/docs/latest/commands/memory-stats/
+
+[42] Redis. SLOWLOG. https://redis.io/docs/latest/commands/slowlog/
+
+[43] Redis. Latency Monitoring. https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/latency-monitor/
+
+[44] Redis. Security. https://redis.io/docs/latest/operate/oss_and_stack/management/security/
+
+[45] Redis. Access Control List. https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl/
+
+[46] Redis. TLS. https://redis.io/docs/latest/operate/oss_and_stack/management/security/encryption/
+
+[47] Redis. Client Handling and maxclients. https://redis.io/docs/latest/develop/reference/clients/
+
+[48] Redis. ACL SETUSER. https://redis.io/docs/latest/commands/acl-setuser/
