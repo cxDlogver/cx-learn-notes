@@ -769,7 +769,7 @@ Node Async I/O
 async / await
 ~~~
 
-Promise State、Resolution Procedure、静态方法、Microtask、async/await 与手写 Promise 的完整知识统一进入 [前端异步编程](./Q-前端异步编程.md)。原 Node 综合笔记中的完整 Promise 教程已经在该文档中拥有更完整的主入口，因此 Node Runtime 不再维护第二套相同知识树。
+Promise State、Resolution Procedure、静态方法、Microtask、async/await 与手写 Promise 的完整知识统一进入 [前端异步编程](./Q-前端异步编程.md)。Node Runtime 只负责解释 Promise 与 Async I/O、Microtask 和 Event Loop 的运行边界，避免在运行时文档中重复维护 JavaScript Promise 的完整知识树。
 
 ### 【Concurrency 与 Parallelism 描述不同执行能力】
 
@@ -928,7 +928,7 @@ Application 可以解析依赖
 
 Workspace、多 Project Dependency 与 Task Graph 进一步进入 [Monorepo 工程体系](./M-Monorepo工程体系.md)。
 
-### 【原有 Package Manager 完整知识继续保留在这一运行依赖分支】
+### 【Package Manager 的命令、Manifest 与 CLI 构成运行依赖管理基础】
 
 
 ### 【NPM介绍】
@@ -1213,7 +1213,7 @@ Business Handler
 
 因此 Express 不是 Node Runtime 内置模块，也不与 fs、path、process 处于同一抽象层。
 
-### 【Express 与 EJS 的原有完整知识作为 Framework 分支继续保留】
+### 【Express 与 EJS 展示 Framework 层的具体请求与模板能力】
 
 
 > [Express - Node.js Web 应用程序框架 - Express.js 框架](https://express.js.cn/)
@@ -1921,7 +1921,7 @@ Node Runtime 可以承载 Cookie Parsing、Session Store Client、JWT Verificati
 
 MongoDB、Mongoose 等能力依赖 Node Runtime 运行 Client，但它们解决的是 Data Model、Persistence 与 Query，而不是 JavaScript Runtime 本身。数据库通用框架见 [数据库完整框架体系](./S-数据库完整框架体系.md)。
 
-原有 MongoDB 基础知识继续保留：
+MongoDB 的数据模型与基础使用可以从下面几个概念建立：
 
 
 MongoDB 是一个基于 **文档（Document）** 的 NoSQL 数据库。它使用类似 JSON 的 BSON 格式存储数据，支持灵活的结构。
@@ -1989,7 +1989,7 @@ MongoDB 是一个基于 **文档（Document）** 的 NoSQL 数据库。它使用
 
 REST API Design、Swagger / OpenAPI、Postman、AJAX、XMLHttpRequest、Fetch、Axios 和 CORS 分别位于 API Design、API Description / Testing、Browser Network 与 Client HTTP Library 等不同层级，它们并不是 Node Runtime 内核。
 
-原有完整知识继续保留，避免因 Runtime 重构造成内容丢失：
+这些 API Design、Browser Request 与 Client HTTP Library 知识可以进一步按下面的具体机制理解：
 
 
 ### 【RESTFul风格设计】
@@ -2489,9 +2489,9 @@ axios(config).then(res => {
 
 
 
-### 【Promise、网络、会话与构建知识改由各自主入口承担完整定义】
+### 【Promise、网络、会话与构建分别由独立知识主入口承担完整定义】
 
-原综合笔记中的这些知识已经存在独立且更完整的主入口：
+这些知识已经存在独立且更完整的主入口：
 
 | 知识 | 主入口 |
 | --- | --- |
