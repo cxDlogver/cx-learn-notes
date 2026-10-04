@@ -114,6 +114,8 @@ Feedback
 
 具体团队可以选择 Push、Pull Request、Merge Queue 或其他事件触发验证；“每天必须提交几次”不是 CI 的固定定义。
 
+测试类型不由 CI/CD 定义。Unit / Component / Integration / E2E 应先在 [前端测试体系从验证边界到工程质量门禁](./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md) 中确定 Verification Boundary，再根据反馈速度、运行环境和风险把对应 Test Job 放入合适 Gate。
+
 ### 【Code Review 与 CI Checks 可以共同组成 Merge Gate】
 
 ~~~text
@@ -353,7 +355,7 @@ Monitoring
 Rollback / Roll Forward
 ~~~
 
-- [前端单元测试、集成测试与E2E测试笔记（面试版）](./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md)：负责 Verification Strategy。
+- [前端测试体系从验证边界到工程质量门禁](./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md)：负责 Verification Strategy，定义 Test Boundary、Environment、Dependency Fidelity、Fixture、Isolation 与不同测试层怎样组合；本文只负责这些 Test Result 怎样进入 Pipeline / Gate。
 - [Git分支操作、发布流程及CI_CD相关面试笔记（完整版）](./G-Git分支操作、发布流程及CI_CD相关面试笔记（完整版）.md)：负责 Git Collaboration、PR / MR 与面试场景。
 - [Docker 工程体系](./D-Docker工程体系.md)：负责 Image / Container / Runtime。
 - [前端工程化设计全面解析](./Q-前端工程化设计全面解析.md)：负责前端项目中 Lint、Test、Build 等工程能力怎样接入交付链。
