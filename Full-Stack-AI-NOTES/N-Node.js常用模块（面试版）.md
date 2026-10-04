@@ -2,6 +2,8 @@
 
 本文整理Node.js面试高频常用模块，分为内置核心模块和第三方模块，涵盖各模块核心作用、常见方法、示例代码及适用场景，配套面试高频问题，便于快速复习和应对面试考查。
 
+本文负责 API 与面试速查；Node Process、Runtime API、Event Loop、异步 I/O、Worker Thread、Child Process 以及这些模块在完整运行链中的位置，统一参考 [Node.js Runtime 完整知识体系](./N-NodeJS核心总结.md)。
+
 ## 内置核心模块
 
 内置核心模块是Node.js自带的模块，无需安装即可通过`require`引入，是服务端开发和面试的核心考点，重点掌握各模块的作用、常用方法及适用场景。
