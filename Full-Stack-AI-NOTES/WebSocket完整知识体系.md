@@ -6,11 +6,148 @@ WebSocket 的学习重点不只是会写 new WebSocket()，而是理解一条长
 
 ---
 
-## 1. WebSocket 位于实时通信体系中的双向长连接位置
+## 1. WebSocket 知识体系先沿一条主链展开，再由横切能力补齐生产边界
+
+WebSocket 不能按“握手、心跳、重连、ACK、背压”并列记忆。更稳定的理解方式是：**每解决上一层问题，系统才会暴露下一层问题。**
+
+### 【总主线从“建立通道”逐步演进到“可恢复、可扩展、可证明”】
+
+~~~text
+实时通信需求
+为什么普通 Request / Response 不够？
+        ↓
+
+协议与接口层
+怎样建立 WebSocket？线上怎样传 Message？
+        ↓
+
+应用协议与状态层
+Message 分别代表什么？当前阶段允许做什么？
+        ↓
+
+会话与连接生命周期层
+谁在连接？身份何时失效？连接还活着吗？断了怎么办？
+        ↓
+
+可靠性与流控层
+重连后从哪里继续？有没有重复 / 缺口？消费不过来怎么办？
+        ↓
+
+服务端系统层
+连接越来越多以后怎样扩容、代理、发布和防护？
+        ↓
+
+观测与验证层
+怎样证明连接、恢复、数据连续性和容量真的符合预期？
+~~~
+
+这条链可以用六个连续问题记忆：
+
+| 层级 | 上一层暴露的问题 | 本层要得到的结果 |
+| --- | --- | --- |
+| 协议与接口 | 需要持续双向通信 | 建立可收发消息的通道 |
+| 应用协议与状态 | 原始 Message 没有业务语义 | 得到可演进的消息协议和状态机 |
+| 会话与生命周期 | 长连接期间身份和网络都会变化 | 得到可信、可判活、可恢复的连接 |
+| 可靠性与流控 | 重连不等于数据连续，消费能力也有限 | 得到 Cursor、Replay、投递语义和背压控制 |
+| 服务端系统 | 单机连接模型无法直接横向扩展 | 得到多实例、共享状态、入口和安全边界 |
+| 观测与验证 | 有实现不等于能力成立 | 得到指标、测试和故障证据 |
+
+### 【一条连接生命周期和一条数据进度线贯穿整个体系】
+
+WebSocket 的知识实际上由两条长期主线交叉形成。
+
+第一条是 Connection Lifecycle（连接生命周期）：
+
+~~~text
+HTTP Upgrade
+    ↓
+OPEN
+    ↓
+AUTH_PENDING
+    ↓
+LIVE
+    ↓
+CLOSE / FAILURE
+    ↓
+RECONNECT
+~~~
+
+第二条是 Data Progress（数据进度）：
+
+~~~text
+Message
+   ↓
+Validate
+   ↓
+Queue / Process
+   ↓
+Confirmed Cursor
+   ↓ disconnect
+Replay
+   ↓
+Live
+~~~
+
+因此很多容易混淆的概念其实位于不同主线：
+
+```text
+Heartbeat
+属于连接生命周期
+
+Cursor / Replay
+属于数据进度
+
+ACK
+定义数据进度推进到哪一步才算完成
+
+Backpressure
+控制数据进入系统和被消费的速度差
+```
+
+### 【安全、性能和可观测性是横切能力，不是生命周期中的单独一步】
+
+还有三类能力会横穿前面所有层级：
+
+~~~text
+Security
+握手 Origin → Authentication → Authorization → Payload / Rate Limit
+
+Performance / Capacity
+bufferedAmount → Queue → Rendering → Connection Scale
+
+Observability
+Handshake → Auth → Live → Close → Reconnect → Replay
+~~~
+
+因此不要把“安全”理解成连接建立后的最后一个章节，也不要把“性能”只理解成 `bufferedAmount`。它们都是贯穿整条实时链路的约束。
+
+---
+
+## 2. 从实时通信需求到可用通道：协议与客户端接口层
+
+这一层解决最底层的问题：**为什么要建立一条长期双向连接，以及浏览器和服务端怎样真正得到这条连接。**
+
+依赖关系是：
+
+~~~text
+通信需求
+  ↓
+技术选型
+  ↓
+Opening Handshake
+  ↓
+Frame / Message
+  ↓
+Browser WebSocket API
+~~~
+
+如果这一层没有建立清楚，后面的鉴权、心跳和重连都没有承载对象。
+
+### 【通信定位：先判断为什么需要 WebSocket】
 
 这一章先回答为什么需要 WebSocket，以及它和 HTTP、SSE、WebTransport 等方案分别解决什么问题。
 
-### 【WebSocket 解决持续双向通信而不是替代 HTTP】
+#### <u>WebSocket 解决持续双向通信而不是替代 HTTP</u>
 
 WebSocket 是一种在客户端和服务端之间建立 Persistent Full-duplex Connection（持久全双工连接）的协议。RFC 6455 将它描述为：先通过 Opening Handshake（开启握手）建立连接，随后在同一连接上以消息和 Frame 的方式双向传输数据。[[1]](https://www.rfc-editor.org/rfc/rfc6455)
 
@@ -77,7 +214,7 @@ WebSocket
 
 ---
 
-### 【实时通信方案应根据通信方向和可靠性需求选择】
+#### <u>实时通信方案应根据通信方向和可靠性需求选择</u>
 
 常见 Web 实时通信方案可以先按通信方向理解。
 
@@ -107,11 +244,11 @@ Client 和 Server 都需要主动发送
 
 ---
 
-## 2. WebSocket 通过握手从 HTTP 入口进入自己的消息协议
+### 【建链协议：HTTP 握手把请求入口升级为持续双向通道】
 
 经典 WebSocket 建连不是直接在 TCP 上凭空出现一条新协议，而是先利用 HTTP 请求完成协议协商。
 
-### 【HTTP Opening Handshake 完成协议升级】
+#### <u>HTTP Opening Handshake 完成协议升级</u>
 
 RFC 6455 的经典 HTTP/1.1 建连过程：
 
@@ -171,7 +308,7 @@ RFC 8441 还定义了通过 HTTP/2 Extended CONNECT 引导 WebSocket 的机制�
 
 ---
 
-### 【Subprotocol 用来协商应用协议而不是认证用户】
+#### <u>Subprotocol 用来协商应用协议而不是认证用户</u>
 
 WebSocket 握手支持 Sec-WebSocket-Protocol，用来选择应用级 Subprotocol（子协议）。
 
@@ -209,7 +346,7 @@ socket.protocol
 
 ---
 
-### 【Extension 在握手阶段协商额外协议能力】
+#### <u>Extension 在握手阶段协商额外协议能力</u>
 
 Sec-WebSocket-Extensions 用来协商协议扩展。
 
@@ -249,11 +386,11 @@ Node.js 常用 ws 库也明确提醒，permessage-deflate 会带来性能和内�
 
 ---
 
-## 3. WebSocket 在协议层传输 Message，Message 再由一个或多个 Frame 组成
+### 【传输模型：Message、Frame 与 Control Frame 定义线上数据结构】
 
 理解 Message 和 Frame 的区别，是理解分片、Ping/Pong、消息大小限制和抓包结果的基础。
 
-### 【Message 是应用看到的逻辑消息】
+#### <u>Message 是应用看到的逻辑消息</u>
 
 RFC 6455 中，客户端和服务端传输的逻辑单位叫 Message（消息）。
 
@@ -289,7 +426,7 @@ socket.binaryType = "arraybuffer";
 
 ---
 
-### 【Frame 是线上实际传输的协议片段】
+#### <u>Frame 是线上实际传输的协议片段</u>
 
 一个 Message 可以由一个 Frame 组成，也可以被拆成多个 Fragment（分片）：
 
@@ -317,7 +454,7 @@ WebSocket Frame
 
 ---
 
-### 【Control Frame 负责连接控制】
+#### <u>Control Frame 负责连接控制</u>
 
 WebSocket 定义了三类核心 Control Frame：
 
@@ -345,7 +482,7 @@ chat / telemetry / command / event
 
 ---
 
-### 【浏览器发往服务端的 Frame 必须 Mask】
+#### <u>浏览器发往服务端的 Frame 必须 Mask</u>
 
 RFC 6455 要求 Client → Server Frame 使用 Masking（掩码），Server → Client 不使用同样的客户端 Mask 规则。[[1]](https://www.rfc-editor.org/rfc/rfc6455)
 
@@ -370,11 +507,11 @@ wss://
 
 ---
 
-## 4. 浏览器 WebSocket API 提供连接和消息接口，但不会自动解决工程问题
+### 【浏览器接口：WebSocket API 只提供基础连接能力】
 
 浏览器标准 WebSocket API 很小，复杂性主要来自应用自己设计的生命周期。
 
-### 【构造函数建立连接但不能自由设置 Authorization Header】
+#### <u>构造函数建立连接但不能自由设置 Authorization Header</u>
 
 浏览器端标准 API：
 
@@ -399,7 +536,7 @@ const socket = new WebSocket(
 
 ---
 
-### 【readyState 只描述 Transport State】
+#### <u>readyState 只描述 Transport State</u>
 
 WebSocket.readyState 有四种状态：
 
@@ -446,7 +583,7 @@ socket.readyState === OPEN
 
 ---
 
-### 【open、message、close、error 是主要生命周期事件】
+#### <u>open、message、close、error 是主要生命周期事件</u>
 
 ~~~ts
 const socket =
@@ -501,7 +638,7 @@ close
 
 ---
 
-### 【send() 是入发送队列，不等于对端已经收到】
+#### <u>send() 是入发送队列，不等于对端已经收到</u>
 
 调用：
 
@@ -539,7 +676,7 @@ Server processed
 
 ---
 
-### 【bufferedAmount 用于观察发送侧积压】
+#### <u>bufferedAmount 用于观察发送侧积压</u>
 
 WebSocket.bufferedAmount 表示已经通过 send() 排队、但尚未实际传输到网络的字节数。[[10]](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/bufferedAmount)
 
@@ -582,13 +719,29 @@ function safeSend(
 
 ---
 
-## 5. 应用层消息协议决定 WebSocket 是否可维护
+## 3. 从“连接已打开”到“业务可维护”：应用协议与连接状态层
+
+协议层只给出一条能够双向收发 Message 的通道，却不知道什么是登录、订阅、遥测、ACK 或 Replay。因此第二层必须把**原始通道变成业务协议**，再用状态机限制不同阶段允许发生的行为。
+
+~~~text
+Raw WebSocket Message
+        ↓
+Application Envelope / Schema
+        ↓
+Protocol State Validation
+        ↓
+Business Handler
+~~~
+
+这一层向上承接浏览器 API，向下为鉴权、恢复和可靠性提供统一消息语义。
+
+### 【应用协议：Envelope、消息类型与 Schema 赋予业务语义】
 
 WebSocket 协议只负责把 Message 送到对端，并不知道业务里的“登录”“订阅”“事件”“错误”和“ACK”。
 
 这些都需要应用自己定义。
 
-### 【消息 Envelope 用统一外层结构承载协议语义】
+#### <u>消息 Envelope 用统一外层结构承载协议语义</u>
 
 一个可维护的消息通常不只发送裸数据：
 
@@ -620,7 +773,7 @@ WebSocket 协议只负责把 Message 送到对端，并不知道业务里的“�
 
 ---
 
-### 【消息类型通常分为 Command、Event、Response 和 Control】
+#### <u>消息类型通常分为 Command、Event、Response 和 Control</u>
 
 可以把应用消息按语义区分：
 
@@ -654,7 +807,7 @@ Application Control
 
 ---
 
-### 【Schema Validation 必须发生在业务处理之前】
+#### <u>Schema Validation 必须发生在业务处理之前</u>
 
 不要直接：
 
@@ -711,7 +864,7 @@ function onMessage(raw: string) {
 
 ---
 
-### 【协议版本应该显式治理而不是靠前后端同时上线】
+#### <u>协议版本应该显式治理而不是靠前后端同时上线</u>
 
 长期连接系统很容易出现：
 
@@ -761,11 +914,11 @@ telemetry.v2
 
 ---
 
-## 6. 生产级 WebSocket 需要独立的业务连接状态机
+### 【连接状态：Transport State 与 Application State 必须分离】
 
 只依赖 readyState 无法表达“正在认证”“正在补历史数据”“正在恢复登录态”等状态。
 
-### 【Transport State 和 Application State 是两套状态】
+#### <u>Transport State 和 Application State 是两套状态</u>
 
 Transport：
 
@@ -807,7 +960,7 @@ LIVE
 
 ---
 
-### 【状态约束可以阻止大量竞态问题】
+#### <u>状态约束可以阻止大量竞态问题</u>
 
 例如首包认证：
 
@@ -843,7 +996,7 @@ ignore
 
 ---
 
-### 【异步回调必须防旧连接事件污染新连接】
+#### <u>异步回调必须防旧连接事件污染新连接</u>
 
 一个常见竞态：
 
@@ -880,7 +1033,33 @@ socket.onmessage = event => {
 
 ---
 
-## 7. WebSocket 鉴权要接入完整身份体系，但不应该在本文重复一套身份系统
+## 4. 从“能够通信”到“长期可信”：会话、存活与故障恢复层
+
+长连接和普通 HTTP Request 最大的差别是：**身份、网络和服务状态都会在连接存活期间发生变化。** 因此这一层不是三个独立专题，而是一条长期连接生命周期。
+
+~~~text
+AUTH_PENDING
+    ↓
+AUTHENTICATED
+    ↓
+LIVE
+    │
+    ├─ Credential Expired / Session Revoked
+    │      → Session Recovery
+    │
+    ├─ Heartbeat Failed
+    │      → Connection Failure
+    │
+    └─ Close
+           ↓
+       Failure Classification
+           ↓
+       Refresh / Reconnect / Stop
+~~~
+
+所以本层依次回答三个问题：**这条连接可信么 → 它还活着么 → 出故障后应该怎样恢复。**
+
+### 【可信连接：Authentication、Session 与 Authorization 接入长连接】
 
 WebSocket 没有内建 Authentication（身份认证）和 Authorization（访问控制）。RFC 6455 本身只定义连接和消息协议。
 
@@ -892,7 +1071,7 @@ WebSocket 没有内建 Authentication（身份认证）和 Authorization（访�
 
 本节只讨论它们怎样接到 WebSocket 生命周期。
 
-### 【浏览器不能自由给 WebSocket 握手增加 Authorization Header】
+#### <u>浏览器不能自由给 WebSocket 握手增加 Authorization Header</u>
 
 浏览器标准 WebSocket 构造器只提供：
 
@@ -923,7 +1102,7 @@ new WebSocket(url, {
 
 ---
 
-### 【首条认证需要认证超时和状态限制】
+#### <u>首条认证需要认证超时和状态限制</u>
 
 完整流程：
 
@@ -1015,7 +1194,7 @@ Business Authenticated
 
 ---
 
-### 【Authentication 成功后仍然需要 Authorization】
+#### <u>Authentication 成功后仍然需要 Authorization</u>
 
 Token 有效只能证明：
 
@@ -1062,7 +1241,7 @@ authorize({
 
 ---
 
-### 【长连接身份有效性要拆成自然过期、主动撤销和连接存活三条线】
+#### <u>长连接身份有效性要拆成自然过期、主动撤销和连接存活三条线</u>
 
 Access Token 可能只有 15 分钟，但 WebSocket 可以持续数小时。只在建连时验证一次会产生：
 
@@ -1088,7 +1267,7 @@ socket 仍然在传业务数据
 
 这三条线应该尽量分离。
 
-#### <u>1. 自然过期不需要客户端周期重新 authenticate</u>
+**1. 自然过期不需要客户端周期重新 authenticate**
 
 如果首次认证以后服务器已经得到：
 
@@ -1134,7 +1313,7 @@ Server 每几秒重新解析同一 Token
 
 这一思路同时适用于 JWT 和 Opaque Token：JWT 可以从 `exp` 得到到期时间；Opaque Token 的 Session Store 也可以保存 `expires_at`。
 
-#### <u>2. Session Revocation 不能只靠 Expiry Timer</u>
+**2. Session Revocation 不能只靠 Expiry Timer**
 
 Expiry Timer 只能回答：
 
@@ -1173,7 +1352,7 @@ close immediately
 
 单实例可以直接在内存 Registry 中完成；多实例可以通过 Redis Pub/Sub、消息总线或其他 Session Invalidation Channel 把撤销事件广播到各 WebSocket 节点。
 
-#### <u>3. 周期 Revalidation 是一种折中，而不是默认最优解</u>
+**3. 周期 Revalidation 是一种折中，而不是默认最优解**
 
 周期调用完整 `verifyAccessToken()` 确实可以同时检查：
 
@@ -1215,11 +1394,11 @@ Periodic Revalidation
 
 ---
 
-## 8. 心跳需要区分协议存活、应用存活和业务进度
+### 【存活判断：协议心跳、应用心跳与业务 Watchdog 分别回答不同问题】
 
 “做了 heartbeat”并不能说明监控的是哪一层。
 
-### 【Protocol Ping/Pong 检查 WebSocket Endpoint】
+#### <u>Protocol Ping/Pong 检查 WebSocket Endpoint</u>
 
 RFC 6455 自带 Ping / Pong Control Frame。
 
@@ -1242,7 +1421,7 @@ WebSocket Endpoint
 
 ---
 
-### 【浏览器 JavaScript 不能直接发送协议 Ping Frame】
+#### <u>浏览器 JavaScript 不能直接发送协议 Ping Frame</u>
 
 浏览器标准 WebSocket API 暴露：
 
@@ -1283,7 +1462,7 @@ socket.ping()
 
 ---
 
-### 【Business Watchdog 检查业务数据有没有继续推进】
+#### <u>Business Watchdog 检查业务数据有没有继续推进</u>
 
 还存在第三种异常：
 
@@ -1324,7 +1503,7 @@ Business Watchdog
 
 ---
 
-### 【Heartbeat Interval 需要结合基础设施 Idle Timeout】
+#### <u>Heartbeat Interval 需要结合基础设施 Idle Timeout</u>
 
 心跳间隔不能只拍脑袋写 30 秒。
 
@@ -1366,11 +1545,11 @@ minimum idle timeout
 
 ---
 
-## 9. Close Code 和故障分类决定是否刷新、重连或停止
+### 【故障恢复：Close Code 决定刷新、重连还是停止】
 
 WebSocket 不会自动替业务决定“断开以后怎么办”。
 
-### 【Close Code 提供关闭语义】
+#### <u>Close Code 提供关闭语义</u>
 
 常见关闭码：
 
@@ -1405,7 +1584,7 @@ socket.close(
 
 ---
 
-### 【故障分类比固定重连更重要】
+#### <u>故障分类比固定重连更重要</u>
 
 恢复决策：
 
@@ -1442,7 +1621,7 @@ close
 
 ---
 
-### 【Exponential Backoff 控制单客户端，Jitter 控制群体同步】
+#### <u>Exponential Backoff 控制单客户端，Jitter 控制群体同步</u>
 
 指数退避：
 
@@ -1489,7 +1668,7 @@ const delay =
 
 ---
 
-### 【页面和网络生命周期也应该进入重连决策】
+#### <u>页面和网络生命周期也应该进入重连决策</u>
 
 浏览器还可以利用：
 
@@ -1510,11 +1689,31 @@ visibilitychange
 
 ---
 
-## 10. 重连只恢复 Transport，数据连续性需要 Cursor 和 Replay
+## 5. 从“重新连上”到“业务数据连续”：可靠性与流量控制层
+
+重连只恢复 Transport，不能证明断线期间的数据已经补齐，也不能证明消息只处理一次，更不能解决生产速度大于消费速度的问题。因此可靠性必须继续沿数据流向下分析。
+
+~~~text
+Reconnect
+   ↓
+Recovery Cursor
+   ↓
+Replay / Gap
+   ↓
+ACK / Delivery Semantics
+   ↓
+Application Queue
+   ↓
+Backpressure / Flow Control
+~~~
+
+这一层把“连接可靠”升级为“业务进度可恢复、数据处理可解释、流量不会把系统压垮”。
+
+### 【数据恢复：Cursor、Replay 与 Gap 跨连接延续业务进度】
 
 连接重新 OPEN 并不意味着断线期间的数据自动回来。
 
-### 【Recovery Cursor 表示业务数据进度】
+#### <u>Recovery Cursor 表示业务数据进度</u>
 
 常见 Cursor：
 
@@ -1545,7 +1744,7 @@ Live
 
 ---
 
-### 【Replay 和 Live 最好有明确边界】
+#### <u>Replay 和 Live 最好有明确边界</u>
 
 如果补发和实时流混在一起：
 
@@ -1579,7 +1778,7 @@ LIVE
 
 ---
 
-### 【Retention Gap 和真正 No-data 必须区分】
+#### <u>Retention Gap 和真正 No-data 必须区分</u>
 
 两种“查不到数据”含义完全不同：
 
@@ -1615,11 +1814,11 @@ Retention Gap
 
 ---
 
-## 11. TCP 有序可靠不等于 WebSocket 业务 Exactly-once
+### 【投递语义：TCP 可靠不等于业务 Exactly-once】
 
 这是 WebSocket 面试和工程设计里最容易混淆的一层。
 
-### 【单连接可靠传输只解决网络传输的一部分语义】
+#### <u>单连接可靠传输只解决网络传输的一部分语义</u>
 
 TCP / WebSocket 能保证一条存活连接上的数据可靠、有序传输，但应用仍然不知道：
 
@@ -1641,7 +1840,7 @@ message event
 
 ---
 
-### 【ACK 定义哪一步才算确认】
+#### <u>ACK 定义哪一步才算确认</u>
 
 可以在不同阶段 ACK：
 
@@ -1675,7 +1874,7 @@ send({
 
 ---
 
-### 【At-most-once、At-least-once 和 Exactly-once 是应用语义】
+#### <u>At-most-once、At-least-once 和 Exactly-once 是应用语义</u>
 
 可以这样理解：
 
@@ -1716,13 +1915,13 @@ durable progress
 
 ---
 
-## 12. WebSocket API 没有自动背压，实时系统必须自己处理生产消费失衡
+### 【流量控制：Backpressure 处理生产速度大于消费速度】
 
 MDN 明确指出标准 WebSocket 接口本身不提供自动 Backpressure（背压）；如果消息到达速度高于应用处理能力，可能导致内存增长或 CPU 长时间占满。[[12]](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
 
 这是实时系统性能设计的核心问题。
 
-### 【发送侧可以通过 bufferedAmount 观察浏览器队列】
+#### <u>发送侧可以通过 bufferedAmount 观察浏览器队列</u>
 
 ~~~text
 Application send()
@@ -1744,7 +1943,7 @@ bufferedAmount 高说明发送侧开始积压。
 
 ---
 
-### 【接收侧需要应用自己的 Queue】
+#### <u>接收侧需要应用自己的 Queue</u>
 
 标准 WebSocket 没有：
 
@@ -1781,7 +1980,7 @@ State / Chart / Map
 
 ---
 
-### 【背压至少要区分三层】
+#### <u>背压至少要区分三层</u>
 
 ~~~text
 Transport Backpressure
@@ -1813,7 +2012,7 @@ queue 已清空但 FPS 低
 
 ---
 
-### 【WebSocketStream 提供自动 Streams Backpressure，但不能作为通用默认】
+#### <u>WebSocketStream 提供自动 Streams Backpressure，但不能作为通用默认</u>
 
 MDN 还介绍 WebSocketStream，它利用 Streams API 提供自动背压，但目前属于非标准 / 实验性接口，不应该在需要广泛浏览器兼容的生产系统中直接替代标准 WebSocket。[[13]](https://developer.mozilla.org/en-US/docs/Web/API/WebSocketStream)
 
@@ -1829,7 +2028,25 @@ explicit flow control
 
 ---
 
-## 13. 单机连接管理扩展到多实例时需要独立实时服务架构
+## 6. 从“一个连接能工作”到“生产系统能承载”：服务端架构、入口与安全层
+
+单机 Demo 中，一个 `Set<WebSocket>` 就能广播；生产环境却还要面对多实例、共享订阅、负载均衡、TLS、反向代理、滚动发布和攻击面。它们共同属于**运行 WebSocket 服务的系统边界**。
+
+~~~text
+Client
+  ↓
+TLS / Load Balancer / Reverse Proxy
+  ↓
+WebSocket Server Instance
+  ↓
+Connection Registry
+  ↓
+Shared Backplane / State
+~~~
+
+Security（安全）横切整个链路：握手入口、身份、消息、资源和流量都需要独立控制。
+
+### 【连接扩展：Connection Registry 与共享背板支撑多实例】
 
 单机 Demo 常见：
 
@@ -1846,7 +2063,7 @@ const clients =
 - 重连落到另一台机器怎么办；
 - 部署时怎样优雅迁移连接。
 
-### 【Connection Registry 管理用户和连接关系】
+#### <u>Connection Registry 管理用户和连接关系</u>
 
 常见映射：
 
@@ -1877,7 +2094,7 @@ Close 时必须清理所有反向索引。
 
 ---
 
-### 【多实例不能只依赖进程内 Map】
+#### <u>多实例不能只依赖进程内 Map</u>
 
 假设：
 
@@ -1921,7 +2138,7 @@ Redis Pub/Sub 适合简单瞬时广播，但不能因为“能 Pub/Sub”就等�
 
 ---
 
-### 【Sticky Session 不是 WebSocket 扩容的唯一答案】
+#### <u>Sticky Session 不是 WebSocket 扩容的唯一答案</u>
 
 Load Balancer 在握手时把连接分给某个实例后，这条长连接会继续留在该实例。
 
@@ -1959,7 +2176,7 @@ Externalized State
 
 ---
 
-### 【服务发布需要 Connection Draining】
+#### <u>服务发布需要 Connection Draining</u>
 
 HTTP 服务更新时，旧请求很快结束；WebSocket 连接可能保持数小时。
 
@@ -1991,7 +2208,7 @@ Close Code 1012 Service Restart 可以作为一种明确的服务重启语义。
 
 ---
 
-## 14. WebSocket 会经过 Proxy、Load Balancer 和 TLS 入口
+### 【网络入口：TLS、Proxy 与 Load Balancer 承接生产连接】
 
 WebSocket 服务很少直接裸露在公网。
 
@@ -2014,7 +2231,7 @@ WebSocket Server
 
 这里只解释 WebSocket 特有的注意点。
 
-### 【生产环境优先使用 WSS】
+#### <u>生产环境优先使用 WSS</u>
 
 ~~~text
 ws://
@@ -2028,7 +2245,7 @@ WebSocket over TLS
 
 ---
 
-### 【Proxy 必须正确支持 WebSocket Upgrade 或对应新协议机制】
+#### <u>Proxy 必须正确支持 WebSocket Upgrade 或对应新协议机制</u>
 
 经典 HTTP/1.1 代理链要正确转发 Upgrade 相关语义。
 
@@ -2054,13 +2271,13 @@ HTTP API 正常
 
 ---
 
-## 15. WebSocket 安全要覆盖连接、消息和资源三个层次
+### 【安全治理：连接、消息与资源必须分层防护】
 
 WebSocket 是长期开放的双向输入通道，攻击面不仅发生在握手。
 
 OWASP WebSocket Security Cheat Sheet 重点覆盖 CSWSH、认证绕过、注入、DoS 和监控缺口等问题。[[14]](https://cheatsheetseries.owasp.org/cheatsheets/WebSocket_Security_Cheat_Sheet.html)
 
-### 【Origin Validation 防止跨站建立已认证连接】
+#### <u>Origin Validation 防止跨站建立已认证连接</u>
 
 浏览器握手会携带 Origin。
 
@@ -2096,7 +2313,7 @@ function verifyOrigin(
 
 ---
 
-### 【Authentication 之后仍然要验证每条消息】
+#### <u>Authentication 之后仍然要验证每条消息</u>
 
 完整入站链：
 
@@ -2132,7 +2349,7 @@ WebSocket 消息仍然是不可信输入。
 
 ---
 
-### 【限制 Message Size 和 Message Rate 防止 DoS】
+#### <u>限制 Message Size 和 Message Rate 防止 DoS</u>
 
 常见保护：
 
@@ -2150,7 +2367,7 @@ Node.js ws 提供 maxPayload 等限制项；实际阈值应该根据业务数据
 
 ---
 
-### 【日志不能记录 Secret】
+#### <u>日志不能记录 Secret</u>
 
 避免记录：
 
@@ -2164,11 +2381,27 @@ Node.js ws 提供 maxPayload 等限制项；实际阈值应该根据业务数据
 
 ---
 
-## 16. 可观测性要覆盖连接生命周期而不是只记录在线人数
+## 7. 从“代码里有这些机制”到“生产能力可证明”：可观测性与测试层
+
+连接、重连、Replay 和 Backpressure 写进代码并不代表能力已经成立。最后必须通过 Metrics、Logs、Integration Test、Load Test 和 Fault Injection 回答：**它为什么断、多久恢复、数据是否完整、扩容后是否仍然正确。**
+
+~~~text
+Runtime State
+   ↓
+Metrics / Logs
+   ↓
+Failure Evidence
+   ↓
+Integration / Load / Fault Test
+   ↓
+可验证的工程结论
+~~~
+
+### 【可观测性：指标覆盖连接、消息与恢复生命周期】
 
 WebSocket 的问题很多发生在 HTTP Access Log 看不到的阶段。
 
-### 【连接指标回答“连接是否健康”】
+#### <u>连接指标回答“连接是否健康”</u>
 
 建议指标：
 
@@ -2185,7 +2418,7 @@ WebSocket 的问题很多发生在 HTTP Access Log 看不到的阶段。
 
 ---
 
-### 【消息指标回答“实时流是否健康”】
+#### <u>消息指标回答“实时流是否健康”</u>
 
 ~~~text
 messages_in / sec
@@ -2209,7 +2442,7 @@ oldest queue age
 
 ---
 
-### 【可靠性指标回答“断线后恢复得怎么样”】
+#### <u>可靠性指标回答“断线后恢复得怎么样”</u>
 
 ~~~text
 replay count
@@ -2227,11 +2460,11 @@ ack latency
 
 ---
 
-## 17. WebSocket 测试应该沿状态机和故障链展开
+### 【测试验证：沿状态机和故障链验证生产能力】
 
 只测试“能连接并发送 hello”无法覆盖生产问题。
 
-### 【协议和消息测试】
+#### <u>协议和消息测试</u>
 
 ~~~text
 valid message
@@ -2246,7 +2479,7 @@ invalid state transition
 
 ---
 
-### 【连接和会话测试】
+#### <u>连接和会话测试</u>
 
 ~~~text
 handshake success
@@ -2262,7 +2495,7 @@ service restart
 
 ---
 
-### 【恢复测试】
+#### <u>恢复测试</u>
 
 ~~~text
 reconnect same cursor
@@ -2278,7 +2511,7 @@ jitter
 
 ---
 
-### 【压力和故障注入测试】
+#### <u>压力和故障注入测试</u>
 
 需要验证：
 
@@ -2298,7 +2531,11 @@ proxy timeout
 
 ---
 
-## 18. WebSocket 的完整知识树从协议延伸到系统架构
+## 8. 从单篇知识到可迁移体系：知识树、关联文档与项目实践
+
+前面六层解决 WebSocket 自身的工程链路；这一层负责把它重新接回完整 Full-Stack 知识体系，并通过真实项目验证哪些机制已经实现、哪些只是设计选择。
+
+### 【知识树：把协议、会话、可靠性和系统架构连成整体】
 
 最终可以把整套知识压缩为下面这棵树：
 
@@ -2440,11 +2677,11 @@ WebSocket
 
 ---
 
-## 19. 已有知识文档承担 WebSocket 各分支的深入学习
+### 【关联知识：网络、身份与其他实时协议形成前后置关系】
 
 为了避免同一知识重复维护，本篇只把相关分支连接到已有主文档。
 
-### 【网络和入口是 WebSocket 的前置知识】
+#### <u>网络和入口是 WebSocket 的前置知识</u>
 
 建议先理解：
 
@@ -2466,7 +2703,7 @@ WebSocket
 
 ---
 
-### 【身份体系是 WebSocket 鉴权的上位知识】
+#### <u>身份体系是 WebSocket 鉴权的上位知识</u>
 
 继续阅读：
 
@@ -2486,7 +2723,7 @@ WebSocket
 
 ---
 
-### 【其他实时协议用于建立选型边界】
+#### <u>其他实时协议用于建立选型边界</u>
 
 - [MQTT 详细学习笔记](./MQTT%20详细学习笔记（含知识点对应问题）.md)
 - [流式输出从0到1知识梳理](./流式输出从0到1知识梳理.md)
@@ -2506,11 +2743,11 @@ Browser-local Communication
 
 ---
 
-## 20. 实战分析入口把通用知识映射到真实源码
+### 【项目实践：用真实源码验证通用机制】
 
 通用知识正文不以项目为上下文，但可以通过项目分析文档验证真实工程是怎样组合这些机制的。
 
-### 【QHZHC 实时平台：鉴权、重连与数据恢复】
+#### <u>QHZHC 实时平台：鉴权、重连与数据恢复</u>
 
 项目实践文档：
 
@@ -2568,7 +2805,7 @@ Backpressure
 
 ---
 
-## 21. 参考文献
+## 9. 参考文献
 
 1. RFC Editor, RFC 6455: The WebSocket Protocol  
    https://www.rfc-editor.org/rfc/rfc6455
