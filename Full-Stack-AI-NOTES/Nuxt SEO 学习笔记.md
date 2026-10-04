@@ -4,6 +4,9 @@ categories:
 ---
 # SEO 机制
 
+> **文档职责**：本文从 Nuxt 与 SEO 工程视角讨论 Crawl / Render / Index、TDK、SSR / SSG / CSR / Hybrid 等落地策略；MPA / SPA、CSR / SSR / SSG 的通用定义、Hydration 生命周期和渲染策略边界统一参考 [Web 渲染架构](./Web渲染架构.md)，本文不再承担第二套通用渲染模型。
+
+
 ## SEO 到底在解决什么问题
 
 SEO（Search Engine Optimization）的目标不是“加几个 meta 就完事”，而是让搜索引擎能**稳定地**完成三件事，这也是SEO工作的核心逻辑，缺一不可：
