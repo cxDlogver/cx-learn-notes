@@ -1,67 +1,34 @@
 # Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复
 
-**原问题：** Agent 在执行复杂长任务时，如何保证任务能够持续推进，并在中断后可靠恢复？
+Agent 长任务的关键不是让一次模型调用持续几个小时，而是把长期目标转化为**可分解、可验收、可持久化、可恢复**的执行过程。任务时间越长，中断、错误累积、上下文耗尽和外部状态变化越不可避免，因此系统必须主动建立可信的阶段边界。
 
-**回答要点：**
-
-- 把长任务拆成可验收的工作单元，用 State 保存阶段、计划、执行结果与待处理事项；拆分粒度和评测频率需随任务与模型调整。
-- Checkpoint 保存继续执行所需状态，Artifact 保存交付证据，Memory 保存未来可用信息，Context 则是本轮模型输入。
-- 一个子任务经过执行、验收与持久化提交，才能作为后续阶段可靠的前置结果。
-- 中断后先恢复可信状态、核对副作用和待审批动作，再继续；Resume 可能重放节点内代码，不能假设精确续接任意指令位置。
-- RunState 支持 Agent 的暂停和恢复，业务长任务仍需外层持久编排、原子操作记录与可靠的幂等保护。
-
-本题与[Agent 完整学习教程](<../A-Agent学习教程.md>)中的长任务与状态管理部分相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-这个问题的起点不是分别解释 State、Memory、Artifact、Checkpoint，而是先回答一个更基础的问题：
-
-> **当一个 Agent Task 需要持续数小时甚至数天，跨越多个 Context Window、多个 Agent Run，甚至多个进程生命周期时，系统怎样保证任务不会因为一次上下文耗尽、局部失败或进程重启而丢失进度，并能够从正确的位置继续执行。**
-
-长任务真正需要解决的不是“让同一个 Agent 一直运行”，而是两个更稳定的工程目标：
+首先把长期目标拆成可独立推进和验收的工作单元；执行过程中用 State 记录当前计划和结果；阶段结果经过 Verification 后才能成为后续可信前置；通过验收的状态、产物和可复用信息分别由 Checkpoint、Artifact、Memory 持久化；发生中断时还要核对外部副作用，再从可信位置 Resume。
 
 ```text
-Progress Continuity
-进度连续性
-
-+
-
-Recoverability
-可恢复性
-```
-
-Anthropic 在长任务 Agent 的实践中发现，复杂任务如果只依赖一个长 Context，很容易出现一次做得过多、上下文耗尽后留下半完成状态、下一次 Session 不知道之前做了什么等问题。因此其主流做法是先将长任务拆成可逐步完成的工作单元，每次只推进一部分，并通过结构化 Artifact、进度文件、Git History 等持久化产物，把已经完成的工作交接给后续 Session。[[1]](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) [[2]](https://www.anthropic.com/engineering/harness-design-long-running-apps)
-
-OpenAI Agents SDK 当前也把 Runtime 内部状态和更上层的长任务编排分开：`RunState` 用于保存一次 Agent Run 的可序列化状态并支持 Pause / Resume；如果任务需要跨长时间等待、重试或进程重启，则官方建议结合 Durable Execution（持久执行）系统来管理更长生命周期的 Workflow。[[3]](https://openai.github.io/openai-agents-python/ref/run_state/) [[4]](https://openai.github.io/openai-agents-python/running_agents/)
-
-因此整个长任务体系可以先理解成：
-
-```text
-Long-running Task
+Long-running Goal
         ↓
 Task Decomposition
-把长任务拆成可独立推进、可独立验收的子任务
+建立可推进、可验收的工作单元
         ↓
-Workflow State
-记录整个任务已经推进到哪里
+State
+记录当前执行事实
         ↓
-Current Subtask
-        ↓
-Agent Runtime / RunState
-记录当前子任务内部执行到哪里
-        ↓
-Execution + Evaluation
-执行并验收
+Execution + Verification
+确认阶段结果可信
         ↓
 Persistence
-沉淀 Artifact / Checkpoint / Memory
+Checkpoint / Artifact / Memory
         ↓
-Context Reconstruction
-下一次运行重新构造模型需要的 Context
+Interruption / Failure
         ↓
-Next Subtask / Resume
+Reconciliation
+核对外部真实状态和副作用
+        ↓
+Resume
+从可信边界继续
 ```
 
-这里 State、Artifact、Checkpoint、Memory、Context 并不是五个平铺概念，而是长任务持续执行链路中不同层级的机制。
-
+后文会进一步区分 Context、State、Checkpoint、Artifact、Memory 的职责，并说明为什么 Agent 内部状态恢复仍不能替代业务级持久编排、幂等和对账。
 ## 1. 任务分解与 State 让长任务进度可以独立推进和验收
 
 ### 【核心目标：运行可以中断，但任务进度不能丢失】
