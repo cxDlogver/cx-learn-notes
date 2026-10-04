@@ -155,30 +155,24 @@ Node.js Event Loop、异步 I/O、Worker Thread 与 Process 的运行时边界�
 
 ### 【Task、Command、Event 与 Schedule 先表达业务语义，再选择传递方式】
 
-任务或命令（Task / Command）表达“请执行某项工作”，例如 GenerateReport、SendEmail、ResizeImage。
+先想清楚“要表达什么”，再决定“怎么传”。Task / Command、Event、Schedule 描述的是**业务语义**（你想表达的内容），而 Durable Job Store、Task Queue、Message Broker、Pub/Sub 描述的是**传递/执行方式**（你怎么送达）。两者是正交的：同一种语义可以用不同方式传递，不要一上来就把语义和某个中间件绑定。
 
-事件（Event）表达“某个业务事实已经发生”，例如 OrderCreated、PaymentSucceeded。多个独立 Consumer 可以根据自己的职责响应同一个 Event。
+| 业务语义 | 表达的含义 | 典型例子 | 常用传递方式 |
+| --- | --- | --- | --- |
+| Task / Command | “请执行某项工作”（发指令，期待被执行） | GenerateReport、SendEmail、ResizeImage | Task Queue / Durable Job Store，由指定执行者消费 |
+| Event | “某个事实已经发生”（只通知，不要求谁处理） | OrderCreated、PaymentSucceeded | Message Broker / Pub/Sub，多个独立 Consumer 各自响应 |
+| Schedule | “在何时 / 周期触发工作”（决定触发时机） | 每日报表、定时清理 | 定时器；触发后通常再生成一个 Task/Command 进入 Queue |
 
-定时任务（Scheduled Job）表达“在某个时间点或周期触发工作”。Schedule 被触发后仍然可以创建普通 Queue Job，因此 Schedule 与 Queue 不是同一层。
+关键区分：
+
+- **Task/Command vs Event**：前者是“指令”——有明确的执行目标和预期；后者是“事实”——发布者不在乎谁来处理，多个 Consumer 可基于同一 Event 做各自职责内的事（计费、审计、通知等）。
+- **Schedule 不是一种新的消息类型**：它只是“触发器”。被触发后产生的工作，依然会以 Task/Command 的形式进入 Queue / Job Store 去执行，所以 Schedule 与 Queue 不在同一层，不要混为一谈。
 
 ~~~text
-Business Semantics
-│
-├── Task / Command
-│   └── 希望某个执行者完成工作
-├── Event
-│   └── 通知一个已经发生的事实
-└── Schedule
-    └── 决定什么时候触发
-
-        ↓
-
-Delivery / Execution Model
-│
-├── Durable Job Store
-├── Task Queue
-├── Message Broker
-└── Pub/Sub
+业务语义（表达什么）
+  Task/Command ─┐
+  Event        ├─ 通过 ─→ 传递/执行方式（怎么送达，可任意组合）
+  Schedule  ───┘            Durable Job Store / Task Queue / Message Broker / Pub/Sub
 ~~~
 
 Google Cloud 对 Cloud Tasks 与 Pub/Sub 的比较也体现了这层差异：Cloud Tasks 更关注显式任务调用和执行控制，Pub/Sub 更关注把消息交付给解耦 Subscriber。[[1]](https://cloud.google.com/tasks/docs/comp-pub-sub)
@@ -223,10 +217,10 @@ Task 消失
 这个边界可能是：
 
 ~~~text
-Database Job Table
-Message Broker
-Managed Task Service
-Persistent Stream
+Database Job Table      （数据库任务表：任务作为一行记录落库，靠事务保证持久化，典型如 outbox 模式）
+Message Broker          （消息中间件：发布即写入 Broker 并持久化，如 Kafka / RabbitMQ，再异步投递消费者）
+Managed Task Service    （托管任务服务：由云平台托管的任务队列与调度，如 Cloud Tasks、托管的 BullMQ）
+Persistent Stream       （持久化流：追加式日志流，如 Kafka topic、Kinesis，消息可持久化并重放）
 ~~~
 
 AWS 关于异步通信的工程指导同样强调，在返回“已接收、稍后处理”的 acknowledgement 前，应先让对象被可靠持久化，例如数据库写入或进入 Queue。[[2]](https://docs.aws.amazon.com/prescriptive-guidance/latest/modernization-integrating-microservices/asynchronous.html)
@@ -242,7 +236,7 @@ Enqueue Function 返回
 “任务已经可靠接收”
 
 至少应先满足
-Durable Acceptance Boundary
+Durable Acceptance Boundary（持久化接收边界 / 可靠接收边界）
 ~~~
 
 ### 【Producer → Broker 与 Broker → Consumer 是两个独立可靠性边界】
@@ -353,13 +347,13 @@ Outbox 解决的是：
 
 它并不规定后续必须使用 Kafka、RabbitMQ 或其他 Broker。
 
-Outbox Record 后续可以通过：
+Outbox Record（发件箱记录）后续可以通过：
 
 ~~~text
-Polling Worker
-CDC
-Broker Publisher
-其他 Relay
+Polling Worker        （轮询工作进程：定时扫 Outbox 表，取出尚未发送的已提交记录）
+CDC                   （变更数据捕获 Change Data Capture：监听数据库日志，捕获已提交的 Outbox 行）
+Broker Publisher      （消息代理发布者：把 Outbox 记录发布到 Kafka / RabbitMQ 等 Broker）
+其他 Relay            （其他中继方式：如直连下游 HTTP、写别的存储等转发途径）
 ~~~
 
 继续处理。
@@ -522,31 +516,52 @@ Lease 过期或 Broker Redelivery 后：
 
 ## 4. 重复执行正确性依靠 Delivery Semantics 与 Idempotency 共同建立
 
-### 【消息交付语义与业务 Side Effect 的执行语义必须分层】
+### 【消息交付语义与业务 Side Effect（副作用）的执行语义必须分层】
 
-常见 Delivery Semantics（交付语义）包括：
+常见 Delivery Semantics（交付语义）有三种，它们**只描述「消息系统」这一层如何投递**，并不保证业务副作用只发生一次：
 
 | 语义 | 直观含义 | 主要风险 |
 | --- | --- | --- |
-| At-most-once | 最多交付一次，失败时可能丢失 | Lost Work |
-| At-least-once | 至少尝试交付，可能重复 | Duplicate Processing |
-| Exactly-once Capability | 某些系统在特定边界内提供一次性处理能力 | 不能自动外推到所有外部 Side Effect |
+| At-most-once（最多一次） | 最多投递一次，发送失败就直接丢弃，不再重试 | Lost Work（工作丢失） |
+| At-least-once（至少一次） | 至少尝试投递一次，失败会重试，可能多次送达 | Duplicate Processing（重复处理） |
+| Exactly-once Capability（精确一次能力） | 某些系统在「特定边界内」提供一次性处理能力 | 不能自动外推到所有外部 Side Effect（副作用） |
 
-真正容易产生误解的是最后一项。
+逐条展开，看清每种语义下风险到底是怎么产生的：
+
+- **At-most-once（最多一次）**：生产者发出后若 ack 丢失、或 Broker 在持久化前宕机，这条消息就直接被丢弃，且不再重试。后果是任务**可能永远不执行（Lost Work）**。它适合「丢了也无所谓」的场景，例如指标打点、非关键日志；但绝不能用在扣款、发券这类不能丢失的业务上。
+
+- **At-least-once（至少一次）**：Broker 先持久化再向生产者确认，消费者处理完后回 ack；若消费者在「处理成功」与「回 ack」之间崩溃，Broker 会认为没收到确认而重新投递，于是**同一条消息被处理了多次（Duplicate Processing）**。这是 Kafka / RabbitMQ 等绝大多数 Broker 的默认（也是唯一能在不加分布式事务前提下稳定实现）的语义。
+
+- **Exactly-once Capability（精确一次能力）**：以 Kafka 为例，靠「幂等生产者 + 事务 + 流处理事务」做到在 **Kafka 自己管辖的边界内**读—处理—写是原子的，对外表现为「恰好一次」。但关键点在于——这个边界**只覆盖 Broker 拥有事务的那一段**；一旦你的处理逻辑要写另一个数据库、调支付网关、发邮件，这个保证就**到此为止**，因为 Broker 无法跨系统协调提交。
+
+  场景：用户注册后，发一封欢迎邮件。
+
+  - **情况一（在边界内）**：处理逻辑是「从 `user-registered` 主题读 → 往 `email-queued` 主题写」。这两步都在 Kafka 里，Kafka 可以把它们放进**同一个事务**。中途崩溃，Kafka 把读和写一起回滚，事件既不丢也不重，看起来就是「恰好一次」。
+
+  - **情况二（出了边界）**：处理逻辑改成「从 `user-registered` 主题读 → **调用外部邮件 API 发信**」。这时候「发邮件」这一步已经不在 Kafka 的事务里了，因为 Kafka 管不了别人的系统。于是两种尴尬都会发生：
+    - 先提交了 Kafka 事务（不会再重投），再去调邮件 API，结果 API 调完、记录「已发」前崩溃 → 重启后 Kafka 不重投 → **邮件永远没发出（丢失）**；
+    - 先调邮件 API 且成功了，但提交 Kafka 事务前崩溃 → 重启后 Kafka 重投这条事件 → **邮件 API 又被调了一次（用户收到两封）**。
+
+真正容易产生误解的正是最后一项：它说的是**消息层的能力边界**，而不是整条业务链路。把上面三层叠起来看：
 
 ~~~text
-Messaging Layer
+Messaging Layer（消息层）
 ↓
-某种 Delivery Guarantee
+某种 Delivery Guarantee（交付保证：at-most / at-least / exactly-once）
 
-Application Layer
+Application Layer（应用层）
 ↓
-Database / Payment / Email / External API Side Effect
+Database / Payment / Email / External API Side Effect（数据库/支付/邮件/外部 API 副作用）
 ↓
-仍然存在 Transaction Boundary、Crash Window 和外部系统语义
+仍然存在 Transaction Boundary（事务边界）、Crash Window（崩溃窗口）和外部系统自身语义
 ~~~
 
-因此“消息系统支持 Exactly Once”不能直接推导为“整个分布式业务副作用绝对只发生一次”。
+为什么叠起来之后「精确一次」会破功，核心有两处断点：
+
+1. **Crash Window（崩溃窗口）**：从「Broker 把消息交给消费者」到「副作用真正提交」之间，进程随时可能崩溃。恢复后消息被重投，副作用就跑了第二次。消息层的交付保证管不到这个窗口。
+2. **外部系统自身语义**：支付扣款、邮件发送这类外部 Side Effect 由对方系统决定成败与可重入性，Broker 既不知道、也无法回滚。即便消息只投了一次，外部调用也可能因超时重试而执行多次。
+
+因此「消息系统支持 Exactly Once（精确一次）」**不能直接推导为**「整个分布式业务的副作用绝对只发生一次」。工程上的正确结论见下一节：既然重复交付无法从根上消除，就应当把**消费端设计成幂等（Idempotent）**，用业务主键或消息去重表来吸收重复，而不是寄希望于端到端的恰好一次。
 
 在通用工程设计中，更稳妥的模型通常是：
 
@@ -820,14 +835,30 @@ Backpressure（背压）：当下游已经无法按当前速度消费时，上�
 可能的控制手段包括：
 
 ~~~text
-Producer Rate Limit
-Queue Admission Control
-Worker Concurrency Limit
-Priority Queue
-Batching
-Load Shedding
-暂时拒绝低优先级任务
+Producer Rate Limit        （生产者限速）
+Queue Admission Control     （入队准入控制）
+Worker Concurrency Limit    （Worker 并发上限）
+Priority Queue              （优先级队列）
+Batching                    （批量处理）
+Load Shedding               （负载卸载 / 过载丢弃）
+暂时拒绝低优先级任务           （显式拒绝低优任务）
 ~~~
+
+逐项说明：
+
+- **Producer Rate Limit（生产者限速）**：在流量源头限制单位时间内的入队速率（常用令牌桶）。防止突发流量一口气压垮队列与下游，是最前置的一道闸。常见于 SDK / 网关 / 采集端侧。
+
+- **Queue Admission Control（入队准入控制）**：队列在「接收任务」这一步就判断自身水位，超过阈值直接拒绝入队（返回 429 或暂存失败）。它把压力挡在系统边界之外，而不是让任务无限制堆积、把内存和延迟拖爆。
+
+- **Worker Concurrency Limit（Worker 并发上限）**：限制单个 Worker 同时处理的任务数。这直接对应上一节提到的——并发一高，Database Connections、Lock Contention、CPU/内存、Remote API QPS、Network I/O 会**同时被放大**。并发上限要按「最窄的那条下游资源」来定，而非越高越好。
+
+- **Priority Queue（优先级队列）**：按优先级调度，高优任务先消费，低优任务在拥塞时被推迟。保证在过载时关键链路（如交易、告警）仍可用，非关键链路（如报表统计）自觉让路。
+
+- **Batching（批量处理）**：把多条任务合并成一批处理（如批量写库、批量发消息）。用更少的往返摊销固定开销，降低单位任务的资源消耗，从而提升吞吐、缓解压力——属于「少次数、多批量」的减压思路。
+
+- **Load Shedding（负载卸载）**：当系统明确感知自己已过载，主动丢弃或拒绝一部分请求/任务，保住核心能力，而不是被流量拖垮。本质是「宁可少做、不能全崩」的兜底策略。
+
+- **暂时拒绝低优先级任务**：Load Shedding 的一种具体形态——过载时直接拒绝报表类、统计类等非关键任务，把腾出的容量优先给关键路径，等水位回落再恢复。
 
 Backpressure 与 Retry 需要一起考虑。如果系统已经积压严重，再让失败任务高频 Retry，会同时扩大新任务压力和旧任务压力。
 
@@ -902,17 +933,68 @@ Process Exit
 
 ### 【Database-backed Job Store 与 Message Broker 应按系统需求选择】
 
-两者不是“低级方案”和“高级方案”的关系，而是不同复杂度和能力边界。
+先讲清楚这两种模式各自是什么，再对比。
 
-| 维度 | Database-backed Job Store | Message Broker / Managed Queue |
+**1. Database-backed Job Store（数据库任务表）**
+
+把「待执行的任务」直接当成一行数据，存进你**业务数据库里的一张表**（常叫 `jobs` / `task_queue`）。Worker 用 SQL 去这张表里「领取」任务——典型写法：`UPDATE ... SET status='running', owner=:me WHERE status='pending' LIMIT 1`（配合行锁或租约 Lease 防止多 Worker 抢同一条）。任务的状态流转、重试、失败记录，全部靠数据库事务和索引来管。
+
+> 本质：复用你**已有的那个数据库**，不引入任何新组件。所谓的「队列」，就是一张普通的表。
+
+一个常见的 `jobs` 表存储模板（PostgreSQL 为例）：
+
+```sql
+CREATE TABLE jobs (
+  id            BIGSERIAL    PRIMARY KEY,
+  type          TEXT         NOT NULL,       -- 任务类型，如 'send_email' / 'export_report'
+  payload       JSONB        NOT NULL,       -- 任务入参（业务自定义结构）
+  status        TEXT         NOT NULL DEFAULT 'pending',  -- pending / running / succeeded / failed
+  owner         TEXT,                         -- 当前领取该任务的 Worker 标识
+  attempt       INT          NOT NULL DEFAULT 0,          -- 已重试次数
+  max_attempts  INT          NOT NULL DEFAULT 3,          -- 超过则标记为 failed，不再重试
+  run_at        TIMESTAMPTZ  NOT NULL DEFAULT now(),      -- 最早可执行时间（用于延迟任务）
+  locked_until  TIMESTAMPTZ,                 -- 租约到期时间：配合 Lease 防止多 Worker 重复领取
+  last_error    TEXT,                         -- 最近一次失败原因，便于排查
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- 关键：原子地「抢占」一条待执行任务（跳过已被其它事务锁住的行）
+UPDATE jobs
+SET status = 'running',
+    owner = :workerId,
+    locked_until = now() + interval '5 minutes',
+    attempt = attempt + 1
+WHERE id = (
+  SELECT id FROM jobs
+  WHERE status = 'pending'
+    AND run_at <= now()             -- 延迟任务未到时间不领
+  ORDER BY run_at ASC               -- 先到先得
+  LIMIT 1
+  FOR UPDATE SKIP LOCKED           -- 跳过被别的事务锁住的行，Worker 之间不互相等待
+)
+RETURNING *;
+```
+
+要点：Worker 处理成功就把 `status` 置为 `succeeded`；失败则把 `attempt + 1`，若已达 `max_attempts` 置为 `failed`，否则保持 `pending` 等待下次领取。**若 Worker 在 `locked_until` 前崩溃**，该行租约过期后其它 Worker 可重新领取，从而不会留下永久 `running` 的僵尸任务——这正是上一节 Graceful Shutdown / Lease 超时机制在存储层的落点。
+
+**2. Message Broker / Managed Queue（消息中间件 / 托管队列）**
+
+引入一个**独立的消息基础设施**（如 Kafka、RabbitMQ）或云平台托管的队列服务（如 Cloud Tasks、SQS）。Producer 把消息「发布」进 Broker，由 Broker 负责持久化、路由、再投递给 Consumer。任务的领取、确认（ack）、重投、扇出（Fan-out），都是 Broker 的**原生能力**。
+
+> 本质：把「任务流转」从数据库里剥离出来，交给专门的消息系统去治理，数据库只管业务数据。
+
+两者**不是**「低级方案」和「高级方案」的关系，而是**不同复杂度和能力边界**——选哪个取决于你的吞吐、耦合度与治理需求，而不是「越复杂越先进」。
+
+| 维度 | Database-backed Job Store（数据库任务表） | Message Broker / Managed Queue（消息中间件 / 托管队列） |
 | --- | --- | --- |
-| 基础设施 | 可复用现有数据库，较简单 | 多一个独立消息基础设施或托管服务 |
-| 与业务事务结合 | 容易使用 Local Transaction / Outbox | 通常需要 Outbox、Broker Transaction 或产品能力衔接 |
-| 领取协调 | Row Lock / Lease / Polling | Broker / Queue 原生 Delivery |
-| 高吞吐扩展 | 容易受到主数据库压力影响 | 通常更适合专业消息吞吐与路由 |
-| Pub/Sub / Fan-out | 需要额外设计 | 很多 Broker 原生支持 |
-| Replay / Routing / Partition | 自行实现较多 | 取决于具体产品，通常能力更丰富 |
-| 适合场景 | 中小规模后台任务、强数据库事务耦合 | 大规模解耦、复杂路由、多 Consumer、独立消息治理 |
+| 基础设施 | 可复用现有数据库，较简单，无新组件 | 多一个独立消息基础设施或托管服务，运维成本更高 |
+| 与业务事务结合 | 容易：直接在同一 Local Transaction 里写任务，或用 Outbox | 通常需要 Outbox、Broker Transaction 或产品自身能力来衔接业务事务 |
+| 领取协调 | 靠 Row Lock（行锁）/ Lease（租约）/ Polling（轮询）自己实现 | Broker / Queue 原生 Delivery（投递与 ack 机制开箱即用） |
+| 高吞吐扩展 | 容易受主数据库压力影响，吞吐上限受 DB 制约 | 通常更适合专业消息吞吐与路由，扩展性强 |
+| Pub/Sub / Fan-out（发布订阅 / 扇出） | 需要额外自己设计（如多写几条记录） | 很多 Broker 原生支持（一个消息推给多个消费者组） |
+| Replay / Routing / Partition（重放 / 路由 / 分区） | 自行实现较多，较费劲 | 取决于具体产品，通常能力更丰富 |
+| 适合场景 | 中小规模后台任务、与数据库事务强耦合的业务 | 大规模解耦、复杂路由、多 Consumer、需要独立消息治理 |
 
 演进判断应该从实际问题出发：
 
