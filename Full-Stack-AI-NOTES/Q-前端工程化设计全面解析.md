@@ -1884,11 +1884,25 @@ Closes #123
 
 ## 测试流程
 
-测试是保障代码质量、减少线上bug、提升开发效率和用户体验的核心环节。测试的三大核心类型——单元测试、集成测试、端到端测试（E2E测试）。
+前端工程化中的测试职责是把测试策略转成项目中可重复执行的工程能力：统一 Test Runner、Environment、Fixture、Script、Coverage、Report 和 CI 入口。Unit / Component / Integration / E2E 的通用定义、Test Boundary、Mock、Isolation、Locator 与 Verification Strategy 统一参考 [前端测试体系从验证边界到工程质量门禁](./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md)。
+
+~~~text
+Testing Strategy
+↓
+Project Test Config
+↓
+Package Script
+↓
+Local Feedback
+↓
+CI Test Result / Evidence
+↓
+Quality Gate
+~~~
 
 ### 单元测试（Unit Testing）
 
-单元测试是前端测试体系的基础，聚焦于“最小测试单元”，即单个函数、方法或组件，通过隔离外部依赖，验证其独立行为是否符合预期。单元测试的核心价值的是快速定位代码问题、保障代码可维护性，为后续集成测试、端到端测试奠定基础，尤其适合在开发阶段同步编写，实现“测试驱动开发（TDD）”或“开发同步测试”。
+本节不再重新定义 Unit Test，而是说明小边界测试怎样接入项目。工程上需要明确测试文件范围、Runtime Environment、Mock / Fixture Setup、Watch Mode、Coverage 和 CI Command；具体测试边界由测试主文档定义。
 
 #### 测试目标
 
@@ -2005,7 +2019,7 @@ npm run test:coverage
 
 ### 集成测试（Integration Testing）
 
-集成测试建立在单元测试的基础上，聚焦于“模块间的协作”，验证多个函数、组件或模块组合在一起后的交互行为是否符合预期。与单元测试的“孤立测试”不同，集成测试不刻意隔离依赖，而是模拟真实的模块协作场景，发现模块交互过程中可能出现的问题。
+集成测试的通用定义由测试主文档维护。本节关注多个模块协作测试如何进入工程配置：Browser / DOM Environment 怎样启动、API Mock 怎样复用、Fixture 怎样组织、Case 怎样通过 CLI 在本地和 CI 中稳定执行。
 
 #### 测试目标
 
@@ -2111,7 +2125,7 @@ describe('表单提交集成测试', () => {
 
 ### 端到端测试（E2E Testing）
 
-端到端测试（End-to-End Testing）是最高层级的测试，模拟真实用户在浏览器中的完整操作流程，从用户打开页面到完成核心业务操作（如登录、下单、支付），验证整个应用在真实环境中的工作状态，覆盖前端、后端、数据库等全链路，确保应用能正常运行。
+E2E 的完整边界由测试主文档维护。本节只关注工程接入：怎样启动 Test Environment、准备 Test Data、配置 Browser Matrix、保存 Trace / Screenshot / Report，并把关键业务链的结果接入 CI Gate。
 
 #### 测试目标
 
@@ -2226,7 +2240,7 @@ jobs:
 
 ### 综合测试流程（开发+CI/CD）
 
-前端测试不是孤立的，需建立“单元测试→集成测试→端到端测试”的层次化测试体系，结合开发流程和CI/CD流程，实现全链路质量保障。
+前端工程化不强制把测试写成固定的“单元→集成→E2E”串行流程，而是把不同反馈成本的测试能力接入开发和 CI/CD。具体组合由 Risk、Test Boundary、Dependency Fidelity 和反馈速度决定。
 
 #### 开发阶段
 
