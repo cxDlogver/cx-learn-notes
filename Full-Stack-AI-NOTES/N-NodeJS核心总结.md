@@ -399,10 +399,10 @@ const fs = require('fs');
 | **删除文件**     | `fs.unlink(...)`                                | `fs.unlinkSync(...)`               | 删除文件             |
 | **重命名/移动**  | `fs.rename(...)`                                | `fs.renameSync(...)`               | 重命名文件或移动位置 |
 | **检测文件状态** | `fs.stat(...)`                                  | `fs.statSync(...)`                 | 查看文件/目录信息    |
-| **判断存在**     | `fs.exists(path）`                              | `fs.existsSync(path)`              | 判断路径是否存在     |
+| **检查可访问性** | `fs.access(path, [mode], callback)`             | `fs.accessSync(path, [mode])`      | 检查路径是否可访问   |
 | **创建目录**     | `fs.mkdir(...)`                                 | `fs.mkdirSync(...)`                | 创建文件夹           |
 | **读取目录**     | `fs.readdir(...)`                               | `fs.readdirSync(...)`              | 获取目录内容         |
-| **删除目录**     | `fs.rmdir(...)`                                 | `fs.rmdirSync(...)`                | 删除文件夹（空）     |
+| **删除路径**     | `fs.rm(...)`                                    | `fs.rmSync(...)`                   | 删除文件或目录；递归删除可使用 `recursive` 等选项 |
 | **流式读取**     | `fs.createReadStream(path)`                     | -                                  | 创建可读流           |
 | **流式写入**     | `fs.createWriteStream(path)`                    | -                                  | 创建可写流           |
 
@@ -466,7 +466,7 @@ fs.readdir('./demo', (err, files) => {
 });
 
 // 删除目录（空目录）
-fs.rmdir('./demo', err => {
+fs.rm('./demo', { recursive: true, force: true }, err => {
   if (err) throw err;
   console.log('目录删除成功');
 });
@@ -512,7 +512,7 @@ rs.on('end', () => {
 ### 【同步 vs 异步】
 
 - **同步**：代码会阻塞等待文件操作完成
-- **异步**：文件操作在后台进行，主线程可以继续执行其他任务
+- **异步**：调用不会要求当前 JavaScript 执行流一直等待结果；底层可能由操作系统异步能力或 Runtime Worker Pool 等机制完成，结果再回到 Event Loop
 - 建议在高并发服务中**优先使用异步**版本
 
 
@@ -520,9 +520,9 @@ rs.on('end', () => {
 
 ### 【Buffer是什么？】
 
-- Buffer 是 Node.js 提供的 **用于处理二进制数据的类数组对象**。
-- 它的出现解决了 JavaScript 语言本身不支持直接操作二进制数据的问题。
-- Buffer 常用于处理文件、网络通信等二进制数据流。
+- Buffer 是 Node.js 提供的 **固定长度字节序列**，并且继承自 JavaScript 的 `Uint8Array`。[[8]](https://nodejs.org/api/buffer.html)
+- JavaScript 本身已经有 ArrayBuffer / TypedArray 等二进制数据抽象；Buffer 在 Node Runtime 中进一步提供更适合文件、网络、编码转换等场景的字节处理 API。
+- Buffer 常用于文件、TCP / HTTP、Stream、Compression、Crypto 等二进制数据场景。
 
 ### 【Buffer的创建】
 
@@ -552,7 +552,7 @@ const buf5 = Buffer.from('hello', 'ascii');
 | 读取字符串   | `buf.toString([encoding], [start], [end])`                   | 转为字符串       | `buf.toString('utf8', 0, 5)`  |
 | 合并 Buffer  | `Buffer.concat([buf1, buf2, ...])`                           | 合并多个Buffer   | `Buffer.concat([buf1, buf2])` |
 | 拷贝数据     | `buf.copy(targetBuffer, [targetStart], [sourceStart], [sourceEnd])` | 复制内容         | `buf1.copy(buf2)`             |
-| 截取子Buffer | `buf.slice(start, end)`                                      | 获取Buffer子区间 | `buf.slice(0, 3)`             |
+| 创建共享视图 | `buf.subarray(start, end)`                                   | 获取共享底层内存的子区间 | `buf.subarray(0, 3)`          |
 
 ### 【Buffer 与字符串的转换】
 
@@ -622,12 +622,12 @@ const path = require('path');
 | `path.sep`                   | 当前操作系统的路径分隔符                        | `'\\'`（Windows）或 `'/'`（Linux/macOS）                     |
 | `path.delimiter`             | 当前操作系统的环境变量分隔符                    | `';'`（Windows）或 `':'`（Linux/macOS）                      |
 
-- `__dirname` 与 `require` 类似，都是 Node.js 环境中的全局变量。`__dirname` 保存着 当前文件所在目录的绝对路径 ，可以使用 `__dirname` 与文件名拼接成绝对路径
+- `__dirname` 与 `__filename` 是 CommonJS Module Wrapper 提供的模块局部变量，并不是所有 Node.js Module System 下都存在的真正全局变量。[[6]](https://nodejs.org/api/modules.html) 在 ESM 中可使用 `import.meta.dirname` / `import.meta.filename` 或 `import.meta.url` 等能力。
 
 ### 【使用示例】
 
 ```js
-js复制编辑const path = require('path');
+const path = require('path');
 
 const filePath = '/foo/bar/baz.txt';
 
@@ -906,6 +906,8 @@ Node.js Module Loader
 
 IIFE、AMD、CMD、ESM Live Binding、CommonJS Export 等完整知识统一参考 [前端模块化规范](./Q-前端模块化规范.md)。
 
+现代 Node.js 的 CommonJS / ESM Interoperability 已经比早期规则更丰富：`require()` 始终使用 CommonJS Loader，但当前版本可以同步加载满足条件、且不包含 Top-level `await` 的 ESM；`import()` 使用 ESM Loader。[[6]](https://nodejs.org/api/modules.html)[[7]](https://nodejs.org/api/esm.html) 因此工程判断应基于当前 Node.js 版本和 Module Format，而不是记成“CommonJS 永远不能加载 ESM”。
+
 ### 【Package Manager 将依赖声明转换为可解析依赖】
 
 Package Manager（包管理器）：读取 Package Manifest 中的依赖声明，解析版本、下载 Package、维护 Lockfile，并让应用能够解析依赖。
@@ -1108,7 +1110,7 @@ NPM 常用命令速查表
 
 ### 【npx】
 
-**npx** 是 Node.js 自带的一个命令行工具（从 **npm 5.2.0** 开始内置），它的主要作用是 **执行 Node.js 项目中的可执行包（CLI 工具）**，而不需要你提前全局安装它。
+**npx** 是 npm CLI 提供的 Package Binary 执行入口，现代 npm 中与 `npm exec` 使用同一套执行能力。它可以执行本地 Dependency 暴露的 CLI，也可以在项目中不存在目标 Package 时把需要的 Package 放入 npm Cache 后临时加入执行环境。[[9]](https://docs.npmjs.com/cli/npm-exec/)
 
 #### <u>1. 为什么有 npx</u>
 
@@ -1121,7 +1123,7 @@ npx 解决了这些问题：
 
 - 直接运行包的可执行文件，不必全局安装。
 - 可以运行项目本地 `node_modules` 里的 CLI 工具。
-- 支持临时安装一次性运行的工具，执行后自动清除。
+- 支持临时获取并执行一次性工具；现代 npm 会把获取的 Package 放入 npm Cache，不应理解为“执行结束一定立即删除”。
 
 #### <u>2. 使用方式</u>
 
@@ -1145,7 +1147,7 @@ npx eslint src/
 npx cowsay "Hello"
 ```
 
-npx 会先下载 `cowsay`（存在临时目录），执行后删除。
+如果本地不存在对应 Package，npm 可以先把它获取到 npm Cache，并将对应可执行文件加入本次命令的 `PATH`；Cache 的保留与清理由 npm Cache 机制管理。[[9]](https://docs.npmjs.com/cli/npm-exec/)
 
 **指定包版本执行**
 
@@ -1966,15 +1968,15 @@ MongoDB 是一个基于 **文档（Document）** 的 NoSQL 数据库。它使用
 
 3. **数据关系和事务**
 
-- **MongoDB**：适合关系不复杂的数据，也支持事务，但不如关系数据库成熟。
-- **关系数据库**：关系复杂（比如多个表之间关联），事务支持特别好，保证数据准确。
+- **MongoDB**：以 Document Model 为核心，也支持多文档事务；是否适合某个业务不能只按“关系复杂不复杂”判断，还要结合数据模型、查询模式、一致性要求和扩展方式。
+- **关系数据库**：以关系模型、Schema、Constraint、Join 与 Transaction 等能力组织数据，在强约束和复杂关系查询场景中通常具有成熟工具链。
 
 4. **扩展和性能**
 
-- **MongoDB**：很容易增加服务器横向扩展，适合海量数据和高并发。
-- **关系数据库**：通常是往服务器加配置（纵向扩展），横向扩展比较难。
+- **MongoDB**：原生提供 Sharding 等横向扩展机制，但分片键、热点、跨分片查询和运维复杂度仍需要设计。
+- **关系数据库**：既可以纵向扩展，也存在 Read Replica、Partition / Sharding、Distributed SQL 等横向方案；具体复杂度取决于 DBMS 和一致性要求。
 
-**MongoDB 更灵活，适合大数据和变化快的应用；关系数据库更严谨，适合传统业务和复杂数据关联。**
+因此 MongoDB 与关系数据库不是“灵活 vs 严谨”或“横向 vs 纵向”的简单二选一，应从业务事实的数据模型、约束、查询模式、一致性和扩展需求选择。
 
 ### 【具体使用】
 
@@ -2554,3 +2556,7 @@ Production Runtime
 [6] Node.js. Modules: CommonJS modules. https://nodejs.org/api/modules.html
 
 [7] Node.js. Modules: ECMAScript modules. https://nodejs.org/api/esm.html
+
+[8] Node.js. Buffer. https://nodejs.org/api/buffer.html
+
+[9] npm Docs. npm exec. https://docs.npmjs.com/cli/npm-exec/
