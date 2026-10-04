@@ -1,26 +1,34 @@
 # Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复
 
-## 回答要点
+## 【知识概述】
 
-Agent 长任务的核心不是维持一个永不结束的进程，而是把长期目标设计成**可以分段提交可信进度，并在任意一次运行中断后继续推进**的系统。
+这篇知识点想讲清楚的是：**当一个 Agent 任务无法在一次 Model Call、一次 Context Window、一次进程甚至一次 Session 中完成时，怎样让已经完成的可信进度保存下来，并在中断以后继续推进。**
 
-1. **Task Decomposition 建立可恢复边界。** 长任务拆成可独立执行和验收的工作单元，否则系统即使有 Checkpoint，也难判断哪些工作已经可信完成。
-2. **State 记录当前执行事实。** 当前计划、已完成任务、当前子任务、Tool Result 和待处理事项形成后续判断与恢复基础。
-3. **Verification 决定哪些进度可以被信任。** 子任务执行结束不等于完成，Test、Rule、Evaluator 或人工审批确认后，结果才能成为后续稳定前置。
-4. **Artifact 保存交付结果。** 代码、文档、报告等独立持久化，不能只存在 Context 或对话中；Artifact 是成果，不等同于运行状态。
-5. **Checkpoint 保存恢复所需快照。** 它记录节点、State 和必要元数据，解决中断后从哪里继续，但不能自动保证外部副作用只发生一次。
-6. **Memory 保存未来可复用信息。** Memory 服务跨轮次或跨任务复用；Context 只是当前 Model Call 实际可见的信息，因此 Context、State、Checkpoint、Artifact、Memory 要区分。
-7. **Interruption 后先核对再 Resume。** 中断期间外部状态可能变化，恢复前要检查已完成节点、待审批动作和真实副作用，必要时 Reconciliation。
-8. **Idempotency / Operation Record 保护真实业务动作。** 数据库写入、消息、订单、支付等动作不能仅靠内部 State 防止重复执行。
-9. **Agent Run 与业务长任务生命周期不同。** RunState 解决一次 Run 的暂停恢复；跨小时、跨天、跨进程任务通常还需要 Durable Workflow / Job System 管理阶段、等待和调度。
+最先要改变的不是 Context 大小，而是任务结构。如果一个长期目标始终作为一个不可分割的大任务执行，中断以后系统很难判断哪些工作已经完成、哪些结果可以继续使用。因此首先需要 **Task Decomposition**，把目标拆成能够独立推进和验收的工作单元。
+
+执行这些单元时，**State** 记录当前计划、已完成工作、Tool Result 和待处理事项。但“执行过”并不等于“已经可靠完成”，所以阶段结果还需要通过 Test、Rule、Evaluator 或人工审批进行 **Verification**。只有经过验证的结果，才适合作为后续阶段的可信前置。
 
 ```text
-Goal → Task Decomposition → State
-→ Execution → Verification
-→ Artifact / Checkpoint / Memory
-→ Interruption → Reconciliation + Idempotency
-→ Resume from Trusted Boundary
+Long-running Goal
+        ↓
+Task Decomposition
+建立可独立推进的工作单元
+        ↓
+State
+记录当前执行事实
+        ↓
+Execution
+        ↓
+Verification
+确认哪些结果已经可信
 ```
+
+当可信进度产生以后，还要把不同类型的信息保存到合适的位置：代码、文档和报告属于 **Artifact**；恢复执行所需的节点和状态快照属于 **Checkpoint**；未来轮次或任务可以复用的信息属于 **Memory**。它们都可能参与长期任务，但解决的问题不同，不能全部理解成“保存上下文”。
+
+中断以后也不能简单加载 Checkpoint 就继续。外部数据库、消息、订单或支付可能已经发生变化，因此恢复前还需要 **Reconciliation** 核对真实状态，并通过 Idempotency / Operation Record 防止副作用重复执行，最后才能从可信边界 Resume。
+
+这篇知识点因此从“任务怎样分段”一直延伸到“状态怎样持久化、结果怎样验收、恢复前怎样核对真实世界”。它会与 Context / Memory、Runtime / Checkpoint、Workflow / Orchestration、Fault Recovery、Governance 和 Eval 等知识交叉，但重点始终是**跨时间保持任务进度的连续性和可信性**。
+
 ## 1. 任务分解与 State 让长任务进度可以独立推进和验收
 
 ### 【核心目标：运行可以中断，但任务进度不能丢失】
