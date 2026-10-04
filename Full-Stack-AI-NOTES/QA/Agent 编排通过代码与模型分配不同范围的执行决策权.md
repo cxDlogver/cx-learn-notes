@@ -1,47 +1,29 @@
 # Agent 编排通过代码与模型分配不同范围的执行决策权
 
-**原问题：** Agent 的 Orchestration（编排）应该如何设计？什么时候使用代码编排，什么时候使用模型编排？
+Agent Orchestration 的核心不是先选择 Workflow、Manager、Handoff 或 Multi-Agent，而是先回答：**复杂任务中的下一步决策权应该由代码还是模型掌握，以及多个执行单元应该怎样组织。**
 
-**回答要点：**
-
-- 编排同时设计执行结构和下一步决策权：可以预先定义的业务阶段优先由代码控制，无法预先确定的局部任务交给模型。
-- Planning 与 Replanning 调整方案、子任务和工具选择，同时保持目标、业务约束、权限与验收标准。
-- Manager 把专业 Agent 作为工具调用并收回结果；Handoff 将后续处理控制权转交给目标 Agent。
-- 多 Agent、并行、Graph 和模型控制是不同维度，不能因为用了其中一个就推断其余维度。
-- 混合编排以确定性业务骨架约束动态任务；允许模型自主性的范围由实际任务边界决定。
-
-本题与[Agent 完整学习教程](<../A-Agent学习教程.md>)中的控制权、执行拓扑与编排模型相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-Orchestration（编排）解决的不是“怎样调用多个 Agent”，而是：
-
-> **一个复杂任务由哪些执行单元完成、它们按照什么关系执行，以及当前步骤结束后，由谁决定下一步。**
-
-因此，编排设计首先判断的不是使用 Manager 还是 Handoff，而是：
+规则稳定、顺序明确或风险较高的业务阶段应优先由代码控制；只有搜索、规划、工具选择、任务拆分等无法提前穷举的局部步骤，才需要把决策权交给模型。决策权边界确定以后，再根据协作需要选择 Single Agent、Manager + Specialists、Handoff、Parallel 或 Graph 等执行拓扑，最后通过目标、权限、预算、验收和人工 Gate 限制模型自主范围。
 
 ```text
-Business Goal → 执行路径能否提前确定？ → 能：Code Orchestration ｜ 不能：LLM Orchestration
+Complex Goal
+        ↓
+哪些阶段能够提前确定？
+→ Code：固定 Workflow / Rule / High-risk Gate
+        ↓
+哪些局部步骤必须运行时判断？
+→ Model：Planning / Tool Selection / Agent Selection
+        ↓
+决策权确定以后怎样组织执行？
+→ Single Agent / Manager / Handoff / Parallel / Graph
+        ↓
+自主范围如何约束？
+→ Goal / Permission / Budget / Verification / Human Gate
+        ↓
+Hybrid Orchestration
+确定性业务骨架 + 局部动态决策
 ```
 
-Anthropic 对 Workflow 和 Agent 的区分建立在这一控制权边界上：Workflow 中，LLM 和 Tool 按照预定义的代码路径运行；Agent 中，则由 LLM 动态控制自己的执行过程和 Tool 使用。[[1]](https://www.anthropic.com/engineering/building-effective-agents)
-
-OpenAI Agents SDK 对 Orchestration 的划分也基本一致：一种是由代码决定 Agent Flow，另一种是让 LLM 根据当前任务进行 Planning、Reasoning 和下一步决策，两种方式可以组合。[[2]](https://openai.github.io/openai-agents-python/multi_agent/)
-
-因此整个问题可以按照下面的层次理解：
-
-```text
-Business Workflow
-├─ 路径可以预先定义 → Code Orchestration
-└─ 局部路径无法预先定义 → LLM Orchestration
-                           ├─ Planning / Replanning
-                           └─ 需要多个 Agent 时
-                              ├─ Manager
-                              └─ Handoff
-```
-
-最终在生产系统中，两种方式通常不是二选一，而是形成 Hybrid Orchestration（混合编排）：
-
-> **外层尽量确定，内层按需自主。**
-
+后文沿“决策权 → 执行拓扑 → 多 Agent 协作 → 混合编排”展开，并重点说明 Manager、Handoff、Parallel、Multi-Agent 属于不同维度，不能由其中一个概念推导出整个系统都由模型控制。
 ## 1. 编排先划分执行结构与下一步决策权
 
 ### 【Orchestration 的核心：分配执行控制权】

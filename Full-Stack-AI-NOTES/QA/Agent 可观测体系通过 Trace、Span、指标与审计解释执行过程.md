@@ -1,66 +1,30 @@
 # Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程
 
-**原问题：** Agent Observability（可观测体系）应该如何构建？
+Agent 可观测性的目标不是“记录更多日志”，而是让系统能够回答两类问题：**一次 Agent Run 到底发生了什么，以及大量 Agent Run 的整体运行状态怎样。** 因此 Trace、Span、Log、Metric、Audit 分别承担不同观察粒度，必须组合使用而不是互相替代。
 
-**回答要点：**
-
-- Trace 关联一次任务，Span 表示执行步骤与嵌套作用域，Log 补充事件，Metric 聚合表现，Audit 保存治理证据。
-- Runtime 自动插桩记录模型、工具与 Agent 调用，业务通过 Hooks 和自定义 Span 补充框架不知道的阶段与资源信息。
-- 父子 Span 体现作用域归属，分析动作原因还需关联模型可见输入、Tool Call ID、参数和时间。
-- 采集、处理、批量导出与后端查询形成观测链；日志、指标和审计有各自的数据管道与留存要求。
-- 使用自有后端时区分增加与替换默认处理器，并对导出内容脱敏；观测数据不是任务完成证明或恢复快照。
-
-本题与[Agent System 研发知识梳理](<../A-Agent-System研发知识梳理.md>)中的可观测体系与[Agent 完整学习教程](<../A-Agent学习教程.md>)相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-Agent Observability（Agent 可观测性）不应该从 Trace、Span、Log、Metric 等概念分别解释，而应该先回答一个更基础的问题：
-
-> **当一个 Agent Task 执行失败、结果异常或者成本突然升高时，系统能不能还原这次任务到底经历了什么，并进一步定位“问题为什么发生”。**
-
-OpenTelemetry 对 Observability 的一个核心描述就是帮助系统回答：
-
-> **“Why is this happening?”——为什么会发生这种情况？** [[1]](https://opentelemetry.io/docs/concepts/observability-primer/)
-
-因此 Agent 可观测体系需要同时解决两个层次的问题：
+单次任务需要 Trace 关联完整链路，再用 Span 拆出模型调用、Tool 调用、Agent 节点和业务阶段，Log 补充局部事件与错误细节；当问题从单次任务扩大到系统趋势时，需要 Metric 聚合成功率、延迟、Token 和错误率；涉及身份、审批和敏感动作时，还需要 Audit 保存治理证据。
 
 ```text
-单次任务
-Agent 这一次到底经历了什么？
-为什么失败？
+想还原一次任务整体过程
+→ Trace
         ↓
-Trace / Span / Log
-用于还原执行过程
-
-大量任务
-整个 Agent 系统运行得怎么样？
-哪些问题正在增加？
+想拆出模型、Tool、Agent 和业务步骤
+→ Span
         ↓
-Metric / Alert
-用于监控整体状态
+想解释某一步的具体事件和错误
+→ Log
+        ↓
+想观察大量任务的趋势
+→ Metric
+        ↓
+想证明敏感动作由谁批准和执行
+→ Audit
+        ↓
+统一处理、导出、查询和分析
+→ Observability Backend
 ```
 
-整个体系可以按照下面的链路理解：
-
-```text
-观测目标
-   ↓
-确定需要观测的执行过程
-   ↓
-Runtime Instrumentation
-运行时插桩
-   ↓
-形成 Trace / Span 等原始运行数据
-   ↓
-Processor / Exporter
-采集、处理、上传
-   ↓
-Observability Backend
-存储、查询、聚合
-   ↓
-单次任务分析 + 系统指标监控
-   ↓
-Debug / Alert / Evaluation / Audit
-```
-
+后文沿“观测目标 → 运行时采集 → 数据关联 → 导出分析 → 治理边界”展开。需要始终保持两个边界：Trace 是执行证据但不是任务成功判定，因此不能替代 Eval；Trace 记录发生过什么，也不能替代用于恢复执行的 Checkpoint。
 ## 1. 任务与步骤通过 Trace 和 Span 建立可检查的执行主线
 
 ### 【Agent Observability 的核心目标】
