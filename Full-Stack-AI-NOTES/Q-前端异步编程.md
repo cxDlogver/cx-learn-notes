@@ -1589,7 +1589,7 @@ f().catch(console.log) // bad
 2. 发布订阅模式：保存then注册的回调函数，待Promise决议（fulfilled/rejected）后批量执行；
 3. 链式调用：then方法返回新的Promise实例，确保异步操作可链式衔接。
 
-后续所有步骤均围绕这三点，逐步完善功能，最终实现符合规范的完整Promise。
+后续所有步骤均围绕这三点展开。分步代码用于解释状态、决议、回调队列和链式调用分别承担什么职责，因此部分片段只代表当前步骤已经实现的能力，不能把早期片段直接拼接成最终可运行版本。完整可运行实现与自测文件分别见 [handwritten-promise.js](./source/promise/handwritten-promise.js) 和 [handwritten-promise.test.js](./source/promise/handwritten-promise.test.js)。
 
 ### 1.基础准备（状态+工具函数）
 
@@ -1956,301 +1956,67 @@ Promise.allSettled = function (promises) {
 };
 ```
 
-### 7.规范测试（验证实现正确性）
+### 7. 可运行实现与验证边界
 
-用 `promises-aplus-tests` 包测试我们手写的Promise，验证是否完全符合 Promises/A+ 规范。
+完整实现已经从 Markdown 中移入 [source/promise/handwritten-promise.js](./source/promise/handwritten-promise.js)。正文继续保留前面的分步实现，用于解释状态迁移、Thenable 展开、回调队列和链式调用；完整文件负责提供可以直接运行和继续测试的实现。
 
-#### 配置测试环境
+实现中的关键决议函数接收当前 Promise、待解析值以及 fulfill / reject 能力，避免依赖函数作用域外不存在的 resolve / reject：
 
-```json
-// package.json
-{
-  "name": "promise-handwritten-test",
-  "version": "1.0.0",
-  "description": "A Promise polyfill with Promises/A+",
-  "main": "src/promise.js", // 我们手写的Promise文件路径
-  "scripts": {
-    "test": "`promises-aplus-tests` ./src/test.js" // 测试命令
-  },
-  "devDependencies": {
-    "`promises-aplus-tests`": "^2.1.2" // 安装测试包
+~~~javascript
+function resolveValue(promise, value, fulfill, reject) {
+  if (promise === value) {
+    reject(new TypeError('Chaining cycle detected for promise'))
+    return
   }
+
+  // 普通值直接 fulfill；
+  // Thenable 则读取 then，并且只允许第一次 resolve / reject 生效。
 }
-```
+~~~
 
-#### 编写测试文件（src/test.js）
+then 方法创建新的 Promise 后，把回调返回值重新交给同一套决议流程：
 
-```javascript
-// 引入手写的Promise
-const Promise = require("./promise");
-
-// 暴露deferred方法（测试包要求，用于生成Promise实例和resolve/reject方法）
-Promise.deferred = function () {
-  const result = {};
-  result.promise = new Promise((resolve, reject) => {
-    result.resolve = resolve;
-    result.reject = reject;
-  });
-  return result;
-};
-
-module.exports = Promise;
-```
-
-#### 执行测试
-
-1. 安装依赖：npm install --save-dev `promises-aplus-tests`；
-2. 执行测试：npm run test；
-3. 测试通过：所有规范用例执行成功，说明手写Promise符合Promises/A+规范。
-
-### 完整代码整合（最终版）
-
-```javascript
-// 1. 状态常量 + 工具函数
-const PENDING_STATE = "pending";
-const FULFILLED_STATE = "fulfilled";
-const REJECTED_STATE = "rejected";
-
-const isFunction = function (fun) {
-  return typeof fun === "function";
-};
-
-const isObject = function (value) {
-  return value && typeof value === "object";
-};
-
-// 2. 核心决议流程
-const resolutionProcedure = function (promise, x) {
-  if (x === promise) {
-    return reject(new TypeError("Promise cannot resolve itself"));
-  }
-
-  if (x instanceof Promise) {
-    return x.then(resolve, reject);
-  }
-
-  if (isObject(x) || isFunction(x)) {
-    let called = false;
-    try {
-      let then = x.then;
-      if (isFunction(then)) {
-        then.call(
-          x,
-          (y) => {
-            if (called) return;
-            called = true;
-            resolutionProcedure(promise, y);
-          },
-          (r) => {
-            if (called) return;
-            called = true;
-            reject(r);
-          }
-        );
-      } else {
-        if (promise.state === PENDING_STATE) {
-          promise.state = FULFILLED_STATE;
-          promise.value = x;
-          promise.onFulfilledCallbacks.forEach((callback) => callback());
-        }
+~~~javascript
+promise2 = new MyPromise((resolve, reject) => {
+  const runFulfilled = () => {
+    queueMicrotask(() => {
+      try {
+        const x = fulfilledHandler(this.value)
+        resolveValue(promise2, x, resolve, reject)
+      } catch (error) {
+        reject(error)
       }
-    } catch (e) {
-      if (called) return;
-      called = true;
-      reject(e);
-    }
-  } else {
-    if (promise.state === PENDING_STATE) {
-      promise.state = FULFILLED_STATE;
-      promise.value = x;
-      promise.onFulfilledCallbacks.forEach((callback) => callback());
-    }
+    })
   }
-};
+})
+~~~
 
-// 3. Promise构造函数
-function Promise(fun) {
-  if (!this || this.constructor !== Promise) {
-    throw new TypeError("Promise must be called with new");
-  }
-  if (!isFunction(fun)) {
-    throw new TypeError("Promise constructor's argument must be a function");
-  }
+这两个片段验证的是“链式 Promise 的结果必须继续经过统一决议流程”；完整代码还包含 reject、catch、finally、resolve、race、all、allSettled 和 deferred 适配器。
 
-  this.state = PENDING_STATE;
-  this.value = void 0;
-  this.onFulfilledCallbacks = [];
-  this.onRejectedCallbacks = [];
+自测文件位于 [source/promise/handwritten-promise.test.js](./source/promise/handwritten-promise.test.js)，覆盖：
 
-  const resolve = (value) => {
-    if (this.state === PENDING_STATE) {
-      resolutionProcedure(this, value);
-    }
-  };
+- then 回调异步执行；
+- 链式返回值；
+- 多层 Thenable 展开；
+- reject / catch 传播；
+- Promise.all 结果顺序；
+- finally 值透传；
+- Chaining Cycle 拒绝；
+- deferred.resolve 基本行为。
 
-  const reject = (reason) => {
-    if (this.state === PENDING_STATE) {
-      this.state = REJECTED_STATE;
-      this.value = reason;
-      this.onRejectedCallbacks.forEach((callback) => callback());
-    }
-  };
+当前自测可以使用：
 
-  try {
-    fun(resolve, reject);
-  } catch (error) {
-    reject(error);
-  }
-}
+~~~bash
+node Full-Stack-AI-NOTES/source/promise/handwritten-promise.test.js
+~~~
 
-// 4. then方法
-Promise.prototype.then = function (onFulfilled, onRejected) {
-  onFulfilled = isFunction(onFulfilled) ? onFulfilled : (value) => value;
-  onRejected = isFunction(onRejected)
-    ? onRejected
-    : (error) => { throw error; };
+本地 Node.js 22 环境执行结果为：
 
-  let promise2 = new Promise((resolve, reject) => {
-    const wrapOnFulfilled = () => {
-      setTimeout(() => {
-        try {
-          const x = onFulfilled(this.value);
-          resolutionProcedure(promise2, x);
-        } catch (error) {
-          reject(error);
-        }
-      }, 0);
-    };
+~~~text
+self-tests passed
+~~~
 
-    const wrapOnRejected = () => {
-      setTimeout(() => {
-        try {
-          const x = onRejected(this.value);
-          resolutionProcedure(promise2, x);
-        } catch (error) {
-          reject(error);
-        }
-      }, 0);
-    };
-
-    if (this.state === FULFILLED_STATE) {
-      wrapOnFulfilled();
-    } else if (this.state === REJECTED_STATE) {
-      wrapOnRejected();
-    } else {
-      this.onFulfilledCallbacks.push(wrapOnFulfilled);
-      this.onRejectedCallbacks.push(wrapOnRejected);
-    }
-  });
-
-  return promise2;
-};
-
-// 5. catch方法
-Promise.prototype.catch = function (callback) {
-  return this.then(null, callback);
-};
-
-// 6. finally方法
-Promise.prototype.finally = function (callback) {
-  return this.then(
-    (data) => {
-      callback();
-      return data;
-    },
-    (error) => {
-      callback();
-      throw error;
-    }
-  );
-};
-
-// 7. 静态方法
-Promise.resolve = function (value) {
-  return value instanceof Promise ? value : new Promise((resolve) => resolve(value));
-};
-
-Promise.reject = function (reason) {
-  return new Promise((resolve, reject) => reject(reason));
-};
-
-Promise.race = function (promises) {
-  return new Promise((resolve, reject) => {
-    promises.forEach((promise) => {
-      Promise.resolve(promise).then(resolve, reject);
-    });
-  });
-};
-
-Promise.all = function (promises) {
-  return new Promise((resolve, reject) => {
-    if (!promises.length) {
-      resolve([]);
-      return;
-    }
-
-    const result = [];
-    let resolvedCount = 0;
-    const length = promises.length;
-
-    for (let index = 0; index < length; index++) {
-      Promise.resolve(promises[index]).then(
-        (data) => {
-          result[index] = data;
-          resolvedCount++;
-          if (resolvedCount === length) {
-            resolve(result);
-          }
-        },
-        (error) => {
-          reject(error);
-        }
-      );
-    }
-  });
-};
-
-Promise.allSettled = function (promises) {
-  return new Promise((resolve, reject) => {
-    if (!promises.length) {
-      resolve([]);
-      return;
-    }
-
-    const result = [];
-    let resolvedCount = 0;
-    const length = promises.length;
-
-    for (let index = 0; index < length; index++) {
-      Promise.resolve(promises[index])
-        .then((data) => {
-          result[index] = { status: FULFILLED_STATE, value: data };
-        })
-        .catch((error) => {
-          result[index] = { status: REJECTED_STATE, reason: error };
-        })
-        .finally(() => {
-          resolvedCount++;
-          if (resolvedCount === length) {
-            resolve(result);
-          }
-        });
-    }
-  });
-};
-
-// 用于测试的deferred方法
-Promise.deferred = function () {
-  const result = {};
-  result.promise = new Promise((resolve, reject) => {
-    result.resolve = resolve;
-    result.reject = reject;
-  });
-  return result;
-};
-
-module.exports = Promise;
-```
+这组自测只证明上述行为已经通过本地验证，**不能等价为完整 Promises/A+ Test Suite 已经通过**。如果需要声明“Promises/A+ 兼容”，还应继续使用官方兼容测试工具运行完整规范用例，并以实际测试结果为准。
 
 ### 总结（核心逻辑回顾）
 
