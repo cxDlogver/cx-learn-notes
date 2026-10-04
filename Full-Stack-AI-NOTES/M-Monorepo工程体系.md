@@ -18,50 +18,46 @@ Monorepo（Monolithic Repository，单体代码仓库）是一种**多项目代�
 项目数量增加后如何控制 CI、构建和发布成本？
 ```
 
-因此可以先建立下面的知识框架：
+因此需要把 **Monorepo 主生命周期** 与 **横切治理能力** 分开理解：
 
 ```text
-Monorepo
-│
-├── Repository / Project Model
-│      仓库边界与项目边界
-│
-├── Workspace / Dependency Model
-│      项目发现与代码依赖
-│
-├── Task Model
-│      开发、测试与构建任务
-│
-├── Artifact / Release Model
-│      构建产物、版本和发布
-│
-├── Runtime / Deployment Model
-│      产物如何进入运行环境
-│
-└── Engineering Governance
-       Affected、Cache、CI 与依赖治理
+                 Monorepo Main Flow
+
+Repository / Project
+        ↓
+Workspace / Dependency
+        ↓
+Project Graph
+        ↓
+Task Graph
+        ↓
+Build Artifact
+        ↓
+Release / Deploy
+        ↓
+Runtime
+
+
+             Cross-cutting Governance
+
+Dependency Boundary ───────→ Project / Dependency
+Affected Analysis ─────────→ Project Graph / CI
+Task Cache ────────────────→ Task Graph / Execution
+CI ────────────────────────→ Test / Build / Release
+Release Governance ────────→ Artifact / Release
+Ownership / Policy ────────→ Repository / Project
 ```
 
-这六层存在明确的上游和下游关系：
+前五类模型描述“代码从仓库组织走向运行环境”的主链；Engineering Governance 不是 Runtime 之后才发生的第六个阶段，而是仓库规模扩大后横向作用于 Project、Dependency、Task、Artifact 与 Delivery Flow 的治理层。
+
+因此：
 
 ```text
-Repository
-    ↓
-Workspace
-    ↓
-Project / Package
-    ↓
-Dependency Graph
-    ↓
-Task Graph
-    ↓
-Build Artifact
-    ↓
-Release / Deploy
-    ↓
-Runtime
-    ↓
-CI / Affected / Cache / Governance
+Main Lifecycle
+Repository → Workspace → Dependency → Task → Artifact → Release / Deploy → Runtime
+        ↑
+        │
+Governance 横向作用于多个阶段
 ```
 
 ---
@@ -350,7 +346,7 @@ Project Graph 本身是一种关系模型，不意味着仓库必须维护一份
 
 ---
 
-## 3. Task Model 将 Project Graph 转换成实际执行关系
+## 3. Task Model 在 Project Graph 基础上建立任务执行关系
 
 Project Graph 只回答“谁依赖谁”，并没有说明具体怎样 Build、Test 或 Dev。
 
@@ -594,7 +590,7 @@ Running Service
 - Package Publish；
 - Release Automation。
 
-这些属于 Release Governance，而不是 Workspace 本身提供的完整能力。
+这些属于 Release Governance，而不是 Workspace 本身提供的完整能力。Artifact 形成以后怎样经过验证、Release Decision、Deployment、Production Verification 与 Recovery，继续参考 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 ---
 
@@ -663,7 +659,15 @@ Docker Compose 的 `depends_on`、`healthcheck` 等机制用于描述 Runtime Se
 
 ---
 
-## 6. Engineering Governance 在仓库扩大后控制变更成本
+## 6. Engineering Governance 横向作用于主生命周期并控制规模化成本
+
+前五章建立的是 Monorepo 从 Repository 到 Runtime 的主生命周期。本章不再增加一个新的线性阶段，而是回到整条链路，讨论仓库规模扩大后如何利用 Project Graph、Task Graph、CI 与策略约束进行横向治理。
+
+```text
+Repository → Dependency → Task → Artifact → Release / Deploy → Runtime
+     ↑           ↑          ↑          ↑              ↑
+     └────────── Engineering Governance ──────────────┘
+```
 
 小型 Monorepo 可以直接执行：
 
@@ -707,6 +711,27 @@ Affected Projects
 
 Affected 的前提是依赖边界足够准确，否则影响范围也会失真。
 
+这里还需要区分：
+
+```text
+Changed Project
+→ 文件直接发生变化的 Project
+
+Affected Project
+→ Changed Project
+  + 依赖传播后可能受到影响的 Dependents
+```
+
+因此：
+
+```text
+Changed Project
+≠
+Affected Project
+```
+
+例如 shared 发生代码修改时，shared 是 Changed；如果 app → shared，那么 app 即使没有直接修改，也可能属于 Affected。
+
 ### 【Task Cache 判断相关任务是否必须重新计算】
 
 Affected 回答：
@@ -740,12 +765,35 @@ Restore      Execute
 所以：
 
 ```text
+All Tasks
+↓
+Affected Analysis
+↓
+Relevant Tasks
+↓
+Task Graph / Scheduling
+↓
+Cache Lookup
+↓
+Cache Miss Tasks
+↓
+Execute
+```
+
+三者分别回答不同问题：
+
+```text
 Affected
-减少候选任务
+→ 哪些 Project / Task 需要考虑？
 
 Cache
-减少真正执行的任务
+→ 其中哪些 Task 不需要重新计算？
+
+Scheduler
+→ 剩余 Task 应以什么依赖顺序和并发关系执行？
 ```
+
+因此 Affected、Cache 与 Scheduler 不是三个孤立优化点，而是从“缩小候选范围”到“避免重复计算”再到“安排实际执行”的连续模型。
 
 ### 【Dependency Boundary 决定 Monorepo 是否能够长期维护】
 
@@ -822,9 +870,9 @@ Shared Infrastructure / Protocol
 
 ---
 
-## 8. 完整知识框架通过六层模型快速复述
+## 8. 完整知识框架通过主生命周期与横切治理快速复述
 
-快速复习 Monorepo 时，不需要先记住工具名，只需要按六层模型回答：
+快速复习 Monorepo 时，不需要先记住工具名。先复述 Repository → Workspace / Dependency → Task → Artifact / Release → Runtime 主生命周期，再说明 Governance 怎样横向作用于这些阶段：
 
 | 层级 | 核心问题 | 常见机制 |
 | --- | --- | --- |
@@ -833,7 +881,7 @@ Shared Infrastructure / Protocol
 | Task | dev/build/test 怎么执行？ | Scripts、Task Graph、Scheduler、Nx、Turborepo |
 | Artifact / Release | 构建以后得到什么、怎样发布？ | Build Artifact、Package、SemVer、Release |
 | Runtime / Deployment | 产物最终在哪里运行？ | Process、Container、Service、Compose/Kubernetes |
-| Governance | 规模扩大以后怎样控制成本？ | Boundary、Affected、Cache、CI、Release Governance |
+| Governance（横切层） | 规模扩大以后怎样控制成本并保持边界？ | Boundary、Affected、Cache、CI、Ownership、Release Governance |
 
 把六层串起来就是：
 
@@ -852,10 +900,14 @@ Build 产生不同 Artifact
         ↓
 Release / Deploy 进入不同 Runtime
         ↓
-Affected / Cache / CI 控制规模化成本
+进入不同 Runtime
+
+横切治理：
+Dependency Boundary / Affected / Cache / CI / Ownership / Release Governance
+作用于上述多个阶段
 ```
 
-这条链比“pnpm + Nx + Turbo + Docker”更稳定，因为工具会变化，而六类工程问题长期存在。
+这套“主生命周期 + 横切治理”模型比“pnpm + Nx + Turbo + Docker”更稳定，因为工具会变化，而工程问题及其作用边界长期存在。
 
 ---
 
@@ -865,7 +917,7 @@ Affected / Cache / CI 控制规模化成本
 
 需要查看一套真实 Monorepo 如何把 Workspace、Dependency Graph、Task、Artifact 和 Runtime 落到代码与配置时，进入：
 
-[Browser Monitor Monorepo 项目实践](<../browser-monitor/docs/Monorepo知识体系.md>)
+[Browser Monitor Monorepo 项目实践](https://github.com/cxDlogver/browser-monitor/blob/main/docs/Monorepo%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB.md)
 
 项目文档负责回答“这套知识在一个真实仓库中具体如何实现”；本文负责维护稳定、可迁移的通用知识，两者不互相复制项目细节。
 
