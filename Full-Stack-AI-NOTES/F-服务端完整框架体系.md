@@ -1,4 +1,4 @@
-# 服务端完整框架体系建立从请求到运行环境的全景认知
+# 服务端完整框架体系建立从请求处理到运行与治理的全景认知
 
 ## 1. 服务端从 Client / Server 通信关系扩展为完整工程系统
 
@@ -4819,7 +4819,30 @@ Server State
     └── 文件、图片、视频、归档对象等大对象
 ~~~
 
-这些系统不是简单的“速度不同”，而是承担不同生命周期、数据模型、一致性和访问模式。具体选择仍要结合数据规模、一致性要求、访问模式和可靠性目标。
+这些系统不是简单的“速度不同”，而是承担不同生命周期、共享范围、持久性、一致性和访问模式。选择状态存储位置时，可以先连续回答：
+
+~~~text
+状态需要存在多久？
+        ↓
+只属于当前 Process，还是需要被多个请求 / Process / Service 共享？
+        ↓
+Process Crash 后是否允许丢失？
+        ↓
+是否需要复杂查询、约束和 Transaction？
+        ↓
+是否允许从其他 Source of Truth 重新生成？
+        ↓
+数据规模、对象形态和访问模式是什么？
+~~~
+
+因此：
+
+- **Process Memory** 适合与当前进程生命周期绑定、无需跨实例共享的临时状态；
+- **Cache** 常用于可以失效、过期或重新生成，并且强调低延迟访问的数据；
+- **Database** 适合需要长期保存、查询、约束、并发控制和事务语义的结构化业务状态；
+- **Object / File Storage** 更适合文件、图片、视频、归档对象等大对象。
+
+具体系统仍可能组合这些存储方式，不能只根据“谁更快”决定。真正的决策依据是数据生命周期、共享范围、持久性要求、一致性语义、查询模型、可恢复性、容量与访问模式。
 
 ### 【Database 负责长期结构化状态，但数据库内部仍是一套独立体系】
 
@@ -4893,7 +4916,568 @@ Worker
 
 当前阶段先建立 Memory、Cache、Database、Object Storage 的职责边界；数据库内部继续阅读 [数据库完整框架体系](./S-数据库完整框架体系.md)，共享高速状态、Cache、Session、Rate Limit、TTL、Lua、Persistence 与 Cluster 继续进入 [Redis 完整知识体系](./R-Redis完整知识体系.md)。当业务工作需要脱离当前 Request 生命周期继续执行时，进入 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)，沿“异步边界 → 可靠交接 → Worker Claim / Lease → At-least-once + Idempotency → Retry / Dead Letter → Backpressure / Observability”继续深入，而不是把 Queue、Worker、Outbox 和 Retry 当成彼此独立的技术点。对象存储和分布式一致性再进入各自专题。
 
-## 6. 参考文献
+## 6. 服务端异步处理体系将部分业务工作移出 Request 生命周期
+
+请求处理体系默认有一个隐含边界：客户端发送 Request，服务端完成必要工作以后返回 Response。但并不是所有业务工作都必须在 Response 之前完成。
+
+例如发送通知、生成报表、图片处理、数据聚合等工作，如果调用方不需要立即得到最终结果，就可以把“接受请求”和“完成工作”拆成两个生命周期：
+
+~~~text
+Request
+    ↓
+Application
+    ↓
+判断哪些工作必须立即完成
+    │
+    ├── 必须立即完成
+    │      ↓
+    │   当前 Request 内执行
+    │      ↓
+    │   Response
+    │
+    └── 可以稍后完成
+           ↓
+       创建 Durable Task / Message
+           ↓
+       Queue / Job Store
+           ↓
+       Response
+
+随后
+
+Queue / Job Store
+    ↓
+Worker
+    ↓
+Business Side Effect / Result
+~~~
+
+这里的上游输入仍然是一次业务操作。异步边界解决的是“哪些工作不再绑定当前 Request 生命周期”；输出则是一个能够被后台执行者继续处理的 Task、Command 或 Event。任务离开当前请求后，请求线程或 Event Loop 不再负责等待最终业务结果，因此系统必须继续解决可靠交接、领取、重复执行、失败恢复和容量治理。
+
+### 【Async I/O 与 Background Job 解决不同层级的问题】
+
+Node.js 中的 Promise、Event Loop 和 Async I/O 解决的是**当前 Process 等待 I/O 时怎样继续推进其他工作**。
+
+~~~text
+Request
+    ↓
+await Database Query
+    ↓
+Response
+~~~
+
+这里虽然使用异步 I/O，但 Database Query 仍然属于当前 Request。
+
+Background Job（后台任务）解决的是**业务工作是否还必须在当前 Request 返回之前完成**：
+
+~~~text
+Request
+    ↓
+Create Export Task
+    ↓
+202 / Job ID
+    ↓
+Response
+
+Worker
+    ↓
+Generate Export
+~~~
+
+因此：
+
+~~~text
+async / await
+≠
+Background Job
+
+Async I/O
+≠
+Queue
+
+Worker Thread
+≠
+Worker Service
+~~~
+
+Worker Thread 是一个 Process 内的并行执行机制；Worker Service / Worker Process 是系统级后台任务执行角色。两者都可能被称为 Worker，但职责层级不同。
+
+### 【Queue 保存待处理工作，Worker 承担后台执行职责】
+
+Queue（队列）或 Durable Job Store（持久任务存储）承担任务交接边界；Worker（后台执行程序）领取任务并执行真正的业务 Side Effect。
+
+但：
+
+~~~text
+Task 已写入 Queue
+≠
+Task 已经执行完成
+
+Request 返回成功
+≠
+后台任务最终成功
+~~~
+
+一旦任务脱离 Request，系统就需要独立描述：
+
+~~~text
+Queued
+  ↓
+Claim / Deliver
+  ↓
+Running
+  ↓
+Success / Failure
+  ↓
+Retry / Terminal Failure
+~~~
+
+这也是为什么异步任务不能只理解成“把函数晚一点执行”。
+
+### 【可靠异步继续进入交接、重复执行和失败恢复】
+
+真正的生产级异步系统还需要回答：
+
+- Producer 怎样确认任务已经可靠进入持久化边界；
+- 多个 Worker 怎样协调领取任务；
+- Worker Crash 后任务怎样重新处理；
+- Redelivery 导致重复执行时怎样保持业务正确；
+- Retry 怎样限制次数并使用 Backoff；
+- 长期失败的任务怎样进入 Dead Letter 或人工处理；
+- Queue Backlog 增长时怎样限流、扩容和观测。
+
+这些问题已经超出服务端总框架的职责。完整模型继续进入 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)，沿“异步边界 → 可靠交接 → 安全消费 → 承载与分发 → 重复执行正确性 → 失败恢复 → 容量与运行治理”逐层展开。
+
+## 7. 运行与部署体系让服务进程成为可以长期在线的服务实例
+
+Runtime 解决了“源码怎样成为正在运行的 Process”，但一个 Process 能够启动，并不等于它已经成为生产环境中可以长期提供服务的实例。
+
+从运行进入部署，还需要补齐：
+
+~~~text
+Source / Build Artifact
+        ↓
+Runtime Environment
+        ↓
+Configuration / Secret
+        ↓
+Process Startup
+        ↓
+Initialization
+        ↓
+Ready
+        ↓
+Receive Traffic / Jobs
+        ↓
+Observe / Restart / Scale
+        ↓
+Graceful Shutdown
+~~~
+
+上游输入是已经可以运行的代码或 Build Artifact。运行与部署体系负责把它放入具体环境、注入部署参数、启动并判断是否 Ready，再交给入口层接收流量。服务运行期间还需要被观察、重启和扩展；退出时则需要安全停止接收新工作并处理正在进行的工作。
+
+### 【Configuration 把部署差异与稳定代码逻辑分离】
+
+Configuration（运行配置）是**会随着部署环境变化，但不应该通过修改业务代码来表达的运行参数**。常见内容包括数据库地址、外部服务 Endpoint、部署域名、功能参数等。
+
+Secret（敏感配置）则是配置中的安全敏感部分，例如 Password、Token、Private Key、第三方 Credential。
+
+可以先建立：
+
+~~~text
+Application Code
+    +
+Deployment Configuration
+    +
+Secret
+    +
+Runtime
+    ↓
+Process
+~~~
+
+Twelve-Factor 的 Config 原则把“会在不同 Deploy 之间变化的配置”与 Code 区分，并以数据库连接、外部服务凭据、部署 Hostname 等作为典型例子。[[38]](https://12factor.net/config)
+
+这里需要区分**原则**和**具体实现**：
+
+~~~text
+稳定原则
+Config 与 Code 分离
+Secret 不应硬编码进源码
+
+具体实现
+Environment Variable
+Config File
+Secret Manager
+Configuration Service
+Container / Orchestrator Injection
+...
+~~~
+
+因此不能把 Environment Variable 写成所有系统唯一正确的配置方式。真正需要保持的是职责边界：同一份应用逻辑可以在不同 Deploy 中获得不同运行参数，而敏感凭据需要采用与普通源码不同的安全管理方式。
+
+### 【Process Startup 之后还需要从 Alive 进入 Ready】
+
+Process 被操作系统创建以后，应用可能还需要：
+
+~~~text
+加载配置
+↓
+初始化 Dependency
+↓
+建立 Database / Cache Connection
+↓
+注册 Route / Consumer
+↓
+完成必要检查
+↓
+Ready
+~~~
+
+因此：
+
+~~~text
+Process Exists
+≠
+Service Ready
+~~~
+
+Health Check（健康检查）也不只是“进程是否存在”。工程上通常需要区分：
+
+- **Liveness**：实例是否仍处于可以继续运行的状态；
+- **Readiness**：实例当前是否已经准备好接收新的 Request 或 Job。
+
+具体平台对 Probe 的实现不同，但上位问题一致：流量入口和调度系统需要知道“这个实例是否应该继续运行”和“现在是否应该把新工作交给它”。
+
+### 【Deployment 把可运行实例连接到真实流量和运行环境】
+
+Deployment（部署）解决的是：**一个版本怎样进入目标运行环境并开始承担真实工作。**
+
+它通常会连接：
+
+~~~text
+Artifact / Image
+    ↓
+Host / Container / Platform
+    ↓
+Process
+    ↓
+Ready
+    ↓
+Reverse Proxy / Load Balancer / Scheduler
+    ↓
+Traffic / Job
+~~~
+
+Docker 解决容器化运行环境，Reverse Proxy 解决公开入口到内部 Upstream 的流量转发，CI/CD 解决从 Source Change 到 Artifact、Release、Deployment 与 Production Verification 的交付链。它们分别属于不同层级，不能把“用了 Docker”直接等同于“完成部署体系”。
+
+容器和多服务运行环境继续阅读 [Docker 工程体系](./D-Docker工程体系.md)；Public Entry、Reverse Proxy、Upstream 与 Load Balancing 继续阅读 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)；从 Source Change 到 Artifact、Release、Deployment 与 Production Verification 的完整交付过程继续阅读 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
+
+### 【Graceful Shutdown 让实例退出时停止接收新工作并完成必要收尾】
+
+Graceful Shutdown（优雅关闭）解决的是：**Process 被要求停止时，怎样避免直接切断正在处理的 Request 或 Job。**
+
+Web Process 可以抽象为：
+
+~~~text
+Receive Termination Signal
+        ↓
+Stop Accepting New Traffic
+        ↓
+Drain In-flight Requests
+        ↓
+Close Connections / Flush Necessary State
+        ↓
+Exit Process
+~~~
+
+Worker 则需要停止领取新任务，并根据任务系统语义完成、释放或重新交回正在处理的 Job。
+
+Twelve-Factor 的 Disposability 原则把快速启动与 Graceful Shutdown 连接到 Deployment、Scaling 和运行健壮性，并明确描述 Web Process 在终止时停止监听新请求、完成当前请求后退出的模型。[[39]](https://12factor.net/disposability)
+
+这说明 Runtime 与 Deployment 之间并不是简单的：
+
+~~~text
+node server.js
+~~~
+
+而是完整的 Process Lifecycle：
+
+~~~text
+Start
+↓
+Initialize
+↓
+Ready
+↓
+Serve
+↓
+Drain
+↓
+Stop
+~~~
+
+## 8. 横向系统能力持续约束请求、数据、任务与运行环境
+
+Security、Configuration、Observability、Reliability、Testing 等能力不属于 Request 之后的线性步骤，而是 Cross-cutting Concerns（横向系统能力）：**它们会同时作用于请求处理、数据状态、异步任务和运行部署等多条主线。**
+
+~~~text
+                Security
+              Configuration
+              Observability
+               Reliability
+                 Testing
+                   │
+       ┌───────────┼───────────┐
+       ↓           ↓           ↓
+Request Processing   State & Data   Async Processing
+       │           │           │
+       └───────────┼───────────┘
+                   ↓
+          Runtime / Deployment
+~~~
+
+因此不能把它们理解为：
+
+~~~text
+Request
+↓
+Security
+↓
+Logging
+↓
+Monitoring
+~~~
+
+它们不是固定先后阶段，而是在不同节点提供约束、证据和控制能力。
+
+### 【Security 在多个边界回答身份、权限、输入和敏感数据问题】
+
+Security（安全）不是只有登录接口才需要。
+
+它会横切：
+
+~~~text
+Request
+├── 身份凭据、输入边界、权限判断
+│
+Data
+├── 数据访问、敏感字段、Credential
+│
+Async
+├── Producer / Consumer 身份、消息权限、任务数据
+│
+Runtime / Deployment
+└── Secret、网络边界、运行权限
+~~~
+
+身份认证、会话与资源级授权的完整体系继续阅读 [Web 身份认证、会话控制与访问控制体系](./W-Web身份认证会话控制与访问控制体系.md)。总框架只需要建立一个边界：Security 是贯穿系统的数据和能力访问约束，不是单独位于 Controller 前的一层。
+
+### 【Configuration 为不同运行单元提供部署参数和敏感凭据】
+
+API Process、Worker、Scheduled Job 都可能读取不同的 Configuration 和 Secret；Database、Cache、Broker、External Service 连接信息也属于运行环境的一部分。
+
+因此 Configuration 同时连接：
+
+~~~text
+Deploy
+↓
+API Process / Worker Process
+↓
+Database / Cache / Broker / External Service
+~~~
+
+它既是部署问题，也是运行时依赖问题。
+
+### 【Observability 用 Logs、Metrics 与 Traces 建立运行证据】
+
+Observability（可观测性）关注：**系统已经运行以后，能否根据外部产生的信号理解内部正在发生什么。**
+
+OpenTelemetry 将 Signals 描述为系统输出，并支持 Traces、Metrics、Logs、Baggage 等类别；其中 Trace 表达请求经过应用的路径，Metric 是运行时测量，Log 是事件记录。[[40]](https://opentelemetry.io/docs/concepts/signals/) [[41]](https://opentelemetry.io/docs/concepts/observability-primer/)
+
+在服务端总框架中，可以先建立：
+
+| Signal | 主要回答的问题 | 典型关联对象 |
+| --- | --- | --- |
+| Logs | 某个时间点发生了什么事件 | Request、Job、Error、Process |
+| Metrics | 一段时间内系统状态和趋势怎样 | Latency、Error Rate、CPU、Queue Depth |
+| Traces | 一次请求 / 操作跨组件怎样传播 | API、Database、Cache、External Service |
+
+这些 Signal 需要通过 Request ID、Trace Context、Service、Version、Environment 等上下文建立关联，才能从“很多日志和数字”变成可以定位问题的运行证据。
+
+### 【Reliability 约束故障发生时系统怎样继续工作或安全退化】
+
+Reliability（可靠性）关注系统在 Dependency Slow、Network Failure、Process Crash、Traffic Spike 等故障条件下的行为。
+
+常见机制包括：
+
+~~~text
+Timeout
+Retry / Backoff
+Circuit Breaking
+Rate Limit / Backpressure
+Health Check
+Graceful Shutdown
+Recovery
+~~~
+
+这些机制不能机械全部叠加。例如 Retry 会增加下游压力，Timeout 需要与业务延迟目标匹配，Queue Backpressure 又属于异步容量治理。因此总框架只建立职责：**可靠性机制用于限制故障传播、控制恢复过程和保护系统容量，具体策略必须根据故障模型选择。**
+
+### 【Testing 在不同层级验证系统是否满足预期】
+
+Testing 同样横切多个层级：
+
+~~~text
+Business Logic
+→ Unit / Component-level Verification
+
+Database / External Dependency
+→ Integration Verification
+
+HTTP / API
+→ API / Contract Verification
+
+完整运行环境
+→ End-to-End / System Verification
+
+Deployment
+→ Smoke / Production Verification
+~~~
+
+测试不是部署后的最后一步，而是在不同边界提供可重复验证。测试层级和具体策略应根据被验证边界、Dependency Fidelity 和风险选择，而不是把所有测试都塞进同一套执行方式。
+
+## 9. 服务端完整链路最终形成请求、状态、任务与运行四条主线
+
+现在可以把全文重新收束为四条主要运行主线和一组横向治理能力：
+
+~~~text
+Client
+  ↓
+Request Processing
+外部请求怎样进入应用并完成同步业务
+  │
+  ├───────────────┐
+  ↓               ↓
+State & Data   Async Processing
+状态怎样跨请求    工作怎样脱离 Request
+持续存在          生命周期继续执行
+  │               │
+  └───────┬───────┘
+          ↓
+Runtime & Deployment
+代码和任务怎样成为长期在线的运行实例
+          ↓
+Production System
+
+同时横切所有主线：
+
+Security / Configuration / Observability / Reliability / Testing
+~~~
+
+### 【请求主线把网络输入转换成业务结果】
+
+~~~text
+Client
+↓
+Reverse Proxy / HTTP Server
+↓
+Framework Pipeline
+↓
+Controller
+↓
+Service
+↓
+Data / External Dependency
+↓
+Response
+~~~
+
+它回答的是“一个外部请求怎样被理解、授权、执行并返回结果”。
+
+### 【状态主线决定业务事实在哪里以及存在多久】
+
+~~~text
+Business State
+↓
+Lifecycle / Sharing / Persistence Requirement
+↓
+Memory / Cache / Database / Object Storage
+↓
+Read / Write / Transaction / Recovery
+~~~
+
+它回答的是“状态应该放在哪里、由谁共享、怎样保持正确”。
+
+### 【任务主线让非即时工作拥有独立生命周期】
+
+~~~text
+Business Operation
+↓
+Async Boundary
+↓
+Durable Task / Event
+↓
+Queue / Job Store
+↓
+Worker
+↓
+Result / Side Effect
+~~~
+
+它回答的是“哪些工作可以离开 Request，以及离开以后怎样继续完成”。
+
+### 【运行主线让代码、配置和进程成为可服务实例】
+
+~~~text
+Source / Artifact
+↓
+Runtime + Configuration + Secret
+↓
+Process
+↓
+Ready
+↓
+Traffic / Job
+↓
+Observe / Scale / Restart
+↓
+Graceful Shutdown
+~~~
+
+它回答的是“代码怎样在具体环境中长期、安全地运行”。
+
+### 【横向能力约束四条主线而不是成为第五条顺序流程】
+
+最终学习服务端时，可以持续使用下面五个问题定位新知识：
+
+1. 它解决的是 Request Processing、State & Data、Async Processing 还是 Runtime & Deployment？
+2. 如果它是横向能力，它作用于哪些主流程节点？
+3. 它的输入是什么、输出是什么、失败边界在哪里？
+4. 它属于通用机制，还是某个 Framework / Product 的具体实现？
+5. 它与相邻层之间通过什么数据、协议、状态或生命周期连接？
+
+例如：
+
+~~~text
+NestJS
+→ Application / Request Processing
+
+PostgreSQL
+→ State & Data
+
+RabbitMQ
+→ Async Delivery Infrastructure
+
+Docker
+→ Runtime / Deployment Environment
+
+OpenTelemetry
+→ Cross-cutting Observability
+~~~
+
+这样 Node.js、NestJS、PostgreSQL、Redis、RabbitMQ、Docker、OpenTelemetry 就不再是一组并列技术名词，而能够重新放回完整服务端工程系统中理解。
+
+## 10. 参考文献
 
 [1] IETF. _RFC 9110: HTTP Semantics_. 2022. https://www.rfc-editor.org/rfc/rfc9110.html
 
@@ -4970,3 +5554,11 @@ Worker
 [36] Node.js. *Worker threads*. Node.js Documentation. https://nodejs.org/api/worker_threads.html
 
 [37] Node.js. *Cluster*. Node.js Documentation. https://nodejs.org/api/cluster.html
+
+[38] The Twelve-Factor App. *Config*. https://12factor.net/config
+
+[39] The Twelve-Factor App. *Disposability*. https://12factor.net/disposability
+
+[40] OpenTelemetry. *Signals*. https://opentelemetry.io/docs/concepts/signals/
+
+[41] OpenTelemetry. *Observability Primer*. https://opentelemetry.io/docs/concepts/observability-primer/
