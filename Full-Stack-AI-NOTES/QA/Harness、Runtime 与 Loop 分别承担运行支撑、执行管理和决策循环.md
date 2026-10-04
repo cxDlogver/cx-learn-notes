@@ -1,65 +1,40 @@
 # Harness、Runtime 与 Loop 分别承担运行支撑、执行管理和决策循环
 
-## 回答要点
+## 【知识概述】
 
-### 【知识定位】
+这篇知识点想讲清楚的是：**模型的一次推理调用，怎样逐步变成一个能够持续决策、执行动作并被工程系统管理的 Agent 运行过程。** 理解这个问题时，不需要先把 Harness、Runtime、Loop 当成三个独立名词背诵，而应该从一次任务真正运行时缺少什么开始。
 
-这篇知识点要建立的是 **Agent 运行体系的基础模型**：一个模型怎样从“一次推理调用”变成能够持续行动、调用外部能力并被工程系统管理的 Agent。
+模型首先只能完成一次输入到输出的推理。如果任务需要调用 Tool，并根据 Tool Result 决定下一步，那么一次调用就不够了，系统需要不断重复“判断 → 行动 → 获得结果 → 再判断”。这就是 **Agent Loop** 解决的问题：它描述 Agent 持续推进任务的基本决策机制。
 
-它重点解决三个不同层次的问题：
-
-- **Loop：Agent 为什么能够持续推进任务。** 负责“判断 → 行动 → 观察 → 再判断”的决策循环。
-- **Runtime：这个循环怎样真正运行。** 负责 Model Call、Tool Execution、State Update、生命周期、中断和恢复。
-- **Harness：Runtime 依靠什么工程环境稳定运行。** 组织 Model、Context、Memory、Tool、Permission、Sandbox、Checkpoint、Trace 等公共能力。
-
-因此三者不是简单的并列术语，而是从 **决策机制 → 执行载体 → 工程支撑** 逐层扩大观察范围。
-
-### 【知识框架】
+但 Loop 只说明“应该循环”，并不会自己完成模型调用和工具执行。真正运行时还要构建 Context、调用 Model、解析 Tool Call、执行 Tool、更新 State，并判断什么时候结束、什么时候中断或恢复。这些执行职责构成 **Agent Runtime**。因此可以先建立一个简单关系：
 
 ```text
-Agent Run
-│
-├─ Harness：运行支撑体系
-│   ├─ Model Access
-│   ├─ Context / Memory
-│   ├─ Tool / Skill / MCP
-│   ├─ Permission / HITL / Sandbox
-│   ├─ Checkpoint
-│   └─ Trace / Observability
-│
-└─ Runtime：一次任务的执行管理
-    ├─ Build Context
-    ├─ Model Call
-    ├─ Tool Execution
-    ├─ State Update
-    ├─ Interrupt / Resume
-    └─ Stop Condition
-         │
-         └─ Loop：持续决策机制
-             Model → Action → Observation → Model ...
+Loop
+描述 Agent 怎样持续决策
+        ↓
+Runtime
+负责把这个决策循环真正执行起来
 ```
 
-正文因此分三层展开：先划清 Harness、Runtime、Loop 的职责，再把三者放回一次 Agent Run 观察真实执行链，最后处理不同框架命名不统一以及 Loop 与 Workflow 的边界。
-
-### 【与其他知识点的联系】
-
-这篇是后续 Agent 工程知识的**运行基础层**：
+Runtime 进入真实工程环境后，又会继续遇到问题：模型从哪里接入，Context 和 Memory 怎样组织，Tool 怎样注册，权限怎样控制，代码在哪里隔离执行，任务怎样 Checkpoint，执行过程怎样 Trace。把这些运行所需的公共能力组织起来，就是这里所说的 **Agent Harness**。
 
 ```text
-Prompt / Context / Tool
-        ↓ 提供模型输入与能力
-Harness / Runtime / Loop
-        ↓ 形成可运行的 Agent
-Orchestration
-        ↓ 组织多个步骤或多个 Agent
-Long-running Task / Fault Recovery
-        ↓ 保证跨时间运行和失败恢复
-Governance ─────→ 约束 Runtime 能执行什么
-Observability ──→ 记录 Runtime 实际执行了什么
-Eval ───────────→ 根据执行结果判断任务是否成功
+一次 Agent Run
+        │
+        ├─ Loop：持续决策
+        │   Model → Action → Observation → Model ...
+        │
+        ├─ Runtime：执行管理
+        │   Context → Model Call → Tool → State → Lifecycle
+        │
+        └─ Harness：运行支撑
+            Model / Context / Memory / Tool
+            Permission / Sandbox / Checkpoint / Trace ...
 ```
 
-因此理解 Runtime 以后，Checkpoint、Trace、Permission、HITL、Retry 等概念就不再是孤立能力：它们都是围绕 Agent 执行过程建立的不同工程机制。
+所以这篇正文真正建立的是一套“**持续决策—实际执行—工程支撑**”的理解方式。后面会分别解释三者职责，再把它们放回一次 Agent Run 中观察如何协作，并说明不同框架可能采用不同命名和代码组织，不能把这里的职责抽象误认为统一的行业代码层级。
+
+这组概念也会自然连接到其他知识点：Context 是 Runtime 每轮调用模型时需要组织的输入；Tool / MCP 是 Runtime 可以调度的外部能力；State 和 Checkpoint 与执行状态和恢复有关；Permission、HITL、Sandbox 进一步进入 Agent Governance；Trace 进入 Observability；当一次 Run 扩展成长时间任务时，又会继续涉及持久化、故障恢复和 Workflow / Orchestration。**这些都是从当前知识点向外延伸的关系，不代表当前文档已经定义了完整的 Agent 工程体系。**
 
 ## 1. 三者按支撑体系、执行管理和循环机制划分职责
 
