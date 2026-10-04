@@ -1,24 +1,41 @@
 # Agent 评测通过任务、执行证据与评分器形成质量闭环
 
-## 回答要点
+## 【知识概述】
 
-完整的 Agent Eval 应围绕“**如何独立证明 Agent 完成了任务，并把这种能力稳定地量化和比较**”构建，而不是从某一个分数或 LLM Judge 开始。
+这篇知识点想解决的是：**Agent 执行完一个任务以后，我们怎样独立证明它真的完成了，并进一步把这种完成能力变成可以比较、回归和持续改进的工程指标。**
 
-1. **Task 与 Success Criteria 定义什么叫成功。** 任务需要提前明确目标、环境、约束和可验证结果，否则后续评分缺少稳定标准。
-2. **Trial 表示一次真实执行样本。** Agent 具有非确定性，同一 Task 要通过多次 Trial 才能观察完成能力与稳定性。
-3. **Evidence 证明 Trial 实际发生了什么。** Final Output 证明模型说了什么；Outcome 检查真实环境结果；Trajectory / Trace 记录执行过程；Cost、Latency 等补充效率证据。
-4. **Grader 根据证据做单次判断。** 可确定条件优先 Code Grader；开放质量使用带 Rubric 的 Model Grader；高风险、争议场景再引入 Human Review。
-5. **Rubric 把复杂质量拆成可检查标准。** 正确性、完整性、安全性、过程约束等可以分别判断，并区分必须通过的 Hard Gate 与可加权质量项。
-6. **Metric 把大量 Trial 聚合成系统能力。** Success Rate、pass@k、pass^k 分别观察总体成功、探索成功和连续稳定性，同时结合 Cost、Latency、Safety 等指标。
-7. **Suite / Benchmark 固定比较条件。** 固定任务集、环境、预算、评分规则和聚合口径后，不同模型、Prompt、Tool 或 Agent 版本才具有可比性。
-8. **Regression 把 Eval 变成研发闭环。** 线上失败和新风险持续回流评测集，每次系统变更后重新执行，判断能力提升和回归。
-9. **Trace 与 Eval 必须区分。** Trace 提供“发生了什么”的证据，Eval 判断“是否达到目标”；可观测性是评测输入之一，不等于评测本身。
+最容易出现的误区，是把 Agent 的 Final Answer 当成任务结果。Agent 说“已经完成”只能说明模型生成了这句话，并不能证明数据库、文件、页面或其他真实环境已经达到目标状态。因此评测的第一步不是选择 LLM Judge，而是先定义 **Task 和 Success Criteria**：到底什么状态才算成功。
+
+有了成功标准以后，让 Agent 在规定环境中真实执行一次，得到一个 **Trial**。接下来需要收集能够证明这次执行结果的 Evidence：Output 表示模型输出了什么，Outcome 表示真实环境最后变成什么状态，Trajectory / Trace 表示中间经过了哪些模型和 Tool 步骤，Cost / Latency 则反映执行代价。
 
 ```text
-Task + Success Criteria → Trial → Evidence
-→ Grader + Rubric → Metrics
-→ Eval Suite / Benchmark → Regression
+先定义什么叫成功
+Task + Success Criteria
+        ↓
+让 Agent 真实执行
+Trial
+        ↓
+收集执行证据
+Output / Outcome / Trajectory / Cost
+        ↓
+根据证据判断这一次是否成功
+Grader + Rubric
 ```
+
+单次 Trial 的判断还不能代表系统整体能力，因为 Agent 具有非确定性。同一个 Task 可能有时成功、有时失败，所以还需要把多次执行聚合为 Success Rate、pass@k、pass^k、Cost、Latency、Safety 等 **Metrics**。当任务集、环境、预算和评分规则被固定下来，就可以形成 Eval Suite / Benchmark，用来比较不同模型、Prompt、Tool 或 Agent 版本；线上失败案例再不断回流到评测集，最终形成 Regression 闭环。
+
+```text
+Task → Trial → Evidence → Grader
+                         ↓
+                      Metrics
+                         ↓
+                Eval Suite / Benchmark
+                         ↓
+                     Regression
+```
+
+这个知识点与其他内容存在直接联系，但职责不同：Observability / Trace 可以为 Eval 提供执行证据，却不能直接证明任务成功；Governance 中的安全规则可以成为评测的 Hard Gate；Prompt、Context、Tool、Runtime 等任何变化都可以成为被评测的变量。也就是说，Eval 更像是建立在实际执行结果之上的**质量判断机制**，它会连接很多知识点，但并不等于这些运行或治理机制本身。
+
 ## 1. 评测以真实任务结果和执行证据为对象
 
 ### 【核心判断：Agent 的自我报告不能作为任务完成证明】
