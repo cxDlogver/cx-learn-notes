@@ -1,27 +1,26 @@
 # Harness、Runtime 与 Loop 分别承担运行支撑、执行管理和决策循环
 
-**原问题：** Agent Harness、Agent Runtime 和 Agent Loop 三者是什么关系？
+Agent Harness、Agent Runtime 和 Agent Loop 不是三个需要孤立记忆的定义，而是对同一次 Agent 执行从不同层次进行抽象：**Loop 描述持续决策机制，Runtime 负责把机制实际运行起来，Harness 提供完整的工程支撑。**
 
-**回答要点：**
+理解三者关系的起点是“一次模型调用为什么不足以构成 Agent”。模型要持续完成动态任务，必须根据执行结果继续判断，因此需要 Loop；循环机制本身不能自动运行，因此需要 Runtime 调用模型、执行 Tool、更新 State 并控制生命周期；Runtime 进入真实工程环境后，还需要 Context、Memory、权限、Checkpoint、Trace 等公共能力，因此进一步形成 Harness 层面的运行支撑。
 
-- Harness 是围绕模型装配上下文、工具、状态、权限和观测能力的支撑体系；Runtime 驱动一次任务实际执行；Loop 是其中反复决策、行动、观察的机制。
-- 一次运行由 Harness 提供能力，Runtime 管理调用和状态，Loop 根据工具反馈继续推进或结束。
-- 三者是职责抽象，不是行业统一的固定模块包含关系；Agent Loop 也不等于预先定义的业务 Workflow。
+```text
+一次模型调用不足以持续完成任务
+        ↓
+需要根据结果继续判断
+→ Loop：判断 → 行动 → 观察 → 再判断
+        ↓
+循环需要真正的执行载体
+→ Runtime：Model Call / Tool / State / Lifecycle
+        ↓
+执行进入工程环境需要公共能力
+→ Harness：Context / Memory / Permission / Checkpoint / Trace ...
+        ↓
+一次 Agent Run
+Context → Model → Tool Call → Tool Result → State → 下一轮 / 结束
+```
 
-本题与[Agent System 研发知识梳理](<../A-Agent-System研发知识梳理.md>)与[Agent 完整学习教程](<../A-Agent学习教程.md>)相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-答辩时不建议从三个定义分别开始讲，而是按照：
-
-**先讲结论 → 再讲三者关注的问题 → 用一次 Agent 执行串起来 → 最后说明术语边界。**
-
-核心可以概括成：
-
-> **Harness 强调 Agent 的整体运行支撑，Runtime 强调一次 Agent 任务如何被执行，Agent Loop 强调 Agent 在运行过程中如何持续决策和推进任务。**
-
----
-
-我认为 Agent Harness、Agent Runtime 和 Agent Loop 描述的是 **Agent 系统的三个不同关注层面**，它们相互关联，但不能简单理解成三个完全并列的模块。
-
+因此后文不按三个术语分别背定义，而是先建立职责，再放回一次 Agent Run 验证协作关系，最后说明不同框架在命名和代码组织上的边界。
 ## 1. 三者按支撑体系、执行管理和循环机制划分职责
 
 ### 【Agent Harness：强调 Agent 的整体运行支撑体系】
