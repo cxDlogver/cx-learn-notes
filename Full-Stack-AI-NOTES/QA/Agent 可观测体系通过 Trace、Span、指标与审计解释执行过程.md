@@ -1,29 +1,33 @@
 # Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程
 
-## 回答要点
+## 【知识概述】
 
-Agent Observability 要围绕“**如何从一次动态 Agent Run 还原因果过程，再从大量 Run 中观察系统趋势**”构建。Trace、Span、Log、Metric 和 Audit 分别解决链路、步骤、细节、聚合和治理证据问题。
+这篇知识点想解决的是：**Agent 的执行路径由模型动态决定以后，怎样记录真实运行过程，使我们既能还原一次任务为什么这样执行，也能观察大量任务的整体运行状态。**
 
-1. **Trace 为一次 Agent Run 建立统一主线。** 多轮 Model Call、Tool Call、Handoff、Retry 和审批通过 Trace ID 关联到同一次任务。
-2. **Span 把 Trace 拆成可分析执行单元。** Model、Tool、Agent、Workflow Stage、Retrieval 等形成 Span，父子关系表达执行作用域，使系统能定位耗时和错误位置。
-3. **Log 补充具体事件。** 参数校验失败、异常栈和业务状态变化通过 Trace / Span ID 与主链关联，而不是形成孤立日志。
-4. **Context 与 Tool Call 关联解释“为什么这样做”。** 仅有执行顺序不足以解释模型决策，还要关联模型可见信息摘要、Tool Call ID、参数、Observation 和关键 State 变化，同时进行脱敏。
-5. **Metric 把单次执行扩展到整体趋势。** 成功率、延迟、Token、Tool Error、Retry 和成本用于趋势、SLO 和告警。
-6. **Audit 回答治理与追责问题。** 身份、授权、审批和敏感动作通常需要独立的留存与访问要求。
-7. **Instrumentation 决定数据怎样产生。** Runtime 自动记录通用 Model / Tool / Agent 节点，业务 Hooks 和自定义 Span 补充业务阶段和资源信息。
-8. **Processor / Exporter / Backend 完成处理和查询。** 观测数据经过采样、过滤、脱敏、批处理和导出后进入分析后端。
-9. **Observability 与 Eval、Checkpoint 边界不同。** Trace 回答发生了什么，Eval 判断做得是否正确，Checkpoint 保存从哪里恢复。
+普通日志往往只能看到零散事件，但一次 Agent Run 可能经历多轮 Model Call、Tool Call、Retry、Handoff 和人工审批。如果这些步骤彼此没有关联，就很难回答“这次任务到底经历了什么”。因此首先需要用 **Trace** 给一次完整执行建立统一标识，再用 **Span** 把其中的模型调用、Tool 调用、Agent 节点或业务阶段拆成可分析的执行单元。
+
+有了 Trace 和 Span，只能知道执行结构。要解释某一步具体发生了什么，还需要 Log、错误信息、Tool 参数和 Result、关键 State Change 等细节；要进一步理解模型为什么选择某个动作，还需要在安全和脱敏边界内关联当时模型可见的 Context 摘要和 Observation。
 
 ```text
-Run → Trace → Span → Log / Context / Tool Call
+一次 Agent Run
         ↓
-单次问题还原
+Trace
+把完整执行关联起来
         ↓
-Metric 聚合 → Trend / SLO / Alert
-
-治理动作 → Audit
-采集结果 → Processor / Exporter → Backend
+Span
+拆分 Model / Tool / Agent / Stage
+        ↓
+Log + Tool Call + State Change
+补充具体事件和执行细节
+        ↓
+Context / Observation
+帮助解释模型为什么产生该动作
 ```
+
+但排查单次任务和观察整个系统是两个层次。Trace 适合还原某一次执行；大量 Run 的成功率、延迟、Token、Tool Error、Retry 和 Cost 则需要聚合成 **Metric**，用于趋势、SLO 和告警。涉及身份、授权、审批和高风险操作时，还需要 **Audit** 保存更稳定的治理证据。最终这些数据经过 Instrumentation、Processor、Exporter 进入可查询的 Observability Backend。
+
+因此这篇知识点建立的是从“**单次执行还原**”到“**整体运行观察**”的观测框架。它会自然连接 Runtime，因为大量观测点发生在 Runtime；连接 Governance，因为审批和权限需要 Audit；连接 Eval，因为 Trace 可以提供评测证据。但三者不能混淆：Observability 说明发生了什么，Eval 判断结果是否正确，Checkpoint 则保存任务从哪里恢复。
+
 ## 1. 任务与步骤通过 Trace 和 Span 建立可检查的执行主线
 
 ### 【Agent Observability 的核心目标】
