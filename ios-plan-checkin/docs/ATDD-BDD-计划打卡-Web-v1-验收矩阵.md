@@ -12,6 +12,8 @@
 
 > 本文件是未来 Web 实施和发布的判定标准，并非通过报告。既有 iOS 的业务语义可复用，原生离线、APNs、32 页画板逐像素阈值和 iOS 真机门槛不直接迁移。Web 可独立发布：本矩阵只验 Web UI、共享 API 与同账号多浏览器；iOS 客户端联测属于独立验收，跨端共享仍保留为产品要求。
 
+> **对应通用知识**：[前端测试体系从验证边界到工程质量门禁](../../Full-Stack-AI-NOTES/Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md)。通用文档解释 Test Boundary、Fixture、Environment、Assertion、Isolation 与 Verification Strategy；本矩阵只负责计划打卡 Web V1 的具体 Acceptance Scenario、测试数据、浏览器矩阵和证据契约。
+
 ## 1. 验收模型与判定原则
 
 每项用例按 `Given 场景 → When 单一动作 → Then 功能 F / Visual 视觉 V / But 反向 N` 写明可观察结果。`Given` 固定账号、计划类型与方向、业务日期、计划时区、规则版本、浏览器/视口、网络和权限。参数变体分别记录结果，不将多个边界值平均。用例状态为 `PASS / FAIL / BLOCKED / NOT_RUN`；未实现属于 `NOT_RUN`，外部依赖阻断必须写明复测条件。功能、视觉、反向三项及必需证据均满足，才可标 `PASS`；视觉 `N/A` 仅适用于无界面 API 场景。
