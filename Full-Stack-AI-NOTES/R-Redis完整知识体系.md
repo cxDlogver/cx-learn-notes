@@ -3086,78 +3086,400 @@ Keyspace
 
 所以 PING = PONG 只能证明 Redis 当前能响应，不能证明 Redis 运行健康。
 
-## 9. Redis 的生产安全与治理从网络边界开始
+## 9. Redis 的生产治理需要同时控制网络、身份权限、连接资源和变更风险
 
-### 【Redis 不应该直接暴露在不可信网络】
+生产安全不是“给 Redis 加一个密码”就结束。
 
-生产安全顺序可以理解为：
+应该按层建立：
 
 ~~~text
-Network Isolation
+Network Boundary
 ↓
-TLS
+Encryption in Transit
 ↓
 Authentication
 ↓
-ACL
+Authorization / ACL
 ↓
-Command / Key Permission
+Connection Governance
 ↓
-Secret Rotation
+Configuration / Secret Governance
 ↓
-Audit / Monitoring
+Upgrade / Capacity Governance
 ~~~
 
-Redis 应优先部署在受控私网 / Service Network 中，而不是依赖“密码足够复杂”来承担全部边界。
+### 【第一层 Network Boundary 决定谁能够真正到达 Redis】
 
-### 【ACL 把“能连接”继续拆成“能执行什么”】
-
-ACL（Access Control List，访问控制列表）允许定义 Redis User，并限制：
+典型生产链：
 
 ~~~text
-Command
-Key Pattern
-Channel
+Browser / User
+↓
+HTTP API
+↓
+Application Network
+↓
+Redis
 ~~~
 
-例如业务 API 并不一定需要：
+而不是：
+
+~~~text
+Internet
+↓
+Redis :6379
+~~~
+
+常见手段：
+
+~~~text
+Private Subnet
+Firewall
+Security Group
+Container Network
+Kubernetes Network Policy
+Redis bind
+~~~
+
+目标是：即使攻击者知道 Redis 地址和端口，也不应该在网络层直接到达 Redis。
+
+### 【Protected Mode 是安全兜底，不应该替代正式网络隔离】
+
+Protected Mode 更像：
+
+~~~text
+默认配置误暴露时
+减少直接远程访问风险
+~~~
+
+它不能替代：
+
+~~~text
+Private Network
+Firewall
+Authentication
+ACL
+TLS
+~~~
+
+应该把它理解成 Safety Guardrail，而不是完整 Security Architecture。[44]
+
+### 【TLS 解决传输过程中是否加密】
+
+三个问题要分开：
+
+~~~text
+Authentication
+→ 你是谁？
+
+Authorization
+→ 你能做什么？
+
+TLS
+→ 你和 Redis 之间的通信是否加密？
+~~~
+
+Redis 支持 TLS 用于 Client Connection、Replication Link 等通信。[46]
+
+网络私有化也不能自动等于完全不需要 TLS，是否启用取决于威胁模型、合规和部署环境。
+
+### 【第二层 ACL 把身份认证继续细化到 Command 与 Key 权限】
+
+Redis ACL 可以把连接绑定到 User，并限制：
+
+~~~text
+Commands
+Keys
+Pub/Sub Channels
+~~~
+
+#### <u>1. Authentication 只回答你是谁</u>
+
+AUTH 成功后，还要继续问：
+
+~~~text
+这个 User
+可以执行哪些 Command？
+可以访问哪些 Key？
+~~~
+
+#### <u>2. 普通业务用户不应该默认拥有管理命令</u>
+
+业务应用通常不需要：
 
 ~~~text
 CONFIG
-FLUSHALL
 SHUTDOWN
+DEBUG
+FLUSHALL
+REPLICAOF
+ACL SETUSER
 ~~~
 
-所以权限治理应该从最小权限原则出发，而不是所有服务共享管理员级 Redis 账号。
+权限应遵循 Least Privilege。[45]
 
-### 【Client Retry、Timeout 与 Connection Lifecycle 同样属于生产治理】
+#### <u>3. ACL Key Pattern 可以隔离不同服务 Namespace</u>
 
-Redis Client 应明确：
-
-- Connect Timeout；
-- Command Timeout；
-- Retry 策略；
-- Max Retries；
-- Ready Check；
-- Shutdown；
-- Redis 不可用时业务是 Fail-open 还是 Fail-closed。
-
-不同 State 的故障策略可能不同：
+例如：
 
 ~~~text
-Cache Redis 故障
-→ 可以尝试回源 Database
-
-Rate Limit Redis 故障
-→ 要明确安全优先还是可用性优先
-
-Session Redis 故障
-→ 可能无法认证现有 Session
+Analytics Service
+只需要 analytics:*
 ~~~
 
-所以“Redis 挂了怎么办”没有一个统一答案，必须回到 State Semantics。
+可以限制其只访问对应 Key Pattern，而不能访问：
 
----
+~~~text
+session:*
+~~~
+
+这样即使某个服务被攻破，也能降低横向读取其他 Redis State 的范围。
+
+### 【危险命令治理应该依靠 Server-side Authorization，而不只是团队约定】
+
+“开发人员不要调用 FLUSHALL”不是安全边界。
+
+真正边界应该是：
+
+~~~text
+即使代码尝试调用
+Redis Server 也拒绝
+~~~
+
+这就是 ACL 的价值。
+
+### 【第三层 Connection Governance 控制 Client 自身不能成为资源风险】
+
+每个 Client 都需要：
+
+~~~text
+Socket
+File Descriptor
+Client State
+Input Buffer
+Output Buffer
+~~~
+
+Redis maxclients 用于限制最大 Client 数。[47]
+
+容量应该估算：
+
+~~~text
+API Instances
+×
+Connections per Instance
++
+Workers
++
+Admin
++
+Monitoring
++
+Replication / Sentinel
+~~~
+
+不能无限增长。
+
+### 【Client Retry 必须和业务 Timeout 放在同一个时间预算里】
+
+假设：
+
+~~~text
+HTTP Timeout = 3s
+~~~
+
+Redis Client 如果无限重试：
+
+~~~text
+Request 已经没有业务价值
+↓
+底层仍不断 Retry
+↓
+请求 / 内存 / 连接继续堆积
+~~~
+
+所以需要统一考虑：
+
+~~~text
+Connect Timeout
+Command Timeout
+Retry Count
+Retry Backoff
+Business Deadline
+~~~
+
+Retry 既是 Reliability 机制，也是 Resource Governance。
+
+### 【Application Shutdown 也是 Connection Lifecycle 的一部分】
+
+优雅关闭：
+
+~~~text
+Stop accepting new work
+↓
+Finish / cancel in-flight work
+↓
+QUIT / close Redis Client
+↓
+Process Exit
+~~~
+
+比直接依赖进程被杀更可控。
+
+### 【第四层 Operational Governance 控制运行参数和基础设施变更风险】
+
+Redis 配置：
+
+~~~text
+appendonly
+appendfsync
+maxmemory
+maxmemory-policy
+timeout
+maxclients
+ACL
+TLS
+~~~
+
+会直接影响：
+
+~~~text
+Durability
+Availability
+Performance
+Security
+~~~
+
+生产环境不应该依赖某个人临时 CONFIG SET 后没有记录。
+
+更合理：
+
+~~~text
+Configuration
+↓
+Version Control / IaC
+↓
+Review
+↓
+Deploy
+↓
+Verify
+~~~
+
+### 【Secret 应拥有独立生命周期】
+
+Redis Credential、Certificate、Private Key 属于 Secret，不应与 Host、Port、Timeout 一样管理。
+
+应该考虑：
+
+~~~text
+Generate
+Store
+Distribute
+Rotate
+Revoke
+Audit
+~~~
+
+常见承载：
+
+~~~text
+Secret Manager
+Kubernetes Secret
+Cloud Secret Service
+Runtime Environment Injection
+~~~
+
+### 【升级 Redis 不是单纯替换 Image Tag】
+
+版本升级前至少检查：
+
+~~~text
+Command Compatibility
+Persistence Compatibility
+ACL / Security Changes
+Client Compatibility
+Cluster Behavior
+Memory Behavior
+Performance Regression
+~~~
+
+再经过：
+
+~~~text
+Test
+↓
+Staging
+↓
+Backup / Rollback Plan
+↓
+Production Rollout
+~~~
+
+### 【Capacity Planning 把前面所有治理能力连接起来】
+
+Capacity Planning 不只是“需要多少 GB RAM”。
+
+至少包括：
+
+~~~text
+Key Count
+Average Key Size
+Peak Key Size
+Ops / second
+Read / Write Ratio
+Hot Key Distribution
+Connected Clients
+Network Throughput
+Persistence I/O
+Growth Rate
+~~~
+
+Memory 还要留 Headroom：
+
+~~~text
+Traffic Spike
+AOF Rewrite
+Fork
+Replication
+Fragmentation
+Temporary Growth
+~~~
+
+所以：
+
+~~~text
+当前 used_memory = 4GB
+↓
+机器配置 4GB
+~~~
+
+不是合理容量规划。
+
+真正需要的是：
+
+~~~text
+Peak Requirement
++
+Growth
++
+Failure / Maintenance Headroom
+~~~
+
+### 【生产治理最终是一套分层检查表】
+
+| 维度 | 需要回答 |
+| --- | --- |
+| Network | 谁能访问 Redis Port？ |
+| TLS | 数据传输是否需要加密？ |
+| Auth | 使用什么 Redis User / Credential？ |
+| ACL | 允许哪些 Command / Key Pattern？ |
+| Client | 连接是否复用？Timeout / Retry 如何？ |
+| Memory | maxmemory / eviction 是否匹配 State？ |
+| Persistence | RDB / AOF / fsync 是否匹配 RPO？ |
+| HA | Replica / Sentinel / Cluster 是否匹配 RTO？ |
+| Observability | 是否能定位 Latency / Memory / Hot Key？ |
+| Operations | 配置、Secret、升级、备份是否受控？ |
 
 ## 10. Redis 选型最终回到“状态—访问—并发—生命周期—恢复”五个问题
 
