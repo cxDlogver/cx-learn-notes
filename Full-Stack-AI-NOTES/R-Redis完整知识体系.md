@@ -40,319 +40,995 @@ Redis 故障、并发或扩容以后，这份状态怎样继续正确工作？
 
 ---
 
-## 1. Redis 的核心定位是共享内存状态服务，而不只是“缓存”
+## 1. Redis 首先是独立运行的共享状态服务，而不是应用进程里的“缓存对象”
 
-### 【Redis 首先是独立 Redis Server，不是应用进程中的 Map】
-
-Redis（Remote Dictionary Server，远程字典服务）首先是一个独立运行的服务器进程。应用通过 Redis Client 与它通信，因此多个 API、Worker 或其他服务可以访问同一份状态。
+理解 Redis 的第一步不是背 GET / SET，而是先建立系统位置。Redis 是独立运行的 Server Process，应用通过 Redis Client 与它通信。它最重要的系统价值是：**把原本局限在单个应用进程中的状态，提升成多个进程、多个实例都可以访问的共享状态。**
 
 ~~~text
-API A ─┐
-API B ─┼── Redis Server ── Keyspace
-Worker ─┘
+Browser / Client
+       ↓
+Application API
+       ↓
+Redis Client
+       ↓ TCP / RESP
+Redis Server
+       ↓
+Keyspace / Dataset
 ~~~
 
-这与进程内 Map 的本质区别是状态作用域：
+### 【Redis Server 与 Redis Client 是两个不同运行角色】
 
-| 方案 | 状态作用域 | 进程重启 | 多实例共享 |
-| --- | --- | --- | --- |
-| JavaScript Map / Memory | 单进程 | 丢失 | 不共享 |
-| Redis | 独立服务 | 取决于 Persistence | 共享 |
-| PostgreSQL | 独立数据库 | 持久 | 共享 |
+#### <u>1. Redis Server 持有共享 Dataset</u>
 
-所以 Redis 的第一个工程价值不是“快”，而是：
-
-> **把原本只能存在于单个应用进程中的运行状态提升成多实例共享状态。**
-
-### 【Redis 适合高频、短生命周期、可派生或运行时共享状态】
-
-一个状态是否适合 Redis，不应该只看“读写频繁”。更完整的判断维度是：
+Redis Server 负责：
 
 ~~~text
-状态是否需要多实例共享？
-        ↓
-是否高频读写？
-        ↓
-是否具有明确 TTL？
-        ↓
-丢失后能否重建？
-        ↓
-是否需要复杂关系约束与多表事务？
-~~~
-
-典型适合 Redis 的状态：
-
-- Session / Login Runtime State；
-- Cache；
-- Rate Limit；
-- Counter；
-- Idempotency Window；
-- 短期时间窗口；
-- 分布式协调状态；
-- Pub/Sub / Stream 场景中的运行数据。
-
-典型更适合关系数据库的状态：
-
-- 订单、支付、账户余额等权威业务事实；
-- 复杂关系与 Foreign Key；
-- 需要跨多行、多表事务保护的不变量；
-- 长期审计历史。
-
-因此：
-
-~~~text
-Redis
-≠ 更快的 PostgreSQL
-
-Redis
-= 为特定访问模式设计的共享状态基础设施
-~~~
-
-### 【Source of Truth 决定 Redis 故障后的恢复方向】
-
-Source of Truth（权威数据源）：系统最终认定哪一份状态是真实业务事实。
-
-例如：
-
-~~~text
-PostgreSQL
-保存订单事实
-
-Redis
-保存订单查询 Cache
-~~~
-
-Redis Cache 丢失后：
-
-~~~text
-Redis Miss
+接收 Command
 ↓
-重新查询 PostgreSQL
+解析 Key
 ↓
-Rebuild Cache
-~~~
-
-恢复方向是：
-
-~~~text
-PostgreSQL → Redis
-~~~
-
-这与“Redis 是否开启 AOF”是两个不同问题。Persistence 可以提高 Redis Dataset 恢复能力，但不会自动把 Redis 提升成业务 Source of Truth。
-
----
-
-## 2. Redis 通过 Keyspace、数据类型与 TTL 建模状态
-
-### 【Key 定义状态身份，Value Type 定义状态内部操作】
-
-Redis 的基础模型是：
-
-~~~text
-Key
+执行对应数据结构操作
 ↓
-Value
-~~~
-
-Key 应该表达状态的 Scope（作用范围）和 Identity（身份），例如：
-
-~~~text
-session:<sessionId>
-rate:user:<userId>
-cache:product:<productId>
-counter:tenant:<tenantId>
-~~~
-
-冒号只是应用层命名约定，不会真的创建目录。
-
-Key Design（键设计）需要同时回答：
-
-- 谁拥有这份状态；
-- 哪些请求会访问同一个 Key；
-- 这个 Key 是否可能成为 Hot Key；
-- 是否需要 TTL；
-- 如果迁移 Redis Cluster，相关 Key 是否需要处于同一 Hash Slot。
-
-### 【String 适合整体值、计数器和简单锁状态】
-
-String 是最基础的数据类型，可保存文本、二进制或数字语义。
-
-常见命令：
-
-~~~text
-SET / GET
-INCR / DECR
-SET key value EX seconds
-SET key value NX
-~~~
-
-典型场景：
-
-~~~text
-Cache Value
-Counter
-Version Number
-Idempotency Marker
-简单 Lock Token
-~~~
-
-重要的是访问模式，而不是 Value 看起来是不是“字符串”。
-
-### 【Hash 适合一个状态对象下多个独立字段】
-
-Hash 的模型：
-
-~~~text
-Key
+修改或读取 Dataset
 ↓
-Field → Value
-Field → Value
-Field → Value
+返回结果
 ~~~
 
-例如 Token Bucket：
-
-~~~text
-rate:user:42
-├── tokens = 73.5
-└── updated = 1700000000.5
-~~~
-
-常用命令：
-
-~~~text
-HSET
-HGET
-HMGET
-HINCRBY
-HGETALL
-~~~
-
-当多个字段属于同一个生命周期和 Scope，同时又需要独立修改时，Hash 比把每个字段拆成独立 Key 更自然。
-
-### 【List、Set、Sorted Set 与 Stream 分别表达不同访问模式】
-
-| 数据类型 | 关键语义 | 典型访问模式 |
-| --- | --- | --- |
-| List | 有顺序、左右端操作 | 简单队列、最近列表 |
-| Set | 成员唯一、集合关系 | 去重、成员关系 |
-| Sorted Set | Member 唯一 + Score 排序 | 排行榜、滑动时间窗口 |
-| Stream | Append-only Record + Consumer Group | 事件流、消费进度 |
-
-Sorted Set 特别适合 Sliding Window：
-
-~~~text
-timestamp → Score
-requestId → Member
-~~~
-
-然后：
-
-~~~text
-ZADD
-↓
-ZRANGEBYSCORE / ZCOUNT
-↓
-ZREMRANGEBYSCORE
-~~~
-
-形成“最近 N 秒发生过什么”的时间窗口。
-
-Stream 则已经进入消息与事件流语义。如果系统主要问题是可靠异步消费、ACK、Consumer Group 与 Replay，应继续结合 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md) 判断 Redis Streams 与其他 Broker 的边界。
-
-### 【TTL 是状态生命周期，不是 Value Type】
-
-TTL（Time To Live，生存时间）定义 Key 还能存在多久。
-
-~~~text
-SET session:abc ... EX 3600
-~~~
-
-或：
-
-~~~text
-EXPIRE session:abc 3600
-~~~
-
-TTL 能直接表达：
-
-~~~text
-Session 过期
-Cache 失效
-Rate Limit Bucket 回收
-Idempotency Window 结束
-临时状态自动清理
-~~~
-
-设计 Redis State 时，TTL 不应该最后才补，而应该和 Key / Value 一起成为状态模型的一部分：
-
-~~~text
-State Model
-├── Key
-├── Value Type
-├── Commands
-└── TTL / Lifecycle
-~~~
-
----
-
-## 3. Redis 的正确并发语义来自原子命令、事务与 Server-side Script
-
-### 【单条 Redis Command 是最基础的原子执行边界】
-
-如果业务动作可以表达成一条 Redis Command，应优先使用原生命令：
-
-~~~text
-Counter +1
-↓
-INCR
-
-Hash Field +1
-↓
-HINCRBY
-~~~
-
-比下面这种客户端 Read-Modify-Write 更安全：
-
-~~~text
-GET
-↓
-Node.js + 1
-↓
-SET
-~~~
-
-因为后者会暴露并发窗口。
-
-### 【Pipeline 优化网络往返，不等于事务】
-
-Pipeline（流水线）主要解决大量 RTT（Round Trip Time，网络往返）的问题。
-
-~~~text
-多次独立 Request / Response
-↓
-Pipeline
-↓
-批量发送 Command
-↓
-减少 Network Round Trip
-~~~
-
-Pipeline 本身不表示“这些 Command 必须作为一个事务不可穿插”。
+应用进程并不直接操作 Redis 内存。它只是通过 Client 发送命令。
 
 所以：
 
 ~~~text
-Pipeline
-解决 Throughput / RTT
+new Map()
+=
+应用进程自己的内存状态
 
-Atomicity
-由具体 Command、Transaction 或 Script 决定
+Redis Server
+=
+独立进程中的共享状态
 ~~~
 
-### 【MULTI / EXEC 适合执行顺序已经确定的命令组】
+当 API 横向扩容以后：
 
-Redis Transaction 常见：
+~~~text
+Load Balancer
+      │
+ ┌────┼────┐
+ ↓    ↓    ↓
+API A API B API C
+      |    /
+      |   /
+    Redis
+~~~
+
+三个 API Instance 可以访问同一个 Key，因此 Session、Rate Limit、Counter 等状态不会因为请求落到不同实例而割裂。
+
+#### <u>2. Redis Client 负责连接、编码命令和接收结果</u>
+
+Node.js、Java、Python、Go 等语言通常通过 Redis Client Library 建立连接。
+
+Client 负责的事情包括：
+
+~~~text
+Connection Lifecycle
+Command Serialization
+Response Parsing
+Retry
+Ready Check
+Pipeline
+Transaction API
+Lua / Function Invocation
+~~~
+
+因此：
+
+> Redis 不是某个语言框架自带的数据结构；Redis Client 才是应用语言与 Redis Server 之间的适配层。
+
+#### <u>3. Connection 应该按进程复用，而不是按 Request 创建</u>
+
+不推荐：
+
+~~~text
+HTTP Request A
+↓
+new Redis()
+↓
+Command
+↓
+close
+
+HTTP Request B
+↓
+new Redis()
+↓
+Command
+↓
+close
+~~~
+
+因为 TCP 建连、认证、TLS、Socket 和 Client State 都有成本。
+
+更常见：
+
+~~~text
+Process Start
+↓
+Create Redis Client
+↓
+Request A / B / C 复用
+↓
+Process Shutdown
+↓
+Graceful Close
+~~~
+
+这也是后续 Connection Governance 的基础。
+
+### 【Redis 的基础数据模型是 Keyspace → Key → Typed Value】
+
+关系数据库常用：
+
+~~~text
+Database
+↓
+Table
+↓
+Row
+↓
+Column
+~~~
+
+Redis 则先建立：
+
+~~~text
+Redis Database
+↓
+Keyspace
+↓
+Key
+↓
+Typed Value
+~~~
+
+Redis 官方将 Redis 描述为 Data Structure Server，原因就在于一个 Key 的 Value 不只是字符串，还可以是 Hash、List、Set、Sorted Set、Stream 等结构。[1]
+
+Keyspace 是当前 Redis Database 中全部 Key 组成的逻辑空间。Redis 并不知道：
+
+~~~text
+session 是一张表
+cache 是一张表
+rate-limit 是一张表
+~~~
+
+它看到的是：
+
+~~~text
+session:a
+session:b
+cache:product:1
+rate:user:42
+~~~
+
+所以 Redis 的建模首先是：
+
+~~~text
+Key Identity
++
+Value Type
++
+Command Semantics
++
+Lifecycle
+~~~
+
+### 【TTL 让生命周期直接成为状态模型的一部分】
+
+TTL（Time To Live，生存时间）回答：
+
+> 这份状态应该存在多久？
+
+例如：
+
+~~~text
+Session
+↓
+30 分钟后自动失效
+
+Cache
+↓
+60 秒后允许重新加载
+
+Rate Limit Bucket
+↓
+长时间无人访问后自动清理
+~~~
+
+因此 Redis State Model 不应该只写：
+
+~~~text
+Key + Value
+~~~
+
+而应该写：
+
+~~~text
+State
+├── Key
+├── Value Type
+├── Commands
+├── TTL / Expiration
+└── Recovery Semantics
+~~~
+
+Redis 官方 Key Expiration 文档也把过期能力作为 Key 生命周期的一部分，而不是单独的数据类型。[2]
+
+### 【Redis 以内存为主要工作数据集，但“内存数据库”不等于“重启一定全部丢失”】
+
+Redis 的工作数据主要驻留内存，这是低延迟的重要基础之一。
+
+但：
+
+~~~text
+Memory-first
+≠
+No Persistence
+~~~
+
+Redis 可以选择：
+
+~~~text
+No Persistence
+RDB Snapshot
+AOF
+RDB + AOF
+~~~
+
+因此需要分开理解：
+
+~~~text
+运行时数据主要在哪里？
+→ Memory
+
+重启后能不能恢复？
+→ Persistence Strategy
+~~~
+
+“Redis 是内存数据库，所以断电数据一定全部丢失”是不准确的。
+
+### 【Redis 与关系数据库的边界来自状态职责，而不是单纯速度差异】
+
+Redis 常见状态具有：
+
+~~~text
+高频
+低延迟
+短生命周期
+可自动过期
+可重建
+需要跨实例共享
+访问模式明确
+~~~
+
+关系数据库更擅长：
+
+~~~text
+长期权威事实
+复杂关系
+Constraint
+Join
+多行多表事务
+审计历史
+复杂查询
+~~~
+
+所以不要把选择问题简化成：
+
+~~~text
+Redis 快
+PostgreSQL 慢
+~~~
+
+更准确的是：
+
+~~~text
+什么是 Source of Truth？
+什么只是 Derived State？
+什么属于 Runtime State？
+什么属于 Control State？
+什么状态丢失后可以重建？
+~~~
+
+### 【同一个 Redis Instance 中的不同 Key 可以拥有完全不同的可靠性要求】
+
+同一个 Redis 中可能同时存在：
+
+~~~text
+Query Cache
+↓
+丢失后可重新生成
+
+Session
+↓
+丢失后用户可能需要重新登录
+
+Rate Limit
+↓
+丢失后短时间预算重新初始化
+
+Operational Counter
+↓
+丢失后统计可能不完整
+~~~
+
+因此：
+
+> 不能因为“这些数据都在 Redis”，就假设它们具有相同的 Persistence、Eviction、HA 与 Recovery 要求。
+
+这也是后续为什么必须按 State Model 分析 Redis，而不是只按“Redis 实例”整体讨论。
+
+## 2. Redis 通过 Keyspace、数据类型与命令语义组织共享状态
+
+Redis 数据结构不是“学会六种类型就结束”。真正需要建立的链路是：
+
+~~~text
+业务状态
+↓
+确定 Scope
+↓
+设计 Key
+↓
+确定访问模式
+↓
+选择 Data Type
+↓
+选择 Command
+↓
+定义 TTL
+~~~
+
+所以 Redis 数据结构的核心原则是：
+
+> **不要只看数据长什么样，要看业务需要怎样访问和修改它。**
+
+### 【Key 的第一职责是定义一份共享状态的身份和隔离范围】
+
+#### <u>1. 冒号只是命名约定，不是 Redis 目录</u>
+
+例如：
+
+~~~text
+session:user-1
+cache:product:100
+rate:tenant:t1
+~~~
+
+人可以把它理解成分层命名：
+
+~~~text
+domain:state-type:scope-id
+~~~
+
+但 Redis 内部并不存在真实目录。
+
+~~~text
+cache/
+  product/
+    100
+~~~
+
+并不存在；Redis 只保存完整 Key：
+
+~~~text
+cache:product:100
+~~~
+
+#### <u>2. Key Design 先回答“哪些请求应该访问同一份状态”</u>
+
+例如：
+
+~~~text
+rate:user:<userId>
+~~~
+
+意味着同一个 userId 的请求竞争同一份预算。
+
+而：
+
+~~~text
+rate:tenant:<tenantId>:ip:<ip>
+~~~
+
+意味着不同 IP 之间状态隔离。
+
+因此 Key Design 本质上是：
+
+~~~text
+Business State
+↓
+Scope
+↓
+Identity
+↓
+Redis Key
+~~~
+
+#### <u>3. Key 命名还会影响 Hot Key、Cluster Slot 和权限边界</u>
+
+Key 不只影响可读性。
+
+它还影响：
+
+- 是否大量请求集中到一个 Key；
+- Redis Cluster 中 Key 落在哪个 Hash Slot；
+- ACL 能否按 Key Pattern 限制访问；
+- 是否方便按 Namespace 做监控、迁移和清理。
+
+所以 Key Design 是性能、安全与分布式部署的共同基础。
+
+### 【String 适合整体读写、整数 Counter 和简单状态标记】
+
+#### <u>1. String 的逻辑模型是 Key → Bytes</u>
+
+Redis String 不只表示文本，它可以保存：
+
+~~~text
+Text
+JSON
+Integer
+Binary
+Serialized State
+~~~
+
+Redis 并不理解 JSON 内部字段。对于它来说：
+
+~~~text
+Key
+↓
+一段 String / Bytes
+~~~
+
+#### <u>2. SET / GET 表达整体替换和整体读取</u>
+
+~~~text
+SET key value
+↓
+如果不存在则创建
+如果存在则整体覆盖
+
+GET key
+↓
+返回整个 String Value
+~~~
+
+如果业务模式是：
+
+~~~text
+整体写入对象
+整体读取对象
+很少字段级更新
+~~~
+
+序列化成 String 很自然。
+
+例如：
+
+~~~text
+Object
+↓
+JSON.stringify
+↓
+SET
+
+GET
+↓
+JSON.parse
+↓
+Object
+~~~
+
+#### <u>3. SET ... EX 把 Value 和生命周期一起定义</u>
+
+~~~text
+SET session:abc value EX 1800
+~~~
+
+同时建立：
+
+~~~text
+Type = String
+Value = ...
+TTL = 1800s
+~~~
+
+比：
+
+~~~text
+SET
+↓
+EXPIRE
+~~~
+
+分两步更能表达“创建状态时就定义生命周期”。
+
+#### <u>4. DEL 删除的是整个 Key</u>
+
+~~~text
+DEL session:abc
+~~~
+
+会让：
+
+~~~text
+Key
+Value
+TTL
+~~~
+
+一起消失。
+
+DEL 是 Key-level 操作，不是“删除 String 内某个字段”。
+
+#### <u>5. INCR / DECR 把 String 当整数 Counter 使用</u>
+
+~~~text
+counter = 8
+↓
+INCR
+↓
+9
+~~~
+
+如果 Key 不存在，INCR 会把它按 0 开始处理。
+
+因此 String 常见两类访问模型：
+
+~~~text
+整体值
+→ SET / GET
+
+整数计数
+→ INCR / DECR
+~~~
+
+### 【Hash 适合一个 Key 下存在多个独立字段的状态对象】
+
+#### <u>1. Hash 的逻辑模型是 Key → Field → Value</u>
+
+~~~text
+user:100
+├── name → Alice
+├── age → 20
+└── score → 100
+~~~
+
+视觉上像“对象”，但它不是 SQL Row，因为 Redis Hash 没有 Schema、Foreign Key、Join 等关系能力。
+
+#### <u>2. HSET / HMGET / HGETALL 对应不同访问模式</u>
+
+~~~text
+HSET
+→ 修改一个或多个 Field
+
+HMGET
+→ 只读取指定 Field
+
+HGETALL
+→ 读取整个 Hash
+~~~
+
+如果业务经常：
+
+~~~text
+只更新对象里的一个字段
+只读取几个字段
+~~~
+
+Hash 比序列化整个 JSON String 更自然。
+
+#### <u>3. HINCRBY 把字段级 Read-Modify-Write 收缩成单命令</u>
+
+如果要：
+
+~~~text
+accepted += 5
+~~~
+
+客户端写：
+
+~~~text
+HGET
+↓
++5
+↓
+HSET
+~~~
+
+会暴露并发窗口。
+
+HINCRBY：
+
+~~~text
+HINCRBY stats accepted 5
+~~~
+
+直接把“读旧值 + 加法 + 写新值”表达成一个 Redis Command。
+
+#### <u>4. 同样是 Hash，不代表业务状态模型相同</u>
+
+例如：
+
+~~~text
+Hash A
+├── accepted
+├── rejected
+└── duplicate
+
+访问模式
+→ HINCRBY / HGETALL
+~~~
+
+另一个：
+
+~~~text
+Hash B
+├── tokens
+└── updated
+
+访问模式
+→ HMGET
+→ Compute
+→ HSET
+~~~
+
+真正决定结构是否合适的是 Access Pattern，而不是“它们都有多个字段”。
+
+### 【Sorted Set 用 Member + Score 表达唯一成员、排序和范围查询】
+
+#### <u>1. Member 唯一，Score 决定顺序</u>
+
+~~~text
+member-A → 100
+member-B → 120
+member-C → 80
+~~~
+
+Redis 会按 Score 维护排序。
+
+同一个 Member 再次 ZADD 时，默认更新 Score，而不是产生重复 Member。
+
+#### <u>2. ZADD 把业务排序维度映射到 Score</u>
+
+排行榜：
+
+~~~text
+Score = points
+Member = userId
+~~~
+
+时间窗口：
+
+~~~text
+Score = timestamp
+Member = requestId / eventId
+~~~
+
+Redis 不理解“积分”或“时间”。是应用把业务维度映射成 Score。
+
+#### <u>3. ZRANGEBYSCORE / ZRANGE BYSCORE 进行范围查询</u>
+
+如果：
+
+~~~text
+Score = timestamp
+~~~
+
+那么：
+
+~~~text
+score >= now - 60s
+~~~
+
+自然就是“最近 60 秒”。
+
+#### <u>4. ZREMRANGEBYSCORE 可以清理窗口外数据</u>
+
+滑动时间窗口常见组合：
+
+~~~text
+ZADD
+↓
+加入当前 Event
+
+ZREMRANGEBYSCORE
+↓
+删除窗口外旧 Event
+
+ZRANGE ... BYSCORE
+↓
+读取当前窗口
+~~~
+
+这是一种非常典型的：
+
+~~~text
+Time → Score
+↓
+Sorted Set
+↓
+Sliding Window
+~~~
+
+建模方式。
+
+### 【TTL 与 Sorted Set Member Cleanup 解决的是两个层次的问题】
+
+假设一个 Sorted Set 保存最近 60 秒的 Event。
+
+~~~text
+ZREMRANGEBYSCORE
+↓
+删除 Key 内已经离开窗口的 Member
+~~~
+
+而：
+
+~~~text
+EXPIRE
+↓
+整个 Key 长时间不再访问时自动删除
+~~~
+
+所以：
+
+~~~text
+Member Cleanup
+=
+内部集合生命周期
+
+TTL
+=
+整个 Key 生命周期
+~~~
+
+这两个机制不能混为一谈。
+
+### 【List、Set 与 Stream 应按访问语义理解，而不是按名称记忆】
+
+#### <u>1. List 强调顺序和两端操作</u>
+
+典型：
+
+~~~text
+LPUSH / RPUSH
+LPOP / RPOP
+LRANGE
+~~~
+
+适合：
+
+- 简单工作列表；
+- 最近记录；
+- 两端队列。
+
+但可靠消息消费还要继续考虑 ACK、重试、Consumer Group 等能力，不能因为 List 能 push/pop 就等同于完整消息系统。
+
+#### <u>2. Set 强调成员唯一和集合运算</u>
+
+典型：
+
+~~~text
+SADD
+SREM
+SISMEMBER
+SINTER
+SUNION
+~~~
+
+适合：
+
+- 去重；
+- Membership；
+- 标签集合；
+- 权限集合；
+- 集合交并差。
+
+#### <u>3. Stream 强调持续追加记录和 Consumer Group</u>
+
+典型：
+
+~~~text
+XADD
+XREAD
+XREADGROUP
+XACK
+XPENDING
+XAUTOCLAIM
+~~~
+
+Stream 更接近持久事件流：
+
+~~~text
+Producer
+↓
+Stream
+↓
+Consumer Group
+↓
+Consumer
+↓
+ACK
+~~~
+
+因此 Stream 已经跨入异步消息处理知识域，需要继续结合 Broker / Queue / Kafka 等模型比较。
+
+### 【数据结构选择最终可以用“状态—操作—生命周期”判断】
+
+面对一个新状态，不要先问“用 String 还是 Hash”。
+
+先回答：
+
+~~~text
+这份状态是谁的？
+↓
+一个 Key 还是多个 Key？
+↓
+是整体读写还是字段级修改？
+↓
+需要排序吗？
+↓
+需要成员唯一吗？
+↓
+需要时间范围查询吗？
+↓
+需要 Consumer Group 吗？
+↓
+多久以后应该自动消失？
+~~~
+
+再映射到：
+
+~~~text
+String
+Hash
+List
+Set
+Sorted Set
+Stream
+TTL
+~~~
+
+这才是可迁移的数据建模方法。
+
+## 3. Redis 通过命令原子性、事务与 Lua 控制并发状态修改
+
+Redis 并发问题的核心不是“多个请求同时进入 Redis”，而是：
+
+> **一个业务动作被拆成多条独立 Command 后，中间是否允许其他 Client 修改同一份状态。**
+
+### 【一次业务操作不一定等于一条 Redis Command】
+
+假设业务要：
+
+~~~text
+读取余额
+↓
+判断余额是否足够
+↓
+扣减余额
+~~~
+
+如果写成：
+
+~~~text
+GET
+↓
+Client Compute
+↓
+SET
+~~~
+
+那么 GET 和 SET 之间存在并发窗口。
+
+#### <u>1. GET → Compute → SET 会产生 Lost Update</u>
+
+假设：
+
+~~~text
+count = 10
+~~~
+
+两个请求：
+
+~~~text
+A GET → 10
+B GET → 10
+
+A +1 → SET 11
+B +1 → SET 11
+~~~
+
+最终：
+
+~~~text
+count = 11
+~~~
+
+但实际上发生了两次 +1。
+
+这就是 Lost Update（丢失更新）。
+
+### 【单条原生命令是最优先的原子边界】
+
+如果业务动作可以直接表达为：
+
+~~~text
+INCR
+HINCRBY
+SET NX
+ZINCRBY
+~~~
+
+优先使用原生命令。
+
+因为：
+
+~~~text
+Read
+Compute
+Write
+~~~
+
+已经被 Redis 命令本身封装。
+
+所以设计优先级通常是：
+
+~~~text
+能否单 Command 完成？
+↓
+不能
+↓
+是否 MULTI / EXEC 足够？
+↓
+不能
+↓
+是否 WATCH + Retry？
+↓
+是否 Lua / Function？
+~~~
+
+### 【Pipeline 只减少网络往返，不自动提供原子性】
+
+Pipeline 的主要问题是 RTT：
+
+~~~text
+Client → Redis Command A
+Redis → Client Response A
+Client → Redis Command B
+Redis → Client Response B
+...
+~~~
+
+Pipeline：
+
+~~~text
+Client
+↓ 一批 Command
+Redis
+↓ 一批 Response
+Client
+~~~
+
+可以显著降低大量小命令的 Network Round Trip。
+
+但：
+
+> Pipeline 不等于 Transaction。
+
+多个命令能否被其他 Client 的命令穿插，取决于具体 Pipeline / Client 执行方式和是否包在事务中；不能把“批量发送”当成“事务原子执行”。
+
+### 【MULTI / EXEC 把预先确定的命令组放进事务执行单元】
+
+基本流程：
 
 ~~~text
 MULTI
@@ -364,168 +1040,334 @@ Command C
 EXEC
 ~~~
 
-它适合命令列表在执行前已经确定，执行过程中不需要先读取某个结果再临时决定下一条写入。
+MULTI 以后命令先排队，EXEC 时才真正执行。[18]
 
-Redis Transaction 与关系数据库事务不要混同。它没有 SQL 数据库那种通用 Rollback 语义；EXEC 阶段某条命令运行时报错，并不会自动撤销前面已经成功的命令。
+#### <u>1. MULTI / EXEC 适合“命令序列提前已知”</u>
 
-### 【WATCH 适合客户端乐观锁式 Read-Modify-Write】
+例如：
 
-WATCH 可以监控某些 Key：
+~~~text
+HINCRBY accepted 10
+HINCRBY duplicate 2
+EXPIRE stats 3600
+~~~
+
+这些命令在执行前已经全部确定，不需要先读取中间结果再决定下一步，因此非常适合 MULTI / EXEC。
+
+#### <u>2. MULTI 内的读取结果不能直接在 Client 中立即参与后续分支</u>
+
+如果写：
+
+~~~text
+MULTI
+GET balance
+???
+SET balance ...
+EXEC
+~~~
+
+问题是 GET 也只是排队，Client 在 EXEC 前拿不到真正 balance。
+
+所以：
+
+~~~text
+Read
+↓
+根据结果 if/else
+↓
+Write
+~~~
+
+不是 MULTI / EXEC 最自然的模型。
+
+### 【WATCH 通过乐观并发控制保护客户端 Read-Modify-Write】
+
+WATCH：
 
 ~~~text
 WATCH key
 ↓
-GET
+GET key
 ↓
 Client Compute
 ↓
 MULTI
-SET ...
+SET key newValue
+↓
 EXEC
 ~~~
 
-如果期间 Key 被别人修改，EXEC 会失败，客户端可以 Retry。
-
-这是一种 Optimistic Concurrency Control（乐观并发控制）。
-
-### 【Lua 把 Read → Decide → Write 收进 Redis Server 内部】
-
-当业务逻辑必须：
+如果 WATCH 以后、EXEC 之前 Key 被其他 Client 修改：
 
 ~~~text
-读取状态
+EXEC
 ↓
-执行计算
-↓
-根据结果做条件判断
-↓
-写回状态
+失败 / 不执行
 ~~~
 
-如果这些动作拆成多条客户端命令，就会出现 Race Condition（竞态条件）。
+Client 可以重新读取再 Retry。
 
-Redis Lua / EVAL 的核心价值是：
-
-> **把 Read + Compute + Conditional Write 作为一个 Server-side Execution Unit 在 Redis 内部执行。**
-
-Redis 官方的 Rate Limiter 文档也把 Lua 描述为保证 read-decide-update 原子性的典型方式。[1]
-
-#### <u>1. Token Bucket 是理解 Redis Lua 最直观的例子</u>
-
-Token Bucket（令牌桶）包含：
+因此 WATCH 本质是：
 
 ~~~text
-capacity = burst
-tokens = 当前令牌
-refillRate = 每秒补充多少令牌
-updated = 上一次计算时间
+Optimistic Concurrency Control
 ~~~
 
-请求到达：
+适合：
+
+- 冲突概率不是特别高；
+- 计算必须在 Client 侧；
+- 可以接受失败后重试。
+
+高冲突场景下，反复 Retry 可能带来额外成本。
+
+### 【Lua 把 Read → Compute → Conditional Write 移入 Redis Server】
+
+Lua / EVAL 特别适合：
 
 ~~~text
-读取 tokens / updated
+Read State
+↓
+Compute
+↓
+if / else
+↓
+Write State
+↓
+Return Decision
+~~~
+
+因为整个脚本在 Redis Server 内执行。
+
+#### <u>1. EVAL 通过 KEYS 和 ARGV 接收输入</u>
+
+常见结构：
+
+~~~lua
+local key = KEYS[1]
+local cost = tonumber(ARGV[1])
+
+local value = redis.call('GET', key)
+
+-- compute / decision
+
+redis.call('SET', key, ...)
+return ...
+~~~
+
+KEYS 用于声明脚本访问的 Redis Key；ARGV 用于普通参数。
+
+这在 Redis Cluster 中尤其重要，因为多 Key Script 必须考虑 Key 所在 Hash Slot。
+
+#### <u>2. Token Bucket 是典型 Read-Compute-Conditional-Write</u>
+
+Token Bucket State：
+
+~~~text
+tokens
+updated
+~~~
+
+请求到来：
+
+~~~text
+HMGET
 ↓
 elapsed = now - updated
 ↓
-tokens = min(
-  burst,
-  tokens + elapsed × rate
-)
+refill = elapsed × rate
+↓
+tokens = min(burst, tokens + refill)
 ↓
 tokens >= cost ?
 ├── No  → Reject
-└── Yes → tokens -= cost → Allow
+└── Yes → tokens -= cost
 ↓
-写回 tokens / updated
+HSET
+↓
+EXPIRE
+↓
+return 0 / 1
 ~~~
 
-如果在应用侧实现：
+如果把 HMGET 和 HSET 放到 Node.js 中间计算，会暴露并发窗口。
+
+Lua 则把整个算法收进一个 Server-side Execution Unit。
+
+#### <u>3. Lua 原子性的真正价值是“其他 Client 不能穿插”</u>
+
+没有 Lua：
 
 ~~~text
-Request A 读 tokens = 10
-Request B 读 tokens = 10
+A HMGET → 10
+B HMGET → 10
 A 判断允许
 B 判断允许
-A 写 0
-B 写 0
+A HSET → 0
+B HSET → 0
 ~~~
 
-两个请求可能同时“花掉”同一份 Token。
-
-Lua 后：
+有 Lua：
 
 ~~~text
-Request A
-↓
-EVAL
-┌───────────────┐
-│ READ          │
-│ REFILL        │
-│ CHECK         │
-│ UPDATE        │
-└───────────────┘
-↓
-完成
-
-Request B
-↓
-才能读取 A 更新后的状态
+A Script
+Read → Compute → Write → Return
+──────── 完整结束 ────────
+B Script
+Read A 更新后的 State
+→ 再决定
 ~~~
 
-Redis 官方说明 Lua Script 的执行具有原子性，脚本运行期间其他服务器活动不会穿插进脚本执行。[2]
+所以 Lua 的核心价值是 Correctness；减少网络往返只是附加收益。[4]
 
-#### <u>2. Lua 原子执行意味着脚本必须短小且可预测</u>
+#### <u>4. Lua 原子执行也意味着脚本必须短小</u>
 
-原子性的代价是：
+脚本执行期间其他命令不能正常穿插。
+
+所以：
 
 ~~~text
-Script 执行时间过长
+大循环
+大 Key 全量扫描
+复杂 CPU 运算
+不可控递归
+~~~
+
+会直接扩大 Redis 延迟。
+
+适合 Lua 的逻辑通常应当：
+
+~~~text
+Key 数量有限
+数据量有限
+计算简单
+执行时间可预测
+~~~
+
+### 【WATCH 与 Lua 都能处理 Read-Modify-Write，但控制位置不同】
+
+| 维度 | WATCH | Lua |
+| --- | --- | --- |
+| 计算位置 | Client | Redis Server |
+| 冲突处理 | EXEC 失败后 Retry | Script 内直接串行执行 |
+| 适合 | Client 侧复杂计算、低冲突 | 小而确定的服务器端状态逻辑 |
+| 网络往返 | 通常更多 | 一次 EVAL 可完成 |
+| 长计算风险 | Client 承担 | 会阻塞 Redis |
+
+所以不是“Lua 永远比 WATCH 好”，而是看计算应该放在哪里。
+
+### 【Redis Atomic Execution 与 SQL ACID Atomicity 不是同一层概念】
+
+“原子”这个词容易混淆。
+
+Redis 中常说：
+
+~~~text
+单 Command 原子
+Lua Script 原子
+MULTI / EXEC 执行不可穿插
+~~~
+
+重点是：
+
+> 执行过程中不会被其他 Client 的命令插入。
+
+SQL ACID 中 Atomicity 更强调：
+
+~~~text
+Transaction
+要么全部成功
+要么全部失败
+~~~
+
+并配合：
+
+~~~text
+Durability
+Isolation
+Consistency
+Rollback / Recovery
+~~~
+
+所以不能把：
+
+~~~text
+Redis Lua 原子
+~~~
+
+直接理解成：
+
+~~~text
+等价 PostgreSQL ACID Transaction
+~~~
+
+#### <u>1. MULTI / EXEC 没有 SQL 式通用 Rollback</u>
+
+Redis Transaction 中需要区分：
+
+~~~text
+排队阶段错误
 ↓
-其他命令等待
+可能让 EXEC 整体不执行
+
+EXEC 运行阶段错误
 ↓
-Redis Latency 上升
+已经成功的前面命令不会自动撤销
 ~~~
 
-因此 Lua 适合：
+这也是 Redis 官方强调“不需要事务回滚”的设计语义之一。[23]
+
+#### <u>2. Lua 也不等于 SQL Rollback</u>
+
+Lua 可以避免并发穿插，但如果脚本执行过程中出现运行错误，不能把它简单理解成“像数据库事务一样自动回滚此前所有副作用”。
+
+因此 Script 设计应该：
+
+- 参数尽量提前校验；
+- 避免容易在中途报错的命令组合；
+- 保持逻辑简单；
+- 明确失败后的状态语义。
+
+### 【Redis 不等于不需要一致性，而是复杂不变量更多由数据模型和应用设计】
+
+Redis 很擅长：
 
 ~~~text
-少量 Key
-简单计算
-条件更新
-有限循环
+Counter
+TTL
+Set Membership
+Sorted Window
+Cache
+Rate Limit
+Session
+Coordination State
 ~~~
 
-不适合：
+但复杂业务不变量如果涉及：
 
 ~~~text
-大规模数据扫描
-复杂 CPU 计算
-不受控循环
+多实体
+长期事实
+复杂关系
+强审计
+多表事务
 ~~~
 
-### 【Redis Functions 是服务端逻辑的另一种管理方式】
+通常更适合关系数据库承担 Source of Truth。
 
-Redis Functions 从 Redis 7 开始提供服务器端函数管理能力，官方将其定位为相比反复发送 EVAL Script 更可管理的方案。[3]
-
-入门阶段可以先建立：
+因此 Redis 并发设计最终要回到：
 
 ~~~text
-EVAL
-适合应用直接执行 Lua Script
-
-EVALSHA
-先加载 Script，再按 SHA 调用，减少重复传输
-
-Redis Functions
-把服务端逻辑作为 Redis 中受管理的函数库
+状态是否应该在 Redis？
+↓
+需要什么原子边界？
+↓
+单 Command / MULTI / WATCH / Lua 哪个足够？
+↓
+失败后如何恢复？
 ~~~
 
-具体选型取决于部署版本、脚本复用程度和运维方式。无论使用哪一种，核心问题仍然是：
-
-> 哪些状态变化必须在 Redis 内部形成一个不可被并发请求穿插的执行边界？
-
----
+而不是为了使用 Lua 或事务而强行把复杂业务状态搬进 Redis。
 
 ## 4. Redis 的工程价值通过一组状态模式体现出来
 
