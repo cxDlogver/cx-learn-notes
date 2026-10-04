@@ -1,64 +1,29 @@
 # Agent 故障恢复通过失败分类、安全重试与业务对账保护执行一致性
 
-**原问题：** Agent 在执行过程中发生失败时，应该如何构建可靠执行与故障恢复体系？
+Agent 故障恢复不能从“失败以后 Retry 几次”开始，因为**调用失败并不等于真实业务动作没有发生**。正确的恢复顺序是先判断失败性质和副作用状态，再判断是否允许安全重放，最后选择 Retry、Reconciliation、Compensation 或停止。
 
-**回答要点：**
-
-- 先设定执行预算和超时边界，失败后区分临时异常、当前条件下的确定错误、业务拒绝和结果未知。
-- 只对可安全重放的操作进行有限重试和退避；局部失败优先在最小范围恢复，耗尽策略后再降级或升级。
-- 恢复从可信状态继续，可复用已成功节点的持久写入，但 Checkpoint 本身不保证外部业务恰好执行一次。
-- 幂等由服务端或下游操作接口实际实施；结果未知先对账，或在可靠幂等保护下复用原操作键重放。
-- 补偿通过业务动作处理已产生的副作用，不能保证物理回滚或抹去所有影响；拒绝不能由 Fallback 绕过权限。
-
-本题与[Agent System 研发知识梳理](<../A-Agent-System研发知识梳理.md>)和[Agent 完整学习教程](<../A-Agent学习教程.md>)中的故障分流与恢复部分相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-原始资料中这一问题出现两版。这里以第一版为骨架，合入第二版的重试上下文、成功节点写入复用和 Saga 幂等要求；相同解释不重复保存。
-
-这个问题不能只理解成“Agent 失败以后重试几次”。真正需要解决的是：
-
-> **当 Model、Tool、Workflow 或外部系统发生异常时，系统怎样判断失败是什么性质、是否可以安全重试、任务应该从哪里继续，以及怎样保证已经发生的真实业务操作不会因为恢复过程被重复执行。**
-
-因此，Agent Reliable Execution（可靠执行）应该按照下面这条链路理解：
+临时异常、确定性错误、业务拒绝和结果未知需要不同策略。只有能够确认安全重放时才进行有限 Retry；如果结果未知，就先查询真实业务状态；确认动作未执行后才能重放，确认已经执行则复用结果，必要时再按照业务语义执行 Compensation。恢复位置由 State / Checkpoint 提供，但外部副作用的一致性仍要依赖 Idempotency 和 Reconciliation。
 
 ```text
-Action
-执行一个步骤
-   ↓
-Execution Boundary
-Timeout / Budget
-   ↓
-Error / Timeout / Unknown Result
-   ↓
+Execution Failure
+        ↓
 Failure Classification
-判断失败性质
-   ↓
-Recovery Decision
-Retry / Fallback / Resume /
-Reconcile / Compensation / Stop
-   ↓
-State & Checkpoint
-保存或恢复执行状态
-   ↓
-Side-effect Safety
-Idempotency / Operation Record
-   ↓
-继续后续 Workflow
+临时异常 / 确定错误 / 业务拒绝 / 结果未知
+        ↓
+Replay Safety
+        ├─ 可安全重放 → Retry + Backoff
+        └─ 无法确认
+             ↓
+        Reconciliation
+             ├─ 未执行 → 安全重放
+             └─ 已执行 → 复用结果 / Compensation
+        ↓
+State / Checkpoint
+        ↓
+Resume
 ```
 
-整个体系的核心不是 Retry，而是：
-
-```text
-Detect
-↓
-Classify
-↓
-Decide
-↓
-Recover
-↓
-Reconcile
-```
-
+后文沿“失败检测 → 分类 → 可重放性判断 → 恢复策略 → 状态恢复 → 业务一致性”展开。需要始终保持两个边界：Checkpoint 不能保证 Exactly-once；权限或业务拒绝也不能通过 Retry、Fallback 绕过。
 ## 1. 执行预算与失败分类为故障处理建立边界
 
 ### 【可靠执行的目标：失败以后系统仍然保持可控】
