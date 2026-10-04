@@ -1,64 +1,131 @@
 # Monorepo 工程体系
 
-Monorepo（Monolithic Repository，单体代码仓库）是一种**多项目代码仓库组织策略**：多个具有协作关系的工程项目共同存放在一个 Git Repository（代码仓库）中，再通过 Workspace、依赖管理、任务编排、构建发布和 CI 治理形成完整的多项目工程体系。
+Monorepo（Monolithic Repository，单体代码仓库）是一种**多项目代码仓库组织策略**：多个具有协作关系的工程项目共同存放在一个 Git Repository（代码仓库）中，再通过 Workspace、依赖管理、任务编排、构建发布和工程治理形成完整的多项目工程体系。
 
-理解 Monorepo 时，不应从 pnpm、Nx、Turborepo 等工具名开始，而应先回答六个问题：
+理解 Monorepo 时，不应从 pnpm、Nx、Turborepo 等工具名开始，而应先理解两条相互配合的知识线：
+
+- **主生命周期**：多个 Project 怎样从“被放进同一个仓库”逐步走到“形成可运行或可发布的产物”。
+- **工程治理（Engineering Governance）**：当 Project、依赖和 Task 数量增加后，怎样控制依赖边界、减少无效执行、约束 CI 和发布过程，使主生命周期仍然可维护。
+
+主生命周期回答的是“工程怎样向前流动”，工程治理回答的是“规模扩大后怎样持续约束和优化这条链路”。二者不是前后两个阶段，而是主流程与横切能力的关系。
+
+可以先用六个问题建立整体认知：
 
 ```text
-为什么多个项目放在一个仓库？
+为什么多个 Project 要放在同一个 Repository？
         ↓
-包管理器怎样知道仓库里有哪些项目？
+Workspace 怎样发现这些 Project？
         ↓
-这些项目之间怎样建立代码依赖？
+Project 之间怎样声明和解析代码依赖？
         ↓
-多个项目的 dev / build / test 怎样执行？
+dev / build / test 等 Task 怎样建立执行关系？
         ↓
-不同项目最终生成什么产物、怎样发布？
+Task 完成后产生什么 Artifact，怎样 Release / Deploy 到 Runtime？
         ↓
-项目数量增加后如何控制 CI、构建和发布成本？
+当 Project、依赖和 Task 增多后，
+怎样通过 Boundary / Affected / Cache / CI / Ownership 控制工程复杂度？
 ```
 
-因此需要把 **Monorepo 主生命周期** 与 **横切治理能力** 分开理解：
+前五个问题构成 Monorepo 的主生命周期，第六个问题对应贯穿主生命周期的工程治理。
+
+### 【Monorepo 主生命周期描述代码怎样从仓库组织走向运行环境】
 
 ```text
-                 Monorepo Main Flow
-
 Repository / Project
+确定哪些工程共同存放，以及每个 Project 的职责边界
         ↓
 Workspace / Dependency
+发现 Project，并声明、解析 Project 之间的代码依赖
         ↓
 Project Graph
+把“谁依赖谁”组织成可分析的项目依赖关系
         ↓
-Task Graph
+Task Model / Task Graph
+把 dev / build / test 等任务及其前后依赖组织成执行关系
         ↓
 Build Artifact
+把源码转换成可以继续验证、分发或运行的构建产物
         ↓
 Release / Deploy
+为产物建立版本和发布决策，并把应用产物送入目标环境
         ↓
 Runtime
-
-
-             Cross-cutting Governance
-
-Dependency Boundary ───────→ Project / Dependency
-Affected Analysis ─────────→ Project Graph / CI
-Task Cache ────────────────→ Task Graph / Execution
-CI ────────────────────────→ Test / Build / Release
-Release Governance ────────→ Artifact / Release
-Ownership / Policy ────────→ Repository / Project
+产物最终以 Browser、Process、Container、Service 等形式运行
 ```
 
-前五类模型描述“代码从仓库组织走向运行环境”的主链；Engineering Governance 不是 Runtime 之后才发生的第六个阶段，而是仓库规模扩大后横向作用于 Project、Dependency、Task、Artifact 与 Delivery Flow 的治理层。
+这条主线中的每一层都会为下一层提供输入：
 
-因此：
+| 层级 | 上游输入 | 这一层解决的问题 | 输出给下一层 |
+| --- | --- | --- | --- |
+| Repository / Project | 业务与工程拆分结果 | 哪些工程放在同仓、每个 Project 的职责边界是什么 | 一组可独立管理的 Project |
+| Workspace / Dependency | Project 集合与 Package Manifest | 包管理器怎样发现 Project，Project 之间怎样建立代码依赖 | 可解析的 Project 依赖关系 |
+| Project Graph | 已声明的 Dependency | 整个仓库“谁依赖谁”，变化可能向哪里传播 | 可用于 Task、Affected、Boundary 分析的依赖图 |
+| Task Model / Task Graph | Project Graph + Task 定义 / Task Rule | build、test、dev 应执行什么，哪些任务必须先完成 | 可被 Scheduler 执行的任务关系 |
+| Build Artifact | Task 执行结果 | 源码最终生成什么可验证、可分发或可运行的产物 | Package、静态资源、Server Bundle、Image 等 Artifact |
+| Release / Deploy | 已生成并验证的 Artifact | 哪个版本可以发布，以及应用产物怎样进入目标环境 | 已部署的版本 |
+| Runtime | 已部署产物 + 运行环境 | 产物以什么进程、容器、服务或浏览器代码形式真正运行 | 实际运行的系统 |
+
+因此这些概念不是一组并列术语。Repository 决定管理边界，Workspace 把 Project 变成可管理集合，Dependency 形成 Project Graph，Project Graph 再参与 Task Graph 和影响分析，Task 执行产生 Artifact，Artifact 经过 Release / Deploy 最终进入 Runtime。
+
+### 【工程治理横向约束主生命周期中的多个阶段】
+
+工程治理（Engineering Governance）表示：**不改变主生命周期的基本阶段，而是在多个阶段同时增加边界、增量执行、质量门禁、所有权和发布约束。**
 
 ```text
-Main Lifecycle
-Repository → Workspace → Dependency → Task → Artifact → Release / Deploy → Runtime
-        ↑
-        │
-Governance 横向作用于多个阶段
+Repository / Project
+      │
+      ├── Ownership / Policy
+      │     明确代码归属、Review 与仓库规则
+      │
+Workspace / Dependency
+      │
+      ├── Dependency Boundary
+      │     约束哪些 Project 可以依赖哪些 Project
+      │
+Project Graph
+      │
+      ├── Affected Analysis
+      │     根据代码变化和依赖传播缩小受影响范围
+      │
+Task Graph / Execution
+      │
+      ├── Task Cache
+      │     对相同输入复用已有计算结果
+      │
+      └── CI / Scheduler
+      │     决定任务如何验证、排序、并行和进入下一阶段
+      │
+Artifact / Release
+      │
+      └── Release Governance
+            约束版本、发布条件和产物推进
 ```
+
+这说明工程治理不是“Runtime 完成后的最后一步”。例如：
+
+- Dependency Boundary 在建立和维护 Project Dependency 时就发挥作用；
+- Affected Analysis 依赖 Project Graph 判断一次变更会影响哪些 Project；
+- Task Cache 与 Scheduler 直接作用于 Task 执行；
+- CI 可以贯穿 lint、test、build、Artifact 和 Release Gate；
+- Release Governance 作用于 Artifact、Version、Release Decision，而不是等系统运行后再开始。
+
+所以 Monorepo 的整体知识框架应理解为：
+
+```text
+主生命周期：
+Repository
+→ Workspace / Dependency
+→ Project Graph
+→ Task Graph
+→ Artifact
+→ Release / Deploy
+→ Runtime
+
+横切治理：
+Boundary / Affected / Cache / CI / Ownership / Release Governance
+分别作用于主生命周期中的对应阶段
+```
+
 
 ---
 
@@ -659,15 +726,24 @@ Docker Compose 的 `depends_on`、`healthcheck` 等机制用于描述 Runtime Se
 
 ---
 
-## 6. Engineering Governance 横向作用于主生命周期并控制规模化成本
+## 6. Engineering Governance 通过依赖、任务和交付治理控制规模化成本
 
-前五章建立的是 Monorepo 从 Repository 到 Runtime 的主生命周期。本章不再增加一个新的线性阶段，而是回到整条链路，讨论仓库规模扩大后如何利用 Project Graph、Task Graph、CI 与策略约束进行横向治理。
+工程治理（Engineering Governance）解决的是 Monorepo 扩大后的第二类问题：主生命周期本身已经能够运行，但 Project、Dependency 和 Task 越来越多以后，如果每次变化都全仓执行、依赖可以任意穿透、发布没有统一约束，工程成本会随规模快速上升。
+
+它主要围绕三类对象建立治理：
 
 ```text
-Repository → Dependency → Task → Artifact → Release / Deploy → Runtime
-     ↑           ↑          ↑          ↑              ↑
-     └────────── Engineering Governance ──────────────┘
+Project / Dependency
+→ 控制依赖边界和变化传播范围
+
+Task / Execution
+→ 控制哪些任务需要执行、哪些结果可以复用、任务怎样调度
+
+Artifact / Delivery
+→ 控制验证、版本、Release 与发布条件
 ```
+
+因此工程治理不是一个独立于主流程的“额外系统”，而是利用前面已经建立的 Project Graph、Task Graph 和 Artifact Model，对主生命周期中的关键阶段施加约束和优化。
 
 小型 Monorepo 可以直接执行：
 
@@ -872,42 +948,75 @@ Shared Infrastructure / Protocol
 
 ## 8. 完整知识框架通过主生命周期与横切治理快速复述
 
-快速复习 Monorepo 时，不需要先记住工具名。先复述 Repository → Workspace / Dependency → Task → Artifact / Release → Runtime 主生命周期，再说明 Governance 怎样横向作用于这些阶段：
+复习 Monorepo 时，可以先回答“工程怎样向前流动”，再回答“规模扩大后怎样控制这条链路”。
 
-| 层级 | 核心问题 | 常见机制 |
+主生命周期从 Repository 开始，到 Runtime 结束：
+
+| 主生命周期层级 | 核心问题 | 常见机制 |
 | --- | --- | --- |
-| Repository / Project | 为什么放在同仓、Project 边界在哪里？ | Git、Repository、Application、Library |
-| Workspace / Dependency | 包管理器怎样发现 Project，谁依赖谁？ | Workspace、package.json、workspace Protocol、Project Graph |
-| Task | dev/build/test 怎么执行？ | Scripts、Task Graph、Scheduler、Nx、Turborepo |
-| Artifact / Release | 构建以后得到什么、怎样发布？ | Build Artifact、Package、SemVer、Release |
-| Runtime / Deployment | 产物最终在哪里运行？ | Process、Container、Service、Compose/Kubernetes |
-| Governance（横切层） | 规模扩大以后怎样控制成本并保持边界？ | Boundary、Affected、Cache、CI、Ownership、Release Governance |
+| Repository / Project | 为什么放在同仓、Project 边界在哪里？ | Git Repository、Application、Library、Project Boundary |
+| Workspace / Dependency | 包管理器怎样发现 Project，谁依赖谁？ | Workspace、package.json、Workspace Protocol、Dependency Resolution |
+| Project Graph | 已有 Dependency 怎样形成全仓关系模型？ | Dependency Graph、Dependencies、Dependents |
+| Task Model / Task Graph | dev / build / test 怎么组织和执行？ | Scripts、Task Rule、Task Graph、Scheduler、Nx、Turborepo |
+| Artifact / Release | 构建以后得到什么、怎样形成可发布版本？ | Build Artifact、Package、Image、SemVer、Release |
+| Runtime / Deployment | 应用产物最终在哪里、以什么形式运行？ | Browser、Process、Container、Service、Compose / Kubernetes |
 
-把六层串起来就是：
+把主生命周期串起来：
 
 ```text
 多个 Project 进入一个 Repository
         ↓
-Workspace 发现和管理 Project
+Workspace 发现这些 Project
         ↓
-Package Manifest 建立 Dependency
+Package Manifest 声明 Project 之间的 Dependency
         ↓
-Project Graph 描述代码关系
+Project Graph 描述全仓代码依赖关系
         ↓
-Task Graph 描述执行关系
+Task Rule 在 Project Graph 基础上形成 Task Graph
         ↓
-Build 产生不同 Artifact
+Scheduler 执行 build / test / dev 等 Task
         ↓
-Release / Deploy 进入不同 Runtime
+Build 产生 Package / Static Bundle / Server Bundle / Image 等 Artifact
         ↓
-进入不同 Runtime
-
-横切治理：
-Dependency Boundary / Affected / Cache / CI / Ownership / Release Governance
-作用于上述多个阶段
+Release 为 Artifact 建立版本和发布决策
+        ↓
+Deploy 把应用 Artifact 放入目标环境
+        ↓
+Browser / Process / Container / Service 进入 Runtime
 ```
 
-这套“主生命周期 + 横切治理”模型比“pnpm + Nx + Turbo + Docker”更稳定，因为工具会变化，而工程问题及其作用边界长期存在。
+横切治理不再增加新的生命周期节点，而是分别控制这些阶段：
+
+| 治理能力 | 作用位置 | 解决的问题 |
+| --- | --- | --- |
+| Ownership / Policy | Repository / Project | 谁负责哪些代码，哪些 Review / Policy 必须满足 |
+| Dependency Boundary | Workspace / Dependency / Project Graph | 哪些 Project 可以依赖哪些 Project，避免任意耦合 |
+| Affected Analysis | Git Change + Project Graph | 本次变化真正影响哪些 Project / Task |
+| Task Cache | Task Execution | 相同输入的 Task 是否可以直接复用已有结果 |
+| CI / Scheduler | Task / Artifact / Release | Task 怎样验证、排序、并行以及何时允许进入下一阶段 |
+| Release Governance | Artifact / Release | 版本、Changelog、Publish、Release Gate 怎样统一治理 |
+
+最终可以形成一个稳定的判断顺序：
+
+```text
+先看代码组织：
+Repository / Project
+
+再看代码关系：
+Workspace / Dependency / Project Graph
+
+再看执行关系：
+Task Model / Task Graph / Scheduler
+
+再看交付结果：
+Artifact / Release / Deploy / Runtime
+
+最后把规模化问题挂回对应阶段：
+Boundary / Affected / Cache / CI / Ownership / Release Governance
+```
+
+这套框架的重点不是记住 pnpm、Nx、Turborepo 或 Docker，而是能够判断一个 Monorepo 问题究竟发生在**仓库边界、依赖关系、任务执行、产物交付、运行边界还是规模化治理**中的哪一层，再选择对应工具和机制解决。
+
 
 ---
 
