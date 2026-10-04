@@ -1,27 +1,25 @@
 # Agent 研发重点从提示词技巧扩展到上下文组织与可靠运行
 
-Agent 研发从 Prompt 扩展到 Context、Runtime / Harness 与可靠运行，不是一个新概念替代旧概念的过程，而是**系统目标从“让模型生成合适答案”逐渐扩大到“让系统在真实环境中可靠完成任务”后，工程问题不断增加的结果。**
+## 回答要点
 
-Prompt 首先解决目标和约束怎样表达；当任务需要更多信息时，问题转向这一轮模型应该看到什么，因此出现 Context Engineering；当模型还要调用 Tool 并根据结果继续执行时，又需要 Runtime / Harness 管理状态、能力、权限、恢复和观测；进入真实业务后，长期任务和外部副作用继续要求 Workflow、幂等、对账、持久化和验收。
+Agent 研发重点的变化，本质上是**任务目标扩大后，工程关注点从“模型如何回答”逐步扩展到“系统如何完成任务并可靠交付结果”**。Prompt、Context、Loop、Runtime / Harness 和可靠性机制不是简单的技术代际，而是逐层解决新的系统问题。
+
+1. **Prompt 解决意图表达。** 目标、角色、约束、输出格式和必要示例仍需明确，但重点从技巧化模板回到准确表达任务和边界。
+2. **Context 解决每轮模型应该知道什么。** 多轮任务还需要 History、State、Memory、Tool Result、检索结果和业务数据，因此要进行选择、检索、压缩和按需加载。
+3. **Tool 与 Loop 解决如何从生成答案走向执行任务。** Tool 让模型影响外部环境；Loop 让模型根据 Observation 继续判断和推进。
+4. **Runtime / Harness 解决执行如何被工程化承载。** 状态管理、Tool Registry、权限、Sandbox、Checkpoint、Trace、中断恢复等能力把动态决策过程变成可运行、可治理的系统。
+5. **Workflow 与持久化解决跨阶段、长时间任务。** 外层 Workflow 固定业务阶段，State、Artifact、Checkpoint 等保存可信进度。
+6. **幂等、对账、验收和可观测解决生产可靠性。** 模型声称成功不等于真实业务成功，必须独立验收，对未知状态进行 Reconciliation，对副作用建立 Idempotency，并通过 Trace / Eval 验证质量。
+7. **这些概念不是前者被后者淘汰。** Prompt 是 Context 的组成部分，Context 服务每次 Model Call，Loop 运行于 Runtime；所谓范式演进更准确地说是工程视角从模型交互扩展到完整系统。
 
 ```text
-怎样让模型理解任务？
-→ Prompt
-        ↓
-模型完成任务还缺哪些有效信息？
-→ Context
-        ↓
-怎样让模型行动并根据结果继续判断？
-→ Tool + Agent Loop
-        ↓
-谁承载状态、执行、权限、恢复和观测？
-→ Runtime / Harness
-        ↓
-真实业务怎样长期可靠运行？
-→ Workflow + Idempotency + Reconciliation + Persistence + Verification
+Prompt：表达任务
+→ Context：组织有效信息
+→ Tool + Loop：执行并持续决策
+→ Runtime + Harness：工程化承载
+→ Workflow + Persistence：长期推进
+→ Verification + Idempotency + Reconciliation + Observability：可靠交付
 ```
-
-因此后文重点不是追逐 Prompt Engineering、Context Engineering、Harness Engineering 等名称，而是分析每一层新增能力究竟解决了前一层无法解决的什么问题，以及这些能力在实际 Agent 系统中如何协作。
 ## 1. Prompt 清楚表达目标与约束并成为基础能力
 
 Prompt Engineering 主要解决的是：
