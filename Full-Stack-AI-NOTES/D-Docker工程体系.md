@@ -87,6 +87,8 @@ Application Process
 
 Container 自身不是业务逻辑执行者，真正处理 HTTP、消费任务或执行数据库迁移的是 Container 内的 Process。
 
+如果这个 Process 是 Node.js 应用，则 Container 提供外部隔离与运行环境，Node.js Runtime 继续负责 Process 内部的 JavaScript 执行、Event Loop、I/O 与 Worker Thread 等机制。对应运行时知识见 [Node.js Runtime 完整知识体系](./N-NodeJS核心总结.md)。
+
 ### 【Container 与 Virtual Machine 的隔离层不同】
 
 Virtual Machine（虚拟机）通常包含独立 Guest OS；Container 主要隔离 Process、Filesystem、Network 等运行资源，并共享 Host Kernel。
