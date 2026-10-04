@@ -1,123 +1,646 @@
-# 前端单元测试、集成测试与E2E测试笔记（面试版）
+# 前端测试体系从验证边界到工程质量门禁
 
-## 单元测试
+前端测试解决的不是“应该使用 Vitest、Cypress 还是 Playwright”，而是：**面对一个需求、一个代码单元或一条业务链路，需要在什么边界、什么环境、使用多真实的依赖来验证什么结果，才能以合理成本建立足够的交付信心。**
 
-### 核心定义
+因此测试体系不能从工具名开始，而应该先建立完整验证链：
 
-单元测试是以最小功能单元（如方法、组件）为测试对象，验证其在不同输入下的逻辑正确性，确保单个单元的输出符合预期。核心原则是“只测当前单元”，隔离外部依赖，聚焦自身逻辑的准确性。
+~~~text
+Requirement / Risk
+        ↓
+确定需要验证什么行为
+        ↓
+选择 Test Boundary
+Unit / Component / Integration / E2E
+        ↓
+选择 Test Environment
+Node / DOM Simulation / Real Browser / Full Environment
+        ↓
+决定 Dependency Fidelity
+Real Dependency / Fake / Stub / Mock
+        ↓
+设计 Test Case
+Scenario → Fixture → Action → Assertion
+        ↓
+执行并产生 Test Result / Evidence
+        ↓
+CI Quality Gate
+        ↓
+Deployment / Smoke / Production Verification
+~~~
 
-**对应问题**：前端单元测试的核心是什么？测试对象主要有哪些？
+这条链中的每一层解决的问题不同：
 
-### 前端常见测试对象
+| 层级 | 输入 | 解决的问题 | 输出 |
+| --- | --- | --- | --- |
+| Requirement / Risk | 需求、缺陷、变更、风险 | 哪些行为必须被证明正确 | Verification Goal |
+| Test Boundary | Verification Goal | 测一个函数、组件、模块协作还是完整系统 | Unit / Component / Integration / E2E Scope |
+| Test Environment | 被测边界 | 在 Node、模拟 DOM、真实浏览器还是完整环境执行 | Execution Environment |
+| Dependency Fidelity | 外部依赖 | 哪些依赖保持真实，哪些需要替换以控制成本与稳定性 | Real / Fake / Stub / Mock Dependency |
+| Test Case Design | 行为和边界 | 如何稳定地准备条件、执行动作并判断结果 | Fixture / Action / Assertion |
+| Test Execution | Test Case | 实际结果是否满足预期 | Test Result / Evidence |
+| CI / Delivery | Test Result | 哪些验证必须通过才能继续交付 | Quality Gate |
 
-- **工具函数**：用于处理通用逻辑的纯函数，如格式化时间（formatDate）、金额转换（formatMoney）、数据过滤（filterList）等，这类函数输入输出明确，易测试。
+因此：
 
-- **业务函数**：与业务逻辑强相关的函数，如权限判断（checkPermission）、表单校验（validateForm）、状态计算（calculateTotal）等。
+~~~text
+Test Type
+≠
+Test Tool
 
-- **组件中的纯逻辑**：组件内部不依赖外部环境的逻辑，如按钮禁用状态判断（isButtonDisabled）、文案切换逻辑（getButtonText）等。
+是否 Mock
+≠
+测试类型的唯一判断标准
 
-- **Hooks / composables**：前端复用逻辑的封装，如状态管理Hook（useCount）、请求Hook（useRequest），测试其状态更新、依赖触发是否符合预期。
+运行在真实 Browser
+≠
+一定就是 E2E
+~~~
 
-**对应问题**：前端开发中，哪些内容适合做单元测试？请举例说明。
+测试类型首先由**被测边界和需要建立的信心**决定，再根据执行环境、依赖真实性、反馈速度和维护成本选择工具。
 
-### 常用工具
+## 1. 前端测试通过不同验证边界逐层建立交付信心
 
-前端单元测试主流工具为**Vitest**，其特点是轻量、快速，与Vite无缝集成，支持TypeScript，语法与Jest类似，上手成本低，适合现代前端项目（Vue、React等）。
+### 【测试的核心是验证可观察结果而不是执行代码本身】
 
-**对应问题**：前端单元测试常用工具是什么？它有哪些优势？
+自动化测试不是“把代码运行一遍”，而是建立：
 
-### 测试模板（Vitest）
+~~~text
+Known Preconditions
+↓
+Action / Input
+↓
+System Behavior
+↓
+Observable Result
+↓
+Assertion
+~~~
 
-基础模板（简单函数测试）：
+例如登录需求真正需要证明的是：
 
-```js
+~~~text
+Given 用户位于登录页并拥有有效凭据
+When 提交登录表单
+Then 登录成功
+And 进入目标页面
+And 页面显示已登录状态
+~~~
+
+测试真正关注的是外部可观察行为是否成立，而不是某个内部函数有没有被调用固定次数。实现重构后，只要业务行为不变，稳定的行为测试通常仍应成立。
+
+### 【测试边界越大能够覆盖的协作越多但执行成本也通常越高】
+
+可以先建立一条边界扩展链：
+
+~~~text
+Function / Class
+↓
+Component
+↓
+Multiple Modules
+↓
+Application
+↓
+Frontend + Backend + Database + Environment
+~~~
+
+对应常见测试层：
+
+| 测试层 | 主要边界 | 常见目标 |
+| --- | --- | --- |
+| Unit Test | 函数、类、Hook、独立逻辑单元 | 快速验证局部规则 |
+| Component Test | 单个 UI Component 及其直接交互 | 验证渲染和用户交互 |
+| Integration Test | 多个模块、组件、状态、路由、请求层协作 | 验证组合后的契约和状态流 |
+| E2E Test | 从用户入口到系统主要依赖的完整业务链 | 验证系统整体可用性 |
+
+边界扩大通常意味着：
+
+~~~text
+更多真实模块参与
+→ 更高 Fidelity
+→ 更接近真实用户链路
+→ 更高环境和数据成本
+→ 失败定位范围更大
+~~~
+
+因此完整测试策略不是“全部写成 E2E”，而是让不同层测试承担不同风险。
+
+### 【工具不能决定测试类型】
+
+同一个工具可以承担不同测试层。
+
+Vitest 可以在 Node、jsdom / happy-dom 等环境运行，也提供 Browser Mode，让测试在真实 Browser 中执行。[[1]](https://vitest.dev/guide/browser/)
+
+Cypress 官方把 Component Testing 与 E2E Testing 都作为正式测试类型；其能力并不限于“集成测试工具”。[[2]](https://docs.cypress.io/app/core-concepts/testing-types)
+
+Playwright 常用于 Browser / E2E Testing，但也可以通过 Route Mock 等能力缩小真实依赖范围。
+
+所以选择顺序应该是：
+
+~~~text
+先定义需要验证的系统边界
+↓
+再选择依赖真实性
+↓
+再选择运行环境
+↓
+最后选择合适工具
+~~~
+
+而不是：
+
+~~~text
+Vitest = Unit
+Cypress = Integration
+Playwright = E2E
+~~~
+
+## 2. Unit、Component、Integration 与 E2E 描述不同测试边界
+
+### 【Unit Test 验证最小逻辑单元在明确输入下的行为】
+
+Unit Test（单元测试）以较小的逻辑单元为测试边界，例如纯函数、业务函数、Class、Hook / Composable 或可以独立验证的逻辑模块。
+
+单元测试的目标是：
+
+~~~text
+Small Boundary
++
+Fast Feedback
++
+Deterministic Input
+↓
+快速验证局部逻辑
+~~~
+
+“单元测试需要 Mock 所有外部依赖”不是绝对定义。是否替换依赖应看这个依赖是否属于当前需要验证的边界，以及真实依赖是否会降低测试可控性。
+
+前端常见测试对象包括：
+
+- **工具函数**：formatDate、formatMoney、filterList 等输入输出明确的函数；
+- **业务函数**：checkPermission、validateForm、calculateTotal 等规则；
+- **组件中的纯逻辑**：按钮禁用、文案计算、状态转换；
+- **Hooks / Composables**：状态更新、依赖变化和副作用封装。
+
+Vitest 是现代前端常见 Test Runner 之一，但“使用 Vitest”并不自动说明测试属于 Unit Test。
+
+基础示例：
+
+~~~js
 import { describe, it, expect } from 'vitest'
-// 引入待测试函数
 import { sum } from './sum'
 
-// 测试套件：描述一组相关测试（此处测试sum函数）
 describe('sum', () => {
-  // 具体测试用例：描述测试场景和预期结果
   it('should return 3 when input is 1 and 2', () => {
-    // 断言：验证函数输出符合预期
     expect(sum(1, 2)).toBe(3)
   })
-  
-  // 可补充更多测试用例（边界值、异常场景）
+
   it('should return 0 when input is 0 and 0', () => {
     expect(sum(0, 0)).toBe(0)
   })
-  
-  it('should return negative number when input has negative value', () => {
+
+  it('should support negative numbers', () => {
     expect(sum(-1, 2)).toBe(1)
   })
 })
-```
+~~~
 
-简洁模板（快速测试）：
+这段测试的关键不是 Vitest API，而是：
 
-```js
-import { describe, it, expect } from 'vitest'
+~~~text
+Input
+1 + 2
+↓
+sum
+↓
+Observable Output
+3
+↓
+Assertion
+~~~
 
-describe('加法函数', ()=> {
-  it("测试加法函数的基本功能", ()=> {
-    expect(sum(1, 2)).toBe(3)
-  })
-})
-```
+### 【Component Test 直接验证 UI Component 的渲染和交互边界】
 
-**对应问题**：如何用Vitest编写一个简单的单元测试？请写出核心模板和示例。
+Component Test（组件测试）把一个 UI Component 挂载到测试环境，验证组件自身的渲染、状态变化和用户交互。
 
-### mock的核心要点
+例如一个 RegistrationForm 可以验证：
 
-单元测试强调“只测当前单元”，因此需要隔离外部依赖，通过mock（模拟）外部模块的行为，确保测试的可控性、稳定性和可重复性。mock的核心目的不是“偷懒”，而是排除外部干扰，聚焦当前单元的逻辑。
+- 不合法输入是否展示校验错误；
+- 勾选某个选项后是否显示额外字段；
+- Submit Button 是否按状态 Enable / Disable；
+- 用户输入后页面是否展示正确内容。
 
-#### 常见需要mock的内容
+Cypress 官方将 Component Testing 与 E2E Testing 明确区分：Component Test 直接 Mount Component，而不是通过 URL 启动完整应用。[[2]](https://docs.cypress.io/app/core-concepts/testing-types)
 
-- 接口请求：axios、fetch等，避免真实请求影响测试（如网络异常、接口返回不稳定）。
+因此：
 
-- 路由对象：vue-router、react-router，避免测试过程中真实跳转页面。
+~~~text
+Unit Test
+→ 更关注局部逻辑
 
-- 本地存储：localStorage、sessionStorage，避免测试污染真实存储数据。
+Component Test
+→ 更关注单个 UI Unit 在渲染环境中的行为
+~~~
 
-- 时间与随机数：Date、Math.random()，确保每次测试的输入一致。
+Component Test 可以包含多个内部函数和状态，因此它不一定等价于“组件的 Unit Test”。
 
-- 第三方SDK：如地图SDK、统计SDK，避免依赖外部服务。
+### 【Integration Test 验证多个真实模块组合后的协作关系】
 
-- 全局状态仓库：Vuex、Pinia、Redux，隔离状态影响。
+Integration Test（集成测试）关注多个模块组合后的交互是否成立。
 
-#### mock的核心目的
+前端常见链路：
 
-- 可控：确保测试环境、输入、输出可预测，避免外部因素干扰。
+~~~text
+Form
+↓
+Validation
+↓
+Request Layer
+↓
+State Store
+↓
+Router
+↓
+UI Render
+~~~
 
-- 稳定：无论外部依赖是否可用，测试都能正常执行，结果一致。
+它可能让前端内部模块保持真实，同时替换真实 Backend；也可能直接验证 Frontend + Real API 的某一部分集成。关键是**边界包含多个协作单元**，而不是“是否使用 Cypress”。
 
-- 可重复执行：多次运行测试，结果始终相同，便于回归测试。
+集成测试特别适合发现：
 
-**对应问题**：单元测试中为什么需要mock外部依赖？常见的需要mock的内容有哪些？
+- 模块 Contract 不一致；
+- State Flow 错误；
+- Router 与页面状态不同步；
+- Request Adapter 与 UI 处理不一致；
+- 多个单元独立正确但组合后失败。
 
-## 集成测试
+### 【E2E Test 从用户入口验证系统主要业务链路】
 
-### 核心定义
+E2E Test（端到端测试）从用户可以进入的系统入口出发，尽可能覆盖构成业务结果的真实系统链路。
 
-集成测试聚焦多个模块之间的交互与协作，验证它们组合在一起后是否能正常工作。与单元测试不同，集成测试不刻意隔离所有外部依赖，仅隔离非核心依赖（如真实后端接口），重点测试模块间的对接逻辑。
+典型模型：
 
-前端集成测试通常关注前端内部模块的协作，如“表单提交→接口请求→状态更新→路由跳转→页面渲染”的完整链路。
+~~~text
+Browser User Action
+↓
+Frontend
+↓
+Backend API
+↓
+Business Logic
+↓
+Database / External Dependency
+↓
+Response
+↓
+Frontend Render
+↓
+User-visible Result
+~~~
 
-**对应问题**：前端集成测试的核心是什么？与单元测试的核心区别是什么？
+E2E 通常优先保留核心依赖的真实性，因为目标是验证完整系统是否可以作为一个整体工作。但 E2E 并不要求“世界上所有依赖都绝对不能 Mock”。不可控第三方服务、支付 Sandbox、邮件 Provider 等可以按照测试目标建立替代边界。
 
-### 常用工具
+所以：
 
-前端集成测试主流工具为**Cypress**，其特点是上手简单、API友好，支持模拟用户交互，可轻松拦截接口请求，适合测试前端模块间的协作链路。
+~~~text
+E2E
+= 以完整业务链路为主要验证边界
 
-### 集成测试示例（登录链路）
+不是
+= 一个 Mock 都不能出现
+~~~
 
-以下示例模拟“用户登录→跳转首页→展示欢迎信息”的完整前端链路，mock接口请求，聚焦前端模块协作：
+## 3. Test Case Design 把需求转换成 Fixture、Action 与 Assertion
 
-```js
+### 【Scenario 先描述需要验证的业务行为】
+
+测试用例首先应该回答：
+
+~~~text
+在什么条件下？
+↓
+发生什么动作？
+↓
+应该观察到什么结果？
+~~~
+
+可以使用 Given-When-Then：
+
+~~~text
+Given 用户已打开登录页
+And 测试账号有效
+
+When 用户填写凭据并提交
+
+Then 系统建立登录状态
+And 页面跳转到首页
+And 页面展示当前用户信息
+~~~
+
+BDD 语法不是必须条件，关键是 Test Case 能明确表示前置条件、动作和结果。
+
+### 【Fixture 提供测试开始前需要的稳定数据和状态】
+
+Fixture（测试夹具 / 测试前置数据）是 Test Case 执行所依赖的稳定输入和环境状态，例如：
+
+- 固定 Test User；
+- 一组 Product / Order 数据；
+- Mock API Response；
+- Frozen Time；
+- Feature Flag；
+- Browser Storage State；
+- Database Seed。
+
+完整关系：
+
+~~~text
+Scenario
+↓
+Fixture / Test Data
+↓
+Action
+↓
+Assertion
+↓
+Result / Evidence
+~~~
+
+Fixture 解决的是“测试从什么已知状态开始”，不能与 Mock 简单等同。
+
+### 【Assertion 应验证业务可观察结果】
+
+常见 Assertion 可以分为：
+
+| 类型 | 示例 |
+| --- | --- |
+| Value Assertion | 函数结果为 3 |
+| UI Assertion | Error Message 可见 |
+| Navigation Assertion | URL 进入 /home |
+| Request Assertion | 正确 Request 被发出 |
+| State Assertion | Store / Storage 状态变化 |
+| Negative Assertion | 不应出现某按钮 / 请求 |
+| Contract Assertion | Response Schema 符合要求 |
+
+同一个场景往往需要多个 Assertion 才能证明真正的业务结果。
+
+例如：
+
+~~~text
+点击登录
+↓
+只断言 Request 200
+不足以证明登录成功
+
+还需要根据目标验证
+Route
+UI
+Session State
+后续受保护资源
+~~~
+
+## 4. Test Double 与 Mock 控制依赖但不单独决定测试层级
+
+### 【Test Double 用可控对象替代真实依赖】
+
+Test Double（测试替身）泛指测试中替代真实 Dependency 的对象或行为，常见概念包括 Stub、Fake、Mock、Spy。
+
+入门阶段可以先按目的理解：
+
+| 类型 | 主要目的 |
+| --- | --- |
+| Stub | 返回预设结果 |
+| Fake | 使用简化但可工作的实现 |
+| Spy | 观察调用和参数 |
+| Mock | 用可控行为替换依赖并支持验证 |
+
+具体框架的 API 名称可能不会严格对应理论分类，因此工程中更重要的是说明“替换了什么、为什么替换、会失去什么真实度”。
+
+### 【Mock 主要解决可控性、速度和故障注入】
+
+常见需要控制的 Dependency：
+
+- HTTP API；
+- Router；
+- Local Storage Adapter；
+- Time / Date；
+- Random Number；
+- 第三方 SDK；
+- Analytics；
+- Feature Flag；
+- External Provider。
+
+Mock 的常见目标：
+
+- **可控**：固定输入和返回值；
+- **稳定**：不受网络和外部服务状态影响；
+- **快速**：避免启动昂贵环境；
+- **故障注入**：稳定构造 Timeout、500、Permission Denied 等异常；
+- **可重复**：同样输入得到同样测试条件。
+
+### 【是否 Mock 不能单独决定 Unit、Integration 或 E2E】
+
+例如：
+
+~~~text
+Playwright
+↓
+真实 Browser
+↓
+真实 Frontend
+↓
+Mock Third-party Analytics
+↓
+真实 Backend / Database
+~~~
+
+这个测试仍可能以完整业务链为主要 E2E Boundary。
+
+另一个例子：
+
+~~~text
+Playwright
+↓
+真实 Browser
+↓
+Frontend
+↓
+所有 Backend API 都通过 Route Mock
+~~~
+
+此时验证范围更接近 Browser-level Frontend Integration。
+
+因此分类应该看：
+
+~~~text
+Test Entry
++
+System Boundary
++
+Real Dependency Scope
++
+Execution Environment
++
+Verification Goal
+~~~
+
+而不是只判断：
+
+~~~text
+有 Mock → Integration
+无 Mock → E2E
+~~~
+
+## 5. Test Environment 与工具能力决定测试怎样被执行
+
+### 【Node、DOM Simulation 与 Real Browser 提供不同运行真实性】
+
+前端测试常见环境：
+
+| Environment | 提供能力 | 优点 | 局限 |
+| --- | --- | --- | --- |
+| Node | JavaScript Runtime | 快、适合纯逻辑 | 没有 Browser DOM |
+| jsdom / happy-dom | DOM Simulation | 快、适合大量 UI Logic Test | 不等于完整 Browser |
+| Real Browser | Browser Engine + DOM + Layout / Events | 更接近用户环境 | 启动和维护成本更高 |
+| Full Test Environment | Browser + Backend + Database 等 | 最高业务 Fidelity | 成本最高 |
+
+Vitest Browser Mode 可以直接在 Browser 中运行测试，并通过 Playwright 或 WebdriverIO Provider 支持真实 Browser 执行。[[1]](https://vitest.dev/guide/browser/)
+
+所以 Environment 也是独立维度：
+
+~~~text
+Unit Test 可以运行在 Browser
+Integration Test 可以运行在 Node
+E2E 通常需要 Browser + Application Environment
+~~~
+
+### 【Cypress 同时支持 Component 与 E2E Testing】
+
+Cypress 官方当前把 E2E、Component、API、Accessibility 等作为不同测试能力，其中 Component Testing 直接 Mount Component，E2E 则从 Browser 访问 Application。[[2]](https://docs.cypress.io/app/core-concepts/testing-types)
+
+Cypress 当前支持 Chrome Family、Edge、Firefox，并提供实验性的 WebKit 支持，因此不应再用“Cypress 多浏览器支持明显不如 Playwright”作为无条件结论。[[3]](https://docs.cypress.io/app/references/launching-browsers)
+
+选择 Cypress 时更应该比较：
+
+- Component / E2E Workflow；
+- Debugging Experience；
+- Browser Coverage Requirement；
+- CI Infrastructure；
+- Existing Team Stack。
+
+### 【Playwright 提供多 Browser Engine 与 Browser Automation】
+
+Playwright 支持 Chromium、Firefox、WebKit，并可以通过 Browser Channel 使用部分已安装的 Chrome / Edge。WebKit 覆盖的是 Playwright 提供的 WebKit Build，不应该直接写成“运行真实 Safari”。[[4]](https://playwright.dev/docs/browsers)
+
+Playwright 的核心优势之一是 Browser Automation、Locator、Auto-waiting、Isolation、Trace 等能力，但这些仍然是工具能力，不是 E2E 的定义本身。
+
+## 6. Test Isolation 与 Test Data 保证测试可重复执行
+
+### 【Test Isolation 避免一个 Test Case 污染另一个 Test Case】
+
+Test Isolation（测试隔离）要求 Test Case 可以独立执行，不依赖前一个 Test 的副作用。
+
+Playwright 默认为每个测试创建独立 Browser Context，包括独立 Cookie、Local Storage、Session Storage 等状态，从而减少级联失败。[[5]](https://playwright.dev/docs/browser-contexts)
+
+稳定 Test 应尽量满足：
+
+~~~text
+Test A
+不改变
+Test B 的前置条件
+
+Test B
+单独运行
+仍然能够通过
+~~~
+
+如果 Test 必须固定顺序执行，往往说明 Fixture、Shared State 或 Cleanup 设计存在问题。
+
+### 【Test Data 必须可创建、可识别并可清理】
+
+常见问题：
+
+~~~text
+测试依赖共享账号
+↓
+并发 Test 修改同一份数据
+↓
+状态相互覆盖
+↓
+Flaky Test
+~~~
+
+更稳定的策略包括：
+
+- 每个 Case 创建独立数据；
+- 使用唯一 ID / Namespace；
+- Test 前 Seed，Test 后 Cleanup；
+- 使用可恢复 Fixture；
+- 只共享真正只读的数据；
+- 固定 Time / Timezone 等不稳定环境变量。
+
+### 【Determinism 让相同条件下的结果尽可能一致】
+
+Determinism（确定性）表示：在相同代码和测试条件下，Case 应尽量得到相同结果。
+
+典型非确定来源：
+
+- Random；
+- Current Time；
+- Network Delay；
+- Shared Mutable Data；
+- External Service；
+- Animation；
+- Race Condition；
+- 不稳定 Selector。
+
+可以通过 Frozen Time、Stable Fixture、Explicit Dependency、Auto-waiting 等方式降低不确定性。
+
+### 【Flaky Test 是测试系统可靠性问题而不只是偶发失败】
+
+Flaky Test（不稳定测试）指代码没有发生相关变化，但测试会在 Pass / Fail 之间随机波动。
+
+~~~text
+Flaky Test
+↓
+团队开始无视失败
+↓
+Quality Gate 失去可信度
+↓
+真正 Regression 被掩盖
+~~~
+
+因此遇到 Flake 不应只增加 Retry。Retry 可以降低偶发基础设施问题的影响，但如果根因是 Race Condition、State Leakage 或 Selector Fragility，仍应定位和修复。
+
+## 7. 测试实现应优先验证用户可观察行为
+
+### 【Locator 应优先描述用户如何识别元素】
+
+Testing Library 推荐优先使用接近用户和 Accessibility Tree 的查询，例如 Role、Label、Text；Test ID 更适合无法通过语义定位或需要显式稳定 Contract 的场景。[[6]](https://testing-library.com/docs/queries/about/)
+
+Playwright 同样建议优先使用 User-facing Attribute 和 Explicit Contract，例如 getByRole，并把 Locator 作为 Auto-waiting 与 Retry-ability 的核心。[[7]](https://playwright.dev/docs/best-practices)
+
+因此 Locator 可以按意图理解：
+
+~~~text
+User-facing Semantics
+Role / Label / Text
+        ↓
+Explicit Test Contract
+Test ID
+        ↓
+Implementation Detail
+CSS / XPath / DOM Structure
+~~~
+
+不是所有页面都必须机械采用同一优先级。例如动态文案不稳定而 Test ID 是团队明确 Contract 时，Test ID 可能更合适；关键是避免把 CSS Class 或 DOM 层级当作业务行为。
+
+### 【Cypress 登录链展示 Browser-level Frontend Integration】
+
+下面保留完整登录链。该 Case 使用真实 Browser 中的 Frontend，但通过 cy.intercept 替换 Backend Response，因此主要验证 Frontend 内部的 Form、Request、Storage、Router 和 Render 协作。
+
+~~~js
 describe('登录集成测试', () => {
   it('用户登录成功后应跳转首页并显示欢迎信息', () => {
-    // 1. mock 登录接口（隔离后端依赖，确保测试稳定）
     cy.intercept('POST', '/api/login', {
       statusCode: 200,
       body: {
@@ -126,9 +649,8 @@ describe('登录集成测试', () => {
           token: 'mock-token-123'
         }
       }
-    }).as('loginRequest') // 给拦截请求取别名，便于后续等待
+    }).as('loginRequest')
 
-    // 2. mock 首页用户信息接口
     cy.intercept('GET', '/api/user/profile', {
       statusCode: 200,
       body: {
@@ -140,206 +662,109 @@ describe('登录集成测试', () => {
       }
     }).as('profileRequest')
 
-    // 3. 打开登录页（模拟用户操作入口）
     cy.visit('/login')
 
-    // 4. 输入用户名和密码（模拟用户输入）
     cy.get('[data-testid="username"]').type('test_user')
     cy.get('[data-testid="password"]').type('123456')
-
-    // 5. 点击登录按钮（模拟用户提交操作）
     cy.get('[data-testid="login-button"]').click()
 
-    // 6. 等待登录接口完成（确保异步请求结束后再执行后续断言）
     cy.wait('@loginRequest')
-
-    // 7. 断言已经跳转到首页（验证路由跳转模块）
     cy.url().should('include', '/home')
 
-    // 8. 等待首页拉取用户信息接口完成
     cy.wait('@profileRequest')
-
-    // 9. 断言页面渲染了欢迎信息（验证页面渲染模块）
     cy.contains('欢迎你，陈相').should('be.visible')
 
-    // 10. 断言 token 已写入本地存储（验证本地存储模块）
     cy.window().then((win) => {
       expect(win.localStorage.getItem('token')).to.equal('mock-token-123')
     })
   })
 })
-```
+~~~
 
-### 示例逐行解析（面试重点）
+这段 Case 包含五类集成点：
 
-#### 1. describe（测试套件）
+| 集成点 | 验证内容 |
+| --- | --- |
+| UI Interaction | 输入和点击是否触发正确行为 |
+| Request Layer | Login / Profile Request 是否发起 |
+| Storage | Login State 是否正确写入 |
+| Router | 登录成功是否进入 /home |
+| Render | Profile Data 是否正确展示 |
 
-`describe('登录集成测试', () => { ... })`：用于组织一组相关的测试用例，描述“这组测试的核心场景”（此处为登录链路的集成测试）。
+其中 cy.wait('@loginRequest') 比固定 sleep 更稳定，因为等待的是明确业务事件，而不是猜测时间。
 
-核心作用：使测试结构清晰，测试报告更易读，后续可新增“登录失败”“token过期”等相关测试用例。
+如果 UI 支持稳定 Accessibility Semantics，可优先把：
 
-#### 2. it（测试用例）
+~~~js
+cy.get('[data-testid="login-button"]')
+~~~
 
-`it('用户登录成功后应跳转首页并显示欢迎信息', () => { ... })`：定义单个具体的测试场景，描述“业务结果”而非“实现细节”。
+替换为接近用户语义的查询；如果 Test ID 是团队明确的 Testing Contract，也可以继续使用它。关键是不要依赖容易随 Styling 改变的 Class Chain。
 
-优势：符合“结果导向”的测试原则，不依赖内部函数实现，即使代码重构，只要业务结果不变，测试用例仍可复用。
+### 【Playwright 登录链展示更高依赖真实性的 E2E Boundary】
 
-#### 3. mock接口（cy.intercept）
+下面的 Case 不拦截核心 Login / Profile API，测试目标是验证 Browser、Frontend、Backend 和 Data Layer 的主要业务链：
 
-`cy.intercept('POST', '/api/login', { ... }).as('loginRequest')`：拦截前端发出的指定请求，返回模拟的响应数据，不调用真实后端接口。
-
-核心细节：
-
-- 第一个参数：请求方法（POST/GET）；第二个参数：请求地址（可模糊匹配）；第三个参数：模拟的响应体。
-
-- `.as('loginRequest')`：给拦截请求取别名，后续可通过`cy.wait('@loginRequest')`显式等待请求完成，比固定毫秒数等待更稳定。
-
-- mock原因：聚焦前端模块协作，避免真实后端接口的不稳定性（如接口报错、网络延迟）影响测试结果。
-
-#### 4. 模拟用户操作
-
-- `cy.visit('/login')`：打开登录页，模拟用户访问页面的行为，是集成测试/E2E测试的常见入口。
-
-- `cy.get('[data-testid="username"]').type('test_user')`：通过`data-testid`定位元素（推荐方式），模拟用户输入内容。
-
-- `cy.get('[data-testid="login-button"]').click()`：模拟用户点击登录按钮，触发后续业务逻辑。
-
-重点：推荐使用`data-testid`定位元素，比class、DOM层级更稳定（样式类名、页面结构可能变更，而`data-testid`专为测试设计，不易变更）。
-
-#### 5. 等待请求与断言
-
-- `cy.wait('@loginRequest')`：等待mock的登录请求完成，避免异步请求未结束就执行后续断言（防止测试不稳定）。
-
-- `cy.url().should('include', '/home')`：断言路由跳转正确，验证“登录成功→跳转首页”的链路。
-
-- `cy.contains('欢迎你，陈相').should('be.visible')`：断言页面渲染正确，验证“接口返回数据→页面展示”的链路。
-
-- `cy.window().then((win) => { ... })`：获取浏览器窗口对象，验证localStorage中token是否正确存储，验证“接口返回token→本地存储”的链路。
-
-#### 6. 测试覆盖的集成点
-
-该示例覆盖前端多个模块的协作，也是集成测试的核心价值所在：
-
-- 页面交互模块：输入框输入、按钮点击。
-
-- 请求模块：登录接口、用户信息接口的发起与响应处理。
-
-- 存储模块：token存入localStorage。
-
-- 路由模块：登录成功后跳转首页。
-
-- 渲染模块：根据接口返回数据展示欢迎信息。
-
-**对应问题**：请解析一段Cypress集成测试代码，说明每个步骤的作用及测试的集成点是什么？
-
-## 端到端测试（E2E）
-
-### 核心定义
-
-端到端测试（End-to-End Testing）站在真实用户的视角，测试整个系统的完整业务链路，从用户操作入口开始，贯穿前端、后端、数据库、部署环境等所有环节，验证整条链路是否能正常跑通。
-
-与集成测试不同，E2E测试尽量不mock核心依赖，优先使用真实环境、真实接口、真实数据，模拟真实用户的操作流程，确保系统在真实场景下的可用性。
-
-**对应问题**：什么是端到端测试（E2E）？它与集成测试的核心区别是什么？
-
-### 常用工具
-
-前端E2E测试主流工具为**Playwright**和**Cypress**：
-
-- Playwright：微软推出，原生覆盖 Chromium、Firefox 和 WebKit 三类浏览器引擎，并可通过 Browser Channel 使用部分已安装的 Chrome、Edge 等浏览器。WebKit 可用于覆盖 WebKit 引擎相关行为，但不能简单等同为“运行真实 Safari”。API 具备自动等待等能力，适合复杂项目的 E2E 测试。[[1]](https://playwright.dev/docs/browsers)
-
-- Cypress：上手简单，生态完善，但对多浏览器支持不如Playwright，更适合中小型项目或简单E2E场景。
-
-**对应问题**：前端E2E测试常用工具有哪些？它们各自的优势是什么？
-
-### E2E测试示例（Playwright，登录链路）
-
-以下示例为真实E2E测试，不mock核心接口，使用真实测试环境、真实账号，验证完整业务链路：
-
-```js
+~~~js
 import { test, expect } from '@playwright/test'
 
 test.describe('登录端到端测试', () => {
   test('用户登录成功后应跳转首页并显示欢迎信息', async ({ page }) => {
-    // 1. 打开真实测试环境的登录页（不mock，使用真实地址）
     await page.goto('http://localhost:3000/login')
 
-    // 2. 输入真实测试账号密码（模拟真实用户操作）
-    await page.getByTestId('username').fill('test_user')
-    await page.getByTestId('password').fill('123456')
+    await page.getByLabel('用户名').fill('test_user')
+    await page.getByLabel('密码').fill('123456')
+    await page.getByRole('button', { name: '登录' }).click()
 
-    // 3. 点击登录按钮
-    await page.getByTestId('login-button').click()
-
-    // 4. 断言页面已跳转到首页（验证路由跳转）
     await expect(page).toHaveURL(/.*\/home/)
-
-    // 5. 断言欢迎语已经显示（验证页面渲染与接口返回）
     await expect(page.getByText('欢迎你，陈相')).toBeVisible()
 
-    // 6. 断言本地 token 已存在（验证登录态存储）
     const token = await page.evaluate(() => localStorage.getItem('token'))
-    await expect(token).toBeTruthy()
+    expect(token).toBeTruthy()
   })
 })
-```
+~~~
 
-### 示例逐行解析（面试重点）
+Playwright 的 Web-first Assertion 会等待条件在 Timeout 内满足，而不是要求业务代码使用固定 sleep。Locator 也会在每次 Action 时重新定位当前 DOM Element。[[7]](https://playwright.dev/docs/best-practices)[[8]](https://playwright.dev/docs/locators)
 
-#### 1. 引入依赖与测试套件
+这条链可以覆盖：
 
-`import { test, expect } from '@playwright/test'`：引入Playwright的测试 runner 和断言能力，与Vitest、Cypress的语法类似，但支持异步操作（需加await）。
+~~~text
+User Input
+↓
+Browser
+↓
+Frontend Form / Router / State
+↓
+Real Backend API
+↓
+Data System
+↓
+Response
+↓
+UI Result
+~~~
 
-`test.describe('登录端到端测试', () => { ... })`：组织测试用例，明确测试场景为登录链路的E2E测试。
+### 【Playwright Route Mock 可以把同一工具用于更窄的测试边界】
 
-#### 2. 测试用例与page对象
+如果测试目标只关注 Browser 中 Frontend 的集成关系，可以通过 page.route 控制 Backend：
 
-`test('用户登录成功后应跳转首页并显示欢迎信息', async ({ page }) => { ... })`：定义E2E测试用例，`page`是Playwright的核心对象，代表浏览器的一个标签页，用于模拟用户操作（打开页面、点击、输入等）。
-
-#### 3. 模拟真实用户操作
-
-- `await page.goto('http://localhost:3000/login')`：访问真实测试环境的登录页，不使用mock，模拟用户真实访问行为。
-
-- `await page.getByTestId('username').fill('test_user')`：通过`getByTestId`定位元素（Playwright推荐的稳定定位方式），填充真实测试账号密码。
-
-- `await page.getByTestId('login-button').click()`：模拟用户点击登录，触发真实接口请求。
-
-#### 4. 断言真实链路结果
-
-- `await expect(page).toHaveURL(/.*\/home/)`：断言路由跳转正确，Playwright的断言为“web-first assertion”，会自动重试直到条件满足或超时，稳定性更高。
-
-- `await expect(page.getByText('欢迎你，陈相')).toBeVisible()`：断言页面展示真实用户信息，验证“前端请求→后端处理→数据库查询→前端渲染”的完整链路。
-
-- `const token = await page.evaluate(() => localStorage.getItem('token'))`：在页面上下文执行JS，获取真实存储的token，验证登录态正常。
-
-#### 5. 与集成测试的核心差异
-
-该示例未mock任何核心接口，完全依赖真实测试环境，测试的是“用户操作→前端→后端→数据库”的完整链路，而非仅前端内部模块的协作，这是E2E测试与集成测试的核心区别。
-
-### Playwright mock接口版（非严格E2E，类似集成测试）
-
-若需用Playwright做前端集成测试（隔离后端依赖），可通过`page.route()`拦截接口，模拟响应，示例如下：
-
-```js
+~~~js
 import { test, expect } from '@playwright/test'
 
-test.describe('登录链路测试（mock接口版）', () => {
+test.describe('登录链路测试（Backend Mock）', () => {
   test('登录成功后跳转首页并显示欢迎语', async ({ page }) => {
-    // mock 登录接口
     await page.route('**/api/login', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           code: 0,
-          data: {
-            token: 'mock-token-123'
-          }
+          data: { token: 'mock-token-123' }
         })
       })
     })
 
-    // mock 用户信息接口
     await page.route('**/api/user/profile', async (route) => {
       await route.fulfill({
         status: 200,
@@ -354,106 +779,259 @@ test.describe('登录链路测试（mock接口版）', () => {
       })
     })
 
-    // 后续操作与真实E2E一致
     await page.goto('http://localhost:3000/login')
-    await page.getByTestId('username').fill('test_user')
-    await page.getByTestId('password').fill('123456')
-    await page.getByTestId('login-button').click()
+    await page.getByLabel('用户名').fill('test_user')
+    await page.getByLabel('密码').fill('123456')
+    await page.getByRole('button', { name: '登录' }).click()
 
     await expect(page).toHaveURL(/.*\/home/)
     await expect(page.getByText('欢迎你，陈相')).toBeVisible()
 
     const token = await page.evaluate(() => localStorage.getItem('token'))
-    await expect(token).toBe('mock-token-123')
+    expect(token).toBe('mock-token-123')
   })
 })
-```
+~~~
 
-说明：该版本虽使用Playwright工具，但因mock了接口，本质仍为前端集成测试，聚焦前端内部模块协作，而非完整链路。
+这里的工具仍然是 Playwright，但 Test Boundary 已经变化。这正说明：
 
-**对应问题**：如何用Playwright编写E2E测试？若需要mock接口，该如何实现？
+~~~text
+Tool
+≠
+Test Type
+~~~
 
-## 集成测试与E2E测试的核心区别（面试高频）
+## 8. Verification Strategy 按风险、速度、成本与真实度组合不同测试层
 
-### 1. 测试范围不同
+### 【不同测试层解决的是不同失败风险】
 
-- 集成测试：聚焦前端内部多个模块的协作，如“表单提交→token存储→路由跳转→页面渲染”，不涉及真实后端逻辑。
+| 维度 | Unit | Component | Integration | E2E |
+| --- | --- | --- | --- | --- |
+| 主要边界 | 单一逻辑单元 | 单个 UI Component | 多个 Module / Layer | 完整业务路径 |
+| 反馈速度 | 通常最快 | 快 | 中等 | 通常最慢 |
+| 依赖真实性 | 较低到中等 | 中等 | 中等到高 | 通常最高 |
+| 环境成本 | 低 | 低到中 | 中 | 高 |
+| 失败定位 | 局部 | Component | 多模块 | 跨系统 |
+| 适合问题 | Rule / Function Error | Render / Interaction | Contract / State Flow | System / Environment Failure |
 
-- E2E测试：聚焦整个系统的完整业务闭环，从用户操作到后端处理、数据库查询，再到前端渲染，覆盖全链路。
+这里的“通常”很重要：一个复杂 Browser Unit Test 可能比简单 API Integration Test 更慢；一个使用 In-memory Database 的 Integration Test 也可能非常快。因此测试层不是由执行时长定义，而是由 Boundary 和 Verification Goal 定义。
 
-### 2. 对外部依赖的处理不同
+### 【测试组合应从风险出发而不是追求固定比例】
 
-- 集成测试：通常mock外部依赖（如接口、第三方SDK），仅保留前端内部模块的真实性，确保测试稳定。
+可以用 Risk-based Strategy：
 
-- E2E测试：尽量使用真实依赖（真实接口、真实数据库、真实环境），模拟真实用户场景，验证整条链路的可用性。
+~~~text
+高频变化 + 核心规则
+→ 更多快速 Unit / Component Verification
 
-### 3. 发现的问题类型不同
+模块 Contract 复杂
+→ 增加 Integration Test
 
-- 集成测试：易发现模块对接问题、状态流转问题、路由跳转问题、组件联动问题（单个模块无错，但组合后出错）。
+核心用户旅程 / 高业务风险
+→ E2E / Acceptance
 
-- E2E测试：易发现前后端联调问题、接口契约不一致、数据库数据异常、环境配置问题（代码本身无错，但真实链路跑不通）。
+跨浏览器风险
+→ Browser Matrix
 
-### 4. 执行成本不同
+第三方依赖风险
+→ Contract / Sandbox / Selected E2E
+~~~
 
-- 集成测试：成本低、执行快、稳定性高、定位问题容易，不依赖真实测试环境，适合日常回归测试。
+测试金字塔、Testing Trophy 等模型可以作为启发，但不能机械规定“必须 70% Unit、20% Integration、10% E2E”。
 
-- E2E测试：成本高、执行慢、易受环境影响、维护成本高、定位问题复杂，适合覆盖核心业务链路（如登录、支付）。
+### 【Coverage 只说明代码被执行到的程度而不是业务已经被证明正确】
 
-### 5. 通俗理解（面试加分）
+Code Coverage 常见指标包括 Statement、Branch、Function、Line Coverage。
 
-集成测试：检查“前端内部这台机器的零件装得对不对，零件之间能不能协同工作”；
+但是：
 
-E2E测试：检查“整台机器（含前端、后端、数据库）能不能正常运转，能不能满足用户的真实需求”。
+~~~text
+100% Line Coverage
+≠
+所有业务行为正确
+~~~
 
-两者互补，而非替代：集成测试保障前端内部逻辑的正确性，E2E测试保障整个系统的可用性。
+如果 Assertion 错误、Scenario 缺失或只执行代码没有验证结果，Coverage 仍可能很高。
 
-**对应问题**：集成测试和E2E测试的核心区别有哪些？请从测试范围、外部依赖处理、执行成本三个方面说明。
+因此 Coverage 适合作为：
 
-## CI/CD 中的测试定位
+~~~text
+Missing Test Signal
++
+Regression Visibility
+~~~
 
-Unit Test、Integration Test 与 E2E Test 是 Verification Strategy，不等于 CI/CD 本身。它们可以作为不同 Pipeline Stage / Job 中的 Quality Check，由执行成本和反馈速度决定运行时机。
+而不应作为唯一 Quality Goal。
+
+## 9. CI/CD 把 Testing Strategy 转换为 Quality Gate
+
+### 【不同反馈成本决定测试进入 Pipeline 的位置】
+
+Unit、Component、Integration、E2E 都属于 Verification Strategy，不等于 CI/CD 本身。
+
+典型 Pipeline：
 
 ~~~text
 Pull Request
 ↓
 Fast Checks
-├── Lint / Type Check
-├── Unit Test
-└── Selected Integration Test
+├── Lint
+├── Type Check
+├── Unit
+└── Fast Component / Integration
 ↓
 Merge / Build Artifact
 ↓
 Environment Verification
-└── E2E / Smoke / Acceptance
+├── Integration
+├── E2E
+└── Acceptance
+↓
+Deployment
+↓
+Smoke / Health / Production Verification
 ~~~
 
-完整的 Trigger → Pipeline → Artifact → Release → Deployment → Production Verification 链路见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
+完整 Trigger → Workflow → Artifact → Release → Deployment → Production Verification 由 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md) 负责。
 
-## 面试重点回答总结
+### 【Quality Gate 应建立在风险和执行成本之上】
 
-### 问题1：请说明单元测试、集成测试、E2E测试的区别
+不是所有 E2E 都必须在每次 Commit 上全量运行，也不是所有 Unit Test 只能在本地运行。
 
-单元测试：测最小功能单元（如函数、组件纯逻辑），隔离所有外部依赖，聚焦自身逻辑正确性，工具用Vitest，适合日常开发中的回归测试。
+可以按照：
 
-集成测试：测前端内部多个模块的协作链路，mock非核心依赖（如接口），重点验证模块对接逻辑，工具用Cypress，成本低、稳定性高。
+~~~text
+Change Risk
++
+Test Cost
++
+Feedback Requirement
+↓
+决定运行时机
+~~~
 
-E2E测试：站在用户视角，测整个系统的完整业务链路，尽量使用真实环境和依赖，验证系统真实可用性，工具用Playwright，覆盖核心链路，成本较高。
+例如：
 
-### 问题2：Cypress集成测试和Playwright E2E测试的核心差异是什么？
+- PR：Fast Unit + Component + Selected Integration；
+- Merge：更完整 Integration；
+- Test / Staging：E2E / Acceptance；
+- Deployment：Smoke；
+- Production：Monitoring / Synthetic / Business Verification。
 
-Cypress集成测试：mock接口，聚焦前端内部模块协作（如登录表单→token存储→路由跳转），不涉及真实后端，测试前端内部链路是否正常。
+### 【失败结果需要可以追溯到 Scenario 和 Evidence】
 
-Playwright E2E测试：不mock核心接口，访问真实测试环境，使用真实账号，测试“前端→后端→数据库”的完整链路，验证系统在真实场景下的可用性。
+一个成熟测试结果至少应回答：
 
-### 问题3：为什么单元测试需要mock外部依赖？
+- 哪个 Scenario 失败；
+- 使用什么 Fixture / Environment；
+- 哪一步 Action 失败；
+- Expected / Actual 是什么；
+- 是否有 Screenshot / Trace / Log；
+- 是 Product Failure、Test Failure、Data Failure 还是 Environment Failure。
 
-单元测试的核心是“只测当前单元”，mock外部依赖的目的是隔离外部干扰，确保测试的可控性、稳定性和可重复性。避免因外部依赖（如接口、路由、本地存储）的不稳定性，导致测试结果异常，无法定位当前单元的逻辑问题。
+这使 Test Result 能真正参与 CI Gate，而不是只留下“某个脚本红了”。
 
-### 问题4：前端项目中，如何选择三种测试方式？
+## 10. 测试知识继续连接工程化、需求验收与浏览器运行环境
 
-1. 单元测试：覆盖核心工具函数、业务函数、Hooks，确保单个单元逻辑正确，作为日常开发的基础测试。
+### 【测试体系位于需求和交付之间】
 
-2. 集成测试：覆盖前端内部关键协作链路（如登录、表单提交），保障模块间对接正常，适合日常回归。
+完整工程关系：
 
-3. E2E测试：覆盖核心业务闭环（如登录→下单→支付），确保系统真实可用，不适合大面积覆盖，仅聚焦关键链路。
+~~~text
+Requirement / Acceptance Criteria
+↓
+Scenario / Test Case
+↓
+Automated Verification
+↓
+CI Quality Gate
+↓
+Artifact / Deployment
+↓
+Production Verification
+~~~
 
+前端工程化负责把 Test Command、Environment、Script、Coverage 等能力接入项目；测试体系负责定义**验证什么、边界多大、依赖多真实、怎样断言**；CI/CD 负责决定这些结果何时执行以及是否允许继续交付。
+
+对应入口：
+
+- [前端工程化设计全面解析](./Q-前端工程化设计全面解析.md)：测试能力怎样接入项目工程；
+- [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)：Test Result 怎样成为 Pipeline Gate；
+- [基于Chrome浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)：Browser Runtime、DOM 与 Rendering；
+- [前端异步编程](./Q-前端异步编程.md)：Promise / Microtask 等异步执行机制。
+
+### 【项目实践应该作为 Scenario 与 Acceptance Design 的证据】
+
+项目中的 ATDD / BDD、验收矩阵、Fixture、浏览器矩阵、证据 Schema 等内容可以作为 Testing Strategy 的工程实践，但项目特定账号、业务状态、Viewport、接口数据和目录结构不应成为通用定义。
+
+计划打卡 Web 项目已经把这些通用概念落成一份可执行验收矩阵，可继续阅读 [计划打卡 Web V1 ATDD / BDD 验收测试矩阵](../ios-plan-checkin/docs/ATDD-BDD-计划打卡-Web-v1-验收矩阵.md)。该文档属于项目实践证据，负责保存具体业务 Scenario、Fixture、浏览器矩阵和 Evidence Contract；本文只维护可迁移的通用测试模型。
+
+通用知识只抽象：
+
+~~~text
+Acceptance Criteria
+↓
+Scenario
+↓
+Fixture / Environment
+↓
+Action
+↓
+Assertion
+↓
+Evidence
+↓
+Result
+~~~
+
+具体业务数据继续留在项目实践文档中。
+
+## 11. 面试与架构说明先讲验证边界再讲具体工具
+
+### 【Unit、Integration 与 E2E 的核心区别是测试边界】
+
+可以回答：
+
+Unit Test 验证较小的逻辑单元，强调快速反馈和局部定位；Integration Test 验证多个模块或 Layer 的协作关系；E2E Test 从用户入口验证系统主要业务链路。三者不是由 Vitest、Cypress 或 Playwright 工具名称决定，依赖是否 Mock 也不是唯一判断标准。
+
+### 【选择测试方式需要同时看风险、边界和反馈成本】
+
+可以沿下面路径回答：
+
+~~~text
+要证明什么风险？
+↓
+最小需要覆盖到什么边界？
+↓
+哪些 Dependency 必须保持真实？
+↓
+需要多接近真实 Browser / Environment？
+↓
+反馈速度要求多高？
+↓
+再选择 Test Tool
+~~~
+
+这比“Unit 用 Vitest、Integration 用 Cypress、E2E 用 Playwright”的工具表述更稳定。
+
+### 【Mock 的价值是控制依赖而不是改变测试名称】
+
+Mock 可以提升可控性、故障注入能力和执行速度，但它会降低某部分依赖真实性。工程上应明确 Mock Boundary，而不是把“出现 Mock”直接作为测试类型的唯一分类依据。
+
+## 12. 参考文献
+
+[1] Vitest. Browser Mode. https://vitest.dev/guide/browser/
+
+[2] Cypress. Testing Types. https://docs.cypress.io/app/core-concepts/testing-types
+
+[3] Cypress. Launching Browsers. https://docs.cypress.io/app/references/launching-browsers
+
+[4] Playwright. Browsers. https://playwright.dev/docs/browsers
+
+[5] Playwright. Isolation. https://playwright.dev/docs/browser-contexts
+
+[6] Testing Library. About Queries. https://testing-library.com/docs/queries/about/
+
+[7] Playwright. Best Practices. https://playwright.dev/docs/best-practices
+
+[8] Playwright. Locators. https://playwright.dev/docs/locators

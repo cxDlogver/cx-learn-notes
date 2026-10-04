@@ -1884,11 +1884,25 @@ Closes #123
 
 ## 测试流程
 
-测试是保障代码质量、减少线上bug、提升开发效率和用户体验的核心环节。测试的三大核心类型——单元测试、集成测试、端到端测试（E2E测试）。
+前端工程化中的测试职责是把测试策略转成项目中可重复执行的工程能力：统一 Test Runner、Environment、Fixture、Script、Coverage、Report 和 CI 入口。Unit / Component / Integration / E2E 的通用定义、Test Boundary、Mock、Isolation、Locator 与 Verification Strategy 统一参考 [前端测试体系从验证边界到工程质量门禁](./Q-前端单元测试、集成测试与E2E测试笔记（面试版）.md)。
+
+~~~text
+Testing Strategy
+↓
+Project Test Config
+↓
+Package Script
+↓
+Local Feedback
+↓
+CI Test Result / Evidence
+↓
+Quality Gate
+~~~
 
 ### 单元测试（Unit Testing）
 
-单元测试是前端测试体系的基础，聚焦于“最小测试单元”，即单个函数、方法或组件，通过隔离外部依赖，验证其独立行为是否符合预期。单元测试的核心价值的是快速定位代码问题、保障代码可维护性，为后续集成测试、端到端测试奠定基础，尤其适合在开发阶段同步编写，实现“测试驱动开发（TDD）”或“开发同步测试”。
+本节不再重新定义 Unit Test，而是说明小边界测试怎样接入项目。工程上需要明确测试文件范围、Runtime Environment、Mock / Fixture Setup、Watch Mode、Coverage 和 CI Command；具体测试边界由测试主文档定义。
 
 #### 测试目标
 
@@ -1905,12 +1919,12 @@ Closes #123
 
 前端单元测试工具主要分为“测试框架”和“断言库”，部分框架内置断言功能，无需额外引入，常用工具如下：
 
-- **Jest**：目前最流行的JavaScript测试框架，由Facebook推出，内置断言、测试运行器、mock工具、覆盖率报告等功能，零配置即可上手，支持单元测试、快照测试、异步测试，适配React、Vue等各类前端项目，是前端单元测试的首选工具。
+- **Jest**：常见 JavaScript Test Framework，提供 Test Runner、Assertion、Mock 和 Coverage 等能力，适用于多类 JavaScript / TypeScript 项目。
 - **Mocha**：灵活度极高的测试框架，不内置断言库和mock工具，需搭配第三方库（如断言库Chai、mock工具Sinon）使用，支持多种测试风格（BDD、TDD），适合对测试配置有定制化需求的项目。
-- **Vitest**：基于Vite的测试框架，速度极快，API与Jest兼容，支持ES模块，适合Vite构建的项目（如Vue3、React18项目），兼顾测试效率和开发体验。
+- **Vitest**：与 Vite 生态集成紧密的 Test Framework，支持 ESM、TypeScript、Mock、Coverage，并可通过 Browser Mode 在真实 Browser 中执行测试。
 - **断言库补充**：若使用Mocha，需搭配Chai断言库（提供expect、should等断言语法）；Jest和Vitest内置断言功能，无需额外引入。
 
-工具对比小结：Jest适合大多数前端项目，零配置、功能全面；Mocha适合需要高度定制化测试流程的项目；Vitest适合Vite生态项目，测试速度更有优势。以下笔记以Jest为例，详细讲解单元测试的完整流程。
+工具选择应结合现有 Build Stack、Runtime Environment、Plugin Ecosystem、迁移成本和 CI 需求，不由测试类型单独决定。以下保留 Jest 配置作为工程接入示例。
 
 #### 详细操作步骤（以Jest为例）
 
@@ -1992,7 +2006,7 @@ npm run test:coverage
 
 - 测试通过：终端显示绿色对勾，提示“X tests passed”；
 - 测试失败：终端显示红色叉号，提示失败的测试用例、预期结果、实际结果，需修复代码或测试用例后重新运行；
-- 覆盖率报告：运行`test:coverage`后，会在项目根目录生成`coverage`文件夹，打开其中的`index.html`文件，可查看测试覆盖率（行覆盖率、分支覆盖率等），通常要求核心代码覆盖率不低于80%。
+- 覆盖率报告：运行 `test:coverage` 后可查看 Line、Branch、Function、Statement 等覆盖情况。Coverage Threshold 应由项目风险、模块关键性、历史缺陷和测试成本共同决定，不存在适用于所有项目的固定 80% 通用标准。
 
 #### 单元测试最佳实践
 
@@ -2005,7 +2019,7 @@ npm run test:coverage
 
 ### 集成测试（Integration Testing）
 
-集成测试建立在单元测试的基础上，聚焦于“模块间的协作”，验证多个函数、组件或模块组合在一起后的交互行为是否符合预期。与单元测试的“孤立测试”不同，集成测试不刻意隔离依赖，而是模拟真实的模块协作场景，发现模块交互过程中可能出现的问题。
+集成测试的通用定义由测试主文档维护。本节关注多个模块协作测试如何进入工程配置：Browser / DOM Environment 怎样启动、API Mock 怎样复用、Fixture 怎样组织、Case 怎样通过 CLI 在本地和 CI 中稳定执行。
 
 #### 测试目标
 
@@ -2017,7 +2031,7 @@ npm run test:coverage
 
 #### 核心工具
 
-- **Cypress**：前端一体化测试工具，支持集成测试和端到端测试，内置浏览器环境，可模拟真实用户交互，无需额外配置，适合测试组件交互和页面流程。
+- **Cypress**：Browser Testing 工具，官方当前提供 Component Testing 与 E2E Testing 等能力；可以通过 cy.intercept 控制 Network Dependency，也可以连接真实 Backend。
 - **Testing Library**：一套测试工具集，包括`@testing-library/react`、`@testing-library/vue`等，专注于组件交互测试，模拟用户真实操作（如点击、输入），适合React、Vue等框架的集成测试。
 - **React Testing Library**：专门用于React项目的集成测试，强调“测试用户行为而非实现细节”，与Jest配合使用，可快速测试组件交互。
 
@@ -2111,7 +2125,7 @@ describe('表单提交集成测试', () => {
 
 ### 端到端测试（E2E Testing）
 
-端到端测试（End-to-End Testing）是最高层级的测试，模拟真实用户在浏览器中的完整操作流程，从用户打开页面到完成核心业务操作（如登录、下单、支付），验证整个应用在真实环境中的工作状态，覆盖前端、后端、数据库等全链路，确保应用能正常运行。
+E2E 的完整边界由测试主文档维护。本节只关注工程接入：怎样启动 Test Environment、准备 Test Data、配置 Browser Matrix、保存 Trace / Screenshot / Report，并把关键业务链的结果接入 CI Gate。
 
 #### 测试目标
 
@@ -2124,9 +2138,9 @@ describe('表单提交集成测试', () => {
 
 #### 核心工具
 
-- **Cypress**：最流行的前端E2E测试工具，上手简单、内置浏览器环境、支持实时重新加载、调试友好，可同时支持集成测试和E2E测试，适合中小型前端项目。
+- **Cypress**：支持 E2E 与 Component Testing，具备 Browser Runner、Network Interception、调试和 CI 能力。是否采用 Cypress 应根据测试边界、Browser Policy、团队栈和调试需求决定，而不是按项目大小固定选择。
 - **Puppeteer**：由Google推出的Node.js库，通过控制Chrome或Chromium浏览器进行E2E测试，API灵活，可自定义浏览器操作，适合需要高度定制化测试流程的项目。
-- **Playwright**：由Microsoft推出，类似于Puppeteer，但支持Chrome、Firefox、Safari等多种浏览器，跨浏览器兼容性测试能力更强，适合需要多浏览器验证的项目。
+- **Playwright**：Browser Automation / Testing 工具，支持 Chromium、Firefox、WebKit，并可通过 Browser Channel 使用部分 Chrome / Edge。WebKit Coverage 不应直接写成“运行真实 Safari”。
 
 #### 详细操作步骤（以Cypress为例）
 
@@ -2226,7 +2240,7 @@ jobs:
 
 ### 综合测试流程（开发+CI/CD）
 
-前端测试不是孤立的，需建立“单元测试→集成测试→端到端测试”的层次化测试体系，结合开发流程和CI/CD流程，实现全链路质量保障。
+前端工程化不强制把测试写成固定的“单元→集成→E2E”串行流程，而是把不同反馈成本的测试能力接入开发和 CI/CD。具体组合由 Risk、Test Boundary、Dependency Fidelity 和反馈速度决定。
 
 #### 开发阶段
 
