@@ -1,25 +1,34 @@
 # Agent 研发重点从提示词技巧扩展到上下文组织与可靠运行
 
-## 回答要点
+## 【知识概述】
 
-Agent 研发重点的变化，本质上是**任务目标扩大后，工程关注点从“模型如何回答”逐步扩展到“系统如何完成任务并可靠交付结果”**。Prompt、Context、Loop、Runtime / Harness 和可靠性机制不是简单的技术代际，而是逐层解决新的系统问题。
+这篇知识点想解释的是：**为什么 Agent 研发不能只停留在 Prompt，以及随着任务从“生成回答”走向“真实执行”，工程关注点是怎样一步步扩大的。**
 
-1. **Prompt 解决意图表达。** 目标、角色、约束、输出格式和必要示例仍需明确，但重点从技巧化模板回到准确表达任务和边界。
-2. **Context 解决每轮模型应该知道什么。** 多轮任务还需要 History、State、Memory、Tool Result、检索结果和业务数据，因此要进行选择、检索、压缩和按需加载。
-3. **Tool 与 Loop 解决如何从生成答案走向执行任务。** Tool 让模型影响外部环境；Loop 让模型根据 Observation 继续判断和推进。
-4. **Runtime / Harness 解决执行如何被工程化承载。** 状态管理、Tool Registry、权限、Sandbox、Checkpoint、Trace、中断恢复等能力把动态决策过程变成可运行、可治理的系统。
-5. **Workflow 与持久化解决跨阶段、长时间任务。** 外层 Workflow 固定业务阶段，State、Artifact、Checkpoint 等保存可信进度。
-6. **幂等、对账、验收和可观测解决生产可靠性。** 模型声称成功不等于真实业务成功，必须独立验收，对未知状态进行 Reconciliation，对副作用建立 Idempotency，并通过 Trace / Eval 验证质量。
-7. **这些概念不是前者被后者淘汰。** Prompt 是 Context 的组成部分，Context 服务每次 Model Call，Loop 运行于 Runtime；所谓范式演进更准确地说是工程视角从模型交互扩展到完整系统。
+最开始的问题比较局部：怎样让模型正确理解目标和约束。Prompt 主要解决的就是这件事。但进入多轮任务以后，模型每一次判断不仅需要指令，还需要历史消息、检索结果、Tool Result、Memory、业务数据和当前 State，因此问题从“Prompt 怎么写”扩大为“这一轮模型究竟应该看到什么”，这就进入 **Context Engineering**。
+
+当模型不只是回答，而要搜索、读写文件、调用 API 或改变外部环境时，又需要 **Tool** 提供行动能力；一次动作的结果还会影响下一步判断，于是需要 **Agent Loop** 持续执行。Loop 真正运行起来以后，还需要 Runtime / Harness 管理 State、Tool、权限、Sandbox、Checkpoint 和 Trace。
 
 ```text
-Prompt：表达任务
-→ Context：组织有效信息
-→ Tool + Loop：执行并持续决策
-→ Runtime + Harness：工程化承载
-→ Workflow + Persistence：长期推进
-→ Verification + Idempotency + Reconciliation + Observability：可靠交付
+让模型理解任务
+Prompt
+   ↓
+让模型获得当前真正需要的信息
+Context
+   ↓
+让模型能够影响外部环境
+Tool
+   ↓
+让模型根据执行结果继续判断
+Agent Loop
+   ↓
+让动态执行成为可管理的系统
+Runtime / Harness
 ```
+
+到这里解决的是“Agent 能运行”，但真实业务还会继续提出新的要求。任务可能跨多个阶段和进程，需要 Workflow、State、Artifact 和持久化；Tool 调用可能产生真实副作用，需要 Idempotency 和 Reconciliation；模型认为完成不代表真实完成，需要 Verification / Eval；运行过程难以解释，又需要 Observability。
+
+因此这篇知识点不是在讨论 Prompt Engineering、Context Engineering、Harness Engineering 哪一个“取代”哪一个，而是在建立一条**问题范围不断扩大的研发视角**：从模型交互逐步走向完整系统工程。Prompt 仍然存在于 Context 中，Context 仍然服务每次 Model Call，Loop 仍然由 Runtime 承载；后续新增的可靠性、治理、评测等知识也都是在已有能力上继续解决新的工程问题，而不是形成一个封闭的固定体系。
+
 ## 1. Prompt 清楚表达目标与约束并成为基础能力
 
 Prompt Engineering 主要解决的是：
