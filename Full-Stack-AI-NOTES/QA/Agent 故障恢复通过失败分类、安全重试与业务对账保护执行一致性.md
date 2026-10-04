@@ -1,32 +1,33 @@
 # Agent 故障恢复通过失败分类、安全重试与业务对账保护执行一致性
 
-## 回答要点
+## 【知识概述】
 
-Agent 故障恢复的核心不是“自动重试”，而是**失败后先确定真实执行状态，再选择不会破坏业务一致性的恢复动作**。因此失败分类、Replay Safety、Retry、Checkpoint、Reconciliation、Idempotency 和 Compensation 必须组成连续决策链。
+这篇知识点想解决的是：**Agent 调用模型、Tool 或外部服务失败以后，怎样判断真实世界到底发生了什么，并从不会破坏业务一致性的位置继续执行。**
 
-1. **Execution Boundary 先限定一次动作的运行边界。** Timeout、最大轮数、Retry Budget 和 Cost Budget 让系统能够明确发现当前执行已经不能继续正常等待。
-2. **Failure Classification 决定后续策略。** 临时异常、确定性参数错误、权限或业务拒绝、Unknown Outcome 的处理完全不同，不能统一进入 Retry。
-3. **Replay Safety 判断动作能否重新执行。** 读取或天然幂等操作较容易重放；写入、支付、通知等有副作用动作必须结合 Idempotency Key、Operation Record 判断。
-4. **Retry 只处理可恢复且可安全重放的临时失败。** 应限制次数并使用 Backoff / Jitter；参数错误、权限拒绝和业务条件不满足不能靠重复调用解决。
-5. **Unknown Outcome 必须先 Reconciliation。** Timeout 只说明调用方没收到确定结果，不能证明服务端没有执行，需要查询真实业务状态或操作记录。
-6. **确认未执行才能重放，确认已执行则复用结果。** 已经产生真实副作用时不应再次执行同一动作。
-7. **Compensation 处理需要抵消的副作用。** Saga 类流程通过退款、取消等新的业务动作恢复一致性，而不是物理回滚历史。
-8. **State / Checkpoint 解决从哪里继续，但不解决外部 Exactly-once。** 外部一致性仍依赖幂等、操作记录和对账。
-9. **Fallback 不能绕过业务拒绝。** 权限不足、风控拒绝等业务决策不能通过换 Tool、Agent 或路径规避。
-10. **Observability 贯穿恢复过程。** 失败类型、Retry、Reconciliation、恢复位置和 Compensation 都应被记录，才能验证恢复机制。
+最容易产生的问题是把“调用报错”直接理解成“动作没有执行”。例如支付请求超时，只能说明调用方没有收到确定 Response，并不能证明支付服务没有完成扣款。如果此时直接 Retry，就可能产生重复副作用。因此故障恢复的起点不是重试，而是先识别失败类型。
+
+系统首先通过 Timeout、最大轮数、Retry Budget 等 **Execution Boundary** 判断一次执行何时应该停止等待。出现错误以后再进行 **Failure Classification**：临时网络异常、确定性参数错误、权限或业务拒绝、Unknown Outcome 的恢复方式完全不同。
 
 ```text
-Execute → Error / Timeout / Unknown
-→ Classify → Check Replay Safety
-├─ 临时且安全 → Retry
-├─ 确定错误 → Fix / Stop
-├─ 业务拒绝 → Stop / Human
-└─ 结果未知 → Reconciliation
-                 ├─ 未执行 → Replay
-                 ├─ 已执行 → Reuse
-                 └─ 需抵消 → Compensation
-→ Restore State / Checkpoint → Resume
+执行出现异常
+        ↓
+先判断失败属于什么类型
+        ↓
+再判断上一次动作能否安全重放
+        ├─ 可以安全重放
+        │   → Retry / Backoff
+        │
+        └─ 无法确认执行结果
+            → Reconciliation
+               查询真实业务状态
 ```
+
+如果确认动作根本没有执行，可以安全重放；如果确认已经执行，就应该复用真实结果而不是再次调用；如果已经产生了需要撤销的业务副作用，则可能通过 **Compensation** 用新的业务动作进行抵消。对于写数据库、支付、发送消息等操作，**Idempotency Key / Operation Record** 又进一步降低重复执行风险。
+
+State 和 Checkpoint 在这里解决的是“Agent 内部从哪里继续”，却不能单独保证外部系统 Exactly-once；这正是 Fault Recovery 与 Long-running Task 相交但不能完全合并的地方。与此同时，权限或风控拒绝属于业务决策，不能通过 Retry 或 Fallback 绕过；整个恢复过程又需要 Observability 记录失败、重试、对账和补偿结果。
+
+因此这篇知识点的主线不是“有哪些重试策略”，而是 **失败识别 → 判断副作用状态 → 选择安全恢复方式 → 从可信状态继续**。
+
 ## 1. 执行预算与失败分类为故障处理建立边界
 
 ### 【可靠执行的目标：失败以后系统仍然保持可控】
