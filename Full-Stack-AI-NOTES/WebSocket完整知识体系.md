@@ -1062,35 +1062,156 @@ authorize({
 
 ---
 
-### 【长连接还要处理 Session Revalidation】
+### 【长连接身份有效性要拆成自然过期、主动撤销和连接存活三条线】
 
-Access Token 可能只有 15 分钟，但 WebSocket 可能持续数小时。
-
-如果只在建连时校验一次：
+Access Token 可能只有 15 分钟，但 WebSocket 可以持续数小时。只在建连时验证一次会产生：
 
 ~~~text
 10:00
-Token valid
-→ connection authenticated
+Access Token valid
+→ WebSocket authenticated
 
 10:15
-Token expired
+Access Token expired
 
 14:00
-connection still active
+socket 仍然在传业务数据
 ~~~
 
-系统必须明确策略：
+但这里不应该把所有问题都归为“周期重新鉴权”。长期连接实际上存在三类完全不同的状态：
 
-| 策略 | 特点 |
-| --- | --- |
-| 建连时只校验 | 最简单，但安全窗口最长 |
-| 每条消息校验 | 最及时，但开销高 |
-| Token 到期时主动关闭 | 适合自然过期 |
-| 周期重验 | 成本和及时性折中 |
-| Session revoke 时主动踢线 | 最及时，需要 Connection Registry |
+| 问题 | 本质 | 更自然的处理方式 |
+| --- | --- | --- |
+| Access Token 自然到期 | 一个已知时间事件 | Expiry Timer / 到期关闭 |
+| Session 被提前撤销 | 服务端状态发生变化 | Revocation Event + Connection Registry |
+| 网络连接是否仍存活 | Transport / Endpoint 状态 | Ping / Pong + Heartbeat |
 
-具体 Token Rotation、Reuse Detection、Absolute Expiration 不在这里重复展开，继续阅读 [Access Token 与 Refresh Token 核心知识点](./Access%20Token与Refresh%20Token核心知识点笔记.md)。
+这三条线应该尽量分离。
+
+#### <u>1. 自然过期不需要客户端周期重新 authenticate</u>
+
+如果首次认证以后服务器已经得到：
+
+~~~text
+principal.accessTokenExpiresAt
+~~~
+
+那么“什么时候自然过期”已经是一个确定答案。服务端可以直接计算：
+
+~~~text
+delay = expiresAt - now
+~~~
+
+并给当前连接设置一次性 Expiry Timer：
+
+~~~ts
+const delay = Math.max(
+  0,
+  principal.accessTokenExpiresAt - Date.now()
+);
+
+context.authExpiryTimer = setTimeout(() => {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.close(
+      4001,
+      "access token expired"
+    );
+  }
+}, delay);
+~~~
+
+因此：
+
+~~~text
+Client 周期发送 authenticate
+不是判断自然过期的必要条件
+
+Server 每几秒重新解析同一 Token
+也不是判断自然过期的必要条件
+~~~
+
+客户端通常只需要在新连接建立时提供 Credential；Token 到期后由服务端关闭连接，客户端再进入 Refresh → Reconnect → Authenticate 的恢复链。
+
+这一思路同时适用于 JWT 和 Opaque Token：JWT 可以从 `exp` 得到到期时间；Opaque Token 的 Session Store 也可以保存 `expires_at`。
+
+#### <u>2. Session Revocation 不能只靠 Expiry Timer</u>
+
+Expiry Timer 只能回答：
+
+> 这个 Access Token 什么时候自然到期？
+
+它无法知道：
+
+- 用户刚刚 Logout；
+- 管理员主动封禁账号；
+- Refresh Token Reuse 导致整个 Token Family 被撤销；
+- 权限策略要求当前 Session 立即失效。
+
+例如 Access Token 10:15 到期，但 10:05 用户 Logout，如果只等 Expiry Timer，这条 WebSocket 还可能继续存活 10 分钟。
+
+更及时的做法是维护：
+
+~~~text
+sessionId / familyId
+        ↓
+Set<WebSocket Connection>
+~~~
+
+当 Session 被 revoke 时：
+
+~~~text
+revoke session
+    ↓
+publish session.revoked
+    ↓
+Connection Registry
+    ↓
+找到相关连接
+    ↓
+close immediately
+~~~
+
+单实例可以直接在内存 Registry 中完成；多实例可以通过 Redis Pub/Sub、消息总线或其他 Session Invalidation Channel 把撤销事件广播到各 WebSocket 节点。
+
+#### <u>3. 周期 Revalidation 是一种折中，而不是默认最优解</u>
+
+周期调用完整 `verifyAccessToken()` 确实可以同时检查：
+
+~~~text
+exp
+session revoked?
+user still active?
+~~~
+
+优点是实现简单，不需要额外的 Revocation Event；但连接数增加以后，它会形成：
+
+~~~text
+connection count
+×
+revalidation frequency
+=
+持续认证开销
+~~~
+
+而且如果过期时间本来已经确定，周期重新检查 `exp` 本身属于重复工作。
+
+所以更清晰的优先级通常是：
+
+~~~text
+Natural Expiration
+→ Expiry Timer
+
+Immediate Revocation
+→ Session Event + Connection Registry
+
+Connection Liveness
+→ Heartbeat
+
+Periodic Revalidation
+→ 当系统暂时没有主动撤销通道时的折中方案
+~~~
+
+完整 Token Family、Rotation、Reuse Detection 和过期模型继续阅读 [Access Token 与 Refresh Token 核心知识点](./Access%20Token与Refresh%20Token核心知识点笔记.md)。
 
 ---
 
@@ -2407,8 +2528,8 @@ HTTP Upgrade
 → authenticate + auth timeout
 
 通用知识
-Session Revalidation
-→ 长连接周期重验 Access Token
+Long-lived Session Validation
+→ 自然过期 Timer + 主动撤销 + Heartbeat 职责分离
 
 通用知识
 Close Classification
