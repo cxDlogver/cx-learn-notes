@@ -12,23 +12,25 @@ Monorepo（Monolithic Repository，单体代码仓库）是一种**多项目代�
 可以先用六个问题建立整体认知：
 
 ```text
-为什么多个 Project 要放在同一个 Repository？
+为什么多个项目要放在同一个代码仓库？
         ↓
-Workspace 怎样发现这些 Project？
+包管理工作区怎样发现并统一管理这些项目？
         ↓
-Project 之间怎样声明和解析代码依赖？
+项目之间怎样声明和解析代码依赖？
         ↓
-dev / build / test 等 Task 怎样建立执行关系？
+开发、构建、测试等任务怎样建立执行关系？
         ↓
-Task 完成后产生什么 Artifact，怎样 Release / Deploy 到 Runtime？
+任务完成后会产生什么构建产物，
+这些产物怎样形成可发布版本并进入运行环境？
         ↓
-当 Project、依赖和 Task 增多后，
-怎样通过 Boundary / Affected / Cache / CI / Ownership 控制工程复杂度？
+当项目、依赖和任务增多后，
+怎样限制依赖方向、缩小变更影响范围、复用任务结果，
+并通过持续集成、代码所有权和发布规则控制工程复杂度？
 ```
 
 前五个问题构成 Monorepo 的主生命周期，第六个问题对应贯穿主生命周期的工程治理。
 
-### 【Monorepo 主生命周期描述代码怎样从仓库组织走向运行环境】
+Monorepo 的主生命周期描述代码怎样从仓库组织逐步走向运行环境：
 
 ```text
 Repository / Project
@@ -67,9 +69,9 @@ Runtime
 
 因此这些概念不是一组并列术语。Repository 决定管理边界，Workspace 把 Project 变成可管理集合，Dependency 形成 Project Graph，Project Graph 再参与 Task Graph 和影响分析，Task 执行产生 Artifact，Artifact 经过 Release / Deploy 最终进入 Runtime。
 
-### 【工程治理横向约束主生命周期中的多个阶段】
+工程治理不是主生命周期之后的新阶段，而是横向作用于多个阶段的约束体系。
 
-工程治理（Engineering Governance）表示：**不改变主生命周期的基本阶段，而是在多个阶段同时增加边界、增量执行、质量门禁、所有权和发布约束。**
+工程治理（Engineering Governance）表示：**不改变主生命周期的基本阶段，而是在多个阶段同时增加依赖边界、增量执行、质量门禁、代码所有权和发布约束。**
 
 ```text
 Repository / Project
@@ -726,7 +728,7 @@ Docker Compose 的 `depends_on`、`healthcheck` 等机制用于描述 Runtime Se
 
 ---
 
-## 6. Engineering Governance 通过依赖、任务和交付治理控制规模化成本
+## 6. 工程治理通过依赖、任务和交付约束控制规模化成本
 
 工程治理（Engineering Governance）解决的是 Monorepo 扩大后的第二类问题：主生命周期本身已经能够运行，但 Project、Dependency 和 Task 越来越多以后，如果每次变化都全仓执行、依赖可以任意穿透、发布没有统一约束，工程成本会随规模快速上升。
 
