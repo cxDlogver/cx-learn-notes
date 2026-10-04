@@ -187,7 +187,7 @@ console.log(userModule.getRegisterTime()); // 输出：对应格式化时间
 
 ### 初步体验
 
-CommonJS规范主要用于Node.js环境，以下通过三个示例文件，演示CommonJS的基本使用：
+CommonJS规范主要用于Node.js环境，以下通过三个示例文件，演示CommonJS的基本使用。Node.js 如何在 Runtime 中加载 CommonJS 与 ECMAScript Modules、怎样结合 package.json 与 Module Loader 判断模块类型，继续参考 [Node.js Runtime 完整知识体系](./N-NodeJS核心总结.md)：
 
 1. 创建school.js（模块文件，定义并导出数据）
 
