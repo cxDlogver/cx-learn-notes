@@ -1369,98 +1369,163 @@ Coordination State
 
 而不是为了使用 Lua 或事务而强行把复杂业务状态搬进 Redis。
 
-## 4. Redis 的工程价值通过一组状态模式体现出来
+## 4. Redis 的工程价值来自状态模型组合，而不是单个数据结构或命令
 
-### 【Cache 保存可重新计算的读取结果】
+前两章回答了“Redis 有什么结构”和“Redis 如何保证一次状态修改的并发边界”。真正进入工程以后，还要继续问：这些能力组合起来，到底形成什么样的状态模型？
 
-最常见模式：
-
-~~~text
-Application
-↓
-GET Cache
-
-Hit
-↓
-Return
-
-Miss
-↓
-Read Database
-↓
-SET Cache + TTL
-↓
-Return
-~~~
-
-这就是 Cache-Aside（旁路缓存）。
-
-核心特点：
+一个完整 Redis State Model 至少要回答六个问题：
 
 ~~~text
-Database
-= Source of Truth
+1. Scope
+   这份状态属于谁？
 
-Redis Cache
-= Derived State
+2. Identity
+   哪些请求访问同一份状态？
+
+3. Structure
+   String / Hash / Set / ZSet / Stream？
+
+4. Access Pattern
+   整体读写、字段更新、计数、范围查询还是消费？
+
+5. Concurrency
+   单 Command、MULTI、WATCH、Lua 还是允许竞争？
+
+6. Lifecycle / Recovery
+   TTL 多久？丢失后如何恢复？是否需要 Persistence？
 ~~~
 
-因此 Cache 设计必须继续回答：
+### 【Session State Model 把身份凭证映射成共享运行时状态】
 
-- TTL 多久；
-- Database 更新后如何 Invalidate；
-- Cache Stampede 怎么控制；
-- Redis 故障时能否直接回源；
-- Value 是否可能成为 Big Key。
-
-### 【Session 把认证状态变成多实例共享 Runtime State】
-
-Session 模型：
+典型 Session 链：
 
 ~~~text
-Browser
-↓ Session ID
-API A / API B
+Login
 ↓
-Redis
+验证账号
 ↓
-Session State
+生成 Session Token
+↓
+Redis 保存 Session State
+↓
+Browser 保存 Cookie / Token
+↓
+后续 Request
+↓
+Token → Redis Key
+↓
+GET Session
+↓
+恢复 Authenticated User
 ~~~
 
-Redis 的价值不是“Session 一定要用 Redis”，而是当 API 横向扩容以后，Session 不能只放在某台 Node.js 进程内存中。
+#### <u>1. Session 适合 Redis 的核心原因是跨实例共享 + 高频读取 + TTL</u>
 
-Session 还需要关注：
+如果 Session 只放 API A 内存：
 
 ~~~text
-TTL
-Logout Invalidation
-Password Reset / Account Revocation
-Persistence Requirement
-Redis Failure Behavior
+Request 1 → API A
+登录成功
+
+Request 2 → API B
+查不到 Session
 ~~~
 
-具体身份链路继续阅读 [Web 身份认证、会话控制与访问控制体系](./W-Web身份认证会话控制与访问控制体系.md)。
+Redis 让多个 API Instance 都能访问同一个 Session Key。
 
-### 【Counter 把高频增量状态收缩成原子数字】
+#### <u>2. 固定 TTL 与 Sliding TTL 是两种不同会话模型</u>
 
-Counter 典型：
+固定 TTL：
 
 ~~~text
-INCR page:view
-HINCRBY stats accepted 1
+Login
+↓
+TTL = 30min
+↓
+期间请求不延长
+↓
+30min 到期
 ~~~
 
-适合运行统计、版本号、简单配额和增量信号。
+Sliding Session：
 
-Counter 是否能成为最终统计结果取决于是否允许丢失和是否需要审计。重要业务报表不能仅因为 Redis Counter 很方便，就把它直接当权威历史。
+~~~text
+每次活跃请求
+↓
+刷新 TTL
+↓
+只要持续活跃就继续延长
+~~~
 
-### 【Rate Limit 把共享预算转成 Allow / Reject 决策】
+两者会影响安全、用户体验和 Redis 写入量，不能只写“Session 有 TTL”。
 
-Rate Limit（限流）回答：
+#### <u>3. Logout 本质是 Session Invalidation</u>
 
-> 一个 Scope 在某个时间尺度内最多能够消耗多少资源？
+~~~text
+DEL session:<token>
+~~~
 
-常见 Scope：
+比等待 TTL 自然到期更及时。
+
+但如果 Session 同时在数据库和 Redis 有记录，就会继续进入第五章的 Dual Write / Revocation Window 问题。
+
+### 【Counter State Model 把高频增量压缩成原子数字变化】
+
+Counter 至少可以分成两类：
+
+~~~text
+统计型 Counter
+↓
+accepted / rejected / requests / bytes
+
+协调型 Counter
+↓
+version / generation / sequence
+~~~
+
+#### <u>1. 统计型 Counter 更关注累加结果</u>
+
+INCR / HINCRBY 把：
+
+~~~text
+Read old
++
+Add
++
+Write new
+~~~
+
+收进单 Command。
+
+#### <u>2. 协调型 Counter 更关注状态世代变化</u>
+
+例如 Cache Version：
+
+~~~text
+version = 8
+↓
+数据变化
+↓
+INCR
+↓
+version = 9
+~~~
+
+这里 9 本身没有业务含义，它表达：之前基于 Version 8 构造的 Cache Namespace 已经过期。
+
+因此 Counter 不只是统计工具，也可以是轻量 Coordination State。
+
+### 【Rate Limit State Model 把共享预算映射成 Allow / Reject 决策】
+
+限流回答：
+
+~~~text
+某个 Scope
+在某段时间内
+允许消耗多少 Resource？
+~~~
+
+Scope 可以是：
 
 ~~~text
 IP
@@ -1468,69 +1533,339 @@ User
 API Key
 Tenant
 Project
+Endpoint
 ~~~
 
-常见算法：
+#### <u>1. Fixed Window、Sliding Window、Token Bucket、Leaky Bucket 解决不同流量形状</u>
 
-| 算法 | 直观模型 | 特点 |
-| --- | --- | --- |
-| Fixed Window | 每分钟最多 N 次 | 简单，窗口边界可能突发 |
-| Sliding Window | 当前时间往前 N 秒 | 更平滑，状态更多 |
-| Token Bucket | 令牌持续补充、请求消耗 | 支持受控 Burst |
-| Leaky Bucket | 以稳定速率泄出 | 更强调平滑输出 |
-
-Redis 适合 Distributed Rate Limiting（分布式限流）的原因可以压缩成三层：
+Fixed Window：
 
 ~~~text
-为什么不能只用进程内 Map？
-↓
-多 API Instance 需要共享同一预算
-
-为什么 Redis 合适？
-↓
-高频、小状态、低延迟、TTL、原子操作
-
-为什么复杂算法常用 Lua？
-↓
-Read → Compute → Decision → Write
-必须形成原子边界
+每分钟 100 次
 ~~~
 
-Redis 官方 Rate Limiter 文档明确将共享存储、原子计数、TTL、Hash / Sorted Set / String 与 Lua 原子 read-decide-update 作为其适配限流的关键能力。[1]
+优点是简单；缺点是两个窗口边界附近可能短时间集中放行接近两倍流量。
 
-### 【Pub/Sub 与 Stream 分别服务瞬时广播和持久事件流】
-
-Redis Pub/Sub：
+Sliding Window：
 
 ~~~text
-Publisher
-↓
-Channel
-↓
-Subscribers
+现在往前 60 秒
+最多 100 次
 ~~~
 
-更适合在线实例之间的瞬时通知、Cache Invalidation Signal、WebSocket Node Broadcast。
+更平滑，但需要保存或近似统计时间窗口。
 
-Subscriber 离线时不会天然获得历史消息，所以 Pub/Sub 不能等同于 Durable Event Log。
-
-Redis Stream：
+Token Bucket：
 
 ~~~text
-XADD
-↓
-Stream
-↓
-Consumer Group
-↓
-XREADGROUP
-↓
-XACK
+持续补 Token
+Request 消耗 Token
 ~~~
 
-提供持久记录和 Consumer Group，因此更接近消息与事件流模型。是否应该使用 Redis Streams、RabbitMQ、Kafka 或 Database-backed Job Store，需要结合吞吐、Replay、消费组、路由与运维成本继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
+允许：
 
----
+~~~text
+长期平均受限
++
+短时间 Burst
+~~~
+
+Leaky Bucket 更强调把输出速率平滑成稳定节奏。
+
+#### <u>2. Token Bucket 的核心不是 DECR，而是四个状态步骤</u>
+
+~~~text
+State
+├── tokens
+├── updated
+├── rate
+└── burst
+~~~
+
+请求 cost 到达：
+
+~~~text
+elapsed = now - updated
+↓
+tokens = min(
+  burst,
+  tokens + elapsed × rate
+)
+↓
+tokens >= cost ?
+├── No → Reject
+└── Yes → tokens -= cost
+↓
+保存 tokens / updated
+~~~
+
+这就是为什么 Token Bucket 常与 Hash + Lua 配合。
+
+#### <u>3. Redis 适合分布式限流，不是因为 Redis 只服务限流</u>
+
+而是因为它同时提供：
+
+~~~text
+共享 State
++
+低延迟
++
+TTL
++
+原子 Command
++
+Lua
++
+Sorted Set / Hash / String
+~~~
+
+使不同限流算法都能映射成 Redis State Model。[28]
+
+### 【Recent Time Window 保存“最近发生了什么”，不是长期历史】
+
+滑动时间窗口也常用于观察：
+
+~~~text
+最近 1 分钟发生了哪些请求？
+最近 5 分钟有哪些错误？
+最近 10 分钟有哪些活跃用户？
+~~~
+
+Sorted Set：
+
+~~~text
+Score = timestamp
+Member = event identity
+~~~
+
+写入：
+
+~~~text
+ZADD
+↓
+ZREMRANGEBYSCORE 清理旧成员
+~~~
+
+读取：
+
+~~~text
+ZRANGE / ZRANGEBYSCORE
+~~~
+
+Recent Window 是 Runtime / Operational State，不应该因为能保留最近数据就替代长期历史数据库。
+
+### 【Cache State Model 保存可重新生成的 Derived State】
+
+Cache-Aside：
+
+~~~text
+Request
+↓
+GET Cache
+↓
+Hit?
+├── Yes → Return
+└── No
+      ↓
+   Database Query
+      ↓
+   SET Cache + TTL
+      ↓
+   Return
+~~~
+
+Cache 最关键的属性是：
+
+~~~text
+可以没有
+可以重新生成
+不是 Source of Truth
+~~~
+
+#### <u>1. TTL 同时承担自动清理和有限陈旧上界</u>
+
+如果 TTL = 15s，那么 Cache 即使失效通知漏掉，也不会无限期保持。
+
+但 TTL 越短：
+
+~~~text
+Cache Miss 更多
+Database Pressure 更高
+~~~
+
+TTL 越长：
+
+~~~text
+Hit Rate 更高
+Staleness Window 更长
+~~~
+
+所以 TTL 是一致性与性能的 Trade-off。
+
+### 【Versioned Invalidation 用 Generation 隔离大量旧 Cache】
+
+当一个业务查询可以产生非常多 Cache Key：
+
+~~~text
+overview:<filters>
+routes:<filters>
+performance:<filters>
+~~~
+
+逐个 DEL 很难。
+
+可以增加：
+
+~~~text
+version = 8
+~~~
+
+Cache Key：
+
+~~~text
+analytics:v8:<query>
+~~~
+
+数据变化：
+
+~~~text
+INCR version
+↓
+9
+~~~
+
+新请求只访问：
+
+~~~text
+analytics:v9:<query>
+~~~
+
+旧 v8 Cache 仍然物理存在，但逻辑不可达，最终由 TTL 删除。
+
+#### <u>1. Version Pattern 是 Logical Invalidation，不是 Physical Deletion</u>
+
+它不是枚举并删除所有旧 Key，而是切换 Namespace。
+
+#### <u>2. Version Pattern 还能隔离 Stale Write</u>
+
+假设：
+
+~~~text
+Request A
+读取 version = 8
+↓
+慢查询
+
+期间数据更新
+↓
+version → 9
+
+Request A 最后写回
+↓
+analytics:v8:...
+~~~
+
+虽然 A 写了旧结果，但它只能进入旧 Generation。
+
+新请求读取 v9，不会命中 v8。
+
+### 【Cache Stampede 是很多 Miss 同时回源的并发问题】
+
+假设热门 Cache 同时过期：
+
+~~~text
+1000 Requests
+↓
+全部 GET Miss
+↓
+1000 次 Database Query
+~~~
+
+常见治理方向：
+
+~~~text
+Single Flight / Request Coalescing
+Distributed Lock
+Early Refresh
+Stale-While-Revalidate
+TTL Jitter
+Prewarm
+~~~
+
+具体选择要看 Query 成本、是否允许短时旧数据、并发规模和锁失败策略。
+
+### 【Redis 快不只是因为 Memory，而是整个执行路径更直接】
+
+Redis 快的原因不只包括数据主要驻留内存，还包括：
+
+~~~text
+Key → Data Structure
+↓
+访问路径直接
+
+大量常见操作
+直接是原生命令
+↓
+INCR / HINCRBY / ZADD / EXPIRE
+
+不承担通用关系模型全部成本
+↓
+没有 JOIN / FK / 通用 Query Planner
+~~~
+
+关系数据库即使命中 Buffer Cache，仍然需要承担 SQL Parser、Planner、MVCC、Index、Transaction、Constraint 等更完整语义。
+
+所以 Redis 与关系数据库的性能差异来自数据位置、数据模型、执行语义和一致性能力共同决定的路径差异。
+
+### 【判断一份数据是否适合 Redis，需要先看状态性质】
+
+#### <u>1. 高频读写是信号，但不是充分条件</u>
+
+高频订单余额依然可能必须留在事务数据库。
+
+#### <u>2. 短生命周期和自动过期非常适合 Redis</u>
+
+例如 Session、Verification Code、Rate Limit Bucket、Temporary Cache。
+
+#### <u>3. 可重新计算的数据非常适合 Redis</u>
+
+例如 Query Cache、Derived Ranking、Materialized Runtime View。
+
+#### <u>4. 多实例共享 Runtime State 也适合 Redis</u>
+
+例如 Session、Rate Limit、Coordination Counter、Distributed Presence。
+
+#### <u>5. 复杂关系、强事务和长期权威历史更适合关系数据库</u>
+
+所以正确问题不是“Redis 能不能存”，而是“Redis 应不应该成为这份状态的长期责任边界”。
+
+### 【数据适合放 Redis 与 Redis 是否需要持久化是两个不同问题】
+
+可以按丢失后果把 Redis State 分级：
+
+~~~text
+Derived Cache
+↓
+丢失可重建
+
+Runtime State
+↓
+丢失影响体验或当前请求
+
+Control State
+↓
+丢失会短暂重置控制逻辑
+
+Operational State
+↓
+丢失可能让统计不完整
+
+Critical Runtime State
+↓
+丢失可能直接影响认证或业务连续性
+~~~
+
+同一个 Redis Instance 可能同时承载这些不同级别 State，因此 Persistence 和 Eviction 不能只用“Redis 是缓存”来决定。
 
 ## 5. Redis 与数据库的一致性问题来自两套独立状态没有共同事务
 
