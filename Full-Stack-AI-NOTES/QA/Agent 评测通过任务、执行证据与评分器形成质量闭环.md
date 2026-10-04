@@ -1,30 +1,24 @@
 # Agent 评测通过任务、执行证据与评分器形成质量闭环
 
-Agent Eval 的核心不是给模型输出“打一个分”，而是判断 **Agent 是否在真实环境中完成了预先定义的任务目标**。因此评测必须从成功标准开始，经真实执行、证据采集和评分，再形成可用于版本比较的指标与 Benchmark。
+## 回答要点
 
-模型自己声称“任务已完成”不能成为完成证明。Task 需要先定义 Success Criteria；一次真实执行形成 Trial；执行结束后收集 Output、Outcome、Trace / Trajectory、Cost 等证据；Grader 再根据证据判断结果；最后把大量 Trial 聚合成 Success Rate、pass@k、pass^k、成本和稳定性等指标，并通过固定 Suite / Benchmark 做持续回归。
+完整的 Agent Eval 应围绕“**如何独立证明 Agent 完成了任务，并把这种能力稳定地量化和比较**”构建，而不是从某一个分数或 LLM Judge 开始。
+
+1. **Task 与 Success Criteria 定义什么叫成功。** 任务需要提前明确目标、环境、约束和可验证结果，否则后续评分缺少稳定标准。
+2. **Trial 表示一次真实执行样本。** Agent 具有非确定性，同一 Task 要通过多次 Trial 才能观察完成能力与稳定性。
+3. **Evidence 证明 Trial 实际发生了什么。** Final Output 证明模型说了什么；Outcome 检查真实环境结果；Trajectory / Trace 记录执行过程；Cost、Latency 等补充效率证据。
+4. **Grader 根据证据做单次判断。** 可确定条件优先 Code Grader；开放质量使用带 Rubric 的 Model Grader；高风险、争议场景再引入 Human Review。
+5. **Rubric 把复杂质量拆成可检查标准。** 正确性、完整性、安全性、过程约束等可以分别判断，并区分必须通过的 Hard Gate 与可加权质量项。
+6. **Metric 把大量 Trial 聚合成系统能力。** Success Rate、pass@k、pass^k 分别观察总体成功、探索成功和连续稳定性，同时结合 Cost、Latency、Safety 等指标。
+7. **Suite / Benchmark 固定比较条件。** 固定任务集、环境、预算、评分规则和聚合口径后，不同模型、Prompt、Tool 或 Agent 版本才具有可比性。
+8. **Regression 把 Eval 变成研发闭环。** 线上失败和新风险持续回流评测集，每次系统变更后重新执行，判断能力提升和回归。
+9. **Trace 与 Eval 必须区分。** Trace 提供“发生了什么”的证据，Eval 判断“是否达到目标”；可观测性是评测输入之一，不等于评测本身。
 
 ```text
-什么叫成功？
-→ Task + Success Criteria
-        ↓
-让 Agent 真实执行
-→ Trial
-        ↓
-用什么证明结果？
-→ Output + Outcome + Trace / Trajectory + Cost
-        ↓
-谁来判断是否成功？
-→ Code Grader / Rubric Model / Human
-        ↓
-怎样衡量系统能力？
-→ Metrics
-        ↓
-怎样比较不同版本？
+Task + Success Criteria → Trial → Evidence
+→ Grader + Rubric → Metrics
 → Eval Suite / Benchmark → Regression
 ```
-
-后文沿这条“定义成功 → 执行 → 取证 → 评分 → 聚合 → 回归”的链路展开，并重点区分评测对象、证据、Grader、Rubric、Metric 和 Benchmark 的职责。
 ## 1. 评测以真实任务结果和执行证据为对象
 
 ### 【核心判断：Agent 的自我报告不能作为任务完成证明】
