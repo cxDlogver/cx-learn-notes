@@ -32,7 +32,7 @@ Retry / Backoff / Jitter / Dead Letter
 Backpressure / Scaling / Graceful Shutdown / Observability
 ~~~
 
-这条链可以进一步压缩成六个阶段：
+这条链可以进一步压缩成七个阶段：
 
 ~~~text
 1. 异步边界
@@ -44,17 +44,20 @@ Backpressure / Scaling / Graceful Shutdown / Observability
 3. 安全消费
    保证多个 Worker 能协调领取、处理和恢复任务
 
-4. 重复执行正确性
+4. 承载与分发基础设施
+   决定使用 Database Job Store、Message Broker 还是 Event Stream，并选择 Pull / Push 等分发方式
+
+5. 重复执行正确性
    接受 Redelivery 可能存在，并通过 Idempotency 保护业务结果
 
-5. 失败恢复
+6. 失败恢复
    区分可恢复故障和终止故障，建立 Retry → Dead Letter 闭环
 
-6. 容量与运行治理
+7. 容量与运行治理
    保证 Producer、Queue、Worker 和下游依赖长期保持可控
 ~~~
 
-理解这六层以后，RabbitMQ、SQS、Cloud Tasks、Redis Streams、Kafka 或 PostgreSQL Job Table 都只是不同实现选择，不再是彼此孤立的技术名词。
+理解这七层以后，RabbitMQ、SQS、Cloud Tasks、Redis Streams、Kafka 或 PostgreSQL Job Table 都只是不同实现选择，不再是彼此孤立的技术名词。
 
 ## 1. 异步边界决定一项业务工作是否离开当前 Request 生命周期
 
@@ -456,37 +459,6 @@ Worker C
 
 不同产品可能使用 Broker Delivery、Partition、Visibility Timeout、Distributed Lease、Database Row Lock 等实现。机制不同，问题相同。
 
-### 【Database-backed Job Store 可以利用 Row Lock 实现并发领取】
-
-Queue 并不要求必须使用专用 Broker。数据库表也可以保存 Durable Job，并通过状态字段、Transaction、Row Lock 与 Lease 构成 Job Store。
-
-PostgreSQL 的 FOR UPDATE SKIP LOCKED 是一种常见实现能力。PostgreSQL 官方明确指出：SKIP LOCKED 会跳过不能立即获得锁的行，因此视图可能不一致，不适合一般查询，但可以用于多个 Consumer 访问 queue-like table 时避免锁竞争。[[6]](https://www.postgresql.org/docs/18/sql-select.html)
-
-典型思路是：
-
-~~~text
-SELECT Ready Jobs
-ORDER BY ...
-LIMIT N
-FOR UPDATE SKIP LOCKED
-        ↓
-同一 Transaction 内
-标记为 Processing / 设置 Lease
-        ↓
-返回 Worker
-~~~
-
-这里要保留两个边界：
-
-~~~text
-SKIP LOCKED
-只是数据库并发领取手段
-
-它不是
-通用 Queue 算法
-也不意味着
-所有异步任务都应该使用 PostgreSQL
-~~~
 
 ### 【Crash Recovery 说明任务安全领取不等于只执行一次】
 
@@ -514,7 +486,7 @@ Lease 过期或 Broker Redelivery 后：
 
 因此安全消费的下一层问题不是“怎样彻底避免 Redelivery”，而是“Redelivery 发生时怎样仍然保持业务正确”。
 
-## 4. 重复执行正确性依靠 Delivery Semantics 与 Idempotency 共同建立
+## 5. 重复执行正确性依靠 Delivery Semantics 与 Idempotency 共同建立
 
 ### 【消息交付语义与业务 Side Effect（副作用）的执行语义必须分层】
 
@@ -641,7 +613,7 @@ Partition by Business Key
 
 顺序保证通常只应该缩小到真正需要的业务 Key 范围，否则全局串行会直接牺牲吞吐。
 
-## 5. 失败恢复通过 Retry、Backoff 与 Dead Letter 建立受控闭环
+## 6. 失败恢复通过 Retry、Backoff 与 Dead Letter 建立受控闭环
 
 ### 【Retry 之前先区分 Transient Failure 与 Permanent Failure】
 
@@ -769,7 +741,757 @@ Correlation / Trace Context
 
 Replay 之前必须先确认导致失败的代码、数据或依赖已经被修复；否则人工 Replay 只是在重新制造同一个失败。
 
-## 6. 容量与运行治理决定异步系统能否长期稳定工作
+## 4. 任务承载基础设施决定任务如何存储、分发与扩展
+
+前面三章先回答了三个问题：**为什么要异步、任务怎样可靠产生、Worker 怎样安全拥有处理权。** 下一步才进入基础设施选择：这些 Task / Event 到底由业务数据库自己承载，还是交给独立 Message Broker（消息代理）或 Event Streaming Platform（事件流平台）。
+
+这一章不按 Kafka、RabbitMQ、SQS 逐个平铺，而是先建立上位关系：
+
+~~~text
+异步工作已经产生
+        ↓
+需要一个 Durable Delivery Infrastructure
+        ↓
+任务 / 事件放在哪里？
+        │
+        ├── Database-backed Job Store
+        │      ↓
+        │   Database 保存 Task State
+        │   Application 实现 Claim / Lease / Retry / Replay 等语义
+        │
+        └── Message Broker / Stream Platform
+               ↓
+            独立消息基础设施
+               ↓
+            再根据消息模型分成
+            Queue-oriented
+            和
+            Log / Stream-oriented
+~~~
+
+这里最重要的不是“哪个产品更高级”，而是理解三层问题：
+
+~~~text
+第一层：承载在哪里？
+Database 还是独立 Broker
+
+第二层：怎样把工作交给 Consumer？
+Pull / Long Poll / Broker Delivery / Scheduler Dispatch
+
+第三层：消费的核心对象是什么？
+Task State 还是 Event Log + Consumer Position
+~~~
+
+把这三层分开以后，Database Job Table、RabbitMQ、SQS、Kafka、Redis Streams 才不会混成一组产品名。
+
+### 【Database-backed Job Store 直接用数据库承载 Durable Task】
+
+Database-backed Job Store（基于数据库的任务存储）把“待执行工作”直接保存成数据库记录。Queue 并不是一个额外产品，而是一张带状态、调度时间、领取者和重试信息的普通表。
+
+最小模型：
+
+~~~text
+Producer / API
+      ↓
+INSERT jobs
+      ↓
+Database
+      ↓
+Worker Poll / Claim
+      ↓
+Processing
+      ↓
+Succeeded / Retry / Failed
+~~~
+
+一个典型任务表：
+
+~~~sql
+CREATE TABLE jobs (
+  id            BIGSERIAL PRIMARY KEY,
+  type          TEXT NOT NULL,
+  payload       JSONB NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'pending',
+  owner         TEXT,
+  attempt       INT NOT NULL DEFAULT 0,
+  max_attempts  INT NOT NULL DEFAULT 3,
+  run_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  locked_until  TIMESTAMPTZ,
+  last_error    TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+~~~
+
+它的核心状态是：
+
+~~~text
+pending
+   ↓ claim
+processing
+   ├── success → completed
+   └── failure
+         ├── retry → pending
+         └── terminal → failed
+~~~
+
+所以 Database-backed Job Store 的本质是：
+
+> **Database Durable Storage + Task State Machine + Concurrency Control。**
+
+#### <u>1. Row Lock、SKIP LOCKED 与 Lease 共同解决多 Worker Claim</u>
+
+多个 Worker 同时查询同一张 Job Table 时，需要避免所有 Worker 等待同一行或同时认为自己拥有同一 Task。PostgreSQL 可以利用 FOR UPDATE SKIP LOCKED：
+
+~~~sql
+SELECT id
+FROM jobs
+WHERE status = 'pending'
+  AND run_at <= now()
+ORDER BY run_at
+LIMIT 100
+FOR UPDATE SKIP LOCKED;
+~~~
+
+然后在同一事务内把领取结果改成：
+
+~~~text
+status = processing
+owner = worker-A
+locked_until = ...
+~~~
+
+PostgreSQL 官方明确指出，SKIP LOCKED 会跳过不能立即取得锁的行；它不适合普通一致性查询，但适合多个 Consumer 访问 queue-like table 时避免锁竞争。[[6]](https://www.postgresql.org/docs/18/sql-select.html)
+
+这里三种机制承担不同职责：
+
+~~~text
+Row Lock
+↓
+避免 Claim 瞬间多个 Worker 同时修改同一候选行
+
+SKIP LOCKED
+↓
+其他 Worker 不必等待已被领取候选行
+
+Lease / locked_until
+↓
+Worker Crash 后允许其他 Worker 最终重新领取
+~~~
+
+#### <u>2. Polling 让 Worker 主动决定什么时候继续领取</u>
+
+数据库不会天然知道“哪个 Worker 当前最空闲”。常见模式是 Worker 主动循环：
+
+~~~text
+claim()
+↓
+有任务 → process
+↓
+处理完成
+↓
+再次 claim()
+
+没有任务
+↓
+sleep / delay
+↓
+再次 claim()
+~~~
+
+这种 Short Polling（短轮询）的优点是简单，而且处理快的 Worker 会更早回来再次 Claim，自然领取更多任务；处理慢的 Worker 更晚回来，不需要中央 Scheduler 维护 CPU、内存或 Available Slot。
+
+代价是 Queue 为空时仍然存在 Empty Poll。Poll Interval 越短，任务发现延迟越低，但数据库空查询越多；Interval 越长，数据库压力越低，但任务等待时间增加。
+
+#### <u>3. 数据库可以继续模拟 Offset、Consumer Group 与 Replay，但复杂度会转移到应用</u>
+
+数据库并非只能实现简单 Task Queue。继续增加：
+
+~~~text
+events
+├── sequence
+├── topic
+├── partition_key
+├── payload
+└── created_at
+
+consumer_offsets
+├── consumer_group
+├── partition
+└── next_offset
+~~~
+
+Consumer 再按 Offset 查询：
+
+~~~sql
+SELECT *
+FROM events
+WHERE sequence >= :nextOffset
+ORDER BY sequence
+LIMIT 100;
+~~~
+
+就已经有 Persistent Log（持久日志）、Consumer Position（消费者位置）和 Replay（重放）的雏形。
+
+但如果继续增加：
+
+~~~text
+Partition
+Group Membership
+Rebalance
+Retention
+Replication
+Flow Control
+Batch Fetch
+多 Consumer Group
+~~~
+
+系统会逐渐变成“在业务数据库上自己实现消息平台”。
+
+因此正确结论不是：
+
+~~~text
+Database 做不到
+Kafka 才做得到
+~~~
+
+而是：
+
+~~~text
+Database
+提供 Transaction / Lock / Index / Durable Storage
+↓
+Application 自己组合消息语义
+
+专业 Broker / Stream Platform
+↓
+把消息存储、分发、消费协调和运行治理
+做成基础设施原生能力
+~~~
+
+### 【Message Broker 将消息交付和消费协调从业务数据库中拆出来】
+
+Message Broker（消息代理）把 Producer 与 Consumer 之间的消息持久化、分发、确认和重新交付交给独立基础设施。
+
+基础链路：
+
+~~~text
+Producer
+   ↓ publish
+Broker
+   ↓ durable store / route / deliver
+Consumer
+   ↓ process
+ACK / Commit
+~~~
+
+Producer 不需要知道具体哪个 Worker 正在运行，Consumer 也不需要直接扫描业务数据库寻找待处理行。
+
+但 Message Broker 内部仍然至少存在两种不同思想：
+
+~~~text
+Message Infrastructure
+│
+├── Queue-oriented
+│   │
+│   ├── RabbitMQ
+│   └── SQS
+│   │
+│   └── 更强调：
+│       这条 Message / Task 是否完成
+│
+└── Log / Stream-oriented
+    │
+    ├── Kafka
+    └── Redis Streams
+        │
+        └── 更强调：
+            Event 保持在持久流中
+            Consumer 自己读到哪里
+~~~
+
+因此不能因为都叫“消息中间件”，就把 RabbitMQ 的 Queue / ACK 模型和 Kafka 的 Partition / Offset 模型理解成同一种内部机制。
+
+#### <u>1. Queue-oriented Broker 更自然地承载一次性 Task / Command</u>
+
+如果语义是 SendEmail、GenerateReport、ResizeImage，系统通常最关心“这条任务有没有被处理完成”。
+
+RabbitMQ 的典型模型：
+
+~~~text
+Producer
+↓
+Exchange
+↓ Routing
+Queue
+↓ Delivery
+Consumer
+↓
+ACK
+~~~
+
+SQS 更接近：
+
+~~~text
+Producer
+↓
+Queue
+↓
+Consumer ReceiveMessage
+↓
+Visibility Timeout
+↓
+Process
+↓
+DeleteMessage
+~~~
+
+两者实现不同，但都更接近“一项待完成工作”的 Queue 思维。
+
+#### <u>2. Log / Stream-oriented Broker 更自然地承载可以被反复读取的 Event</u>
+
+如果语义是 OrderPaid、UserRegistered、PageViewed、LogProduced，这些事情在发布时已经发生。系统真正需要回答的是：
+
+~~~text
+哪些独立下游已经处理到哪里？
+是否需要新的下游以后再读取？
+是否需要 Replay 历史？
+~~~
+
+这时 Persistent Event Log 比“单一 Task Completed 状态”更自然，Kafka 正是这一分支的典型代表。
+
+### 【任务分发方式是承载基础设施之上的第二个维度】
+
+“任务存在哪里”和“任务怎样到 Worker”不是同一个问题。
+
+~~~text
+Durable Queue / Store
+        ↓
+怎样到达 Worker？
+        │
+        ├── Pull
+        │   ├── Short Polling
+        │   ├── Long Polling
+        │   └── Batch Fetch
+        │
+        ├── Broker Push / Delivery
+        │   └── ACK / Prefetch / Credit 控制投递
+        │
+        └── Scheduler Dispatch
+            └── Heartbeat / Capacity / Resource
+                决定具体 Task → Worker
+~~~
+
+| 模式 | 谁主动 | Worker 容量如何体现 | 典型实现 |
+| --- | --- | --- | --- |
+| Short Polling Pull | Worker | 处理完以后再次 Poll | Database Job Table |
+| Long Polling Pull | Worker | Receive 请求等待消息到达 | Amazon SQS |
+| Batch Fetch Pull | Consumer | Consumer 控制 Fetch / Batch 节奏 | Kafka |
+| Broker Push / Delivery | Broker | ACK + Prefetch / Credit 限制未确认消息 | RabbitMQ |
+| Scheduler Dispatch | Scheduler | Heartbeat、Slot、CPU / Memory / GPU | 分布式计算 / 资源调度 |
+
+SQS 的 ReceiveMessage 可以通过 WaitTimeSeconds 实现 Long Polling，减少 Queue 为空时的空请求。[[9]](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html)
+
+RabbitMQ 注册 Consumer 后由 Broker Delivery，但它通常不是实时读取 Worker CPU 后寻找“最空闲机器”，而是通过 Consumer ACK 和 Prefetch 控制 Consumer 当前允许持有的未确认消息数量。[[10]](https://www.rabbitmq.com/docs/consumer-prefetch)
+
+真正的 Scheduler Dispatch 则会维护 Worker Membership、Heartbeat、Available Slot、资源标签和 Placement，更适合 GPU 训练、分布式计算、构建等异构资源任务。
+
+### 【Kafka 用“持久化分区日志 + Consumer Position”组织 Event Stream】
+
+Kafka 不应该继续平铺成 Topic、Partition、Offset、Consumer Group 一串孤立术语。它们属于同一条因果链：
+
+~~~text
+Event 需要长期保留并支持多个独立下游
+        ↓
+Topic 表示一类 Event Stream
+        ↓
+单条 Log 无法无限并行
+        ↓
+Topic 拆成多个 Partition
+        ↓
+每个 Partition 内用 Offset 标识位置
+        ↓
+Consumer Group 表示一个逻辑订阅者
+        ↓
+Group 内 Consumer 分摊 Partition
+        ↓
+每个 Group 独立保存消费位置
+        ↓
+形成 Lag、Crash Recovery 与 Replay
+~~~
+
+#### <u>1. Topic → Partition → Offset 先解决存储、顺序与并行</u>
+
+Topic（主题）表示一类 Event Stream；Partition（分区）把 Topic 拆成多个可以独立追加和读取的有序日志；Offset（偏移量）表示 Record 在某个 Partition 内的位置。
+
+~~~text
+Topic: order-events
+│
+├── Partition 0
+│   0 → 1 → 2 → 3 → ...
+│
+├── Partition 1
+│   0 → 1 → 2 → 3 → ...
+│
+└── Partition 2
+    0 → 1 → 2 → 3 → ...
+~~~
+
+Offset 只在单个 Partition 内有意义，不是整个 Topic 的全局编号。
+
+Kafka 只保证 Partition 内顺序，所以 Producer 常把具有顺序要求的业务实体 ID 作为 Message Key：
+
+~~~text
+key = orderId = 10001
+
+OrderCreated(10001)
+OrderPaid(10001)
+OrderShipped(10001)
+        ↓
+稳定进入同一 Partition
+        ↓
+保持该订单事件的相对顺序
+~~~
+
+Partition 同时决定一个 Consumer Group 的主要并行单位，因此增加 Partition 本质是在扩大可并行处理空间，而不是简单增加一个配置数字。
+
+#### <u>2. Consumer Group 同时实现 Group 间订阅与 Group 内分工</u>
+
+假设 Topic 有三个 Partition：
+
+~~~text
+order-events
+├── P0
+├── P1
+└── P2
+~~~
+
+库存系统建立：
+
+~~~text
+group.id = inventory-group
+~~~
+
+并启动三个 Consumer：
+
+~~~text
+inventory-group
+├── Consumer A ← P0
+├── Consumer B ← P1
+└── Consumer C ← P2
+~~~
+
+同一个 Consumer Group 内，一个 Partition 同一时刻只由该 Group 中一个 Consumer 负责，所以多个 Consumer 是在共同完成**同一个逻辑订阅者**的工作。
+
+再建立 analytics-group、risk-group，并都订阅 order-events：
+
+~~~text
+                         order-events
+                              │
+          ┌───────────────────┼───────────────────┐
+          ↓                   ↓                   ↓
+ inventory-group       analytics-group        risk-group
+       │                    │                    │
+   A / B / C              D / E                  F
+~~~
+
+这时关系可以压缩成：
+
+~~~text
+不同 Consumer Group
+=
+Publish / Subscribe
+
+同一个 Consumer Group 内多个 Consumer
+=
+Partition Load Balance
+~~~
+
+Kafka 官方把 Consumer Group 作为一个逻辑 Subscriber：同 Group 内实例分摊 Partition，不同 Group 可以各自订阅同一 Topic。[[11]](https://kafka.apache.org/documentation/)
+
+#### <u>3. Offset Commit 把“处理状态”从 Event 转移到 Consumer Group</u>
+
+传统 Queue 更关心：
+
+~~~text
+Task
+pending
+↓
+processing
+↓
+completed / failed
+~~~
+
+状态绑定在 Task 本身。
+
+Kafka 中 Event 本身保持不变：
+
+~~~text
+Partition 1
+
+104  OrderCreated
+105  OrderPaid
+106  OrderShipped
+~~~
+
+真正变化的是：
+
+~~~text
+inventory-group
+P1 → 106
+
+analytics-group
+P1 → 103
+~~~
+
+所以：
+
+~~~text
+Commit Offset
+≠
+Delete Event
+~~~
+
+它表达的是：这个 Consumer Group 对这个 Partition 已经推进到哪个位置。
+
+由此自然得到：
+
+~~~text
+Crash Recovery
+↓
+从已提交 Offset 附近继续
+
+Consumer Lag
+↓
+Log End Offset - Consumer Position
+
+Replay
+↓
+把 Consumer Position 调回更早位置重新读取
+~~~
+
+这也是“传统 Queue 更关心任务做完没有，而 Kafka 更关心 Consumer 读到哪里”的真正工程意义：**Event 的生命周期和每个 Consumer 的处理进度被解耦了。**
+
+#### <u>4. Producer 发布到 Topic，Consumer Group 订阅 Topic</u>
+
+以订单支付事件为例：
+
+~~~text
+Order Service
+    ↓
+publish OrderPaid
+    ↓
+Topic: order-events
+    ↓
+Partition 1
+Offset 105
+    │
+    ├──────────────────┬──────────────────┐
+    ↓                  ↓                  ↓
+inventory-group   analytics-group      risk-group
+    ↓                  ↓                  ↓
+库存处理            GMV 统计            风控判断
+~~~
+
+Producer 发布时只需要 Topic、Key、Value，它不需要知道库存、分析、风控系统是否存在，也不需要知道每个下游有几个 Consumer。
+
+未来增加 recommendation-group 时，只要它订阅相同 Topic；在 Retention 允许的历史范围内，新 Group 可以从需要的位置开始读取，并且不会修改其他 Group 的消费位置。
+
+因此 Kafka 更适合：**一份 Event Stream 会被多个彼此独立的业务下游以不同速度处理，并且需要新增订阅者、Retention、Replay、独立 Lag 和 Partition 级扩展的场景。**
+
+#### <u>5. KafkaJS 的 TypeScript API 将发布订阅链映射到代码</u>
+
+Node.js / TypeScript 可以使用 KafkaJS 观察最小发布链。
+
+Producer：
+
+~~~ts
+import { Kafka } from 'kafkajs';
+
+const kafka = new Kafka({
+  clientId: 'order-service',
+  brokers: ['localhost:9092'],
+});
+
+const producer = kafka.producer();
+
+await producer.connect();
+
+const event = {
+  type: 'OrderPaid',
+  orderId: '10001',
+  amount: 299,
+};
+
+await producer.send({
+  topic: 'order-events',
+  messages: [
+    {
+      key: event.orderId,
+      value: JSON.stringify(event),
+    },
+  ],
+});
+~~~
+
+对应：
+
+~~~text
+producer.send()
+↓
+Topic = order-events
+↓
+Message Key = orderId
+↓
+Partition Selection
+↓
+Append Record
+↓
+产生 Partition 内 Offset
+~~~
+
+KafkaJS 官方 producer.send() 用于向 Topic 发布 Message；Message Key 会参与 Partition 选择。[[13]](https://kafka.js.org/docs/producing)
+
+Consumer：
+
+~~~ts
+const consumer = kafka.consumer({
+  groupId: 'inventory-group',
+});
+
+await consumer.connect();
+
+await consumer.subscribe({
+  topics: ['order-events'],
+});
+
+await consumer.run({
+  eachMessage: async ({ topic, partition, message }) => {
+    if (!message.value) return;
+
+    const event = JSON.parse(message.value.toString());
+
+    await updateInventory(event);
+
+    console.log({
+      topic,
+      partition,
+      offset: message.offset,
+    });
+  },
+});
+~~~
+
+对应：
+
+~~~text
+kafka.consumer({ groupId })
+↓
+确定逻辑订阅者
+
+subscribe()
+↓
+声明订阅 Topic
+
+run()
+↓
+启动持续消费循环
+
+内部 Batch Fetch
+↓
+eachMessage()
+↓
+业务处理
+↓
+推进 / 提交 Offset
+~~~
+
+KafkaJS 的 eachMessage 建立在批量消费机制之上；底层仍由 Consumer 主动 Fetch，只是库封装了持续 Fetch、Heartbeat 与常规 Offset 管理。[[14]](https://kafka.js.org/docs/consuming)
+
+学习可靠消费时，可以关闭自动 Commit：
+
+~~~ts
+await consumer.run({
+  autoCommit: false,
+
+  eachMessage: async ({ topic, partition, message }) => {
+    if (!message.value) return;
+
+    await updateInventory(
+      JSON.parse(message.value.toString()),
+    );
+
+    await consumer.commitOffsets([
+      {
+        topic,
+        partition,
+        offset: (BigInt(message.offset) + 1n).toString(),
+      },
+    ]);
+  },
+});
+~~~
+
+offset + 1 表示下一次恢复时从下一条开始，但手工 Commit 仍然不能消除：
+
+~~~text
+业务数据库写成功
+↓
+Process Crash
+↓
+Offset 尚未 Commit
+↓
+同一 Record 再次处理
+~~~
+
+因此 Kafka Consumer 仍然要继续进入下一章的 At-least-once 与 Idempotency。
+
+### 【Database Job Store、RabbitMQ、SQS、Kafka 应从工作语义和消费模型选择】
+
+| 方案 | 核心抽象 | 典型分发 | 强项 | 更自然的场景 |
+| --- | --- | --- | --- | --- |
+| Database Job Store | Task Row + State | Poll / Claim | 本地事务简单、组件少 | 后台 Job、与业务 DB 强关联 |
+| RabbitMQ | Queue + Exchange | Broker Delivery + ACK / Prefetch | Routing、Work Queue | 业务任务、复杂路由 |
+| SQS | Managed Queue | Long Poll + Visibility Timeout | 托管 Queue、部署治理简单 | 云上后台任务 |
+| Redis Streams | Stream + Consumer Group | Blocking Read / Claim / ACK | 已有 Redis 时的轻量流式消费 | 中等规模 Stream / Worker |
+| Kafka | Partitioned Event Log | Batch Fetch + Consumer Group | 多订阅者、Retention、Replay、高吞吐 | Event Pipeline、CDC、日志、多个独立下游 |
+
+演进判断：
+
+~~~text
+现在解决的是一次性 Task
+还是长期复用的 Event Stream？
+        ↓
+是否需要多个独立 Consumer Group？
+        ↓
+是否需要 Retention / Replay？
+        ↓
+是否需要 Partition 级高吞吐并行？
+        ↓
+Database Polling / Queue State Update
+是否已经成为真实热点？
+        ↓
+再决定是否从 Database Job Store
+演进到专业 Broker / Stream Platform
+~~~
+
+如果业务状态写库和 Broker Publish 同时发生，即使最终引入 Kafka / RabbitMQ，Producer 侧仍可能继续保留 Transactional Outbox：
+
+~~~text
+Business Transaction
+├── Business Data
+└── Outbox Event
+↓
+COMMIT
+↓
+Relay / CDC
+↓
+Broker
+~~~
+
+因此 Outbox 与 Broker 不是互斥替代关系：**Outbox 解决 Database → Broker 的可靠交接，Broker 解决 Message / Event → Consumers 的可靠分发。**
+
+## 7. 容量与运行治理决定异步系统能否长期稳定工作
 
 ### 【Producer Rate 与 Consumer Throughput 决定 Queue 是否持续积压】
 
@@ -931,587 +1653,7 @@ Process Exit
 
 这把异步任务与运行部署连接起来：Container / Service 的生命周期继续阅读 [Docker 工程体系](./D-Docker工程体系.md)。
 
-### 【Database-backed Job Store 与 Message Broker 应按系统需求选择】
-
-先讲清楚这两种模式各自是什么，再对比。
-
-**1. Database-backed Job Store（数据库任务表）**
-
-把「待执行的任务」直接当成一行数据，存进你**业务数据库里的一张表**（常叫 `jobs` / `task_queue`）。Worker 用 SQL 去这张表里「领取」任务——典型写法：`UPDATE ... SET status='running', owner=:me WHERE status='pending' LIMIT 1`（配合行锁或租约 Lease 防止多 Worker 抢同一条）。任务的状态流转、重试、失败记录，全部靠数据库事务和索引来管。
-
-> 本质：复用你**已有的那个数据库**，不引入任何新组件。所谓的「队列」，就是一张普通的表。
-
-一个常见的 `jobs` 表存储模板（PostgreSQL 为例）：
-
-```sql
-CREATE TABLE jobs (
-  id            BIGSERIAL    PRIMARY KEY,
-  type          TEXT         NOT NULL,       -- 任务类型，如 'send_email' / 'export_report'
-  payload       JSONB        NOT NULL,       -- 任务入参（业务自定义结构）
-  status        TEXT         NOT NULL DEFAULT 'pending',  -- pending / running / succeeded / failed
-  owner         TEXT,                         -- 当前领取该任务的 Worker 标识
-  attempt       INT          NOT NULL DEFAULT 0,          -- 已重试次数
-  max_attempts  INT          NOT NULL DEFAULT 3,          -- 超过则标记为 failed，不再重试
-  run_at        TIMESTAMPTZ  NOT NULL DEFAULT now(),      -- 最早可执行时间（用于延迟任务）
-  locked_until  TIMESTAMPTZ,                 -- 租约到期时间：配合 Lease 防止多 Worker 重复领取
-  last_error    TEXT,                         -- 最近一次失败原因，便于排查
-  created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
-);
-
--- 关键：原子地「抢占」一条待执行任务（跳过已被其它事务锁住的行）
-UPDATE jobs
-SET status = 'running',
-    owner = :workerId,
-    locked_until = now() + interval '5 minutes',
-    attempt = attempt + 1
-WHERE id = (
-  SELECT id FROM jobs
-  WHERE status = 'pending'
-    AND run_at <= now()             -- 延迟任务未到时间不领
-  ORDER BY run_at ASC               -- 先到先得
-  LIMIT 1
-  FOR UPDATE SKIP LOCKED           -- 跳过被别的事务锁住的行，Worker 之间不互相等待
-)
-RETURNING *;
-```
-
-要点：Worker 处理成功就把 `status` 置为 `succeeded`；失败则把 `attempt + 1`，若已达 `max_attempts` 置为 `failed`，否则保持 `pending` 等待下次领取。**若 Worker 在 `locked_until` 前崩溃**，该行租约过期后其它 Worker 可重新领取，从而不会留下永久 `running` 的僵尸任务——这正是上一节 Graceful Shutdown / Lease 超时机制在存储层的落点。
-
-**2. Message Broker / Managed Queue（消息中间件 / 托管队列）**
-
-引入一个**独立的消息基础设施**（如 Kafka、RabbitMQ）或云平台托管的队列服务（如 Cloud Tasks、SQS）。Producer 把消息「发布」进 Broker，由 Broker 负责持久化、路由、再投递给 Consumer。任务的领取、确认（ack）、重投、扇出（Fan-out），都是 Broker 的**原生能力**。
-
-> 本质：把「任务流转」从数据库里剥离出来，交给专门的消息系统去治理，数据库只管业务数据。
-
-两者**不是**「低级方案」和「高级方案」的关系，而是**不同复杂度和能力边界**——选哪个取决于你的吞吐、耦合度与治理需求，而不是「越复杂越先进」。
-
-| 维度 | Database-backed Job Store（数据库任务表） | Message Broker / Managed Queue（消息中间件 / 托管队列） |
-| --- | --- | --- |
-| 基础设施 | 可复用现有数据库，较简单，无新组件 | 多一个独立消息基础设施或托管服务，运维成本更高 |
-| 与业务事务结合 | 容易：直接在同一 Local Transaction 里写任务，或用 Outbox | 通常需要 Outbox、Broker Transaction 或产品自身能力来衔接业务事务 |
-| 领取协调 | 靠 Row Lock（行锁）/ Lease（租约）/ Polling（轮询）自己实现 | Broker / Queue 原生 Delivery（投递与 ack 机制开箱即用） |
-| 高吞吐扩展 | 容易受主数据库压力影响，吞吐上限受 DB 制约 | 通常更适合专业消息吞吐与路由，扩展性强 |
-| Pub/Sub / Fan-out（发布订阅 / 扇出） | 需要额外自己设计（如多写几条记录） | 很多 Broker 原生支持（一个消息推给多个消费者组） |
-| Replay / Routing / Partition（重放 / 路由 / 分区） | 自行实现较多，较费劲 | 取决于具体产品，通常能力更丰富 |
-| 适合场景 | 中小规模后台任务、与数据库事务强耦合的业务 | 大规模解耦、复杂路由、多 Consumer、需要独立消息治理 |
-
-演进判断应该从实际问题出发：
-
-~~~text
-当前 Database Job Queue
-↓
-是否出现明显 DB Contention / Polling Cost？
-↓
-是否需要大量 Fan-out / 多 Consumer Group？
-↓
-是否需要独立 Partition / Replay / Routing？
-↓
-是否已经需要单独的 Message SLO 和容量治理？
-↓
-再决定是否引入 Broker
-~~~
-
-不要仅因为系统出现 Worker 就提前引入复杂消息基础设施。
-
-
-### 【任务分发模式首先区分 Pull、Broker Push 与 Scheduler Dispatch】
-
-“有任务以后怎样交给 Worker”是 Queue / Broker 的另一条核心主线。不要把所有系统都理解成“中央系统实时找到最空闲 Worker 再分配”，主流实现至少分成三类：
-
-~~~text
-任务已经进入 Durable Queue / Store
-        ↓
-怎样到达 Worker？
-        │
-        ├── Pull（Worker 主动领取）
-        │   ├── Short Polling
-        │   ├── Long Polling
-        │   └── Batch Fetch
-        │
-        ├── Broker Push / Delivery
-        │   └── Broker 按 ACK / Prefetch / Credit 控制投递
-        │
-        └── Scheduler Dispatch
-            └── Scheduler 根据 Worker Heartbeat / Capacity / Resource
-                主动决定 Task → Worker
-~~~
-
-| 模式 | 谁主动 | Worker 容量如何体现 | 典型实现 |
-| --- | --- | --- | --- |
-| Short Polling Pull | Worker | Worker 处理完以后再次 Poll | Database Job Table |
-| Long Polling Pull | Worker | Worker 发起 Receive，请求可等待消息出现 | Amazon SQS |
-| Batch Fetch Pull | Consumer | Consumer 按 Fetch / Batch 节奏读取 | Kafka |
-| Broker Push / Delivery | Broker | ACK + Prefetch / Credit 限制未确认消息 | RabbitMQ |
-| Scheduler Dispatch | Scheduler | Heartbeat、Slot、CPU / Memory / GPU 等资源状态 | 分布式计算 / 资源调度系统 |
-
-Pull 的优势是 Worker 自己最清楚什么时候有能力继续领取任务。处理快的 Worker 更早回到 Claim / Fetch，自然会拿到更多工作；处理慢的 Worker 更晚回来，不需要中央调度器实时计算“谁最空闲”。
-
-Short Polling 的代价是空轮询。Poll Interval 越短，任务发现延迟越低，但 Queue 为空时的无效请求越多。Long Polling 仍然属于 Pull，只是 Queue 在没有消息时暂不立即返回 empty，而是等待消息到达或超时。Amazon SQS 的 ReceiveMessage 通过 WaitTimeSeconds 提供这种能力。[[9]](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html)
-
-RabbitMQ 更接近 Broker 主动 Delivery：Consumer 先注册订阅，Broker 再持续投递消息。但这里的“Push”通常不是 Broker 实时读取每台 Worker 的 CPU 后寻找“最空闲机器”，而是利用 Consumer Acknowledgement（消费者确认）和 Prefetch（预取额度）控制一个 Consumer 最多持有多少未确认消息。[[10]](https://www.rabbitmq.com/docs/consumer-prefetch)
-
-真正的 Scheduler Dispatch 则属于另一种复杂度：Scheduler 维护 Worker Membership、Heartbeat、Available Slots 和资源标签，再决定某个任务具体落在哪个 Worker。它适合 GPU 训练、分布式计算、构建任务等资源差异明显的工作，而普通同质后台任务通常不需要这套 Placement（放置）能力。
-
-### 【Database-backed Job Store 可以模拟更多 Broker 语义，但复杂度会逐渐转移到应用自身】
-
-数据库当然可以继续实现比“pending → processing → completed”更复杂的消费模型。例如可以建立：
-
-~~~text
-events
-├── id / sequence
-├── topic
-├── partition_key
-├── payload
-└── created_at
-
-consumer_offsets
-├── consumer_group
-├── partition
-└── next_offset
-~~~
-
-Consumer 查询：
-
-~~~sql
-SELECT *
-FROM events
-WHERE id >= :nextOffset
-ORDER BY id
-LIMIT 100;
-~~~
-
-处理成功后再更新 consumer_offsets，就已经具备了 Persistent Log（持久日志）、Consumer Position（消费者位置）和 Replay（重放）的雏形。继续增加 Partition、Group Membership、Rebalance、Retention、Replication、流控和批量 Fetch，数据库方案理论上也可以逐步逼近专业 Broker。
-
-所以差别并不是：
-
-~~~text
-Database 做不到
-Kafka 才做得到
-~~~
-
-而是：
-
-~~~text
-Database
-提供 Transaction / Lock / Index / Durable Storage
-↓
-应用自己组合消息语义
-
-Kafka / RabbitMQ / SQS
-↓
-把大量消息交付、消费协调和运行治理
-做成基础设施原生能力
-~~~
-
-当这些语义越来越多时，继续基于业务数据库自建消息协议，会把锁竞争、状态表、清理策略、Consumer 进度、路由和故障恢复复杂度全部留给应用维护。这才是专业 Message Broker 的工程价值。
-
-### 【传统 Queue 把处理状态绑定在 Task 上，Kafka 把消费进度绑定在 Consumer Group 上】
-
-传统 Job Queue 更自然地表达 Command / Task：
-
-~~~text
-SendEmail
-GenerateReport
-ResizeImage
-~~~
-
-它关注：
-
-~~~text
-这条任务处理完了吗？
-
-pending
-↓
-processing
-↓
-completed / failed
-~~~
-
-因此 Task 自己拥有生命周期状态。
-
-Kafka 更自然地表达已经发生的 Event：
-
-~~~text
-OrderCreated
-OrderPaid
-UserRegistered
-~~~
-
-Event 被追加到持久日志以后，不会因为某个 Consumer 处理完成就变成 completed。真正变化的是不同 Consumer Group 各自的消费位置：
-
-~~~text
-Partition
-
-100  OrderCreated
-101  OrderPaid
-102  OrderShipped
-103  OrderCancelled
-       ↑        ↑
-   analytics  inventory
-~~~
-
-因此可以把两者压缩成：
-
-~~~text
-Queue
-=
-Task-centric
-处理状态属于 Task
-
-Kafka
-=
-Log + Consumer-centric
-消费进度属于 Consumer Group
-~~~
-
-这个差异直接产生：
-
-| 维度 | 传统 Queue | Kafka |
-| --- | --- | --- |
-| 核心状态 | Task Status | Consumer Group Offset |
-| 消费成功 | ACK / Mark Completed | Advance / Commit Offset |
-| 多个独立下游 | 通常路由 / 复制到多个 Queue | 多个 Consumer Group 独立读取同一 Log |
-| 历史 Replay | 需要保留历史并重新造 Task，或产品额外支持 | Offset Reset / Seek 后重新读取 Retention 内数据 |
-| 慢消费者 | Queue Backlog / Oldest Task Age | Consumer Lag |
-| 数据生命周期 | 经常围绕任务完成和清理 | Retention 与某个 Consumer 是否已读解耦 |
-
-Kafka 官方把 Topic 的每个 Partition 定义为持续追加的有序日志，每条 Record 在 Partition 内拥有 Offset；数据是否被 Consumer 读取并不直接决定其删除时间，而由 Retention 控制。Consumer 可以改变自己的位置重新处理旧数据。[[11]](https://kafka.apache.org/documentation/)
-
-### 【Kafka 通过 Topic → Partition → Offset 建立可并行的持久事件日志】
-
-Kafka 的核心数据结构不是单个 Queue，而是：
-
-~~~text
-Topic
-│
-├── Partition 0
-│   └── 0 → 1 → 2 → 3 → ...
-│
-├── Partition 1
-│   └── 0 → 1 → 2 → 3 → ...
-│
-└── Partition 2
-    └── 0 → 1 → 2 → 3 → ...
-~~~
-
-Topic（主题）表示一类 Event Stream。Partition（分区）把一个 Topic 拆成多个可以并行读写的有序日志。Offset（偏移量）是 Record 在某个 Partition 内的位置，不是整个 Topic 的全局序号。
-
-Kafka 只保证单个 Partition 内的顺序，而不提供跨 Partition 的全局顺序。Producer 因此常把业务实体 ID 作为 Message Key，使同一实体相关的事件稳定进入同一 Partition：
-
-~~~text
-key = orderId = 10001
-
-OrderCreated(10001)
-OrderPaid(10001)
-OrderShipped(10001)
-        ↓
-同一 Partition
-        ↓
-保持该订单事件的相对顺序
-~~~
-
-Partition 同时也是 Consumer Group 内的并行单位，因此 Partition 数会约束一个 Consumer Group 的有效并行度。
-
-### 【Consumer Group 让 Kafka 同时拥有“Group 间发布订阅”和“Group 内负载分摊”】
-
-假设 order-events 有三个 Partition：
-
-~~~text
-order-events
-├── P0
-├── P1
-└── P2
-~~~
-
-库存系统建立 group.id = inventory-group，并启动三个 Consumer：
-
-~~~text
-inventory-group
-├── Consumer A ← P0
-├── Consumer B ← P1
-└── Consumer C ← P2
-~~~
-
-同一个 Consumer Group 内，一个 Partition 在同一时刻只由该 Group 中一个 Consumer 负责，因此三个 Consumer 是在共同完成一个逻辑订阅者的工作。增加 Consumer 是水平扩容，不是让同一 Event 广播三份。
-
-如果再增加 analytics-group、risk-group，并都订阅 order-events：
-
-~~~text
-                         order-events
-                              │
-          ┌───────────────────┼───────────────────┐
-          ↓                   ↓                   ↓
- inventory-group       analytics-group        risk-group
-       │                    │                    │
-   A / B / C              D / E                  F
-~~~
-
-不同 Consumer Group 各自拥有独立消费位置，因此都可以处理同一份 Event Stream。
-
-所以 Kafka 发布订阅模型可以压缩成：
-
-~~~text
-不同 Consumer Group
-=
-Publish / Subscribe
-
-同一个 Consumer Group 内多个 Consumer
-=
-Partition Load Balance
-~~~
-
-Kafka 官方把 Consumer Group 描述为一个逻辑 Subscriber：同 Group 内实例分摊 Partition；不同 Group 可以各自订阅同一 Topic。[[11]](https://kafka.apache.org/documentation/)
-
-### 【Kafka 的发布订阅不把 Producer 与具体 Consumer 绑定】
-
-用订单系统举例：
-
-~~~text
-Order Service
-    ↓
-发布 OrderPaid
-    ↓
-Topic: order-events
-    ↓
-Partition 1
-Offset 105
-    │
-    ├──────────────────┬──────────────────┐
-    ↓                  ↓                  ↓
-inventory-group   analytics-group      risk-group
-    ↓                  ↓                  ↓
-库存处理            GMV 统计            风控判断
-~~~
-
-Producer 发布时只需要决定 Topic、Key、Value，不需要知道库存、分析、风控系统是否存在，也不需要知道它们各自有几个 Consumer。
-
-假设半年后增加 recommendation-group，只要它订阅 order-events，在历史数据仍处于 Retention 范围内时，就可以从需要的位置开始消费，而不会改变其他 Group 的消费进度。
-
-因此 Kafka 特别适合：**一份 Event Stream 会被多个彼此独立的业务下游以不同速度处理，并且需要新增订阅者、保留历史、Replay 或独立扩容的场景。**
-
-如果需求只是“生成 PDF”“发一封邮件”“处理一张图片”这类明确的一次性工作，Task Queue 通常更直接；如果是“订单已支付”“用户已注册”“日志已产生”这种已经发生的事实，并且多个系统都可能关心，Event Stream 更自然。
-
-### 【Offset Commit 保存的是 Consumer Group 的恢复位置，不是删除 Event】
-
-假设：
-
-~~~text
-Partition 1
-
-104  OrderCreated
-105  OrderPaid
-106  OrderShipped
-~~~
-
-inventory-group 成功处理 105 后，提交的是下一次恢复消费应该从哪里继续，例如概念上推进到 106。
-
-~~~text
-Commit Offset
-≠
-Delete Event 105
-~~~
-
-而是：
-
-~~~text
-inventory-group
-对 Partition 1
-已经推进到这个位置
-~~~
-
-另一个 analytics-group 完全可以仍停留在更早的位置。
-
-Consumer Crash 后，新实例通过 Group Coordination 接手 Partition，并从已提交 Offset 附近继续处理；Consumer 加入或退出导致 Partition 重新分配的过程称为 Rebalance（再均衡）。Kafka 的 Consumer Offset 由 Consumer Group 独立维护，Group 可以在重启后从已提交位置恢复。[[12]](https://kafka.apache.org/41/implementation/distribution/)
-
-Consumer Lag（消费者积压）通常可以理解为：
-
-~~~text
-Log End Offset
--
-Consumer Group Current Offset
-=
-Lag
-~~~
-
-它回答的不是“有多少 Task 状态是 pending”，而是“这个 Consumer Group 距离 Event Stream 的最新位置还有多远”。
-
-### 【KafkaJS 的 TypeScript API 可以把发布与订阅链直接映射到上述概念】
-
-Node.js / TypeScript 中可以使用 KafkaJS 观察一条最小代码链。下面代码只是通用示例，不代表任何项目必须使用 KafkaJS。
-
-Producer：
-
-~~~ts
-import { Kafka } from 'kafkajs';
-
-const kafka = new Kafka({
-  clientId: 'order-service',
-  brokers: ['localhost:9092'],
-});
-
-const producer = kafka.producer();
-
-await producer.connect();
-
-const event = {
-  type: 'OrderPaid',
-  orderId: '10001',
-  amount: 299,
-};
-
-await producer.send({
-  topic: 'order-events',
-  messages: [
-    {
-      key: event.orderId,
-      value: JSON.stringify(event),
-    },
-  ],
-});
-~~~
-
-代码链：
-
-~~~text
-producer.send()
-↓
-Topic = order-events
-↓
-Message Key = orderId
-↓
-Partition Selection
-↓
-Append Record
-↓
-产生该 Partition 内 Offset
-~~~
-
-KafkaJS 官方 producer.send() 用于向 Topic 发布 Message；Message key 会参与 Partition 选择，同一业务 Key 可用于维持相关 Event 的 Partition 内顺序。[[13]](https://kafka.js.org/docs/producing)
-
-Consumer：
-
-~~~ts
-const consumer = kafka.consumer({
-  groupId: 'inventory-group',
-});
-
-await consumer.connect();
-
-await consumer.subscribe({
-  topics: ['order-events'],
-});
-
-await consumer.run({
-  eachMessage: async ({ topic, partition, message }) => {
-    if (!message.value) return;
-
-    const event = JSON.parse(message.value.toString());
-
-    await updateInventory(event);
-
-    console.log({
-      topic,
-      partition,
-      offset: message.offset,
-    });
-  },
-});
-~~~
-
-这条 API 链可以读成：
-
-~~~text
-kafka.consumer({ groupId })
-↓
-确定“我是哪个逻辑订阅者”
-
-subscribe()
-↓
-声明订阅哪些 Topic
-
-run()
-↓
-启动持续消费循环
-
-内部 Batch Fetch
-↓
-eachMessage()
-↓
-执行业务处理
-↓
-按 Consumer 配置推进 / 提交 Offset
-~~~
-
-KafkaJS 的 eachMessage 建立在 eachBatch 之上；底层消息仍然按 Batch 从 Kafka Fetch，只是库把持续 Fetch、Heartbeat 和常规 Offset 处理封装起来。[[14]](https://kafka.js.org/docs/consuming)
-
-学习可靠消费时，也可以关闭自动 Commit：
-
-~~~ts
-await consumer.run({
-  autoCommit: false,
-
-  eachMessage: async ({ topic, partition, message }) => {
-    if (!message.value) return;
-
-    await updateInventory(
-      JSON.parse(message.value.toString()),
-    );
-
-    await consumer.commitOffsets([
-      {
-        topic,
-        partition,
-        offset: (BigInt(message.offset) + 1n).toString(),
-      },
-    ]);
-  },
-});
-~~~
-
-这里 offset + 1 表达“下一次恢复时从下一条开始”。但手工 Commit 不能消除 At-least-once 的故障窗口：
-
-~~~text
-业务数据库写成功
-↓
-Process Crash
-↓
-Offset 尚未 Commit
-↓
-Record 再次处理
-~~~
-
-所以 Kafka Consumer 仍然需要 Idempotency。KafkaJS 官方区分自动 Commit 与 consumer.commitOffsets() 的手工 Commit，并说明把业务结果和消费 Offset 原子写入同一个外部存储可以获得比默认 Offset Commit 更强的一致性边界。[[14]](https://kafka.js.org/docs/consuming)
-
-### 【Kafka、RabbitMQ、SQS 与 Database Job Store 应按工作语义和消费模型选择】
-
-| 方案 | 核心抽象 | 典型分发方式 | 强项 | 更自然的场景 |
-| --- | --- | --- | --- | --- |
-| Database Job Store | Task Row + State | Poll / Claim | 与数据库事务结合简单、组件少 | 后台 Job、与业务 DB 强关联 |
-| RabbitMQ | Queue + Exchange | Broker Delivery + ACK / Prefetch | Routing、Work Queue、Consumer Delivery 控制 | 业务任务、复杂路由 |
-| SQS | Managed Queue | ReceiveMessage / Long Poll + Visibility Timeout | 托管 Queue、简单可靠的 Worker 解耦 | 云上后台任务 |
-| Kafka | Partitioned Event Log | Consumer Batch Fetch + Consumer Group | 多独立订阅者、Retention、Replay、高吞吐 Event Stream | Event Pipeline、日志、CDC、多个独立下游 |
-
-架构演进的判断顺序：
-
-~~~text
-现在解决的是一次性 Task
-还是可长期复用的 Event Stream？
-        ↓
-是否需要多个独立 Consumer Group？
-        ↓
-是否需要 Retention / Replay？
-        ↓
-是否需要 Partition 级高吞吐并行？
-        ↓
-业务数据库是否已经被 Polling / Queue State 更新拖成热点？
-        ↓
-再决定是否从 Database Job Store
-演进到专业 Broker / Stream Platform
-~~~
-
-
-## 7. 异步任务体系通过上下游知识和项目实践形成完整学习路径
+## 8. 异步任务体系通过上下游知识和项目实践形成完整学习路径
 
 ### 【通用知识先连接 Runtime、Database 与 Deployment】
 
@@ -1551,13 +1693,14 @@ Docker / Service Runtime / Observability
 - [计划打卡 iOS Worker](../ios-plan-checkin/apps/worker/src/planReminders.ts)：PostgreSQL-backed Job Queue 的另一类代码实践入口。
 - [计划打卡 Mobile Outbox Runner](../ios-plan-checkin/apps/mobile/src/data/outboxRunner.ts)：客户端 Durable Outbox、Retry、Backoff 与 Jitter 的代码实践入口。
 
-Browser Monitor 专题与本文六阶段主线对应如下：
+Browser Monitor 专题与本文七阶段主线对应如下：
 
 | 通用知识阶段 | Browser Monitor 专题对应位置 |
 | --- | --- |
 | 异步边界 | 第 1 章：API 202、API / Worker Process 分离 |
 | 可靠交接 | 第 2 章：telemetry_events + outbox_tasks 同事务 |
 | 安全消费 | 第 3 章：Task State、SKIP LOCKED、Lease、Graceful Shutdown |
+| 承载与分发基础设施 | 第 8 章：当前 Database-backed Job Store + Polling Pull，以及 Kafka 演进边界 |
 | 重复执行正确性 | 第 4 章：At-least-once、Unique Key、Advisory Lock、sequence |
 | 失败恢复 | 第 5 章：Retry、Exponential Backoff、Dead Letter、Manual Replay |
 | 容量与运行治理 | 第 6～7 章：Cache Version、后台维护、Batch / Concurrency、Service Status、Metrics 与 Queue Lag 演进 |
@@ -1604,7 +1747,7 @@ Worker Crash 为什么会 Redelivery？
 
 只要能够把这条链讲清楚，就已经从“会使用 Queue / Worker”进入了“能够设计和解释可靠异步系统”的层级。
 
-## 8. 参考文献
+## 9. 参考文献
 
 [1] Google Cloud. Cloud Tasks compared to Pub/Sub. https://cloud.google.com/tasks/docs/comp-pub-sub
 
