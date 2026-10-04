@@ -8,7 +8,7 @@
 
 ### 【NestJS 不是 HTTP Server，也不是 Node.js 的替代品】
 
-从服务端完整链路看，NestJS 位于运行时和底层 Web Framework 之上：
+从服务端完整链路看，NestJS 位于运行时和底层 Web Framework 之上。Node Process、Event Loop、异步 I/O、Worker Thread 等更底层运行机制统一参考 [Node.js Runtime 完整知识体系](./N-NodeJS核心总结.md)：
 
 ```text
 Client
