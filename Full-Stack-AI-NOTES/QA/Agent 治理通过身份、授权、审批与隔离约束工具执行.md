@@ -1,89 +1,28 @@
 # Agent 治理通过身份、授权、审批与隔离约束工具执行
 
-**原问题：** Agent 中的治理规则体系应该如何设计？治理规则应该放在哪里，一条 Tool Call 又应该经过怎样的控制链路？
+Agent Governance 的核心边界是：**模型可以提出动作，但不能决定真实动作是否有权执行。** 因此治理不能只依赖 Prompt、Guardrail 或某一个审批节点，而要沿着动作从“模型意图”变成“真实业务副作用”的全过程设置可信控制点。
 
-**回答要点：**
-
-- 可信身份由服务端认证，业务权限由资源后端校验，Prompt 和 Skill 负责行为指导，不能替代授权。
-- 工具是否可见、具体动作是否允许、是否需要审批、在哪个隔离环境执行是不同控制点。
-- Runtime 在执行前校验参数、资源权限与策略；高风险动作暂停审批，恢复时重新核验身份、规则和资源状态。
-- SDK 护栏与审批的顺序、适用工具范围需要按具体配置说明，业务治理图不等于 SDK 默认实现。
-- 审批状态应可信保存并防重复消费，Trace 与审计保留身份、决策和执行结果证据。
-
-本题与[Agent System 研发知识梳理](<../A-Agent-System研发知识梳理.md>)中的治理与执行控制部分相互参照。原问题及讲解来自[《Agent范式演进》原始资料](<../resource/Agent范式演进-原始资料.md>)，本文按问题视图完整整理；工程职责划分不冒充框架统一定义。
-
-这个问题不适合从 Prompt、Guardrail 或 HITL 某一个具体机制开始讲，而应该先回答两个更基础的问题。
-
-第一，**Agent Governance（Agent 治理）到底要治理什么。**
-
-传统软件系统本身就存在 Authentication（身份认证）、Authorization（权限校验）、风险控制和 Audit（审计）。Agent 出现以后，这些机制没有消失，而是因为执行主体从“用户直接操作系统”变成了“用户委托 Agent 操作系统”，又增加了 Agent 自主决策和非确定性带来的风险。
-
-因此 Agent Governance 主要解决两类问题：
+一次 Tool Call 真正执行前，系统需要确认发起身份、当前允许暴露的能力、该身份对具体资源的动作权限，以及高风险操作是否需要人工批准；执行阶段还要限制可访问的环境和资源，并由真实业务后端做最终校验；执行以后再通过 Trace / Audit 保存治理证据。
 
 ```text
-用户身份与权限问题
-谁在使用 Agent？
-Agent 能代表这个用户做什么？
-
-            +
-
-Agent 自身的不确定性问题
-即使有权限，
-Agent 会不会因为错误判断执行高风险 Action？
-```
-
-第二，**治理规则不能全部放在一个位置。**
-
-更合理的设计是：
-
-```text
-Governance Policy
-统一定义治理规则
+Model 提出 Tool Call
         ↓
-不同控制点分别执行
-
-Prompt / Skill
-→ 行为软约束
-
-Tool Registry / Workflow
-→ 控制当前暴露哪些能力
-
-Runtime Policy
-→ 判断当前具体 Tool Call 是否允许
-
-Guardrail / HITL
-→ 控制风险行为
-
-Business Backend
-→ 最终资源权限校验
-
-Sandbox
-→ 限制执行影响范围
-
-Trace / Audit
-→ 保存完整治理证据
+Authentication：谁在发起？
+        ↓
+Tool Exposure：当前可以看到哪些能力？
+        ↓
+Authorization：能否对该资源执行该动作？
+        ↓
+Human Approval：高风险动作是否需要批准？
+        ↓
+Sandbox / Resource Boundary：允许在哪里执行？
+        ↓
+Backend Revalidation：真实副作用是否最终允许？
+        ↓
+Trace / Audit：怎样证明发生过什么？
 ```
 
-所以整个回答可以沿着下面这条主线展开：
-
-```text
-治理目标
-   ↓
-治理规则放在哪里
-   ↓
-软约束与硬约束的边界
-   ↓
-能力可见性与权限控制的边界
-   ↓
-Tool Call 产生以后怎样做动态判断
-   ↓
-高风险操作怎样通过 HITL 控制
-   ↓
-最终 Backend 和 Sandbox 怎样兜底
-   ↓
-形成完整 Tool Call 治理链路
-```
-
+因此后文会把 Prompt / Skill 的行为指导、Tool 可见性、业务授权、HITL、Sandbox、后端校验和审计拆成不同控制职责，并说明恢复任务时为什么还需要重新核验关键安全条件。
 ## 1. 治理规则贯穿身份、动作与执行边界
 
 ### 【Agent Governance 的定位与治理目标】
