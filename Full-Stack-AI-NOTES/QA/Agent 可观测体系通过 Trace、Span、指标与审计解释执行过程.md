@@ -1,30 +1,29 @@
 # Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程
 
-Agent 可观测性的目标不是“记录更多日志”，而是让系统能够回答两类问题：**一次 Agent Run 到底发生了什么，以及大量 Agent Run 的整体运行状态怎样。** 因此 Trace、Span、Log、Metric、Audit 分别承担不同观察粒度，必须组合使用而不是互相替代。
+## 回答要点
 
-单次任务需要 Trace 关联完整链路，再用 Span 拆出模型调用、Tool 调用、Agent 节点和业务阶段，Log 补充局部事件与错误细节；当问题从单次任务扩大到系统趋势时，需要 Metric 聚合成功率、延迟、Token 和错误率；涉及身份、审批和敏感动作时，还需要 Audit 保存治理证据。
+Agent Observability 要围绕“**如何从一次动态 Agent Run 还原因果过程，再从大量 Run 中观察系统趋势**”构建。Trace、Span、Log、Metric 和 Audit 分别解决链路、步骤、细节、聚合和治理证据问题。
+
+1. **Trace 为一次 Agent Run 建立统一主线。** 多轮 Model Call、Tool Call、Handoff、Retry 和审批通过 Trace ID 关联到同一次任务。
+2. **Span 把 Trace 拆成可分析执行单元。** Model、Tool、Agent、Workflow Stage、Retrieval 等形成 Span，父子关系表达执行作用域，使系统能定位耗时和错误位置。
+3. **Log 补充具体事件。** 参数校验失败、异常栈和业务状态变化通过 Trace / Span ID 与主链关联，而不是形成孤立日志。
+4. **Context 与 Tool Call 关联解释“为什么这样做”。** 仅有执行顺序不足以解释模型决策，还要关联模型可见信息摘要、Tool Call ID、参数、Observation 和关键 State 变化，同时进行脱敏。
+5. **Metric 把单次执行扩展到整体趋势。** 成功率、延迟、Token、Tool Error、Retry 和成本用于趋势、SLO 和告警。
+6. **Audit 回答治理与追责问题。** 身份、授权、审批和敏感动作通常需要独立的留存与访问要求。
+7. **Instrumentation 决定数据怎样产生。** Runtime 自动记录通用 Model / Tool / Agent 节点，业务 Hooks 和自定义 Span 补充业务阶段和资源信息。
+8. **Processor / Exporter / Backend 完成处理和查询。** 观测数据经过采样、过滤、脱敏、批处理和导出后进入分析后端。
+9. **Observability 与 Eval、Checkpoint 边界不同。** Trace 回答发生了什么，Eval 判断做得是否正确，Checkpoint 保存从哪里恢复。
 
 ```text
-想还原一次任务整体过程
-→ Trace
+Run → Trace → Span → Log / Context / Tool Call
         ↓
-想拆出模型、Tool、Agent 和业务步骤
-→ Span
+单次问题还原
         ↓
-想解释某一步的具体事件和错误
-→ Log
-        ↓
-想观察大量任务的趋势
-→ Metric
-        ↓
-想证明敏感动作由谁批准和执行
-→ Audit
-        ↓
-统一处理、导出、查询和分析
-→ Observability Backend
-```
+Metric 聚合 → Trend / SLO / Alert
 
-后文沿“观测目标 → 运行时采集 → 数据关联 → 导出分析 → 治理边界”展开。需要始终保持两个边界：Trace 是执行证据但不是任务成功判定，因此不能替代 Eval；Trace 记录发生过什么，也不能替代用于恢复执行的 Checkpoint。
+治理动作 → Audit
+采集结果 → Processor / Exporter → Backend
+```
 ## 1. 任务与步骤通过 Trace 和 Span 建立可检查的执行主线
 
 ### 【Agent Observability 的核心目标】
