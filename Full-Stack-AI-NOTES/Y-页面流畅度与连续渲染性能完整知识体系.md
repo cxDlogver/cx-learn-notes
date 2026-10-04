@@ -6,10 +6,10 @@
 
 它不替代以下已有知识：
 
-- [性能专项优化](./性能专项优化.md)：负责完整前端性能指标、监控采集与 RUM 体系；
-- [基于 Chrome 浏览器渲染原理](./基于Chrome浏览器渲染原理.md)：负责 JavaScript → Style → Layout → Paint → Composite 的浏览器渲染流水线；
-- [Vue 应用级性能分析及优化](./Vue应用级性能分析及优化.md)：负责 Vue 应用层的性能定位与框架实践；
-- [WebSocket 完整知识体系](./WebSocket完整知识体系.md)：负责实时连接、可靠恢复与 Backpressure 的通信侧知识。
+- [性能专项优化](X-性能专项优化.md)：负责完整前端性能指标、监控采集与 RUM 体系；
+- [基于 Chrome 浏览器渲染原理](J-基于Chrome浏览器渲染原理.md)：负责 JavaScript → Style → Layout → Paint → Composite 的浏览器渲染流水线；
+- [Vue 应用级性能分析及优化](V-Vue应用级性能分析及优化.md)：负责 Vue 应用层的性能定位与框架实践；
+- [WebSocket 完整知识体系](W-WebSocket完整知识体系.md)：负责实时连接、可靠恢复与 Backpressure 的通信侧知识。
 
 本文建立另一条独立主线：**持续视觉更新怎样从“看起来卡”变成一个可测量、可定位、可优化、可验证的问题。**
 
@@ -1273,11 +1273,11 @@ Performance Panel + LoAF + Call Tree 定位具体代码
 
 相关文档：
 
-- [基于 Chrome 浏览器渲染原理](./基于Chrome浏览器渲染原理.md)
-- [性能专项优化](./性能专项优化.md)
-- [Vue 应用级性能分析及优化](./Vue应用级性能分析及优化.md)
-- [WebSocket 完整知识体系](./WebSocket完整知识体系.md)
-- [二维地图绘制](./二维地图绘制.md)
+- [基于 Chrome 浏览器渲染原理](J-基于Chrome浏览器渲染原理.md)
+- [性能专项优化](X-性能专项优化.md)
+- [Vue 应用级性能分析及优化](V-Vue应用级性能分析及优化.md)
+- [WebSocket 完整知识体系](W-WebSocket完整知识体系.md)
+- [二维地图绘制](E-二维地图绘制.md)
 - [ECharts 从 0 到 1](./12-ECharts从0到1.md)
 
 ### 【实战分析入口】

@@ -1145,7 +1145,7 @@ Google 对三项指标分别给出了明确含义：**LCP 衡量用户感知到�
 
 对于 Smoothness，目前不存在一组等价的官方 Good / Poor 阈值。实际项目可以根据业务场景建立 Performance Budget（性能预算），例如对地图拖拽、Canvas 动画、图表更新等连续渲染过程定义 Frame Time P95、超预算帧比例或卡顿率等结果指标。**这类阈值属于企业工程标准，而不是 Core Web Vitals 标准。**
 
-Smoothness 的完整学习不应该继续在本综合性能文档中展开成另一套渲染诊断体系。关于 **Frame Production（帧生产）+ Data Progress（数据进度）双主线、FPS / Frame Time / LoAF / Queue 指标组合、N / K / C / H / B 根因模型、Batch / Rate / History / Empty Render 受控实验，以及从定位到优化再到 Soak 验收的完整闭环**，统一进入 [页面流畅度与连续渲染性能完整知识体系](./页面流畅度与连续渲染性能完整知识体系.md)。本文继续承担性能指标、监控采集与 RUM 的上位入口。
+Smoothness 的完整学习不应该继续在本综合性能文档中展开成另一套渲染诊断体系。关于 **Frame Production（帧生产）+ Data Progress（数据进度）双主线、FPS / Frame Time / LoAF / Queue 指标组合、N / K / C / H / B 根因模型、Batch / Rate / History / Empty Render 受控实验，以及从定位到优化再到 Soak 验收的完整闭环**，统一进入 [页面流畅度与连续渲染性能完整知识体系](Y-页面流畅度与连续渲染性能完整知识体系.md)。本文继续承担性能指标、监控采集与 RUM 的上位入口。
 
 结果指标负责描述**最终体验**，诊断数据负责描述**产生这个结果的运行过程**。
 

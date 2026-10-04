@@ -186,6 +186,8 @@ Agent Runtime 持续读写 State
 
 Checkpoint 保存的是“继续执行所需的数据”，Trace 记录的是“这次执行发生了什么”。两者用途不同，不能互相替代。[13](https://docs.langchain.com/oss/python/langgraph/persistence) [14](https://openai.github.io/openai-agents-python/tracing/)
 
+配置 Checkpointer 后，LangGraph 还会保存同一 super-step 中已成功节点的 Pending Writes（待提交写入），恢复时可复用这些结果。它不等于完整 StateSnapshot，也不保证节点内未提交代码和外部副作用不会重放；后者仍需幂等保护或业务对账。[37](https://docs.langchain.com/oss/python/langgraph/checkpointers)
+
 **Trace 也不等于 Eval。** Trace 是 Runtime 产生的运行事实；Eval 会进一步结合 Trace、Outcome、最终输出和资源消耗，通过 Grader 判断一次 Trial 是否满足 Task 的成功标准。完整评测链路见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ### 【开发一个 Agent System，需要建设什么】
@@ -1366,6 +1368,8 @@ OpenAI Agents SDK 的异步 Function Tool 可以直接设置单次调用超时�
 
 ### 【Trace 和审计记录在哪里生成】
 
+Python Agents SDK 默认 Trace 处理器会导出到 OpenAI 后端：`add_trace_processor()` 增加目的地，`set_trace_processors()` 替换处理器列表。`trace_include_sensitive_data` 默认开启；关闭它不等于 metadata、error 和自定义 Span 已脱敏，业务应在导出前处理这些字段。Trace Processor 主要处理 Trace / Span，日志、业务指标与审计仍需分别接入并关联。[14](https://openai.github.io/openai-agents-python/tracing/)
+
 Runtime 在每个接入点发出事件。业务代码不需要各自拼接完整日志。
 
 ~~~js
@@ -1470,3 +1474,4 @@ Runtime 和框架负责按固定顺序调用它们。新增 Tool 时，注册新
 34. [AWS Builders' Library — Making Retries Safe with Idempotent APIs](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/)
 35. [NIST — AI Risk Management Framework Playbook](https://airc.nist.gov/docs/AI_RMF_Playbook.pdf)
 36. [LangChain JavaScript — Custom Middleware](https://docs.langchain.com/oss/javascript/langchain/middleware/custom)
+37. [LangGraph — Checkpointers](https://docs.langchain.com/oss/python/langgraph/checkpointers)

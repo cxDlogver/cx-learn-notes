@@ -1779,6 +1779,8 @@ Anthropic 在 2025 年的长任务研究中明确指出：
 
 > 把大型任务拆成可以处理的小块；通过 Structured Artifacts（结构化产物）在不同 Session 之间传递 Context。[[19]](https://www.anthropic.com/engineering/harness-design-long-running-apps)
 
+这组角色与任务拆分是实验方案，不是长任务的固定标准。该文后续随模型能力提升移除了 sprint 分解，并把每阶段评测调整为最终评测；应根据真实失败、任务依赖和模型能力选择拆分粒度与反馈频率，避免永久固化某一代模型的补偿机制。[[19]](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+
 因此，一个长任务通常会逐渐形成：
 
 Long-running Task → Planning → Task 1 → Artifact + Evaluation → Task 2 → Artifact + Evaluation → Task 3
