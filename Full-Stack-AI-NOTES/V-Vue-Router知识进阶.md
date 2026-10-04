@@ -8,7 +8,7 @@ categories:
 
 ## 1. `Vue Router` 快速上手
 
-[Vue Router快速上手 - 相](./Vue3快速上手.md/#4. 路由)
+[Vue Router快速上手 - 相](./V-Vue3快速上手.md/#4. 路由)
 
 ## 2. 路由守卫
 

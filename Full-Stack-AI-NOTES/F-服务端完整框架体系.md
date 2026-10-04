@@ -598,7 +598,7 @@ HTTPS 在哪里终止
 
 这是两个完全不同的职责。
 
-本章在这里仅建立 Reverse Proxy 位于“网络入口 → HTTP Server”之间的位置认知。关于 Public Entry / Internal Upstream、路径路由、Forwarded Header、CORS、静态 Web、负载均衡和 Caddy / Nginx 的完整体系，继续阅读 [反向代理与 Web 入口体系](./反向代理与Web入口体系.md)。
+本章在这里仅建立 Reverse Proxy 位于“网络入口 → HTTP Server”之间的位置认知。关于 Public Entry / Internal Upstream、路径路由、Forwarded Header、CORS、静态 Web、负载均衡和 Caddy / Nginx 的完整体系，继续阅读 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。
 
 ### 【HTTP Server 把网络中的 HTTP 消息转换成程序能够处理的请求对象】
 
@@ -4853,7 +4853,7 @@ Index / Query Planner
 Migration / Operations
 ~~~
 
-因此本篇只负责确定 Database 在完整 Server Architecture 中的位置；数据库内部知识由 [数据库完整框架体系](./数据库完整框架体系.md) 继续展开。
+因此本篇只负责确定 Database 在完整 Server Architecture 中的位置；数据库内部知识由 [数据库完整框架体系](./S-数据库完整框架体系.md) 继续展开。
 
 ### 【Cache 与 Database 的职责不能用“快”和“慢”简单替代】
 
@@ -4889,7 +4889,7 @@ Worker
 
 同时 API Process、Worker Process、Scheduled Job 可能共享 Database、Cache 或 Storage。因此数据体系会继续与后续的异步处理、部署、可靠性和可观测性发生连接。
 
-当前阶段先建立 Memory、Cache、Database、Object Storage 的职责边界；数据库内部继续阅读 [数据库完整框架体系](./数据库完整框架体系.md)。当业务工作需要脱离当前 Request 生命周期继续执行时，进入 [服务端异步任务与消息处理体系](./服务端异步任务与消息处理体系.md)，沿“异步边界 → 可靠交接 → Worker Claim / Lease → At-least-once + Idempotency → Retry / Dead Letter → Backpressure / Observability”继续深入，而不是把 Queue、Worker、Outbox 和 Retry 当成彼此独立的技术点。Redis、对象存储和分布式一致性再进入各自专题。
+当前阶段先建立 Memory、Cache、Database、Object Storage 的职责边界；数据库内部继续阅读 [数据库完整框架体系](./S-数据库完整框架体系.md)。当业务工作需要脱离当前 Request 生命周期继续执行时，进入 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)，沿“异步边界 → 可靠交接 → Worker Claim / Lease → At-least-once + Idempotency → Retry / Dead Letter → Backpressure / Observability”继续深入，而不是把 Queue、Worker、Outbox 和 Retry 当成彼此独立的技术点。Redis、对象存储和分布式一致性再进入各自专题。
 
 ## 6. 参考文献
 

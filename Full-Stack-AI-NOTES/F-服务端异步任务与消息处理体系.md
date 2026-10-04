@@ -124,7 +124,7 @@ Async I/O
 Background Job
 ~~~
 
-Node.js Event Loop、异步 I/O、Worker Thread 与 Process 的运行时边界继续阅读 [NodeJS 核心总结](./NodeJS核心总结.md)。本文只负责系统级异步任务。
+Node.js Event Loop、异步 I/O、Worker Thread 与 Process 的运行时边界继续阅读 [NodeJS 核心总结](./N-NodeJS核心总结.md)。本文只负责系统级异步任务。
 
 ### 【是否异步首先由业务完成语义决定，而不是只看执行时间】
 
@@ -338,7 +338,7 @@ Mark Processed
 
 AWS Transactional Outbox Pattern 同样把业务对象与 Event / Message 放在同一个 Transaction 中保存，用来避免 Database Write 与 Event Notification 之间的 Dual Write 不一致。[[4]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
 
-数据库 Transaction 的完整前置知识见 [数据库完整框架体系](./数据库完整框架体系.md)。
+数据库 Transaction 的完整前置知识见 [数据库完整框架体系](./S-数据库完整框架体系.md)。
 
 ### 【Outbox 是一致性模式，不是 Queue 产品】
 
@@ -898,7 +898,7 @@ Process Exit
 
 如果无法等待当前任务完成，也应保证 Lease / Visibility Timeout 最终能够让其他 Worker 重新领取，而不是永久留下 Running Task。
 
-这把异步任务与运行部署连接起来：Container / Service 的生命周期继续阅读 [Docker 工程体系](./Docker工程体系.md)。
+这把异步任务与运行部署连接起来：Container / Service 的生命周期继续阅读 [Docker 工程体系](./D-Docker工程体系.md)。
 
 ### 【Database-backed Job Store 与 Message Broker 应按系统需求选择】
 
@@ -955,11 +955,11 @@ Docker / Service Runtime / Observability
 
 建议按下面的关系阅读：
 
-- [服务端完整框架体系](./服务端完整框架体系.md)：先确定异步任务位于完整 Server Architecture 的哪条链路。
-- [NodeJS 核心总结](./NodeJS核心总结.md)：理解 Event Loop、Async I/O、Process 与 Worker Thread 等 Runtime 概念。
-- [数据库完整框架体系](./数据库完整框架体系.md)：理解 Transaction、Concurrency Control，以及 Transactional Outbox 为什么需要本地事务。
-- [Docker 工程体系](./Docker工程体系.md)：理解 API Process、Worker Process、Scheduler 怎样进入长期运行的 Container / Service Runtime。
-- [邮件传输与邮件系统完整框架](./邮件传输与邮件系统完整框架.md)：观察 Email Queue、Retry、Outbox 如何作为本体系在具体业务域中的应用。
+- [服务端完整框架体系](./F-服务端完整框架体系.md)：先确定异步任务位于完整 Server Architecture 的哪条链路。
+- [NodeJS 核心总结](./N-NodeJS核心总结.md)：理解 Event Loop、Async I/O、Process 与 Worker Thread 等 Runtime 概念。
+- [数据库完整框架体系](./S-数据库完整框架体系.md)：理解 Transaction、Concurrency Control，以及 Transactional Outbox 为什么需要本地事务。
+- [Docker 工程体系](./D-Docker工程体系.md)：理解 API Process、Worker Process、Scheduler 怎样进入长期运行的 Container / Service Runtime。
+- [邮件传输与邮件系统完整框架](./Y-邮件传输与邮件系统完整框架.md)：观察 Email Queue、Retry、Outbox 如何作为本体系在具体业务域中的应用。
 
 ### 【项目实践只承担真实实现验证，不反向定义通用知识】
 

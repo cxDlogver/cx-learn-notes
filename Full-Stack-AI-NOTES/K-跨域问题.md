@@ -65,7 +65,7 @@ fetch("https://bank.com/api/account")
 
 ### 3.什么是Nginx，Nginx的三大作用？
 
-> 本节只从跨域与前后端入口的角度说明 Nginx。Reverse Proxy（反向代理）的完整定义、请求转发链、Upstream、Web Server / Application Server 边界、Docker Runtime 与 Caddy / Nginx 实现统一参考 [反向代理与 Web 入口体系](./反向代理与Web入口体系.md)。
+> 本节只从跨域与前后端入口的角度说明 Nginx。Reverse Proxy（反向代理）的完整定义、请求转发链、Upstream、Web Server / Application Server 边界、Docker Runtime 与 Caddy / Nginx 实现统一参考 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。
 
 > [【狂神说】Nginx最新教程通俗易懂，40分钟搞定！_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1F5411J7vK/?spm_id_from=333.337.search-card.all.click&vd_source=ff414aaf189e3a685358d2a984fd4742)
 
@@ -88,7 +88,7 @@ Nginx 常被用作反向代理入口。客户端访问 Nginx 暴露的公开地�
 - 在统一入口部署中让浏览器以同一 Origin 访问 Web 与 API，从而减少对应的 CORS 场景
 - 为后端提供安全隔离
 
-这里需要注意：反向代理并不是 CORS 机制本身。同源策略由浏览器执行；代理只有在让浏览器继续访问同一个 Scheme + Host + Port 时，才会让这一条 Browser Request 保持 Same-Origin。真正的跨源 Client 仍然需要正确配置 CORS。完整边界见 [反向代理与 Web 入口体系](./反向代理与Web入口体系.md)。
+这里需要注意：反向代理并不是 CORS 机制本身。同源策略由浏览器执行；代理只有在让浏览器继续访问同一个 Scheme + Host + Port 时，才会让这一条 Browser Request 保持 Same-Origin。真正的跨源 Client 仍然需要正确配置 CORS。完整边界见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。
 
 ```nginx
 server {

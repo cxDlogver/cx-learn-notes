@@ -44,7 +44,7 @@ Eval / Production Governance
 | 06 Agent 四种范式 | 第 12 章：不同粒度的动态决策与控制机制 |
 | 07 Agent 核心原理与最小实现 | 第 13 章：七个组成与最小 Agent Run |
 
-本文与 [Agent System 研发知识梳理](./Agent-System研发知识梳理.md) 的关系是：
+本文与 [Agent System 研发知识梳理](./A-Agent-System研发知识梳理.md) 的关系是：
 
 ~~~text
 Agent 完整学习教程
@@ -55,7 +55,7 @@ Agent System 研发知识梳理
   做概念校准和横向对比
 ~~~
 
-Agent Eval 仍由 [Agent Eval 与 Benchmark](./Agent-Eval与Benchmark.md) 作为独立主入口，因为 Eval 本身已经形成独立知识域，不再重复塞入本文。
+Agent Eval 仍由 [Agent Eval 与 Benchmark](./A-Agent-Eval与Benchmark.md) 作为独立主入口，因为 Eval 本身已经形成独立知识域，不再重复塞入本文。
 
 ## 2. Agent 研发的两种语境
 
@@ -4180,7 +4180,7 @@ Adapter
   隔离具体 Agent 产品的调用差异
 ```
 
-从这里继续向底层理解 Agent 的实际运行机制，直接阅读本文第 13 章“七个组成与最小可运行实现”；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。
+从这里继续向底层理解 Agent 的实际运行机制，直接阅读本文第 13 章“七个组成与最小可运行实现”；继续看 Runtime 与 Harness 的概念边界，可以阅读 [《Agent System 研发知识梳理》](./A-Agent-System研发知识梳理.md)。
 
 ## 7. 从 Prompt Engineering 到 Harness Engineering 是工程对象逐层扩大的过程
 

@@ -264,7 +264,7 @@ ISO/IEC/IEEE 29148 对 Requirement（需求）的定义是：
 
 因此，需求分析不能只理解成“产品写一份 PRD”。它**<u>实际上是在把一个最初可能比较模糊的业务诉求，逐步整理成产品、设计、研发、测试以及后续 AI Agent 都能够共同理解和执行的需求规范</u>**。
 
-`项目工程化设计.md` 第一阶段可以进一步分为三个部分：
+`X-项目工程化设计.md` 第一阶段可以进一步分为三个部分：
 
 > **需求设计 → UI / UX 设计 → 需求评审**
 
@@ -832,7 +832,7 @@ Test Case → Expected Result → Actual Result → Evidence → PASS / FAIL
 
 这样功能验收的结果才具有可审查性。
 
-这里需要区分两个评测对象：**功能验收是在证明软件产物是否满足 Requirement；Agent Eval 是在证明 Agent / Harness 是否能够稳定完成 Task。** AI Coding 场景可以把 Acceptance Criteria、Test Case 和 Evidence 复用为 Outcome Grader 的重要输入，但一个完整的 Agent Eval Task 还需要明确初始仓库状态、可用 Tool、权限、环境重置方式、Trial 次数以及时间 / Token Budget 等运行条件。也就是说，软件 Test Case 证明“产物是否正确”，Agent Eval 进一步证明“Agent 是否能够稳定、安全、低成本地产生这个正确产物”。完整关系见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+这里需要区分两个评测对象：**功能验收是在证明软件产物是否满足 Requirement；Agent Eval 是在证明 Agent / Harness 是否能够稳定完成 Task。** AI Coding 场景可以把 Acceptance Criteria、Test Case 和 Evidence 复用为 Outcome Grader 的重要输入，但一个完整的 Agent Eval Task 还需要明确初始仓库状态、可用 Tool、权限、环境重置方式、Trial 次数以及时间 / Token Budget 等运行条件。也就是说，软件 Test Case 证明“产物是否正确”，Agent Eval 进一步证明“Agent 是否能够稳定、安全、低成本地产生这个正确产物”。完整关系见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 **第一，完整性。** 已定义的 Test Case 是否全部被执行，是否存在 Skip（跳过）、失败后未继续或者遗漏的场景。
 

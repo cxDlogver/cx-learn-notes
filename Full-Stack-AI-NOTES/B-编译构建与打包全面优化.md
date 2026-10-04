@@ -1472,4 +1472,4 @@ CI/CD Pipeline
 Release / Deployment
 ~~~
 
-因此 Build Success 不等于 Release 或 Deployment。完整的 Artifact → Release → Deployment → Production Verification 边界见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
+因此 Build Success 不等于 Release 或 Deployment。完整的 Artifact → Release → Deployment → Production Verification 边界见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。

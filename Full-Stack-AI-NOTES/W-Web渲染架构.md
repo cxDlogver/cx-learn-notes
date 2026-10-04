@@ -99,7 +99,7 @@ MPA
 
 因此 MPA 可以与 SSR 组合，也可以直接托管静态 HTML；不能建立“MPA = SSR”的等价关系。
 
-MPA 导航会创建新的 Document 生命周期，但这不等于所有 CSS、JavaScript、Font、Image 都必须重新下载。浏览器仍会根据 HTTP Cache、Memory Cache、Disk Cache、Service Worker 等机制决定是否复用已有资源。缓存机制继续参考 [CDN缓存与浏览器缓存笔记](./CDN缓存与浏览器缓存笔记.md)。
+MPA 导航会创建新的 Document 生命周期，但这不等于所有 CSS、JavaScript、Font、Image 都必须重新下载。浏览器仍会根据 HTTP Cache、Memory Cache、Disk Cache、Service Worker 等机制决定是否复用已有资源。缓存机制继续参考 [CDN缓存与浏览器缓存笔记](./C-CDN缓存与浏览器缓存笔记.md)。
 
 ~~~text
 New Document Navigation
@@ -161,7 +161,7 @@ SPA Navigation
 → 当前 Document 内更新 Application State
 ~~~
 
-History API、Hash Router 等更具体的路由机制继续参考 [SPA路由（history路由+hash路由）核心知识点笔记](./SPA路由（history路由+hash路由）核心知识点笔记.md)。
+History API、Hash Router 等更具体的路由机制继续参考 [SPA路由（history路由+hash路由）核心知识点笔记](./S-SPA路由（history路由+hash路由）核心知识点笔记.md)。
 
 ## 3. CSR、SSR 与 SSG 描述内容生成策略
 
@@ -373,7 +373,7 @@ Caching
 Browser Rendering
 ~~~
 
-浏览器拿到 HTML / CSS / JavaScript 后如何构建 DOM、Style、Layout、Paint、Raster 与 Composite，继续参考 [基于Chrome浏览器渲染原理](./基于Chrome浏览器渲染原理.md)。
+浏览器拿到 HTML / CSS / JavaScript 后如何构建 DOM、Style、Layout、Paint、Raster 与 Composite，继续参考 [基于Chrome浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)。
 
 因此：
 
@@ -415,7 +415,7 @@ Crawler Capability / Rendering Delay
 
 SSR / SSG / Prerender 的 SEO 价值主要是让关键内容直接存在于初始 HTML Response 中，降低 Crawler 对 JavaScript Rendering 的依赖。但 Rendering Strategy 只是 SEO 的一个影响因素，SEO 还包括 Crawlability、Status Code、Canonical、Metadata、Internal Links、Content Quality 等。
 
-Nuxt 在 SEO 场景中的具体策略继续参考 [Nuxt SEO 学习笔记](./Nuxt%20SEO%20学习笔记.md)。
+Nuxt 在 SEO 场景中的具体策略继续参考 [Nuxt SEO 学习笔记](./N-Nuxt%20SEO%20学习笔记.md)。
 
 ## 7. Web 渲染架构继续连接缓存、路由和浏览器渲染机制
 
@@ -443,10 +443,10 @@ User-visible Result
 
 对应知识入口：
 
-- [SPA路由（history路由+hash路由）核心知识点笔记](./SPA路由（history路由+hash路由）核心知识点笔记.md)：继续学习 Client-side Navigation。
-- [CDN缓存与浏览器缓存笔记](./CDN缓存与浏览器缓存笔记.md)：继续学习 Document Navigation 后资源是否真正重新下载。
-- [基于Chrome浏览器渲染原理](./基于Chrome浏览器渲染原理.md)：继续学习 Browser 收到资源后怎样形成最终画面。
-- [Nuxt SEO 学习笔记](./Nuxt%20SEO%20学习笔记.md)：继续学习通用渲染模型在 Nuxt 与 SEO 工程中的具体应用。
+- [SPA路由（history路由+hash路由）核心知识点笔记](./S-SPA路由（history路由+hash路由）核心知识点笔记.md)：继续学习 Client-side Navigation。
+- [CDN缓存与浏览器缓存笔记](./C-CDN缓存与浏览器缓存笔记.md)：继续学习 Document Navigation 后资源是否真正重新下载。
+- [基于Chrome浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)：继续学习 Browser 收到资源后怎样形成最终画面。
+- [Nuxt SEO 学习笔记](./N-Nuxt%20SEO%20学习笔记.md)：继续学习通用渲染模型在 Nuxt 与 SEO 工程中的具体应用。
 
 ## 8. 参考文献
 

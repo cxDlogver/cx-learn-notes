@@ -380,7 +380,7 @@ Monorepo 属于**代码仓库与多项目工程组织策略**，与 React、Vue�
 
 完整知识统一进入：
 
-[Monorepo 工程体系](<./Monorepo工程体系.md>)
+[Monorepo 工程体系](<./M-Monorepo工程体系.md>)
 
 该专题按照 Repository / Project → Workspace / Dependency → Task → Artifact / Release → Runtime / Deployment → Engineering Governance 的顺序建立完整知识框架；具体项目实现再由专题正文中的“项目实践入口”继续读取。
 
@@ -2769,7 +2769,7 @@ Software Delivery Pipeline
 Release / Deployment / Verification
 ~~~
 
-这里不再重复维护 CI、Continuous Delivery、Continuous Deployment、Artifact、Release 与 Deployment 的完整定义。统一进入 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
+这里不再重复维护 CI、Continuous Delivery、Continuous Deployment、Artifact、Release 与 Deployment 的完整定义。统一进入 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 前端侧需要保留的重点是：
 
@@ -3025,7 +3025,7 @@ Release / Deployment / Verification
 
 #### CI基本流水线
 
-下面 YAML 只是前端项目的一个串行 Job 示例，不代表 Pipeline 必须按固定顺序组织。真实 Pipeline 可以把 Lint、Type Check、Test、Build 拆成并行或具有依赖关系的 Job，再通过 Gate 汇合；完整模型见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
+下面 YAML 只是前端项目的一个串行 Job 示例，不代表 Pipeline 必须按固定顺序组织。真实 Pipeline 可以把 Lint、Type Check、Test、Build 拆成并行或具有依赖关系的 Job，再通过 Gate 汇合；完整模型见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 ```yaml
 # GitHub Actions CI流水线示例（.github/workflows/ci.yml）

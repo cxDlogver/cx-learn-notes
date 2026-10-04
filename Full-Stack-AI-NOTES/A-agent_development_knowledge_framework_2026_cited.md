@@ -199,7 +199,7 @@ Production Agent System
   → 在上述基础上加入业务流程、部署、评测、监控与治理
 ```
 
-这是一套便于工程讨论的职责模型，不代表所有框架都采用相同边界。本文关于 Loop、Runtime 与 Harness 的主口径与 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md) 保持一致；如果其他章节出现不同表述，应优先回到该文档的概念定义进行校准。
+这是一套便于工程讨论的职责模型，不代表所有框架都采用相同边界。本文关于 Loop、Runtime 与 Harness 的主口径与 [《Agent System 研发知识梳理》](./A-Agent-System研发知识梳理.md) 保持一致；如果其他章节出现不同表述，应优先回到该文档的概念定义进行校准。
 
 ---
 
@@ -1545,7 +1545,7 @@ flowchart TD
 
 # 18. Agent Eval：为什么不能只测最终答案？
 
-Agent 不是单轮 Input → Output。一次任务可能包含多轮 Model、Tool、环境修改、Retry、Handoff 和 Approval，因此评测需要同时看最终 Outcome、执行过程、稳定性、成本和安全，而不是只检查最后一段文本。完整知识已经独立整理到 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+Agent 不是单轮 Input → Output。一次任务可能包含多轮 Model、Tool、环境修改、Retry、Handoff 和 Approval，因此评测需要同时看最终 Outcome、执行过程、稳定性、成本和安全，而不是只检查最后一段文本。完整知识已经独立整理到 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 核心链路可以压缩为：
 
@@ -1574,7 +1574,7 @@ Business KPI
 → 时间节省 / Throughput / 人力成本 / 覆盖率 / 解决率 / 用户满意度
 ~~~
 
-两层可以关联，但不能互相替代。Agent Eval 分数提高不直接等于业务 ROI 提高；业务 KPI 改善也不能证明 Agent 的运行机制已经稳定。具体指标与边界见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+两层可以关联，但不能互相替代。Agent Eval 分数提高不直接等于业务 ROI 提高；业务 KPI 改善也不能证明 Agent 的运行机制已经稳定。具体指标与边界见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 
@@ -1588,7 +1588,7 @@ Business KPI
 - **Efficiency**：Token、Model Call、Tool Call、Latency、Cost / Successful Task；
 - **Safety**：越权操作、审批绕过、敏感信息泄漏、Prompt Injection 等。
 
-Agent 的非确定性、多 Trial 与 pass@k / pass^k 的适用边界统一见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+Agent 的非确定性、多 Trial 与 pass@k / pass^k 的适用边界统一见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 
@@ -1607,7 +1607,7 @@ Regression Suite
 → 历史失败与关键能力保护
 ~~~
 
-Benchmark、Evaluation Suite 与 Regression Case 的完整关系见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+Benchmark、Evaluation Suite 与 Regression Case 的完整关系见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 
@@ -1617,7 +1617,7 @@ Benchmark、Evaluation Suite 与 Regression Case 的完整关系见 [《Agent Ev
 
 例如 Coding Agent 的成功标准可以落到补丁、测试结果、修改范围和安全约束；业务 Agent 可以检查数据库、工单、订单或其他真实资源状态。
 
-Task / Trial / Outcome 的数据链路与示例统一见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+Task / Trial / Outcome 的数据链路与示例统一见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 
@@ -1633,7 +1633,7 @@ Code-based / Deterministic
 
 能够通过 Test、Database State、Tool 参数或权限规则直接验证的事实，应优先使用确定性 Grader；开放式文本质量和复杂策略可以使用 Model-based Grader，并通过 Human Review 做校准。高风险安全条件更适合作为硬门禁，而不是由平均分抵消。
 
-完整 Grader 设计、Evaluation Harness 与持续回归方法见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+完整 Grader 设计、Evaluation Harness 与持续回归方法见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 
@@ -1824,7 +1824,7 @@ Agent 需要同时评估 Outcome、Trajectory、Cost、Reliability 和 Safety。
 
 ## Q8：Agent 怎么评测？
 
-> Agent Eval 不能只看最终答案。我会建立 Task、Trial、Grader、Trace、Outcome 和 Eval Suite。指标至少覆盖任务完成度、trajectory、稳定性、成本延迟和安全；业务 Agent 还必须回到业务 KPI，看是否真正节省时间、降低成本或解决原本无法规模化处理的问题。完整方法见 [《Agent Eval 与 Benchmark》](./Agent-Eval与Benchmark.md)。
+> Agent Eval 不能只看最终答案。我会建立 Task、Trial、Grader、Trace、Outcome 和 Eval Suite。指标至少覆盖任务完成度、trajectory、稳定性、成本延迟和安全；业务 Agent 还必须回到业务 KPI，看是否真正节省时间、降低成本或解决原本无法规模化处理的问题。完整方法见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 

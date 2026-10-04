@@ -82,7 +82,7 @@ CORS 支持：
 - **开发环境非常常见**
 - 生产环境也常用于 API 网关、统一入口
 
-反向代理的完整网络位置、Upstream、Forwarded Header、静态 Web、Docker Runtime 与 Caddy / Nginx 实现统一参考 [反向代理与 Web 入口体系](./反向代理与Web入口体系.md)。本节只保留“它为什么能让浏览器保持同源”的面试视角。
+反向代理的完整网络位置、Upstream、Forwarded Header、静态 Web、Docker Runtime 与 Caddy / Nginx 实现统一参考 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。本节只保留“它为什么能让浏览器保持同源”的面试视角。
 
 ------
 

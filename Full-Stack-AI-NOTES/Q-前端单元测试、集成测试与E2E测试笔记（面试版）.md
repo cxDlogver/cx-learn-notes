@@ -427,7 +427,7 @@ Environment Verification
 └── E2E / Smoke / Acceptance
 ~~~
 
-完整的 Trigger → Pipeline → Artifact → Release → Deployment → Production Verification 链路见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
+完整的 Trigger → Pipeline → Artifact → Release → Deployment → Production Verification 链路见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 ## 面试重点回答总结
 

@@ -134,7 +134,7 @@ Data Correctness
     └── 值和关系还必须满足什么规则
 ~~~
 
-数据库类型与具体编程语言之间的映射属于更下游的专题。MySQL → JDBC / Connector/J → Java 的具体映射见 [MySQL 数据类型与 Java 数据访问映射](./DATABASE.md)。
+数据库类型与具体编程语言之间的映射属于更下游的专题。MySQL → JDBC / Connector/J → Java 的具体映射见 [MySQL 数据类型与 Java 数据访问映射](./D-DATABASE.md)。
 
 ## 3. 应用通过数据访问链连接数据库
 
@@ -442,7 +442,7 @@ Retry Statement
 Retry Transaction
 ~~~
 
-数据库 Transaction Retry 与后台 Job Retry 也不是同一概念。前者恢复的是数据库并发冲突下的一整个事务决策过程；后者恢复的是异步任务执行。后台任务的 Retry、Redelivery 与 Idempotency 继续参考 [服务端异步任务与消息处理体系](./服务端异步任务与消息处理体系.md)。
+数据库 Transaction Retry 与后台 Job Retry 也不是同一概念。前者恢复的是数据库并发冲突下的一整个事务决策过程；后者恢复的是异步任务执行。后台任务的 Retry、Redelivery 与 Idempotency 继续参考 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
 
 ### 【Lock 会引入 Blocking，并可能进一步形成 Deadlock】
 
@@ -612,9 +612,9 @@ Reliability / Operations
 
 通用知识入口：
 
-- [服务端完整框架体系](./服务端完整框架体系.md)：理解数据库为什么属于服务端状态与数据体系。
-- [服务端异步任务与消息处理体系](./服务端异步任务与消息处理体系.md)：从 Database Transaction 继续进入 Dual Write Problem 与 Transactional Outbox，理解数据库状态变化怎样可靠地连接后台任务和消息发布。
-- [MySQL 数据类型与 Java 数据访问映射](./DATABASE.md)：继续学习 MySQL Server Type → JDBC / Connector/J → Java Application Type。
+- [服务端完整框架体系](./F-服务端完整框架体系.md)：理解数据库为什么属于服务端状态与数据体系。
+- [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)：从 Database Transaction 继续进入 Dual Write Problem 与 Transactional Outbox，理解数据库状态变化怎样可靠地连接后台任务和消息发布。
+- [MySQL 数据类型与 Java 数据访问映射](./D-DATABASE.md)：继续学习 MySQL Server Type → JDBC / Connector/J → Java Application Type。
 
 项目实践入口：
 

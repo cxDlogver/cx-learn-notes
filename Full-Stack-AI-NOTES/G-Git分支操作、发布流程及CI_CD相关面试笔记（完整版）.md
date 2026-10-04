@@ -288,7 +288,7 @@ CI常见操作：自动安装依赖、执行lint检查（代码规范校验）�
 
 #### 4. CD（Continuous Delivery / Continuous Deployment，持续交付/持续部署）
 
-CD 在面试中需要区分 Continuous Delivery 与 Continuous Deployment。Continuous Delivery 的核心是通过可重复的 Build、Test、Environment Verification 与 Release Process，让变化持续保持可安全发布状态；生产 Release 可以保留显式人工或业务 Gate。Continuous Deployment 则把通过既定 Gate 的变化继续自动推进到 Production。完整定义、Artifact / Release / Deployment 边界与 Pipeline 模型统一见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
+CD 在面试中需要区分 Continuous Delivery 与 Continuous Deployment。Continuous Delivery 的核心是通过可重复的 Build、Test、Environment Verification 与 Release Process，让变化持续保持可安全发布状态；生产 Release 可以保留显式人工或业务 Gate。Continuous Deployment 则把通过既定 Gate 的变化继续自动推进到 Production。完整定义、Artifact / Release / Deployment 边界与 Pipeline 模型统一见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 ### 核心区别与联系
 
@@ -348,7 +348,7 @@ PR和MR本质都是代码合并请求，用于分支协作和Code Review，仅�
 
 ### 标准面试回答
 
-代码合并到主干分支（如main）后，并不意味着直接上线。典型交付链会继续经过“自动化校验 → Build Artifact → 环境验证 → Release Gate → Deployment → Production Verification / Recovery”。下面保留的是面试场景下的一种常见实现，不应理解为所有团队唯一的固定顺序；完整通用模型见 [软件交付与 CI/CD 工程体系](./软件交付与CI-CD工程体系.md)。
+代码合并到主干分支（如main）后，并不意味着直接上线。典型交付链会继续经过“自动化校验 → Build Artifact → 环境验证 → Release Gate → Deployment → Production Verification / Recovery”。下面保留的是面试场景下的一种常见实现，不应理解为所有团队唯一的固定顺序；完整通用模型见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 #### 1. 触发CI流程（自动校验）
 

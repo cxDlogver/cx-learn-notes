@@ -1466,7 +1466,7 @@ If-None-Match: "33a64df551425fcc55e4d42a148795d9f25f89d4"
 - 这些资源的加载和解析可能和 HTML 解析并行，也可能会影响渲染流程（例如 CSS 解析阻塞渲染，JS 可能阻塞HTML解析）。
 - 当这些资源加载完成，会触发对应的渲染更新。
 
-> **异步概念边界**：本文件中的 Promise、async / await、Event Loop 与异步 I/O 主要描述 JavaScript / Node.js Runtime 内“等待期间怎样继续推进工作”。当业务任务需要脱离当前 HTTP Request，在 Queue / Job Store 中持久化并由独立 Worker Process / Worker Service 后台执行时，应继续阅读 [服务端异步任务与消息处理体系](./服务端异步任务与消息处理体系.md)。Runtime-level Asynchrony 与 System-level Asynchronous Processing 不应混为同一层。
+> **异步概念边界**：本文件中的 Promise、async / await、Event Loop 与异步 I/O 主要描述 JavaScript / Node.js Runtime 内“等待期间怎样继续推进工作”。当业务任务需要脱离当前 HTTP Request，在 Queue / Job Store 中持久化并由独立 Worker Process / Worker Service 后台执行时，应继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。Runtime-level Asynchrony 与 System-level Asynchronous Processing 不应混为同一层。
 
 # Promise核心总结
 

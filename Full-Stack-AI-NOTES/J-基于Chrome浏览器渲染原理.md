@@ -5,7 +5,7 @@ categories:
 
 # 基于Chrome浏览器渲染原理
 
-> **知识边界**：本文关注 HTML / CSS / JavaScript 到达浏览器之后，Chrome 如何经过 Parse、Style、Layout、Paint、Raster 与 Composite 形成最终画面。MPA / SPA、CSR / SSR / SSG、Hydration 与 Hybrid Rendering 属于更上层的页面导航和内容生成策略，统一参考 [Web 渲染架构](./Web渲染架构.md)。
+> **知识边界**：本文关注 HTML / CSS / JavaScript 到达浏览器之后，Chrome 如何经过 Parse、Style、Layout、Paint、Raster 与 Composite 形成最终画面。MPA / SPA、CSR / SSR / SSG、Hydration 与 Hybrid Rendering 属于更上层的页面导航和内容生成策略，统一参考 [Web 渲染架构](./W-Web渲染架构.md)。
 
 
 > [王道计算机考研 计算机网络_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV19E411D78Q/?spm_id_from=333.337.search-card.all.click&vd_source=ff414aaf189e3a685358d2a984fd4742) —— 传输层和应用层部分

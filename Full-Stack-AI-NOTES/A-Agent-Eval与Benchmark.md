@@ -22,7 +22,7 @@ Evaluation Suite / Benchmark
 版本比较、回归保护与持续改进
 ~~~
 
-如果还不理解 Agent Runtime、State、Checkpoint 与 Trace 的运行边界，先阅读 [《Agent System 研发知识梳理》](./Agent-System研发知识梳理.md)。如果关注 AI Coding 中“什么算正确、怎样验收代码产物”，可以同时阅读 [《项目工程化设计》](./项目工程化设计.md)。
+如果还不理解 Agent Runtime、State、Checkpoint 与 Trace 的运行边界，先阅读 [《Agent System 研发知识梳理》](./A-Agent-System研发知识梳理.md)。如果关注 AI Coding 中“什么算正确、怎样验收代码产物”，可以同时阅读 [《项目工程化设计》](./X-项目工程化设计.md)。
 
 ## 1. Agent Eval 评测的是完整任务执行而不只是最终回答
 
@@ -513,7 +513,7 @@ Pass / Fail / Score
 Regression Suite
 ~~~
 
-这与 [《项目工程化设计》](./项目工程化设计.md) 中：
+这与 [《项目工程化设计》](./X-项目工程化设计.md) 中：
 
 ~~~text
 Requirement
