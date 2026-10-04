@@ -1,24 +1,39 @@
 # Agent 治理通过身份、授权、审批与隔离约束工具执行
 
-## 回答要点
+## 【知识概述】
 
-Agent Governance 应围绕“**模型产生的执行意图怎样经过可信系统控制，最终才允许转化为真实副作用**”构建。治理不是一句安全 Prompt，而是贯穿身份、能力、权限、审批、隔离和审计的控制链。
+这篇知识点想讲清楚的是：**当 Agent 从“生成内容”进一步获得 Tool、代码执行、文件修改或业务操作能力后，怎样保证模型提出的动作只有经过可信系统判断以后，才能真正影响外部世界。**
 
-1. **Authentication 确认 Agent 代表谁执行。** 用户身份、服务身份和 Session 必须由可信系统建立，不能由模型自行声明。
-2. **Tool Exposure 控制当前能看到哪些能力。** 根据场景、角色和阶段缩小 Tool 面可以降低误用概率，但 Tool 不可见不能替代真正授权。
-3. **Authorization 判断具体动作是否允许。** Tool Call 产生后，要结合用户、资源、动作和业务状态校验权限；真实资源权限最终必须由可信 Runtime / Backend 执行。
-4. **Guardrail / Policy 检查参数和风险条件。** 它们解决策略校验，但不等同于身份认证和业务资源授权。
-5. **HITL 为高风险动作增加人工决策。** 删除、退款、发布等动作可在执行前暂停；批准后恢复时仍需重新核验身份、权限和资源状态。
-6. **Sandbox / Resource Boundary 限制影响范围。** 对代码、Shell、文件和浏览器能力限制目录、网络、凭证和资源，降低模型误判后的影响。
-7. **Backend Revalidation 是真实副作用前的最终安全边界。** 即使 Runtime、Guardrail 和审批已通过，资源服务仍应按自身规则再次校验。
-8. **Trace / Audit 保存可追责证据。** 记录谁发起、模型提出什么动作、命中什么策略、谁批准、最终执行结果如何。
-9. **各治理机制不能互相替代。** Prompt / Skill 是行为指导，Exposure 是能力收敛，Authorization 是权限判断，HITL 是风险审批，Sandbox 是隔离，Audit 是事后证据。
+首先要区分“模型想做什么”和“系统允许做什么”。Prompt、Skill 或 Guardrail 可以指导模型不要产生危险动作，但模型输出本身不能成为安全边界。真正执行 Tool 之前，系统首先要知道当前 Agent 代表谁，这对应 Authentication；然后可以根据任务和角色缩小当前暴露的 Tool，但“看不到某个 Tool”仍不等于真正没有权限。
+
+当模型产生具体 Tool Call 后，系统还要结合身份、资源、动作和业务状态做 **Authorization**。对于删除、退款、发布等高风险操作，可以进一步增加 **HITL**，让执行暂停并等待人工批准。即使获得批准，代码、Shell、文件和浏览器能力仍然应该通过 **Sandbox / Resource Boundary** 限制影响范围。
 
 ```text
-Identity → Model Tool Call → Tool Exposure
-→ Authorization / Policy → HITL
-→ Sandbox → Backend Revalidation → Trace / Audit
+模型产生执行意图
+        ↓
+Authentication
+确认代表谁执行
+        ↓
+Tool Exposure
+控制当前可见能力
+        ↓
+Authorization / Policy
+判断具体动作是否允许
+        ↓
+HITL
+高风险动作增加人工决策
+        ↓
+Sandbox
+限制真实影响范围
+        ↓
+Backend Revalidation
+真实业务系统最终校验
 ```
+
+最后一个关键点是：真正拥有业务数据和副作用的 Backend 仍然需要再次校验，不能因为 Agent Runtime 已经检查过就放弃服务端权限边界。执行以后再通过 Trace / Audit 记录谁发起、谁批准、最终做了什么，才能形成完整治理证据。
+
+这个知识点会与 Tool / MCP、Runtime、Orchestration、Long-running Task 和 Observability 发生交叉：Tool 是治理的动作对象，Runtime 承载治理检查，Orchestration 决定在哪些节点设置 Gate，长任务恢复后可能需要重新验证权限，而 Audit 又需要观测体系保存证据。理解这些联系的关键不是把它们合成一个“大安全层”，而是明确每种机制分别控制执行链上的哪一个风险。
+
 ## 1. 治理规则贯穿身份、动作与执行边界
 
 ### 【Agent Governance 的定位与治理目标】
