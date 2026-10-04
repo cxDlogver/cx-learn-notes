@@ -1,29 +1,28 @@
 # Agent 编排通过代码与模型分配不同范围的执行决策权
 
-Agent Orchestration 的核心不是先选择 Workflow、Manager、Handoff 或 Multi-Agent，而是先回答：**复杂任务中的下一步决策权应该由代码还是模型掌握，以及多个执行单元应该怎样组织。**
+## 回答要点
 
-规则稳定、顺序明确或风险较高的业务阶段应优先由代码控制；只有搜索、规划、工具选择、任务拆分等无法提前穷举的局部步骤，才需要把决策权交给模型。决策权边界确定以后，再根据协作需要选择 Single Agent、Manager + Specialists、Handoff、Parallel 或 Graph 等执行拓扑，最后通过目标、权限、预算、验收和人工 Gate 限制模型自主范围。
+Agent Orchestration 应从“**哪些决策必须确定，哪些决策只有运行时才能做，以及这些决策由谁拥有**”开始，而不是先选 Manager、Handoff 或 Multi-Agent。最终目标是形成确定性业务骨架与局部模型自主性的组合。
+
+1. **先识别 Business Workflow 中不可让渡的确定性结构。** 法定顺序、发布流程、审批节点、权限边界、验收条件等如果已经明确，就应由代码或规则固定。
+2. **再识别真正需要模型动态决策的局部任务。** 搜索文件、选择 Tool、拆解开放问题、根据反馈调整方案等无法提前穷举的步骤，才适合交给模型。
+3. **Planning / Replanning 管理模型的方案调整权。** 模型可以修改 Plan、Subtask、执行顺序和 Tool 选择，但 Goal、Business Constraint、Security Policy、Acceptance Criteria 应保持外部约束。
+4. **决策权确定后再选择执行拓扑。** Single Agent、Manager + Specialists、Handoff、Parallel、Graph 描述执行单元如何连接和协作，不等于系统是否由模型控制。
+5. **Manager 表示中央决策权保留。** Specialist 完成局部任务后把结果返回 Manager，后续 Planning 和最终输出仍由 Manager 控制。
+6. **Handoff 表示当前处理控制权发生转移。** Agent A 把后续处理交给 Agent B；关键区别是结果是否回到中央控制者。
+7. **Parallelism 只描述并发关系。** 并行可以由代码控制，也可以由 Manager 动态发起，与是否 Multi-Agent、是否模型编排是不同维度。
+8. **Graph 主要表达执行结构和状态转移。** Graph 可以承载确定性 Workflow，也可以在节点内部运行 Agent，不能直接等同于 Agent 自主编排。
+9. **Hybrid Orchestration 是常见生产组合。** 外层固定业务阶段和 Gate，内部开放任务交给 Agent Planning；只有确实需要专业分工时再引入 Manager / Handoff。
+10. **自主性越高，控制边界越要明确。** Goal、Permission、Budget、Timeout、Verification、HITL 和 Trace 限制模型能够决定的范围。
 
 ```text
-Complex Goal
-        ↓
-哪些阶段能够提前确定？
-→ Code：固定 Workflow / Rule / High-risk Gate
-        ↓
-哪些局部步骤必须运行时判断？
-→ Model：Planning / Tool Selection / Agent Selection
-        ↓
-决策权确定以后怎样组织执行？
-→ Single Agent / Manager / Handoff / Parallel / Graph
-        ↓
-自主范围如何约束？
-→ Goal / Permission / Budget / Verification / Human Gate
-        ↓
-Hybrid Orchestration
-确定性业务骨架 + 局部动态决策
+Business Goal
+→ 确定结构：Code / Rule / Workflow / Gate
+→ 动态局部：Model Planning / Replanning
+→ 执行拓扑：Single / Manager / Handoff / Parallel / Graph
+→ 控制边界：Goal / Permission / Budget / Verification / HITL
+→ Hybrid Orchestration
 ```
-
-后文沿“决策权 → 执行拓扑 → 多 Agent 协作 → 混合编排”展开，并重点说明 Manager、Handoff、Parallel、Multi-Agent 属于不同维度，不能由其中一个概念推导出整个系统都由模型控制。
 ## 1. 编排先划分执行结构与下一步决策权
 
 ### 【Orchestration 的核心：分配执行控制权】
