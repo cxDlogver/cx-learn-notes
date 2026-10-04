@@ -486,7 +486,7 @@ Lease 过期或 Broker Redelivery 后：
 
 因此安全消费的下一层问题不是“怎样彻底避免 Redelivery”，而是“Redelivery 发生时怎样仍然保持业务正确”。
 
-## 4. 任务承载基础设施决定任务如何存储、分发与扩展
+## 4. Database-backed Job Store 与 Message Broker 决定任务如何承载、分发与扩展
 
 前面三章先回答了三个问题：**为什么要异步、任务怎样可靠产生、Worker 怎样安全拥有处理权。** 下一步才进入基础设施选择：这些 Task / Event 到底由业务数据库自己承载，还是交给独立 Message Broker（消息代理）或 Event Streaming Platform（事件流平台）。
 
