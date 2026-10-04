@@ -41,26 +41,38 @@ QA.md 重点回答四件事：
 
 ### 【回答框架】
 
-这类问题不能只背三个定义，应该从“**机制—运行—支撑体系**”三个层次回答，再把三者放回一次 Agent 执行过程验证关系。
+核心判断：Loop、Runtime、Harness 不是三个互相独立的名词，而是从“Agent 怎样持续完成任务”这个共同问题中拆出的不同职责。
+
+一次模型调用只能完成一次输入到输出。Agent 要根据执行结果继续工作，就会依次出现三个工程问题：
+
+1. **任务怎样持续推进**：模型需要根据行动结果再次判断，形成“判断 → 行动 → 观察 → 再判断”的循环，这一机制就是 Loop。
+2. **这套循环由谁真正执行**：循环不能自己运行，需要有执行层负责构建 Context、调用 Model、解析 Tool Call、执行 Tool、更新 State，并判断继续还是结束，这就是 Runtime。
+3. **Runtime 怎样可靠运行**：真正进入工程环境后，还需要 Tool 管理、Memory、权限、Checkpoint、Trace 等公共能力，这些运行支撑共同构成 Harness 这一更宽的工程抽象。
+
+把三者放回一次 Agent Run，可以验证这个关系：
 
 ```text
-Agent 要持续完成任务
-        ↓
-Loop：描述“判断 → 行动 → 观察 → 再判断”的循环机制
-        ↓
-Runtime：真正驱动模型调用、Tool 执行、State 更新和停止条件
-        ↓
-Harness：把 Runtime 与 Context、Tool、Memory、权限、Trace 等能力装配起来
-        ↓
-回到一次 Agent Run
-验证三者如何协作
-        ↓
-补充边界：这是职责抽象，不是行业统一固定嵌套关系
+用户目标
+  ↓
+Runtime 构建 Context 并调用 Model
+  ↓
+Model 给出 Final Answer 或 Tool Call
+  ↓
+需要行动时，Runtime 执行 Tool 并更新 State
+  ↓
+Tool Result 成为新的 Observation
+  ↓
+Loop 使系统基于新信息进入下一轮判断
+  ↓
+直到满足停止条件
+
+整个过程中：
+Harness 持续提供 Tool、Memory、权限、Checkpoint、Trace 等运行支撑
 ```
 
-- **先区分问题层次**：Loop 回答“任务怎样反复推进”，Runtime 回答“谁负责把这套过程运行起来”，Harness 回答“完整 Agent 运行还需要哪些工程支撑”。
-- **再解释协作过程**：Runtime 构建上下文并调用 Model；模型产生 Tool Call 后 Runtime 执行工具、写入 State，再进入下一轮 Loop；Harness 提供这一过程中需要的 Context、Tool、Memory、权限、Checkpoint、Trace 等能力。
-- **最后说明边界**：不同框架对 Runtime 和 Harness 的模块划分不同，因此不能把 `Loop < Runtime < Harness` 当成行业统一标准；Agent Loop 也不等于预定义业务 Workflow。
+因此这里真正的联系是：**Loop 描述持续推进的机制，Runtime 负责把这个机制实际跑起来，Harness 再为 Runtime 和整个 Agent 执行提供完整工程支撑。**
+
+最后要补充边界：这是职责层面的工程抽象，不代表所有框架都存在固定的 `Loop < Runtime < Harness` 代码包含关系。回答时应先从“一次模型调用为什么不足以构成 Agent”推出持续执行问题，再推出 Loop、Runtime、Harness，最后用一次 Agent Run 验证三者关系。
 
 ### 【完整回答】
 
