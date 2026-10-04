@@ -2,30 +2,65 @@
 
 ## 回答要点
 
-这组概念应该从“**一次 Agent 任务怎样从模型推理变成可持续、可控制的工程执行**”来理解，而不是分别背定义。
+### 【知识定位】
 
-1. **Loop 解决持续推进问题。** 单次模型调用只能完成一次推理；任务需要调用 Tool、读取结果并继续判断时，就需要“Model 判断 → Action → Observation → 再判断”的循环。Loop 回答“任务为什么能够继续往下走”。
-2. **Runtime 解决循环如何真正执行的问题。** Loop 只是机制描述，真正运行还需要构建 Context、调用 Model、解析 Tool Call、执行 Tool、更新 State，并处理超时、中断、恢复和停止条件。Runtime 是一次 Agent Run 的执行载体。
-3. **Harness 解决 Runtime 如何进入完整工程环境的问题。** Runtime 稳定工作还依赖 Model Adapter、Context、Memory、Tool / Skill / MCP、Permission / HITL、Sandbox、Checkpoint、Trace 等公共能力。Harness 强调这些能力怎样被组织成运行支撑体系。
-4. **三者最终要放回同一次 Agent Run 验证。** Runtime 从 Harness 获取模型、工具、上下文和治理能力，驱动 Model 与 Tool 执行；Tool Result 更新 State 后，Loop 决定是否进入下一轮，直到得到 Final Output 或触发停止条件。
-5. **职责关系不等于固定代码包含关系。** 可以用“Loop 是循环机制、Runtime 是执行载体、Harness 是工程支撑”建立认知，但不同框架可能使用 Runner、Graph、Engine、Harness 等不同命名，也可能组合这些职责。
-6. **Loop 不能与 Workflow 混淆。** Loop 解决 Agent 如何根据反馈持续决策；Workflow 解决业务步骤怎样组织和约束。确定性 Workflow 内部也可以运行 Agent Loop。
+这篇知识点要建立的是 **Agent 运行体系的基础模型**：一个模型怎样从“一次推理调用”变成能够持续行动、调用外部能力并被工程系统管理的 Agent。
 
-因此整篇正文的主线是：
+它重点解决三个不同层次的问题：
+
+- **Loop：Agent 为什么能够持续推进任务。** 负责“判断 → 行动 → 观察 → 再判断”的决策循环。
+- **Runtime：这个循环怎样真正运行。** 负责 Model Call、Tool Execution、State Update、生命周期、中断和恢复。
+- **Harness：Runtime 依靠什么工程环境稳定运行。** 组织 Model、Context、Memory、Tool、Permission、Sandbox、Checkpoint、Trace 等公共能力。
+
+因此三者不是简单的并列术语，而是从 **决策机制 → 执行载体 → 工程支撑** 逐层扩大观察范围。
+
+### 【知识框架】
 
 ```text
-单次模型调用无法持续完成动态任务
-        ↓
-Loop：建立“判断—行动—观察—再判断”的持续推进机制
-        ↓
-Runtime：把模型调用、Tool 执行、State 与生命周期真正运行起来
-        ↓
-Harness：补齐 Context、Memory、Tool、权限、Checkpoint、Trace 等工程支撑
-        ↓
-放回一次 Agent Run 验证三者如何协作
-        ↓
-补充边界：职责抽象 ≠ 行业统一代码层级；Loop ≠ Workflow
+Agent Run
+│
+├─ Harness：运行支撑体系
+│   ├─ Model Access
+│   ├─ Context / Memory
+│   ├─ Tool / Skill / MCP
+│   ├─ Permission / HITL / Sandbox
+│   ├─ Checkpoint
+│   └─ Trace / Observability
+│
+└─ Runtime：一次任务的执行管理
+    ├─ Build Context
+    ├─ Model Call
+    ├─ Tool Execution
+    ├─ State Update
+    ├─ Interrupt / Resume
+    └─ Stop Condition
+         │
+         └─ Loop：持续决策机制
+             Model → Action → Observation → Model ...
 ```
+
+正文因此分三层展开：先划清 Harness、Runtime、Loop 的职责，再把三者放回一次 Agent Run 观察真实执行链，最后处理不同框架命名不统一以及 Loop 与 Workflow 的边界。
+
+### 【与其他知识点的联系】
+
+这篇是后续 Agent 工程知识的**运行基础层**：
+
+```text
+Prompt / Context / Tool
+        ↓ 提供模型输入与能力
+Harness / Runtime / Loop
+        ↓ 形成可运行的 Agent
+Orchestration
+        ↓ 组织多个步骤或多个 Agent
+Long-running Task / Fault Recovery
+        ↓ 保证跨时间运行和失败恢复
+Governance ─────→ 约束 Runtime 能执行什么
+Observability ──→ 记录 Runtime 实际执行了什么
+Eval ───────────→ 根据执行结果判断任务是否成功
+```
+
+因此理解 Runtime 以后，Checkpoint、Trace、Permission、HITL、Retry 等概念就不再是孤立能力：它们都是围绕 Agent 执行过程建立的不同工程机制。
+
 ## 1. 三者按支撑体系、执行管理和循环机制划分职责
 
 ### 【Agent Harness：强调 Agent 的整体运行支撑体系】
