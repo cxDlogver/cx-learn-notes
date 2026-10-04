@@ -2711,111 +2711,380 @@ Cluster
 
 不要因为“生产要高可用”就自动得出“必须上 Cluster”。
 
-## 8. Redis 的规模化运行需要同时治理 Memory、Hot Key、Big Key 与 Observability
+## 8. Redis 的规模化运行需要同时治理 Key 分布、命令成本、内存与可观测性
 
-### 【maxmemory 与 Eviction Policy 定义内存耗尽后的行为】
+很多 Redis 性能问题不是“Redis 整体太慢”，而是某一类 Key、某一条 Command 或某一种访问模式出现了结构性问题。
 
-Redis 是内存优先系统，因此必须回答：
-
-~~~text
-Dataset 不断增长
-↓
-达到可用内存上限以后怎么办？
-~~~
-
-maxmemory 定义内存上界；Eviction Policy 决定到达上限后的行为。
-
-常见方向：
+治理可以拆成四层：
 
 ~~~text
-noeviction
+Keyspace Governance
 ↓
-不主动删旧 Key，新的内存增长写入可能失败
-
-allkeys-*
+Execution Efficiency
 ↓
-可以从所有 Key 选择驱逐
-
-volatile-*
+Capacity / Memory
 ↓
-只从设置 TTL 的 Key 中选择驱逐
+Observability
 ~~~
 
-选哪一种必须先看 Redis 中混合了哪些 State。一个同时保存 Session、Rate Limit、Cache 的 Redis，不能简单按“反正 Redis 就是缓存”选择激进驱逐策略。
+### 【第一层 Keyspace Governance 先区分 Cardinality、Big Key 与 Hot Key】
 
-### 【Big Key、Hot Key 与 Key Explosion 是三个不同问题】
+#### <u>1. Key 很多不等于 Big Key</u>
+
+假设：
+
+~~~text
+session:user1
+session:user2
+...
+100 万个 Key
+~~~
+
+每个只有几百 Bytes。
+
+这里主要问题是：
+
+~~~text
+High Cardinality
++
+Total Memory
+~~~
+
+而不是 Big Key。
+
+#### <u>2. Big Key 指单个 Key 内部承载数据过大</u>
+
+例如：
+
+~~~text
+one-hash
+↓
+500 万 Fields
+
+one-zset
+↓
+1000 万 Members
+
+one-string
+↓
+几十 MB
+~~~
+
+Big Key 风险不只是占内存。
+
+某些 Command：
+
+~~~text
+HGETALL
+LRANGE 0 -1
+ZRANGE 0 -1
+DEL huge-key
+~~~
+
+都可能一次处理大量元素，带来 CPU、Network、Latency 和删除成本。
+
+#### <u>3. Hot Key 指单个 Key 被访问得过于频繁</u>
+
+一个 Value 只有几个字节，也可能因为每秒极高访问量成为 Hot Key。
+
+所以：
 
 ~~~text
 Big Key
-= 单个 Key 本身太大
+=
+Data Size Problem
 
 Hot Key
-= 单个 Key 请求量过高
+=
+Access Frequency Problem
 
-Key Explosion
-= Key 数量本身失控
+High Cardinality
+=
+Key Count Problem
 ~~~
 
-三者处理方式不同。
+三者可能独立，也可能同时存在。
 
-Big Key 可能导致单命令耗时变长、网络返回巨大、删除或序列化成本增加。
+### 【Key Design 会决定流量集中还是自然分散】
 
-Hot Key 可能导致单个 Shard CPU / Network 集中。
-
-Key Explosion 可能导致 Metadata / Memory overhead 增长以及扫描和管理困难。
-
-### 【Connection Reuse 与 Pipeline 是 Client 侧基础性能能力】
-
-应用不应每个 HTTP 请求重新创建 Redis TCP Connection。
+例如：
 
 ~~~text
-Process Start
-↓
-Create Redis Client
-↓
-Reuse Connection
-↓
-Process Shutdown
-↓
-Graceful Close
+session:<sessionId>
 ~~~
 
-大量独立 Command 时，可以根据场景使用 Pipeline 降低 RTT，但仍然要区分：
+天然按 Session 分散。
+
+而：
 
 ~~~text
-Pipeline = Performance Optimization
-Transaction / Lua = Correctness Boundary
+counter:global
 ~~~
 
-### 【Redis Observability 需要覆盖 Server、Command、Memory 与 Client】
+所有请求都写同一个 Key，更容易成为 Hot Key。
 
-至少要观察：
+所以在设计 Key 时就应该问：
 
 ~~~text
-INFO
-↓
-Memory / CPU / Connections / Replication
-
-SLOWLOG
-↓
-执行过慢的 Command
-
-LATENCY
-↓
-Redis 内部延迟事件
-
-MEMORY STATS
-↓
-内存构成
-
-Key / Command Metrics
-↓
-Hot Key / Big Key / Error / Throughput
+这个 Scope 会不会让所有请求集中？
+有没有必要按 Tenant / User / Shard 拆分？
+拆分后还能不能满足业务查询？
 ~~~
 
-生产问题不能只看 PING = PONG，因为“Redis 活着”并不能证明 Latency、Memory、Eviction、Replication 和 Client 数量都正常。
+### 【第二层 Execution Efficiency 关注 Command 成本和结果规模】
 
----
+不能只记：
+
+~~~text
+Redis Command 很快
+~~~
+
+Command Complexity 必须和数据规模一起看。
+
+例如：
+
+~~~text
+HGET 一个 Field
+~~~
+
+和：
+
+~~~text
+HGETALL 一个拥有 500 万 Field 的 Hash
+~~~
+
+虽然都访问 Hash，但实际成本完全不同。
+
+范围查询也一样：
+
+~~~text
+ZRANGE 返回 10 个 Member
+~~~
+
+和：
+
+~~~text
+ZRANGE 返回 100 万 Member
+~~~
+
+Network Payload 和 Client Parsing 成本差异巨大。
+
+### 【Pipeline 优化大量独立 Command 的 RTT】
+
+如果应用需要连续发送很多独立命令：
+
+~~~text
+Command 1
+RTT
+Command 2
+RTT
+Command 3
+RTT
+~~~
+
+Pipeline 可以：
+
+~~~text
+一次发送多条
+↓
+Redis 顺序执行
+↓
+批量返回 Response
+~~~
+
+主要收益是减少 Network Round Trip。[37]
+
+但仍然要记住：
+
+~~~text
+Pipeline
+=
+Performance Tool
+
+MULTI / Lua
+=
+Correctness / Atomicity Tool
+~~~
+
+### 【Connection Reuse 避免把建连成本放进每个业务请求】
+
+每个 Redis Connection 都需要：
+
+~~~text
+TCP Socket
+File Descriptor
+Client State
+Input Buffer
+Output Buffer
+可能的 TLS / AUTH
+~~~
+
+所以典型应用应复用进程级 Client。
+
+Connection 数量也必须纳入容量：
+
+~~~text
+Application Instances
+×
+Connections per Instance
++
+Workers
++
+Admin
++
+Monitoring
++
+Replication / Sentinel
+~~~
+
+不能无限增长。
+
+### 【第三层 Memory Governance 不只看 used_memory】
+
+内存问题至少包括：
+
+~~~text
+Dataset Memory
+Allocator Overhead
+Fragmentation
+Client Buffers
+Replication Buffers
+AOF Rewrite / Fork Headroom
+Temporary Growth
+~~~
+
+因此：
+
+~~~text
+当前 used_memory = 4GB
+↓
+机器就配置 4GB
+~~~
+
+是不安全的。
+
+需要保留 Headroom 给 Traffic Spike、Fragmentation、Fork、Rewrite 与 Replication。
+
+### 【第四层 Observability 让性能治理从猜测变成定位】
+
+#### <u>1. INFO 是 Redis Runtime 的基础入口</u>
+
+INFO 可以观察：
+
+~~~text
+Server
+Clients
+Memory
+Persistence
+Stats
+Replication
+CPU
+Keyspace
+Commandstats
+Latencystats
+~~~
+
+它不只是版本查询，而是运行状态总入口。[40]
+
+#### <u>2. MEMORY STATS 用于理解内存组成</u>
+
+MEMORY STATS 可以帮助区分：
+
+~~~text
+Dataset
+Overhead
+Peak
+Fragmentation
+Allocator
+~~~
+
+从而判断内存上涨到底来自数据还是运行开销。[41]
+
+#### <u>3. SLOWLOG 定位 Redis Server 内部执行时间过长的 Command</u>
+
+SLOWLOG 记录超过阈值的 Server-side Command Execution。[42]
+
+要注意：
+
+~~~text
+SLOWLOG Time
+≠
+Client End-to-end Latency
+~~~
+
+如果 Client 感知 100ms，但 SLOWLOG 没记录慢命令，问题可能在：
+
+~~~text
+Network
+Connection Establishment
+Client Scheduling
+Queueing
+~~~
+
+而不是 Redis Command 自身。
+
+#### <u>4. LATENCY Monitoring 观察 Redis 内部延迟事件</u>
+
+Redis 提供：
+
+~~~text
+LATENCY LATEST
+LATENCY HISTORY
+LATENCY GRAPH
+LATENCY DOCTOR
+~~~
+
+用于分析 Fork、AOF、Command Spike、Eviction 等内部延迟事件。[43]
+
+### 【Big Key、Hot Key 需要专门进入日常诊断】
+
+常见：
+
+~~~text
+redis-cli --bigkeys
+redis-cli --memkeys
+redis-cli --hotkeys
+~~~
+
+分别帮助观察大型结构、高内存 Key 和高频 Key。
+
+MONITOR 虽然可以实时看到命令流，但会带来明显额外开销，不适合当长期生产监控方案。
+
+### 【完整 Redis Observability 至少覆盖六类信号】
+
+~~~text
+Availability
+├── Up / Ping
+└── Failover State
+
+Traffic
+├── Ops/sec
+├── Command Calls
+└── Network
+
+Latency
+├── Command Latency
+├── SLOWLOG
+└── LATENCY Events
+
+Memory
+├── used_memory
+├── maxmemory
+├── fragmentation
+└── evicted_keys
+
+Persistence
+├── RDB / AOF Status
+├── Last Save
+└── Rewrite
+
+Keyspace
+├── Key Count
+├── Big Key
+└── Hot Key
+~~~
+
+所以 PING = PONG 只能证明 Redis 当前能响应，不能证明 Redis 运行健康。
 
 ## 9. Redis 的生产安全与治理从网络边界开始
 
