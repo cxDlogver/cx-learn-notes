@@ -1014,6 +1014,503 @@ RETURNING *;
 
 不要仅因为系统出现 Worker 就提前引入复杂消息基础设施。
 
+
+### 【任务分发模式首先区分 Pull、Broker Push 与 Scheduler Dispatch】
+
+“有任务以后怎样交给 Worker”是 Queue / Broker 的另一条核心主线。不要把所有系统都理解成“中央系统实时找到最空闲 Worker 再分配”，主流实现至少分成三类：
+
+~~~text
+任务已经进入 Durable Queue / Store
+        ↓
+怎样到达 Worker？
+        │
+        ├── Pull（Worker 主动领取）
+        │   ├── Short Polling
+        │   ├── Long Polling
+        │   └── Batch Fetch
+        │
+        ├── Broker Push / Delivery
+        │   └── Broker 按 ACK / Prefetch / Credit 控制投递
+        │
+        └── Scheduler Dispatch
+            └── Scheduler 根据 Worker Heartbeat / Capacity / Resource
+                主动决定 Task → Worker
+~~~
+
+| 模式 | 谁主动 | Worker 容量如何体现 | 典型实现 |
+| --- | --- | --- | --- |
+| Short Polling Pull | Worker | Worker 处理完以后再次 Poll | Database Job Table |
+| Long Polling Pull | Worker | Worker 发起 Receive，请求可等待消息出现 | Amazon SQS |
+| Batch Fetch Pull | Consumer | Consumer 按 Fetch / Batch 节奏读取 | Kafka |
+| Broker Push / Delivery | Broker | ACK + Prefetch / Credit 限制未确认消息 | RabbitMQ |
+| Scheduler Dispatch | Scheduler | Heartbeat、Slot、CPU / Memory / GPU 等资源状态 | 分布式计算 / 资源调度系统 |
+
+Pull 的优势是 Worker 自己最清楚什么时候有能力继续领取任务。处理快的 Worker 更早回到 Claim / Fetch，自然会拿到更多工作；处理慢的 Worker 更晚回来，不需要中央调度器实时计算“谁最空闲”。
+
+Short Polling 的代价是空轮询。Poll Interval 越短，任务发现延迟越低，但 Queue 为空时的无效请求越多。Long Polling 仍然属于 Pull，只是 Queue 在没有消息时暂不立即返回 empty，而是等待消息到达或超时。Amazon SQS 的 ReceiveMessage 通过 WaitTimeSeconds 提供这种能力。[[9]](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html)
+
+RabbitMQ 更接近 Broker 主动 Delivery：Consumer 先注册订阅，Broker 再持续投递消息。但这里的“Push”通常不是 Broker 实时读取每台 Worker 的 CPU 后寻找“最空闲机器”，而是利用 Consumer Acknowledgement（消费者确认）和 Prefetch（预取额度）控制一个 Consumer 最多持有多少未确认消息。[[10]](https://www.rabbitmq.com/docs/consumer-prefetch)
+
+真正的 Scheduler Dispatch 则属于另一种复杂度：Scheduler 维护 Worker Membership、Heartbeat、Available Slots 和资源标签，再决定某个任务具体落在哪个 Worker。它适合 GPU 训练、分布式计算、构建任务等资源差异明显的工作，而普通同质后台任务通常不需要这套 Placement（放置）能力。
+
+### 【Database-backed Job Store 可以模拟更多 Broker 语义，但复杂度会逐渐转移到应用自身】
+
+数据库当然可以继续实现比“pending → processing → completed”更复杂的消费模型。例如可以建立：
+
+~~~text
+events
+├── id / sequence
+├── topic
+├── partition_key
+├── payload
+└── created_at
+
+consumer_offsets
+├── consumer_group
+├── partition
+└── next_offset
+~~~
+
+Consumer 查询：
+
+~~~sql
+SELECT *
+FROM events
+WHERE id >= :nextOffset
+ORDER BY id
+LIMIT 100;
+~~~
+
+处理成功后再更新 consumer_offsets，就已经具备了 Persistent Log（持久日志）、Consumer Position（消费者位置）和 Replay（重放）的雏形。继续增加 Partition、Group Membership、Rebalance、Retention、Replication、流控和批量 Fetch，数据库方案理论上也可以逐步逼近专业 Broker。
+
+所以差别并不是：
+
+~~~text
+Database 做不到
+Kafka 才做得到
+~~~
+
+而是：
+
+~~~text
+Database
+提供 Transaction / Lock / Index / Durable Storage
+↓
+应用自己组合消息语义
+
+Kafka / RabbitMQ / SQS
+↓
+把大量消息交付、消费协调和运行治理
+做成基础设施原生能力
+~~~
+
+当这些语义越来越多时，继续基于业务数据库自建消息协议，会把锁竞争、状态表、清理策略、Consumer 进度、路由和故障恢复复杂度全部留给应用维护。这才是专业 Message Broker 的工程价值。
+
+### 【传统 Queue 把处理状态绑定在 Task 上，Kafka 把消费进度绑定在 Consumer Group 上】
+
+传统 Job Queue 更自然地表达 Command / Task：
+
+~~~text
+SendEmail
+GenerateReport
+ResizeImage
+~~~
+
+它关注：
+
+~~~text
+这条任务处理完了吗？
+
+pending
+↓
+processing
+↓
+completed / failed
+~~~
+
+因此 Task 自己拥有生命周期状态。
+
+Kafka 更自然地表达已经发生的 Event：
+
+~~~text
+OrderCreated
+OrderPaid
+UserRegistered
+~~~
+
+Event 被追加到持久日志以后，不会因为某个 Consumer 处理完成就变成 completed。真正变化的是不同 Consumer Group 各自的消费位置：
+
+~~~text
+Partition
+
+100  OrderCreated
+101  OrderPaid
+102  OrderShipped
+103  OrderCancelled
+       ↑        ↑
+   analytics  inventory
+~~~
+
+因此可以把两者压缩成：
+
+~~~text
+Queue
+=
+Task-centric
+处理状态属于 Task
+
+Kafka
+=
+Log + Consumer-centric
+消费进度属于 Consumer Group
+~~~
+
+这个差异直接产生：
+
+| 维度 | 传统 Queue | Kafka |
+| --- | --- | --- |
+| 核心状态 | Task Status | Consumer Group Offset |
+| 消费成功 | ACK / Mark Completed | Advance / Commit Offset |
+| 多个独立下游 | 通常路由 / 复制到多个 Queue | 多个 Consumer Group 独立读取同一 Log |
+| 历史 Replay | 需要保留历史并重新造 Task，或产品额外支持 | Offset Reset / Seek 后重新读取 Retention 内数据 |
+| 慢消费者 | Queue Backlog / Oldest Task Age | Consumer Lag |
+| 数据生命周期 | 经常围绕任务完成和清理 | Retention 与某个 Consumer 是否已读解耦 |
+
+Kafka 官方把 Topic 的每个 Partition 定义为持续追加的有序日志，每条 Record 在 Partition 内拥有 Offset；数据是否被 Consumer 读取并不直接决定其删除时间，而由 Retention 控制。Consumer 可以改变自己的位置重新处理旧数据。[[11]](https://kafka.apache.org/documentation/)
+
+### 【Kafka 通过 Topic → Partition → Offset 建立可并行的持久事件日志】
+
+Kafka 的核心数据结构不是单个 Queue，而是：
+
+~~~text
+Topic
+│
+├── Partition 0
+│   └── 0 → 1 → 2 → 3 → ...
+│
+├── Partition 1
+│   └── 0 → 1 → 2 → 3 → ...
+│
+└── Partition 2
+    └── 0 → 1 → 2 → 3 → ...
+~~~
+
+Topic（主题）表示一类 Event Stream。Partition（分区）把一个 Topic 拆成多个可以并行读写的有序日志。Offset（偏移量）是 Record 在某个 Partition 内的位置，不是整个 Topic 的全局序号。
+
+Kafka 只保证单个 Partition 内的顺序，而不提供跨 Partition 的全局顺序。Producer 因此常把业务实体 ID 作为 Message Key，使同一实体相关的事件稳定进入同一 Partition：
+
+~~~text
+key = orderId = 10001
+
+OrderCreated(10001)
+OrderPaid(10001)
+OrderShipped(10001)
+        ↓
+同一 Partition
+        ↓
+保持该订单事件的相对顺序
+~~~
+
+Partition 同时也是 Consumer Group 内的并行单位，因此 Partition 数会约束一个 Consumer Group 的有效并行度。
+
+### 【Consumer Group 让 Kafka 同时拥有“Group 间发布订阅”和“Group 内负载分摊”】
+
+假设 order-events 有三个 Partition：
+
+~~~text
+order-events
+├── P0
+├── P1
+└── P2
+~~~
+
+库存系统建立 group.id = inventory-group，并启动三个 Consumer：
+
+~~~text
+inventory-group
+├── Consumer A ← P0
+├── Consumer B ← P1
+└── Consumer C ← P2
+~~~
+
+同一个 Consumer Group 内，一个 Partition 在同一时刻只由该 Group 中一个 Consumer 负责，因此三个 Consumer 是在共同完成一个逻辑订阅者的工作。增加 Consumer 是水平扩容，不是让同一 Event 广播三份。
+
+如果再增加 analytics-group、risk-group，并都订阅 order-events：
+
+~~~text
+                         order-events
+                              │
+          ┌───────────────────┼───────────────────┐
+          ↓                   ↓                   ↓
+ inventory-group       analytics-group        risk-group
+       │                    │                    │
+   A / B / C              D / E                  F
+~~~
+
+不同 Consumer Group 各自拥有独立消费位置，因此都可以处理同一份 Event Stream。
+
+所以 Kafka 发布订阅模型可以压缩成：
+
+~~~text
+不同 Consumer Group
+=
+Publish / Subscribe
+
+同一个 Consumer Group 内多个 Consumer
+=
+Partition Load Balance
+~~~
+
+Kafka 官方把 Consumer Group 描述为一个逻辑 Subscriber：同 Group 内实例分摊 Partition；不同 Group 可以各自订阅同一 Topic。[[11]](https://kafka.apache.org/documentation/)
+
+### 【Kafka 的发布订阅不把 Producer 与具体 Consumer 绑定】
+
+用订单系统举例：
+
+~~~text
+Order Service
+    ↓
+发布 OrderPaid
+    ↓
+Topic: order-events
+    ↓
+Partition 1
+Offset 105
+    │
+    ├──────────────────┬──────────────────┐
+    ↓                  ↓                  ↓
+inventory-group   analytics-group      risk-group
+    ↓                  ↓                  ↓
+库存处理            GMV 统计            风控判断
+~~~
+
+Producer 发布时只需要决定 Topic、Key、Value，不需要知道库存、分析、风控系统是否存在，也不需要知道它们各自有几个 Consumer。
+
+假设半年后增加 recommendation-group，只要它订阅 order-events，在历史数据仍处于 Retention 范围内时，就可以从需要的位置开始消费，而不会改变其他 Group 的消费进度。
+
+因此 Kafka 特别适合：**一份 Event Stream 会被多个彼此独立的业务下游以不同速度处理，并且需要新增订阅者、保留历史、Replay 或独立扩容的场景。**
+
+如果需求只是“生成 PDF”“发一封邮件”“处理一张图片”这类明确的一次性工作，Task Queue 通常更直接；如果是“订单已支付”“用户已注册”“日志已产生”这种已经发生的事实，并且多个系统都可能关心，Event Stream 更自然。
+
+### 【Offset Commit 保存的是 Consumer Group 的恢复位置，不是删除 Event】
+
+假设：
+
+~~~text
+Partition 1
+
+104  OrderCreated
+105  OrderPaid
+106  OrderShipped
+~~~
+
+inventory-group 成功处理 105 后，提交的是下一次恢复消费应该从哪里继续，例如概念上推进到 106。
+
+~~~text
+Commit Offset
+≠
+Delete Event 105
+~~~
+
+而是：
+
+~~~text
+inventory-group
+对 Partition 1
+已经推进到这个位置
+~~~
+
+另一个 analytics-group 完全可以仍停留在更早的位置。
+
+Consumer Crash 后，新实例通过 Group Coordination 接手 Partition，并从已提交 Offset 附近继续处理；Consumer 加入或退出导致 Partition 重新分配的过程称为 Rebalance（再均衡）。Kafka 的 Consumer Offset 由 Consumer Group 独立维护，Group 可以在重启后从已提交位置恢复。[[12]](https://kafka.apache.org/41/implementation/distribution/)
+
+Consumer Lag（消费者积压）通常可以理解为：
+
+~~~text
+Log End Offset
+-
+Consumer Group Current Offset
+=
+Lag
+~~~
+
+它回答的不是“有多少 Task 状态是 pending”，而是“这个 Consumer Group 距离 Event Stream 的最新位置还有多远”。
+
+### 【KafkaJS 的 TypeScript API 可以把发布与订阅链直接映射到上述概念】
+
+Node.js / TypeScript 中可以使用 KafkaJS 观察一条最小代码链。下面代码只是通用示例，不代表任何项目必须使用 KafkaJS。
+
+Producer：
+
+~~~ts
+import { Kafka } from 'kafkajs';
+
+const kafka = new Kafka({
+  clientId: 'order-service',
+  brokers: ['localhost:9092'],
+});
+
+const producer = kafka.producer();
+
+await producer.connect();
+
+const event = {
+  type: 'OrderPaid',
+  orderId: '10001',
+  amount: 299,
+};
+
+await producer.send({
+  topic: 'order-events',
+  messages: [
+    {
+      key: event.orderId,
+      value: JSON.stringify(event),
+    },
+  ],
+});
+~~~
+
+代码链：
+
+~~~text
+producer.send()
+↓
+Topic = order-events
+↓
+Message Key = orderId
+↓
+Partition Selection
+↓
+Append Record
+↓
+产生该 Partition 内 Offset
+~~~
+
+KafkaJS 官方 producer.send() 用于向 Topic 发布 Message；Message key 会参与 Partition 选择，同一业务 Key 可用于维持相关 Event 的 Partition 内顺序。[[13]](https://kafka.js.org/docs/producing)
+
+Consumer：
+
+~~~ts
+const consumer = kafka.consumer({
+  groupId: 'inventory-group',
+});
+
+await consumer.connect();
+
+await consumer.subscribe({
+  topics: ['order-events'],
+});
+
+await consumer.run({
+  eachMessage: async ({ topic, partition, message }) => {
+    if (!message.value) return;
+
+    const event = JSON.parse(message.value.toString());
+
+    await updateInventory(event);
+
+    console.log({
+      topic,
+      partition,
+      offset: message.offset,
+    });
+  },
+});
+~~~
+
+这条 API 链可以读成：
+
+~~~text
+kafka.consumer({ groupId })
+↓
+确定“我是哪个逻辑订阅者”
+
+subscribe()
+↓
+声明订阅哪些 Topic
+
+run()
+↓
+启动持续消费循环
+
+内部 Batch Fetch
+↓
+eachMessage()
+↓
+执行业务处理
+↓
+按 Consumer 配置推进 / 提交 Offset
+~~~
+
+KafkaJS 的 eachMessage 建立在 eachBatch 之上；底层消息仍然按 Batch 从 Kafka Fetch，只是库把持续 Fetch、Heartbeat 和常规 Offset 处理封装起来。[[14]](https://kafka.js.org/docs/consuming)
+
+学习可靠消费时，也可以关闭自动 Commit：
+
+~~~ts
+await consumer.run({
+  autoCommit: false,
+
+  eachMessage: async ({ topic, partition, message }) => {
+    if (!message.value) return;
+
+    await updateInventory(
+      JSON.parse(message.value.toString()),
+    );
+
+    await consumer.commitOffsets([
+      {
+        topic,
+        partition,
+        offset: (BigInt(message.offset) + 1n).toString(),
+      },
+    ]);
+  },
+});
+~~~
+
+这里 offset + 1 表达“下一次恢复时从下一条开始”。但手工 Commit 不能消除 At-least-once 的故障窗口：
+
+~~~text
+业务数据库写成功
+↓
+Process Crash
+↓
+Offset 尚未 Commit
+↓
+Record 再次处理
+~~~
+
+所以 Kafka Consumer 仍然需要 Idempotency。KafkaJS 官方区分自动 Commit 与 consumer.commitOffsets() 的手工 Commit，并说明把业务结果和消费 Offset 原子写入同一个外部存储可以获得比默认 Offset Commit 更强的一致性边界。[[14]](https://kafka.js.org/docs/consuming)
+
+### 【Kafka、RabbitMQ、SQS 与 Database Job Store 应按工作语义和消费模型选择】
+
+| 方案 | 核心抽象 | 典型分发方式 | 强项 | 更自然的场景 |
+| --- | --- | --- | --- | --- |
+| Database Job Store | Task Row + State | Poll / Claim | 与数据库事务结合简单、组件少 | 后台 Job、与业务 DB 强关联 |
+| RabbitMQ | Queue + Exchange | Broker Delivery + ACK / Prefetch | Routing、Work Queue、Consumer Delivery 控制 | 业务任务、复杂路由 |
+| SQS | Managed Queue | ReceiveMessage / Long Poll + Visibility Timeout | 托管 Queue、简单可靠的 Worker 解耦 | 云上后台任务 |
+| Kafka | Partitioned Event Log | Consumer Batch Fetch + Consumer Group | 多独立订阅者、Retention、Replay、高吞吐 Event Stream | Event Pipeline、日志、CDC、多个独立下游 |
+
+架构演进的判断顺序：
+
+~~~text
+现在解决的是一次性 Task
+还是可长期复用的 Event Stream？
+        ↓
+是否需要多个独立 Consumer Group？
+        ↓
+是否需要 Retention / Replay？
+        ↓
+是否需要 Partition 级高吞吐并行？
+        ↓
+业务数据库是否已经被 Polling / Queue State 更新拖成热点？
+        ↓
+再决定是否从 Database Job Store
+演进到专业 Broker / Stream Platform
+~~~
+
+
 ## 7. 异步任务体系通过上下游知识和项目实践形成完整学习路径
 
 ### 【通用知识先连接 Runtime、Database 与 Deployment】
@@ -1124,3 +1621,15 @@ Worker Crash 为什么会 Redelivery？
 [7] Google Cloud. RetryConfig. Cloud Tasks API v2. https://cloud.google.com/tasks/docs/reference/rest/v2/RetryConfig
 
 [8] Amazon Web Services. Timeouts, retries, and backoff with jitter. Amazon Builders' Library. https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/
+
+[9] Amazon Web Services. ReceiveMessage - Amazon Simple Queue Service API Reference. https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html
+
+[10] RabbitMQ. Consumer Prefetch. https://www.rabbitmq.com/docs/consumer-prefetch
+
+[11] Apache Kafka. Documentation - Topics, Partitions, Producers and Consumers. https://kafka.apache.org/documentation/
+
+[12] Apache Kafka. Distribution - Consumer Offset Tracking. https://kafka.apache.org/41/implementation/distribution/
+
+[13] KafkaJS. Producing Messages. https://kafka.js.org/docs/producing
+
+[14] KafkaJS. Consuming Messages. https://kafka.js.org/docs/consuming
