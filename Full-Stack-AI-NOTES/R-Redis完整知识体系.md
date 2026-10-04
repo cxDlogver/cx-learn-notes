@@ -1867,192 +1867,637 @@ Critical Runtime State
 
 同一个 Redis Instance 可能同时承载这些不同级别 State，因此 Persistence 和 Eviction 不能只用“Redis 是缓存”来决定。
 
-## 5. Redis 与数据库的一致性问题来自两套独立状态没有共同事务
+## 5. Redis 与数据库的一致性问题来自两套独立状态没有共同事务边界
 
-### 【Cache 一致性的核心是 Source of Truth 与 Invalidation】
+只要系统同时有 Database 和 Redis，就必须先回答两个问题：
 
-典型 Dual State：
+~~~text
+哪一份是 Source of Truth？
+↓
+如果两边都要修改，但只成功一边怎么办？
+~~~
+
+### 【第一层先确定数据职责，再讨论一致性】
+
+Source of Truth（权威数据源）表示系统最终认定哪一份状态是真实业务事实。
+
+Derived State（派生状态）表示可以由权威事实重新计算出来的状态。
+
+Runtime State（运行时状态）表示为了请求执行、身份恢复或节点协作临时维护的状态。
+
+#### <u>1. Source of Truth 决定故障后的恢复方向</u>
+
+如果：
 
 ~~~text
 PostgreSQL
-= 权威状态
+=
+Source of Truth
 
 Redis
-= 派生状态
-~~~
-
-更新数据库以后：
-
-~~~text
-DB Commit
-↓
-Invalidate Redis
-~~~
-
-这两步不共享一个本地 ACID Transaction，因此中间可能 Crash。
-
-工程上通常不追求“Redis 与数据库任何时刻每个字节都一致”，而是先定义：
-
-- 哪一份是 Source of Truth；
-- 可接受多久的 Staleness（陈旧）；
-- Cache Miss 时怎样 Rebuild；
-- Invalidation 失败时怎样恢复；
-- 是否需要 Version Key / TTL / Event-driven Invalidation。
-
-### 【TTL 是一致性恢复边界，不是完整一致性方案】
-
-如果 Cache Invalidation 偶尔失败，而 TTL = 60s，那么错误 Cache 最迟会在 TTL 到期后失效。
-
-但 TTL 不能替代：
-
-~~~text
-正确的更新顺序
-失效策略
-重试
-事件通知
-版本隔离
-~~~
-
-它只是“陈旧状态最多能存在多久”的一个恢复上界。
-
-### 【Versioned Cache 通过命名空间隔离旧值】
-
-一种常见方式：
-
-~~~text
-version = 42
-
-cache key
 =
-analytics:v42:<query>
+Cache
 ~~~
 
-数据发生变化：
+恢复方向应该是：
 
 ~~~text
-INCR version
+PostgreSQL
 ↓
-43
+Rebuild Redis
 ~~~
 
-新请求自然进入：
+而不是 Redis 反向覆盖 PostgreSQL。
+
+#### <u>2. Persistent Record 与 Runtime Read Authority 不是同一个概念</u>
+
+有些系统可能由数据库保存持久 Session Record，但认证热路径真正读取 Redis Session。此时数据库负责持久记录，Redis 却可能是 Runtime Read Authority。
+
+所以“数据库已经删除 Session”并不必然等于“下一次请求一定认证失败”，还要看实际读路径。
+
+### 【第二层一次业务同时修改两个 Store 就形成 Dual Write】
+
+典型：
 
 ~~~text
-analytics:v43:<query>
-~~~
-
-旧 v42 Cache 不需要立即枚举删除，由 TTL 最终回收。
-
-这种模式适合 Query Key 很多、逐个 DEL 成本高的场景。
-
-### 【跨存储关键副作用不能只靠“先写 A 再写 B”】
-
-如果业务要求：
-
-~~~text
-Database 更新成功
+UPDATE Database
 ↓
-某个后续动作绝不能被忘记
+DEL Redis Cache
 ~~~
 
-仅靠：
+或者：
 
 ~~~text
-UPDATE DB
+DELETE Database Session
 ↓
-PUBLISH / DEL / SET Redis
+DEL Redis Session
 ~~~
 
-存在 Crash Window。
+这类操作属于 Dual Write（双写）。
 
-如果“后续动作不能丢”，可以考虑 Transactional Outbox：
+#### <u>1. Database Transaction 不能自动把 Redis 包进去</u>
 
 ~~~text
-DB Transaction
-├── Business Data
-└── Outbox Intent
-↓
+BEGIN
+UPDATE ...
 COMMIT
-↓
-Worker
-↓
-外部 Redis / Broker / API Side Effect
+
+Redis DEL
 ~~~
 
-Outbox 的完整机制继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
+PostgreSQL COMMIT 不会自动回滚 Redis；反过来 Redis Lua 也不会自动回滚 PostgreSQL。
 
----
+#### <u>2. Dual Write 真正危险的是 Partial Failure</u>
 
-## 6. Redis Persistence 解决重启恢复，但不等于高可用
-
-### 【RDB 与 AOF 解决的是 Dataset Durability】
-
-Redis 官方当前主要提供：
+可能出现：
 
 ~~~text
-RDB
-= Point-in-time Snapshot
+Database ✓
+Redis ✗
+~~~
 
+或者：
+
+~~~text
+Redis ✓
+Database ✗
+~~~
+
+哪一种更严重，取决于状态语义。
+
+#### <u>3. 调换顺序只能改变失败模式，不能消灭 Dual Write</u>
+
+把“先 DB 后 Redis”改成“先 Redis 后 DB”，只会改变哪一边暂时领先，不会得到跨存储原子事务。
+
+### 【第三层 Session 展示跨存储不一致为什么可能具有安全语义】
+
+假设 Logout：
+
+~~~text
+DELETE Database Session
+↓
+DEL Redis Session
+~~~
+
+如果：
+
+~~~text
+Database DELETE ✓
+Redis DEL ✗
+~~~
+
+而认证 Guard 只读取 Redis，则旧 Redis Session 仍可能继续通过认证，形成 Session Revocation Window（会话撤销窗口）。
+
+同类问题还可能出现在：
+
+~~~text
+Password Reset
+Account Disable
+Permission Revocation
+~~~
+
+所以，同样是“几秒钟不一致”，Analytics Cache 可能只是显示旧统计，Session 却可能成为安全问题。
+
+### 【第四层 Cache-Aside 的核心是 Source of Truth + Invalidation】
+
+读链：
+
+~~~text
+Request
+↓
+GET Redis Cache
+↓
+Hit?
+├── Yes → Return
+└── No
+      ↓
+   Read Database
+      ↓
+   SET Cache
+      ↓
+   Return
+~~~
+
+写链更常见：
+
+~~~text
+Update Source of Truth
+↓
+Invalidate Cache
+↓
+Next Read Miss
+↓
+Reload Source of Truth
+~~~
+
+为什么不总是 UPDATE Database + UPDATE Cache？因为这仍然是 Dual Write。Cache 的核心特征是“可以没有、可以重新生成”，因此 Invalidation 通常比维护第二份权威值更自然。
+
+### 【Version + TTL 可以形成两层 Cache Recovery】
+
+Version 主要负责主动 Logical Invalidation；TTL 负责旧状态最终自动失效。
+
+~~~text
+Version
+↓
+快速切换 Generation
+
+TTL
+↓
+即使 Version Update 漏掉
+旧值也有时间上界
+~~~
+
+两者不是重复机制。
+
+### 【Derived Cache 不是 Source of Truth，但仍可能成为 Runtime Dependency】
+
+数据语义上：
+
+~~~text
+Cache 丢失
+↓
+可以从 Database Rebuild
+~~~
+
+但代码如果在 Redis Error 时直接抛错，那么 Redis 仍然是当前请求的同步依赖。
+
+因此：
+
+~~~text
+Data Authority
+≠
+Runtime Availability Dependency
+~~~
+
+如果希望 Cache 真正 Fail-open，需要显式设计 Redis Error → Bypass Cache → Direct Database Query。
+
+### 【第五层跨存储一致性真正依赖可恢复机制】
+
+不一致发生后，关键问题是：
+
+~~~text
+系统知不知道还有什么没完成？
+↓
+能不能 Retry？
+↓
+Process Crash 后 Retry Intent 还在吗？
+↓
+最终能不能重新收敛？
+~~~
+
+这比追求“任何瞬间绝对一致”更符合分布式系统现实。
+
+### 【Transactional Outbox 把后续动作不能丢变成持久待办】
+
+假设业务状态已经写入数据库，但还必须 Publish Message、Delete Redis 或 Call External API。
+
+直接：
+
+~~~text
+DB COMMIT
+↓
+External Action
+~~~
+
+在中间 Crash，会产生 DB 已成功但外部动作永久遗漏的窗口。
+
+Outbox 改成：
+
+~~~text
+BEGIN Database Transaction
+
+UPDATE Business Data
+
+INSERT Outbox Task
+status = pending
+
+COMMIT
+~~~
+
+于是 Business Change 和 Need-to-do Action 被同一个数据库事务原子记录。
+
+#### <u>1. Outbox 的核心是 Durable Retry Intent</u>
+
+普通 retry() 依赖进程内存；Process Crash 后“还要重试”可能消失。Outbox 通过 pending row 让 Restart 后仍然知道要继续执行什么。
+
+#### <u>2. Worker 将 Outbox 从 pending 推进到 completed / retry / failed</u>
+
+~~~text
+pending
+↓
+claim
+↓
+processing
+↓
+success → completed
+failure → pending + backoff
+repeated failure → failed / dead letter
+~~~
+
+#### <u>3. Outbox 解决 Reliable Eventual Consistency，不是 Distributed ACID</u>
+
+在 DB COMMIT 到 Worker 完成之间，Database 可能是 New，而 Redis / Broker / External 仍是 Old。Outbox 保证的是“动作不会被忘记并最终收敛”，不是“同一瞬间全部成功”。
+
+#### <u>4. Outbox Consumer 仍然需要 Idempotency</u>
+
+典型窗口：
+
+~~~text
+External Action 已成功
+↓
+还没标记 Outbox completed
+↓
+Worker Crash
+↓
+重启后同一 Task 再执行
+~~~
+
+所以 At-least-once 与 Idempotent Consumer 仍然需要组合。[32]
+
+#### <u>5. Outbox 与 Message Queue 不互斥</u>
+
+完整链路可以是：
+
+~~~text
+Database Transaction
+├── Business Data
+└── Outbox Event
+↓
+Relay / Worker
+↓
+Kafka / RabbitMQ / SQS
+↓
+Consumers
+~~~
+
+Outbox 解决 Database → Broker 的可靠交接；Broker 解决 Message → Consumers 的可靠分发。
+
+### 【Retry、TTL、Version、Outbox 与 Rebuild 解决不同 Failure Stage】
+
+#### <u>1. Retry 解决暂时性执行失败</u>
+
+前提是系统还记得要 Retry 什么。
+
+#### <u>2. TTL 给遗漏失效动作一个时间上界</u>
+
+适合 Cache、Session、Temporary State，但不能保证立即一致。
+
+#### <u>3. Version 解决大量 Cache Key 的逻辑失效与旧写隔离</u>
+
+它是 Cache Consistency Pattern，不是通用事务机制。
+
+#### <u>4. Outbox 解决必须完成的外部动作不能被忘记</u>
+
+核心是 Pending Work 被持久化。
+
+#### <u>5. Rebuild 适合真正可派生状态</u>
+
+Redis Cache 丢失后，从 Database 重新生成，通常比复杂双向同步更自然。
+
+### 【强一致、有限陈旧与最终一致必须按 State Semantics 选择】
+
+~~~text
+Security Revocation
+↓
+更强 Immediate Consistency
+
+Analytics Cache
+↓
+Bounded Staleness
+
+Async Side Effect
+↓
+Reliable Eventual Consistency
+~~~
+
+所以设计链应该是：
+
+~~~text
+State Semantics
+↓
+Business Impact
+↓
+Allowed Staleness
+↓
+Recovery Ability
+↓
+Invalidate / TTL / Version / Retry / Outbox / Rebuild
+~~~
+
+## 6. Redis 的可靠运行需要同时解决 Durability、Memory Safety、Availability 与 Recovery
+
+“Redis 要高可靠”至少应该拆成四层：
+
+~~~text
+Durability
+Redis Restart 后数据还能不能恢复？
+
+Memory Safety
+运行过程中 Dataset 会不会无限增长？
+
+Availability
+Redis Node 故障后服务还能不能继续？
+
+Recovery
+面对不同 Failure Mode，怎样恢复到可接受状态？
+~~~
+
+### 【第一层 Durability 解决 Redis 重启以后 Dataset 能否恢复】
+
+如果完全没有 Persistence：
+
+~~~text
+Memory Dataset
+↓
+Process Crash / Power Off
+↓
+Restart
+↓
+Dataset 消失
+~~~
+
+Redis 主要支持 RDB、AOF、RDB + AOF 和 No Persistence。[24]
+
+### 【RDB 通过周期性 Snapshot 保存某个时间点的 Dataset】
+
+~~~text
+Redis Memory
+↓ Snapshot
+dump.rdb
+~~~
+
+假设 10:00 Snapshot，10:01 和 10:02 又发生写入，10:03 Crash，而之后没有新的 Snapshot，那么恢复只能依赖 10:00 的状态。
+
+因此 RDB 的基本模型是 Point-in-time Snapshot。
+
+优点包括文件相对紧凑、适合备份、大数据集恢复路径直接；代价是 Snapshot 之间存在数据丢失窗口，并且 fork / snapshot 会消耗 CPU、Memory、I/O。
+
+### 【AOF 记录改变 Dataset 的写操作】
+
+AOF（Append Only File）记录类似 SET、HSET、INCR、DEL 等改变 Dataset 的写操作。
+
+Restart：
+
+~~~text
 AOF
-= 记录写命令并在恢复时 Replay
-
-RDB + AOF
-= 两种方式组合
-
-No Persistence
-= 完全作为可丢失内存状态
+↓
+Replay Writes
+↓
+Rebuild Dataset
 ~~~
 
-官方 Persistence 文档明确区分这几种模式。[4]
-
-#### <u>1. RDB 更像周期快照</u>
-
-优点包括文件紧凑、备份和恢复路径直接；代价是两次 Snapshot 之间的数据可能丢失，而且 Snapshot 本身需要系统资源。
-
-#### <u>2. AOF 更像写操作日志</u>
-
-AOF 记录改变 Dataset 的写操作。AOF 的核心取舍来自 fsync：
+因此：
 
 ~~~text
-always
-↓
-更强 Durability
-更高写入成本
-
-everysec
-↓
-性能与数据丢失窗口之间折中
-
-no
-↓
-更多依赖操作系统刷盘
+RDB = Snapshot
+AOF = Write Operation Log
 ~~~
 
-Persistence 的选型应从 RPO（Recovery Point Objective，恢复点目标）出发，而不是默认“Redis 一定不需要持久化”。
+#### <u>1. AOF 的可靠程度真正由 fsync 策略决定</u>
 
-### 【Persistence 与业务 Source of Truth 是两个问题】
+不能简单理解 appendonly yes 就意味着每条写已经永久落盘。
 
-即使 Redis 开启 AOF，也不能自动推出 Redis 是业务唯一 Source of Truth。
-
-不同 State 的故障后果完全不同：
+中间还有：
 
 ~~~text
-Query Cache
-丢了可以 Rebuild
-
-Session
-丢失会导致用户重新登录
-
-Rate Limit
-丢失会短暂重置配额
-
-订单事实
-丢失可能造成不可接受业务错误
+Redis
+↓
+OS Buffer / Page Cache
+↓
+Disk
 ~~~
 
-可靠性要求必须按 State Class 分别决定。
+常见策略：
 
----
+~~~text
+appendfsync always
+appendfsync everysec
+appendfsync no
+~~~
+
+always 更偏 Durability，但增加写延迟；everysec 在性能与数据丢失窗口之间折中；no 更多依赖操作系统刷盘。
+
+#### <u>2. AOF Rewrite 解决日志无限增长</u>
+
+如果 INCR count 执行很多次，最终 Dataset 可能只需要 count = 1000000，但旧 AOF 包含大量历史操作。
+
+Rewrite：
+
+~~~text
+Old AOF
+大量历史命令
+↓
+Background Rewrite
+↓
+New AOF
+只保留恢复当前 Dataset
+真正需要的信息
+~~~
+
+所以 AOF 体系应理解成 Append + fsync + Rewrite + Replay。
+
+### 【第二层 Memory Safety 解决 Dataset 增长到容量边界后的行为】
+
+Persistence 解决 Restart 后能不能恢复，却不能解决运行中内存会不会不断增长。
+
+如果持续 SET / HSET / ZADD，却没有 TTL、DEL、Range Cleanup 和 Capacity Limit，Dataset 会持续增长。
+
+Memory Governance 至少包含：
+
+~~~text
+TTL / Cleanup
+maxmemory
+maxmemory-policy
+Memory Observability
+~~~
+
+### 【maxmemory 定义内存上界，Eviction Policy 定义超过上界后牺牲谁】
+
+maxmemory 定义 Dataset Capacity Boundary；maxmemory-policy 定义到达上限后的处理规则。[34]
+
+#### <u>1. noeviction 更强调保留已有 Key</u>
+
+达到上限后 Existing Keys 保留，需要增加内存的写操作可能返回 Error。
+
+#### <u>2. allkeys-* 会从全部 Key 中选择驱逐对象</u>
+
+例如 allkeys-lru、allkeys-lfu、allkeys-random，更接近 Pure Cache Instance，因为被驱逐的 Cache 可以 Rebuild。
+
+#### <u>3. volatile-* 只从带 TTL 的 Key 中选择候选</u>
+
+但带 TTL 的 Key 不一定都是 Cache。Session、Rate Limit、Temporary Control State 都可能有 TTL。
+
+所以 volatile-* 也可能驱逐 Session 或 Control State。
+
+因此：
+
+> Eviction Policy 是 Redis Instance 级的数据治理策略，不是 Cache 的一个局部配置。
+
+### 【第三层 Availability 解决 Redis Node 故障后服务是否继续】
+
+即使 AOF 完整，Redis Process Crash → Restart → AOF Replay → Ready 期间 Redis 仍不可用。
+
+所以：
+
+~~~text
+Persistence
+≠
+High Availability
+~~~
+
+### 【Replication 提供副本，但不自动等于 Failover】
+
+基本结构：
+
+~~~text
+Primary
+↓ Replication Stream
+Replica
+~~~
+
+Replication 解决 Data Redundancy。[35]
+
+如果 Primary Down，但 Replica 还在，仍然要回答：
+
+~~~text
+谁把 Replica 提升为 Primary？
+Client 去哪里发现新 Primary？
+其他 Replica 跟谁？
+~~~
+
+这才是 Failover。
+
+### 【Sentinel 在非 Cluster 架构中提供监控和自动故障切换】
+
+Sentinel 的核心职责：
+
+~~~text
+Monitoring
+Notification
+Failure Detection
+Automatic Failover
+Configuration Provider
+~~~
+
+典型：
+
+~~~text
+Primary Down
+↓
+Sentinel 判断故障
+↓
+选择 Replica
+↓
+Promote
+↓
+其他 Replica 跟随新 Primary
+↓
+Client 获取新 Primary
+~~~
+
+所以：
+
+~~~text
+RDB / AOF → Durability
+Replication → Redundancy
+Sentinel → Failure Detection + Failover
+~~~
+
+不是三种同义的“备份”。[36]
+
+### 【第四层 Recovery 必须按 Failure Mode 选择机制】
+
+| Failure Mode | 主要问题 | 常见机制 |
+| --- | --- | --- |
+| Process Crash | 内存 State 消失 | RDB / AOF |
+| Power Loss | 最近写是否落盘 | fsync |
+| AOF 过大 | 恢复和磁盘成本 | Rewrite |
+| Memory Full | 删除谁 / 拒绝谁 | maxmemory + eviction |
+| Redis Node Down | 服务是否继续 | Replica + Failover |
+| Host Down | 单机全部失效 | Multi-node Replication |
+| 误删 / 错写 | 错误可能同步副本 | Backup / Historical Recovery |
+
+一个 Redis 配置不可能解决所有 Failure。
+
+### 【Replication 与 Backup 解决的不是同一个问题】
+
+如果 Primary 错误执行 DEL / FLUSH，错误可能同步到 Replica，所以 Replica 不能替代 Historical Backup。
+
+Backup 更关注“能否恢复到过去某个正确时间点”；Replication 更关注“当前节点故障后有没有另一节点继续服务”。
+
+### 【RPO 与 RTO 把高可靠拆成可回答目标】
+
+RPO（Recovery Point Objective，恢复点目标）问：故障后最多允许丢失多久的数据？
+
+它会影响 AOF fsync、Snapshot Frequency、Replication 与 Backup。
+
+RTO（Recovery Time Objective，恢复时间目标）问：故障以后多久必须重新提供服务？
+
+它会影响 Single-node Restart、Sentinel Failover、Cluster 和 Managed HA。
+
+可以粗略理解：
+
+~~~text
+Persistence / fsync
+↓
+主要影响 Data Loss / RPO
+
+Replication / Failover
+↓
+主要影响 Service Recovery / RTO
+~~~
+
+### 【不同 Redis State 应该分别评估 Failure Impact】
+
+| State | 丢失后 | 暂时不可用时 | 一般敏感度 |
+| --- | --- | --- | --- |
+| Query Cache | 可重建 | 可考虑回源 DB | 低 |
+| Rate Limit | 预算重置 | 限流链路受影响 | 中 |
+| Session | 登录态丢失 | 认证不可用 | 高 |
+| Version Counter | Cache Generation 重置 | Cache 路径受影响 | 中 |
+| Operational Stats | 统计出现缺口 | 状态看板不完整 | 视业务要求 |
+
+同一个 Redis Instance 可能混合不同 Reliability Class，因此未来可能需要 Instance Splitting、不同 Persistence、不同 Eviction、不同 HA 和不同 Access Control。
 
 ## 7. Replication、Sentinel 与 Cluster 分别解决不同层级的问题
 
