@@ -164,6 +164,8 @@ addTask(400, '4');
 
 **Promise 在 JavaScript 中用于实现异步编程？**
 
+Promise、Microtask 与 async / await 属于 JavaScript 异步控制流；当这些机制运行在 Node.js 中时，Event Loop、异步 I/O、Worker Thread 与 Process 的 Runtime 边界继续参考 [Node.js Runtime 完整知识体系](./N-NodeJS核心总结.md)。
+
 在 JavaScript 中，**异步编程**是为了解决**单线程模型下的耗时操作阻塞主线程**的问题。
 
 JavaScript 本身是**单线程执行**的，所有代码默认是同步执行的。如果将网络请求、文件读取、定时器等**耗时操作**都以同步方式执行，会直接阻塞主线程，导致页面卡顿甚至失去响应。
