@@ -272,193 +272,448 @@ Bulkhead（舱壁隔离）解决的是另一类传播：一个慢依赖不能占
 
 这些机制是组合工具，不是固定套餐。是否引入必须由 Failure Model、业务副作用和资源模型决定。
 
-## 3. 状态与数据可靠性保证已经确认的业务事实不会处于半完成状态
+## 3. 状态与数据可靠性从事务正确性继续扩展到崩溃恢复、副本和灾难恢复
 
-### 【Transaction 解决单个数据库边界内的一组状态原子变化】
+请求失败后可以重新发送，但已经向用户确认成功的数据还要面对更复杂的问题：进程 Crash、机器断电、主数据库整机损坏、误执行 DELETE、错误程序批量覆盖、整个故障域不可用、备份文件本身损坏。这些故障不是同一个层次，因此 Transaction、WAL、Replication、Backup、PITR 不能互相替代。
 
-当一次业务操作需要修改多条数据时，可靠性首先要求确定 Transaction Boundary（事务边界）：
+### 【Transaction 先保证一个业务状态变化不会只完成一半】
+
+假设“创建订单”需要：
 
 ~~~text
-Business Operation
-      ↓
-必须共同成立的状态变化
-      ↓
+INSERT orders
+UPDATE inventory
+INSERT payment_record
+~~~
+
+如果三条 SQL 分别自动提交，可能出现 orders 成功、inventory 成功、payment_record 失败。每一条 SQL 单独都合法，但业务整体已经不完整。
+
+Transaction Boundary 应该来自业务原子性：
+
+~~~text
 BEGIN
-      ↓
-Write A
-Write B
-Write C
-      ↓
-COMMIT / ROLLBACK
-~~~
 
-Transaction（事务）解决的是：同一个数据库事务边界中的状态变化要么共同提交，要么共同回滚。PostgreSQL 官方事务教程明确说明，事务把多个步骤捆绑成一个 all-or-nothing 操作。[[5]](https://www.postgresql.org/docs/current/tutorial-transactions.html)
+INSERT orders
+UPDATE inventory
+INSERT payment_record
 
-数据库内部的 Isolation、MVCC、Lock、Deadlock 和 Transaction Retry 继续进入 [数据库完整框架体系](./S-数据库完整框架体系.md)。
-
-### 【跨系统写入需要重新识别一致性边界】
-
-**事务原子性只属于单个数据库引擎。** `BEGIN … COMMIT` 的 all-or-nothing 是某一个数据库给自己的多条写入提供的保证；而 Message Broker、Redis、外部 API 是另外的系统，各有各自的提交语义。数据库既无法“回滚”一条已经发出的消息，也无法撤销一次已经成功的外部调用。因此，当一次业务需要同时写多个系统时，事务这道原子锁就在边界上断开了——单个数据库事务不能自动覆盖：
-
-~~~text
-Database
-+
-Message Broker
-+
-Redis
-+
-External API
-~~~
-
-只用一个库的事务去包住跨系统写入，就形成 Dual Write（双写）：两个系统各写各的，没有任何事务能同时包住它们，于是中间一旦失败就会“只成功一半”。例如“先写库、再发消息”：
-
-~~~text
-INSERT business_record
-      ↓
 COMMIT
-      ↓
+~~~
+
+任何一步失败则 ROLLBACK。PostgreSQL 官方把事务描述为把多个步骤捆绑成一个 all-or-nothing 操作。[[5]](https://www.postgresql.org/docs/current/tutorial-transactions.html)
+
+这里需要特别区分：Transaction Atomicity 解决“一次业务写入是否半完成”，并不直接解决“整台数据库机器永久损坏以后怎么办”。所以事务只是数据可靠性的第一层。
+
+### 【Constraint 与并发控制保证成功提交的数据仍然满足业务不变量】
+
+即使所有 SQL 都 COMMIT，也可能因为并发写出错误状态。例如两个请求同时扣最后 1 件库存，或者同一个业务单号被并发创建两次。于是还需要 Unique Constraint、Foreign Key、Check Constraint、Isolation、Lock 或 Optimistic Concurrency 等机制。
+
+这些机制解决的是：多个操作交叉执行时，最终提交的数据仍然满足业务不变量。完整的 Isolation Level、MVCC、Row Lock、Advisory Lock、Deadlock 与 Transaction Retry 继续进入 [数据库完整框架体系](./S-数据库完整框架体系.md)。
+
+### 【跨系统写入形成 Dual Write，单数据库事务不能替其他系统回滚】
+
+假设业务同时要完成两件事：写订单数据库、发布 order.created 消息。
+
+如果先写库：
+
+~~~text
+BEGIN
+INSERT order
+COMMIT
+        ↓
 Process Crash
+        ↓
+Message 没发
+~~~
+
+订单存在，但下游永远不知道。
+
+如果先发消息：
+
+~~~text
+Publish order.created
+        ↓
+Database COMMIT 失败
+~~~
+
+下游已经处理一个数据库中不存在的订单。
+
+问题根源是 Database Transaction 只能控制 Database；Message Broker、Redis、External API 都有各自状态和提交语义。所以不能靠把 publish 塞进 BEGIN / COMMIT 就让它变成数据库事务的一部分。
+
+Transactional Outbox 的关键是把跨系统动作先转换成本地可事务化的“待执行意图”：
+
+~~~text
+BEGIN
+    INSERT order
+    INSERT outbox_event(order.created)
+COMMIT
+        ↓
+业务事实 + 待发送意图一起持久化
+        ↓
+Relay / Worker 读取 outbox
+        ↓
+Publish
+        ↓
+标记已发送
+~~~
+
+这样即使 Process 在 COMMIT 后立刻 Crash，Outbox Event 仍在数据库，恢复后可以继续发送。AWS Transactional Outbox Pattern 也明确指出，后续消息可能重复，因此 Consumer 仍然需要 Idempotency。[[6]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+
+### 【Durability 要按故障类型拆成 Crash、Instance、Logical 与 Disaster 四层】
+
+Durability（持久性）最容易被一句“COMMIT 后数据不会丢”过度简化。工程上更有用的问题是：**你准备保护哪一种故障？**
+
+~~~text
+第一层：Process / OS Crash
+数据库进程或机器突然停止
+        ↓
+WAL / Crash Recovery
+
+第二层：Database Instance / Host Failure
+主机、磁盘或实例不可继续提供服务
+        ↓
+Replication / Standby / Failover
+
+第三层：Logical Error
+误删、错误 UPDATE、错误程序写坏数据
+        ↓
+Backup / WAL Archive / PITR
+
+第四层：Large-scale Disaster
+机房、区域、账号或备份介质同时受影响
+        ↓
+Off-site / Cross-region / Isolated Backup
++
+Restore Plan
+~~~
+
+这四层不是“越往下越高级”，而是保护不同失败。
+
+#### <u>1. COMMIT 与 WAL 主要解决数据库崩溃后的状态恢复</u>
+
+PostgreSQL 使用 Write-Ahead Log（WAL，预写日志）：数据页真正写回数据文件之前，相关变化先记录到 WAL。发生系统 Crash 后，数据库可以从 Checkpoint 之后重放 WAL，把数据文件恢复到一致状态。PostgreSQL 官方把 WAL 放在 Reliability 章节中，并明确说明其首要用途是 Crash Safety。[[7]](https://www.postgresql.org/docs/current/wal.html) [[8]](https://www.postgresql.org/docs/current/continuous-archiving.html)
+
+可以简化理解成：
+
+~~~text
+Transaction 修改内存中的数据页
+        ↓
+先产生 WAL Record
+        ↓
+满足提交持久化条件
+        ↓
+COMMIT 返回成功
+        ↓
+数据页可以稍后再刷盘
+~~~
+
+Crash 后：
+
+~~~text
+Database Restart
       ↓
-Publish Message 没执行
+读取持久化 WAL
+      ↓
+Replay
+      ↓
+恢复到一致状态
 ~~~
 
-数据库这边已经提交（业务事实落库），但进程在“提交成功之后、发消息之前”崩溃，导致消息永远没发出去——下游永远收不到它本该收到的事件。
+WAL 让“数据库进程突然停止”不必退化成“应用重新执行所有最近请求”。但 WAL 仍位于数据库自己的存储体系中；如果整块存储永久损坏，只靠同一机器上的 WAL 仍不足以完成灾难恢复。
 
-双写其实两个方向都会坏，而且无法靠调整顺序根治：
+#### <u>2. Replication 主要缩短实例故障后的恢复时间，但不等同于 Backup</u>
+
+Replication（复制）让 Primary 的数据变化传播到 Standby / Replica：
 
 ~~~text
-先写库、后发消息
-  库提交了、消息没发
-  → 下游永远不知道（丢事件）
-
-先发消息、后写库
-  消息发了、库提交失败
-  → 下游处理了一个库里并不存在的事实
+Primary
+   ↓ WAL / Replication Stream
+Standby
 ~~~
 
-只要两步之间存在哪怕一个可能失败的时刻（崩溃、网络中断、超时），就一定存在这个“半成功”窗口。
+Primary 故障时，可以 Promote Standby 并让应用切换到新 Primary。它主要改善的是单实例故障时的 Availability 与 RTO。
 
-Transactional Outbox（事务发件箱）正是为此而设：把业务记录和待发布任务 / 事件放进**同一个本地数据库事务**，让原子部分始终落在一个库内部、问题退化成单库事务能管的范围——业务记录与待发事件要么一起提交、要么一起回滚，不会丢；随后再由独立 Consumer 或 Relay 从“发件箱”表读出并投递。这样先保证 Producer 侧可靠交接，跨系统部分则退化为“至少一次”投递。AWS 对这一模式的说明同时指出，后续消息可能重复，因此 Consumer 仍然需要幂等。[[6]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+PostgreSQL Streaming Replication 默认是异步的。官方文档明确说明，如果 Primary 在某些已 COMMIT 的 WAL 还没复制到 Standby 前永久故障，Failover 后可能丢掉这一小段事务。[[9]](https://www.postgresql.org/docs/current/warm-standby.html)
 
-**注意：Outbox 和普通双写都用事务，区别不在“用不用 BEGIN / COMMIT”，而在于事务包住了什么。**
+故障窗口可以表示为：
 
 ~~~text
-普通双写
-  BEGIN
-    INSERT business_record
-  COMMIT                ← 事务只包住“写库”这一件事
-  publish(message)      ← 跨系统动作，在事务之外
-  崩溃 → “要不要发消息”这个意图没被持久化 → 永久丢失
-
-Transactional Outbox
-  BEGIN
-    INSERT business_record
-    INSERT outbox_task   ← 把“要发消息”也写成本库的一条记录，同事务提交
-  COMMIT                 ← 事务包住“写库 + 待发意图”
-  （之后）Relay 读 outbox → publish → 标记完成
-  崩溃 → 意图仍在库里 → Relay 重新读到并补发
+Primary COMMIT 成功
+        ↓
+Client 已收到成功
+        ↓
+Standby 尚未收到对应 WAL
+        ↓
+Primary 永久损坏
+        ↓
+Failover
+        ↓
+最后一小段事务可能不存在于新 Primary
 ~~~
 
-差别在于：普通双写只把业务记录持久化，“要发消息”只存在于内存，COMMIT 后崩溃就再也无法重建；Outbox 把“要发消息”也变成一条已提交的记录，于是发消息这一步虽然仍在事务之外，却可以由这条持久记录反复重试，直到成功。
+Synchronous Replication 可以要求 COMMIT 等待指定 Standby 确认，从而缩小 RPO，但会增加写入延迟，而且 Standby / Network 故障可能反过来影响提交可用性。所以它是“更低 RPO 换取更高延迟和更强依赖”，不是默认更优。
 
-**为什么不能直接把 publish 塞进事务（`BEGIN; INSERT; publish; COMMIT`）？** 因为 publish 是别的系统的动作，数据库无法回滚它：一旦 publish 成功而 COMMIT 失败，就会发出一个库里不存在的消息；而且在一个事务里做网络调用会长时间持有锁。这正是“跨系统动作天生无法被单库事务原子化”的体现——Outbox 不是让 publish 变成事务性的，而是把“发消息”这个跨系统动作**替换成“写一行发件箱记录”这个同库动作**，把真正的发送推迟到 COMMIT 之后、由记录驱动。
+#### <u>3. Replica 不能替代 Backup，因为逻辑错误也会被复制</u>
 
-因此：
+假设管理员误执行 DELETE FROM orders。Replication 会忠实地把 DELETE 也同步到 Standby。此时 Replica 完全健康，但正确历史已经一起消失。
+
+同理，错误程序批量 UPDATE、错误 Schema Migration、恶意操作、逻辑层 Corruption 都可能快速复制过去。
+
+> **Replica 主要保护“实例没了”，Backup 主要保护“正确历史没了”。**
+
+这也是为什么高可用和灾难恢复不能用一套机制代替。
+
+#### <u>4. Backup 需要根据恢复方式选择 Logical、Physical 或 Continuous Archiving</u>
+
+PostgreSQL 官方把 Backup / Restore 分成 SQL Dump、File-system-level Backup 和 Continuous Archiving 等方法。[[10]](https://www.postgresql.org/docs/current/backup.html)
+
+| 方式 | 更适合解决什么 | 典型特点 |
+| --- | --- | --- |
+| Logical Dump | 按数据库 / 对象导出、迁移、长期逻辑备份 | 可读性高，大库恢复可能慢 |
+| Physical / Base Backup | 恢复完整 Cluster、构建 Standby | 接近数据库物理状态 |
+| Base Backup + WAL Archive | Point-in-Time Recovery | 可以回到历史时间点 |
+
+不要把“每天有一个备份文件”直接等同于完整恢复能力。真正要问的是备份频率、保存位置、保留时间、权限隔离、加密、恢复粒度、恢复耗时，以及是否依赖完整 WAL 链。
+
+#### <u>5. PITR 解决需要回到事故发生前某一时刻的问题</u>
+
+Point-in-Time Recovery（PITR，时间点恢复）通常基于 Base Backup + Continuous WAL Archive。PostgreSQL 官方说明，Continuous Archiving 可以通过恢复 Base Backup 并重放 WAL 回到备份之后的特定时间点。[[8]](https://www.postgresql.org/docs/current/continuous-archiving.html)
+
+例如：
 
 ~~~text
-Local Transaction
-解决
-同一持久化边界内的原子提交
-
-Outbox / Saga / Compensation
-解决
-跨边界后的可靠协调
+10:00 Base Backup
+10:00 ~ 15:29 WAL 持续归档
+15:30 错误 DELETE
+        ↓
+Recovery Target = 15:29:59
+        ↓
+恢复到误删之前
 ~~~
 
-它们不是同一层能力：不能用“再加一个事务”去解决跨系统问题，跨边界后的协调需要 Outbox、Saga 或 Compensation 这类模式单独承担。
+这正是 Replica 无法直接解决、PITR 可以解决的故障类型。
 
-### 【Durability 还需要备份、复制和恢复验证】
+#### <u>6. Restore Drill 才能证明 Backup 真正可用</u>
 
-事务 COMMIT 只是数据可靠性的一部分。真正的生产数据还需要继续考虑：
+Backup Job 成功只证明某个文件或对象被生成，不能证明文件没有损坏、权限仍可访问、解密密钥存在、WAL 连续完整、团队知道恢复流程，也不能证明实际恢复时间满足 RTO。
 
-- 持久化介质是否可靠；
-- 是否需要 Replication；
-- Backup 是否存在；
-- Restore 是否真实演练过；
-- RPO（Recovery Point Objective，恢复点目标）允许丢失多少数据；
-- RTO（Recovery Time Objective，恢复时间目标）允许多久恢复。
-
-不能因为“使用了数据库”就默认具备完整灾难恢复能力。
-
-## 4. 异步任务可靠性保证离开请求生命周期的工作拥有明确终态
-
-一项工作离开当前 Request 以后，可靠性问题会从“请求是否成功”转成“任务是否最终完成”。
-
-### 【可靠任务体系需要完整生命周期而不是一个 Queue 名称】
-
-一个最小可靠任务生命周期可以表示为：
+真正的恢复验证应该执行：
 
 ~~~text
-Producer
-   ↓
-Durable Task
-   ↓
-Queued / Pending
-   ↓
-Claim / Delivery
+选择隔离环境
+      ↓
+拿真实 Backup Restore
+      ↓
+应用必要 WAL / PITR
+      ↓
+启动 Database
+      ↓
+执行一致性检查 / 关键查询
+      ↓
+启动 Application Smoke Test
+      ↓
+记录真实 Restore Time
+      ↓
+与 RPO / RTO 比较
+~~~
+
+> **没有定期 Restore Drill 的 Backup，只能证明“保存过副本”，不能证明“拥有恢复能力”。**
+
+### 【RPO 与 RTO 应反过来驱动数据保护方案】
+
+不要先问“每天备份一次够不够”，而应先从业务目标倒推。
+
+例如业务要求 RPO ≤ 5 min、RTO ≤ 30 min，只做每天 02:00 的 pg_dump 显然不满足：最坏可能丢接近 24 小时，且大库恢复时间可能远超 30 分钟。
+
+这时可以组合：
+
+~~~text
+Primary + Standby
+→ 实例故障时快速 Failover，降低 RTO
+
+Base Backup + Continuous WAL Archive
+→ 把逻辑事故恢复点压到更小窗口
+
+Automated Restore Procedure + 定期 Drill
+→ 验证真实 RTO
+~~~
+
+如果只是内部低价值工具，RPO = 24h、RTO = 8h，那么简单每日 Backup 可能已经足够，没有必要一开始就建设复杂同步复制和跨 Region Failover。
+
+数据可靠性最终可以用以下决策链检查：
+
+~~~text
+数据库 Crash？
+→ WAL / Crash Recovery
+
+主实例永久不可用？
+→ Replica / Standby / Failover
+
+误删 / 错写？
+→ Backup / PITR
+
+整个故障域失效？
+→ Off-site / Cross-region Copy
+
+有备份但不确定能不能恢复？
+→ Restore Drill
+
+恢复点和恢复速度是否满足业务？
+→ RPO / RTO 验证
+~~~
+
+## 4. 异步任务可靠性保证离开 Request 的工作最终进入明确终态
+
+当工作仍在当前 HTTP Request 中时，请求本身提供一个同步边界；一旦改成 Request → Create Task → 202 Accepted，再由 Worker 稍后处理，请求生命周期已经结束，但业务工作还没有结束。
+
+可靠性问题因此从“请求有没有成功”变成：任务会不会丢、谁负责执行、Worker Crash 怎么办、同一个任务执行两次怎么办、永远失败怎么办。
+
+### 【Durable Handoff 先保证 Producer 退出后任务仍然存在】
+
+最危险的实现是把任务只放在进程内存：
+
+~~~text
+Request
+  ↓
+setTimeout / in-memory queue
+  ↓
+return 202
+~~~
+
+如果 Process 在 Response 后立刻退出，202 已经返回，但任务直接消失。所以可靠任务首先需要 Durable Boundary：Database Job Table、Durable Message Queue、Broker 或 Transactional Outbox。
+
+真正可以把“任务已接受”告诉调用方的边界应该是：
+
+~~~text
+Task 已经进入可恢复的持久化介质
+而不是
+Task 已经被某个函数放进内存
+~~~
+
+### 【Task State Machine 让系统知道任务现在处于什么阶段】
+
+一个实际任务至少需要明确：
+
+~~~text
+Pending
    ↓
 Processing
    ↓
-┌───────────────┐
-↓               ↓
-Success       Failure
-                ↓
-          Retry / Backoff
-                ↓
-         Terminal Failure
-                ↓
-           Dead Letter
+Completed
+
+或
+
+Processing
+   ↓
+Retry Waiting
+   ↓
+Pending
+
+或
+
+Processing
+   ↓
+Terminal Failed / Dead Letter
 ~~~
 
-每个节点分别解决：
+如果系统只知道“Queue 里有 / 没有”，就很难回答任务是否已经被某个 Worker 拿走、处理多久、Worker 是否 Crash、尝试过几次、为什么失败、是否应该重新领取。所以任务状态本身就是可靠性数据。
 
-| 节点 | 可靠性问题 |
-| --- | --- |
-| Durable Task | Producer 退出后任务是否仍存在 |
-| Claim / ACK / Lease | 多 Consumer 如何确定处理所有权 |
-| Idempotency | 重复投递是否产生重复副作用 |
-| Retry | 瞬态故障是否能够恢复 |
-| Backoff / Jitter | 重试是否会再次压垮下游 |
-| Dead Letter | 永久失败是否会无限消耗资源 |
-| Replay / Repair | 人工修复后是否可以重新进入处理链 |
+### 【Claim、ACK 与 Lease 解决 Consumer 所有权和 Crash Recovery】
 
-### 【At-least-once 语义要求 Consumer 把重复执行当成正常情况处理】
+多个 Worker 并发时不能只 SELECT 第一个 pending task，否则两个 Worker 可能同时拿到同一任务。常见协调方式包括 Database Row Lock、Broker Delivery + ACK、Visibility Timeout、Lease / locked_until。
 
-很多任务系统为了避免任务静默丢失，会允许 Redelivery（重新投递）。这意味着：
+Lease 模型可以表示为：
 
 ~~~text
-“至少处理一次”
-可能表现为
-同一任务实际执行多次
+Worker A Claim
+        ↓
+task.owner = A
+task.lease_until = 10:05
+        ↓
+A 正常完成
+        ↓
+Completed
+
+如果 A Crash
+        ↓
+10:05 Lease Expired
+        ↓
+Worker B Reclaim
 ~~~
 
-因此业务效果需要通过 Idempotency Key、Unique Constraint、Version / Sequence、状态机等机制保证重复执行不会产生错误结果。
+Lease 过短会让正常长任务被误判失联并重复执行；Lease 过长会让 Crash 后恢复过慢。长任务因此通常需要 Heartbeat / Lease Renewal。
 
-不能仅凭 Queue 或 Broker 声称 Exactly Once。真正需要判断的是：
+### 【At-least-once 要求业务接受任务可能再次执行】
+
+典型 Crash Window：
 
 ~~~text
-Delivery Guarantee
-+
-Consumer Side Effect
-+
-Database Commit Boundary
-+
-ACK / Completion Boundary
+Worker 执行业务写入
+      ↓
+Database COMMIT 成功
+      ↓
+Worker Crash
+      ↓
+还没 ACK / 标记 Completed
 ~~~
 
-共同形成的最终业务语义。
+恢复以后系统看到任务没有完成确认，于是 Redelivery / Reclaim，同一任务再次执行。因此“不丢任务”往往意味着“允许重复投递”。
 
-完整的 Task、Queue、Job Store、Transactional Outbox、Broker、Worker、Claim、Lease、ACK、At-least-once、Retry、Dead Letter 和 Backpressure 模型继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
+Consumer 需要通过 Idempotency Key、Unique Constraint、ON CONFLICT、Version / Sequence、State Transition Check 等机制保证重复执行不会重复产生副作用。
+
+Exactly-once 不能只从 Broker 的 Delivery Feature 判断，而必须把 Task Delivery、Consumer Side Effect、Database Commit 和 ACK Boundary 一起看。
+
+### 【Retry Policy 要先区分可恢复、确定失败和结果未知】
+
+Task Failure 至少分三类：
+
+| 类型 | 示例 | 处理 |
+| --- | --- | --- |
+| Transient | 网络抖动、短暂 503、DB Connection Failure | Retry + Backoff |
+| Permanent / Deterministic | Payload 非法、任务类型不支持、业务条件永久不满足 | Fail Fast / Dead Letter |
+| Unknown Result | 外部副作用可能已成功但响应丢失 | Reconciliation / Idempotent Retry |
+
+如果所有 Error 都统一“Retry 8 次”，只是延迟发现永久问题，还持续浪费 CPU、Connection 和 Queue Capacity。
+
+任务记录通常需要保留 attempts、last_error、next_available_at、status、first_failed_at、last_failed_at 等状态。Backoff 可以使用指数增长并加入 Jitter，避免大量失败任务在同一时间一起回潮。
+
+### 【Dead Letter 是人工恢复边界，不是失败垃圾桶】
+
+任务达到最大重试次数以后应该进入可观察终态：
+
+~~~text
+Retry Exhausted
+      ↓
+Dead Letter
+      ↓
+保留 Task / Error / Attempts / Context / Failed At
+      ↓
+人工判断
+      ├─ 修复数据后 Replay
+      ├─ 修复代码后 Replay
+      ├─ 标记无需执行
+      └─ 执行 Compensation
+~~~
+
+Dead Letter 的真正价值，是把“系统无法自动恢复”变成“可审计、可修复、可人工决定下一步”的明确边界。
+
+### 【任务可靠性必须用 Lag、Wait、Attempts 与终态分布验证】
+
+只看 Worker Process Alive 不够。至少要观察：
+
+~~~text
+Enqueue Rate
+Processing Rate
+Pending Count
+Oldest Pending Age
+Queue Wait Duration
+Processing Duration
+Retry Rate
+Attempts Distribution
+Dead Letter Count
+~~~
+
+例如 Pending = 1000 可能完全正常，如果最老任务只等待 1 秒；Pending = 50 也可能严重失控，如果最老任务已经等待 30 分钟。完整的 Queue、Broker、Delivery、Claim / Lease、Idempotency、Retry、Dead Letter 与 Backpressure 模型继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
 
 ## 5. 容量与过载可靠性保证系统在生产速度超过处理能力时仍然受控
 
