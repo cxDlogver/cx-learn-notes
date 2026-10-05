@@ -145,6 +145,70 @@ Email 已经验证
 
 持续登录属于后面的会话控制；具体资源权限属于访问控制。
 
+### 【身份认证既可以由当前应用完成，也可以委托给外部身份提供方】
+
+“验证 Credential”并不意味着每个应用都必须自己保存并验证用户的 Password。身份认证可以先分成两条常见路径：
+
+~~~text
+Authentication
+│
+├── Local Authentication
+│   当前应用直接建立账号并验证 Credential
+│   例如 Password / Passkey / MFA
+│
+└── Federated Authentication
+    当前应用把外部身份验证委托给可信 Identity Provider
+    再验证对方返回的 Authentication Result
+~~~
+
+本地身份认证（Local Authentication）中，当前应用直接负责：
+
+~~~text
+Account
++
+Credential
++
+Verification
+        ↓
+Authenticated Principal
+~~~
+
+因此后面的注册、Password Hash、Email Verification、MFA、Password Reset 等都属于这一分支。
+
+联合身份认证（Federated Authentication）中，当前应用不直接获取或验证外部账号的 Password，而是信任一个经过配置的身份提供方（Identity Provider，IdP）完成外部身份认证，再验证它返回的协议结果：
+
+~~~text
+User
+↓
+Identity Provider
+完成外部身份认证
+↓
+Authentication Result
+↓
+Current Application
+验证结果并映射本地身份
+↓
+Authenticated Principal
+~~~
+
+在 OpenID Connect 中，当前应用通常称为 Relying Party（RP，信赖方）：它不因为“用户从某个页面跳回来”就直接相信身份，而是必须按照协议验证来自 OpenID Provider 的认证结果。
+
+因此：
+
+~~~text
+Federated Authentication
+≠
+把外部网站返回的 email 直接当成已登录用户
+
+Federated Authentication
+=
+把 Credential Verification 委托出去
++
+在本应用边界重新验证协议结果
++
+形成当前应用自己的可信 Principal
+~~~
+
 ### 【注册阶段首先建立稳定的用户身份记录】
 
 假设注册请求：
@@ -717,26 +781,302 @@ Authorization
 
 OWASP 也建议在 Password Change、账号恢复、可疑设备等高风险事件之后要求重新认证。[[1]](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 
-身份认证这一部分最终可以收束成：
+### 【OAuth 2.0 解决授权访问资源，OpenID Connect 在其上增加身份认证层】
+
+OAuth 2.0 是 Authorization Framework（授权框架）：它解决 Client 怎样在 Resource Owner 授权后获得 Access Token，并用该 Token 访问 Resource Server。它的标准职责不是定义“这个用户是谁”的统一认证结果。[[3]](https://www.rfc-editor.org/rfc/rfc6749.html)
+
+因此下面的等式不成立：
 
 ~~~text
-Register
-建立 Digital Identity
+OAuth 2.0
+=
+第三方登录协议
+~~~
+
+OpenID Connect（OIDC）在 OAuth 2.0 之上增加 Identity Layer（身份层）。它让 Client / Relying Party 可以获得并验证 End-User 的 Authentication Result，其中最核心的新增结构是 ID Token。[[4]](https://openid.net/specs/openid-connect-core-1_0.html)
+
+可以把职责先拆成：
+
+~~~text
+OAuth 2.0
+回答：
+Client 被允许访问什么 Resource？
+
+OIDC
+继续回答：
+这次 Authentication 对应的 End-User 是谁？
+Authentication Result 是否可以被当前 Client 信任？
+~~~
+
+OIDC Authentication Request 会使用 OAuth 2.0 的 Authorization Endpoint；当请求包含 `openid` Scope 时，它进入 OpenID Connect 的身份认证语义，并最终通过 ID Token 等结构把认证结果安全返回给 Relying Party。
+
+因此工程中常说的：
+
+~~~text
+“使用 Google / Microsoft / 企业 IdP 登录”
+~~~
+
+如果目标是让当前应用确认用户身份，通常需要的是 OIDC 等身份协议能力，而不能只因为底层使用 OAuth 2.0 就把 OAuth Access Token 当成登录证明。
+
+### 【Authorization Code 与 PKCE 把重定向认证和 Token Exchange 安全连接起来】
+
+现代 Browser / Web Authentication 常使用 Authorization Code Flow。一次 OIDC Authorization Code 流程可以先建立下面的最小链路：
+
+~~~text
+1. Browser / Client
+发起 Authentication Request
+生成 PKCE code_verifier
+并发送对应 code_challenge
         ↓
-Credential Enrollment
-建立认证材料
+2. Authorization Endpoint
+Identity Provider 完成 Authentication
         ↓
-Identity Verification
-验证邮箱等身份属性
+3. Redirect URI
+只返回短生命周期 Authorization Code
         ↓
-Login
-验证 Credential
+4. Token Endpoint
+Client 提交：
+Authorization Code
++
+code_verifier
+        ↓
+5. Authorization Server
+验证 Code 与 PKCE Binding
+        ↓
+6. 返回协议允许的 Token
+例如：
+ID Token
+Access Token
+Refresh Token（如果该 Client / Scope / Policy 允许）
+~~~
+
+Authorization Code（授权码）是用于 Token Exchange 的短生命周期中间凭据，它不是业务 API 的 Access Token，也不应该被当作长期 Session Credential。
+
+PKCE（Proof Key for Code Exchange，授权码交换证明）：Client 在流程开始时生成随机 `code_verifier`，只发送其派生出的 `code_challenge`；兑换 Authorization Code 时再提交原始 `code_verifier`。这样 Authorization Server 可以确认“兑换 Code 的 Client 实例”与最初发起流程的实例相匹配。
+
+~~~text
+Client Instance
+生成 verifier
+     ↓
+challenge
+     ↓
+Authorization Request
+     ↓
+Authorization Code
+     ↓
+verifier
+     ↓
+Token Request
+     ↓
+Server 验证 challenge / verifier
+~~~
+
+RFC 9700 要求 OAuth Public Client 使用 PKCE，并推荐 Confidential Client 也使用 PKCE；RFC 10017 对 Browser-based Public Client 进一步明确要求 Authorization Code + PKCE。[[5]](https://www.rfc-editor.org/rfc/rfc9700.html)[[6]](https://www.rfc-editor.org/rfc/rfc10017.html)
+
+PKCE 保护的是 Authorization Code 被拦截或注入后的兑换边界，它不替代 OIDC 身份结果验证。Relying Party 获得 ID Token 后仍需要根据协议验证 Signature、Issuer、Audience、Expiration，以及流程中适用的 `nonce` 等约束。
+
+### 【ID Token、Access Token、Refresh Token 与 Session Cookie 面向不同消费者】
+
+联合身份流程中最容易出现的错误，是把所有 Token 都理解成“登录 Token”。
+
+可以先按“谁消费它、它证明什么”区分：
+
+| Credential / Token | 主要消费者 | 核心职责 |
+| --- | --- | --- |
+| Authorization Code | Authorization Server 的 Token Endpoint | 临时兑换 Token，不直接访问业务 Resource |
+| ID Token | OIDC Relying Party / Client | 表达 Authentication Result 与身份相关 Claims |
+| Access Token | Resource Server | 表达访问 Resource 的授权能力 |
+| Refresh Token | Authorization Server | 在允许的生命周期内申请新的 Access Token |
+| Session Cookie | 当前 Web Application / BFF | 把当前应用已经建立的 Session 带到后续 Browser Request |
+
+因此：
+
+~~~text
+ID Token
+≠
+Access Token
+
+ID Token
+主要证明 OIDC Authentication Result
+
+Access Token
+主要授权 Resource Access
+~~~
+
+OpenID Connect Core 将 ID Token 定义为包含 End-User Authentication Event Claims 的安全 Token，并明确它是 OIDC 在 OAuth 2.0 上实现身份认证的核心扩展。[[4]](https://openid.net/specs/openid-connect-core-1_0.html)
+
+同样：
+
+~~~text
+Refresh Token
+≠
+Session Cookie
+~~~
+
+Refresh Token 面向 Authorization Server 的 Token Endpoint；Session Cookie 面向当前 Web Application 的 Session Boundary。Access / Refresh Token 的生命周期、Rotation、Reuse Detection、JWT / Opaque Token 等细节继续阅读 [Access Token 与 Refresh Token 核心知识点笔记](./A-Access%20Token与Refresh%20Token核心知识点笔记.md)。
+
+### 【联合身份认证完成后仍要映射本地 Principal 并继续会话与访问控制】
+
+外部 Identity Provider 完成 Authentication，只解决了“外部身份已经被可信提供方验证”。当前应用仍然需要决定：
+
+~~~text
+这个 External Identity
+对应本系统中的哪个 User？
+~~~
+
+OIDC 中更稳定的外部身份键通常来自：
+
+~~~text
+Issuer
++
+Subject Identifier (sub)
+~~~
+
+可以抽象成：
+
+~~~text
+Validated ID Token
+        ↓
+External Identity
+iss + sub
+        ↓
+Account Linking / Provisioning
+        ↓
+Local User ID
         ↓
 Authenticated Principal
         ↓
-Recovery / Re-authentication
-维护身份可信度
+Session Management
+        ↓
+Application Authorization
 ~~~
+
+这里 Account Linking（账号关联）表示：把“某个 Identity Provider 下的外部 Subject”与本应用内部稳定 User 关联起来。应用不应该只因为两个账号返回了相同 Display Name，甚至仅凭未经严格策略约束的 Email，就默认它们一定是同一个 Principal。
+
+更重要的是：
+
+~~~text
+OIDC Authentication Success
+≠
+拥有本应用所有权限
+~~~
+
+联合身份只改变“Authentication Result 从哪里来”，并没有取消当前应用自己的 Authorization：
+
+~~~text
+External Authentication
+        ↓
+Local Principal
+        ↓
+Session
+        ↓
+RBAC / ABAC / ReBAC / ACL
+        ↓
+Allow / Deny
+~~~
+
+所以无论身份来自本地 Password 还是外部 IdP，最终都应该回到当前应用能够信任和审计的 Principal，再进入同一套 Session Management 与 Authorization Boundary。
+
+### 【Browser、BFF 与 Server-side Web 的 OAuth Token 边界不同】
+
+讨论“Access Token 应该放 localStorage、memory 还是 Cookie”之前，应该先决定：
+
+> OAuth Client 的可信执行边界在哪里？Browser 是否真的需要直接持有 OAuth Token？
+
+RFC 10017 把 Browser-based OAuth Application 的主要架构分成三类：BFF、Token-Mediating Backend、以及 Browser 自己作为 OAuth Client。它们的核心差异不是 Storage API，而是 Token 是否暴露给 Browser JavaScript。[[6]](https://www.rfc-editor.org/rfc/rfc10017.html)
+
+BFF（Backend for Frontend，面向前端的后端）模式中：
+
+~~~text
+Browser
+只持有受保护的 Session Cookie
+        ↓
+BFF
+作为 OAuth Client
+保存 / 使用 Access Token、Refresh Token
+        ↓
+Resource Server
+~~~
+
+Browser 请求 BFF 时携带 Session Cookie，BFF 根据 Server-side Session 找到对应 OAuth Token，再代表 Browser 调用 Resource Server。RFC 10017 明确把“避免 OAuth Token 直接暴露给 Browser”作为 BFF 的核心安全属性之一。[[6]](https://www.rfc-editor.org/rfc/rfc10017.html)
+
+Token-Mediating Backend 中，Backend 负责 OAuth Flow 与 Refresh Token 等职责，但仍可能把 Access Token 提供给 Browser，由 Browser 直接访问 Resource Server。
+
+Browser-based OAuth Client 则让 Browser JavaScript 自己承担 OAuth Client 职责：
+
+~~~text
+Browser
+Authorization Code + PKCE
+        ↓
+Token Endpoint
+        ↓
+Access Token
+        ↓
+Browser 直接调用 Resource Server
+~~~
+
+这种模型必须接受 Access Token 进入 Browser Runtime 所带来的 XSS / Exfiltration Exposure，并按照 RFC 10017 的 Browser Client 要求保护 Authorization Code、Token 与 Refresh Lifecycle。
+
+传统 Server-side Web Application 或 Same-origin BFF 还可能在 OIDC Authentication 完成后直接建立本应用的 Server-side Session：
+
+~~~text
+OIDC Authentication
+        ↓
+Backend 验证 ID Token / Authentication Result
+        ↓
+Local Principal
+        ↓
+Server-side Session
+        ↓
+HttpOnly Session Cookie
+        ↓
+Browser
+~~~
+
+因此：
+
+~~~text
+使用 OIDC 登录
+≠
+Browser 必须长期保存 Access Token
+~~~
+
+如果 Browser 只需要访问同一个可信 Backend，而 OAuth Token 只用于 Backend 访问下游 Resource Server，那么让 Token 保留在 Server-side Boundary 往往能减少 Browser Token Exposure。
+
+BFF 会承担应用层代理职责，但它不等同于通用 Reverse Proxy 或 API Gateway。公开入口、Upstream Routing、Load Balancing 与 Proxy Trust Boundary 继续阅读 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。
+
+身份认证这一部分最终可以收束成两条来源、一条统一出口：
+
+~~~text
+Local Authentication
+Account + Local Credential
+        │
+        ├─────────────┐
+        │             │
+        ↓             ↓
+Password / MFA    Recovery / Re-authentication
+        │             │
+        └──────┬──────┘
+               ↓
+       Authenticated Principal
+
+Federated Authentication
+External Identity Provider
+        ↓
+OIDC Authentication Result
+        ↓
+Validate ID Token / Protocol Result
+        ↓
+Account Linking / Provisioning
+        ↓
+Authenticated Principal
+               ↓
+       Session Management
+               ↓
+       Application Authorization
+~~~
+
+两条 Authentication Path 的 Credential 来源不同，但最终目标相同：形成当前应用能够信任的 Principal。接下来仍然需要解决这个 Principal 怎样跨多个 HTTP Request 持续成立，因此进入 Session Management。
 
 ## 2. 会话控制体系让认证结果跨多个 HTTP Request 持续成立
 
@@ -1063,11 +1403,7 @@ Issue New Access Token
 | Access Token | 访问 Resource API | 短 |
 | Refresh Token | 获取新的 Access Token | 相对长 |
 
-RFC 6749 明确指出 Access Token 可以是 Opaque Identifier，也可以是 Self-contained Token，并不要求必须使用 JWT。
-
-参考：
-
-https://www.rfc-editor.org/rfc/rfc6749.html
+RFC 6749 明确指出 Access Token 可以是 Opaque Identifier，也可以是 Self-contained Token，并不要求必须使用 JWT。[[3]](https://www.rfc-editor.org/rfc/rfc6749.html)
 
 ### 【Bearer Access Token 的安全边界是“持有即可使用”】
 
@@ -1086,11 +1422,7 @@ RFC 6750 推荐通过：
 Authorization: Bearer <access-token>
 ~~~
 
-传输，并要求在存储与传输中保护 Bearer Token。
-
-参考：
-
-https://www.rfc-editor.org/rfc/rfc6750.html
+传输，并要求在存储与传输中保护 Bearer Token。[[12]](https://www.rfc-editor.org/rfc/rfc6750.html)
 
 ### 【Refresh Token 让 Access Token 可以保持短生命周期】
 
@@ -1119,11 +1451,7 @@ Refresh Token
 
 Refresh Token 本身价值很高，因为它可以持续铸造新的 Access Token。
 
-RFC 9700 要求 Public Client 使用 Refresh Token 时，通过 Sender-constrained Token 或 Refresh Token Rotation 等机制处理重放风险。
-
-参考：
-
-https://www.rfc-editor.org/rfc/rfc9700.html
+RFC 9700 要求 Public Client 使用 Refresh Token 时，通过 Sender-constrained Token 或 Refresh Token Rotation 等机制处理重放风险。[[5]](https://www.rfc-editor.org/rfc/rfc9700.html)
 
 ### 【Refresh Token Rotation 建立 Token Chain 与 Replay Detection】
 
@@ -1332,6 +1660,25 @@ JavaScript-readable Bearer Token
 
 ### 【Browser Storage 的选择不能只看持久时间】
 
+Browser Token Storage 是架构决策的下游问题。先判断 OAuth Client 与 Token Boundary：
+
+~~~text
+BFF / Server-side Web
+OAuth Token 留在可信 Backend
+Browser 主要持有 Session Cookie
+
+Token-Mediating Backend
+Backend 管理 OAuth Flow
+Browser 仍可能获得 Access Token
+
+Browser-based OAuth Client
+Browser JavaScript 直接管理 Access Token
+~~~
+
+RFC 10017 对这些 Browser Architecture Pattern 分别给出安全边界，并把 BFF、Token-Mediating Backend、Browser-based OAuth Client 作为不同权衡。[[6]](https://www.rfc-editor.org/rfc/rfc10017.html)
+
+只有架构确定以后，才继续讨论 Browser 侧 Credential 放在哪里。
+
 常见位置：
 
 ~~~text
@@ -1367,11 +1714,7 @@ Reload 后丢失
 
 可以缩小长期持久化暴露面，但需要新的续期或恢复策略。
 
-IETF 2026 发布的 RFC 10017 专门讨论 Browser-based OAuth Application 的 Token 暴露面、BFF 等架构选择。
-
-参考：
-
-https://www.rfc-editor.org/rfc/rfc10017.html
+IETF 2026 发布的 RFC 10017 专门讨论 Browser-based OAuth Application 的 Token 暴露面、BFF 等架构选择。[[6]](https://www.rfc-editor.org/rfc/rfc10017.html)
 
 ### 【Session Lifecycle 管理的不是一个 expiresAt，而是会话从创建到失效的完整状态】
 
@@ -4193,59 +4536,62 @@ Resource-specific Grant
 2. OWASP Password Storage Cheat Sheet  
    https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-### 【会话控制】
-
-3. OWASP Session Management Cheat Sheet  
-   https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
-
-4. MDN Set-Cookie  
-   https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
-
-5. OWASP CSRF Prevention Cheat Sheet  
-   https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
-
-6. RFC 9110 — Safe Methods  
-   https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
-
-7. MDN Same-Origin Policy  
-   https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
-
-8. RFC 6749 — OAuth 2.0 Authorization Framework  
+3. RFC 6749 — OAuth 2.0 Authorization Framework  
    https://www.rfc-editor.org/rfc/rfc6749.html
 
-9. RFC 6750 — Bearer Token Usage  
-   https://www.rfc-editor.org/rfc/rfc6750.html
+4. OpenID Connect Core 1.0 incorporating errata set 2  
+   https://openid.net/specs/openid-connect-core-1_0.html
 
-10. RFC 9700 — Best Current Practice for OAuth 2.0 Security  
-    https://www.rfc-editor.org/rfc/rfc9700.html
+5. RFC 9700 — Best Current Practice for OAuth 2.0 Security  
+   https://www.rfc-editor.org/rfc/rfc9700.html
 
-11. RFC 10017 — OAuth 2.0 for Browser-Based Applications  
-    https://www.rfc-editor.org/rfc/rfc10017.html
+6. RFC 10017 — OAuth 2.0 for Browser-Based Applications  
+   https://www.rfc-editor.org/rfc/rfc10017.html
+
+### 【会话控制】
+
+7. OWASP Session Management Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+
+8. MDN Set-Cookie  
+   https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
+
+9. OWASP CSRF Prevention Cheat Sheet  
+   https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+
+10. RFC 9110 — Safe Methods  
+    https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
+
+11. MDN Same-Origin Policy  
+    https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
+
+12. RFC 6750 — Bearer Token Usage  
+    https://www.rfc-editor.org/rfc/rfc6750.html
 
 ### 【访问控制】
 
-12. OWASP Authorization Cheat Sheet  
+13. OWASP Authorization Cheat Sheet  
     https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
 
-13. NIST — Role-Based Access Control: Features and Motivations  
+14. NIST — Role-Based Access Control: Features and Motivations  
     https://www.nist.gov/publications/role-based-access-control-rbac-features-and-motivations
 
-14. NIST SP 800-162 — Guide to Attribute Based Access Control  
+15. NIST SP 800-162 — Guide to Attribute Based Access Control  
     https://www.nist.gov/publications/guide-attribute-based-access-control-abac-definition-and-considerations
 
-15. NIST — Discretionary Access Control (DAC)  
+16. NIST — Discretionary Access Control (DAC)  
     https://csrc.nist.gov/glossary/term/discretionary_access_control
 
-16. NIST — Mandatory Access Control (MAC)  
+17. NIST — Mandatory Access Control (MAC)  
     https://csrc.nist.gov/glossary/term/mandatory_access_control
 
-17. NIST — Policy Decision Point (PDP)  
+18. NIST — Policy Decision Point (PDP)  
     https://csrc.nist.gov/glossary/term/PDP
 
-18. NIST — Policy Enforcement Point (PEP)  
+19. NIST — Policy Enforcement Point (PEP)  
     https://csrc.nist.gov/glossary/term/policy_enforcement_point
 
-19. OWASP Authorization Patterns Cheat Sheet  
+20. OWASP Authorization Patterns Cheat Sheet  
     https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Patterns_Cheat_Sheet.html
 
 ### 【相关知识文档】
@@ -4254,8 +4600,9 @@ Resource-specific Grant
 - [Access Token 与 Refresh Token 核心知识点笔记](./A-Access%20Token与Refresh%20Token核心知识点笔记.md)
 - [浏览器存储方式](./L-浏览器存储方式.md)
 - [浏览器网络面试题](./L-浏览器网络面试题.md)
+- [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)
 - [NestJS 快速上手](./N-NestJS快速上手.md)
 
 ### 【实战分析入口】
 
-- [Browser Monitor：账号认证、Session 与 CSRF 源码实战分析](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E8%B4%A6%E5%8F%B7%E8%AE%A4%E8%AF%81Session%E4%B8%8ECSRF%E6%BA%90%E7%A0%81%E5%AE%9E%E6%88%98%E5%88%86%E6%9E%90.md)
+- [Browser Monitor：账号认证、Session 与 CSRF 源码实战分析](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E8%B4%A6%E5%8F%B7%E8%AE%A4%E8%AF%81Session%E4%B8%8ECSRF%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md)
