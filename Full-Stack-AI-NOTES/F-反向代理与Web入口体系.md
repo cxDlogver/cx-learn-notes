@@ -382,6 +382,8 @@ API Gateway
 
 二者能力可以重叠，但不能因为某个工具同时支持这些能力，就把两个概念直接等同。
 
+BFF（Backend for Frontend）虽然也可能代理 Frontend Request，但它首先是面向特定 Frontend 的应用后端边界，不等同于通用 Reverse Proxy 或 API Gateway。OIDC、Session 与 BFF 的身份安全职责统一由 [Web 身份认证、会话控制与访问控制体系](./W-Web身份认证会话控制与访问控制体系.md) 维护。
+
 ---
 
 ## 4. Same-Origin 与 CORS 只约束 Browser 一侧，不等于反向代理本身的定义
