@@ -4,6 +4,8 @@
 
 **长任务持续占用主线程，会推迟输入处理和部分渲染工作；优化需要同时考虑减少工作量、主动让出线程和转移可并行计算。**
 
+> 本文定位为 Long Task / Task Chunking / Worker 单题深挖。Task、Microtask、Rendering Opportunity 与不同 Scheduling API 的完整关系统一参考 [浏览器主线程、Event Loop 与任务调度完整知识体系](../B-浏览器主线程Event Loop与任务调度完整知识体系.md)。
+
 **主线程不仅执行 JavaScript，同时还承担页面渲染和用户交互中的很多关键工作。**
 
 例如 JavaScript 执行、HTML/CSS 相关处理、Layout、Paint，以及点击、输入等事件处理，都和主线程密切相关。
@@ -23,6 +25,8 @@
 比较分片让出执行权、Web Worker 与 OffscreenCanvas 的适用工作和通信成本。
 
 微任务连续执行不等于让浏览器有机会渲染；Worker 不能直接操作 DOM，requestAnimationFrame 内也不适合放大量计算。相关完整知识可结合 [基于Chrome浏览器渲染原理](<../J-基于Chrome浏览器渲染原理.md>) 阅读。
+
+现代浏览器还提供 Prioritized Task Scheduling API，其中 `scheduler.yield()` 可以在可拆分的长任务中主动让出主线程并以后续 Task 继续；但当前仍需做兼容性检测，不能把它视为无条件可用的统一方案。
 
 ## 1. 机制说明与工程判断
 
@@ -189,7 +193,7 @@ Paint 等待
 - `setTimeout/postMessage`：**单纯把一个大任务切开，让主线程中间有机会处理其他事情**。
 
 ---
-#### <u>3. `requestIdleCallback`</u>
+#### <u>3. `requestIdleCallback` 与 `scheduler.yield()`</u>
 
 如果任务本身并不重要，例如：
 
