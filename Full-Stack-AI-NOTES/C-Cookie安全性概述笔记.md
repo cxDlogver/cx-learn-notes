@@ -167,4 +167,6 @@ Set-Cookie: sessionId=abc123; Secure
 `HttpOnly`、`SameSite`和`Secure`是提升Cookie安全性的核心HTTP属性，三者各司其职：`HttpOnly`防御XSS攻击，`SameSite`防御CSRF攻击，`Secure`防御中间人攻击，组合配置可显著降低Cookie的安全风险。
 
 但需明确，这些属性并非万无一失的解决方案，Cookie的全面安全防护需要结合全站HTTPS、输入验证、会话管理、双重验证等多种措施。在实际开发中，需根据业务场景，平衡安全性和用户体验，合理配置Cookie属性，同时落实其他安全实践，才能更全面地保护用户隐私和数据安全。
+Cookie 只是 Credential / Session State 的传递与保存机制之一。Cookie 怎样承载 Session Identifier、为什么 HttpOnly Cookie 会引入 CSRF 关注点、以及 OIDC / BFF 场景中 Browser 为什么可以只持有 Session Cookie，统一放回 [Web 身份认证、会话控制与访问控制体系](./W-Web身份认证会话控制与访问控制体系.md) 理解。
+
 > （注：文档部分内容可能由 AI 生成）
