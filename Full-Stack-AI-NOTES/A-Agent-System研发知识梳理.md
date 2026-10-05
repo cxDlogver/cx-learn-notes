@@ -29,7 +29,9 @@ Agent System
     ├── Agent Runtime（执行 Agent 的运行层）
     │   ├── Agent Loop（反复运行的决策循环）
     │   └── State（当前运行数据）
-    ├── Context Management（组织模型输入）/ Memory（保存和取回信息）
+    ├── Context Management（组织模型输入）
+    │   ├── Session / Conversation History（跨 Run 延续会话历史）
+    │   └── Memory（保存和取回后续仍有价值的信息）
     ├── Model Access & Management
     ├── Capability Management
     │   ├── Tool（可调用的操作接口）
@@ -121,6 +123,10 @@ Runtime 驱动这条执行链路。Harness 则提供链路上用到的上下文�
 用户输入不会直接原样交给模型。Runtime 会先初始化本次运行，再由 Context Management 构建本轮模型输入。
 
 Context Management 是对模型可见信息的组织过程。它决定本轮放入哪些系统指令、用户输入、会话历史、Skill 指令、工具说明、Memory 检索结果和上一轮 Observation，也要在上下文窗口有限时做裁剪或压缩。[6](https://openai.github.io/openai-agents-python/context/)
+
+这里还要区分两类容易同名的 Context。**运行时上下文（Runtime / Application Context）** 是应用代码、Tool、Hook 和 Runtime 使用的数据或依赖，例如用户标识、权限主体、Logger 和数据库客户端；**模型上下文（Model-visible Context）** 才是实际发送给模型、参与本轮推理的信息。运行时知道某项数据，不代表模型天然能够看到它。OpenAI Agents SDK 的 `RunContextWrapper.context` 就属于前一类，官方明确说明该对象不会自动发送给 LLM。[6](https://openai.github.io/openai-agents-python/context/)
+
+Session / Conversation History 负责在多次 Agent Run 之间延续同一段会话发生过什么。以 OpenAI Agents SDK 为例，Session 会在每次 Run 前读取该会话的历史，并在 Run 后保存本轮新增的消息、Tool Call 等项目；它解决的是会话连续性，而不是把所有历史信息都定义为长期记忆。[38](https://openai.github.io/openai-agents-python/sessions/)
 
 Memory 是可以跨轮次或跨任务保存并取回的信息。它与 Context Management 不是同一个模块：Memory 负责存取，Context Management 决定当前取哪些内容给模型看。长期记忆也不应该一次性全部塞进上下文，通常按任务需要读取。[7](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)
 
@@ -331,7 +337,7 @@ DeepSeek Harness 当前仍处于 Developer Preview。这里引用它，是为了
 
 Agent 每次调用模型之前，都要先回答一个问题：这一轮应该让模型看到什么？
 
-当前输入、会话历史、任务状态、长期记忆和外部知识都可能有用，但不能不加选择地全部交给模型。Context Management 负责从这些信息中筛选、组织和压缩内容，形成当前这次模型调用的输入。Memory、知识库和业务数据库虽然来源不同，最终都可能通过这一步进入 Context，因此放在同一章讨论。
+当前输入、会话历史、任务状态、长期记忆和外部知识都可能有用，但不能不加选择地全部交给模型。Context Management 负责从这些信息中筛选、组织和压缩内容，形成当前这次模型调用的输入。Session / Conversation History 负责跨 Run 延续会话历史，Memory 负责保存并重新取回后续仍有价值的信息，State 则保存当前运行事实；这些信息最终只有被选入模型输入后，才成为本轮 Model Context。Memory、知识库和业务数据库虽然来源不同，最终都可能通过这一步进入 Context，因此放在同一章讨论。
 
 ![Context、Memory 与知识检索整体框架](assets/agent-system-context与记忆检索.png)
 
@@ -340,30 +346,33 @@ Agent 每次调用模型之前，都要先回答一个问题：这一轮应该�
 ```text
 当前用户输入
         +
-当前会话 State（含短期记忆）
+Session / Conversation History（跨 Run 的会话历史）
         +
-长期记忆
+Run State（当前运行事实）
+        +
+长期 Memory（跨任务仍值得复用的信息）
         +
 业务数据库 / 知识库 / 规则库
         ↓
-筛选、检索、排序、裁剪与压缩
+Context Management：筛选、检索、排序、裁剪与压缩
         ↓
-本轮 Model Context
+Model-visible Context：本轮模型实际可见的信息
 ```
 
 这里讨论的 Context，指模型在一次推理时实际可见的 Token 集合。应用代码内部保存、但没有放入模型请求的数据，不属于本轮 Model Context。[6](https://openai.github.io/openai-agents-python/context/) [19](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
 
-### 【Context、State 与短期记忆】
+### 【Context、State、Session 与短期记忆】
 
-这三个概念的关系如下：
+这几个概念处在不同的信息生命周期位置，不宜只按“是否持久化”区分：
 
 | 概念 | 含义 | 作用范围 |
 |---|---|---|
-| State | Agent 当前运行数据的集合 | 一次运行或一个会话线程 |
-| 短期记忆 | State 中需要在当前会话内持续保留的信息 | 当前会话 |
-| Context | 从各类信息中选出、交给本轮模型调用的内容 | 单次模型调用 |
+| Run State | Agent 当前运行到哪里、已经得到什么的运行数据 | 当前 Run，部分框架可延伸到 Thread |
+| Session / Conversation History | 多次 Run 之间持续保存的会话历史 | 同一会话 |
+| 短期记忆 | 当前会话或 Thread 内为了后续执行继续保留的信息 | 当前会话或 Thread |
+| Model Context | 从各类信息中选出、真正交给本轮模型调用的内容 | 单次 Model Call |
 
-State 是运行数据的载体。它可以包含消息、工具结果、任务进度、中间变量、审批状态和重试次数。短期记忆通常是 State 的一部分，主要解决同一个会话怎样延续的问题。LangGraph 也把短期记忆定义为线程范围内的 State，并通过 Checkpoint 保存，使后续执行可以恢复会话状态。[20](https://docs.langchain.com/oss/python/concepts/memory)
+State 是运行数据的载体。它可以包含消息、工具结果、任务进度、中间变量、审批状态和重试次数。Session 更强调“跨 Run 保存和恢复会话历史”；短期记忆则是更上位的职责概念，不同框架可能通过 Session、Thread State、Checkpointer 或服务端 Conversation State 实现，因此不能把 `Session = Short-term Memory` 当成行业统一定义。OpenAI Agents SDK 将 Session 作为多次 Run 之间的 conversation history 持久层；LangGraph 则把 short-term memory 建模为 thread-scoped State，并通过 Checkpoint 持久化。[38](https://openai.github.io/openai-agents-python/sessions/) [20](https://docs.langchain.com/oss/python/concepts/memory)
 
 ```text
 State
@@ -377,7 +386,22 @@ State
 └── 重试次数
 ```
 
-不是所有 State 都要放进 Context。审批记录、内部标识或已经失效的工具结果可能需要保存在 Runtime 中，但模型不一定需要看到。Context Management 会在每轮调用前，从 State 中选择当前任务真正需要的内容。
+不是所有 State、Session History 或运行时数据都要放进 Model Context。审批记录、内部标识、权限主体、数据库连接或已经失效的工具结果可能需要保存在 Runtime 中，但模型不一定需要看到。Context Management 会在每轮调用前，从 State、Session History、Memory 和外部知识中选择当前任务真正需要的内容。
+
+因此可以用一个稳定边界判断信息归属：
+
+```text
+Runtime / Application Context
+代码与 Tool 运行所需的数据和依赖
+        │ 只有明确选择后才可能进入模型输入
+        ↓
+Context Management
+        ↓
+Model-visible Context
+模型本轮真正能够看到的信息
+```
+
+这个边界对权限尤其重要：用户身份、租户、权限范围等可信事实可以保存在 Runtime Context 中并用于强制授权，但不能因为某个角色名称被写进 Prompt，就把它当成可靠的权限判断。
 
 以客服 Agent 为例。用户先说“查询订单 123”，订单号、会话消息和查询结果被写入 State。下一轮用户问“什么时候送到”，Agent 可以继续使用这些信息，这就是短期记忆。模型本轮实际看到的最近消息、订单摘要和必要工具说明，则是 Context。
 
@@ -548,28 +572,32 @@ Context Window 是模型一次调用能够处理的 Token 范围。它限制了�
 把前面的部分串起来，一次 Agent 执行中的信息流如下：
 
 ```text
-1. 接收当前输入，读取或初始化 State
+1. 接收当前输入，读取或初始化 Run State
                 ↓
-2. 恢复会话历史和短期记忆
+2. 按 Session / Thread 恢复会话历史与短期记忆
                 ↓
-3. 按用户、Agent 或组织 Scope 检索长期记忆
+3. 按用户、Agent 或组织 Scope 检索长期 Memory
                 ↓
 4. 根据任务查询业务数据库、知识库或规则库
                 ↓
-5. 对候选信息做权限过滤、排序、裁剪和摘要
+5. Context Management 对候选信息做权限过滤、排序、裁剪和摘要
                 ↓
-6. 在 Context Window 预算内组成本轮 Model Context
+6. 在 Context Window 预算内组成本轮 Model-visible Context
                 ↓
 7. 调用 Model，并执行后续 Tool Call
                 ↓
-8. 把消息、工具结果和任务进度写回 State
+8. 把消息、工具结果和任务进度写回 Run State
+                ├── 会话历史按 Session / Thread 策略持久化
+                └── 关键执行点按需要生成 Checkpoint
                 ↓
-9. 满足记忆写入条件时，同步保存或生成候选记忆
+9. 满足长期记忆写入条件时，提取、校验、去重并写入 Memory Store
                 ↓
-10. 一次交互或会话结束后，按需异步沉淀长期记忆
+10. 后续 Run 再按任务需要检索 Memory，并重新进入 Context Management
 ```
 
-最终送入模型的不是完整历史，也不是检索系统返回的全部内容，而是当前任务需要的一组信息。State 保持会话连续，Memory 保存后续仍有价值的信息，知识检索补充外部事实；Context Management 负责把它们整理成一次可用的模型输入。
+最终送入模型的不是完整 State、完整会话历史，也不是检索系统返回的全部内容，而是当前任务需要的一组信息。Run State 保持当前执行事实，Session / Thread 维持会话连续，Memory 保存跨任务仍值得复用的信息，Checkpoint 保存恢复执行所需的状态快照；Context Management 负责把其中需要参与当前推理的信息整理成一次 Model-visible Context。
+
+这几类信息虽然都可能落到持久化存储，但目的不同：Session 主要延续会话，Checkpoint 主要支持恢复，Memory 主要支持未来重新取回。持久化介质相同，不代表它们属于同一种知识对象。
 
 ## 4. Tool、Skill 与 MCP 的能力管理
 
@@ -1475,3 +1503,4 @@ Runtime 和框架负责按固定顺序调用它们。新增 Tool 时，注册新
 35. [NIST — AI Risk Management Framework Playbook](https://airc.nist.gov/docs/AI_RMF_Playbook.pdf)
 36. [LangChain JavaScript — Custom Middleware](https://docs.langchain.com/oss/javascript/langchain/middleware/custom)
 37. [LangGraph — Checkpointers](https://docs.langchain.com/oss/python/langgraph/checkpointers)
+38. [OpenAI Agents SDK — Sessions](https://openai.github.io/openai-agents-python/sessions/)
