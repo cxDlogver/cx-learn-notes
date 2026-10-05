@@ -1289,11 +1289,7 @@ Find All User Sessions
 Revoke
 ~~~
 
-OWASP 建议 Session Identifier 应不可预测，不应包含敏感业务语义，并应在服务端维护真正的 Session State。
-
-参考：
-
-https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+OWASP 建议 Session Identifier 应不可预测，不应包含敏感业务语义，并应在服务端维护真正的 Session State。[[7]](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
 
 
 可以把一次 Server-side Session 的真实数据流展开成：
@@ -1422,7 +1418,7 @@ RFC 6750 推荐通过：
 Authorization: Bearer <access-token>
 ~~~
 
-传输，并要求在存储与传输中保护 Bearer Token。[[12]](https://www.rfc-editor.org/rfc/rfc6750.html)
+传输，并要求在存储与传输中保护 Bearer Token。[[8]](https://www.rfc-editor.org/rfc/rfc6750.html)
 
 ### 【Refresh Token 让 Access Token 可以保持短生命周期】
 
@@ -1635,6 +1631,8 @@ Browser Cookie Store
       ↓
 Browser 自动附加
 ~~~
+
+Cookie 的 Domain、Path、Expires / Max-Age、Secure、HttpOnly 与 SameSite 等传输属性由 Set-Cookie 响应头定义。[[9]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
 
 Authorization Header：
 
@@ -2571,15 +2569,11 @@ POST / PUT / PATCH / DELETE
 GET /delete-account
 ~~~
 
-首先说明 API 违反 Safe Method 语义。
-
-参考：
-
-https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
+首先说明 API 违反 Safe Method 语义。RFC 9110 将 GET、HEAD、OPTIONS、TRACE 定义为 Safe Method，应用不应把具有副作用的业务操作设计成普通 GET。[[11]](https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods)
 
 GET 不要求 CSRF Token 不意味着完全没有跨站信息泄露。
 
-Same-Origin Policy 通常允许部分 Cross-origin Write / Navigation / Embedding，同时限制 Cross-origin Read。
+Same-Origin Policy 通常允许部分 Cross-origin Write / Navigation / Embedding，同时限制 Cross-origin Read。[[12]](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy)
 
 仍需单独处理：
 
@@ -2590,10 +2584,6 @@ Cross-origin Embedding
 Timing Side Channel
 Resource Existence Leak
 ~~~
-
-参考：
-
-https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
 
 
 ---
@@ -4553,20 +4543,20 @@ Resource-specific Grant
 7. OWASP Session Management Cheat Sheet  
    https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
 
-8. MDN Set-Cookie  
+8. RFC 6750 — Bearer Token Usage  
+   https://www.rfc-editor.org/rfc/rfc6750.html
+
+9. MDN Set-Cookie  
    https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
 
-9. OWASP CSRF Prevention Cheat Sheet  
-   https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+10. OWASP CSRF Prevention Cheat Sheet  
+    https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
 
-10. RFC 9110 — Safe Methods  
+11. RFC 9110 — Safe Methods  
     https://www.rfc-editor.org/rfc/rfc9110.html#name-safe-methods
 
-11. MDN Same-Origin Policy  
+12. MDN Same-Origin Policy  
     https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
-
-12. RFC 6750 — Bearer Token Usage  
-    https://www.rfc-editor.org/rfc/rfc6750.html
 
 ### 【访问控制】
 
