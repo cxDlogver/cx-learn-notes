@@ -249,7 +249,7 @@ Source / Builder / Build Process
 
 Digest（摘要）是对 Artifact 内容计算得到的固定长度值。内容发生变化时，Digest 通常也会变化，因此它适合作为 Artifact 的内容身份；Tag、Version 等名称则可能被重新指向其他内容，不能单独承担完整性判断。
 
-Provenance（来源证明信息）进一步描述 Artifact 在哪里、何时、怎样被生产。SLSA v1.2 将 Provenance 定义为能够把 Artifact 追溯到其来源的可验证信息，并把 Build Provenance 用于把 Build Output 连接回产生它的 Source 和 Build Process。[[4]](https://slsa.dev/spec/v1.2/provenance)
+Provenance（来源证明信息）进一步描述 Artifact 在哪里、何时、怎样被生产。SLSA v1.2 将 Provenance 定义为能够把 Artifact 追溯到其来源的可验证信息，并把 Build Provenance 用于把 Build Output 连接回产生它的 Source 和 Build Process。[[3]](https://slsa.dev/spec/v1.2/provenance)
 
 因此：
 
@@ -267,7 +267,7 @@ Verifiable Provenance / Integrity
 
 ### 【SBOM、Provenance 与 Attestation 描述 Artifact 的不同事实】
 
-软件物料清单（Software Bill of Materials，SBOM）描述软件由哪些 Component、Dependency 及其关系构成。CISA 将 SBOM 定义为软件组件、依赖及其关系的正式、机器可读清单。[[5]](https://www.cisa.gov/sites/default/files/2024-10/SBOM%20Framing%20Software%20Component%20Transparency%202024.pdf)
+软件物料清单（Software Bill of Materials，SBOM）描述软件由哪些 Component、Dependency 及其关系构成。CISA 将 SBOM 定义为软件组件、依赖及其关系的正式、机器可读清单。[[4]](https://www.cisa.gov/sites/default/files/2024-10/SBOM%20Framing%20Software%20Component%20Transparency%202024.pdf)
 
 它和 Provenance 解决的问题不同：
 
@@ -279,7 +279,7 @@ Verifiable Provenance / Integrity
 | Attestation | 怎样把针对某个 Artifact 的事实形成可验证声明 |
 | Verification Policy | 哪些来源、Builder、Digest、Attestation 或其他条件满足后才允许继续 Release / Deploy |
 
-Attestation（可验证声明）是一种承载事实声明的方式，声明的内容可以不同。GitHub Artifact Attestations 既可以为 Binary / Container Image 生成 Build Provenance Attestation，也可以单独生成 SBOM Attestation，这说明 SBOM 和 Build Provenance 不是同一个对象。[[6]](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations)
+Attestation（可验证声明）是一种承载事实声明的方式，声明的内容可以不同。GitHub Artifact Attestations 既可以为 Binary / Container Image 生成 Build Provenance Attestation，也可以单独生成 SBOM Attestation，这说明 SBOM 和 Build Provenance 不是同一个对象。[[5]](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations)
 
 可以把关系收敛为：
 
@@ -369,7 +369,7 @@ Continuous Deployment
 
 ### 【Deployment Pipeline 通过逐层验证增加发布信心】
 
-Martin Fowler 对 Deployment Pipeline 的经典描述强调，把 Build 划分成多个 Stage，每个 Stage 对 Build 提供更高的信心，后续阶段可能包含自动或人工 Gate。[[3]](https://martinfowler.com/bliki/DeploymentPipeline.html)
+Martin Fowler 对 Deployment Pipeline 的经典描述强调，把 Build 划分成多个 Stage，每个 Stage 对 Build 提供更高的信心，后续阶段可能包含自动或人工 Gate。[[6]](https://martinfowler.com/bliki/DeploymentPipeline.html)
 
 因此 Pipeline 的目标不是“自动化越多越好”，而是在反馈速度、验证成本和发布风险之间建立可重复的决策路径。
 
@@ -463,10 +463,10 @@ Rollback / Roll Forward
 
 [2] GitHub Docs. *Workflows*. https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows
 
-[3] Martin Fowler. *Deployment Pipeline*. https://martinfowler.com/bliki/DeploymentPipeline.html
+[3] SLSA. *Provenance — SLSA v1.2*. https://slsa.dev/spec/v1.2/provenance
 
-[4] SLSA. *Provenance — SLSA v1.2*. https://slsa.dev/spec/v1.2/provenance
+[4] CISA. *Framing Software Component Transparency: Establishing a Common Software Bill of Materials (SBOM), Third Edition*. https://www.cisa.gov/sites/default/files/2024-10/SBOM%20Framing%20Software%20Component%20Transparency%202024.pdf
 
-[5] CISA. *Framing Software Component Transparency: Establishing a Common Software Bill of Materials (SBOM), Third Edition*. https://www.cisa.gov/sites/default/files/2024-10/SBOM%20Framing%20Software%20Component%20Transparency%202024.pdf
+[5] GitHub Docs. *Using artifact attestations to establish provenance for builds*. https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
 
-[6] GitHub Docs. *Using artifact attestations to establish provenance for builds*. https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
+[6] Martin Fowler. *Deployment Pipeline*. https://martinfowler.com/bliki/DeploymentPipeline.html
