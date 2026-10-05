@@ -6,23 +6,28 @@ Web Performance（Web 性能）不是“让某个 Lighthouse 分数更高”，�
 
 ~~~text
 体验主线
-Navigation
-   ↓
-Document / Data Delivery
-   ↓
-Critical Resource Loading
-   ↓
-JavaScript / Hydration
-   ↓
-Style / Layout / Paint / Composite
-   ↓
-Interaction / Continuous Rendering
-   ↓
-Field Verification
+
+页面导航（Navigation，用户开始进入页面）
+   ↓ 发起文档与数据获取
+文档与数据交付（Document / Data Delivery，返回页面运行所需的 HTML 与数据）
+   ↓ 浏览器发现并请求首屏关键资源
+关键资源加载（Critical Resource Loading，加载影响首屏显示的 CSS、JavaScript、图片、字体等）
+   ↓ 资源到达后执行客户端代码并恢复交互能力
+JavaScript 执行与页面激活（Hydration，将已有页面结构接入客户端运行时）
+   ↓ 进入浏览器像素生成过程
+浏览器渲染（Style → Layout → Paint → Composite，完成样式计算、布局、绘制与合成）
+   ↓ 页面进入可交互和持续更新阶段
+用户交互与连续渲染（Interaction / Continuous Rendering，处理点击、滚动、动画等运行时更新）
+   ↓ 上线后持续观察真实环境结果
+真实用户验证（Field Verification，用线上用户数据判断优化是否真正有效）
 
 成本主线
-Latency（等待） + Bytes（传输） + Main-thread Work（主线程计算）
-+ Render Work（渲染工作） + Memory（长期占用）
+
+等待延迟（Latency）
++ 传输字节（Bytes）
++ 主线程计算（Main-thread Work）
++ 浏览器渲染工作（Render Work）
++ 长时间内存占用（Memory）
 ~~~
 
 因此，“网络优化、资源优化、渲染优化”不是三套彼此独立的方法，而是同一条用户体验链上的不同干预位置。上一层没有解决的时间成本，会继续传递到下一层：服务端响应慢会抬高 TTFB；LCP 图片发现晚会形成 Resource Load Delay；JavaScript 长任务会让已经下载完成的内容仍然不能及时显示；DOM 和 Layout 工作过重又会让交互处理结束后迟迟无法产生下一帧。
