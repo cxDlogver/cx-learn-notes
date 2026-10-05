@@ -463,7 +463,7 @@ Main Process Exit
 Stopped
 ~~~
 
-执行 `docker stop` 时，Docker 默认先向 Container 的 Main Process 发送 `SIGTERM`，给应用一段 Grace Period 完成清理；如果进程在超时后仍未退出，再发送 `SIGKILL` 强制终止。默认停止信号可以通过 Image 的 `STOPSIGNAL` 等配置调整。[[11]](https://docs.docker.com/reference/cli/docker/container/stop/)
+执行 `docker stop` 时，Docker 默认先向 Container 的 Main Process 发送 `SIGTERM`，给应用一段 Grace Period 完成清理；如果进程在超时后仍未退出，再发送 `SIGKILL` 强制终止。默认停止信号可以通过 Image 的 `STOPSIGNAL` 等配置调整。[[10]](https://docs.docker.com/reference/cli/docker/container/stop/)
 
 因此 Container 能否“优雅停止”取决于两层机制共同成立：
 
@@ -496,7 +496,7 @@ services:
     restart: unless-stopped
 ~~~
 
-`service_completed_successfully` 表示下游 Service 等待依赖任务成功执行完成。[[10]](https://docs.docker.com/compose/how-tos/startup-order/)
+`service_completed_successfully` 表示下游 Service 等待依赖任务成功执行完成。[[11]](https://docs.docker.com/compose/how-tos/startup-order/)
 
 ---
 
@@ -798,7 +798,7 @@ Container Started
 Application Ready
 ~~~
 
-Healthcheck（健康检查）通过用户定义的检查命令产生 Container / Service 的健康状态信号。只有当检查内容本身能够代表“当前依赖已经可以接受所需工作”时，这个 Health Status 才具有 Readiness（就绪）语义，Compose 才适合通过 `service_healthy` 把它用于启动依赖。[[10]](https://docs.docker.com/compose/how-tos/startup-order/)
+Healthcheck（健康检查）通过用户定义的检查命令产生 Container / Service 的健康状态信号。只有当检查内容本身能够代表“当前依赖已经可以接受所需工作”时，这个 Health Status 才具有 Readiness（就绪）语义，Compose 才适合通过 `service_healthy` 把它用于启动依赖。[[11]](https://docs.docker.com/compose/how-tos/startup-order/)
 
 因此：
 
@@ -1259,8 +1259,8 @@ Volume / Network / Healthcheck
 7. Docker Docs, **Build cache**：https://docs.docker.com/build/cache/
 8. Docker Docs, **Multi-stage builds**：https://docs.docker.com/build/building/multi-stage/
 9. Docker Docs, **Compose services**：https://docs.docker.com/reference/compose-file/services/
-10. Docker Docs, **Control startup order**：https://docs.docker.com/compose/how-tos/startup-order/
-11. Docker Docs, **docker container stop**：https://docs.docker.com/reference/cli/docker/container/stop/
+10. Docker Docs, **docker container stop**：https://docs.docker.com/reference/cli/docker/container/stop/
+11. Docker Docs, **Control startup order**：https://docs.docker.com/compose/how-tos/startup-order/
 12. Docker Docs, **Volumes**：https://docs.docker.com/engine/storage/volumes/
 13. Docker Docs, **Bind mounts**：https://docs.docker.com/engine/storage/bind-mounts/
 14. Docker Docs, **tmpfs mounts**：https://docs.docker.com/engine/storage/tmpfs/
