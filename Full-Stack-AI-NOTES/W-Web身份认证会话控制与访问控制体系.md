@@ -2464,6 +2464,8 @@ Logout
 
 ### 【CSRF 主要出现在 Browser 自动发送 Credential 的模型中】
 
+CSRF（Cross-Site Request Forgery，跨站请求伪造）的关键条件是 Browser 会在攻击者触发的跨站请求中自动携带目标站点能够接受的 Credential。防御需要结合 Credential Transport、SameSite、CSRF Token、Origin / Fetch Metadata 等机制，而不是只依赖某一个 Cookie 属性。[[10]](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
+
 Cookie-based Session：
 
 ~~~text
