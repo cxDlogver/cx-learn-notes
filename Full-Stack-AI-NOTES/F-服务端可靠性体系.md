@@ -187,7 +187,7 @@ Request Deadline
 总重试预算
 ~~~
 
-AWS 关于 Timeout 的工程建议同样强调：调用远程服务时应设置连接和请求超时；超时过长会使资源长时间被占用，过短又会制造不必要的失败。[[3]](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_mitigate_interaction_failure_limit_retries.html)
+AWS 关于 Timeout 的工程建议同样强调：调用远程服务时应设置连接和请求超时；超时过长会使资源长时间被占用，过短又会制造不必要的失败。[[3]](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_client_timeouts.html)
 
 ### 【Retry 只适用于有机会通过再次执行恢复的失败】
 
@@ -413,7 +413,7 @@ Processing Latency
 Resource Saturation
 ~~~
 
-其中 Oldest Item Age（最老任务年龄）往往比单独 Queue Depth 更能说明“用户工作已经等待多久”。AWS 关于 Queue Backlog 的可靠性实践也强调监控积压和消息年龄，并对无法处理的消息使用 Dead Letter Queue。[[7]](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_mitigate_interaction_failure_limit_queues.html)
+其中 Oldest Item Age（最老任务年龄）往往比单独 Queue Depth 更能说明“用户工作已经等待多久”。AWS 关于 Queue Backlog 的可靠性实践也强调监控积压和消息年龄，并对无法处理的消息使用 Dead Letter Queue。[[7]](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_fail_fast.html)
 
 ### 【Backpressure 把下游处理能力反向变成上游约束】
 
@@ -610,7 +610,7 @@ Restart / Recovery
 
 [2] Google. Site Reliability Engineering — Embracing Risk. https://sre.google/sre-book/embracing-risk/
 
-[3] Amazon Web Services. REL05-BP04 Fail fast and limit queues / Reliability Pillar guidance on interaction failure and retries. https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_mitigate_interaction_failure_limit_retries.html
+[3] Amazon Web Services. REL05-BP05 Set client timeouts. AWS Well-Architected Framework. https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_client_timeouts.html
 
 [4] Amazon Web Services. Timeouts, retries, and backoff with jitter. AWS Builders Library. https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/
 
@@ -618,7 +618,7 @@ Restart / Recovery
 
 [6] Amazon Web Services. Transactional outbox pattern. AWS Prescriptive Guidance. https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html
 
-[7] Amazon Web Services. REL05-BP04 Fail fast and limit queues. AWS Well-Architected Framework. https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_mitigate_interaction_failure_limit_queues.html
+[7] Amazon Web Services. REL05-BP04 Fail fast and limit queues. AWS Well-Architected Framework. https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_fail_fast.html
 
 [8] Kubernetes. Liveness, Readiness, and Startup Probes. https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/
 
