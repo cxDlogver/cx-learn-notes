@@ -1045,6 +1045,128 @@ Frame Healthy
 
 需要 Hysteresis（滞回）、Cooldown（冷却时间）和慢恢复，避免控制器在两个档位之间来回震荡。
 
+#### <u>反馈控制的核心不是“找固定最优参数”，而是同时比较需求吞吐与安全容量</u>
+
+连续渲染中的自适应控制可以抽象成两个量：
+
+~~~text
+Required Capacity
+为了跟上新输入并在目标时间内消化积压
+理论上每次至少要处理多少工作
+
+Safe Capacity
+在当前 Frame Budget 内
+已经被运行结果证明可以安全承担多少工作
+~~~
+
+例如一个通用的批量需求估算可以写成：
+
+~~~text
+requiredBatch
+≈
+(
+  arrivalRate
+  + pending / catchUpWindow
+)
+/
+availableFrameRate
+~~~
+
+其中：
+
+- `arrivalRate` 表示新的工作进入速度；
+- `pending / catchUpWindow` 表示为了在目标窗口内追平积压，需要额外提供的消费能力；
+- `availableFrameRate` 表示当前真正还能获得多少次帧级处理机会。
+
+但这个公式只回答：
+
+> **从吞吐角度希望 batch 至少有多大。**
+
+它不能直接决定最终 batch。最终还必须受 Frame Budget 约束：
+
+~~~text
+requiredBatch
+告诉控制器“想处理多快”
+        ↓
+safeBatch / Frame Budget
+限制控制器“最多敢处理多重”
+        ↓
+actualBatch
+在吞吐需求和渲染安全之间取可接受值
+~~~
+
+因此更稳定的控制器通常不会直接从小 batch 跳到理论 requiredBatch，而是采用 Conservative Probe（保守探测）：
+
+~~~text
+当前安全容量 = S
+理论需求 = R
+
+下一轮最多尝试
+min(R, S + smallStep)
+~~~
+
+每次试探后重新观察 Frame Time、Queue 和 FPS。如果仍在预算内，再把新的容量记为安全边界；如果超预算，则立即停止继续上探。
+
+#### <u>为什么 Queue 与 Frame Pressure 必须同时进入控制器</u>
+
+只看 Queue 会得到：
+
+~~~text
+Queue ↑
+→ 不断增加 batch
+~~~
+
+但 batch 过大可能让单帧成本突破预算，导致 FPS 下降、每秒消费机会减少，反过来让 Queue 更严重。
+
+只看 FPS 又会得到：
+
+~~~text
+FPS ↓
+→ 不断减 batch
+~~~
+
+但 batch 太小又可能让 Consume Rate 长期低于 Arrival Rate，页面虽然单帧变轻，却越来越不实时。
+
+所以反馈控制至少要同时观察：
+
+~~~text
+Data Pressure
+Arrival / Consume / Pending / Queue Age
+        +
+Frame Pressure
+Frame Time / FPS / Render Cost / Budget
+~~~
+
+只有这两类信号结合，才能区分：
+
+~~~text
+消费能力不足但单帧还有余量
+→ 提高单次消费能力
+
+单帧已经达到容量上限
+→ 停止加重单帧
+→ 必要时降低输入或视觉质量
+~~~
+
+#### <u>这类控制器通常属于离散规则反馈控制，不一定需要 PID</u>
+
+页面性能控制常常具有这些特点：
+
+- 控制量是离散的 batch、采样档位、质量级别；
+- 页面负载关系高度非线性；
+- 地图模式、历史规模和设备差异会改变容量；
+- 安全边界比理论收敛速度更重要。
+
+因此工程上常采用 Rule-based Adaptive Feedback Controller（基于规则的自适应反馈控制器），配合：
+
+- Threshold（阈值）；
+- Hysteresis（滞回）；
+- Cooldown（冷却）；
+- Conservative Probe（保守探测）；
+- Slow Recovery（慢恢复）。
+
+PID 更适合有连续误差、连续控制量且系统动力学相对稳定的场景；如果控制动作本身就是几个离散档位，规则反馈往往更容易解释、测试和设置安全上限。
+
 ---
 
 ## 7. 一个完整定位决策树应该从“现象”一路走到“可验证根因”
