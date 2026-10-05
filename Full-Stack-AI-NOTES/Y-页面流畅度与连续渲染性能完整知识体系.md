@@ -6,7 +6,8 @@
 
 它不替代以下已有知识：
 
-- [性能专项优化](X-性能专项优化.md)：负责完整前端性能指标、监控采集与 RUM 体系；
+- [Web 性能优化完整知识体系](W-Web性能优化完整知识体系.md)：负责从 Loading / Responsiveness / Visual Stability / Smoothness 出发，把 Server / Network / Resource / JavaScript / Rendering / Runtime / RUM 串成端到端性能总框架；本文只继续深入 Continuous Rendering（连续渲染）分支；
+- [性能专项优化](X-性能专项优化.md)：负责性能指标、监控采集与 RUM 体系；
 - [基于 Chrome 浏览器渲染原理](J-基于Chrome浏览器渲染原理.md)：负责 JavaScript → Style → Layout → Paint → Composite 的浏览器渲染流水线；
 - [Vue 应用级性能分析及优化](V-Vue应用级性能分析及优化.md)：负责 Vue 应用层的性能定位与框架实践；
 - [WebSocket 完整知识体系](W-WebSocket完整知识体系.md)：负责实时连接、可靠恢复与 Backpressure 的通信侧知识。
