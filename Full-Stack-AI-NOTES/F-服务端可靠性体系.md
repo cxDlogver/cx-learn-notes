@@ -48,108 +48,129 @@
 
 > **学习边界**：本文负责服务端 Reliability 的通用总框架。数据库事务、并发控制、Redis、异步任务、Docker 等专题仍由各自主文档深入；本文只解释它们为什么会在“可靠性”这一横向问题上重新发生联系。
 
-## 1. 服务端可靠性从目标、失败模型和可靠性边界开始设计
+## 1. 服务端可靠性先从业务承诺、失败模型和恢复目标开始设计
 
-### 【可靠性首先回答系统在故障发生时还需要保证什么】
+可靠性设计最容易犯的错误，是一开始就在问“要不要 Retry、Kafka、主从复制、Kubernetes”。这些都是方案，不是问题本身。真正的设计顺序应该先回答：系统对调用方承诺了什么、这个承诺允许怎样失败、失败以后多久必须恢复、已经产生的数据允许丢多少，以及哪些失败能够自动恢复、哪些必须转人工或降级。
 
-可靠性设计的第一步不是选择技术，而是确定系统最重要的承诺。
+### 【可靠性关注故障条件下的业务结果，而不是单纯的进程存活】
 
-一个服务可能需要分别保证：
-
-| 可靠性目标 | 需要回答的问题 | 常见证据 |
-| --- | --- | --- |
-| Request Reliability | 合法请求能否在可接受时间内得到明确结果 | 成功率、延迟、超时率 |
-| State Reliability | 已确认成功的数据是否保持正确并可恢复 | Transaction、Durability、Backup |
-| Task Reliability | 已接受的后台工作是否最终完成或进入明确终态 | Queue Lag、Retry、Dead Letter |
-| Dependency Reliability | 下游故障是否会无限拖垮上游 | Timeout、Circuit Breaker、Fallback |
-| Runtime Reliability | 进程或实例故障后服务能否恢复 | Health、Restart、Failover |
-| Capacity Reliability | 流量超过容量时是否仍然受控 | Rate Limit、Backpressure、Load Shedding |
-
-这些目标并不等价。例如进程仍然存活，不代表数据库可访问；HTTP 202 已经返回，也不代表后台任务已经完成；数据库事务已经提交，也不代表下游缓存一定刷新成功。
-
-因此可靠性必须先明确**完成语义和承诺边界**。
-
-### 【失败模型决定可靠性机制应该放在哪里】
-
-**<u>可靠性不是消灭所有故障，而是假设故障一定会发生，再决定系统怎样处理。</u>**
-
-典型故障可以沿边界分类：
+假设订单 API 的 Node.js Process 仍然运行，但数据库已经不可连接：
 
 ~~~text
-Client / Traffic
-├── 非法输入
-├── 重复请求
-└── 突发流量
-
-Application
-├── Exception              （异常：未捕获 / 业务异常）
-├── Timeout                （处理超时）
-└── Process Crash          （进程崩溃）
-
-Database / Cache
-├── Connection Failure     （连接失败 / 连接池耗尽）
-├── Transaction Conflict   （事务冲突：死锁 / 序列化失败）
-├── Slow Query             （慢查询）
-└── Data Loss Risk         （数据丢失风险：持久化 / 备份不足）
-
-Async Work
-├── Worker Crash           （消费者崩溃）
-├── Duplicate Delivery     （重复投递：At-least-once 的必然产物）
-├── Poison Task            （毒任务：反复失败、永远处理不成功的任务）
-└── Queue Backlog          （队列积压）
-
-External Dependency
-├── Slow Response          （下游响应慢）
-├── Partial Failure        （部分失败：一次调用里部分子操作成功、部分失败）
-└── Unknown Result         （结果未知：超时后不知对方到底成功没有）
-
-Deployment
-├── Bad Config             （配置错误）
-├── Startup Failure        （启动失败）
-└── Shutdown During Work   （运行中关停：还有任务在处理时退出）
+POST /orders
+      ↓
+Application Process = Alive
+      ↓
+Database Connection Timeout
+      ↓
+订单无法创建
 ~~~
 
-同一个 Retry 不能解决所有失败。例如参数错误原样重试没有价值；结果未知的有副作用请求如果直接重放，反而可能制造重复写入。
+从操作系统角度看程序还“活着”，从用户角度看创建订单能力已经不可用。反过来，如果一个 Worker Crash，但任务已经写入 Durable Queue，Lease 超时后可以由其他 Worker 重新领取，那么 Process Failure 并不等于 Business Task Lost。
 
-所以可靠性设计应遵循：
+因此可靠性判断必须围绕业务能力、数据事实和任务结果，而不是只观察某个进程、容器或者端口是否存在。
 
-~~~text
-Failure
-  ↓
-先分类
-  ↓
-判断是否可恢复
-  ↓
-选择保护 / 隔离 / 重试 / 补偿 / 终止
-~~~
+### 【一次服务端操作通常包含多种独立可靠性承诺】
 
-### 【SLO 把“稳定”转换成可以判断的工程目标】
+| 可靠性对象 | 真正要保护什么 | 典型失败 | 常见机制 |
+| --- | --- | --- | --- |
+| Request | 合法请求能否在预算时间内得到明确结果 | Timeout、5xx、慢依赖 | Deadline、Timeout、Retry、Fallback |
+| State | 已确认成功的数据是否正确、持久、可恢复 | 半提交、Crash、磁盘损坏、误删 | Transaction、WAL、Replication、Backup |
+| Task | 已接受的后台任务是否最终进入成功或明确失败 | Worker Crash、重复投递、毒任务 | Durable Queue、Lease、Idempotency、Retry、DLQ |
+| Dependency | 下游异常是否会拖垮上游 | Slow、Unavailable、Unknown Result | Timeout、Circuit Breaker、Bulkhead |
+| Capacity | 超过容量后是否仍然可控 | Queue Backlog、连接池耗尽、CPU 饱和 | Rate Limit、Backpressure、Load Shedding |
+| Runtime | 实例故障、部署和重启时是否安全 | Bad Config、Crash、Shutdown During Work | Config Validation、Health、Restart、Graceful Shutdown |
 
-Google SRE 将 Service Level Objective（SLO，服务级目标）作为衡量服务可靠性的重要方式，并强调目标应从用户体验出发，而不是简单要求 100% 可用。Error Budget（错误预算）则把允许失败的空间显式化，用来平衡可靠性与功能迭代。[[1]](https://sre.google/sre-book/service-best-practices/) [[2]](https://sre.google/sre-book/embracing-risk/)
-
-因此：
+这些目标不是同一件事。例如：
 
 ~~~text
-可靠性目标
+HTTP 202 Accepted
 ≠
-“永不失败”
+后台任务完成
 
-更合理的是
+Database COMMIT
+≠
+已经拥有灾难恢复能力
 
-什么指标代表用户可用
-+
-允许多少失败
-+
-超过边界后怎样响应
+Container Restart
+≠
+业务状态已经恢复
+
+Replica 存在
+≠
+误删数据能够恢复
 ~~~
 
-## 2. 请求与依赖可靠性限制一次调用把局部故障放大成系统故障
+可靠性设计的核心，就是不断把这些“看起来像成功”的状态拆开，明确每个边界到底承诺了什么。
 
-请求链路的可靠性首先解决两个问题：**不应该进入系统的工作要尽早拒绝；已经进入系统的工作不能因为依赖异常无限占用资源。**
+### 【Failure Model 先描述失败，再选择机制】
 
-### 【请求准入把非法输入、重复操作和过量流量挡在昂贵资源之前】
+一个可执行的 Failure Model 至少写清四个维度：
 
-典型请求入口可以先建立：
+| 维度 | 需要回答的问题 |
+| --- | --- |
+| Failure Source | 谁失败：Client、Application、Database、Cache、Worker、Network、External Service |
+| Failure Type | 怎样失败：Slow、Timeout、Crash、Duplicate、Partial Failure、Corruption、Overload |
+| Business Impact | 会破坏什么：请求结果、业务事实、任务进度、容量、可用性 |
+| Recovery Strategy | 怎样恢复：Fail Fast、Retry、Replay、Fallback、Restart、Restore、Manual Repair |
+
+例如“支付调用超时”不能只归类为一个 Timeout：
+
+~~~text
+Failure Source
+第三方支付服务
+
+Failure Type
+Client 收到 Timeout，但不知道对方是否已扣款
+
+Business Impact
+直接重试可能重复扣款
+
+Recovery Strategy
+Idempotency Key
++
+查询真实支付状态 Reconciliation
++
+确认未执行以后再决定是否 Retry
+~~~
+
+同样是 Timeout，不同业务副作用会产生完全不同的恢复方案。这也是后面所有可靠性机制都必须回到 Failure Model 的原因。
+
+### 【SLO、RPO 与 RTO分别约束服务、数据和恢复】
+
+Service Level Indicator（SLI，服务级指标）描述实际测量值，例如成功请求比例、请求 P95 / P99、任务在 5 分钟内完成的比例；Service Level Objective（SLO，服务级目标）规定这些指标应该达到什么水平。Google SRE 使用 SLO 与 Error Budget（错误预算）明确“多可靠才足够”，而不是无限追求 100%。[[1]](https://sre.google/sre-book/service-best-practices/) [[2]](https://sre.google/sre-book/embracing-risk/)
+
+例如：
+
+~~~text
+30 天窗口内 99.9% 的有效请求成功
+
+99% 的已接受任务在 2 分钟内完成
+~~~
+
+数据恢复还需要两个不同目标：
+
+~~~text
+RPO
+Recovery Point Objective（恢复点目标）
+→ 最多允许丢失多长时间的数据
+
+RTO
+Recovery Time Objective（恢复时间目标）
+→ 故障发生后最多允许多久恢复服务
+~~~
+
+例如 RPO = 5 min，表示最坏情况下希望恢复到故障前 5 分钟以内的数据点；RTO = 30 min，表示从灾难发生到业务重新可用的目标不超过 30 分钟。
+
+RPO 决定 Backup、WAL Archive、Replication 等数据保护策略；RTO 决定是否需要 Standby、自动 Failover、预热恢复环境和自动化 Runbook。它们应该先由业务风险确定，再倒推基础设施，而不是先选组件再为组件寻找理由。
+
+## 2. 请求与依赖可靠性通过有限等待、安全重试和故障隔离保护调用链
+
+一次 HTTP Request 往往会继续访问 Database、Redis、内部 Service 或第三方 API。只要其中一个依赖变慢，上游就可能一起变慢。因此请求可靠性的核心不是“失败后多试几次”，而是给整条调用链建立时间预算、重试边界和故障传播边界。
+
+### 【请求准入先把无效和过量工作挡在昂贵资源之前】
+
+一个典型入口可以按成本从低到高组织：
 
 ~~~text
 Request
@@ -158,80 +179,98 @@ Protocol / Schema Validation
   ↓
 Authentication / Authorization
   ↓
-Idempotency / Duplicate Control
+Duplicate / Idempotency Check
   ↓
 Rate Limit / Quota
   ↓
 Business Logic
   ↓
-Database / External Dependency
+Database / External Service
 ~~~
 
-越靠前拒绝无效请求，越少消耗数据库连接、线程、CPU 和外部配额。
+越靠后的资源通常越昂贵。一个明显缺少必要字段的请求，如果直到执行 SQL 后才失败，已经浪费 HTTP Connection、Application CPU、Database Connection，甚至可能产生 Lock。
 
-Rate Limit（限流）不是只为了防攻击，它也是可靠性保护：当系统容量有限时，宁可让部分请求得到明确的 429 / overload 结果，也不要让所有请求同时进入下游后一起超时。
+Rate Limit（限流）同样属于可靠性而不只是安全防刷。当系统容量有限时，“所有请求都进入系统然后一起 Timeout”通常比“超预算请求尽早得到 429 / overload，保护仍在容量内的请求”更糟。
 
-### 【Timeout 为依赖调用建立有限等待边界】
+### 【Deadline 是一次业务操作的总预算，Timeout 是其中单次等待边界】
 
-如果一个服务调用下游时没有 Timeout（超时边界），下游变慢就可能让上游请求长时间占用连接、内存和并发槽位。
-
-因此依赖调用至少需要明确：
+Timeout 不应该只是随手设置一个 3 秒常量。更完整的模型是：
 
 ~~~text
-Request Deadline
-      ↓
-单次 Dependency Timeout
-      ↓
-是否允许 Retry
-      ↓
-总重试预算
+Client Deadline = 5s
+       ↓
+API 自己处理消耗 300ms
+       ↓
+Database 最多 800ms
+       ↓
+External API 最多 1.5s
+       ↓
+必要 Retry 仍必须落在剩余 Deadline 内
 ~~~
 
-AWS 关于 Timeout 的工程建议同样强调：调用远程服务时应设置连接和请求超时；超时过长会使资源长时间被占用，过短又会制造不必要的失败。[[3]](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_client_timeouts.html)
+如果调用方总 Deadline 只有 3 秒，而下游单次 Timeout 设置成 5 秒，这个 Timeout 实际上没有意义：调用方早已经放弃。AWS Well-Architected 对远程依赖明确建议设置连接和请求 Timeout，以避免等待时间无限增长。[[3]](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_client_timeouts.html)
 
-### 【Retry 只适用于有机会通过再次执行恢复的失败】
+设计 Timeout 时至少回答：
 
-Retry（重试）会把一次失败变成多次请求，因此它既可能恢复服务，也可能放大故障。
+| 问题 | 设计含义 |
+| --- | --- |
+| 正常 P99 延迟是多少 | Timeout 不能低于正常长尾，否则制造大量假失败 |
+| 调用方总 Deadline 是多少 | 单次 Timeout 必须服从整体时间预算 |
+| 请求失败能否 Retry | 要为 Retry 留出时间 |
+| 调用占用什么资源 | Connection / Thread / Memory 长时间等待是否会放大故障 |
+| Timeout 后结果是否未知 | 有副作用调用可能需要 Reconciliation |
+
+### 【Retry 只有在失败可能通过再次执行恢复时才有价值】
+
+Retry 适合短暂网络抖动、临时连接失败、短时 503、可安全重放的并发冲突等情况。参数非法、权限拒绝、业务规则明确拒绝、同样输入必然再次失败的确定性错误，不应该原样 Retry。
+
+Retry 自身会增加流量。如果 1000 个调用同时失败并立即重试三次，下游得到的是新的流量冲击。因此完整 Retry Policy 通常由 Retryable Error Classification、Attempt Limit、Exponential Backoff、Jitter 和 Overall Deadline / Retry Budget 共同组成。AWS Builders Library 也把 Timeout、Retry、Backoff 与 Jitter 放在同一可靠性问题中讨论。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
+最小执行逻辑可以表示为：
 
 ~~~text
-Dependency 已经过载
-      ↓
-大量调用失败
-      ↓
-所有上游立即 Retry
-      ↓
-流量再次放大
-      ↓
-依赖更难恢复
+deadline = now + 3s
+
+for attempt in 1..3
+    remaining = deadline - now
+    remaining <= 0 → stop
+
+    call dependency with bounded timeout
+
+    success → return
+    non-retryable error → fail fast
+
+    sleep(backoff + jitter)
+
+finally → return failure
 ~~~
 
-因此重试通常需要和以下机制组合：
+真正关键的是：Retry 不是无限循环；每次等待有限；总执行服从 Deadline；只有 Retryable Failure 才继续。
 
-- Backoff（退避）：逐步拉开重试时间；
-- Jitter（随机抖动）：避免大量客户端在相同时间再次请求；
-- Retry Limit：限制总次数；
-- Deadline：限制整个操作最多等待多久；
-- Idempotency：有副作用操作必须先保证重复执行安全。
+### 【有副作用请求必须先解决幂等和结果未知，再谈 Retry】
 
-对于明显不可恢复的输入错误、权限拒绝和确定性业务错误，应 Fail Fast（快速失败），而不是不断重试。AWS Builders Library 对 Timeout、Retry、Backoff 和 Jitter 的讨论也强调了这一点。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+假设支付服务实际扣款成功，但 Response 在网络中丢失，调用方看到 Timeout。此时“请求失败”不等于“业务动作没发生”。直接再次 POST /pay 可能重复扣款。
 
-### 【Circuit Breaking 与隔离用于阻止持续失败向上游传播】
+因此这类操作通常需要 Operation / Idempotency Key：服务端用同一 Key 识别同一个业务操作，重复请求返回已经存在的结果。如果对方不提供可靠幂等，Timeout 后应该先 Query Operation Status：已经成功则复用结果；确定未执行才重新发起；仍无法确认则进入人工或补偿流程。
 
-当某个依赖持续不可用时，每次调用都等待 Timeout 再失败会持续消耗资源。Circuit Breaker（熔断）是一种常见故障隔离策略：在失败率达到阈值后暂时停止正常调用，让依赖有恢复空间，再通过受控探测决定是否恢复。
+> **Retry 的前提不是“上一次报错”，而是“再次执行是安全的”。**
 
-它不是所有系统都必须使用的固定组件。是否值得引入，应根据：
+### 【Circuit Breaker 与 Bulkhead分别限制持续失败和资源互相拖累】
 
-~~~text
-依赖故障是否频繁
-调用成本是否高
-是否存在替代结果
-是否允许短时间快速失败
-恢复探测怎样完成
-~~~
+Timeout 解决一次调用最多等多久，但如果下游持续失败，每个请求仍然会真实访问故障依赖并等到 Timeout。Circuit Breaker（熔断）进一步用 Closed → Open → Half-Open → Closed 状态阻止持续调用，在 Open 状态快速失败，恢复窗口后只放少量探测流量。
 
-共同判断。
+Bulkhead（舱壁隔离）解决的是另一类传播：一个慢依赖不能占满所有共享连接或并发槽位。例如把第三方 A、B、C 的最大并发分别限制，而不是共享一个无限竞争的全局池。
 
-举例来说：订单服务调用下游的「库存查询」API。当库存服务因数据库故障持续超时或返回 5xx 时，如果不熔断，每次下单都要等满 Timeout（例如 3 秒）才失败——不仅下单变慢，等待中的线程 / 连接还被长期占用，故障于是沿调用链向订单服务、网关乃至前端传播。Circuit Breaker 在失败率达到阈值后直接快速失败（不再真正发起调用），既给下游留出恢复空间，也保护了调用方资源；随后进入 Half-Open，放行少量探测请求，成功则关闭熔断、恢复正常调用。
+| 现象 | 优先机制 |
+| --- | --- |
+| 单次等待无限拖长 | Timeout / Deadline |
+| 短暂失败偶尔可恢复 | Retry + Backoff + Jitter |
+| 重复调用可能产生副作用 | Idempotency / Reconciliation |
+| 依赖持续失败，每次调用都慢失败 | Circuit Breaker |
+| 一个依赖占满全部连接或线程 | Bulkhead / Concurrency Limit |
+| 下游不可用但允许返回旧数据 | Fallback / Cache / Degradation |
+
+这些机制是组合工具，不是固定套餐。是否引入必须由 Failure Model、业务副作用和资源模型决定。
 
 ## 3. 状态与数据可靠性保证已经确认的业务事实不会处于半完成状态
 
