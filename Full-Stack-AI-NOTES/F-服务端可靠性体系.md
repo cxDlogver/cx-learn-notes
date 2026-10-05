@@ -715,118 +715,328 @@ Dead Letter Count
 
 例如 Pending = 1000 可能完全正常，如果最老任务只等待 1 秒；Pending = 50 也可能严重失控，如果最老任务已经等待 30 分钟。完整的 Queue、Broker、Delivery、Claim / Lease、Idempotency、Retry、Dead Letter 与 Backpressure 模型继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
 
-## 5. 容量与过载可靠性保证系统在生产速度超过处理能力时仍然受控
+## 5. 容量与过载可靠性保证生产速度超过处理能力时系统仍然受控
 
-### 【异步化只能缓冲流量差异，不能创造处理能力】
+很多系统在正常流量下完全正确，真正的问题只在 Peak Traffic（流量高峰）或下游变慢时出现。可靠性因此不仅是“失败后恢复”，还包括“当工作进入速度超过处理能力时，不让系统进入不可逆失控”。
 
-如果：
+### 【Queue 能吸收短时 Burst，但不能创造处理能力】
+
+假设：
 
 ~~~text
-Arrival Rate = 10000 / s
-Processing Rate = 6000 / s
+Arrival Rate λ = 10,000 / s
+Processing Capacity μ = 6,000 / s
 ~~~
 
-那么积压仍然会持续增加：
+每秒都会多出：
 
 ~~~text
-Queue Backlog
-0 → 4000 → 8000 → 12000 → ...
+Backlog Growth = λ - μ = 4,000 / s
 ~~~
 
-Queue 把同步失败转成了时间缓冲，但如果长期生产速度高于消费速度，最终仍然会耗尽存储、延迟预算或下游能力。
+一分钟以后理论上就会新增约 240,000 个等待工作。Queue 可以把同步失败转成时间缓冲，但只要 λ 长期大于 μ，积压就一定持续增加。
 
-因此容量可靠性需要同时观察：
+短时 Burst 的典型价值是：
 
 ~~~text
-Arrival Rate
-Processing Rate
-Queue Depth
-Oldest Item Age
-Processing Latency
-Resource Saturation
+正常 Capacity = 1000 / s
+
+突然 5 秒进入 1500 / s
+        ↓
+Queue 暂存 2500
+        ↓
+流量恢复到 800 / s
+        ↓
+Consumer 使用剩余能力逐渐追平
 ~~~
 
-其中 Oldest Item Age（最老任务年龄）往往比单独 Queue Depth 更能说明“用户工作已经等待多久”。AWS 关于 Queue Backlog 的可靠性实践也强调监控积压和消息年龄，并对无法处理的消息使用 Dead Letter Queue。[[7]](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_fail_fast.html)
+如果 Producer 长期维持 1500 / s、Consumer 只能 1000 / s，Queue 最终会遇到磁盘 / 内存上限、消息 Age 超过业务 Deadline、历史积压反过来拖慢数据库等问题。所以 Queue 是缓冲，不是无限容量。
 
-### 【Backpressure 把下游处理能力反向变成上游约束】
+### 【Queue Depth 只能说明多少任务在等，Age 才说明业务等了多久】
 
-Backpressure（背压）的核心是：当下游已经处理不过来时，上游不能继续无限生产。
+容量可靠性至少观察：
 
-常见手段包括：
+| 指标 | 回答的问题 |
+| --- | --- |
+| Arrival Rate | 每秒新增多少工作 |
+| Processing Rate | 每秒真正完成多少 |
+| Queue Depth | 当前积压多少 |
+| Oldest Item Age | 最老任务已经等待多久 |
+| Queue Wait Duration | 一条任务从入队到开始执行等多久 |
+| Processing Duration | 真正业务处理本身多慢 |
+| Saturation | CPU、DB Pool、Thread、Disk、External Quota 是否接近上限 |
+
+例如：
 
 ~~~text
-Rate Limit
-Bounded Queue
-Batch
-Concurrency Limit
-Consumer Scaling
-Load Shedding
-Admission Control
+Queue A
+10,000 tasks
+Oldest = 2s
+
+Queue B
+200 tasks
+Oldest = 30min
 ~~~
 
-这些机制解决的是不同位置的容量问题。增加 Worker 并发也不是永远有效，因为真正瓶颈可能已经位于 Database Connection、Lock、CPU、Storage I/O 或外部服务。
+如果业务 SLO 是 5 分钟内处理，真正已经违约的是 B。只看 Depth 很容易误判。
 
-所以扩容之前必须先定位 Saturation Point（饱和点）。
+### 【Backpressure 的本质是把下游处理能力反向传回上游】
 
-## 6. 进程与部署可靠性保证服务实例能够安全启动、停止和恢复
-
-### 【Liveness、Readiness 与 Startup 分别回答不同生命周期问题】
-
-一个 Process 已经存在，不代表它能够正常接收流量。
-
-Kubernetes Probe 模型区分：
-
-- Liveness：实例是否仍然活着，失败时可以触发重启；
-- Readiness：实例当前是否能够接收请求，失败时应该停止给它分配流量；
-- Startup：慢启动程序是否已经完成启动，在此之前避免过早执行其他 Probe。[[8]](https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/)
-
-即使不使用 Kubernetes，这三个问题仍然是通用的运行判断：
+当 Consumer 已经追不上，不能只继续扩 Queue。Backpressure（背压）要求上游感知下游容量，并减少进入系统的工作。
 
 ~~~text
-Process Alive?
+Client
+  ↓
+Rate Limit / Quota
+  ↓
+API
+  ↓
+Bounded Concurrency
+  ↓
+Queue
+  ↓
+Bounded Queue / Admission Control
+  ↓
+Worker
+  ↓
+Consumer Concurrency
+  ↓
+Database / External Service
+~~~
+
+不同手段保护的位置不同：
+
+| 手段 | 主要解决的问题 |
+| --- | --- |
+| Rate Limit | 限制入口总流量，防止所有请求同时进入 |
+| Bounded Queue | 队列达到容量后明确拒绝或降级，而不是无限增长 |
+| Concurrency Limit | 防止同时执行太多任务压垮共享依赖 |
+| Batch | 降低每条任务的固定网络 / SQL 开销 |
+| Load Shedding | 过载时主动放弃低优先级或过期工作 |
+| Consumer Scaling | 在下游仍有容量时提高处理能力 |
+| Priority Queue | 让关键任务优先于低价值任务 |
+
+### 【Scale Out 前先确认瓶颈不是共享依赖】
+
+单 Worker 每秒能处理 100 个 Task，不代表 10 个 Worker 一定能达到 1000 / s。假设所有 Worker 共用 50 个 Database Connection：
+
+~~~text
+Worker 1..10
       ↓
-Dependencies Ready?
+全部竞争同一个 DB Pool
       ↓
-Can Receive Traffic?
+Connection Wait / Lock Contention
+      ↓
+Throughput 不再增加
+Latency 反而继续上升
 ~~~
 
-### 【Restart 能恢复进程但不能替代业务恢复机制】
+所以 Backlog 增长时应该先定位：Processing Duration 是不是变慢、CPU 是否饱和、DB Pool 是否等待、Lock 是否增加、Storage I/O 是否到顶、外部 API 是否有限额，然后再决定增加 Worker、优化 Query、Batch、提高资源配额还是限流。
 
-容器或进程管理器可以在应用退出后重新启动实例。Docker 提供 no、on-failure、always、unless-stopped 等 Restart Policy。[[9]](https://docs.docker.com/engine/containers/start-containers-automatically/)
+### 【Load Shedding 用明确拒绝替代全系统慢性崩溃】
 
-但：
+当系统已经超过设计容量，有些工作应该主动拒绝或丢弃：
 
 ~~~text
-Process Restart
-≠
+可重试写请求
+→ 429 / 503 + Retry-After
+
+低优先级异步任务
+→ 延迟 / 丢弃 / 降采样
+
+已经过期的实时任务
+→ 不再消费旧任务
+~~~
+
+这不是“系统不可靠”，而是为了保护更重要的承诺。可靠性真正关心的是：过载时失败是否有边界、是否可预测、是否优先保护关键业务。
+
+### 【容量设计要从目标吞吐、峰值、恢复速度和资源上限共同计算】
+
+实践中可以先列一张 Capacity Sheet：
+
+| 项目 | 示例 |
+| --- | --- |
+| 平均输入 | 2,000 events/s |
+| 峰值输入 | 8,000 events/s，持续 3 分钟 |
+| 单 Worker 稳态能力 | 1,500 events/s |
+| 最大 Worker 数 | 8 |
+| DB 最大安全写入 | 10,000 events/s |
+| 可接受 Queue Age | 2 分钟 |
+| Queue Storage 上限 | 2 小时峰值 |
+
+然后验证：峰值期间积压增长多少、峰值结束后多久追平、扩容是否会先撞到数据库上限、Queue Age 是否会违反业务 SLO。这样 Capacity Reliability 才从“加机器”变成可计算的工程设计。
+
+## 6. 运行与部署可靠性让进程从能启动变成能安全加入和退出服务
+
+源码编译成功并不代表服务已经可用。一个完整运行生命周期更接近：
+
+~~~text
+Load Config
+      ↓
+Initialize Dependencies
+      ↓
+Process Started
+      ↓
+Startup Complete
+      ↓
+Ready
+      ↓
+Receive Traffic / Task
+      ↓
+Running
+      ↓
+Not Ready / Draining
+      ↓
+Graceful Shutdown
+      ↓
+Stopped
+~~~
+
+可靠性必须覆盖启动、运行、故障、退出和重新加入，而不只是“进程能否启动”。
+
+### 【Config Validation 把配置错误提前到 Startup 阶段】
+
+如果生产缺少 DATABASE_URL、Secret 或关键外部地址，但程序仍然启动，问题可能直到某个用户请求才暴露。更可靠的做法是：
+
+~~~text
+Process Start
+      ↓
+Parse Config
+      ↓
+Schema Validation
+      ↓
+Invalid
+  → Fail Fast
+
+Valid
+  → Continue Bootstrap
+~~~
+
+Startup Failure 是明确失败，可以直接阻止坏实例加入服务；“容器 Running 但部分功能随机报错”反而更危险。
+
+### 【Startup、Liveness 与 Readiness 判断三个不同生命周期状态】
+
+Kubernetes 官方明确区分 Startup Probe、Liveness Probe 与 Readiness Probe：Startup 判断应用是否完成启动；Liveness 判断实例是否需要被重启；Readiness 判断是否应该继续接收流量。[[11]](https://kubernetes.io/docs/concepts/workloads/pods/probes/)
+
+可以用三个问题理解：
+
+~~~text
+Startup
+应用是否已经启动完成？
+
+Liveness
+这个实例是否已经坏到需要重启？
+
+Readiness
+这个实例现在是否能正确服务请求？
+~~~
+
+例如 Process 正常，但 Database 暂时不可用，可能应该是：
+
+~~~text
+Liveness = true
+Readiness = false
+~~~
+
+此时实例继续运行等待依赖恢复，但 Load Balancer 暂停给它流量，而不是不断 Restart。
+
+Kubernetes 官方也特别警告错误 Liveness Probe 会在高负载下制造级联重启：某个实例因为负载高暂时响应慢，被误判为“死掉”后重启，剩余实例承受更多流量，又继续被重启。[[11]](https://kubernetes.io/docs/concepts/workloads/pods/probes/)
+
+因此 Health Endpoint 不能只是一个固定 return 200 的 /health，而要明确每个 Endpoint 的业务语义。
+
+### 【Readiness 依赖检查不能把所有下游都机械设成关键依赖】
+
+如果一个 API 核心写入依赖 Database，但推荐列表依赖某个可选缓存，那么：
+
+~~~text
+Database Down
+→ 核心请求无法正确执行
+→ Readiness 可能应该失败
+
+Optional Cache Down
+→ 可以退化为 Database Query
+→ 不一定要把整个实例摘流量
+~~~
+
+Health Check 本质也是 Dependency Classification：Hard Dependency 才影响 Ready；Soft Dependency 更适合降级并暴露独立指标。
+
+### 【Restart 只重新创建 Runtime Instance，不自动恢复业务状态】
+
+Process Manager 或 Container Runtime 可以把 Crash 的进程重新启动，但 Restart 不会自动回答：Crash 前领取的 Task 怎么办、内存 Session 怎么办、正在执行的外部支付怎么办、Database 自身损坏怎么办。
+
+所以必须区分：
+
+~~~text
+Restart
+→ 恢复 Runtime Instance
+
 Task Recovery
-≠
+→ Durable State / Lease / Redelivery
+
 Data Recovery
-≠
-Dependency Failover
+→ WAL / Replica / Backup
+
+External Side Effect Recovery
+→ Idempotency / Reconciliation
 ~~~
 
-如果任务状态只存在内存里，Restart 后任务依然可能丢失；如果数据库已经损坏，重启应用也无法恢复数据。
+这也是为什么设置 restart: always 或 always-on supervisor 不能等同于系统可靠。
 
-### 【Graceful Shutdown 避免正常部署主动制造半执行状态】
+### 【Graceful Shutdown 在正常退出路径上减少主动制造的半执行状态】
 
-部署、扩容和节点维护都会主动终止进程。可靠服务需要在收到终止信号后：
+部署、扩容和节点维护都会主动终止实例。如果直接 Kill，正在接收的 Request、正在执行的 Task 和 Buffer 都可能突然中断。
+
+完整 Shutdown 流程通常是：
 
 ~~~text
-停止接收新工作
+收到 SIGTERM
       ↓
-等待或转移 In-flight Work
+Readiness = false
+停止接收新 Traffic / 新 Task
       ↓
-Flush / Commit 必要状态
+等待 In-flight Work
       ↓
-关闭 Database / Redis / Network Connection
+到达 Drain Deadline？
+      ├─ No → 正常完成
+      └─ Yes → 中止，但状态必须可恢复
       ↓
-退出 Process
+Flush 必要 Buffer
+      ↓
+Close DB / Redis / Network
+      ↓
+Exit
 ~~~
 
-Node.js 会向进程暴露 SIGINT、SIGTERM 等 Signal Event，应用可以据此执行清理逻辑。[[10]](https://nodejs.org/api/process.html#signal-events)
+关键边界是：Graceful Shutdown 不是无限等待，而是在平台提供的终止预算内尽量落到可恢复状态。所以 Task 系统仍然必须能够处理 Grace Period 到期后的强制终止。
 
-Graceful Shutdown 的目标不是永远等待，而是在平台提供的终止时间预算内，尽量把运行状态收束到可恢复边界。
+### 【Rolling Deployment 需要把 Readiness、Drain 与版本兼容一起考虑】
+
+多实例滚动发布时：
+
+~~~text
+Old Version A
+Old Version B
+      ↓
+Start New Version C
+      ↓
+C Startup Ready
+      ↓
+开始接流量
+      ↓
+A Readiness false + Drain
+      ↓
+A Exit
+~~~
+
+此时还要检查新旧版本是否可以同时访问同一 Database Schema、Queue Payload 或 Cache Key。如果 Schema Migration 只兼容新代码，却在所有旧实例退出前执行，就可能让 Rolling Deployment 变成跨版本故障。
+
+所以 Deployment Reliability 不只是 Container Restart，还包括 backward-compatible migration、readiness gate、drain 和 rollback。
+
+### 【多实例高可用要求状态从单实例内存迁移到共享或可恢复边界】
+
+当系统扩成 API A / B / C，多实例只能解决单实例失效后的流量承接；Session、Task、Lock、业务状态如果仍只存在某个实例 Memory，Failover 后仍然丢失。
+
+因此高可用设计还必须判断 State Placement：哪些状态允许 Local Ephemeral，哪些必须进入 Shared Cache、Database、Durable Queue 或其他可恢复存储。多开实例不是高可用的全部，只是其中的计算实例冗余。
 
 ## 7. 可观测性与验证把可靠性从设计目标变成可证明结果
 
