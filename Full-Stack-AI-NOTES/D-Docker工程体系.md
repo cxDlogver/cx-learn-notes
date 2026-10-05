@@ -2,44 +2,53 @@
 
 Docker 是一套围绕 **Image（镜像）构建、Container（容器）运行和多服务编排** 建立的应用交付与运行体系。理解 Docker 时，不应只记 Dockerfile、Compose 或几条 CLI 命令，而应该沿着“源码如何变成可重复运行环境”这条主线建立完整模型。
 
-可以先把 Docker 放到软件交付链路中：
+可以先把 Docker 分成三条彼此连接、但职责不同的工程链：
 
 ~~~text
-Source Code
-    ↓
-Build Context
-    ↓
-Dockerfile
-    ↓
+Build Flow
+Source Code + Dependency
+        ↓
+Dockerfile + Build Context
+        ↓
+Image Build
+        ↓
 Image
-    ↓
-Container
-    ↓
-Application Process
-    ↓
-Runtime Resources
+
+Distribution Flow
+Image
+        ↓
+Tag / Digest
+        ↓
+Registry
+        ↓
+Push / Pull
+        ↓
+Deployment Environment
+
+Runtime Application Model
+Compose Model / docker run
+        ↓
+Runtime Configuration
 ├── Environment
-├── Network
-├── Port
-└── Storage
-    ↓
-Docker Compose
-    ↓
-Multi-container Application
+├── Network / Port
+├── Storage
+├── CPU / Memory
+└── Lifecycle
+        ↓
+Container
+        ↓
+Application Process
+        ↓
+Running Application
 ~~~
 
-这条链对应三个核心问题：
+Build Flow 解决“源码和依赖怎样形成可重复使用的 Image”：上游输入是 Source、Dependency、Dockerfile 与 Build Context，输出是可以被保存和分发的 Image。
 
-~~~text
-Build
-源码和依赖如何变成 Image？
+Distribution Flow 解决“同一个 Image 怎样跨机器和环境交付”：Image 通过 Tag 或 Digest 被引用，通过 Registry 保存和分发，Deployment Environment 再拉取目标 Image。它连接 Docker Build 与后续 CI/CD，但不负责 Release Strategy 或 Deployment Strategy 本身。
 
-Runtime
-Image 如何变成真正运行的 Process？
+Runtime Application Model 解决“Image 怎样成为真正运行的 Process，以及多个运行单元怎样组成应用”：`docker run` 可以直接声明单个 Container 的运行参数；Compose 则通过 Service、Network、Volume、Config、Secret 等 Application Model 描述多容器应用，再由 Docker 创建并连接对应 Runtime Resource。Docker 官方 Compose Specification 将这些对象作为 Compose Application Model 的顶层元素。[[18]](https://docs.docker.com/reference/compose-file/)
 
-Orchestration
-多个 Container 如何组成一个完整系统？
-~~~
+因此 Compose 不是“Container 创建完成之后再执行的一步”，而是描述 Runtime Application 应该如何组成的上位配置层。
 
 ---
 
@@ -91,7 +100,7 @@ Container 自身不是业务逻辑执行者，真正处理 HTTP、消费任务�
 
 ### 【Container 与 Virtual Machine 的隔离层不同】
 
-Virtual Machine（虚拟机）通常包含独立 Guest OS；Container 主要隔离 Process、Filesystem、Network 等运行资源，并共享 Host Kernel。
+Virtual Machine（虚拟机）通常包含独立 Guest OS；Linux Container 主要隔离 Process、Filesystem、Network 等运行资源，并共享承载这些 Container 的 Linux Kernel。这里的“共享 Kernel”需要区分运行平台：在 Linux Docker Engine 上通常是 Host Linux Kernel；在 macOS、Windows 等 Docker Desktop 环境中，Linux Container 运行在 Docker 管理的 Linux VM 内，共享的是这层 Linux Environment 的 Kernel，而不是直接共享 macOS 或 Windows Kernel。[[19]](https://docs.docker.com/desktop/faqs/general/#how-does-docker-desktop-run-linux-containers)
 
 ~~~text
 Virtual Machine
@@ -119,6 +128,31 @@ Isolated Process
 ~~~
 
 因此 Container 一般比完整虚拟机更轻量，但它不是“没有隔离”，而是隔离发生在进程和操作系统资源层。
+
+### 【Container 隔离不等于自动限制 CPU 与 Memory】
+
+Container 可以拥有隔离的 Process、Network 和 Filesystem 视图，但“看起来彼此隔离”不代表 Runtime 已经自动限制每个 Container 可以消耗多少 CPU 或 Memory。Docker 默认不会自动为 Container 设置严格的 CPU / Memory 上限，需要通过 Runtime Resource Constraint 显式配置。[[22]](https://docs.docker.com/engine/containers/resource_constraints/)
+
+~~~text
+Isolation
+解决“看到和访问哪些运行资源”
+        ↓
+Resource Constraint
+解决“最多可以消耗多少计算资源”
+~~~
+
+在 Linux Container 的底层机制中，Namespace 主要提供资源视图隔离，cgroup（Control Group，控制组）主要用于 CPU、Memory 等资源的统计与限制。对 Docker 工程使用者而言，重点不是直接操作这些内核机制，而是理解 Runtime Configuration 还包含 Compute Resource：
+
+~~~text
+Container Runtime Configuration
+├── Environment
+├── Network / Port
+├── Storage
+├── CPU / Memory
+└── Lifecycle
+~~~
+
+资源限制会进一步影响 Capacity Planning、OOM 行为和部署密度，但这些属于更深的 Runtime / Operations 主题。
 
 ---
 
@@ -211,7 +245,9 @@ Dockerfile 的完整语义以 Docker 官方 Dockerfile Reference 为准。[[2]](
 
 ### 【Image Layer 保存构建步骤产生的文件系统变化】
 
-Image 不是一个简单压缩目录，而是由多个只读 Layer（层）组成。可以简化理解为：
+Image 不是一个简单压缩目录，而是由只读 Filesystem Layer 与 Image Metadata 共同描述。Dockerfile 中每条 Instruction 都属于 Build Step，但并非每条 Instruction 都一定产生新的 Filesystem Layer：会改变文件系统的指令可以形成 Layer，而 `CMD`、`LABEL` 等只改变 Image Metadata 的指令不需要产生新的 Filesystem Layer。[[20]](https://docs.docker.com/engine/storage/drivers/)
+
+可以简化理解为：
 
 ~~~text
 Base Image Layer
@@ -225,7 +261,7 @@ COPY Source
 Build Result
 ~~~
 
-每一步产生的结果可以参与后续 Build Cache（构建缓存）。
+这些 Build Step 的结果可以参与后续 Build Cache（构建缓存），但“Build Step”与“Filesystem Layer”不能简单视为一一对应。
 
 ### 【Build Cache 缓存的是某一步构建结果】
 
@@ -406,6 +442,44 @@ listen :3000
 ~~~
 
 Compose 再通过 `restart`、`healthcheck`、`depends_on.condition` 配合这种生命周期。
+
+### 【Container 停止会把终止信号传递给 Main Process】
+
+Container 生命周期不仅包括 Create 与 Start，还包括停止阶段：
+
+~~~text
+Create
+↓
+Start
+↓
+Running
+↓
+Stop Signal
+↓
+Grace Period
+↓
+Main Process Exit
+↓
+Stopped
+~~~
+
+执行 `docker stop` 时，Docker 默认先向 Container 的 Main Process 发送 `SIGTERM`，给应用一段 Grace Period 完成清理；如果进程在超时后仍未退出，再发送 `SIGKILL` 强制终止。默认停止信号可以通过 Image 的 `STOPSIGNAL` 等配置调整。[[21]](https://docs.docker.com/reference/cli/docker/container/stop/)
+
+因此 Container 能否“优雅停止”取决于两层机制共同成立：
+
+~~~text
+Docker Runtime
+发送 Termination Signal
+        ↓
+Application Process
+监听 Signal
+        ↓
+停止接收新工作 / 等待在途工作 / 释放资源
+        ↓
+Process Exit
+~~~
+
+Docker 负责 Container Lifecycle 与 Signal Delivery；应用自身怎样完成 Drain、Graceful Shutdown 和资源释放属于服务端 Process Lifecycle。对应关系见 [服务端完整框架体系](./F-服务端完整框架体系.md)。
 
 ~~~yaml
 services:
@@ -724,7 +798,19 @@ Container Started
 Application Ready
 ~~~
 
-Healthcheck（健康检查）用于描述服务是否已经达到可以被依赖的状态。[[6]](https://docs.docker.com/compose/how-tos/startup-order/)
+Healthcheck（健康检查）通过用户定义的检查命令产生 Container / Service 的健康状态信号。只有当检查内容本身能够代表“当前依赖已经可以接受所需工作”时，这个 Health Status 才具有 Readiness（就绪）语义，Compose 才适合通过 `service_healthy` 把它用于启动依赖。[[6]](https://docs.docker.com/compose/how-tos/startup-order/)
+
+因此：
+
+~~~text
+Container Started
+≠
+Healthcheck Passed
+≠
+业务语义一定 Ready
+~~~
+
+最后一层是否成立取决于 Healthcheck 实际验证了什么，而不是因为配置了 `healthcheck` 就天然成立。
 
 ### 【Profile 控制可选 Service 是否参与本次运行】
 
@@ -987,9 +1073,24 @@ docker network inspect <network>
 
 ---
 
-## 9. Docker 工程治理连接构建、部署、安全与项目实践
+## 9. Docker 工程治理连接构建、运行与交付
 
-### 【Dockerfile 优化围绕可重复构建、缓存和最小 Runtime 展开】
+Docker Engineering Governance（Docker 工程治理）不是 Build、Runtime 之后的一个线性阶段，而是横向作用于 Image Build、Container Runtime 与 Image Delivery 的工程约束：
+
+~~~text
+Build Governance
+→ Reproducibility / Cache / Minimal Image
+
+Runtime Governance
+→ Least Privilege / Read-only / Resource Constraint
+
+Delivery Governance
+→ Image Identity / Registry / CI/CD Connection
+~~~
+
+三类治理分别约束“怎样得到可靠 Image”“怎样安全稳定运行 Container”“怎样把确定的 Image 交付到目标环境”。
+
+### 【Build Governance 围绕可重复构建、缓存和最小 Runtime 展开】
 
 常见治理目标：
 
@@ -1006,14 +1107,58 @@ Multi-stage
 .dockerignore
 限制 Build Context
 
+~~~
+
+因此 Build Optimization 不能只等价成“换更小 Base Image”。Least Privilege、Read-only Filesystem 与 Resource Constraint 属于 Runtime Governance，不应和 Build Cache 混成同一个优化维度。
+
+### 【Runtime Governance 限制 Container 的权限、写入面和资源消耗】
+
+Runtime Governance 关注已经创建出的 Container 可以做什么、可以修改什么、可以消耗多少资源：
+
+~~~text
 Least Privilege
 避免不必要 Root / Capability
 
 Read-only + Explicit Mount
 缩小 Runtime Writable Surface
+
+CPU / Memory Constraint
+控制单个 Container 的计算资源边界
 ~~~
 
-因此 Docker 优化不能只等价成“换更小 Base Image”。
+这些约束不会改变业务代码职责，而是在 Runtime 层减少权限、状态写入和资源争用带来的风险。
+
+### 【Delivery Governance 通过 Image Identity 与 Registry 连接部署环境】
+
+本地 `docker build` 得到 Image 后，还需要回答“另一台机器怎样取得同一个 Image”以及“部署时怎样确定具体 Image 内容”。
+
+~~~text
+Image
+↓
+Tag / Digest
+↓
+Registry
+↓
+Push
+↓
+Remote Registry
+↓
+Pull
+↓
+Deployment Environment
+~~~
+
+Tag（标签）是便于人和自动化系统使用的 Image Reference，例如 `my-api:1.0`；同一个 Tag 后续可以重新指向其他 Image。Digest（摘要）是基于 Image 内容形成的不可变内容标识，可以用来精确引用某个 Image 内容。Docker 在 Push / Pull 等操作中会展示对应 Digest，也支持通过 Digest 拉取确定的 Image。[[23]](https://docs.docker.com/reference/cli/docker/image/pull/)[[24]](https://docs.docker.com/reference/cli/docker/image/push/)[[25]](https://docs.docker.com/dhi/core-concepts/digests/)
+
+Registry（镜像仓库）负责保存和分发 Image。它解决的是 Artifact Distribution，而不是 Release Approval、Environment Promotion 或 Rollback Strategy：
+
+~~~text
+Docker
+Image Identity + Registry Distribution
+        ↓
+CI/CD
+Verification + Release + Deployment + Recovery
+~~~
 
 ### 【Docker 处于 Build Artifact 与 Deployment Runtime 之间】
 
@@ -1037,7 +1182,7 @@ Container
 Running Service
 ~~~
 
-Docker 与 CI/CD 的连接点通常包括 Build Image、Test Image、Scan Image、Tag、Push Registry、Deploy 和 Rollback。所以 Docker 是 Runtime / Deployment Model 的重要组成，但不是 CI/CD 本身。Artifact、Release、Deployment、Production Verification 与 Recovery 的完整边界见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
+Docker 与 CI/CD 的连接点通常包括 Build Image、Test Image、Scan Image、Tag、Push Registry 和为 Deployment 提供确定的 Image Reference。Release Approval、Environment Promotion、Deploy、Production Verification 与 Rollback 则属于更完整的软件交付流程。所以 Docker 是 Runtime / Deployment Model 的重要组成，但不是 CI/CD 本身。Artifact、Release、Deployment、Production Verification 与 Recovery 的完整边界见 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
 
 ### 【Compose 与 Kubernetes 管理规模不同】
 
@@ -1122,3 +1267,11 @@ Volume / Network / Healthcheck
 15. Docker Docs, **Compose variable interpolation**：https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/
 16. Docker Docs, **Set environment variables within a container**：https://docs.docker.com/compose/how-tos/environment-variables/set-environment-variables/
 17. Docker Docs, **docker init**：https://docs.docker.com/reference/cli/docker/init/
+18. Docker Docs, **Compose file reference**：https://docs.docker.com/reference/compose-file/
+19. Docker Docs, **Docker Desktop general FAQ**：https://docs.docker.com/desktop/faqs/general/
+20. Docker Docs, **Storage drivers**：https://docs.docker.com/engine/storage/drivers/
+21. Docker Docs, **docker container stop**：https://docs.docker.com/reference/cli/docker/container/stop/
+22. Docker Docs, **Resource constraints**：https://docs.docker.com/engine/containers/resource_constraints/
+23. Docker Docs, **docker image pull**：https://docs.docker.com/reference/cli/docker/image/pull/
+24. Docker Docs, **docker image push**：https://docs.docker.com/reference/cli/docker/image/push/
+25. Docker Docs, **Image digests**：https://docs.docker.com/dhi/core-concepts/digests/
