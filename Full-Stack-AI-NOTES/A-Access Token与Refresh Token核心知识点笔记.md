@@ -1,5 +1,7 @@
 # Access Token与Refresh Token核心知识点笔记
 
+本篇聚焦 Access Token、Refresh Token 的授权凭据职责、生命周期、Rotation 与撤销机制。它们位于更大的身份系统中：Local / Federated Authentication 怎样形成 Principal、OIDC 的 ID Token 与 Access Token 怎样区分、Session Cookie 怎样连接 Browser 与当前应用，统一由 [Web 身份认证、会话控制与访问控制体系](./W-Web身份认证会话控制与访问控制体系.md) 作为上位入口维护。
+
 ### Access Token 核心知识点
 
 作用：访问业务接口的凭证，资源服务器/API通过它判断用户身份、访问权限及权限范围。
@@ -501,7 +503,9 @@ Refresh Token偏有状态的原因：需支持撤销、轮换、复用检测、�
 
 - 流程：浏览器请求时自动携带Cookie，服务端代为处理认证、Token获取和续签，前端无需关注Token逻辑。
 
-方案选择原则：若为OAuth风格、前后端分离、多资源服务器，优先选择方案A；若为同源Web + BFF架构，方案B更自然，前端安全负担更小。
+方案选择不能只根据“前后端是否分离”决定。RFC 10017 将 Browser-based OAuth Application 区分为 BFF、Token-Mediating Backend 与 Browser-based OAuth Client 等架构，它们的核心差异是 OAuth Client 位于哪里、Access / Refresh Token 是否暴露给 Browser JavaScript，以及 Browser 是否直接调用 Resource Server。[[2]](https://www.rfc-editor.org/rfc/rfc10017.html)
+
+因此应先确定信任边界，再决定 Token Storage：BFF / Server-side Web 可以让 OAuth Token 保留在可信 Backend，Browser 主要持有 Session Cookie；Browser-based OAuth Client 直接持有 Access Token 时，需要承担更高的 Token Exfiltration 风险并使用 Authorization Code + PKCE 等当前安全要求；Token-Mediating Backend 的边界介于两者之间。OIDC 登录、ID Token、Local Principal 与 Session 的完整关系见 [Web 身份认证、会话控制与访问控制体系](./W-Web身份认证会话控制与访问控制体系.md)。
 
 对应问题：
 
@@ -513,7 +517,7 @@ Refresh Token偏有状态的原因：需支持撤销、轮换、复用检测、�
 
 - Access Token用于访问业务API，应短期有效，泄露后损失小；Refresh Token用于续签，权限更大，需严格保护。
 
-- Refresh Token存储在`HttpOnly + Secure + SameSite` Cookie中是最佳实践，需通过`Path`限制发送范围。
+- Refresh Token 是高价值续期凭据，是否由 Browser 持有、通过 Cookie 传递，还是完全保留在 BFF / Server-side Backend，取决于 OAuth Client 与 Session 的架构边界；不能把某一种 Browser Storage 写成所有应用的唯一最佳方案。
 
 - 短Token的价值的是缩短攻击窗口，分层减损；Refresh Token的安全依赖rotation、复用检测、过期控制等组合机制。
 
