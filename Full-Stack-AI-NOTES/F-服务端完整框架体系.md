@@ -5323,6 +5323,8 @@ Recovery
 
 这些机制不能机械全部叠加。例如 Retry 会增加下游压力，Timeout 需要与业务延迟目标匹配，Queue Backpressure 又属于异步容量治理。因此总框架只建立职责：**可靠性机制用于限制故障传播、控制恢复过程和保护系统容量，具体策略必须根据故障模型选择。**
 
+完整的 Failure Model、Request / Dependency Reliability、State / Data Reliability、Task Reliability、Capacity、Health / Restart / Graceful Shutdown 与 SLO 验证统一进入 [服务端可靠性体系](./F-服务端可靠性体系.md)。本章只保留可靠性作为横向约束的位置认知，不在这里重复维护完整知识树。
+
 ### 【Testing 在不同层级验证系统是否满足预期】
 
 Testing 同样横切多个层级：

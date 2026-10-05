@@ -2,6 +2,8 @@
 
 服务端异步处理解决的不是“怎样写 async / await”，而是一个系统级问题：**一项业务工作是否必须跟随当前 Request 生命周期完成，以及当工作离开当前请求以后，系统怎样保证它能够被可靠交接、安全领取、正确重复执行、失败恢复并长期稳定运行。**
 
+> **知识边界**：本文只负责异步任务与消息处理这一子系统。Request / Dependency、State / Data、Capacity、Runtime / Deployment 等其他可靠性边界统一由 [服务端可靠性体系](./F-服务端可靠性体系.md) 作为总入口；不要把 Task Reliability 等同于全部 Server Reliability。
+
 因此完整的异步任务体系不能从 Queue、Worker、Retry 等名词平铺展开，而应该沿着问题产生的顺序建立：
 
 ~~~text
@@ -1686,10 +1688,12 @@ Docker / Service Runtime / Observability
 
 项目实践入口首先连接到对应的专项源码学习，再由专项文档继续进入更细的数据库、Redis 与端到端链路：
 
+- [Browser Monitor 服务端可靠性体系源码学习](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md)：项目可靠性总入口，用于把 Request、Transaction、Worker、Redis、Capacity、Health 与 Runtime Recovery 放回同一故障模型；本专项只继续深入其中的 Async Task 分支。
+
 - [Browser Monitor 异步任务与 Worker 可靠消费体系源码学习](../browser-monitor/docs/异步任务与Worker可靠消费体系源码学习.md)：本体系的主要项目映射。沿 API 202 异步边界 → Transactional Outbox → FOR UPDATE SKIP LOCKED → Lease / Reclaim → At-least-once + Idempotent Projection → Retry / Dead Letter → Queue Observability 对照真实源码。
 - [Browser Monitor 服务端数据管理源码学习-2](../browser-monitor/docs/服务端数据管理源码学习-2.md)：补充 Database Transaction、Concurrency Control、Advisory Lock 与 Transactional Outbox 的数据库前置知识。
 - [Browser Monitor Redis 体系源码学习](../browser-monitor/docs/Redis体系源码学习.md)：补充 Analytics Version Cache、Runtime State 与 Worker / Redis 的边界。
-- [Browser Monitor 服务端全链路](../browser-monitor/platform/docs/浏览器监控平台-服务端全链路.md)：把 Worker 专题重新放回 SDK → API → Storage → Worker → Analytics → Web 的完整数据生命周期。
+- [Browser Monitor 服务端全链路](../browser-monitor/docs/浏览器监控平台-服务端全链路.md)：把 Worker 专题重新放回 SDK → API → Storage → Worker → Analytics → Web 的完整数据生命周期。
 - [计划打卡 iOS Worker](../ios-plan-checkin/apps/worker/src/planReminders.ts)：PostgreSQL-backed Job Queue 的另一类代码实践入口。
 - [计划打卡 Mobile Outbox Runner](../ios-plan-checkin/apps/mobile/src/data/outboxRunner.ts)：客户端 Durable Outbox、Retry、Backoff 与 Jitter 的代码实践入口。
 
