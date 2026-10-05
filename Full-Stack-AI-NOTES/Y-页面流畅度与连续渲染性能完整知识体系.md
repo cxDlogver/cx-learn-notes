@@ -1278,25 +1278,38 @@ Performance Panel + LoAF + Call Tree 定位具体代码
 - [Vue 应用级性能分析及优化](V-Vue应用级性能分析及优化.md)
 - [WebSocket 完整知识体系](W-WebSocket完整知识体系.md)
 - [二维地图绘制](E-二维地图绘制.md)
-- [ECharts 从 0 到 1](./12-ECharts从0到1.md)
+- [ECharts 从 0 到 1](E-ECharts从0到1.md)
 
 ### 【实战分析入口】
 
-QHZHC 实时可视化平台已经针对“持续数据进入页面以后逐渐掉帧”进行了可控实验、链路定位和优化验证。项目文档负责提供真实代码、实验数据和当前实现边界：
+通用知识只负责解释页面连续渲染的框架、指标、根因模型、定位方法与优化边界；具体项目如何把这些机制落到源码、实验和验收中，由项目自己的正式实践文档负责。
 
-- [QHZHC：实时渲染链路分析与优化记录](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/reports/realtime-rendering/render-analysis.md)
-- [QHZHC：历史规模对实时渲染的影响](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/reports/realtime-rendering/history-scale-analysis.md)
-- [QHZHC：批量渲染实验](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/reports/realtime-rendering/batch-sweep-analysis.md)
-- [QHZHC：输入速率实验](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/reports/realtime-rendering/rate-sweep-analysis.md)
+- [QHZHC：页面连续渲染流畅度与掉帧优化](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/docs/%E9%A1%B5%E9%9D%A2%E8%BF%9E%E7%BB%AD%E6%B8%B2%E6%9F%93%E6%B5%81%E7%95%85%E5%BA%A6%E4%B8%8E%E6%8E%89%E5%B8%A7%E4%BC%98%E5%8C%96.md)
 
-阅读时应保持边界：
+项目文档进一步提供：
 
 ~~~text
-本文
-负责通用诊断框架和工程方法
+真实实时数据链路
+        ↓
+基线 / Batch / Rate / History / Empty Render 实验
+        ↓
+N / K / C / H / B 在当前代码中的具体映射
+        ↓
+Vue / ECharts / OpenLayers / Cesium 优化实现
+        ↓
+Adaptive Controller
+        ↓
+当前验证结果与尚未完成的 Soak 边界
+~~~
 
-项目报告
-负责证明某个具体瓶颈在当前代码中是否真的存在
+这样保持：
+
+~~~text
+Full-Stack-AI-NOTES
+维护可迁移的通用知识
+
+Project docs
+维护真实源码、实验、取舍和验证结果
 ~~~
 
 ---
