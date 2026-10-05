@@ -71,7 +71,7 @@
 
 ### 【失败模型决定可靠性机制应该放在哪里】
 
-可靠性不是消灭所有故障，而是假设故障一定会发生，再决定系统怎样处理。
+**<u>可靠性不是消灭所有故障，而是假设故障一定会发生，再决定系统怎样处理。</u>**
 
 典型故障可以沿边界分类：
 
@@ -82,31 +82,31 @@ Client / Traffic
 └── 突发流量
 
 Application
-├── Exception
-├── Timeout
-└── Process Crash
+├── Exception              （异常：未捕获 / 业务异常）
+├── Timeout                （处理超时）
+└── Process Crash          （进程崩溃）
 
 Database / Cache
-├── Connection Failure
-├── Transaction Conflict
-├── Slow Query
-└── Data Loss Risk
+├── Connection Failure     （连接失败 / 连接池耗尽）
+├── Transaction Conflict   （事务冲突：死锁 / 序列化失败）
+├── Slow Query             （慢查询）
+└── Data Loss Risk         （数据丢失风险：持久化 / 备份不足）
 
 Async Work
-├── Worker Crash
-├── Duplicate Delivery
-├── Poison Task
-└── Queue Backlog
+├── Worker Crash           （消费者崩溃）
+├── Duplicate Delivery     （重复投递：At-least-once 的必然产物）
+├── Poison Task            （毒任务：反复失败、永远处理不成功的任务）
+└── Queue Backlog          （队列积压）
 
 External Dependency
-├── Slow Response
-├── Partial Failure
-└── Unknown Result
+├── Slow Response          （下游响应慢）
+├── Partial Failure        （部分失败：一次调用里部分子操作成功、部分失败）
+└── Unknown Result         （结果未知：超时后不知对方到底成功没有）
 
 Deployment
-├── Bad Config
-├── Startup Failure
-└── Shutdown During Work
+├── Bad Config             （配置错误）
+├── Startup Failure        （启动失败）
+└── Shutdown During Work   （运行中关停：还有任务在处理时退出）
 ~~~
 
 同一个 Retry 不能解决所有失败。例如参数错误原样重试没有价值；结果未知的有副作用请求如果直接重放，反而可能制造重复写入。
@@ -231,6 +231,8 @@ Dependency 已经过载
 
 共同判断。
 
+举例来说：订单服务调用下游的「库存查询」API。当库存服务因数据库故障持续超时或返回 5xx 时，如果不熔断，每次下单都要等满 Timeout（例如 3 秒）才失败——不仅下单变慢，等待中的线程 / 连接还被长期占用，故障于是沿调用链向订单服务、网关乃至前端传播。Circuit Breaker 在失败率达到阈值后直接快速失败（不再真正发起调用），既给下游留出恢复空间，也保护了调用方资源；随后进入 Half-Open，放行少量探测请求，成功则关闭熔断、恢复正常调用。
+
 ## 3. 状态与数据可靠性保证已经确认的业务事实不会处于半完成状态
 
 ### 【Transaction 解决单个数据库边界内的一组状态原子变化】
@@ -257,7 +259,7 @@ Transaction（事务）解决的是：同一个数据库事务边界中的状态
 
 ### 【跨系统写入需要重新识别一致性边界】
 
-单个数据库事务不能自动覆盖：
+**事务原子性只属于单个数据库引擎。** `BEGIN … COMMIT` 的 all-or-nothing 是某一个数据库给自己的多条写入提供的保证；而 Message Broker、Redis、外部 API 是另外的系统，各有各自的提交语义。数据库既无法“回滚”一条已经发出的消息，也无法撤销一次已经成功的外部调用。因此，当一次业务需要同时写多个系统时，事务这道原子锁就在边界上断开了——单个数据库事务不能自动覆盖：
 
 ~~~text
 Database
@@ -269,7 +271,7 @@ Redis
 External API
 ~~~
 
-例如：
+只用一个库的事务去包住跨系统写入，就形成 Dual Write（双写）：两个系统各写各的，没有任何事务能同时包住它们，于是中间一旦失败就会“只成功一半”。例如“先写库、再发消息”：
 
 ~~~text
 INSERT business_record
@@ -281,9 +283,46 @@ Process Crash
 Publish Message 没执行
 ~~~
 
-这就是典型的 Dual Write（双写）风险。
+数据库这边已经提交（业务事实落库），但进程在“提交成功之后、发消息之前”崩溃，导致消息永远没发出去——下游永远收不到它本该收到的事件。
 
-Transactional Outbox（事务发件箱）通过把业务记录和待发布任务 / 事件放进同一个本地数据库事务，先保证 Producer 侧可靠交接，再由独立 Consumer 或 Relay 继续处理。AWS 对这一模式的说明同时指出，后续消息可能重复，因此 Consumer 仍然需要幂等。[[6]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+双写其实两个方向都会坏，而且无法靠调整顺序根治：
+
+~~~text
+先写库、后发消息
+  库提交了、消息没发
+  → 下游永远不知道（丢事件）
+
+先发消息、后写库
+  消息发了、库提交失败
+  → 下游处理了一个库里并不存在的事实
+~~~
+
+只要两步之间存在哪怕一个可能失败的时刻（崩溃、网络中断、超时），就一定存在这个“半成功”窗口。
+
+Transactional Outbox（事务发件箱）正是为此而设：把业务记录和待发布任务 / 事件放进**同一个本地数据库事务**，让原子部分始终落在一个库内部、问题退化成单库事务能管的范围——业务记录与待发事件要么一起提交、要么一起回滚，不会丢；随后再由独立 Consumer 或 Relay 从“发件箱”表读出并投递。这样先保证 Producer 侧可靠交接，跨系统部分则退化为“至少一次”投递。AWS 对这一模式的说明同时指出，后续消息可能重复，因此 Consumer 仍然需要幂等。[[6]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+
+**注意：Outbox 和普通双写都用事务，区别不在“用不用 BEGIN / COMMIT”，而在于事务包住了什么。**
+
+~~~text
+普通双写
+  BEGIN
+    INSERT business_record
+  COMMIT                ← 事务只包住“写库”这一件事
+  publish(message)      ← 跨系统动作，在事务之外
+  崩溃 → “要不要发消息”这个意图没被持久化 → 永久丢失
+
+Transactional Outbox
+  BEGIN
+    INSERT business_record
+    INSERT outbox_task   ← 把“要发消息”也写成本库的一条记录，同事务提交
+  COMMIT                 ← 事务包住“写库 + 待发意图”
+  （之后）Relay 读 outbox → publish → 标记完成
+  崩溃 → 意图仍在库里 → Relay 重新读到并补发
+~~~
+
+差别在于：普通双写只把业务记录持久化，“要发消息”只存在于内存，COMMIT 后崩溃就再也无法重建；Outbox 把“要发消息”也变成一条已提交的记录，于是发消息这一步虽然仍在事务之外，却可以由这条持久记录反复重试，直到成功。
+
+**为什么不能直接把 publish 塞进事务（`BEGIN; INSERT; publish; COMMIT`）？** 因为 publish 是别的系统的动作，数据库无法回滚它：一旦 publish 成功而 COMMIT 失败，就会发出一个库里不存在的消息；而且在一个事务里做网络调用会长时间持有锁。这正是“跨系统动作天生无法被单库事务原子化”的体现——Outbox 不是让 publish 变成事务性的，而是把“发消息”这个跨系统动作**替换成“写一行发件箱记录”这个同库动作**，把真正的发送推迟到 COMMIT 之后、由记录驱动。
 
 因此：
 
@@ -297,7 +336,7 @@ Outbox / Saga / Compensation
 跨边界后的可靠协调
 ~~~
 
-它们不是同一层能力。
+它们不是同一层能力：不能用“再加一个事务”去解决跨系统问题，跨边界后的协调需要 Outbox、Saga 或 Compensation 这类模式单独承担。
 
 ### 【Durability 还需要备份、复制和恢复验证】
 
@@ -625,3 +664,5 @@ Restart / Recovery
 [9] Docker. Start containers automatically — Restart policies. https://docs.docker.com/engine/containers/start-containers-automatically/
 
 [10] Node.js. Process — Signal Events. https://nodejs.org/api/process.html#signal-events
+
+[11] Resilience4j. CircuitBreaker. https://resilience4j.readme.io/docs/circuitbreaker
