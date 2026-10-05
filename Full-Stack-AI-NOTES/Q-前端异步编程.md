@@ -493,179 +493,73 @@ Promise 的链式调用，本质上并不是“连续调用函数”，而是**�
 2. 用 `then` 实现顺序依赖
 3. 用 `catch` 实现统一错误处理
 
-### 3.微任务与宏任务
+### 3.微任务与 Task
 
-在 JavaScript 中，代码的执行并不是“写一行、立刻执行一行”，而是基于**事件循环机制（Event Loop）**来完成的。
- 为了协调同步代码、异步回调以及 UI 渲染，JavaScript 将任务按照执行优先级划分为两类：**宏任务（MacroTask）** 和 **微任务（MicroTask）**。
+这一节只解释 Promise 为什么通过 Microtask 延续异步结果；浏览器主线程、Event Loop、Rendering Opportunity、requestAnimationFrame、Timer、Long Task、Yield 与 Worker 的完整关系统一参考 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)。
 
-ES 规范中定义了一个内部队列，称为 **PromiseJobs**，用于存放由 Promise 产生的回调任务（如 `then`、`catch`、`finally`）。这个队列在实际开发和学习中通常被称为**微任务队列（microtask queue）**。
- 与之相对，像 `setTimeout`、`setInterval` 等 API 所产生的回调，会被放入**宏任务队列（macrotask queue）**。
+需要先纠正两个常见简化：
 
-当 JavaScript 引擎开始执行代码时，**整个 `script` 脚本本身会被视为第一个宏任务**，并进入宏任务队列。此时：
+- HTML Standard 的正式术语是 Task；“宏任务”主要是社区和面试中的习惯叫法。
+- Event Loop 不是“宏任务队列和微任务队列轮流执行”的两个固定队列模型。浏览器还要协调事件、网络、渲染机会等工作。
 
-- 调用栈（Call Stack）为空
-- 微任务队列为空
-- 宏任务队列中包含当前脚本任务
+从 Promise 角度，最重要的链路是：
 
-<font color='#409eff'>事件循环的整体执行流程可以概括为以下几个步骤：</font>
+~~~text
+当前 Task 中执行同步 JavaScript
+        ↓
+Promise 状态发生变化
+        ↓
+对应 Promise Reaction 被安排为 Microtask
+        ↓
+当前 Task 结束
+        ↓
+Microtask Checkpoint
+        ↓
+持续处理 Microtask，直到当前队列为空
+        ↓
+浏览器之后继续推进 Rendering Opportunity 或后续 Task
+~~~
 
-1. 从宏任务队列中取出一个宏任务（最开始就是 `script`），放入调用栈中执行
-2. 在宏任务执行过程中，如果产生了微任务（例如 Promise 的 `then` 回调），就将它们加入微任务队列
-3. 当前宏任务执行完成后，调用栈清空，此时**不会立刻执行下一个宏任务**
-4. 引擎会立刻检查微任务队列，并按照先进先出的顺序，将所有微任务依次放入调用栈中执行，直到微任务队列被清空
-5. 微任务全部执行完毕后，事件循环才会继续取出下一个宏任务
-6. 重复上述过程，直到所有任务执行完成
+因此下面代码：
 
-需要特别强调的是：
- **在一次宏任务执行结束后，微任务队列一定会被“清空执行”，而不是只执行其中一个微任务。**
-
-正是这种调度策略，使得微任务具有比宏任务更高的执行优先级。
- 因此在实际表现上：
-
-- `Promise.then / catch / finally` 的回调
-- 总是会比 `setTimeout(fn, 0)` 更早执行
-
-这种设计的好处在于：微任务可以在两个宏任务之间，对程序状态进行快速、连续的补充处理，从而保证 Promise 状态变化和链式调用的**一致性与及时性**，同时也提高了程序的整体响应速度。
-
-```js
-setTimeout(()=>{
-    console.log(1)
-})
+~~~js
+setTimeout(() => {
+  console.log(1);
+}, 0);
 
 Promise.resolve().then(() => {
-    console.log(2)
-})
+  console.log(2);
+});
+~~~
 
-// 2 , 1 
-```
+通常输出：
 
-那么现在对于前面提到的一个例子如下，
+~~~text
+2
+1
+~~~
 
-```js
-const promise = new Promise((resolve, reject)=>{
-    setTimeout(()=>{
-        resolve("哈哈")
-    },1000)
-}).then((data)=>{
-    console.log(data)
-})
-```
+原因不是“Promise 天生执行速度比 setTimeout 快”，而是二者进入了不同的调度机制：Promise Reaction 属于 Microtask，而 Timer 回调需要等待后续 Task 调度机会。
 
-**整个执行顺序如下：**
+需要特别注意：
 
-**宏任务：script（当前整段代码）**
+> **Microtask 并不适合拿来拆分长任务。**
 
-- 执行 `new Promise(...)`
-  - 注册定时器（1s 后才可能入宏任务队列）
-- 执行 `.then(...)`
-  - 把回调登记到 Promise 上（此时不入微任务队列）
+如果 Microtask 在执行过程中不断继续创建新的 Microtask，Microtask Checkpoint 会长时间无法结束，后续 Task 和 Rendering Opportunity 同样会被延迟。
 
-1s 后：
+Promise 的核心仍然是：
 
-- **宏任务：timer 回调入队并被执行**
-  - 执行 `resolve("哈哈")`
-    - Promise fulfilled
-    - `then` 回调 **入微任务队列**
-- timer 宏任务执行完毕
-- **立刻清空微任务队列**
-  - 执行 `then` 回调 → `console.log("哈哈")`
+~~~text
+异步结果状态
++
+Reaction 登记
++
+Microtask 延续
+~~~
 
-**`Promise`登记过程**
+而不是把所有浏览器异步行为都塞进“宏任务 / 微任务”二分法。
 
-在规范层面，每一个 Promise 内部至少维护这三类“槽位”：
-
-```
-Promise {
-  [[PromiseState]]: pending | fulfilled | rejected
-  [[PromiseResult]]: value | reason
-  [[PromiseReactions]]: {
-      fulfillReactions: [],
-      rejectReactions: []
-  }
-}
-```
-
-`.then()` 做的事情，本质上只有三步，当写：
-
-```js
-promise.then(onFulfilled, onRejected)
-```
-
-JS 引擎内部（逻辑等价，不是源码）会做：
-
-① 创建一个新的 Promise（这是链式调用的根）
-
-```js
-newPromise = new Promise(...)
-```
-
-这个 Promise 还没有状态，是 `pending`。
-
-② 把回调“包装成 reaction 对象”：不是简单存一个函数，而是一个**结构体**，类似这样：
-
-```js
-reaction = {
-  onFulfilled,          // 成功回调
-  onRejected,           // 失败回调
-  capability: {
-    resolve,            // newPromise 的 resolve
-    reject              // newPromise 的 reject
-  }
-}
-```
-
-这一步非常关键：**reaction 把“当前 Promise 的回调”和“下一个 Promise 的控制权”绑在了一起**
-
-这就是为什么：`then` 的返回值会由回调的返回值决定
-
-③ 根据当前 Promise 状态，决定“登记”还是“立刻调度”
-
-**情况 A：当前 Promise 是 `pending`**
-
-此时引擎会做：
-
-```
-promise.[[PromiseReactions]].fulfillReactions.push(reaction)
-promise.[[PromiseReactions]].rejectReactions.push(reaction)
-```
-
-**只登记，不执行，不入队列**
-
-也就是说：`.then()` 在 pending 状态下只是“订阅事件”，类似 addEventListener
-
-**情况 B：当前 Promise 已经是 `fulfilled`**
-
-```
-Promise.resolve(100).then(fn)
-```
-
-此时不会登记到列表，而是：
-
-```
-把 reaction 立刻封装成一个 microtask
-推入 PromiseJobs（微任务队列）
-```
-
-这就是为什么：
-
-```
-Promise.resolve().then(fn)
-```
-
-**一定是异步执行的**
-
-情况 C：当前 Promise 已经是 `rejected`
-
-逻辑完全对称，只走 reject 分支。
-
-**状态一旦切换，Promise 就“封印”了，取出之前登记的 reactions**
-
-```
-for each reaction in fulfillReactions:
-    enqueueMicrotask(reaction)
-```
-
-注意这句话非常重要：**是 resolve 触发了微任务的创建，而不是 then**
+进一步阅读：[浏览器事件循环、任务、微任务与渲染时机](./QA/浏览器事件循环、任务、微任务与渲染时机.md)。
 
 ### 4.async 和 await
 
