@@ -1038,103 +1038,359 @@ A Exit
 
 因此高可用设计还必须判断 State Placement：哪些状态允许 Local Ephemeral，哪些必须进入 Shared Cache、Database、Durable Queue 或其他可恢复存储。多开实例不是高可用的全部，只是其中的计算实例冗余。
 
-## 7. 可观测性与验证把可靠性从设计目标变成可证明结果
+## 7. 可观测性、SLO 与故障演练把可靠性从设计方案变成可验证结果
 
-### 【可靠性指标必须覆盖用户结果和内部故障链路】
+可靠性机制存在于代码里，并不等于它真的有效。已经写了 Retry，但每次都失败；已经做了 Backup，但 Restore 不出来；已经有 Worker，但 Queue 积压了三小时；已经有 Readiness，但它永远返回 200——这些都属于“实现存在、可靠性能力不存在”。
 
-可靠系统至少需要两类信号：
+因此可靠性的最后一层不是再增加机制，而是建立证据。
+
+### 【用户结果指标和内部机制指标必须同时存在】
+
+第一类指标观察用户真正感受到什么：
 
 ~~~text
-User-facing SLI
-请求成功率 / 延迟 / 可用性
-        +
-Internal Reliability Signal
-Queue Lag / Retry / Dead Letter / Dependency Error / Restart
+Availability
+Request Success Rate
+Latency
+Task Completion SLO
+Data Freshness
 ~~~
 
-只看 HTTP 200 比例，无法证明后台任务没有积压；只看 CPU，也无法证明用户请求成功。
-
-可以围绕四类 Golden Signals 建立基础观察：
-
-- Latency：请求和任务处理多慢；
-- Traffic：系统正在处理多少负载；
-- Errors：失败和拒绝多少；
-- Saturation：容量是否接近极限。
-
-Google SRE 将监控和 SLO 作为生产服务可靠性的重要基础。[[1]](https://sre.google/sre-book/service-best-practices/)
-
-### 【可靠性验证需要故障场景而不只是正常流程测试】
-
-正常路径测试只能证明“没有故障时能够工作”。
-
-可靠性还需要验证：
+第二类指标观察为什么会变成这样：
 
 ~~~text
-Dependency Timeout
+Dependency Timeout Rate
+Retry Rate
+Circuit Open Count
+Queue Depth
+Oldest Task Age
+Dead Letter Count
+Replication Lag
+Restart Count
+DB Pool Saturation
+~~~
+
+两者的关系是：Internal Signal 用来解释 User-facing SLI。只看 HTTP 200 无法证明后台任务没有积压；只看 CPU 也无法证明用户操作成功。
+
+### 【Golden Signals 是监控入口，不是最终业务指标】
+
+Google SRE 常用 Latency、Traffic、Errors、Saturation 四类信号作为生产服务观察入口。[[1]](https://sre.google/sre-book/service-best-practices/)
+
+同步 API 可以映射成：
+
+| Signal | 示例 |
+| --- | --- |
+| Latency | HTTP P50 / P95 / P99 |
+| Traffic | Requests / s |
+| Errors | 5xx、Timeout、业务拒绝 |
+| Saturation | CPU、DB Connection Pool、Thread Pool |
+
+Worker 则需要重新定义：
+
+| Signal | 示例 |
+| --- | --- |
+| Latency | Queue Wait + Processing Duration |
+| Traffic | Enqueue Rate / Processing Rate |
+| Errors | Retry / Failed / Dead Letter |
+| Saturation | Worker Concurrency、DB Pool、CPU |
+
+因此“所有服务统一看 QPS、CPU、5xx”不够。可靠性指标必须跟运行模型和业务完成语义对应。
+
+### 【SLO 应表达业务承诺，资源指标主要用于解释原因】
+
+CPU < 80%、Memory < 70% 可以作为 Saturation Signal，但通常不是用户真正关心的 SLO。
+
+更接近业务承诺的目标是：
+
+~~~text
+30 天窗口内
+99.9% 的有效 API 请求成功
+
+99% 的已接受异步任务
+在 2 分钟内进入 Completed / 明确 Failed 终态
+
+关键数据恢复演练中
+RPO ≤ 5min
+RTO ≤ 30min
+~~~
+
+SLO 还需要对应操作策略。否则“99.9%”只是报表数字。
+
+例如：
+
+~~~text
+Error Budget 消耗过快
+        ↓
+暂停高风险发布
+        ↓
+优先修复可靠性缺陷
+        ↓
+恢复预算后再继续快速迭代
+~~~
+
+### 【告警要从需要行动的问题出发，而不是所有指标都设阈值】
+
+一个好的 Alert 应该回答：现在是否需要人采取行动？
+
+例如：
+
+~~~text
+CPU 82%
+但请求 SLO 正常
+Queue Age 正常
+→ 可能只需要观察
+
+Oldest Task Age > 20min
+而 Task SLO = 5min
+→ 明确业务违约，应告警
+~~~
+
+因此可靠性告警更适合围绕：
+
+~~~text
+SLO Burn Rate
+持续错误率
+持续 Queue Lag
+Dead Letter 增量
+Replication Lag
+Readiness 大面积失败
+Restore / Backup Job Failure
+~~~
+
+而不是把每个瞬时指标都做成 Pager。
+
+### 【可靠性测试必须主动制造故障，而不只验证 Happy Path】
+
+正常 E2E：Request → 200，只证明正常环境工作。可靠性验证应该覆盖：
+
+~~~text
+Dependency Slow / Down
+Network Timeout
 Process Crash
-Duplicate Request
 Worker Crash
+Duplicate Delivery
 Retry Exhausted
 Queue Backlog
-Database / Cache Unavailable
-Graceful Shutdown
-Restart / Recovery
+Database Failover
+Redis Unavailable
+Bad Config
+SIGTERM During Work
+Backup Restore
+PITR
 ~~~
 
-验证时应该关注：
+每个测试都检查四类结果：
 
 ~~~text
-故障前的已确认事实是否还在
-+
-未完成工作是否能够恢复
-+
-错误是否被限制在预期边界
-+
-恢复后是否产生重复副作用
-+
-指标是否能够发现问题
+1. 故障前已经确认成功的数据有没有丢？
+2. 未完成工作能不能恢复或进入明确失败？
+3. 恢复以后是否产生重复副作用？
+4. Metrics / Logs / Alerts 能不能发现这次故障？
 ~~~
 
-这形成从设计到验证的闭环。
-
-## 8. 服务端可靠性最终收敛为保护、隔离、恢复和证明四类控制
-
-前面的机制很多，但可以收敛成四类长期问题：
+例如 Worker Crash Test：
 
 ~~~text
-1. Protect
-   在无效输入、重复请求和过载进入核心资源前进行保护
-
-2. Isolate
-   用 Timeout、资源边界和失败策略限制局部故障传播
-
-3. Recover
-   用 Transaction、Idempotency、Retry、Task State、Restart 和 Data Recovery
-   把系统带回可信状态
-
-4. Prove
-   用 SLI / SLO、Metrics、Logs、Trace、Load Test 和 Failure Test
-   证明可靠性目标是否成立
+准备 1000 tasks
+      ↓
+Worker Processing 中强制 Kill
+      ↓
+Restart / Other Worker 接管
+      ↓
+等待任务进入终态
+      ↓
+验证
+completed + failed = accepted
+无重复业务副作用
+stale / redelivery 可观察
+恢复时间满足 Task SLO
 ~~~
 
-对应到服务端四条主要链路：
+这才是在验证 Crash Recovery，而不是只确认 Worker 又启动了。
+
+### 【Recovery Drill 要验证完整操作链和真实 RPO / RTO】
+
+真实事故时恢复失败，经常不是因为“完全没有备份”，而是因为最新 Backup 找不到、权限过期、Secret 丢失、Runbook 过时、DNS / Traffic 切换顺序不清楚、恢复后没有一致性校验。
+
+因此 Recovery Runbook 至少写清：
+
+| 项目 | 内容 |
+| --- | --- |
+| Trigger | 什么条件触发恢复 / Failover |
+| Owner | 谁负责决策和执行 |
+| Steps | 恢复、切换、验证的顺序 |
+| Validation | 哪些 Query / Smoke Test 证明结果正确 |
+| Rollback | 恢复流程本身失败时怎么办 |
+| Evidence | 记录实际 RPO、RTO、Timeline |
+
+一次 Restore Drill 应从真实备份开始，到应用 Smoke Test 结束，而不是只运行数据库恢复命令。最终记录实际丢失窗口和实际恢复耗时，再与目标 RPO / RTO 比较。
+
+因此可靠性形成真正闭环：
+
+~~~text
+Design
+   ↓
+Implementation
+   ↓
+Failure Injection
+   ↓
+Observation
+   ↓
+Recovery
+   ↓
+Verification
+~~~
+
+## 8. 服务端可靠性设计沿保护、隔离、恢复和证明四步落到具体方案
+
+前面的机制很多，但实际做系统设计时不应该从名词清单重新开始。可以固定使用“画链路 → 找失败边界 → 选择控制 → 定义验证”这一套方法。
+
+### 【第一步先画业务主链并标出真正的完成边界】
+
+例如：
+
+~~~text
+Client
+  ↓
+API
+  ↓
+Database
+  ↓
+Outbox
+  ↓
+Worker
+  ↓
+External Service
+~~~
+
+不要只写组件名称，要为每个节点标出：
+
+~~~text
+输入是什么？
+成功是什么？
+状态保存在哪里？
+失败后调用方知道吗？
+结果会不会 Unknown？
+Process Crash 后还能不能恢复？
+是否可能重复执行？
+容量上限在哪里？
+~~~
+
+例如“API 返回 202”如果只表示 Task 已进入内存，那么它不是可靠接受；如果表示 Durable Task 已 COMMIT，那么才有明确恢复基础。
+
+### 【第二步把每个 Failure 映射到 Protect、Isolate、Recover】
+
+| Failure | Protect | Isolate | Recover |
+| --- | --- | --- | --- |
+| Invalid Request | Validation | — | Fail Fast |
+| Traffic Spike | Rate Limit | Bounded Concurrency | Scale / Shed Load |
+| Slow Dependency | — | Timeout / Circuit Breaker | Retry / Fallback |
+| Duplicate Request | Idempotency Key | — | Return Existing Result |
+| Partial DB Write | Constraint / Transaction | Transaction Boundary | Rollback |
+| Process Crash | Durable State | Instance Boundary | Restart |
+| Worker Crash | Durable Queue | Lease | Redelivery |
+| Duplicate Delivery | Idempotency | Consumer Boundary | Safe Re-execution |
+| Permanent Task Error | Validation | Retry Limit | Dead Letter / Repair |
+| Primary DB Failure | Replication | Fault Domain | Failover |
+| Accidental DELETE | Backup / PITR | Backup Isolation | Restore |
+| Region Failure | Cross-region Copy | Region Boundary | DR Failover |
+
+这张表的价值是把机制重新挂回 Failure，而不是让“Retry、Backup、Health、Queue”成为互相没有关系的名词。
+
+### 【第三步给每个机制写清代价和不适用边界】
+
+可靠性机制都有成本：
+
+~~~text
+Synchronous Replication
+→ RPO 更低
+→ Write Latency / Availability Cost 更高
+
+Retry
+→ 瞬态恢复概率更高
+→ 下游压力更大
+
+Circuit Breaker
+→ 防止持续拖垮上游
+→ 故障期间会产生更多快速失败
+
+Backup Retention
+→ 可恢复历史更长
+→ Storage / Compliance Cost 更高
+
+More Replicas
+→ Instance Availability 更高
+→ 运维、成本、一致性和 Failover 复杂度更高
+~~~
+
+所以一个好的设计不仅要说明“为什么用”，还要说明“为什么当前复杂度值得”。
+
+### 【第四步给每一个可靠性声明绑定最小验证证据】
+
+不要只写“支持 Retry”“做了 HA”“有 Backup”。每个声明都应该有对应测试：
+
+| 声明 | 最低验证证据 |
+| --- | --- |
+| Retry 有效 | 注入 Retryable Failure，观察 Attempt、Backoff 和最终结果 |
+| Idempotency 有效 | 同一 Operation 重放多次，只产生一次业务副作用 |
+| Worker Crash 可恢复 | Processing 中 Kill Worker，任务最终被 Reclaim |
+| Readiness 有效 | 关键依赖断开后实例停止接流量，恢复后重新加入 |
+| Backup 可恢复 | 隔离环境 Restore + Data Check + Application Smoke Test |
+| PITR 有效 | 制造误删并恢复到误删前 Recovery Target |
+| Failover 满足 RTO | 主实例故障演练并记录服务恢复耗时 |
+| RPO 达标 | 比较故障前最后提交点与恢复后的最后可用事务 |
+
+这把“可靠性设计”变成可验收工程。
+
+### 【一套通用可靠性评审可以按八个问题执行】
+
+对一个新的 Service、Job 或数据链路，可以连续问：
+
+1. 这个能力向调用方承诺的成功边界是什么？
+2. 关键状态保存在哪里，Process Crash 后还存在吗？
+3. 哪些依赖可能 Slow / Down，等待上限是多少？
+4. 哪些操作可能被重复调用，副作用是否幂等？
+5. 异步任务如何 Claim、Recover、Retry，并最终进入终态？
+6. 流量超过处理能力时在哪里限流、背压或丢弃？
+7. 实例、数据库或整个故障域失效时分别如何恢复？
+8. 用哪些 SLI、Failure Test、Restore Drill 证明以上方案成立？
+
+如果这八个问题都能沿真实数据流回答，可靠性方案通常已经从“组件堆积”进入“系统设计”。
+
+### 【服务端可靠性最终形成四类长期控制】
+
+~~~text
+Protect
+在非法输入、重复操作和过载进入核心资源前保护系统
+
+Isolate
+用 Timeout、Circuit、Bulkhead、Fault Domain 限制故障传播
+
+Recover
+用 Transaction、Idempotency、Retry、Replay、Failover、Restore
+把系统带回可信状态
+
+Prove
+用 SLI / SLO、Metrics、Failure Injection、Restore Drill
+证明可靠性目标真的成立
+~~~
+
+对应回服务端主线：
 
 | 服务端主线 | 可靠性重点 |
 | --- | --- |
-| Request Processing | Validation、Idempotency、Timeout、Rate Limit |
-| State & Data | Transaction、Constraint、Durability、Backup / Restore |
-| Async Processing | Durable Task、Claim、Lease、Retry、Dead Letter |
-| Runtime & Deployment | Config Validation、Health、Restart、Graceful Shutdown |
-| Cross-cutting | Dependency Isolation、Capacity、Observability、SLO |
+| Request Processing | Validation、Idempotency、Deadline、Timeout、Rate Limit |
+| State & Data | Constraint、Transaction、WAL、Replication、Backup、PITR |
+| Async Processing | Durable Task、Claim、Lease、Idempotency、Retry、Dead Letter |
+| Runtime & Deployment | Config Validation、Startup、Readiness、Restart、Graceful Shutdown、Failover |
+| Cross-cutting | Dependency Isolation、Capacity、Observability、SLO、Recovery Drill |
 
-这也是可靠性最重要的设计方法：
-
-> **不要先问“应该加什么可靠性组件”，而要先沿请求、状态、任务和运行四条链找失败边界，再决定每个边界应该保护什么、允许怎样失败、怎样恢复，以及用什么指标证明恢复确实发生。**
+> **不要先问“应该加什么可靠性组件”，而要先沿请求、状态、任务和运行四条链找失败边界，再决定每个边界保护什么、允许怎样失败、怎样恢复，以及用什么证据证明恢复真的发生。**
 
 相关专题继续阅读：
 
 - [服务端完整框架体系](./F-服务端完整框架体系.md)：定位 Reliability 在服务端整体架构中的横向位置。
-- [数据库完整框架体系](./S-数据库完整框架体系.md)：深入 Transaction、Concurrency、Durability 与数据库恢复。
+- [数据库完整框架体系](./S-数据库完整框架体系.md)：深入 Transaction、Concurrency、WAL 与数据库内部机制。
 - [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)：深入 Durable Task、Outbox、Worker、Delivery、Idempotency、Retry 与 Backpressure。
 - [Redis 完整知识体系](./R-Redis完整知识体系.md)：深入 Cache、Runtime State、Persistence、Replication 与 Redis 自身可靠性。
 - [Docker 工程体系](./D-Docker工程体系.md)：深入 Container Lifecycle、Health、Restart、Storage 与 Compose。
@@ -1161,12 +1417,12 @@ Restart / Recovery
 
 [6] Amazon Web Services. Transactional outbox pattern. AWS Prescriptive Guidance. https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html
 
-[7] Amazon Web Services. REL05-BP04 Fail fast and limit queues. AWS Well-Architected Framework. https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_fail_fast.html
+[7] PostgreSQL Global Development Group. Reliability and the Write-Ahead Log. PostgreSQL Documentation. https://www.postgresql.org/docs/current/wal.html
 
-[8] Kubernetes. Liveness, Readiness, and Startup Probes. https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/
+[8] PostgreSQL Global Development Group. Continuous Archiving and Point-in-Time Recovery. PostgreSQL Documentation. https://www.postgresql.org/docs/current/continuous-archiving.html
 
-[9] Docker. Start containers automatically — Restart policies. https://docs.docker.com/engine/containers/start-containers-automatically/
+[9] PostgreSQL Global Development Group. Log-Shipping Standby Servers / Streaming Replication. PostgreSQL Documentation. https://www.postgresql.org/docs/current/warm-standby.html
 
-[10] Node.js. Process — Signal Events. https://nodejs.org/api/process.html#signal-events
+[10] PostgreSQL Global Development Group. Backup and Restore. PostgreSQL Documentation. https://www.postgresql.org/docs/current/backup.html
 
-[11] Resilience4j. CircuitBreaker. https://resilience4j.readme.io/docs/circuitbreaker
+[11] Kubernetes. Liveness, Readiness, and Startup Probes. https://kubernetes.io/docs/concepts/workloads/pods/probes/
