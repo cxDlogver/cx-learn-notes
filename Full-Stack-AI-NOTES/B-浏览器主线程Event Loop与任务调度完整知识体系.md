@@ -36,9 +36,11 @@ Responsiveness / Smoothness
 
 ---
 
-## 1. 浏览器任务调度的主线是“工作进入系统 → 获得执行机会 → 让出执行权 → 浏览器继续推进其他工作”
+## 1. 浏览器运行时调度从主线程竞争问题开始
 
-### 【主线程问题来自多类工作竞争有限执行时间】
+### 【主线程竞争构成浏览器任务调度的起点】
+
+#### <u>主线程问题来自多类工作竞争有限执行时间</u>
 
 在浏览器页面中，需要推进的工作不只有业务 JavaScript：
 
@@ -74,7 +76,7 @@ Smoothness 变差
 
 这也是为什么同一个 Long Task 既可能让按钮“点不动”，也可能让动画掉帧。
 
-### 【规范中的 Event Loop 与实现线程不能简单画等号】
+#### <u>规范中的 Event Loop 与实现线程不能简单画等号</u>
 
 WHATWG HTML Standard 使用 Agent 和 Event Loop 描述任务、事件、脚本和渲染的协调关系。规范还明确提醒：Event Loop 不必与某一个实现线程一一对应。
 
@@ -94,9 +96,13 @@ Process / Main Thread / Compositor Thread / Raster Thread
 
 ---
 
-## 2. Event Loop 协调 Task、Microtask 与 Rendering Opportunity，而不是“两个队列轮流执行”
+## 2. Event Loop 把 Task、Microtask、Rendering Opportunity 与框架更新连接成运行链
 
-### 【Task 是浏览器安排一段工作的基本调度单位之一】
+这一层回答：一段工作怎样获得执行机会、什么时候处理 Microtask、什么时候进入视觉更新，以及框架调度为什么还位于浏览器调度之上。
+
+### 【Event Loop 协调 Task、Microtask 与 Rendering Opportunity】
+
+#### <u>Task 是浏览器安排一段工作的基本调度单位之一</u>
 
 HTML Standard 使用 task，而不是把“宏任务”作为正式术语。
 
@@ -126,7 +132,7 @@ Microtask Checkpoint
 
 “宏任务”可以用于面试交流，但文档默认使用规范术语 Task。
 
-### 【Microtask 用于当前工作结束后的高优先级延续】
+#### <u>Microtask 用于当前工作结束后的高优先级延续</u>
 
 常见 Microtask 来源包括：
 
@@ -167,7 +173,7 @@ HTML Standard 也明确提醒，大量 Microtask 与大量同步代码一样，�
 
 官方资料：[HTML Standard — Timers and microtasks](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html)。
 
-### 【Rendering Opportunity 是独立的调度阶段，不是每个 Task 后必然 Paint】
+#### <u>Rendering Opportunity 是独立的调度阶段，不是每个 Task 后必然 Paint</u>
 
 常见口诀：
 
@@ -202,9 +208,9 @@ Microtask Checkpoint
 
 ---
 
-## 3. requestAnimationFrame 属于 Rendering Scheduling，不是“16.7ms 定时器”
+### 【requestAnimationFrame 属于 Rendering Scheduling】
 
-### 【rAF 表达的是“下一次合适的绘制前执行”】
+#### <u>rAF 表达的是“下一次合适的绘制前执行”</u>
 
 requestAnimationFrame(callback) 的语义是请求浏览器在下一次 Repaint 前执行 callback。
 
@@ -223,7 +229,7 @@ requestAnimationFrame((timestamp) => {
 
 官方资料：[MDN — requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)。
 
-### 【rAF 解决“什么时候做视觉工作”，不解决“工作本身太重”】
+#### <u>rAF 解决“什么时候做视觉工作”，不解决“工作本身太重”</u>
 
 错误理解：
 
@@ -255,9 +261,13 @@ rAF callback
 
 ---
 
-## 4. Promise、Timer、rAF、Idle 与 Scheduler API 分别表达不同的调度意图
+## 3. 不同 Scheduling API 表达不同的执行意图
 
-### 【调度 API 不能只按“宏任务 / 微任务”二分】
+这一层不再按“宏任务 / 微任务”简单二分，而是根据工作是否与视觉更新、延迟、优先级或后台执行相关来选择 API。
+
+### 【Promise、Timer、rAF、Idle 与 Scheduler API 的调度语义】
+
+#### <u>调度 API 不能只按“宏任务 / 微任务”二分</u>
 
 实际工程选型更应该问：
 
@@ -282,7 +292,7 @@ rAF callback
 - [MDN — Prioritized Task Scheduling API](https://developer.mozilla.org/en-US/docs/Web/API/Prioritized_Task_Scheduling_API)
 - [MDN — scheduler.yield](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield)
 
-### 【setTimeout 的 delay 是最早可调度时间，不是执行承诺】
+#### <u>setTimeout 的 delay 是最早可调度时间，不是执行承诺</u>
 
 ~~~js
 setTimeout(callback, 100);
@@ -311,7 +321,7 @@ Microtask 和其他 Event Loop 工作
 
 ---
 
-## 5. Framework Scheduling 位于浏览器调度之上，nextTick 不等于“已经 Paint”
+### 【Framework Scheduling 位于浏览器调度之上】
 
 Vue、React 等框架还会在浏览器 Event Loop 之上维护自己的 Update Queue。
 
@@ -349,9 +359,11 @@ Next Paint / Presented Frame
 
 ---
 
-## 6. Long Task 的本质是主线程太久没有归还执行权
+## 4. Long Task 与 Starvation 解释主线程为什么长期没有归还执行权
 
-### 【一个长 Task 会同时推迟输入和渲染】
+### 【Long Task 与 Microtask Starvation 的阻塞模型】
+
+#### <u>一个长 Task 会同时推迟输入和渲染</u>
 
 假设主线程执行：
 
@@ -392,7 +404,7 @@ Long Tasks API 通常把主线程中持续 50ms 以上的 Task 作为需要关�
 
 进一步阅读：[主线程长任务、任务拆分与 Worker 优化](./QA/主线程长任务、任务拆分与 Worker 优化.md)。
 
-### 【Microtask Starvation 也能形成类似长期占用】
+#### <u>Microtask Starvation 也能形成类似长期占用</u>
 
 并不是只有单个大 Task 才会阻止浏览器工作。
 
@@ -420,9 +432,11 @@ Microtask Checkpoint 长时间无法结束时，同样会让后续 Rendering 和
 
 ---
 
-## 7. 主线程优化有三条不同主线：减少工作、主动让出、搬离主线程
+## 5. 主线程优化依次采用减少工作、主动 Yield 与 Worker Offload
 
-### 【第一条是 Reduce Work：先问这项工作是否必须做】
+### 【减少工作、主动让出与 Worker Offload 三类优化路径】
+
+#### <u>第一条是 Reduce Work：先问这项工作是否必须做</u>
 
 最高收益通常不是换调度 API，而是减少工作量：
 
@@ -442,7 +456,7 @@ Microtask Checkpoint 长时间无法结束时，同样会让后续 Rendering 和
 
 如果一段计算从 100ms 降到 5ms，就不需要靠复杂调度“救场”。
 
-### 【第二条是 Cooperative Scheduling：任务还在主线程，但主动 Yield】
+#### <u>第二条是 Cooperative Scheduling：任务还在主线程，但主动 Yield</u>
 
 一个可拆分的长任务：
 
@@ -485,7 +499,7 @@ MDN 对 scheduler.yield() 的定义就是把主线程控制权暂时交回浏览
 
 兼容性不足时可以根据场景使用 Task 级 fallback，例如 setTimeout；但 Microtask 不是真正的“让浏览器获得下一轮 Task / Rendering 机会”的替代品。
 
-### 【第三条是 Parallelize / Offload：把可并行 CPU 工作移到 Worker】
+#### <u>第三条是 Parallelize / Offload：把可并行 CPU 工作移到 Worker</u>
 
 适合 Worker 的典型工作：
 
@@ -527,9 +541,11 @@ Worker 自己也拥有 Event Loop；它解决的是把计算从 Window Main Thre
 
 ---
 
-## 8. 调度 API 的正确选型应该从“任务语义”而不是 API 熟悉度出发
+## 6. 调度选型与性能定位必须从任务语义和主线程证据出发
 
-### 【一个通用决策树】
+### 【调度 API 的任务语义选型】
+
+#### <u>一个通用决策树</u>
 
 ~~~text
 有一段待执行工作
@@ -568,7 +584,7 @@ Worker 自己也拥有 Event Loop；它解决的是把计算从 Window Main Thre
              先减少工作本身
 ~~~
 
-### 【不同机制的常见误用】
+#### <u>不同机制的常见误用</u>
 
 | 错误做法 | 为什么错 |
 | --- | --- |
@@ -581,9 +597,9 @@ Worker 自己也拥有 Event Loop；它解决的是把计算从 Window Main Thre
 
 ---
 
-## 9. 性能定位要先判断“主线程为什么没有及时让出”，再决定优化手段
+### 【性能定位先判断主线程为什么没有及时让出】
 
-### 【Performance Trace 的观察顺序】
+#### <u>Performance Trace 的观察顺序</u>
 
 遇到：
 
@@ -620,7 +636,7 @@ rAF callback 是否过重？
 
 页面流畅度的完整 Frame / LoAF / Queue 诊断继续阅读：[页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)。
 
-### 【“FPS 低”只是结果，任务调度解释的是原因之一】
+#### <u>“FPS 低”只是结果，任务调度解释的是原因之一</u>
 
 FPS 下降可能来自：
 
@@ -637,7 +653,9 @@ FPS 下降可能来自：
 
 ---
 
-## 10. 这套知识最终连接前端异步、渲染、框架和性能四个知识域
+## 7. 浏览器调度连接异步、框架、渲染与性能四个前端知识域
+
+### 【异步、框架、渲染与性能的知识连接】
 
 ~~~text
 JavaScript Async Control Flow
@@ -673,7 +691,7 @@ Responsiveness + Smoothness
 
 ---
 
-## 11. 面试回答应从“调度目标”解释，而不是背执行顺序
+### 【面试回答从调度目标而不是执行口诀展开】
 
 如果面试官问：
 
@@ -685,7 +703,9 @@ Responsiveness + Smoothness
 
 ---
 
-## 12. 项目实践通过实时可视化链路验证浏览器调度模型
+## 8. 项目实践与权威资料验证通用调度模型
+
+### 【QHZHC 实时可视化验证浏览器调度模型】
 
 QHZHC 实时可视化项目把这些抽象机制落到了同一条运行链：
 
@@ -731,7 +751,7 @@ PerformanceObserver
 
 ---
 
-## 13. 参考文献
+### 【参考文献】
 
 1. [WHATWG HTML Standard — Event loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
 2. [WHATWG HTML Standard — Timers and user prompts](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html)
