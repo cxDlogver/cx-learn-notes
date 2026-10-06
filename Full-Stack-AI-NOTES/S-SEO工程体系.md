@@ -90,7 +90,9 @@ Lighthouse 主要覆盖第一层和第二层中的**少量可自动检测技术�
 
 ### 【Internal Link 和 Sitemap 解决 URL Discovery，而不是保证索引】
 
-一个重要页面最好能够从站内其他可发现页面通过真实链接到达：
+一个重要页面最好能够从站内其他可发现页面通过真实链接到达。Google 的开发者 SEO 指南明确建议使用带 href 的 a 元素，并让每个重要页面至少能从另一个可发现页面通过链接到达。[[14]](https://developers.google.com/search/docs/fundamentals/get-started-developers)
+
+例如：
 
 ~~~html
 <a href="/product/a">产品 A</a>
@@ -284,7 +286,7 @@ Meta Description 应简洁概括页面真实内容，帮助搜索结果形成有
 
 ### 【meta keywords 对 Google 排名不是核心投入】
 
-Google 不使用 `meta keywords` 作为网页搜索排名信号。面向其他搜索生态时可以保留兼容配置，但工程优先级应明显低于 Title、主体内容、链接、Canonical、索引控制与结构化数据。
+Google 不使用 `meta keywords` 作为网页搜索排名信号。[[15]](https://developers.google.com/search/help/office-hours/2023/january) 面向其他搜索生态时可以保留兼容配置，但工程优先级应明显低于 Title、主体内容、链接、Canonical、索引控制与结构化数据。
 
 ### 【结构化数据描述实体，但不能制造页面中不存在的事实】
 
@@ -534,6 +536,8 @@ is-crawlable
 
 实际报告中如果某个 Audit 为 Not Applicable（不适用），Lighthouse 会按适用项重新归一化，因此不要把上表机械理解成任何页面永远固定扣相同分数。
 
+还有一个重要边界：**主动 noindex 的页面不应该以 Lighthouse SEO 100 为目标。** 例如测试环境、开发中页面或明确不参与搜索的页面，本来就应该触发索引相关审计失败。SEO Score 的阈值应该用于“业务上应该被搜索引擎索引的公开页面”，其他 Route 应验证自己的预期索引策略，而不是全站机械追求同一个分数。
+
 ### 【当前 Lighthouse 文档与运行配置存在版本差异，精确评分应以版本源码为准】
 
 Lighthouse v13.5.0 仓库中的 `docs/scoring.md` 仍写着“SEO Audit 等权、每项约 8 分”，但同一版本真正的 `default-config.js` 已把 `is-crawlable` 权重提升到至少 31%。[[11]](https://github.com/GoogleChrome/lighthouse/blob/v13.5.0/docs/scoring.md)[[10]](https://github.com/GoogleChrome/lighthouse/blob/v13.5.0/core/config/default-config.js)
@@ -638,3 +642,5 @@ Lighthouse + Rich Results Test
 11. [Lighthouse v13.5.0 - Scoring Documentation](https://github.com/GoogleChrome/lighthouse/blob/v13.5.0/docs/scoring.md)
 12. [Nuxt 4 - SEO and Meta](https://nuxt.com/docs/4.x/getting-started/seo-meta)
 13. [Nuxt 4 - Rendering Modes](https://nuxt.com/docs/4.x/guide/concepts/rendering)
+14. [Google Search Central - SEO Guide for Web Developers](https://developers.google.com/search/docs/fundamentals/get-started-developers)
+15. [Google Search Central - SEO Office Hours: Meta Keywords](https://developers.google.com/search/help/office-hours/2023/january)
