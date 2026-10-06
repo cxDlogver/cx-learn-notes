@@ -119,63 +119,186 @@ Interactive Application（可交互应用）
 
 因此“服务端已经返回完整 HTML”和“页面已经完全可交互”不是同一个时刻。
 
-## 2. 浏览器首次页面请求进入服务端后先建立请求上下文与页面目标
+## 2. 浏览器首次页面请求先进入 Server Runtime，再由框架找到页面组件
 
-### 【Document Request 是 SSR 链路的起点】
+### 【HTTP 只把 URL 交给服务器，并不知道页面组件】
 
 用户直接输入 URL、刷新页面或从外部链接进入站点时，浏览器会发起新的 Document Request（文档请求）。
 
-服务端首先拿到的是 HTTP 请求，而不是一个“Vue 页面”：
+例如：
+
+```http
+GET /news/123
+Accept: text/html
+Cookie: ...
+```
+
+HTTP 在这一层只描述“请求哪个 URL、携带什么请求信息”，它并不知道 Vue、Nuxt、`pages/` 或某个 `.vue` 文件。
+
+因此不能把 SSR 请求理解成：
+
+```text
+HTTP
+→ 直接找到 pages/news/[id].vue
+```
+
+真实过程还需要经过服务端运行时和应用路由：
+
+```text
+Browser Document Request（浏览器文档请求）
+        ↓
+Server Runtime（服务端运行环境）
+        ↓
+Framework Request Handler（框架请求入口）
+        ↓
+Page Renderer（页面渲染入口）
+        ↓
+Application Router（应用路由）
+        ↓
+Page Component（页面组件）
+```
+
+### 【在 Nuxt 中，页面请求首先进入 Nitro 提供的服务端请求入口】
+
+Nuxt 内置 Nitro 作为 Server Engine（服务端引擎）。部署环境把 HTTP Request 交给 Nuxt 服务端以后，Nitro 负责承接服务端请求，并把请求组织成后续框架可以处理的上下文。
+
+Nuxt 当前内部会把请求转换为 Server Event，再交给对应 Handler。对于页面请求，最终会进入 Nuxt Renderer；对于 `server/api` 等接口请求，则进入对应的 Server Route Handler。[[9]](https://nuxt.com/docs/4.x/guide/directory-structure/server)
+
+因此需要区分两层：
+
+```text
+Server Routing（服务端请求分发）
+解决：
+这个 HTTP Request 应该交给哪个服务端处理入口？
+
+例如：
+/api/news/123 → Server API Handler
+/news/123     → Nuxt Page Renderer
+```
+
+页面请求进入 Renderer 后，才继续解决：
+
+```text
+Page Routing（页面路由）
+解决：
+当前 URL 应该渲染哪个 Vue Page Component？
+```
+
+Nitro 底层使用 H3 的请求模型处理 HTTP Event、Middleware 和 Route Handler；可以把 H3 理解成 Nitro 中负责 HTTP 请求抽象与处理的一层，而 Nitro 负责更完整的 Nuxt Server Runtime。[[10]](https://h3.dev/guide/basics/lifecycle)
+
+### 【URL 能对应 Page Component，是因为构建阶段已经生成了路由表】
+
+Nuxt 的 File-based Routing（文件路由）不是在请求到来以后临时扫描磁盘。
+
+例如开发时存在：
+
+```text
+app/pages/
+├─ index.vue
+└─ news/
+   ├─ index.vue
+   └─ [id].vue
+```
+
+Nuxt 会在开发启动 / 构建阶段读取这些页面，并生成对应的页面路由关系。机制上可以简化理解为：
+
+```text
+app/pages/news/[id].vue
+        ↓
+Nuxt 构建阶段生成 Route Record
+        ↓
+/news/:id
+        ↓
+运行时 Router Match
+```
+
+所以请求：
+
+```text
+/news/123
+```
+
+进入 Page Renderer 后，Router 使用已经生成好的 Route Table（路由表）进行匹配：
+
+```text
+/news/123
+    ↓
+匹配 /news/:id
+    ↓
+params.id = "123"
+    ↓
+加载 news/[id].vue
+```
+
+Nuxt 官方将这一能力定义为基于 `app/pages` 的文件路由，并在运行时建立在 Vue Router 之上。[[11]](https://nuxt.com/docs/4.x/getting-started/routing)
+
+因此开发者看到的：
+
+```text
+URL
+→ Page Component
+```
+
+实际上是下面这条链被框架封装后的结果：
 
 ```text
 HTTP Request
-├─ Method
-├─ URL / Path
-├─ Query
-├─ Headers
-├─ Cookie
-└─ Body（按请求类型存在）
-        ↓
-Server Request Context（服务端请求上下文）
+    ↓
+Nitro Server Runtime
+    ↓
+Nuxt Page Renderer
+    ↓
+Generated Route Table
+    ↓
+Vue Router Match
+    ↓
+Page Component
 ```
 
-框架或 Web Server 会把这些信息组织成当前请求的上下文。之后页面路由、鉴权、数据请求、重定向和错误处理都以这个请求上下文为输入。
+### 【匹配到页面后，才开始创建本次 SSR 所需的应用上下文】
 
-这里要把“服务端页面路由”和“浏览器客户端路由”分开：
+页面请求确定以后，SSR 仍然不能直接复用一个全局 Vue Application。
+
+服务器进程可以长期复用已经加载的模块代码，但每个请求需要自己的应用状态：
 
 ```text
-首次 Document Request
-URL → 服务端 Router → 确定本次应该渲染哪个页面
-
-Hydration 完成后的客户端导航
-URL State → Client Router → 切换页面组件 / 获取数据
+Server Process
+├─ 已加载的组件 / Composable / Plugin 定义
+│   └─ 可以复用
+│
+├─ Request A
+│   └─ Vue App A / NuxtApp A / Route A / State A
+│
+└─ Request B
+    └─ Vue App B / NuxtApp B / Route B / State B
 ```
 
-两者可能使用同一套路由定义，但运行时和请求成本不同。
+Nuxt 的服务端入口会为当前 SSR 请求创建新的 Vue App 和 NuxtApp，并把当前请求对应的 SSR Context 传入其中。这样 `useRoute()`、`useState()`、`useFetch()` 等能力读取的是当前请求的上下文，而不是整个服务器进程共享的一份页面状态。
 
-### 【服务器通常按请求创建本次渲染需要的应用状态】
+这解决了两个问题：
 
-SSR Server 同时服务多个用户，所以请求状态不能默认使用一个可变的全局单例：
+1. 模块代码可以长期加载和复用，不需要每个请求重新加载整个应用；
+2. Route、State、Payload、Async Data 等请求状态仍然彼此隔离，避免 Cross-Request State Pollution（跨请求状态污染）。[[1]](https://vuejs.org/guide/scaling-up/ssr)
+
+到这里，服务端才真正具备了继续执行当前 Page Component 的条件：
 
 ```text
-Request A ─→ App / Route / State A
-Request B ─→ App / Route / State B
-Request C ─→ App / Route / State C
+HTTP Request
+    ↓
+Nitro
+    ↓
+Nuxt Renderer
+    ↓
+Route Match
+    ↓
+Request-scoped NuxtApp（请求级应用上下文）
+    ↓
+Page Component setup
+    ↓
+进入页面数据准备与 Server Render
 ```
 
-如果把用户状态放进服务器模块级可变对象：
-
-```text
-Request A 修改共享状态
-        ↓
-Request B 读取同一个对象
-        ↓
-Cross-Request State Pollution（跨请求状态污染）
-```
-
-Vue 官方因此强调 SSR 应用需要注意跨请求状态污染：服务器模块通常只初始化一次，而每个请求必须获得彼此隔离的应用和状态。[[1]](https://vuejs.org/guide/scaling-up/ssr)
-
-**项目实践映射：** official-network 使用 Nuxt / Nitro 将 Document Request 映射到文件路由，并在当前请求上下文中继续页面生成。真实路由匹配与请求边界见 [项目分析：Document Request 到达 Nitro 后先匹配页面路由和请求上下文](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#3-document-request-%E5%88%B0%E8%BE%BE-nitro-%E5%90%8E%E5%85%88%E5%8C%B9%E9%85%8D%E9%A1%B5%E9%9D%A2%E8%B7%AF%E7%94%B1%E5%92%8C%E8%AF%B7%E6%B1%82%E4%B8%8A%E4%B8%8B%E6%96%87)。
+**项目实践映射：** official-network 中 `/news/:id` 如何从 Nitro 请求进入动态页面、再由 `route.params.id` 驱动服务端数据获取，见 [项目分析：Document Request 到达 Nitro 后先匹配页面路由和请求上下文](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#3-document-request-%E5%88%B0%E8%BE%BE-nitro-%E5%90%8E%E5%85%88%E5%8C%B9%E9%85%8D%E9%A1%B5%E9%9D%A2%E8%B7%AF%E7%94%B1%E5%92%8C%E8%AF%B7%E6%B1%82%E4%B8%8A%E4%B8%8B%E6%96%87)。
 
 ## 3. 路由确定页面后，服务端需要先解决首屏渲染依赖的数据
 
@@ -723,3 +846,6 @@ Web 性能与 SEO
 6. [Nuxt 4 - Plugins](https://nuxt.com/docs/4.x/directory-structure/app/plugins)
 7. [Nuxt 4 - Rendering Modes](https://nuxt.com/docs/4.x/guide/concepts/rendering)
 8. [Nuxt 4 - Hydration Best Practices](https://nuxt.com/docs/4.x/guide/best-practices/hydration)
+9. [Nuxt 4 - Server Directory](https://nuxt.com/docs/4.x/guide/directory-structure/server)
+10. [H3 - Request Lifecycle](https://h3.dev/guide/basics/lifecycle)
+11. [Nuxt 4 - Routing](https://nuxt.com/docs/4.x/getting-started/routing)
