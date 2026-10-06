@@ -226,6 +226,29 @@ Retry 适合短暂网络抖动、临时连接失败、短时 503、可安全重�
 
 Retry 自身会增加流量。如果 1000 个调用同时失败并立即重试三次，下游得到的是新的流量冲击。因此完整 Retry Policy 通常由 Retryable Error Classification、Attempt Limit、Exponential Backoff、Jitter 和 Overall Deadline / Retry Budget 共同组成。AWS Builders Library 也把 Timeout、Retry、Backoff 与 Jitter 放在同一可靠性问题中讨论。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
 
+单层 Retry 之外，还要继续考虑分布式调用链中的 **Retry Amplification（重试放大）**。假设一次用户请求形成五层服务调用，每层都把一次失败操作最多尝试三次，最下游在极端情况下可能面对 `3^5 = 243` 次尝试。AWS Builders Library 用这个例子说明：每层都独立 Retry 会把局部故障放大成更严重的下游负载，因此低成本控制面和数据面操作通常只在调用栈中的一个合适位置承担 Retry。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
+~~~text
+Client
+  ↓ Retry?
+Service A
+  ↓ Retry?
+Service B
+  ↓ Retry?
+Service C
+  ↓ Retry?
+Database
+
+每层都 Retry
+→ Attempt 沿调用链乘法放大
+→ 故障依赖收到更多压力
+→ Recovery 更困难
+~~~
+
+因此还需要明确 **Retry Ownership（重试责任）**：调用链中由哪一层负责把一次可恢复失败重新尝试。选择位置时要权衡两类成本——越靠下重试，重复工作通常越少；越靠上重试，更容易掌握完整业务 Deadline 和最终结果。关键不是机械规定“永远在最高层”或“永远在最低层”，而是避免多个层级对同一个失败同时进行无协调 Retry。
+
+Retry Budget（重试预算）进一步限制故障期间允许产生多少额外尝试。Token Bucket（令牌桶）可以作为一种实现：成功请求逐步补充 Retry Token，失败重试消耗 Token；预算耗尽后直接返回失败，而不是让故障流量继续无限放大。它与 Exponential Backoff / Jitter 解决的问题不同：Backoff 与 Jitter 调整重试发生的时间，Retry Budget 限制重试总量。AWS 也使用 Token Bucket 对客户端 Retry 进行本地限速。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
 最小执行逻辑可以表示为：
 
 ~~~text
@@ -258,6 +281,24 @@ finally → return failure
 ### 【Circuit Breaker 与 Bulkhead分别限制持续失败和资源互相拖累】
 
 Timeout 解决一次调用最多等多久，但如果下游持续失败，每个请求仍然会真实访问故障依赖并等到 Timeout。Circuit Breaker（熔断）进一步用 Closed → Open → Half-Open → Closed 状态阻止持续调用，在 Open 状态快速失败，恢复窗口后只放少量探测流量。
+
+Circuit Breaker 不是“持续失败就必须开启”的固定答案。它会给系统引入 Closed / Open / Half-Open 等额外运行模式，需要继续设计错误阈值、Open 时间、Half-Open 探测量和恢复条件；这些状态也增加测试与故障恢复的复杂度。AWS Builders Library 特别指出，这类 modal behavior 可能延长恢复时间，因此某些场景会优先使用 Token Bucket 限制 Retry 流量，而不是只依赖熔断。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
+~~~text
+持续失败
+   ↓
+是否需要阻止真实调用继续触达依赖？
+   │
+   ├── Yes
+   │    → Circuit Breaker
+   │       → 需要管理 Open / Half-Open / Recovery
+   │
+   └── 主要问题是 Retry 流量继续放大
+        → Retry Budget / Token Bucket
+           → 限制故障期间额外尝试
+~~~
+
+因此 Circuit Breaker 与 Retry Budget 可以组合，也可以根据 Failure Model 单独使用。前者控制“是否继续真实调用故障依赖”，后者控制“允许产生多少额外 Retry”；两者不能互相替代。
 
 Bulkhead（舱壁隔离）解决的是另一类传播：一个慢依赖不能占满所有共享连接或并发槽位。例如把第三方 A、B、C 的最大并发分别限制，而不是共享一个无限竞争的全局池。
 
@@ -804,11 +845,12 @@ Consumer Concurrency
 Database / External Service
 ~~~
 
-不同手段保护的位置不同：
+不同手段保护的位置不同。这里的 Retry Budget 与第 2 章 Retry Policy 属于同一控制链：第 2 章决定“哪些失败值得重试以及由哪一层负责重试”，容量治理进一步限制“系统在故障期间最多还能承受多少额外 Retry 流量”。
 
 | 手段 | 主要解决的问题 |
 | --- | --- |
 | Rate Limit | 限制入口总流量，防止所有请求同时进入 |
+| Retry Budget / Token Bucket | 限制故障期间由 Retry 产生的额外流量，避免恢复阶段继续放大下游压力 |
 | Bounded Queue | 队列达到容量后明确拒绝或降级，而不是无限增长 |
 | Concurrency Limit | 防止同时执行太多任务压垮共享依赖 |
 | Batch | 降低每条任务的固定网络 / SQL 开销 |
