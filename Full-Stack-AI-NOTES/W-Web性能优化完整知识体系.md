@@ -136,7 +136,7 @@ Chrome DevTools Performance 面板能够把 Main Thread（主线程）上的 Jav
 
 这一步非常重要，因为性能问题常存在“伴随现象”。例如图片请求与主线程长任务同时发生，不能仅凭时间相邻就判断图片是根因；必须通过改变图片尺寸、关闭动画或减少 JavaScript 工作等受控实验，观察目标指标是否随变量变化。
 
-> **项目实践映射：** 如何把“先固定场景、再做单变量实验”落到真实项目，可查看 official-network 对首页、Join 与 News 三类页面建立基线和实验矩阵的分析：[优化优先级应由受控实验决定，而不是按技术名词排序](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#8-%E4%BC%98%E5%8C%96%E4%BC%98%E5%85%88%E7%BA%A7%E5%BA%94%E7%94%B1%E5%8F%97%E6%8E%A7%E5%AE%9E%E9%AA%8C%E5%86%B3%E5%AE%9A%E8%80%8C%E4%B8%8D%E6%98%AF%E6%8C%89%E6%8A%80%E6%9C%AF%E5%90%8D%E8%AF%8D%E6%8E%92%E5%BA%8F)。
+**项目实践映射：** 如何把“先固定场景、再做单变量实验”落到真实项目，可查看 official-network 对首页、Join 与 News 三类页面建立基线和实验矩阵的分析：[优化优先级应由受控实验决定，而不是按技术名词排序](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#8-%E4%BC%98%E5%8C%96%E4%BC%98%E5%85%88%E7%BA%A7%E5%BA%94%E7%94%B1%E5%8F%97%E6%8E%A7%E5%AE%9E%E9%AA%8C%E5%86%B3%E5%AE%9A%E8%80%8C%E4%B8%8D%E6%98%AF%E6%8C%89%E6%8A%80%E6%9C%AF%E5%90%8D%E8%AF%8D%E6%8E%92%E5%BA%8F)。
 
 ## 3. 文档与服务端交付决定浏览器最早何时能开始工作
 
@@ -198,7 +198,7 @@ First Byte
 
 **答辩证明：**除 LCP 外还应给出 TTFB、HTML/数据缓存命中、服务器渲染耗时，并说明为什么该页面适合当前渲染策略。
 
-> **项目实践映射：** HTML 生成策略只是在不同阶段分配生成成本。official-network 使用 Nuxt Route Rules 将 Prerender 与 SWR 分配给不同页面，并继续讨论 TTFB 与 Server Timing 的验证边界，见 [项目分析：Nuxt Hybrid Rendering 先控制 HTML 交付成本](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#2-nuxt-hybrid-rendering-%E5%85%88%E6%8E%A7%E5%88%B6-html-%E4%BA%A4%E4%BB%98%E6%88%90%E6%9C%AC)。
+**项目实践映射：** HTML 生成策略只是在不同阶段分配生成成本。official-network 使用 Nuxt Route Rules 将 Prerender 与 SWR 分配给不同页面，并继续讨论 TTFB 与 Server Timing 的验证边界，见 [项目分析：Nuxt Hybrid Rendering 先控制 HTML 交付成本](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#2-nuxt-hybrid-rendering-%E5%85%88%E6%8E%A7%E5%88%B6-html-%E4%BA%A4%E4%BB%98%E6%88%90%E6%9C%AC)。
 
 ## 4. 关键资源加载决定首屏内容何时具备渲染条件
 
@@ -276,7 +276,7 @@ HTTP Cache（HTTP 缓存）与 CDN Cache（CDN 缓存）用于避免重复回源
 
 **答辩证明：**Network Waterfall 中给出关键资源发现时刻、Initiator、Priority、Transfer Size、Cache 状态和 LCP 对应资源；图片还要说明资源像素尺寸与实际 CSS 展示尺寸是否匹配。
 
-> **项目实践映射：** 资源优化不能只看“是否用了 CDN / WebP / lazy”。official-network 的图片链路同时存在 CDN 路径改写、Nuxt Image、不同 loading 策略和较大的源文件，因此需要回到最终请求、响应式尺寸、发现时机与解码成本验证，见 [项目分析：静态资源层的 CDN 与 Nuxt Image](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#3-%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90%E5%B1%82%E5%B7%B2%E7%BB%8F%E6%9C%89-cdn-%E4%B8%8E-nuxt-image%E4%BD%86%E4%BB%8D%E8%A6%81%E9%80%90%E8%B5%84%E6%BA%90%E9%AA%8C%E8%AF%81%E5%8F%91%E7%8E%B0%E4%BC%98%E5%85%88%E7%BA%A7%E5%AD%97%E8%8A%82%E5%92%8C%E8%A7%A3%E7%A0%81)。
+**项目实践映射：** 资源优化不能只看“是否用了 CDN / WebP / lazy”。official-network 的图片链路同时存在 CDN 路径改写、Nuxt Image、不同 loading 策略和较大的源文件，因此需要回到最终请求、响应式尺寸、发现时机与解码成本验证，见 [项目分析：静态资源层的 CDN 与 Nuxt Image](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#3-%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90%E5%B1%82%E5%B7%B2%E7%BB%8F%E6%9C%89-cdn-%E4%B8%8E-nuxt-image%E4%BD%86%E4%BB%8D%E8%A6%81%E9%80%90%E8%B5%84%E6%BA%90%E9%AA%8C%E8%AF%81%E5%8F%91%E7%8E%B0%E4%BC%98%E5%85%88%E7%BA%A7%E5%AD%97%E8%8A%82%E5%92%8C%E8%A7%A3%E7%A0%81)。
 
 ## 5. JavaScript 与 Hydration 决定下载完成后主线程还要工作多久
 
@@ -358,7 +358,7 @@ Client Runtime 已经空闲
 
 **答辩证明：**展示 Main Thread Flame Chart 中真正的 Long Task、Bottom-up / Call Tree 的 Self Time，以及优化后 Long Task 数量、Blocking Time 和 INP 阶段变化。
 
-> **项目实践映射：** SSR / Prerender 并不意味着首屏内容一定已经在 HTML 中。official-network 首页 Hero 使用 `ClientOnly`，因此需要继续验证客户端挂载与 Hydration 是否形成 LCP 的 Element Render Delay，见 [项目分析：首页 Prerender 之后仍存在 Client-only 首屏路径](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#4-%E9%A6%96%E9%A1%B5-prerender-%E4%B9%8B%E5%90%8E%E4%BB%8D%E5%AD%98%E5%9C%A8-client-only-%E9%A6%96%E5%B1%8F%E8%B7%AF%E5%BE%84%E9%A6%96%E5%B1%8F%E6%80%A7%E8%83%BD%E5%BF%85%E9%A1%BB%E7%BB%A7%E7%BB%AD%E5%88%86%E6%9E%90-hydration)。
+**项目实践映射：** SSR / Prerender 并不意味着首屏内容一定已经在 HTML 中。official-network 首页 Hero 使用 `ClientOnly`，因此需要继续验证客户端挂载与 Hydration 是否形成 LCP 的 Element Render Delay，见 [项目分析：首页 Prerender 之后仍存在 Client-only 首屏路径](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#4-%E9%A6%96%E9%A1%B5-prerender-%E4%B9%8B%E5%90%8E%E4%BB%8D%E5%AD%98%E5%9C%A8-client-only-%E9%A6%96%E5%B1%8F%E8%B7%AF%E5%BE%84%E9%A6%96%E5%B1%8F%E6%80%A7%E8%83%BD%E5%BF%85%E9%A1%BB%E7%BB%A7%E7%BB%AD%E5%88%86%E6%9E%90-hydration)。
 
 ## 6. 浏览器渲染流水线决定像素何时真正出现在屏幕
 
@@ -511,7 +511,7 @@ Memory + Per-update Cost 可能随时间增长
 
 排查时需要把 Heap Snapshot / Allocation 与运行时 Trace 对齐，观察“对象为什么没有释放”和“状态规模是否正在放大每次更新成本”。
 
-> **项目实践映射：** 浏览器渲染与长期运行成本在真实页面中往往同时出现。official-network 的 Hero、Canvas 粒子与 DOM 几何测量包含多个持续 `requestAnimationFrame` 循环，可用于观察“框架响应式更新、DOM 读取、Canvas 绘制、可见性生命周期”如何共同形成帧成本，见 [项目分析：持续 rAF、响应式更新与 Canvas / DOM 测量](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#5-%E5%BD%93%E5%89%8D%E6%9C%80%E6%98%8E%E7%A1%AE%E7%9A%84%E8%BF%90%E8%A1%8C%E6%97%B6%E9%A3%8E%E9%99%A9%E6%98%AF%E5%A4%9A%E4%B8%AA%E6%8C%81%E7%BB%AD-raf-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9B%B4%E6%96%B0--canvas--dom-%E6%B5%8B%E9%87%8F)。
+**项目实践映射：** 浏览器渲染与长期运行成本在真实页面中往往同时出现。official-network 的 Hero、Canvas 粒子与 DOM 几何测量包含多个持续 `requestAnimationFrame` 循环，可用于观察“框架响应式更新、DOM 读取、Canvas 绘制、可见性生命周期”如何共同形成帧成本，见 [项目分析：持续 rAF、响应式更新与 Canvas / DOM 测量](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#5-%E5%BD%93%E5%89%8D%E6%9C%80%E6%98%8E%E7%A1%AE%E7%9A%84%E8%BF%90%E8%A1%8C%E6%97%B6%E9%A3%8E%E9%99%A9%E6%98%AF%E5%A4%9A%E4%B8%AA%E6%8C%81%E7%BB%AD-raf-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9B%B4%E6%96%B0--canvas--dom-%E6%B5%8B%E9%87%8F)。
 
 ## 9. 性能工程通过预算、监控和回归把一次优化变成长期能力
 
@@ -559,7 +559,7 @@ RUM（Real User Monitoring，真实用户监控）SDK 会执行 Observer、事�
 
 性能采集、聚合和 RUM 的详细机制继续进入 [性能专项优化](X-性能专项优化.md)；该文档承担监控数据采集与指标计算专项，而本文只说明它为什么是性能优化闭环的验证层。
 
-> **项目实践映射：** 从单次采样走向性能工程，需要把采集、聚合、版本上下文和预算串成闭环。official-network 当前已有 Web Vital、Navigation、Resource 与服务端报告代码，同时也保留“自动触发链是否完整”的验证边界，见 [项目分析：性能采集与报告模型](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#7-%E5%BD%93%E5%89%8D%E4%BB%93%E5%BA%93%E5%B7%B2%E7%BB%8F%E5%85%B7%E5%A4%87%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86%E4%B8%8E%E6%8A%A5%E5%91%8A%E6%A8%A1%E5%9E%8B%E4%BD%86%E5%BF%85%E9%A1%BB%E5%8C%BA%E5%88%86%E5%8D%95%E6%AC%A1%E8%AF%8A%E6%96%AD%E6%8A%A5%E5%91%8A%E5%92%8C%E7%BA%BF%E4%B8%8A%E6%80%A7%E8%83%BD-slo) 与 [性能治理闭环](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#9-%E9%A1%B9%E7%9B%AE%E6%80%A7%E8%83%BD%E6%B2%BB%E7%90%86%E6%9C%80%E7%BB%88%E8%A6%81%E5%BD%A2%E6%88%90%E9%A2%84%E7%AE%97--%E5%BC%80%E5%8F%91%E9%AA%8C%E8%AF%81--%E4%B8%8A%E7%BA%BF-rum--%E5%9B%9E%E5%BD%92%E7%9A%84%E9%97%AD%E7%8E%AF)。
+**项目实践映射：** 从单次采样走向性能工程，需要把采集、聚合、版本上下文和预算串成闭环。official-network 当前已有 Web Vital、Navigation、Resource 与服务端报告代码，同时也保留“自动触发链是否完整”的验证边界，见 [项目分析：性能采集与报告模型](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#7-%E5%BD%93%E5%89%8D%E4%BB%93%E5%BA%93%E5%B7%B2%E7%BB%8F%E5%85%B7%E5%A4%87%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86%E4%B8%8E%E6%8A%A5%E5%91%8A%E6%A8%A1%E5%9E%8B%E4%BD%86%E5%BF%85%E9%A1%BB%E5%8C%BA%E5%88%86%E5%8D%95%E6%AC%A1%E8%AF%8A%E6%96%AD%E6%8A%A5%E5%91%8A%E5%92%8C%E7%BA%BF%E4%B8%8A%E6%80%A7%E8%83%BD-slo) 与 [性能治理闭环](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#9-%E9%A1%B9%E7%9B%AE%E6%80%A7%E8%83%BD%E6%B2%BB%E7%90%86%E6%9C%80%E7%BB%88%E8%A6%81%E5%BD%A2%E6%88%90%E9%A2%84%E7%AE%97--%E5%BC%80%E5%8F%91%E9%AA%8C%E8%AF%81--%E4%B8%8A%E7%BA%BF-rum--%E5%9B%9E%E5%BD%92%E7%9A%84%E9%97%AD%E7%8E%AF)。
 
 ## 10. 面试与答辩应使用同一套“现象到证据”回答框架
 
