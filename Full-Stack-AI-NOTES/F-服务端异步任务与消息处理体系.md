@@ -61,6 +61,8 @@ Backpressure / Scaling / Graceful Shutdown / Observability
 
 理解这七层以后，RabbitMQ、SQS、Cloud Tasks、Redis Streams、Kafka 或 PostgreSQL Job Table 都只是不同实现选择，不再是彼此孤立的技术名词。
 
+这里还要区分 Redis Pub/Sub：它面向当前在线 Subscriber 做即时广播，默认不提供离线历史、ACK、Pending 与 Replay，因此不能直接承担本文所说的 Durable Acceptance Boundary。Redis Pub/Sub 与 Streams 的完整状态模型继续阅读 [Redis 完整知识体系](./R-Redis完整知识体系.md)。
+
 ## 1. 异步边界决定一项业务工作是否离开当前 Request 生命周期
 
 ### 【Runtime-level Asynchrony 与 System-level Asynchronous Processing 属于不同层级】
