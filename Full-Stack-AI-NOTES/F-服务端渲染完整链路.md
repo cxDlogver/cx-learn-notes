@@ -2,7 +2,7 @@
 
 服务端渲染（Server-Side Rendering，SSR）描述的是：**浏览器首次请求页面时，服务器先根据路由、数据和组件生成 HTML，再把 HTML 与客户端运行所需的资源和状态返回给浏览器；浏览器先解析和显示已有内容，再通过 Hydration（水合）把这份静态 HTML 接回客户端应用。**
 
-本文只深入 SSR 的完整运行链路。CSR、SSG、Hybrid Rendering 的位置关系继续由 [Web 渲染架构](./W-Web渲染架构.md) 作为上位入口；浏览器收到 HTML 之后更底层的 Parse、Style、Layout、Paint 与 Composite 继续由 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md) 承担。
+本文只深入 SSR 的完整运行链路。CSR、SSR、SSG、SWR、ISR 与 Hybrid 的策略演进和选择先进入 [页面渲染策略演进与选择框架](./Y-页面渲染策略演进与选择框架.md)，更上位的 Navigation Model 与 Rendering Strategy 关系继续由 [Web 渲染架构](./W-Web渲染架构.md) 承担；浏览器收到 HTML 之后更底层的 Parse、Style、Layout、Paint 与 Composite 继续由 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md) 承担。
 
 SSR 可以沿两条长期主线理解：
 
@@ -786,6 +786,85 @@ Hydration
 
 SSR 提前的是“已有内容进入浏览器”的时间，并不自动消除客户端 JavaScript 成本。
 
+### 【服务端应用和客户端应用使用同一套组件定义，但承担不同生命周期】
+
+SSR 中服务端和浏览器都会创建 Vue / Nuxt Application，但它们不是同一个运行实例。
+
+可以先把两者区分成：
+
+```text
+Server App
+目的：Component + Data → HTML
+
+Client App
+目的：Component Runtime + Payload → 接管 Existing DOM
+```
+
+服务端收到一次 Document Request 后，会为当前请求创建请求级应用上下文：
+
+```text
+HTTP Request
+    ↓
+Create Server Vue App / NuxtApp
+    ↓
+Route / Data / Component
+    ↓
+Server Render
+    ↓
+HTML + Payload
+    ↓
+当前请求级应用结束使命
+```
+
+它面对的是 Request、SSR Context、Route 和首屏数据，主要输出 HTML 与可序列化 Payload。服务端没有真实 DOM，也不会进入浏览器中的长期交互生命周期。
+
+浏览器收到 HTML 后，还会加载框架生成的 Client JavaScript。这里的 JavaScript 不只是“页面业务代码”，还包含启动客户端应用所需的 Runtime 与入口程序：
+
+```text
+Client JavaScript
+    ↓
+Create Client Vue App / NuxtApp
+    ↓
+读取 Payload
+    ↓
+初始化 Router / Plugins / Components
+    ↓
+Mount / Hydration
+    ↓
+接管已有 DOM
+```
+
+因此服务端和客户端虽然都可能执行同一个 Page / Component 定义，但输入、输出和生命周期不同：
+
+| 对比 | Server App | Client App |
+| --- | --- | --- |
+| 创建时机 | 每次需要 SSR 的页面请求 | 浏览器首次启动当前页面应用 |
+| 主要输入 | Request、Route、Server Data、SSR Context | Existing DOM、Payload、当前 URL |
+| 是否有真实 DOM | 否 | 是 |
+| 主要目标 | 生成 HTML | Hydration 并持续管理页面 |
+| 生命周期 | 请求级，生成 Response 后结束 | 页面会话级，Hydration 后继续运行 |
+| 后续职责 | 不处理浏览器长期交互 | Event、State、Router、DOM Update |
+
+所以“客户端再次创建应用”并不是把服务端 App 传到了浏览器，而是：
+
+```text
+同一套 Application Definition
+        │
+        ├─ Server Bundle
+        │      ↓
+        │   Server App
+        │      ↓
+        │   HTML + Payload
+        │
+        └─ Client Bundle
+               ↓
+            Client App
+               ↓
+            Hydration
+```
+
+两边共享的是组件和应用定义；不共享的是运行实例和内存对象。
+
 ### 【Hydration 不是重新生成一遍 DOM，而是接管已有 DOM】
 
 Vue 对 Hydration 的定义是：客户端创建与服务端相同的应用，匹配每个组件应控制的已有 DOM 节点，并附加事件监听，使静态标记进入完整交互状态。[[1]](https://vuejs.org/guide/scaling-up/ssr)
@@ -891,6 +970,72 @@ Client
 这里“客户端再次执行 `useFetch`”与“客户端再次发送 HTTP 请求”必须区分。Composable 代码需要再次执行来恢复客户端应用，但首次 Hydration 命中 Payload 时，实际网络请求可以被跳过。
 
 这项复用只针对当前已有的 SSR 初始数据。后续客户端导航、参数或 Key 变化、主动 Refresh，或者本来没有在 Server Fetch 的数据，仍然可能触发新的请求。
+
+### 【Hydration 完成后，Payload 从“传输载体”转成客户端运行时状态】
+
+Payload 不能只理解成 HTML 中的一段 JSON。更准确地说，它有两个阶段：
+
+```text
+Server
+可序列化页面数据
+    ↓
+Serialized Payload（序列化传输载体）
+    ↓
+HTML 内联数据 / 外部 Payload 文件
+    ↓
+Browser
+Client JavaScript 解析
+    ↓
+Client NuxtApp / Runtime State
+```
+
+因此要区分：
+
+```text
+序列化 Payload
+= Server → Client 的数据运输形式
+
+Client Runtime State
+= 客户端解析后真正继续使用的数据
+```
+
+以 Nuxt 为例，客户端启动时会读取页面中的 Nuxt Payload，解析后写入客户端 NuxtApp 的 `payload.data`、`payload.state` 等运行时结构。之后 `useFetch`、`useState` 和组件响应式状态主要使用 JavaScript 内存中的这份数据，而不是每次重新从 DOM 中读取序列化文本。
+
+所以 Hydration 完成后不能理解成：
+
+```text
+Payload 被使用
+    ↓
+Payload 消失
+```
+
+更准确的是：
+
+```text
+Serialized Payload
+    ↓ parse
+Client Runtime State
+    ↓
+Hydration
+    ↓
+继续被客户端应用使用
+```
+
+至于最初承载 Payload 的 HTML 节点是否被框架删除，是具体实现细节，不影响这条核心关系。即使该节点继续存在于 Document 中，它也只是已经完成主要启动职责的序列化载体，不是后续 Vue 状态管理的主要数据源。
+
+另外，一些框架还会把较大的 Payload 提取成独立文件：
+
+```text
+HTML
+└─ Payload Entry / Metadata
+
+External Payload File
+└─ Serialized Page Data
+```
+
+客户端加载并解析以后，最终仍然进入应用运行时状态。因此：
+
+> Payload 的关键不是“它是否继续留在 DOM”，而是“服务端数据如何安全地跨越网络边界，恢复成客户端应用能够继续使用的状态”。
 
 ### 【Hydration 要求服务端输出与客户端第一次结果保持确定性】
 
@@ -1123,7 +1268,8 @@ Web 性能与 SEO
 
 前置与延伸：
 
-- [Web 渲染架构](./W-Web渲染架构.md)：决定 CSR / SSR / SSG / Hybrid 在整体架构中的位置；
+- [Web 渲染架构](./W-Web渲染架构.md)：先区分 Navigation Model 与 Rendering Strategy；
+- [页面渲染策略演进与选择框架](./Y-页面渲染策略演进与选择框架.md)：继续判断 CSR / SSR / SSG、SWR / ISR 与 Hybrid 的层级和选型；
 - [浏览器网络面试题](./L-浏览器网络面试题.md)：继续理解 Document Request 如何经过 DNS、连接和 HTTP 到达服务端；
 - [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)：继续理解 HTML 到达浏览器后的 Parse、Layout、Paint 与 Composite；
 - [Vue3进阶学习](./V-Vue3进阶学习.md)：继续理解组件响应式与客户端 Runtime；
