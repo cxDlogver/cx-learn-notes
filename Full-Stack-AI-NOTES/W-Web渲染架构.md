@@ -222,6 +222,8 @@ SSR
 
 现代前端框架中的 SSR 通常还会继续进入 Hydration，使服务端生成的 HTML 变成完整的客户端交互应用。
 
+SSR 从 Document Request 进入服务端开始，继续经过 Route、Async Data、Server Render、HTML / Payload Response、Browser Parse、Hydration 与 Client Runtime 接管的完整机制，统一进入 [服务端渲染完整链路](./S-服务端渲染完整链路.md)。本篇只保留它在 Web 渲染架构中的位置关系。
+
 ### 【SSG 在 Build Time 提前生成 HTML】
 
 SSG（Static Site Generation）或 Prerender 的核心区别不在于“HTML 是否完整”，而在于生成时间。
