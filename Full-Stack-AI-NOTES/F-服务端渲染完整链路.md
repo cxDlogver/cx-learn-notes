@@ -2,7 +2,7 @@
 
 服务端渲染（Server-Side Rendering，SSR）描述的是：**浏览器首次请求页面时，服务器先根据路由、数据和组件生成 HTML，再把 HTML 与客户端运行所需的资源和状态返回给浏览器；浏览器先解析和显示已有内容，再通过 Hydration（水合）把这份静态 HTML 接回客户端应用。**
 
-本文只深入 SSR 的完整运行链路。CSR、SSR、SSG、SWR、ISR 与 Hybrid 的策略演进和选择先进入 [页面渲染策略演进与选择框架](./Y-页面渲染策略演进与选择框架.md)，更上位的 Navigation Model 与 Rendering Strategy 关系继续由 [Web 渲染架构](./W-Web渲染架构.md) 承担；浏览器收到 HTML 之后更底层的 Parse、Style、Layout、Paint 与 Composite 继续由 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md) 承担。
+本文只深入 SSR 的完整运行链路。CSR、SSR、SSG、SWR、ISR、Hybrid，以及 Navigation Model 与 Rendering Strategy 的完整位置关系统一由 [Web 渲染架构](./W-Web渲染架构.md) 承担；浏览器收到 HTML 之后更底层的 Parse、Style、Layout、Paint 与 Composite 继续由 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md) 承担。
 
 SSR 可以沿两条长期主线理解：
 
@@ -1268,8 +1268,7 @@ Web 性能与 SEO
 
 前置与延伸：
 
-- [Web 渲染架构](./W-Web渲染架构.md)：先区分 Navigation Model 与 Rendering Strategy；
-- [页面渲染策略演进与选择框架](./Y-页面渲染策略演进与选择框架.md)：继续判断 CSR / SSR / SSG、SWR / ISR 与 Hybrid 的层级和选型；
+- [Web 渲染架构](./W-Web渲染架构.md)：统一理解 Navigation Model、CSR / SSR / SSG、SWR / ISR、Hybrid 与选型框架；
 - [浏览器网络面试题](./L-浏览器网络面试题.md)：继续理解 Document Request 如何经过 DNS、连接和 HTTP 到达服务端；
 - [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)：继续理解 HTML 到达浏览器后的 Parse、Layout、Paint 与 Composite；
 - [Vue3进阶学习](./V-Vue3进阶学习.md)：继续理解组件响应式与客户端 Runtime；
