@@ -829,7 +829,7 @@ SSR / SSG / Prerender 的 SEO 价值主要在于让关键内容直接进入 Init
 
 Dynamic Rendering（根据 Crawler 和用户返回不同渲染结果）则属于另一种历史 SEO workaround。Google 当前将其定位为 workaround，而不是推荐长期方案。[[5]](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering)
 
-Nuxt 中更具体的 SEO 工程继续参考 [Nuxt SEO 学习笔记](./N-Nuxt%20SEO%20学习笔记.md)。
+SEO 工程中抓取、索引、Canonical 与验证闭环继续参考 [SEO 工程体系](./S-SEO工程体系.md)。
 
 ## 9. 一张表看清主流页面策略真正改变了什么
 
