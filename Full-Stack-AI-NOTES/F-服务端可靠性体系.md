@@ -428,7 +428,7 @@ Off-site / Cross-region / Isolated Backup
 Restore Plan
 ~~~
 
-这四层不是“越往下越高级”，而是保护不同失败。
+这四层不是“越往下越高级”，而是保护不同失败。数据库内部的 WAL / Crash Recovery、Backup / PITR、Replication 与运行维护机制由 [数据库完整框架体系](./S-数据库完整框架体系.md) 继续深入；本文保留它们在系统级 Failure Model、RPO / RTO、HA / DR 与恢复演练中的横向关系。
 
 #### <u>1. COMMIT 与 WAL 主要解决数据库崩溃后的状态恢复</u>
 
