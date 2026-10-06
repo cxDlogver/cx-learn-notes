@@ -559,6 +559,79 @@ onMounted
 
 这里的结构只是机制示意，不代表所有框架使用完全相同的标签或序列化格式。
 
+### 【一个最小按钮可以看清 HTML、Payload 与 Client JavaScript 的分工】
+
+假设组件是：
+
+```vue
+<script setup>
+const count = ref(0)
+
+function add() {
+  count.value++
+}
+</script>
+
+<template>
+  <button @click="add">
+    {{ count }}
+  </button>
+</template>
+```
+
+服务端执行组件以后，可以根据 `count = 0` 生成首屏页面标记：
+
+```html
+<button>0</button>
+```
+
+同时，框架还可能把首屏需要恢复的可序列化状态放进 Payload，并在 HTML 中保留客户端 JavaScript 的资源入口。职责上可以理解为：
+
+```text
+HTML
+→ <button>0</button>
+→ 记录“页面当前长什么样”
+
+Payload
+→ count = 0
+→ 记录“服务端生成首屏时用了什么初始状态”
+
+Client JavaScript
+→ Vue / Nuxt Runtime + 组件逻辑 + add()
+→ 记录“页面接下来应该怎样运行”
+```
+
+因此一个 SSR Response 的机制示意可以写成：
+
+```html
+<html>
+  <body>
+    <div id="app">
+      <button>0</button>
+    </div>
+
+    <!-- count = 0 等可序列化初始状态 -->
+    <!-- Vue / Nuxt Client JavaScript 资源入口 -->
+  </body>
+</html>
+```
+
+浏览器收到后，`<button>0</button>` 已经足以建立 DOM 并显示按钮；但它此时还只是一个普通 DOM 节点。只有客户端 Vue / Nuxt JavaScript 启动、读取 Payload 并完成 Hydration 后，才会重新建立：
+
+```text
+Vue Component
+    ↓
+count 响应式状态
+    ↓
+<button> DOM
+    ↓
+click → add()
+```
+
+因此：
+
+> HTML 保存的是服务端已经计算出的页面结果；Payload 保存的是客户端继续运行需要恢复的数据；Client JavaScript 才负责恢复组件、响应式和事件等运行关系。
+
 ### 【HTML 中不会直接包含客户端运行时本身的对象关系】
 
 服务器可以输出：
@@ -581,6 +654,23 @@ Canvas Drawing Context
 ```
 
 所以浏览器虽然可能已经看到按钮，但它尚未自动拥有框架运行时中的“这个按钮点击后执行哪个组件函数”关系。
+
+以上面的计数按钮为例，服务端内存中原本存在：
+
+```text
+Component Instance
+├─ count → Ref
+├─ add → Function
+└─ 响应式依赖关系
+```
+
+但通过 HTTP 发给浏览器的页面标记只需要是：
+
+```html
+<button>0</button>
+```
+
+HTTP Response 传递的是可序列化的字节内容，不会把服务器 JavaScript 内存中的 Function、Component Instance、Closure 或 DOM 引用整体搬到浏览器。因此客户端必须重新运行组件代码，再把这些运行关系建立到已有 DOM 上。
 
 这正是为什么 SSR 后还需要 Hydration。
 
