@@ -364,28 +364,74 @@ Hydration 直接复用
 
 Nuxt 的 `useFetch` 与 `useAsyncData` 就承担这一类职责：服务端取得的数据会传入 Nuxt Payload，客户端水合时可以读取该数据，避免再次获取同一份首屏数据。[[2]](https://nuxt.com/docs/4.x/getting-started/data-fetching)
 
-### 【SSR 请求数据还需要处理当前用户的请求上下文】
+### 【请求上下文接力只在“服务器代浏览器取数”时出现】
 
-浏览器调用 API 时会自然携带符合规则的 Cookie 与请求头，但服务端 SSR 内部再调用 API 时已经进入另一层 Server Fetch。
+浏览器自己调用 API 时，Cookie 等请求信息会按照浏览器规则携带；但首次 SSR、刷新或外部直达页面时，页面组件是在服务端执行的，`useFetch` 可能由 SSR Server 代替浏览器去获取首屏数据。
 
-因此需要明确：
+因此链路会从：
 
 ```text
-Browser Request Context
+Client-side Request
+
+Browser
+    ↓
+直接请求 API
+    ↓
+Cookie 等由浏览器规则处理
+```
+
+变成：
+
+```text
+SSR Initial Request
+
+Browser
 Cookie / Authorization / Locale / Trace
-        ↓
+    ↓
 SSR Server
+    ↓
+Server-side Fetch
+    ↓
+Internal API
+```
+
+第二种情况下，真正发起数据请求的是服务器，所以需要决定原始 Browser Request 中哪些上下文应该安全地继续传给下游。Nuxt 的 `useRequestFetch` 就用于这类请求上下文接力；服务端执行相对 URL 的 `useFetch` 时会使用这一机制。[[3]](https://nuxt.com/docs/4.x/api/composables/use-request-fetch)
+
+这项机制主要属于 SSR 阶段，而不是整个页面生命周期一直存在：
+
+```text
+首次进入 / 刷新 / 外部直达
+        ↓
+Server SSR
         ↓
 Server-side Fetch
         ↓
-哪些上下文需要安全地继续传递？
+需要考虑请求上下文连续性
+        ↓
+HTML + Payload
+        ↓
+Hydration
+        ↓
+Client 接管
+        ↓
+后续客户端导航 / 数据请求
+        ↓
+Browser 自己发 HTTP Request
+        ↓
+通常不再存在“SSR Server 代请求”这一层
 ```
 
-Nuxt 的 `useRequestFetch` 会在服务端请求中转发适合继续携带的请求上下文；`useFetch` 在服务端底层使用这一机制。[[3]](https://nuxt.com/docs/4.x/api/composables/use-request-fetch)
+因此需要区分：
 
-这意味着 SSR 数据层不仅是“请求接口”，还承担**当前请求身份与上下文的连续性**。
+- **服务端执行 `useFetch`**：需要考虑当前 Browser Request 的 Cookie、Authorization、Locale、Trace 等是否继续传递；
+- **Hydration 后客户端执行请求**：请求本身由浏览器发出，Cookie 等通常由浏览器规则处理，不需要 `useRequestFetch` 再替客户端继承首次页面请求；
+- **Server API 再调用下游服务**：仍然属于 Server-to-Server Request（服务端到服务端请求），是否继续传播 Authorization、Trace 等上下文是另一层后端设计问题，不能和 SSR 首屏请求混为一谈。
 
-**项目实践映射：** 通用的“路由确定 → 解析首屏数据依赖 → 复用客户端初始数据”在 official-network 中由页面 `useFetch / useAsyncData`、Nitro Server API 与外部数据源共同完成，见 [项目分析：页面 setup 在服务端执行时会先解析首屏数据依赖](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#4-%E9%A1%B5%E9%9D%A2-setup-%E5%9C%A8%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%89%A7%E8%A1%8C%E6%97%B6%E4%BC%9A%E5%85%88%E8%A7%A3%E6%9E%90%E9%A6%96%E5%B1%8F%E6%95%B0%E6%8D%AE%E4%BE%9D%E8%B5%96) 与 [内部 API 数据链路](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#5-%E5%86%85%E9%83%A8-api-%E5%9C%A8-ssr-%E9%98%B6%E6%AE%B5%E7%BB%A7%E7%BB%AD%E6%89%A7%E8%A1%8C%E7%9C%9F%E6%AD%A3%E7%9A%84%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
+所以“请求上下文连续性”最准确的理解是：
+
+> SSR 把原本可能由浏览器直接完成的数据请求改成了服务器代发，因此框架需要在这一跳中保留必要且安全的用户请求上下文。
+
+**项目实践映射：** official-network 的新闻详情页在 SSR 阶段通过 `useFetch('/api/news/:id')` 进入 Nitro Server API；但当前新闻数据是公共内容，Server API 再访问 WordPress 时使用普通 `$fetch`，并不依赖把用户 Cookie / Authorization 继续传给 WordPress。对应链路见 [项目分析：页面 setup 在服务端执行时会先解析首屏数据依赖](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#4-%E9%A1%B5%E9%9D%A2-setup-%E5%9C%A8%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%89%A7%E8%A1%8C%E6%97%B6%E4%BC%9A%E5%85%88%E8%A7%A3%E6%9E%90%E9%A6%96%E5%B1%8F%E6%95%B0%E6%8D%AE%E4%BE%9D%E8%B5%96) 与 [内部 API 数据链路](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#5-%E5%86%85%E9%83%A8-api-%E5%9C%A8-ssr-%E9%98%B6%E6%AE%B5%E7%BB%A7%E7%BB%AD%E6%89%A7%E8%A1%8C%E7%9C%9F%E6%AD%A3%E7%9A%84%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
 
 ## 4. 服务端渲染阶段执行组件逻辑，但不会执行浏览器渲染管线
 
