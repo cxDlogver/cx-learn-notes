@@ -786,6 +786,85 @@ Hydration
 
 SSR 提前的是“已有内容进入浏览器”的时间，并不自动消除客户端 JavaScript 成本。
 
+### 【服务端应用和客户端应用使用同一套组件定义，但承担不同生命周期】
+
+SSR 中服务端和浏览器都会创建 Vue / Nuxt Application，但它们不是同一个运行实例。
+
+可以先把两者区分成：
+
+```text
+Server App
+目的：Component + Data → HTML
+
+Client App
+目的：Component Runtime + Payload → 接管 Existing DOM
+```
+
+服务端收到一次 Document Request 后，会为当前请求创建请求级应用上下文：
+
+```text
+HTTP Request
+    ↓
+Create Server Vue App / NuxtApp
+    ↓
+Route / Data / Component
+    ↓
+Server Render
+    ↓
+HTML + Payload
+    ↓
+当前请求级应用结束使命
+```
+
+它面对的是 Request、SSR Context、Route 和首屏数据，主要输出 HTML 与可序列化 Payload。服务端没有真实 DOM，也不会进入浏览器中的长期交互生命周期。
+
+浏览器收到 HTML 后，还会加载框架生成的 Client JavaScript。这里的 JavaScript 不只是“页面业务代码”，还包含启动客户端应用所需的 Runtime 与入口程序：
+
+```text
+Client JavaScript
+    ↓
+Create Client Vue App / NuxtApp
+    ↓
+读取 Payload
+    ↓
+初始化 Router / Plugins / Components
+    ↓
+Mount / Hydration
+    ↓
+接管已有 DOM
+```
+
+因此服务端和客户端虽然都可能执行同一个 Page / Component 定义，但输入、输出和生命周期不同：
+
+| 对比 | Server App | Client App |
+| --- | --- | --- |
+| 创建时机 | 每次需要 SSR 的页面请求 | 浏览器首次启动当前页面应用 |
+| 主要输入 | Request、Route、Server Data、SSR Context | Existing DOM、Payload、当前 URL |
+| 是否有真实 DOM | 否 | 是 |
+| 主要目标 | 生成 HTML | Hydration 并持续管理页面 |
+| 生命周期 | 请求级，生成 Response 后结束 | 页面会话级，Hydration 后继续运行 |
+| 后续职责 | 不处理浏览器长期交互 | Event、State、Router、DOM Update |
+
+所以“客户端再次创建应用”并不是把服务端 App 传到了浏览器，而是：
+
+```text
+同一套 Application Definition
+        │
+        ├─ Server Bundle
+        │      ↓
+        │   Server App
+        │      ↓
+        │   HTML + Payload
+        │
+        └─ Client Bundle
+               ↓
+            Client App
+               ↓
+            Hydration
+```
+
+两边共享的是组件和应用定义；不共享的是运行实例和内存对象。
+
 ### 【Hydration 不是重新生成一遍 DOM，而是接管已有 DOM】
 
 Vue 对 Hydration 的定义是：客户端创建与服务端相同的应用，匹配每个组件应控制的已有 DOM 节点，并附加事件监听，使静态标记进入完整交互状态。[[1]](https://vuejs.org/guide/scaling-up/ssr)
