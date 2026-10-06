@@ -32,17 +32,17 @@ Hydration（水合）
 
 
 State / Data Continuity（状态与数据连续性）
-Route / Cookie / Request Data（请求输入）
-    ↓
-Server State（服务端渲染状态）
-    ↓
-HTML + Serialized Payload（序列化状态）
-    ↓
-Client Initial State（客户端初始状态）
-    ↓
-Hydration First Render（客户端首次渲染）
-    ↓
-Reactive Runtime（响应式运行时）
+请求输入（Route / Cookie / Request Data）
+    ↓ 建立本次请求的渲染状态
+服务端状态（Server State）
+    ↓ 序列化可安全传递的数据
+HTML 与序列化数据（HTML + Serialized Payload）
+    ↓ 浏览器恢复页面初始状态
+客户端初始状态（Client Initial State）
+    ↓ 与已有 HTML 建立运行关系
+水合首次运行（Hydration First Render）
+    ↓ 进入长期客户端状态更新
+响应式运行时（Reactive Runtime）
 ```
 
 第一条回答“页面从请求到可交互经历什么”；第二条回答“为什么服务端生成的 HTML 能被客户端继续接管，而不是重新开始”。
@@ -175,6 +175,8 @@ Cross-Request State Pollution（跨请求状态污染）
 
 Vue 官方因此强调 SSR 应用需要注意跨请求状态污染：服务器模块通常只初始化一次，而每个请求必须获得彼此隔离的应用和状态。[[1]](https://vuejs.org/guide/scaling-up/ssr)
 
+> **项目实践映射：** official-network 使用 Nuxt / Nitro 将 Document Request 映射到文件路由，并在当前请求上下文中继续页面生成。真实路由匹配与请求边界见 [项目分析：Document Request 到达 Nitro 后先匹配页面路由和请求上下文](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#3-document-request-%E5%88%B0%E8%BE%BE-nitro-%E5%90%8E%E5%85%88%E5%8C%B9%E9%85%8D%E9%A1%B5%E9%9D%A2%E8%B7%AF%E7%94%B1%E5%92%8C%E8%AF%B7%E6%B1%82%E4%B8%8A%E4%B8%8B%E6%96%87)。
+
 ## 3. 路由确定页面后，服务端需要先解决首屏渲染依赖的数据
 
 ### 【页面数据属于服务端渲染输入，而不是渲染完成后的附加步骤】
@@ -260,6 +262,8 @@ Nuxt 的 `useRequestFetch` 会在服务端请求中转发适合继续携带的�
 
 这意味着 SSR 数据层不仅是“请求接口”，还承担**当前请求身份与上下文的连续性**。
 
+> **项目实践映射：** 通用的“路由确定 → 解析首屏数据依赖 → 复用客户端初始数据”在 official-network 中由页面 `useFetch / useAsyncData`、Nitro Server API 与外部数据源共同完成，见 [项目分析：页面 setup 在服务端执行时会先解析首屏数据依赖](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#4-%E9%A1%B5%E9%9D%A2-setup-%E5%9C%A8%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%89%A7%E8%A1%8C%E6%97%B6%E4%BC%9A%E5%85%88%E8%A7%A3%E6%9E%90%E9%A6%96%E5%B1%8F%E6%95%B0%E6%8D%AE%E4%BE%9D%E8%B5%96) 与 [内部 API 数据链路](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#5-%E5%86%85%E9%83%A8-api-%E5%9C%A8-ssr-%E9%98%B6%E6%AE%B5%E7%BB%A7%E7%BB%AD%E6%89%A7%E8%A1%8C%E7%9C%9F%E6%AD%A3%E7%9A%84%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
+
 ## 4. 服务端渲染阶段执行组件逻辑，但不会执行浏览器渲染管线
 
 ### 【Server Render 的输出是 HTML 字符串而不是 DOM】
@@ -315,6 +319,8 @@ onMounted
 ```
 
 需要清理的定时器、DOM 监听等副作用也不应直接无条件放在 SSR 会执行的顶层代码中。
+
+> **项目实践映射：** Vue Server Renderer 如何在真实 Nuxt 页面中把已准备的数据和组件树转换成 HTML，并同时生成 SEO Head，可继续查看 [项目分析：数据准备完成后，Vue Server Renderer 把组件树转换成 HTML](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#6-%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87%E5%AE%8C%E6%88%90%E5%90%8Evue-server-renderer-%E6%8A%8A%E7%BB%84%E4%BB%B6%E6%A0%91%E8%BD%AC%E6%8D%A2%E6%88%90-html)。
 
 ## 5. 服务端返回的不只是页面正文 HTML，而是一份可继续运行的页面启动材料
 
@@ -495,6 +501,8 @@ Vue 官方列出的常见原因包括非法 HTML 被浏览器自动纠正、随�
 
 解决原则不是“关闭 Hydration 警告”，而是保证服务端与客户端初始状态来源一致；确实只能在浏览器确定的内容，再下沉到 Client-only 边界。
 
+> **项目实践映射：** official-network 的 HTML、Nuxt Payload 与客户端资源引用展示了“服务端输出可见内容 + 浏览器继续启动应用”的实际边界；浏览器随后恢复 Payload 并执行 Hydration。对应分析见 [返回给浏览器的内容组成](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#7-%E5%BD%93%E5%89%8D%E8%BF%94%E5%9B%9E%E7%BB%99%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E5%86%85%E5%AE%B9%E5%8F%AF%E4%BB%A5%E5%88%86%E6%88%90%E5%B7%B2%E7%94%9F%E6%88%90%E5%86%85%E5%AE%B9%E5%92%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%90%AF%E5%8A%A8%E6%9D%90%E6%96%99) 与 [浏览器恢复 Payload 并 Hydration](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#10-%E6%B5%8F%E8%A7%88%E5%99%A8%E6%94%B6%E5%88%B0-html-%E5%90%8E%E5%85%88%E6%98%BE%E7%A4%BA%E5%B7%B2%E6%9C%89%E5%86%85%E5%AE%B9%E5%86%8D%E6%81%A2%E5%A4%8D-nuxt-payload-%E5%B9%B6-hydration)。
+
 ## 7. SSR 代码设计必须显式区分 Universal、Server 与 Client 三种运行边界
 
 ### 【Universal Code 必须同时满足两种 Runtime】
@@ -578,6 +586,8 @@ Hero Shell
 
 因为 Client-only 边界越大，服务端可以提前输出的 HTML 越少。
 
+> **项目实践映射：** Universal / Server / Client 三类运行边界在 Nuxt 项目中具体表现为 `ClientOnly`、`import.meta.client`、`onMounted` 与 `.client.ts`。这些机制分别解决什么问题以及边界过大时会损失什么，可查看 [项目分析：ClientOnly 边界](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#8-clientonly-%E6%98%8E%E7%A1%AE%E5%86%B3%E5%AE%9A%E5%93%AA%E4%BA%9B%E5%86%85%E5%AE%B9%E4%B8%8D%E4%BC%9A%E8%BF%9B%E5%85%A5%E6%9C%8D%E5%8A%A1%E7%AB%AF%E4%B8%BB%E8%A6%81-html) 与 [Browser-only API 隔离](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#9-browser-only-api-%E9%80%9A%E8%BF%87-importmetaclientonmounted-%E5%92%8C-clientts-%E9%9A%94%E7%A6%BB)。
+
 ## 8. 水合完成后，应用从“首次 Document 请求”切换为长期客户端运行
 
 ### 【首次请求和后续页面切换属于两个不同阶段】
@@ -633,6 +643,8 @@ HTML 可见
 ```
 
 性能指标、生命周期和测试必须明确自己观察的是哪个阶段。
+
+> **项目实践映射：** 水合完成后的站内跳转不再重复完整 Document SSR 链，而主要进入客户端路由与数据更新流程。Nuxt 中这一切换可查看 [项目分析：Hydration 完成以后，后续站内跳转主要进入 Client Navigation](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#12-hydration-%E5%AE%8C%E6%88%90%E4%BB%A5%E5%90%8E%E5%90%8E%E7%BB%AD%E7%AB%99%E5%86%85%E8%B7%B3%E8%BD%AC%E4%B8%BB%E8%A6%81%E8%BF%9B%E5%85%A5-client-navigation)。
 
 ## 9. SSR 设计可以用请求、数据、输出和运行边界四组问题自检
 
@@ -700,11 +712,6 @@ Web 性能与 SEO
 - [SPA 路由核心知识点](<./S-SPA路由（history路由+hash路由）核心知识点笔记.md>)：继续理解 Hydration 后的客户端导航；
 - [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md)：继续分析 TTFB、HTML Delivery、Hydration 与主线程成本。
 
-### 【实战分析入口】
-
-Nuxt 项目的真实 SSR 请求、`useFetch` Payload、`ClientOnly`、浏览器 API 隔离和 Hydration 边界，可继续查看 official-network 项目中的《服务端渲染完整链路源码分析》：
-
-https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md
 
 ## 11. 参考文献
 
