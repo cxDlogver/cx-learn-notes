@@ -971,6 +971,72 @@ Client
 
 这项复用只针对当前已有的 SSR 初始数据。后续客户端导航、参数或 Key 变化、主动 Refresh，或者本来没有在 Server Fetch 的数据，仍然可能触发新的请求。
 
+### 【Hydration 完成后，Payload 从“传输载体”转成客户端运行时状态】
+
+Payload 不能只理解成 HTML 中的一段 JSON。更准确地说，它有两个阶段：
+
+```text
+Server
+可序列化页面数据
+    ↓
+Serialized Payload（序列化传输载体）
+    ↓
+HTML 内联数据 / 外部 Payload 文件
+    ↓
+Browser
+Client JavaScript 解析
+    ↓
+Client NuxtApp / Runtime State
+```
+
+因此要区分：
+
+```text
+序列化 Payload
+= Server → Client 的数据运输形式
+
+Client Runtime State
+= 客户端解析后真正继续使用的数据
+```
+
+以 Nuxt 为例，客户端启动时会读取页面中的 Nuxt Payload，解析后写入客户端 NuxtApp 的 `payload.data`、`payload.state` 等运行时结构。之后 `useFetch`、`useState` 和组件响应式状态主要使用 JavaScript 内存中的这份数据，而不是每次重新从 DOM 中读取序列化文本。
+
+所以 Hydration 完成后不能理解成：
+
+```text
+Payload 被使用
+    ↓
+Payload 消失
+```
+
+更准确的是：
+
+```text
+Serialized Payload
+    ↓ parse
+Client Runtime State
+    ↓
+Hydration
+    ↓
+继续被客户端应用使用
+```
+
+至于最初承载 Payload 的 HTML 节点是否被框架删除，是具体实现细节，不影响这条核心关系。即使该节点继续存在于 Document 中，它也只是已经完成主要启动职责的序列化载体，不是后续 Vue 状态管理的主要数据源。
+
+另外，一些框架还会把较大的 Payload 提取成独立文件：
+
+```text
+HTML
+└─ Payload Entry / Metadata
+
+External Payload File
+└─ Serialized Page Data
+```
+
+客户端加载并解析以后，最终仍然进入应用运行时状态。因此：
+
+> Payload 的关键不是“它是否继续留在 DOM”，而是“服务端数据如何安全地跨越网络边界，恢复成客户端应用能够继续使用的状态”。
+
 ### 【Hydration 要求服务端输出与客户端第一次结果保持确定性】
 
 客户端第一次执行组件时，应该得到与服务端 HTML 相同的初始结构：
