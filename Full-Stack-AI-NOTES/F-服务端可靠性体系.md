@@ -247,7 +247,7 @@ Database
 
 因此还需要明确 **Retry Ownership（重试责任）**：调用链中由哪一层负责把一次可恢复失败重新尝试。选择位置时要权衡两类成本——越靠下重试，重复工作通常越少；越靠上重试，更容易掌握完整业务 Deadline 和最终结果。关键不是机械规定“永远在最高层”或“永远在最低层”，而是避免多个层级对同一个失败同时进行无协调 Retry。
 
-Retry Budget（重试预算）进一步限制故障期间允许产生多少额外尝试。Token Bucket（令牌桶）可以作为一种实现：成功请求逐步补充 Retry Token，失败重试消耗 Token；预算耗尽后直接返回失败，而不是让故障流量继续无限放大。它与 Exponential Backoff / Jitter 解决的问题不同：Backoff 与 Jitter 调整重试发生的时间，Retry Budget 限制重试总量。AWS 也使用 Token Bucket 对客户端 Retry 进行本地限速。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+Retry Budget（重试预算）进一步限制故障期间允许产生多少额外尝试。Token Bucket（令牌桶）可以作为一种实现：每次 Retry 消耗有限 Token，Token 按既定策略恢复或补充；预算耗尽后停止无界重试，或只允许受控速率继续尝试。它与 Exponential Backoff / Jitter 解决的问题不同：Backoff 与 Jitter 调整重试发生的时间，Retry Budget 限制重试总量或速率。AWS 也使用 Token Bucket 对客户端 Retry 进行本地限速。[[4]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
 
 最小执行逻辑可以表示为：
 
