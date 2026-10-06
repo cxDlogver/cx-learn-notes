@@ -425,6 +425,39 @@ IntersectionObserver / ResizeObserver
 
 这些工作必须等浏览器得到 HTML 和客户端代码以后才能发生。
 
+### 【Server、Client Runtime 与 Browser 不是同一层概念】
+
+SSR 中容易把“服务端、客户端、浏览器”混在一起，原因是三者都可能被描述为“参与渲染”。更准确的区分是：
+
+| 概念 | 表示什么 | 主要职责 |
+| --- | --- | --- |
+| Server（服务端） | 服务器上的 JavaScript 运行环境 | 处理请求、获取数据、执行组件 SSR、生成 HTML |
+| Client Runtime（客户端运行时） | 浏览器中运行的 Vue / Nuxt JavaScript | 创建客户端应用、恢复状态、Hydration、事件和后续 UI 更新 |
+| Browser（浏览器） | Client Runtime 的宿主环境 | 网络、HTML 解析、DOM、CSS、Layout、Paint、Composite 等 |
+
+因此三种“渲染”也不是一回事：
+
+```text
+Server Rendering
+Component + Data
+        ↓
+HTML String
+
+Client Rendering
+Component + State
+        ↓
+创建 / 更新 DOM
+
+Browser Rendering
+DOM + CSS
+        ↓
+Layout / Paint / Composite
+        ↓
+Pixels
+```
+
+无论页面采用 SSR 还是 CSR，最终把 DOM 和 CSS 转换成屏幕像素的始终是浏览器；SSR 只是把首屏 HTML 的生成提前到了服务端。
+
 ### 【组件生命周期在服务端与浏览器并不对称】
 
 服务端渲染只需要得到一次 HTML 输出，并不存在组件真正插入浏览器文档后的长期交互生命周期。
@@ -596,6 +629,76 @@ Hydration Complete（水合完成）
 1. **结构关系恢复**：组件与现有 DOM 对应起来；
 2. **状态关系恢复**：客户端得到与服务器首屏一致的初始数据；
 3. **行为关系恢复**：事件、响应式更新、Router、插件等客户端运行能力继续建立。
+
+### 【Payload 负责数据交接，真正执行 Hydration 的是客户端 JavaScript】
+
+HTML、Payload 与 Client JavaScript 的职责不同：
+
+```text
+HTML
+→ 告诉浏览器“当前页面结构是什么”
+
+Serialized Payload
+→ 告诉客户端应用“服务端首屏使用了哪些初始数据和状态”
+
+Client JavaScript
+→ 提供组件、响应式、事件和 Hydration 的执行逻辑
+```
+
+因此不是：
+
+```text
+Payload
+→ 自己完成 Hydration
+```
+
+而是：
+
+```text
+Client JavaScript 启动
+        ↓
+读取 Payload
+        ↓
+恢复与服务端一致的初始状态
+        ↓
+客户端组件第一次执行
+        ↓
+与 Existing DOM 建立对应关系
+        ↓
+Hydration
+```
+
+这也解释了为什么 SSR-aware Data Fetching（支持 SSR 数据交接的数据获取机制）需要把服务端结果写入 Payload。
+
+以 Nuxt 的 `useFetch / useAsyncData` 为例，首次 SSR 时通常是：
+
+```text
+Server
+执行 useFetch
+    ↓
+真正获取数据
+    ↓
+页面用这份数据生成 HTML
+    +
+结果写入 Nuxt Payload
+```
+
+浏览器启动客户端应用后，同一页面逻辑还会再次执行并再次遇到 `useFetch`，但 Hydration 阶段会优先读取当前 Key 对应的 Payload Data。已经存在服务端结果时，不会为了首屏再重复执行同一次数据请求。[[2]](https://nuxt.com/docs/4.x/getting-started/data-fetching)
+
+```text
+Client
+再次执行 useFetch
+    ↓
+查找对应 Payload Data
+    ↓
+有服务端数据
+    ├─ 是 → 直接恢复 data → 继续 Hydration
+    └─ 否 → 才需要执行数据获取
+```
+
+这里“客户端再次执行 `useFetch`”与“客户端再次发送 HTTP 请求”必须区分。Composable 代码需要再次执行来恢复客户端应用，但首次 Hydration 命中 Payload 时，实际网络请求可以被跳过。
+
+这项复用只针对当前已有的 SSR 初始数据。后续客户端导航、参数或 Key 变化、主动 Refresh，或者本来没有在 Server Fetch 的数据，仍然可能触发新的请求。
 
 ### 【Hydration 要求服务端输出与客户端第一次结果保持确定性】
 
