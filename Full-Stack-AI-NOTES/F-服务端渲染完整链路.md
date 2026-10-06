@@ -1155,33 +1155,212 @@ Hero Shell
 
 ### 【首次请求和后续页面切换属于两个不同阶段】
 
-现代 SSR 框架通常不是每次用户点击链接都重新完成完整 SSR：
+现代 SSR 框架通常不会让每一次站内点击都重新创建一个完整 Document：
 
-```text
-Direct Visit / Refresh
+~~~text
+直接访问 / 刷新 / 外部进入
         ↓
-Document Request
+浏览器发起 Document Request
         ↓
-SSR
+服务端生成或复用页面响应
         ↓
-HTML
+HTML + 当前页面初始数据
         ↓
-Hydration
+Hydration（水合）
         ↓
-Client Runtime Ready
+客户端应用持续运行
         ↓
 后续站内导航
         ↓
-Client Router
+Client Router（客户端路由）
         ↓
-按需取数 / 切换组件
-        ↓
-更新当前 Document
-```
+在当前 Document 内切换页面
+~~~
 
 因此 SSR 与 SPA Navigation 并不冲突。
 
-页面刷新、新标签页直接打开 URL、外部进入等重新触发 Document Request 时，才再次进入新的 SSR 首次请求链路。
+### 【客户端导航不等于一定重新请求页面 API】
+
+后续导航需要解决两个不同问题：
+
+~~~text
+页面结构从哪里来？
+→ 客户端已经下载的页面组件代码
+
+目标页面的数据从哪里来？
+→ 可能重新请求 API
+→ 也可能加载目标 Route 已经生成的 Payload
+~~~
+
+以支持 Payload Extraction（页面数据提取）的 Nuxt 为例，客户端路由准备进入新页面时，可以根据目标 Route 加载该页面对应的 Payload，然后把其中的数据放入客户端数据缓存。Nuxt 4.3 的客户端 Payload 插件会在路由 beforeResolve 阶段调用 loadPayload(to.path)；payload.ts 再根据目标 Route 计算对应的 _payload.json / _payload.js 地址。[[13]](https://github.com/nuxt/nuxt/blob/v4.3.0/packages/nuxt/src/app/plugins/payload.client.ts)[[14]](https://github.com/nuxt/nuxt/blob/v4.3.0/packages/nuxt/src/app/composables/payload.ts)
+
+因此存在两条不同的数据路径：
+
+~~~text
+路径一：没有可复用的目标页面 Payload
+客户端进入目标页面
+↓
+页面 setup 执行
+↓
+useFetch / useAsyncData 没有命中已有数据
+↓
+真正请求 API
+↓
+得到新数据
+
+
+路径二：目标 Route 有可加载的 Payload
+客户端进入目标页面
+↓
+先加载这个 Route 的 Payload
+↓
+数据写入客户端缓存
+↓
+页面 setup 执行
+↓
+useFetch / useAsyncData 按相同 Key 命中已有数据
+↓
+直接复用，不重复请求同一个 API
+~~~
+
+所以：
+
+~~~text
+没有重新请求整份 HTML
+≠
+一定会直接请求数据 API
+~~~
+
+### 【Payload 是页面数据的传输结果，不等于浏览器缓存本身】
+
+Payload 可以先理解为：
+
+> 服务端或构建阶段已经得到的页面数据，被序列化成浏览器能够恢复的格式。
+
+例如一个页面在服务端执行：
+
+~~~text
+页面 Route
+↓
+useFetch('/api/article/123')
+↓
+得到 Article A
+↓
+生成 HTML
++
+把 Article A 写入页面 Payload
+~~~
+
+逻辑上形成两个相关结果：
+
+~~~text
+页面显示结果
+→ HTML
+
+页面数据结果
+→ Payload
+~~~
+
+Payload 可以通过不同载体到达浏览器：
+
+~~~text
+首次直达
+→ Payload 可以作为当前 HTML 启动材料的一部分
+→ 浏览器用它完成 Hydration
+
+后续客户端导航
+→ 框架可以单独请求目标 Route 的 Payload
+→ 不需要重新下载目标页面整份 HTML
+~~~
+
+因此 Payload 和 Cache（缓存）是两个不同概念：
+
+- Payload 描述“页面数据以什么形式交给客户端”；
+- Cache 描述“某个 HTML / Payload / API Response 能否直接复用”。
+
+对于 Prerender、SWR、ISR 等可复用页面，Payload 本身也可以成为对应 Route 的可复用结果；具体物理存储在文件、Server Cache、Reverse Proxy、CDN 还是其他存储中，由构建模式和部署环境决定，不能统一理解成“服务器硬盘里固定有一个 JSON 文件”。
+
+### 【页面 Route 决定加载哪份 Payload，数据 API 决定这份数据最初从哪里获得】
+
+这两个 URL 的职责不能混在一起：
+
+~~~text
+/article/123
+→ 页面 Route
+→ 决定进入哪个页面
+→ 也决定客户端导航时尝试加载哪份页面 Payload
+
+/api/article/123
+→ 数据 API
+→ 页面真正需要重新取数时的数据来源
+~~~
+
+首次生成页面时可能是：
+
+~~~text
+/article/123
+↓
+页面 setup
+↓
+useFetch('/api/article/123')
+↓
+API / 数据源
+↓
+Article A
+↓
+HTML A + Payload A
+~~~
+
+之后客户端站内进入 /article/123 时，如果该 Route 的 Payload A 可以复用：
+
+~~~text
+Client Router
+↓
+目标 Route = /article/123
+↓
+加载该 Route 的 Payload A
+↓
+useFetch 使用相同 Key
+↓
+直接得到 Article A
+↓
+不必再次请求 /api/article/123
+~~~
+
+所以“Payload 由哪个 Route 触发”和“Payload 里的数据最初来自哪个 API”是两个问题。
+
+### 【刷新会清空浏览器 JavaScript 内存，但不会自动清掉服务端页面缓存】
+
+浏览器中的 NuxtApp、组件状态和客户端数据缓存都属于当前 JavaScript Runtime：
+
+~~~text
+浏览器当前运行
+↓
+内存中已经有页面 Payload Data
+↓
+刷新
+↓
+旧 JavaScript Runtime 销毁
+↓
+旧内存数据消失
+↓
+创建新的 Client Runtime
+~~~
+
+但刷新浏览器并不会天然通知服务器删除这个 Route 的 SWR / CDN / Server Cache。
+
+因此完全可能出现：
+
+~~~text
+浏览器内存
+→ 刷新后重新开始
+
+服务端 / CDN 的页面与 Payload 缓存
+→ 仍然存在
+→ 下一次导航又把相同版本加载回新的浏览器内存
+~~~
+
+浏览器自身的 HTTP Cache 还可能再形成一层缓存，但它和 Nuxt Runtime 内存、服务端 Route Cache 是三个不同层次。
 
 ### 【“首次页面完成”需要区分多个完成点】
 
@@ -1198,16 +1377,16 @@ SSR 页面不存在唯一的“完成时刻”。至少要区分：
 
 因此：
 
-```text
+~~~text
 HTML 可见
 ≠ Hydration 完成
 ≠ 所有资源加载完成
 ≠ 页面后续不再发生更新
-```
+~~~
 
 性能指标、生命周期和测试必须明确自己观察的是哪个阶段。
 
-**项目实践映射：** 水合完成后的站内跳转不再重复完整 Document SSR 链，而主要进入客户端路由与数据更新流程。Nuxt 中这一切换可查看 [项目分析：Hydration 完成以后，后续站内跳转主要进入 Client Navigation](https://github.com/cxDlogver/official-network/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#12-hydration-%E5%AE%8C%E6%88%90%E4%BB%A5%E5%90%8E%E5%90%8E%E7%BB%AD%E7%AB%99%E5%86%85%E8%B7%B3%E8%BD%AC%E4%B8%BB%E8%A6%81%E8%BF%9B%E5%85%A5-client-navigation)。
+**项目实践映射：** official-network 的 /news/:id 同时存在 /news/:id 页面 Route、/api/news/:id 数据 API、SWR 页面缓存和 Nuxt Route Payload。直接访问与客户端导航如何分别复用 HTML / Payload，以及为什么 WordPress 更新后页面仍可能看到旧数据，见 [页面渲染策略与 Hybrid Rendering 源码分析](https://github.com/cxDlogver/official-network/blob/main/docs/页面渲染策略与Hybrid%20Rendering源码分析.md#4-新闻使用-swr-解决不能长期静态但也没必要每次都重新-ssr的矛盾)。
 
 ## 9. SSR 设计可以用请求、数据、输出和运行边界四组问题自检
 
@@ -1290,3 +1469,5 @@ Web 性能与 SEO
 10. [H3 - Request Lifecycle](https://h3.dev/guide/basics/lifecycle)
 11. [Nuxt 4 - Routing](https://nuxt.com/docs/4.x/getting-started/routing)
 12. [MDN - <script>: The Script element](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script)
+13. [Nuxt 4.3 Source - payload.client.ts](https://github.com/nuxt/nuxt/blob/v4.3.0/packages/nuxt/src/app/plugins/payload.client.ts)
+14. [Nuxt 4.3 Source - payload.ts](https://github.com/nuxt/nuxt/blob/v4.3.0/packages/nuxt/src/app/composables/payload.ts)
