@@ -17,7 +17,8 @@ Correctness
     ↓
 Performance
     ↓
-Schema Evolution / Operations
+长期运行与恢复
+（结构演进、数据恢复、运行维护）
 ~~~
 
 本文只建立数据库的通用框架与知识边界。PostgreSQL、MySQL、Drizzle 等用于验证通用概念，具体项目源码只作为实践入口。
@@ -548,6 +549,26 @@ Index 等额外数据结构可能提升读取，但 Insert / Update / Delete 也
 
 ## 7. 数据库长期运行还需要结构演进、可靠性与运维能力
 
+前六章解决了“数据怎样组织、访问、正确提交和高效查询”。数据库进入长期运行以后，还要继续回答另一组问题：
+
+~~~text
+Schema 怎样随版本演进
+        ↓
+已经 COMMIT 的状态为什么能在 Crash 后恢复
+        ↓
+历史正确状态怎样恢复
+        ↓
+主实例失效后谁继续提供服务
+        ↓
+超过单实例故障边界时怎样恢复业务
+        ↓
+正常运行期间怎样持续维护内部状态
+        ↓
+怎样观察这些机制是否仍然健康
+~~~
+
+因此数据库运行阶段不是一个“运维附录”，而是前面 Transaction、MVCC、Planner 等机制在长期运行环境中的继续。
+
 ### 【Schema Migration 让数据库结构随应用版本持续演进】
 
 ~~~text
@@ -562,33 +583,312 @@ Next Database State
 
 因此修改 schema.ts 不等于数据库已经修改，还必须确认项目采用的 Migration / Push / Deployment 流程。
 
-### 【Backup、Replication 与 High Availability 解决不同可靠性问题】
+长期运行时，Migration 还需要考虑新旧应用版本是否会在一段时间内同时访问数据库。更稳妥的演进通常要求：
 
 ~~~text
-Backup / Restore
-    ↓
-数据损坏或误操作以后如何恢复
-
-Replication
-    ↓
-如何维护数据副本
-
-High Availability
-    ↓
-实例故障后如何继续提供服务
-
-Disaster Recovery
-    ↓
-严重故障后如何恢复业务
+先增加兼容结构
+        ↓
+新旧版本都能工作
+        ↓
+发布新应用
+        ↓
+完成数据迁移 / Backfill
+        ↓
+确认旧版本退出
+        ↓
+再删除旧结构
 ~~~
 
-这些能力会继续涉及 RPO、RTO、WAL / Binlog、Failover 等更深知识。当前主文档只保留入口，不在入门阶段展开具体产品实现。
+这把 Schema Evolution 与 Rolling Deployment 连接起来：数据库结构不是只在开发阶段设计一次，而是要在不停机或有限停机条件下持续演进。
 
-### 【Monitoring 与 Capacity Management 让数据库可以长期稳定运行】
+### 【Durability 与 Recovery 让已提交状态在 Crash 后仍可恢复】
 
-长期运行至少需要继续观察 Connections、Query Latency、Slow Queries、Lock / Conflict、CPU / Memory / I/O、Storage Growth、Replication Lag 和 Backup Result。
+事务（Transaction）解决的是多个数据库操作如何形成一个正确提交边界；持久性（Durability）继续回答：
 
-完整数据库框架最终收敛为：
+> Transaction 已经 COMMIT 以后，如果数据库进程或机器突然停止，怎样恢复这些已经确认成功的数据？
+
+通用数据库通常不会要求每次修改都立刻把所有数据页同步写回最终数据文件，而会先记录足够的恢复信息，再允许数据页按更合适的时机落盘。不同 DBMS 的具体实现不同，例如 PostgreSQL 使用 Write-Ahead Log（WAL，预写日志），MySQL InnoDB 使用 Redo Log。
+
+以 PostgreSQL 为例，WAL 的基本原则是：
+
+~~~text
+Transaction 修改数据
+        ↓
+生成 WAL Record
+        ↓
+提交所需 WAL 先持久化
+        ↓
+COMMIT 可以完成
+        ↓
+Data Page 可以随后写回
+~~~
+
+PostgreSQL 官方说明，WAL 的核心规则是“描述数据文件变化的日志记录必须先写入持久存储，数据页本身才可以随后写入”；发生 Crash 后，可以通过重放 WAL 恢复数据库状态。[[16]](https://www.postgresql.org/docs/18/wal-intro.html)
+
+因此：
+
+~~~text
+Transaction Atomicity
+→ 一次业务修改是否整体成立
+
+Durability / Recovery Log
+→ 已提交结果是否有可恢复依据
+~~~
+
+两者不能混为一件事。
+
+数据库 Crash 后的恢复链可以概括为：
+
+~~~text
+Database Crash
+        ↓
+Restart
+        ↓
+读取 Checkpoint 之后的 Recovery Log
+        ↓
+Replay / Redo 必要变化
+        ↓
+恢复一致状态
+        ↓
+重新提供服务
+~~~
+
+这层主要解决数据库自身的 Crash Recovery。它并不能单独解决整块存储永久损坏、误删数据或整个故障域失效，因此还需要 Backup、Replication 与 Disaster Recovery。
+
+### 【Backup 与 Point-in-Time Recovery 提供历史状态恢复能力】
+
+Backup（备份）解决的是：
+
+> 当前数据库已经损坏、误删或写入错误时，能否恢复到过去的正确状态？
+
+这和 Crash Recovery 不同。Crash Recovery 假设数据库自己的持久化介质和恢复日志仍然可用；Backup 则为更大的故障和逻辑错误保留另一份恢复来源。
+
+常见恢复来源可以分成：
+
+~~~text
+Logical Backup
+→ 导出逻辑对象和数据
+
+Physical / Base Backup
+→ 保存数据库物理状态
+
+Base Backup + Log Archive
+→ 在基础备份以后继续保留恢复日志
+→ 支持恢复到某个历史时间点
+~~~
+
+PostgreSQL 将 SQL Dump、File System Level Backup、Continuous Archiving 作为不同备份方式；Continuous Archiving 可以把 Base Backup 与持续归档的 WAL 组合起来。[[17]](https://www.postgresql.org/docs/18/backup.html)
+
+时间点恢复（Point-in-Time Recovery，PITR）：从一个基础备份开始，继续重放后续恢复日志，直到目标时间点，而不是只能恢复到“备份创建时刻”。
+
+例如：
+
+~~~text
+10:00 Base Backup
+        ↓
+10:00 ~ 15:29 持续归档 WAL
+        ↓
+15:30 误执行 DELETE
+        ↓
+恢复 Base Backup
+        ↓
+Replay WAL 到 15:29:59
+        ↓
+得到误删之前的数据库状态
+~~~
+
+PostgreSQL 官方的 Continuous Archiving / PITR 文档明确描述了这种 Base Backup + WAL Archive 的恢复模型。[[18]](https://www.postgresql.org/docs/18/continuous-archiving.html)
+
+所以：
+
+~~~text
+Backup File Exists
+≠
+已经具备可验证的恢复能力
+~~~
+
+还必须定期执行 Restore Drill（恢复演练）：在隔离环境真正 Restore、应用必要日志、启动数据库、执行一致性检查和关键业务验证，并记录实际恢复时间。
+
+### 【Replication、Failover 与 High Availability 解决在线实例故障】
+
+Replication（复制）解决的是持续维护数据副本：
+
+~~~text
+Primary
+        ↓
+Replication Stream / WAL
+        ↓
+Standby / Replica
+~~~
+
+如果 Primary 故障，可以把某个 Replica 提升为新的 Primary，这个接管过程就是 Failover（故障切换）。
+
+因此三个概念要分开：
+
+~~~text
+Replication
+→ 有没有持续同步的数据副本
+
+Failover
+→ 主实例失败后由谁接管
+
+High Availability
+→ 发生目标范围内故障时，服务能否在可接受时间内继续
+~~~
+
+仅仅“存在 Replica”并不自动等于完整高可用。真正的 HA 还需要 Failure Detection、Promotion、Client Routing / Service Discovery，以及避免两个节点同时认为自己是 Primary 的冲突控制。
+
+同样，Replica 不能替代 Backup。错误 DELETE、错误 UPDATE 或错误 Migration 也可能被正常复制到所有 Replica：
+
+~~~text
+Primary 误删
+        ↓
+Replication 正常工作
+        ↓
+Replica 同样完成误删
+~~~
+
+因此可以用一句边界记住：
+
+> **Replication 主要保护“当前实例失效”，Backup 主要保护“正确历史丢失”。**
+
+### 【RPO 与 RTO 把数据保护要求转换成可设计目标】
+
+恢复点目标（Recovery Point Objective，RPO）：故障发生后最多允许丢失多长时间的数据。
+
+恢复时间目标（Recovery Time Objective，RTO）：故障发生后最多允许多久恢复到可提供业务服务的状态。
+
+它们分别约束：
+
+~~~text
+RPO
+→ Backup Frequency
+→ WAL / Log Archive
+→ Replication Mode
+→ 同步确认强度
+
+RTO
+→ Restore Automation
+→ Standby Readiness
+→ Failover Automation
+→ Recovery Environment
+~~~
+
+例如：
+
+~~~text
+RPO = 5 min
+RTO = 30 min
+~~~
+
+意味着不能仅凭“每天做一次备份”就认为满足要求。反过来，如果只是低价值内部工具，允许 RPO = 24h、RTO = 8h，也没有必要默认建设同步复制和跨区域自动切换。
+
+因此数据库可靠性应从业务恢复目标倒推机制，而不是先选择“主从、备份、PITR”再寻找使用理由。
+
+### 【Disaster Recovery 处理超过正常高可用边界的故障】
+
+High Availability 通常围绕一个预先定义的故障范围设计，例如单进程、单实例、单主机或单可用区故障。
+
+Disaster Recovery（灾难恢复，DR）继续处理更大的故障：
+
+~~~text
+整个 Region 不可用
+多个副本同时损坏
+账号 / 权限故障影响在线环境
+备份介质和生产环境同时受影响
+严重逻辑错误已经传播到所有在线副本
+~~~
+
+因此 DR 常需要：
+
+~~~text
+Off-site / Cross-region Copy
+        +
+Isolated Backup
+        +
+Recovery Runbook
+        +
+定期 Restore / Failover Drill
+~~~
+
+数据库正文只负责解释这些机制在数据生命周期中的位置；跨服务 Failure Domain、整体业务 Failover、SLO 和演练治理继续由 [服务端可靠性体系](./F-服务端可靠性体系.md) 作为横向总入口。
+
+### 【数据库长期运行需要持续维护 Storage 与 Statistics】
+
+数据库内部状态并不是写入以后永远不需要维护。
+
+前面已经建立两条知识链：
+
+~~~text
+MVCC
+→ 并发读写时保存不同可见版本
+
+Statistics
+→ Planner 估算候选 Query Plan
+~~~
+
+长期运行以后，两者都会产生持续维护需求。
+
+以 PostgreSQL 为例，MVCC 更新和删除后会留下不再对任何活跃事务可见的旧 Row Version。VACUUM 用于回收这些版本可占用的空间，并防止 Transaction ID Wraparound 等问题；ANALYZE 负责采集表内容分布统计，供 Planner 估算 Query Cost。Autovacuum 会自动调度 VACUUM 和 ANALYZE。[[19]](https://www.postgresql.org/docs/18/routine-vacuuming.html)
+
+因此可以形成两条长期运行链：
+
+~~~text
+MVCC
+        ↓
+旧版本持续产生
+        ↓
+Storage Maintenance
+        ↓
+Vacuum / Cleanup
+
+Data Distribution 变化
+        ↓
+Statistics 逐渐过时
+        ↓
+Statistics Maintenance
+        ↓
+Analyze
+        ↓
+Planner 获得更准确估算
+~~~
+
+这里的关键不是记住 PostgreSQL 的命令，而是理解：
+
+> 数据库的并发控制和查询优化机制，会反过来产生长期维护成本。
+
+不同 DBMS 的实现名称不同，但都需要持续处理空间回收、统计更新、索引与存储增长等问题。
+
+### 【Observability 与 Capacity Management 验证数据库是否仍然健康】
+
+Monitoring 不是只看“Database Process Alive”，而是要观察数据库是否仍能在预期容量和延迟下完成工作。
+
+至少可以按四组信号理解：
+
+| 维度 | 典型信号 | 回答的问题 |
+| --- | --- | --- |
+| Workload | Connections、QPS、Read / Write Ratio | 当前进入多少数据库工作 |
+| Query | Query Latency、Slow Query、Plan Change | 查询为什么变慢 |
+| Concurrency | Lock Wait、Deadlock、Conflict、Pool Wait | 是否发生资源竞争 |
+| Storage / Recovery | Storage Growth、Vacuum Lag、Replication Lag、Backup / Restore Result | 数据是否可持续保存和恢复 |
+
+Capacity Management 继续回答：
+
+~~~text
+Connection 上限够不够
+        ↓
+CPU / Memory / I/O 是否接近饱和
+        ↓
+Storage Growth 是否可持续
+        ↓
+Index / Table 是否不断膨胀
+        ↓
+Replication Lag 是否扩大
+        ↓
+Backup Window 与 Restore Time 是否仍满足目标
+~~~
+
+最终数据库长期运行的主线可以收束为：
 
 ~~~text
 Data Model
@@ -605,7 +905,9 @@ Performance
     ↓
 Schema Evolution
     ↓
-Reliability / Operations
+Durability / Recovery
+    ↓
+Maintenance / Observability
 ~~~
 
 ### 【数据库知识继续连接具体专题与项目实践】
@@ -613,6 +915,7 @@ Reliability / Operations
 通用知识入口：
 
 - [服务端完整框架体系](./F-服务端完整框架体系.md)：理解数据库为什么属于服务端状态与数据体系。
+- [服务端可靠性体系](./F-服务端可靠性体系.md)：从数据库内部的 Transaction、WAL、Backup、Replication、PITR 继续进入系统级 Failure Model、RPO / RTO、Failover、HA、DR、SLO 与故障演练；数据库正文负责数据库内部机制，可靠性正文负责跨系统横向治理。
 - [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)：从 Database Transaction 继续进入 Dual Write Problem 与 Transactional Outbox，理解数据库状态变化怎样可靠地连接后台任务和消息发布。
 - [MySQL 数据类型与 Java 数据访问映射](./D-DATABASE.md)：继续学习 MySQL Server Type → JDBC / Connector/J → Java Application Type。
 
@@ -622,7 +925,7 @@ Reliability / Operations
 - [Browser Monitor 服务端数据管理源码学习-2](../browser-monitor/docs/服务端数据管理源码学习-2.md)：Transaction 与 Concurrency Control 的项目实践。
 - [Browser Monitor 服务端数据管理源码学习-3](../browser-monitor/docs/服务端数据管理源码学习-3.md)：TimescaleDB 与 Time-Series Data Management 的进一步实践。
 
-项目文档用于验证和扩展通用知识，不作为 Database、Transaction、Index 等概念的定义来源。
+这些项目文档用于验证已经核实的数据库实践，不代表当前项目已经实现 Database HA、自动 Failover、PITR 或跨区域 DR；未在项目源码和部署配置中确认的能力只保留为通用知识。
 
 ## 8. 参考文献
 
@@ -655,3 +958,11 @@ Reliability / Operations
 [14] PostgreSQL Global Development Group. *Examining Index Usage*. PostgreSQL 18 Documentation. https://www.postgresql.org/docs/18/indexes-examine.html
 
 [15] Drizzle Team. *Migrations*. Drizzle ORM Documentation. https://orm.drizzle.team/docs/migrations
+
+[16] PostgreSQL Global Development Group. *Write-Ahead Logging*. PostgreSQL 18 Documentation. https://www.postgresql.org/docs/18/wal-intro.html
+
+[17] PostgreSQL Global Development Group. *Backup and Restore*. PostgreSQL 18 Documentation. https://www.postgresql.org/docs/18/backup.html
+
+[18] PostgreSQL Global Development Group. *Continuous Archiving and Point-in-Time Recovery*. PostgreSQL 18 Documentation. https://www.postgresql.org/docs/18/continuous-archiving.html
+
+[19] PostgreSQL Global Development Group. *Routine Vacuuming*. PostgreSQL 18 Documentation. https://www.postgresql.org/docs/18/routine-vacuuming.html
