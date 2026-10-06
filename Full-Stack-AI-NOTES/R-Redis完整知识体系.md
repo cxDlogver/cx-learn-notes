@@ -861,6 +861,8 @@ ACK
 
 因此 Stream 已经跨入异步消息处理知识域，需要继续结合 Broker / Queue / Kafka 等模型比较。
 
+这里需要同时建立一个边界：**Stream 是 Redis Keyspace 中的数据类型，Pub/Sub Channel 不是 Redis Data Type，也不保存为 Key。** Stream Entry 会进入 Redis Dataset；Pub/Sub 则通过 Channel 把消息直接推送给当前在线 Subscriber。两者虽然都能传递消息，但状态模型不同。[17][49]
+
 ### 【数据结构选择最终可以用“状态—操作—生命周期”判断】
 
 面对一个新状态，不要先问“用 String 还是 Hash”。
@@ -1793,6 +1795,103 @@ Prewarm
 ~~~
 
 具体选择要看 Query 成本、是否允许短时旧数据、并发规模和锁失败策略。
+
+### 【Pub/Sub 把即时通知直接分发给当前在线订阅者】
+
+Redis 除了通过 Keyspace 保存共享 Dataset，还提供发布/订阅（Publish/Subscribe，Pub/Sub）：Publisher 向 Channel 发布消息，Redis 将消息立即分发给当时已经订阅该 Channel 的 Subscriber。[49]
+
+~~~text
+共享 Dataset
+│
+├── Keyspace
+│   └── Key → Typed Value
+│       ├── String / Hash / Set / Sorted Set
+│       └── Stream
+│
+└── 即时消息分发
+    └── Publisher
+        ↓ PUBLISH
+      Channel
+        ↓
+      当前在线 Subscriber
+~~~
+
+Keyspace 中的数据可以继续读取，并由 TTL、Persistence、Replication 等机制管理生命周期；Pub/Sub Channel 负责消息路由，不把每条消息保存成随后可以读取的 Key。Subscriber 必须在消息发布时在线，才能接收到这次通知。
+
+因此 Pub/Sub 更适合回答“哪些当前在线节点需要立即知道某件事发生了”，而不是回答“这件事是否已经被可靠保存，离线 Consumer 恢复以后能否继续处理”。
+
+Redis 官方将 Pub/Sub 的交付语义定义为 at-most-once（至多一次）：消息发送后不会因为 Subscriber 处理失败或网络断开而重新交付；Subscriber 离线期间发布的消息也不会在重连后补发。[49]
+
+### 【Pub/Sub 与 Streams 的核心区别是消息是否成为可恢复状态】
+
+Pub/Sub 与 Streams 都能把消息从 Producer 传给 Consumer，但它们首先解决的是不同问题。
+
+~~~text
+需要通知当前在线节点
+        ↓
+消息错过后是否需要恢复？
+        │
+        ├── 不需要
+        │      ↓
+        │   Pub/Sub
+        │      ↓
+        │   当前在线 Subscriber
+        │
+        └── 需要
+               ↓
+            Streams
+               ↓
+            Stream Entry
+               ↓
+            Consumer Group / Pending / ACK / Claim
+~~~
+
+| 维度 | Pub/Sub | Streams |
+| --- | --- | --- |
+| 核心对象 | Channel + 当前在线 Subscriber | Stream Key + Entry + Consumer State |
+| 消息历史 | 不保存离线历史 | Entry 保存在 Stream 中，可按 ID 读取 |
+| 消费状态 | 不维护 ACK / Pending | Consumer Group 可维护 Pending、ACK、Claim |
+| 典型目标 | 即时广播 | 可恢复消费、事件流、Worker 协作 |
+
+Streams 的 Consumer Group 会维护 Last Delivered ID 和 Pending Entries，并允许 Consumer 通过 XACK 确认处理结果、通过 XCLAIM / XAUTOCLAIM 接管未完成消息。[17]
+
+但“Streams 保存消息状态”不等于“消息在任何故障下都绝不会丢”。Stream 和 Consumer Group State 仍然依赖 Redis 自身的 Persistence 与 Replication。Redis 官方明确说明，默认异步 Replication 下，Failover 时仍可能缺失尚未复制到 Replica 的 XADD 或 Consumer Group 状态变化；如果消息持久性重要，还需要继续设计 AOF fsync、Replication、WAIT 与 Failover 边界。[17]
+
+~~~text
+Pub/Sub
+→ Live Broadcast
+→ At-most-once
+→ No Replay
+
+Streams
+→ Persisted Stream State
+→ History / Consumer Group / ACK / Recovery
+→ 最终可靠性继续受 Redis Persistence / Replication 约束
+~~~
+
+### 【即时通知应建立在可恢复状态之上，而不是承担唯一事实来源】
+
+如果一个事件不能因为 Subscriber 短暂离线就永久消失，不应该只依赖 PUBLISH。更稳妥的通用模型是：
+
+~~~text
+先修改 Durable / Recoverable State
+        ↓
+再 PUBLISH 即时通知
+        ↓
+在线节点立即响应
+
+某个节点错过通知
+        ↓
+Reconnect / Reconcile
+        ↓
+重新读取真实状态
+~~~
+
+Redis 官方 Pub/Sub 工程指导也建议：需要 Replay 的事实应保存在普通 Redis Key、Stream 或外部持久系统中，Pub/Sub 只承担即时 Transport；断线后的恢复依靠 Durable State，而不是等待 Pub/Sub 补发。[50]
+
+这个模型适合 Cache Invalidation Notification、Session Revocation Broadcast、WebSocket 多节点通知和 Configuration Change Hint。共同前提是：通知用于加速状态传播，真实状态仍有可恢复来源。
+
+如果业务需要 Durable Acceptance、ACK、Retry、Dead Letter、Crash Recovery 等完整任务语义，就已经进入异步任务与消息处理体系，而不能把 Pub/Sub 当成“更轻的可靠 Queue”。继续阅读 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md)。
 
 ### 【Redis 快不只是因为 Memory，而是整个执行路径更直接】
 
@@ -3711,8 +3810,8 @@ ACL / TLS / Secret / Config 是否受控？
 | Counter | 常见 | INCR / HINCRBY | 是否允许统计丢失 |
 | 排行榜 | 很适合 | Sorted Set | Big Key、范围查询规模 |
 | Sliding Window | 很适合 | Score = Time | Member Cleanup + TTL |
-| 瞬时广播 | 可用 Pub/Sub | 简单低延迟 | 无离线历史 |
-| 轻量持久流 | 可用 Streams | Consumer Group + ACK | 与 Broker 的边界 |
+| 瞬时广播 | 可用 Pub/Sub | 面向当前在线 Subscriber 的即时 Fan-out | At-most-once、无离线历史、不能承担唯一事实来源 |
+| 可恢复消息流 | 可用 Streams | Stream Entry + Consumer Group + ACK / Claim | 仍需结合 Persistence / Replication 设计故障边界 |
 | 复杂订单事实 | 通常不应只放 Redis | 强事务、长期权威历史 | Database Source of Truth |
 | 跨表复杂查询 | 不适合 | Redis 非关系查询模型 | 关系数据库 / Analytics Store |
 
@@ -3848,3 +3947,7 @@ Browser Monitor 是这套 Redis 体系的一个真实工程映射：
 [47] Redis. Client Handling and maxclients. https://redis.io/docs/latest/develop/reference/clients/
 
 [48] Redis. ACL SETUSER. https://redis.io/docs/latest/commands/acl-setuser/
+
+[49] Redis. Redis Pub/Sub. https://redis.io/docs/latest/develop/pubsub/
+
+[50] Redis. Redis Pub/Sub Messaging Use Case. https://redis.io/docs/latest/develop/use-cases/pub-sub/
