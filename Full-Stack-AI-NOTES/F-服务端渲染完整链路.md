@@ -718,6 +718,62 @@ Paint
 
 与此同时浏览器继续发现并请求 JavaScript、CSS、图片、字体等资源。
 
+这里还要区分脚本的加载方式。传统普通脚本：
+
+```html
+<script src="/app.js"></script>
+```
+
+如果 HTML Parser 在文档中途遇到它，通常需要暂停 HTML 解析，等待脚本下载并执行后再继续。早期页面因此常把普通 `<script>` 放在 `body` 尾部，尽量让主要 HTML 先被解析。
+
+另一种方式是在 `head` 中使用：
+
+```html
+<script src="/app.js" defer></script>
+```
+
+其运行关系可以简化为：
+
+```text
+HTML 持续解析 ─────────────→ 解析完成
+      │
+      └─ 同时下载 JavaScript
+                              ↓
+                         执行 defer 脚本
+```
+
+`defer` 使外部脚本下载不再阻塞 HTML Parser，并在文档解析完成后执行。[[12]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script)
+
+现代前端框架通常使用 ES Module（ES 模块）作为客户端入口：
+
+```html
+<script type="module" src="/app.js"></script>
+```
+
+Module Script 默认就具有类似 `defer` 的延迟执行行为，因此通常不需要再额外声明 `defer`。[[12]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script)
+
+所以 SSR 中“服务端内容可以先显示”不能简单归因于“script 一定放在 body 尾部”，更准确的是：
+
+```text
+HTML Response 到达
+    ↓
+HTML Parser 持续解析服务端 HTML
+    ↓
+发现 CSS / Module Script 等资源
+    ↓
+浏览器并行加载资源
+    ↓
+DOM + 必要样式满足绘制条件
+    ↓
+服务端内容可以先 Paint
+    ↓
+Client JavaScript 执行
+    ↓
+Hydration
+```
+
+需要注意，**不阻塞 HTML Parse 不代表 JavaScript 没有首屏成本**。JavaScript 的下载、解析、执行以及 Hydration 仍然会占用网络与主线程资源，并影响页面进入完整可交互状态的时间。
+
 因此可能出现一个真实时间窗口：
 
 ```text
@@ -1088,3 +1144,4 @@ Web 性能与 SEO
 9. [Nuxt 4 - Server Directory](https://nuxt.com/docs/4.x/guide/directory-structure/server)
 10. [H3 - Request Lifecycle](https://h3.dev/guide/basics/lifecycle)
 11. [Nuxt 4 - Routing](https://nuxt.com/docs/4.x/getting-started/routing)
+12. [MDN - <script>: The Script element](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script)
