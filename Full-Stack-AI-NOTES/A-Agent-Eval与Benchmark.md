@@ -153,6 +153,84 @@ Agent Trial
 
 因此，Agent 的实现路径不应该因为与 Reference Solution 不同就自动失败。
 
+### 【Dataset 把真实任务分布转换成可重复评测样本】
+
+单个 Task 定义“怎样测试一个场景”，Dataset（评测数据集 / Task Portfolio）解决的是另一个问题：**应该选择哪些 Task，才能让评测结果代表真正关心的能力、风险和真实任务分布。**
+
+一个可持续维护的 Dataset 通常不是随意收集大量 Case，而是从不同来源持续形成具有代表性的任务组合：
+
+~~~text
+真实任务空间
+  ↓
+候选 Case 来源
+  ├── 产品需求与人工验收 → Capability Case
+  ├── 风险与策略边界     → Safety Case
+  ├── 生产日志与用户反馈 → Real-world Case
+  ├── 历史失败           → Regression Case
+  └── 新能力边界         → Challenge Case
+          ↓
+清洗 / 去重 / 标注 / 成功标准确认
+          ↓
+Dataset
+          ↓
+按评测目标组织为 Evaluation Suite
+~~~
+
+上游输入是真实需求、生产行为、历史失败和风险边界；这一层解决“测试样本是否代表真正问题”，输出是可以被 Harness 重复加载的 Task 集合。进入下一层 Trial 后，评测系统才开始回答 Agent 在这些任务上实际表现怎样。OpenAI 的 Evaluation Best Practices 也把 Collect Dataset 放在定义目标之后、定义指标和持续评测之前，并建议综合生产数据、领域数据、人工整理数据、合成数据和历史数据。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+
+Dataset 的质量不能只用 Case 数量衡量。更重要的是：
+
+| 维度 | 需要回答的问题 |
+| --- | --- |
+| Coverage | 关键能力、失败模式和风险是否被覆盖 |
+| Representativeness | Case 是否接近真实任务分布，而不是只覆盖容易构造的样本 |
+| Difficulty | 是否同时存在基础任务与能够继续区分能力上限的困难任务 |
+| Risk Distribution | 低频但高风险场景是否因为占比低而被总体平均分掩盖 |
+| Label / Grader Quality | Success Criteria、Reference Solution 和 Grader 是否能够公平判断结果 |
+
+如果 Dataset 与生产分布明显失配，即使分数很高，也不能直接推断真实系统同样可靠。OpenAI 将“不忠实反映生产流量模式的数据集”列为 Eval 设计的反模式，并建议覆盖 typical、edge 与 adversarial cases。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+
+Dataset 还需要同时覆盖**行为应该发生**和**行为不应该发生**的 Case。Anthropic 指出，单边 Eval 会产生单边优化：如果只测试“需要搜索时是否搜索”，Agent 可能通过“几乎总是搜索”获得高分，却没有学会什么时候不应该搜索。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+~~~text
+Behavior Eval
+  ├── Positive Case：条件满足时，目标行为应该发生
+  └── Negative Case：条件不满足时，目标行为不应该发生
+~~~
+
+因此 Tool Selection、Handoff、Approval、Search、Retry 等行为型 Eval，都应检查触发不足与过度触发两个方向，而不是只验证其中一侧。
+
+Dataset 同时存在一个开发边界：**反复针对固定 Eval Case 调整 Prompt、Tool 或 Harness，可能得到对这些 Case 的局部优化，而不是可泛化能力。** 工程上可以把数据职责区分为：
+
+~~~text
+Development Set
+→ 用于日常迭代、定位和快速反馈
+
+Holdout / Fresh Set
+→ 用未参与直接优化的 Case 检查泛化
+
+Regression Set
+→ 保存历史失败和关键已获得能力，持续防止退化
+~~~
+
+这不是要求所有 Agent Eval 都采用固定的数据集比例，而是强调“用于优化的样本”和“用于独立验证的样本”不能在概念上完全混为一体。OpenAI 的评测实践同样使用 held-out set 说明独立验证，并把持续扩充 Eval Set 作为 Continuous Evaluation 的一部分。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+
+Dataset 也不仅验证 Agent，还能帮助验证 Grader。对带有人类标签、Reference Solution 或专家判断的样本，可以比较自动 Grader 与人工判断：
+
+~~~text
+Dataset Sample
+  ↓
+Human Label / Reference Solution
+  ↓
+Automated Grader
+  ↓
+Agreement / Disagreement
+  ↓
+Grader Calibration
+~~~
+
+因此 Reference Solution、Transcript Review 与 Grader Calibration 不是彼此孤立的质量手段：它们共同保证“Task 可解、Case 有代表性、Grader 能公平测量”。
+
 ### 【Trial 是 Task 的一次具体执行】
 
 Trial（一次尝试）表示 Agent 对同一个 Task 的一次完整运行。由于模型输出和 Agent 路径具有非确定性，同一个 Task 应根据评测目标运行多次 Trial，而不是把单次 Pass / Fail 当成稳定能力结论。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
@@ -352,6 +430,18 @@ Evaluation Harness
 ### 【Evaluation Suite 组织一组具有共同目标的 Task】
 
 Evaluation Suite 是为某类能力或行为组织的一组 Task。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+Dataset 与 Evaluation Suite 的职责不同：Dataset 负责保存和维护可评测的 Task Portfolio，Suite 负责按照某个评测目标选择、组织其中的 Task。一个 Task 可以因为能力、风险或历史失败来源进入 Dataset，再根据当前目标进入 Capability、Safety 或 Regression Suite。
+
+~~~text
+Task Source
+  ↓
+Dataset：维护可重复评测的任务集合
+  ↓ 按目标选择与组织
+Evaluation Suite
+  ↓
+Evaluation Harness 执行 Trial
+~~~
 
 例如 Coding Agent 可以分别维护：
 
@@ -566,9 +656,37 @@ Eval Validation 至少可以包含：
 
 Anthropic 建议持续阅读失败 Trial 的 Transcript，因为它能区分“Agent 真正做错”与“Grader 拒绝了合法方案”。Capability Eval 接近 100% 后也会逐渐失去继续衡量能力增长的信号，需要增加更困难的 Task 或将已稳定任务迁入 Regression Suite。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
-### 【生产失败应该沉淀为 Regression Case】
+### 【生产数据与失败持续推动 Dataset Evolution】
 
-一个可持续 Eval 体系应该形成：
+一个可持续 Eval 体系不只把单次 Production Failure 写成 Regression Case，还需要持续从生产日志、用户反馈、失败 Trial 和新需求中挖掘 Case，让 Dataset 随真实任务分布和系统能力一起演化：
+
+~~~text
+Production Logs / User Feedback / Trial Results
+  ↓
+Failure Mining 与新场景发现
+  ↓
+Case Selection
+  ↓
+Task 定义与 Success Criteria
+  ↓
+Dataset / Evaluation Suite
+  ↓
+多次 Trial
+  ↓
+Trace + Outcome
+  ↓
+Grader
+  ↓
+Failure Analysis
+  ├── Agent / Prompt / Tool / Harness 改进
+  └── Eval Task / Grader / Environment 修正
+          ↓
+重新运行
+          ↓
+新的生产事实继续进入 Dataset
+~~~
+
+生产失败仍然是其中最重要的输入之一：
 
 ~~~text
 Production Failure
@@ -584,7 +702,9 @@ Next Version
 Re-run
 ~~~
 
-这样 Eval 不只是上线前的一次考试，而是持续积累系统真实失败经验。
+OpenAI 建议在开发过程中持续记录运行事实，从日志中挖掘新的 Eval Case，并在每次变化中持续评测、逐步扩展 Eval Set。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices) Anthropic 也将 Evaluation Suite 视为需要长期维护的 living artifact：真实失败、产品需求和能力变化会不断产生新的 Task。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+因此 Dataset Evolution 的目标不是机械增加 Case 数量，而是让评测集合持续覆盖当前真实任务、关键风险、历史回归和新的能力边界。
 
 ## 8. 项目中的 Agent Benchmark 调研属于实践映射而不是已实现 Eval 系统
 
@@ -646,3 +766,9 @@ Regression Store
 [5] MIALON, Grégoire; FOURRIER, Clémentine; SWIFT, Craig; WOLF, Thomas; LECUN, Yann; SCIALOM, Thomas. [GAIA: a benchmark for General AI Assistants](https://arxiv.org/abs/2311.12983)[EB/OL]. 2023-11-21[2026-09-30].
 
 [6] OPENAI. [Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals)[EB/OL]. [2026-09-30].
+
+[7] OPENAI. [Evaluation best practices](https://developers.openai.com/api/docs/guides/evaluation-best-practices)[EB/OL]. [2026-10-07].
+
+[8] OPENAI. [Getting started with datasets](https://developers.openai.com/api/docs/guides/evaluation-getting-started)[EB/OL]. [2026-10-07].
+
+> OpenAI 当前正在弃用旧 Evals Platform：官方计划于 2026-10-31 将其设为只读，并于 2026-11-30 关闭。本文使用 Dataset、Eval Run、Trace、Grader 等概念时均按通用评测对象理解，不把旧平台的具体产品形态作为 Agent Eval 的稳定架构定义。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
