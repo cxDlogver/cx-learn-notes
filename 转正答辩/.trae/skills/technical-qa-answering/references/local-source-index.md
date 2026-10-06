@@ -213,14 +213,14 @@
 
 | 用途 | 对应目录或文档 | 可定位内容 |
 |---|---|---|
-| Nuxt 专题 | `_posts/Nuxt/SEO 工程体系.md` | Nuxt、SEO、元信息、服务端/混合渲染 |
+| Nuxt 专题 | `_posts/Nuxt/Nuxt SEO 学习笔记.md` | Nuxt、SEO、元信息、服务端/混合渲染 |
 | Nuxt 实践 | `_posts/Nuxt/实战记录.md` | Nuxt 项目实践记录 |
 | 项目复盘 | `_posts/Project/官网开发.md` | 官网项目、SEO 工程化、首屏优化 |
 | 项目总览 | `_posts/Project/项目概述.md` | 官网项目面试表达 |
 
 快速查找：
 
-- 想学 Nuxt SEO，看 `_posts/Nuxt/SEO 工程体系.md`。
+- 想学 Nuxt SEO，看 `_posts/Nuxt/Nuxt SEO 学习笔记.md`。
 - 想看官网项目表达，看 `_posts/Project/官网开发.md`。
 
 ### 13. Node.js、后端与数据库
@@ -355,7 +355,7 @@
 | WebSocket 项目 | `_posts/Project/走航车项目.md` |
 | 地图可视化 | `_posts/Project/二维地图绘制.md`、`_posts/Project/能源平台项目.md` |
 | ECharts | `_posts/Project/12-ECharts从0到1.md` |
-| Nuxt SEO | `_posts/Nuxt/SEO 工程体系.md` |
+| Nuxt SEO | `_posts/Nuxt/Nuxt SEO 学习笔记.md` |
 | AI Agent 架构 | `AI/第一篇 AI Agent 开发报告.md` |
 | Prompt / Skill / MCP / Tools / CLI | `AI/AI 核心工具体系.md` |
 | AI-DLC / Spec Kit | `_posts/AI/AI团队赋能` |
