@@ -341,90 +341,180 @@ Hybrid Rendering：按页面分别选择策略
 - SWR / ISR 只适合能够共享并容忍一定旧内容的页面；
 - Hybrid 只是把不同策略组合到同一个应用。
 
-## 4. SWR 与 ISR 解决的是“生成结果如何复用和更新”，不是新的页面生成位置
+## 4. SWR 与 ISR 解决的是“生成结果怎样复用和更新”，而不是新的页面生成位置
 
-### 【SWR 的核心是先复用 stale 结果，再后台更新】
+页面已经生成以后，还会出现第二类问题：**这个结果可以复用多久，什么时候重新生成，更新期间用户拿旧结果还是等待新结果。**
 
-SWR（Stale-While-Revalidate，过期内容先返回并后台重新验证）首先是缓存语义。RFC 5861 允许缓存在指定 stale 窗口内先返回旧响应，同时异步重新验证，以隐藏重新验证带来的等待。[[2]](https://www.rfc-editor.org/rfc/rfc5861.html)
-
-把这一思想用于完整页面响应，可以抽象为：
+这和“HTML 最初在哪里生成”是两个维度：
 
 ~~~text
-第一次请求或没有缓存
+页面生成
+├─ 浏览器生成（CSR）
+├─ 请求到来后由服务端生成（SSR）
+└─ 构建阶段提前生成（SSG / Prerender）
+
+生成结果的复用与更新
+├─ 长期复用静态结果
+├─ 按 TTL 过期
+├─ 过期后先返回旧结果、后台更新（SWR）
+└─ 部署后按页面继续生成或更新静态结果（ISR）
+~~~
+
+### 【传统 SSG 常以整次 Build 作为更新边界，但“全量重建”不是 SSG 的标准定义】
+
+传统 SSG（Static Site Generation，静态站点生成）通常在一次构建中读取当时的数据，再生成一批静态页面：
+
+~~~text
+开始构建
 ↓
-生成页面响应
+读取当前数据
 ↓
-写入缓存
+生成站点页面
+↓
+形成一套部署产物
+↓
+发布到服务器 / CDN
+↓
+后续请求直接读取这些结果
+~~~
+
+部署完成后，静态文件本身不会主动监听数据库或 CMS。源数据发生变化时，已经生成的 HTML 不会自动知道，因此经典工程流程往往重新进入：
+
+~~~text
+源数据变化
+↓
+重新执行站点 Build
+↓
+得到新一批静态产物
+↓
+重新部署
+~~~
+
+这就是“改了一篇文章，却可能触发一次整站 Build”的来源。
+
+但要注意：
+
+> SSG 本身只规定页面在请求前提前生成，并没有规定实现一定重新计算所有页面。
+
+工程上可以自行构建 Partial Build（部分构建）、依赖图或只部署变化文件。ISR 的价值在于把“部署以后仍能按页面重新生成”变成框架直接提供的运行能力，而不是要求业务自己搭增量构建系统。
+
+### 【SWR 关注缓存已经过期时，这次请求应该拿什么】
+
+SWR（Stale-While-Revalidate，过期内容先返回并后台重新验证）首先是一种缓存语义。RFC 5861 允许缓存在 stale 窗口内先返回旧响应，同时异步重新验证，从而避免当前请求等待重新验证完成。[[2]](https://www.rfc-editor.org/rfc/rfc5861.html)
+
+应用到页面响应时，可以理解为：
+
+~~~text
+没有缓存
+↓
+生成页面并建立缓存
 
 缓存仍在有效期内
 ↓
-直接返回已有页面
+直接返回当前结果
 
-缓存过期
+缓存已经过期
 ↓
-先把旧页面返回给用户
-+
-后台重新生成新页面
+当前请求先得到旧结果
 ↓
-新页面替换旧缓存
+后台重新生成页面
+↓
+用新结果替换旧缓存
 ~~~
 
-所以 SWR 不是另一套 Vue Renderer，而是在已有页面生成能力外增加“复用 + 更新”策略。
+因此 SWR 回答的重点是：
 
-它解决的是：
+> **页面已经需要更新时，是否允许当前用户继续使用旧结果，让更新过程在后台完成。**
+
+它并不天然负责监听数据库有没有变化。
+
+### 【ISR 关注静态结果在部署以后能否按页面继续生成和更新】
+
+ISR（Incremental Static Regeneration，增量静态再生成）解决的是传统静态生成的另一个限制：页面发布后仍会变化，但不希望每次变化都重新构建整个站点。
+
+更准确的“增量”含义是：
 
 ~~~text
-SSG / Prerender
-→ 请求时几乎不需要重新生成
-→ 但内容通常要重新构建才能更新
+某个页面达到重新生成条件
+↓
+重新生成这个页面对应的结果
+↓
+替换这个页面的静态 / CDN 缓存
+↓
+其他没有触发更新的页面继续复用原结果
+~~~
 
-每次请求 SSR
-→ 内容可以按请求生成
-→ 但重复消耗服务端计算
+这里“只更新需要的页面”**不表示框架会自动分析数据库依赖并找出所有受影响页面**。它通常表示：哪个 Route 被时间规则、请求、主动失效或框架 API 判定为需要重新生成，就重新生成这个 Route，而不是重新执行整个站点 Build。
 
+ISR 不是统一的 Web 标准，不同框架和部署平台在触发条件、缓存位置、阻塞或后台更新方式上都可能不同。
+
+### 【“源数据有没有变化”和“页面怎样重新生成”是两个独立问题】
+
+SWR / ISR 经常被误解成会持续监听数据库。更准确的完整链路是：
+
+~~~text
+第一步：为什么认为页面可能需要更新？
+├─ TTL 到期
+├─ CMS Webhook / 业务事件
+├─ 数据变更事件
+├─ 手动失效 / Cache Purge
+└─ 其他框架触发条件
+        ↓
+第二步：是否需要确认源数据真的变化？
+├─ 不确认：直接重新生成
+└─ 确认：比较 ETag / Last-Modified / Version 等
+        ↓
+第三步：页面进入重新生成
+        ↓
+第四步：新结果替换缓存
+~~~
+
+HTTP 缓存中的 ETag + If-None-Match、Last-Modified + If-Modified-Since 属于“重新验证资源是否变化”的机制；RFC 9111 对这些 Validator（验证器）和条件请求进行了定义。[[6]](https://www.rfc-editor.org/rfc/rfc9111.html)
+
+所以几个概念的职责应该分开：
+
+~~~text
+变化发现 / 更新触发
+→ TTL、Webhook、事件、主动失效
+
+变化确认
+→ ETag、Last-Modified、版本号、Hash
+
+页面重新生成
+→ 再执行页面的数据获取与渲染
+
+更新期间怎样响应用户
+→ 等待新结果
+   或
+→ SWR：先返回旧结果、后台更新
+~~~
+
+### 【Nuxt 中 SWR 与 ISR 行为高度接近，差异必须回到具体平台理解】
+
+Nuxt 当前 Route Rules 可以配置 swr、isr、prerender 和 ssr:false。官方文档说明，swr 可以缓存完整响应，在 TTL 过期后先返回旧响应并后台重新生成；isr 具有相近的重新生成行为，并可以在支持的平台上使用 CDN Cache。[[3]](https://nuxt.com/docs/4.x/guide/concepts/rendering)
+
+因此不能简单记成：
+
+~~~text
 SWR
-→ 大多数请求直接复用缓存结果
-→ 过期后在后台重新生成
+→ 后台更新
+
+ISR
+→ 单页更新
 ~~~
 
-SWR 通常不适合直接用于共享用户私有页面，因为公共 Cache Key 如果没有包含用户身份维度，就可能造成跨用户页面复用。
+因为 SWR 同样可以只重新生成当前过期的 Route。更稳定的区分是：
 
-### 【ISR 强调构建以后继续增量创建或更新静态结果】
+| 维度 | SWR | ISR |
+| --- | --- | --- |
+| 出发点 | 缓存过期后怎样响应 | 静态结果如何在部署后继续更新 |
+| 是否复用旧结果 | 是 | 取决于框架具体实现 |
+| 是否可以按 Route 重新生成 | 可以 | 可以 |
+| 是否要求重新 Build 全站 | 不需要 | 不需要 |
+| 是否属于统一 Web 标准 | stale-while-revalidate 有 HTTP 缓存语义来源 | 否，属于框架 / 平台能力 |
+| 在 Nuxt 中的主要差异 | Server / Reverse Proxy 缓存语义 | 支持平台可进一步使用 CDN Cache |
 
-ISR（Incremental Static Regeneration，增量静态再生成）关注：
-
-> 页面不适合每次都全站重新 Build，但仍希望保持静态结果的低请求成本。
-
-抽象关系：
-
-~~~text
-已有静态页面结果
-↓
-满足请求触发或重新验证条件
-↓
-只重新生成需要更新的页面
-↓
-更新对应的静态结果 / CDN 缓存
-↓
-其他页面继续复用，不需要整站重新构建
-~~~
-
-ISR 不是统一 Web Standard，不同框架和部署平台的触发方式、缓存位置以及阻塞 / 非阻塞行为可能不同。
-
-Nuxt 当前官方文档中，Route Rules 可以配置 `swr`、`isr`、`prerender` 和 `ssr:false`。其中 `swr` 可以让过期响应先返回并在后台再生成；`isr` 在支持的平台上可以进一步使用 CDN Cache。[[3]](https://nuxt.com/docs/4.x/guide/concepts/rendering)
-
-因此不要简单写：
-
-~~~text
-SWR 与 ISR 都处理“旧结果如何更新”
-但二者不是完全相同的机制
-~~~
-
-更准确的理解是：
-
-> 两者都解决生成结果如何在部署后继续更新，但 SWR 更接近 stale-while-revalidate 缓存语义，ISR 更强调增量更新静态结果；具体行为必须回到框架和部署平台确认。
-
-**项目实践映射：** official-network 当前新闻 Route 使用 `swr: 86400`，没有配置 ISR。缓存需要首次建立或后台再生成时，仍会执行页面数据获取与 Server Render。对应分析见 [新闻使用 SWR 的真实链路](https://github.com/cxDlogver/official-network/blob/main/docs/页面渲染策略与Hybrid%20Rendering源码分析.md#4-新闻使用-swr-解决不能长期静态但也没必要每次都重新-ssr的矛盾)。
+**项目实践映射：** official-network 当前新闻 Route 使用 swr: 86400，没有配置 ISR，也没有实现 WordPress 内容变化驱动的主动缓存失效。因此 WordPress 更新和页面缓存更新是两条不同链路。具体见 [新闻 SWR、Payload 与 WordPress 数据新鲜度](https://github.com/cxDlogver/official-network/blob/main/docs/页面渲染策略与Hybrid%20Rendering源码分析.md#4-新闻使用-swr-解决不能长期静态但也没必要每次都重新-ssr的矛盾)。
 
 ## 5. Hydration 把服务端或构建阶段生成的 HTML 接回客户端应用
 
@@ -493,6 +583,8 @@ CSR 所说明的“主要页面内容由浏览器生成”
 ~~~
 
 一个应用可以首次请求使用 SSR 或 Prerender，同时在 Hydration 后由 Client Router 完成后续页面切换。
+
+客户端导航也不能简单理解成“页面组件一定重新请求 API”。支持 Payload Extraction（页面数据提取）的框架可以在导航到目标 Route 时单独加载该页面已经生成的数据 Payload，再由 useFetch / useAsyncData 按稳定 Key 复用这些数据。Payload 的产生、存储、刷新后生命周期以及“页面 Route Payload”和“数据 API”之间的关系，继续进入 [服务端渲染完整链路](./F-服务端渲染完整链路.md#8-水合完成后应用从首次-document-请求切换为长期客户端运行)。
 
 ## 6. Hybrid Rendering 把渲染策略从整站选择下沉为 Route 选择
 
@@ -760,3 +852,4 @@ Hybrid Rendering（混合渲染）
 3. [Nuxt 4 - Rendering Modes](https://nuxt.com/docs/4.x/guide/concepts/rendering)
 4. [Google Search Central - Understand the JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
 5. [Google Search Central - Dynamic rendering as a workaround](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering)
+6. [RFC 9111 - HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111.html)
