@@ -88,7 +88,7 @@ Lighthouse 主要覆盖第一层和第二层中的**少量可自动检测技术�
 
 上一层确定“页面必须先进入搜索系统”，这一层继续解决两个问题：**搜索引擎怎样知道 URL 存在，以及知道后是否能够访问。**
 
-### 【Internal Link 和 Sitemap 解决 URL Discovery，而不是保证索引】
+### 【Internal Link 和 Sitemap 都能帮助发现 URL，但表达的信息不同】
 
 一个重要页面最好能够从站内其他可发现页面通过真实链接到达。Google 的开发者 SEO 指南明确建议使用带 href 的 a 元素，并让每个重要页面至少能从另一个可发现页面通过链接到达。[[14]](https://developers.google.com/search/docs/fundamentals/get-started-developers)
 
@@ -98,52 +98,144 @@ Lighthouse 主要覆盖第一层和第二层中的**少量可自动检测技术�
 <a href="/product/a">产品 A</a>
 ~~~
 
-可抓取的链接既帮助用户导航，也向搜索引擎提供页面关系。Sitemap（站点地图）则补充提供站点希望搜索引擎发现的 URL 集合，尤其适合动态内容、大型站点或内部链接覆盖不足的场景。Google 明确说明 Sitemap 是发现提示，不保证其中 URL 一定被抓取或索引。[[3]](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview)
-
-二者关系更适合理解为：
+这里要区分两个问题：
 
 ~~~text
-站内链接
-→ 建立页面之间真实的内容关系与发现路径
+问题一：
+搜索引擎知不知道 /product/a 这个 URL 存在？
 
-Sitemap
-→ 给搜索引擎额外提交希望发现的规范 URL 集合
-
-两者都不能直接推出：
-“这个 URL 一定会被索引”
+问题二：
+搜索引擎能不能从当前页面识别出
+“当前页面链接到了 /product/a”这条关系？
 ~~~
 
-### 【robots.txt 控制抓取，noindex 控制索引，两者职责不能混用】
+Sitemap、外部链接、历史抓取记录、其他页面链接，都可能让搜索引擎发现某个 URL，所以不能说“只有 <a> 才能让搜索引擎知道 URL”。
+
+但如果工程目标是稳定表达页面之间的 Internal Link（站内链接）关系，最可靠的形式仍然是：
+
+~~~html
+<a href="/news/123">新闻详情</a>
+~~~
+
+而不是：
+
+~~~html
+<article onclick="go('/news/123')">...</article>
+
+<button onclick="go('/news/123')">...</button>
+~~~
+
+后两种依赖 JavaScript 行为才能知道目标地址，不能等同于标准可抓取链接。
+
+因此：
+
+~~~text
+Sitemap
+→ 告诉搜索引擎：
+“这些 URL 存在，希望你发现它们”
+
+<a href>
+→ 告诉搜索引擎：
+“当前页面明确链接到了这个 URL”
+→ 同时形成站内链接图和 Anchor Text（锚文本）语义
+~~~
+
+两者互补，但不能互相完全替代。
+
+### 【SPA 路由不妨碍使用标准链接】
+
+在 Vue / Nuxt 中不需要为了 SEO 放弃客户端路由。
+
+例如：
+
+~~~vue
+<NuxtLink to="/news/123">
+  新闻详情
+</NuxtLink>
+~~~
+
+最终会渲染为标准 Anchor：
+
+~~~html
+<a href="/news/123">新闻详情</a>
+~~~
+
+同时浏览器点击后仍然可以由 Nuxt Router 拦截并完成 SPA Client Navigation。
+
+因此理想关系是：
+
+~~~text
+HTML 层
+→ <a href>
+→ 搜索引擎能够识别链接
+
+客户端运行时
+→ Router 拦截点击
+→ 保留 SPA 导航体验
+~~~
+
+### 【robots.txt 不是 SEO 必配项，没有限制需求时可以不配置复杂规则】
 
 robots.txt 属于 Robots Exclusion Protocol（爬虫访问规则），主要回答：
 
 > 某类爬虫是否允许请求这个 URL？
 
-而 robots meta / X-Robots-Tag 中的 `noindex` 回答：
+如果网站没有任何需要限制抓取的公开路径，就没有必要为了“做 SEO”强行增加复杂 Disallow。
 
-> 搜索引擎访问页面以后，是否允许把它保留在搜索索引中？
-
-正确关系：
+可以理解为：
 
 ~~~text
-robots.txt
-→ Crawl Control（抓取控制）
+没有特殊 robots 规则
+→ 默认允许正常抓取
 
-noindex
-→ Index Control（索引控制）
+有需要限制的路径
+→ robots.txt 再配置 Disallow
 ~~~
 
-Google 明确指出：如果 URL 被 robots.txt 阻止，Google 可能无法看到页面中的 `noindex`；被阻止抓取的 URL 仍可能基于其他信号出现在搜索结果中。[[4]](https://developers.google.com/search/docs/crawling-indexing/block-indexing)
-
-所以“公开可访问，但不希望进入搜索结果”的页面通常应：
+工程上仍可以保留一个简单 robots.txt，用于显式表达默认允许策略，并声明 Sitemap：
 
 ~~~text
-允许爬虫访问
-+
-返回 noindex
+User-agent: *
+Allow: /
+
+Sitemap: https://example.com/sitemap.xml
 ~~~
 
-而真正的私有内容不应该依赖 robots 或 noindex 保密，而应该由 Authentication / Authorization（身份认证与访问控制）阻止未授权访问。
+这里的 Allow: / 不是“开启 SEO”的开关，而只是显式表达规则。
+
+### 【robots.txt 控制抓取，noindex 控制索引，两者职责不能混用】
+
+robots.txt：
+
+~~~text
+Crawl Control（抓取控制）
+→ 爬虫能不能请求这个 URL
+~~~
+
+noindex：
+
+~~~text
+Index Control（索引控制）
+→ 页面被访问以后，能不能进入搜索索引
+~~~
+
+Google 明确指出：如果 URL 被 robots.txt 阻止，Google 可能无法看到页面中的 noindex；被阻止抓取的 URL 仍可能基于其他信号出现在搜索结果中。[[4]](https://developers.google.com/search/docs/crawling-indexing/block-indexing)
+
+因此：
+
+~~~text
+页面公开可访问
+但不希望出现在搜索结果
+→ 允许抓取 + noindex
+
+页面本身就不应该公开
+→ Authentication / Authorization
+
+只是希望减少某些爬虫抓取
+→ robots.txt
+~~~
+
+不能把 robots.txt 当成“禁止收录”或“保护私密内容”的替代品。
 
 ### 【HTTP 状态码是页面生命周期的一部分，不只是后端细节】
 
@@ -165,73 +257,294 @@ Google 明确指出：如果 URL 被 robots.txt 阻止，Google 可能无法看�
 
 因此 SEO 工程应把删除、迁移、下架和合并页面纳入发布流程，而不是所有异常都渲染一个“找不到”组件后仍返回 200。
 
-**项目实践映射：** official-network 的动态 Product、Job、News URL 如何进入 Sitemap，以及开发中页面如何处理 robots / noindex，可继续查看 [项目分析中的 URL 发现与索引治理](https://github.com/cxDlogver/official-network/blob/main/docs/SEO工程体系源码分析.md)。
+**项目实践映射：** official-network 当前 News / Jobs 的点击导航、Sitemap 和 /develop 抓取 / 索引策略，见 [SEO 工程体系源码分析](https://github.com/cxDlogver/official-network/blob/main/docs/SEO工程体系源码分析.md)。
 
-## 3. 索引与规范化层决定“哪一个 URL 代表这份内容”
+## 3. 索引与规范化层决定“哪个 URL 进入索引、哪个 URL 代表这份内容”
 
-页面能被访问以后，并不意味着每个可访问 URL 都应该成为独立搜索结果。排序参数、筛选参数、协议、尾斜杠、复制内容、多语言版本都可能形成多个 URL 指向相同或近似内容。
+页面能被访问以后，还要继续区分两个问题：
 
-Canonicalization（规范化）解决的是：
+~~~text
+这个页面要不要进入搜索索引？
+→ noindex
 
-> 一组重复或高度相似 URL 中，哪个 URL 应代表这份内容。
+如果多个 URL 内容重复或高度相似，
+哪个 URL 应作为主版本？
+→ Canonical
+~~~
 
-### 【rel=canonical 是规范化信号，不是强制命令】
+### 【Canonical 表示“规范 URL / 主版本 URL”】
 
-典型页面：
+Canonical（规范 URL）用于告诉搜索引擎：
+
+> 多个相同或高度相似的 URL 中，我希望哪一个 URL 代表这份内容。
+
+例如同一个新闻列表可能出现：
+
+~~~text
+/news
+/news?category=AI
+/news?year=2026
+/news?search=agent
+~~~
+
+如果这些 Query 只是筛选状态，而不希望它们分别成为独立搜索落地页，可以让它们统一声明：
 
 ~~~html
-<link rel="canonical" href="https://example.com/news/123">
+<link
+  rel="canonical"
+  href="https://example.com/news"
+/>
 ~~~
 
-Google 会综合 Redirect、`rel=canonical`、Sitemap 等信号选择规范 URL，并明确说明站点声明的 canonical 是信号，Google 仍可能选择不同 URL。[[5]](https://developers.google.com/search/docs/crawling-indexing/canonicalization)
-
-因此工程上应让多个信号一致：
+逻辑是：
 
 ~~~text
-内部链接
-→ 指向规范 URL
+/news?category=AI
+/news?year=2026
+/news?search=agent
+        │
+        └──── Canonical ───→ /news
+~~~
 
-Canonical
-→ 指向规范 URL
+Canonical 不是：
+
+~~~text
+“禁止当前 URL 被索引”
+~~~
+
+而是：
+
+~~~text
+“这些页面高度相似，
+如果需要选代表版本，
+建议把 /news 当成主版本”
+~~~
+
+因此 Canonical 和 noindex 不能互相替代。
+
+### 【Canonical 主要解决重复 URL 和信号分散问题】
+
+常见来源包括：
+
+~~~text
+统计参数
+/product/a?utm_source=google
+
+来源参数
+/product/a?ref=homepage
+
+筛选参数
+/news?category=AI
+
+排序参数
+/list?sort=time
+
+协议 / 域名 / 尾斜杠差异
+https://example.com/page
+https://www.example.com/page/
+~~~
+
+如果这些 URL 指向相同或高度相似内容，搜索引擎就需要自己判断哪个是主要版本。
+
+Canonical 的作用是帮助：
+
+~~~text
+多个近似 URL
+↓
+收敛到一个主要 URL
+↓
+减少重复页面判断成本
+↓
+让内部链接、Sitemap、页面规范信号尽量保持一致
+~~~
+
+### 【Canonical 是强信号，但不是搜索引擎必须执行的命令】
+
+不是：
+
+~~~text
+开发者声明 canonical
+↓
+Google 必须照做
+~~~
+
+而是：
+
+~~~text
+rel=canonical
++
+Redirect
++
+Sitemap
++
+Internal Link
++
+页面内容相似度
+↓
+搜索引擎综合判断
+↓
+选择最终 Canonical
+~~~
+
+所以 Search Console 中可能同时存在：
+
+~~~text
+User-declared canonical
+→ 网站声明的规范 URL
+
+Google-selected canonical
+→ Google 最终选择的规范 URL
+~~~
+
+如果二者不同，就应该检查站点是否发出了冲突信号。
+
+### 【Canonical、Redirect、Sitemap 和 Internal Link 应尽量指向同一 URL】
+
+理想状态：
+
+~~~text
+站内链接
+→ /news/123
 
 Sitemap
-→ 提交规范 URL
+→ /news/123
 
-重定向
-→ 旧 URL / 非首选 URL 收敛到规范 URL
+Canonical
+→ /news/123
 
-页面内容
-→ 与规范 URL 对应内容一致
+旧 URL Redirect
+→ /news/123
 ~~~
 
-而不是：
+不理想状态：
 
 ~~~text
-内部链接 → /page?a=1
-Sitemap  → /page
-Canonical → /page?sort=2
+Internal Link
+→ /news?id=123
+
+Sitemap
+→ /news/123
+
+Canonical
+→ /article/123
 ~~~
 
-### 【Sitemap 的 lastmod 应表达真实显著更新时间】
+SEO 工程关注的是 URL Governance（URL 治理）的一致性，而不是单独“有没有 canonical 标签”。
 
-Google 对 Sitemap 中 `<lastmod>` 的使用建立在“长期准确”基础上；它应该反映页面最后一次显著内容修改，而不是每次构建时间或无意义地持续变化。Google 对 `priority` 和 `changefreq` 不予使用。[[6]](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
+### 【Sitemap 中 loc、lastmod、changefreq、priority 的职责并不相同】
 
-所以一个动态 Sitemap 更应该关注：
+一个 Sitemap Entry 可能是：
+
+~~~ts
+{
+  loc: '/news/123',
+  lastmod: post.modified,
+  changefreq: 'daily',
+  priority: 0.8,
+}
+~~~
+
+四个字段可以分别理解为：
+
+| 字段 | 含义 | Google 当前是否重点使用 |
+| --- | --- | --- |
+| loc | 页面 URL | 是，Sitemap 的核心 |
+| lastmod | 最后一次显著修改时间 | 会参考，但要求长期准确 |
+| changefreq | 站点声明“预计多久变化一次” | Google 忽略 |
+| priority | 站点声明“相对本站其他 URL 的重要程度” | Google 忽略 |
+
+### 【lastmod 应表达真实显著修改时间，而不是机械写发布时间或构建时间】
+
+例如：
 
 ~~~text
+9 月 1 日发布文章
+10 月 5 日修改正文
+~~~
+
+那么更合理的是：
+
+~~~text
+lastmod = 10 月 5 日
+~~~
+
+而不是仍然：
+
+~~~text
+lastmod = 9 月 1 日
+~~~
+
+如果数据源区分：
+
+~~~text
+date
+→ 发布时间
+
+modified
+→ 最后修改时间
+~~~
+
+Sitemap 更应该使用能够真实反映页面重大更新的 modified。
+
+同时也不应该每次 Build 都无条件把 lastmod 改成当前时间，否则搜索引擎无法判断这个字段是否可信。
+
+### 【changefreq 不是抓取调度器】
+
+~~~text
+changefreq: daily
+~~~
+
+并不表示：
+
+~~~text
+Google 每天一定抓一次
+~~~
+
+它只是站点自己声明“预计变化频率”。Google 当前会忽略这个字段，因此不能把它描述成“控制 Googlebot 抓取频率”。
+
+### 【priority 不是 SEO 权重，更不会直接影响排名】
+
+~~~text
+priority: 0.8
+~~~
+
+只是在 Sitemap 协议层表达：
+
+~~~text
+这个 URL 相对本站其他 URL
+由站点自己认为比较重要
+~~~
+
+它不是：
+
+~~~text
+Google 排名权重 = 0.8
+~~~
+
+Google 当前也忽略该字段。
+
+因此对 Google SEO，更值得维护的是：
+
+~~~text
+Sitemap
+↓
 URL 是否完整
-+
-是否为规范 URL
-+
-lastmod 是否真实可信
+↓
+是否提交 Canonical URL
+↓
+lastmod 是否真实准确
 ~~~
 
-而不是花大量精力调：
+而不是不断调整：
 
 ~~~text
-priority = 0.7 / 0.8
-changefreq = daily / weekly
+priority = 0.8 还是 0.9
+changefreq = daily 还是 weekly
 ~~~
+
+Google 对 Sitemap 的说明同样强调：Sitemap 是发现提示，不保证 URL 一定抓取、索引或获得排名。[[3]](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview)[[6]](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
+
+**项目实践映射：** official-network 当前 /news Query Canonical、WordPress Sitemap 的 lastmod / priority / changefreq 以及前 100 条限制，见 [SEO 工程体系源码分析](https://github.com/cxDlogver/official-network/blob/main/docs/SEO工程体系源码分析.md)。
 
 ## 4. 页面语义与搜索展示层让搜索引擎理解“这一页是什么”
 
