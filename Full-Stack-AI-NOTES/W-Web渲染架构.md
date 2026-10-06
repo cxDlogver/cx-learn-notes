@@ -67,6 +67,8 @@ Where is the main HTML/UI generated?
 When is it generated?
 ~~~
 
+本文只负责建立 Navigation Model 与 Rendering Strategy 的上位位置关系。CSR、SSR、SSG / Prerender 如何进一步演进到 SWR、ISR 与 Hybrid，以及这些概念为什么不完全处在同一层，统一进入 [页面渲染策略演进与选择框架](./Y-页面渲染策略演进与选择框架.md)。
+
 ## 2. MPA 与 SPA 描述页面导航模型
 
 ### 【MPA 通过新的 Document Navigation 切换页面】
@@ -330,6 +332,8 @@ Application
 ~~~
 
 Nuxt 官方支持 Universal、Client-side 以及按 Route 配置的 Hybrid Rendering，并可通过 Route Rules 对不同 Route 采用不同策略。[[1]](https://nuxt.com/docs/4.x/guide/concepts/rendering)
+
+Hybrid 继续向下展开时，还需要把“页面生成策略”和“缓存 / 再生成策略”分开：CSR / SSR / SSG 主要回答生成位置与时间，SWR / ISR 主要回答已有结果怎样复用与更新。详细框架见 [页面渲染策略演进与选择框架](./Y-页面渲染策略演进与选择框架.md)。
 
 这里需要区分两个概念：
 
