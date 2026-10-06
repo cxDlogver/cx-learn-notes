@@ -24,6 +24,21 @@ Rollback / Roll Forward
 
 CI/CD 不是某一个工具，也不等于把 install、test、build、deploy 几条命令顺序执行。GitHub Actions、GitLab CI/CD、Jenkins 等是实现 Pipeline 的工具；本文关注脱离具体平台仍然成立的交付模型。
 
+软件供应链安全（Software Supply Chain Security）不是主流程末尾新增的一个 Stage，而是贯穿 Source、Build、Artifact、Release 与 Deployment 的横切约束。它要回答：源码是否来自可信变更、Builder 是否可信、Artifact 内容是否被替换、依赖组成是否透明，以及消费方在 Release / Deploy 前能否验证这些事实。
+
+~~~text
+交付主流程
+Source → Build → Artifact → Release → Deployment
+          │         │          │          │
+          └─────────┴──────────┴──────────┘
+                    ↓
+          Artifact Trust / Supply Chain
+          来源可信、内容完整、依赖透明、
+          发布和部署前可以验证
+~~~
+
+主流程回答“版本怎样向生产推进”；供应链安全回答“推进的这份产物为什么值得信任”。两者作用于同一条交付链，但职责不同。
+
 ## 1. 软件交付把代码变化转换为可运行版本
 
 ### 【开发完成、构建完成、发布和部署是不同阶段】
@@ -90,6 +105,8 @@ Production
 ~~~
 
 这样不同环境验证的是同一份产物，而不是每进入一个环境就重新从源码构建。是否能够完全做到不可变产物仍取决于配置注入、前端 Runtime Config、平台打包方式等工程约束。
+
+这里的“同一份 Artifact”不能只依赖文件名、Version 或 Image Tag 判断。Version / Tag 便于人识别版本，Digest / Hash 用于确认具体内容身份；如果还要证明这份内容确实由预期 Source、Builder 和 Build Process 产生，则需要继续建立 Provenance / Attestation 与消费前验证。
 
 ## 2. Continuous Integration 持续验证共享代码库中的变化
 
@@ -210,6 +227,82 @@ Artifact → Environment → Runtime
 
 Artifact 最好具有 Version、Commit SHA、Build Metadata 等可追踪标识，使线上版本能够回溯到源代码和 Pipeline。
 
+这些标识主要解决 Traceability（可追踪性）：系统知道“这个产物声称对应哪个版本、Commit 和 Pipeline”。但可追踪不等于已经验证来源和内容完整性。软件供应链还要继续回答：当前拿到的二进制内容是否就是当时构建出的那一份，以及它是否真的由预期的 Source 和 Build Process 产生。
+
+### 【Artifact Trust 从可追踪标识继续进入内容身份与来源证明】
+
+可以把 Artifact 的信任信息分成三个层次：
+
+~~~text
+Human-readable Identifier
+Version / Tag / Commit SHA / Build Metadata
+解决：怎样定位和回溯版本
+        ↓
+Content Identity
+Digest / Hash
+解决：当前内容是不是同一份字节内容
+        ↓
+Verifiable Provenance
+Source / Builder / Build Process
+解决：这份 Artifact 是否按预期来源和过程产生
+~~~
+
+Digest（摘要）是对 Artifact 内容计算得到的固定长度值。内容发生变化时，Digest 通常也会变化，因此它适合作为 Artifact 的内容身份；Tag、Version 等名称则可能被重新指向其他内容，不能单独承担完整性判断。
+
+Provenance（来源证明信息）进一步描述 Artifact 在哪里、何时、怎样被生产。SLSA v1.2 将 Provenance 定义为能够把 Artifact 追溯到其来源的可验证信息，并把 Build Provenance 用于把 Build Output 连接回产生它的 Source 和 Build Process。[[3]](https://slsa.dev/spec/v1.2/provenance)
+
+因此：
+
+~~~text
+Traceability
+知道 Artifact 声称来自哪里
+
+≠
+
+Verifiable Provenance / Integrity
+能够验证 Artifact 内容和生产来源符合预期
+~~~
+
+“Build Once、Promote Same Artifact”要形成更强的工程保证，除了流程上不重复 Build，还应让后续环境能够通过 Digest 确认消费的是同一份内容，并在需要更高供应链保证时验证相应 Provenance / Attestation。
+
+### 【SBOM、Provenance 与 Attestation 描述 Artifact 的不同事实】
+
+软件物料清单（Software Bill of Materials，SBOM）描述软件由哪些 Component、Dependency 及其关系构成。CISA 将 SBOM 定义为软件组件、依赖及其关系的正式、机器可读清单。[[4]](https://www.cisa.gov/sites/default/files/2024-10/SBOM%20Framing%20Software%20Component%20Transparency%202024.pdf)
+
+它和 Provenance 解决的问题不同：
+
+| 对象 | 核心问题 |
+| --- | --- |
+| Digest / Hash | 这是不是同一份 Artifact 内容 |
+| SBOM | 这份软件包含哪些 Component / Dependency |
+| Provenance | 这份 Artifact 从什么 Source、通过什么 Builder / Build Process 产生 |
+| Attestation | 怎样把针对某个 Artifact 的事实形成可验证声明 |
+| Verification Policy | 哪些来源、Builder、Digest、Attestation 或其他条件满足后才允许继续 Release / Deploy |
+
+Attestation（可验证声明）是一种承载事实声明的方式，声明的内容可以不同。GitHub Artifact Attestations 既可以为 Binary / Container Image 生成 Build Provenance Attestation，也可以单独生成 SBOM Attestation，这说明 SBOM 和 Build Provenance 不是同一个对象。[[5]](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations)
+
+可以把关系收敛为：
+
+~~~text
+Artifact
+├── Version / Tag / Metadata
+│   └── 便于定位和追踪
+├── Digest
+│   └── 确认具体内容身份
+├── SBOM
+│   └── 说明软件组成
+└── Provenance
+    └── 说明生产来源和过程
+          ↓
+      Attestation
+      承载可验证声明
+          ↓
+      Verification Policy
+      判断是否允许 Release / Deploy
+~~~
+
+这里的 Verification Policy 不是某个平台的固定 API，而是消费方的工程规则：例如要求 Artifact Digest 匹配、Build 必须来自受信任 Workflow、Provenance 中的 Source Repository 必须符合预期，或者高风险发布必须同时满足 SBOM / Provenance 检查。
+
 ### 【Container Image 是一种 Deployable Artifact】
 
 Docker 链路可以放回完整交付体系：
@@ -221,9 +314,13 @@ Build Application
 ↓
 Build Image
 ↓
-Image Tag / Digest
+Image Tag：便于识别版本
++
+Image Digest：确认具体 Image 内容
 ↓
 Registry
+↓
+Verify / Promote
 ↓
 Deploy
 ↓
@@ -272,7 +369,7 @@ Continuous Deployment
 
 ### 【Deployment Pipeline 通过逐层验证增加发布信心】
 
-Martin Fowler 对 Deployment Pipeline 的经典描述强调，把 Build 划分成多个 Stage，每个 Stage 对 Build 提供更高的信心，后续阶段可能包含自动或人工 Gate。[[3]](https://martinfowler.com/bliki/DeploymentPipeline.html)
+Martin Fowler 对 Deployment Pipeline 的经典描述强调，把 Build 划分成多个 Stage，每个 Stage 对 Build 提供更高的信心，后续阶段可能包含自动或人工 Gate。[[6]](https://martinfowler.com/bliki/DeploymentPipeline.html)
 
 因此 Pipeline 的目标不是“自动化越多越好”，而是在反馈速度、验证成本和发布风险之间建立可重复的决策路径。
 
@@ -366,6 +463,10 @@ Rollback / Roll Forward
 
 [2] GitHub Docs. *Workflows*. https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows
 
-[3] Martin Fowler. *Deployment Pipeline*. https://martinfowler.com/bliki/DeploymentPipeline.html
+[3] SLSA. *Provenance — SLSA v1.2*. https://slsa.dev/spec/v1.2/provenance
 
-[4] Playwright. *Browsers*. https://playwright.dev/docs/browsers
+[4] CISA. *Framing Software Component Transparency: Establishing a Common Software Bill of Materials (SBOM), Third Edition*. https://www.cisa.gov/sites/default/files/2024-10/SBOM%20Framing%20Software%20Component%20Transparency%202024.pdf
+
+[5] GitHub Docs. *Using artifact attestations to establish provenance for builds*. https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
+
+[6] Martin Fowler. *Deployment Pipeline*. https://martinfowler.com/bliki/DeploymentPipeline.html

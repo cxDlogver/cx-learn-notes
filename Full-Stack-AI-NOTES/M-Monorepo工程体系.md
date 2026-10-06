@@ -659,7 +659,7 @@ Running Service
 - Package Publish；
 - Release Automation。
 
-这些属于 Release Governance，而不是 Workspace 本身提供的完整能力。Artifact 形成以后怎样经过验证、Release Decision、Deployment、Production Verification 与 Recovery，继续参考 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。
+这些属于 Release Governance，而不是 Workspace 本身提供的完整能力。Artifact 形成以后怎样经过验证、建立 Digest / Provenance 等信任信息、形成 Release Decision，再进入 Deployment、Production Verification 与 Recovery，继续参考 [软件交付与 CI/CD 工程体系](./R-软件交付与CI-CD工程体系.md)。Monorepo 负责产生和组织 Artifact，不重复维护软件供应链验证机制。
 
 ---
 

@@ -1350,7 +1350,7 @@ Connection Registry
 close immediately
 ~~~
 
-单实例可以直接在内存 Registry 中完成；多实例可以通过 Redis Pub/Sub、消息总线或其他 Session Invalidation Channel 把撤销事件广播到各 WebSocket 节点。
+单实例可以直接在内存 Registry 中完成；多实例可以通过 Redis Pub/Sub、消息总线或其他 Session Invalidation Channel 把撤销事件广播到各 WebSocket 节点。这里使用 Pub/Sub 的前提是撤销事实本身存在可恢复的状态来源：Pub/Sub 负责让当前在线节点尽快收到通知，而不是保存离线节点之后必须补收的撤销事实。Redis Pub/Sub 的 at-most-once、无离线历史以及与 Streams 的边界继续阅读 [Redis 完整知识体系](./R-Redis完整知识体系.md)。
 
 **3. 周期 Revalidation 是一种折中，而不是默认最优解**
 
