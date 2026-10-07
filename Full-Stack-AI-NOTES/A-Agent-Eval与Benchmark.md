@@ -292,6 +292,32 @@ Grader
 
 因此，能通过代码、数据库、文件系统或业务状态验证的结果，应优先使用真实环境证据，而不是只评价最终自然语言。
 
+### 【项目实践：AI Coding Verify 把验收结论落到证据闭环】
+
+在真实 AI Coding 交付中，这条通用原则可以继续落成“**断言 → 实际观察值 → 持久化证据 → Gate**”的验收链路，而不是让 Coding Agent 在执行后直接写一句“PASS”。
+
+字节 AI Coding Workflow 的 Verify 阶段就是一个具体实践：Test Case 预先声明 positive / negative / visual assertion 与 evidence requirement；运行时再把每个断言映射到 `observed_value`、`evidence_type` 和 `evidence_ref`。只有验证已经执行、结果已经记录、证据类型与断言匹配、持久化证据能够支持观察值时，当前验收项才能关闭。
+
+这也进一步验证了前面的职责边界：
+
+~~~text
+Outcome / Runtime Evidence
+→ 主要证明“最终结果是否满足任务目标”
+
+Trace / Execution Record
+→ 主要解释“Agent 做了什么、为什么成功或失败”
+
+Deterministic Gate
+→ 检查能够机械判断的证据完整性和合同条件
+
+Human Review
+→ 处理高风险、开放语义或自动判断存在争议的部分
+~~~
+
+因此，Trace 很重要，但不能因为执行路径完整就推导任务结果正确；同样，Agent 的自然语言 Summary 也不能替代真实 Outcome。只有当 Tool 顺序、审批、权限或禁止行为本身就是 Task 的明确约束时，相应 Trace 才直接成为 Grader 的验收对象。
+
+项目实践可继续查看 [《AI Coding 如何保证 Agent 验收结论可信》](../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)，其中保留了具体的 Case Result 字段、Evidence Mapping 和 Verify Gate 实现；本文只维护可迁移到其他 Agent 系统的通用评测机制。
+
 ## 3. Grader 根据任务性质组合确定性、模型和人工判断
 
 ### 【Grader 判断 Trial 的某一方面是否满足标准】
