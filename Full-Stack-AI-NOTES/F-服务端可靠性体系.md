@@ -400,6 +400,8 @@ Publish
 
 这样即使 Process 在 COMMIT 后立刻 Crash，Outbox Event 仍在数据库，恢复后可以继续发送。AWS Transactional Outbox Pattern 也明确指出，后续消息可能重复，因此 Consumer 仍然需要 Idempotency。[[6]](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
 
+项目实践可以继续查看 [Browser Monitor 服务端可靠性体系源码学习 · 状态与数据可靠性](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md#3-%E7%8A%B6%E6%80%81%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%8F%AF%E9%9D%A0%E6%80%A7%E9%80%9A%E8%BF%87%E4%BA%8B%E5%8A%A1%E5%B9%82%E7%AD%89%E5%92%8C-outbox-%E4%BF%9D%E8%AF%81%E5%B7%B2%E6%8E%A5%E5%8F%97%E4%BA%8B%E5%AE%9E%E4%B8%8D%E5%A4%84%E4%BA%8E%E5%8D%8A%E6%8F%90%E4%BA%A4%E7%8A%B6%E6%80%81)，其中用 PostgreSQL Transaction 同时提交原始事件与 Outbox Task，验证了“业务事实与待执行意图必须共享同一持久化边界”的工程实现；该项目当前仍是单实例数据库部署，不应由此推导出数据库高可用能力。
+
 ### 【Durability 要按故障类型拆成 Crash、Instance、Logical 与 Disaster 四层】
 
 Durability（持久性）最容易被一句“COMMIT 后数据不会丢”过度简化。工程上更有用的问题是：**你准备保护哪一种故障？**
@@ -738,6 +740,8 @@ Dead Letter
 
 Dead Letter 的真正价值，是把“系统无法自动恢复”变成“可审计、可修复、可人工决定下一步”的明确边界。
 
+项目实践可以继续查看 [Browser Monitor 服务端可靠性体系源码学习 · 后台任务可靠性](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md#4-%E5%90%8E%E5%8F%B0%E4%BB%BB%E5%8A%A1%E5%8F%AF%E9%9D%A0%E6%80%A7%E9%80%9A%E8%BF%87%E6%8C%81%E4%B9%85%E4%BB%BB%E5%8A%A1claimleaseretrydead-letter-%E5%92%8C-replay-%E5%BB%BA%E7%AB%8B%E5%AE%8C%E6%95%B4%E7%BB%88%E6%80%81)，其中当前实现使用 PostgreSQL Outbox、`FOR UPDATE SKIP LOCKED`、固定 Lease、Retry、Dead Letter 与 Manual Replay 组成恢复链；Heartbeat / Lease Renewal 与更细的 Retry 分类仍属于项目演进方向，而不是已实现事实。
+
 ### 【任务可靠性必须用 Lag、Wait、Attempts 与终态分布验证】
 
 只看 Worker Process Alive 不够。至少要观察：
@@ -973,14 +977,14 @@ Readiness
 这个实例现在是否能正确服务请求？
 ~~~
 
-例如 Process 正常，但 Database 暂时不可用，可能应该是：
+例如 Process 正常，而某个**当前核心请求必须依赖的 Database** 暂时不可用时，可能应该是：
 
 ~~~text
 Liveness = true
 Readiness = false
 ~~~
 
-此时实例继续运行等待依赖恢复，但 Load Balancer 暂停给它流量，而不是不断 Restart。
+此时实例继续运行等待依赖恢复，但 Load Balancer 暂停给它流量，而不是不断 Restart。这里的前提是该依赖确实属于当前服务能力的 Hard Dependency；如果依赖失败后仍能通过降级路径给出正确结果，就不应机械地把整个实例判为 Not Ready。
 
 Kubernetes 官方也特别警告错误 Liveness Probe 会在高负载下制造级联重启：某个实例因为负载高暂时响应慢，被误判为“死掉”后重启，剩余实例承受更多流量，又继续被重启。[[11]](https://kubernetes.io/docs/concepts/workloads/pods/probes/)
 
@@ -1050,6 +1054,8 @@ Exit
 ~~~
 
 关键边界是：Graceful Shutdown 不是无限等待，而是在平台提供的终止预算内尽量落到可恢复状态。所以 Task 系统仍然必须能够处理 Grace Period 到期后的强制终止。
+
+项目实践可以继续查看 [Browser Monitor 服务端可靠性体系源码学习 · 运行与部署可靠性](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md#6-%E8%BF%90%E8%A1%8C%E4%B8%8E%E9%83%A8%E7%BD%B2%E5%8F%AF%E9%9D%A0%E6%80%A7%E9%80%9A%E8%BF%87%E9%85%8D%E7%BD%AE%E6%A0%A1%E9%AA%8C%E5%90%AF%E5%8A%A8%E4%BE%9D%E8%B5%96%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E9%87%8D%E5%90%AF%E5%92%8C%E4%BC%98%E9%9B%85%E5%85%B3%E9%97%AD%E6%81%A2%E5%A4%8D%E6%9C%8D%E5%8A%A1%E5%AE%9E%E4%BE%8B)，其中 API 已区分 Liveness / Readiness，Worker 在 SIGINT / SIGTERM 下停止继续领取任务并等待当前 Batch 收束；异常 Crash 则由 Lease Timeout + Reclaim 兜底。当前项目仍缺少 Worker 独立 Heartbeat，这属于后续演进边界。
 
 ### 【Rolling Deployment 需要把 Readiness、Drain 与版本兼容一起考虑】
 
@@ -1439,11 +1445,11 @@ Prove
 
 ## 9. 实战分析入口
 
-需要查看一套真实监控服务如何把请求准入、事务提交、Transactional Outbox、Worker Claim / Lease、幂等投影、Retry / Dead Letter、Redis 依赖、Health Check、Restart、Graceful Shutdown 与可靠性指标连接成完整控制链时，进入：
+正文已经在 Transactional Outbox、后台任务恢复和运行生命周期等关键机制附近建立了对应项目实践映射。这里保留汇总入口，便于从完整服务端可靠性视角继续阅读同一项目：
 
 [Browser Monitor 服务端可靠性体系源码学习](https://github.com/cxDlogver/browser-monitor/blob/main/docs/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0.md)
 
-项目文档负责验证“这些可靠性机制在真实源码中如何落地、当前边界在哪里”；本文只维护可以迁移到其他服务端系统的通用知识。
+项目文档负责验证请求准入、事务提交、Transactional Outbox、Worker Claim / Lease、幂等投影、Retry / Dead Letter、Health Check、Restart 与 Graceful Shutdown 等机制在真实源码中如何落地，并明确当前实现与演进建议的边界；本文只维护可以迁移到其他服务端系统的通用知识。
 
 ## 10. 参考文献
 
