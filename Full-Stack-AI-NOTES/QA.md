@@ -139,6 +139,7 @@ Harness 持续提供 Tool、Memory、权限、Checkpoint、Trace 等运行支撑
 
 - 一个 Agent 到底应该怎么评测，不能只看最终回答吗？
 - Agent Eval 中 Task、Trial、Trace、Outcome 和 Grader 是什么关系？
+- AI 在 Verify 阶段怎样证明 PASS，而不是“自己执行、自己宣布通过”？
 - pass@k、pass^k 和普通成功率分别说明什么？
 
 ### 【回答框架】
@@ -184,6 +185,8 @@ Harness 持续提供 Tool、Memory、权限、Checkpoint、Trace 等运行支撑
   - 可继续阅读：[Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程](<./QA/Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程.md>)。
 - **追问：长任务中的阶段验收怎样进入 Agent Eval？**
   - 可继续阅读：[Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复](<./QA/Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复.md>)。
+- **项目实践：AI Coding 的 Verify 阶段怎样把 PASS 结论落到可复核证据？**
+  - 可继续阅读：[AI Coding 如何保证 Agent 验收结论可信](../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)。
 
 ## 4. Agent 工具执行的身份、授权、审批与隔离
 
