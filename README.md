@@ -2,6 +2,12 @@
 
 学习笔记与项目实践。Browser Monitor 独立维护在 [cxDlogver/browser-monitor](https://github.com/cxDlogver/browser-monitor)，本仓库通过 Git 子模块保留 `browser-monitor/` 目录及固定版本引用。走航车平台独立维护在 [cxDlogver/qhzhc-realtime-platform](https://github.com/cxDlogver/qhzhc-realtime-platform)，通过子模块保留 `qhzhc-realtime-platform/` 目录及固定版本引用。
 
+## AI 全栈面试训练
+
+[全栈 AI 面试评审任务规范](全栈AI面试评审任务规范.md) 区分完整岗位知识与当前简历经历：知识题按能力树选题，项目分析限于简历陈述。每题说明来源、考察能力和选题原因，按验证价值与覆盖缺口深入或切换；回答结合仓库与权威资料完整展开。
+
+GitHub Skill 入口：[ai-fullstack-interview](.github/skills/ai-fullstack-interview/SKILL.md)。知识正文与已有问题分别见 [知识体系索引](Full-Stack-AI-NOTES/知识体系索引.md) 和 [QA](Full-Stack-AI-NOTES/QA.md)。
+
 ## 获取完整项目
 
 ```bash
