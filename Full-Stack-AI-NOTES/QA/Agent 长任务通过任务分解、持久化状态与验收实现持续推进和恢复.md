@@ -1027,6 +1027,24 @@ Resume
 
 > **运行可以失败，进程可以退出，Context 可以重建，但已经完成并验证过的任务进度、产物和外部业务事实不能丢失。**
 
+### 【结构化状态还能成为确定性检查的输入】
+
+结构化状态不仅服务于恢复。只要某些字段存在明确语义，它们还可以进一步成为 Schema、Script、Test 或 Gate 的输入，把“Agent 记得规则并自行判断”转换成程序能够重复执行的检查。
+
+例如：
+
+~~~text
+Workflow State / Artifact
+        ↓
+required fields / status / evidence refs
+        ↓
+deterministic validation
+        ↓
+PASS / FAIL / BLOCKED
+~~~
+
+这一层讨论的是“已经确定的规则怎样从自然语言软约束下沉成可验证的工程约束”，与本章的 State / Artifact / Checkpoint 职责不同。完整回答见 [Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性](./Agent%20通过结构化状态与确定性检查降低自然语言约束的不确定性.md)。
+
 ## 5. 参考文献
 
 [1] Anthropic. [Effective harnesses for long-running agents](<https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents>)[EB/OL]. 核验日期：2026-10-04。
