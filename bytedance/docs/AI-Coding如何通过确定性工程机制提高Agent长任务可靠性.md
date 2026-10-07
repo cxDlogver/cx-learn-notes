@@ -329,7 +329,13 @@ Evidence 文件存不存在
 
 > **让 Agent 负责不确定性，让工程系统负责确定性。**
 
-这和通用 Agent 编排中的“能确定的流程、权限、验收和状态尽量交给代码；只有无法提前穷举、需要运行时语义判断的部分才释放模型自主性”是同一条工程主线。通用知识可继续阅读 [Agent 完整学习教程](../../Full-Stack-AI-NOTES/A-Agent学习教程.md) 和 [Agent 编排通过代码与模型分配不同范围的执行决策权](<../../Full-Stack-AI-NOTES/QA/Agent%20编排通过代码与模型分配不同范围的执行决策权.md>)。
+这和通用 Agent 编排中的“能确定的流程、权限、验收和状态尽量交给代码；只有无法提前穷举、需要运行时语义判断的部分才释放模型自主性”是同一条工程主线。
+
+通用知识可继续阅读：
+
+- [Agent 完整学习教程](../../Full-Stack-AI-NOTES/A-Agent学习教程.md)：从 Workflow、长任务与 Harness 的整体结构理解确定性代码和 Agent 的边界。
+- [Agent 编排通过代码与模型分配不同范围的执行决策权](<../../Full-Stack-AI-NOTES/QA/Agent%20编排通过代码与模型分配不同范围的执行决策权.md>)：回答“哪些下一步决策交给代码，哪些交给模型”。
+- [Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性](<../../Full-Stack-AI-NOTES/QA/Agent%20通过结构化状态与确定性检查降低自然语言约束的不确定性.md>)：回答“已经确定的规则怎样从自然语言下沉成可验证的工程约束”。
 
 ## 【项目实例：Verify 如何应用这套原则】
 
@@ -390,6 +396,8 @@ Workflow
 - [需求交付框架流程图](../AI-Coding-Workflow/docs/delivery-framework-flow.md)：`scripts/` 被定义为确定性检查与验证工具，Artifact 作为阶段事实来源；
 - [Verify Skill](../AI-Coding-Workflow/skills/06-debug-verification/SKILL.md)：逐 Case 执行、结构化证据记录与 Evidence Coverage；
 - [如何让 Agent 可靠执行 Skill](../如何让Agent可靠执行Skill-汇报分享.md)：软约束、结构化合同、脚本校验、增量状态和 Gate 回溯的专项实践；
+- [浏览器运行合同静态检查脚本](../AI-Coding-Workflow/scripts/check_browser_runtime_contract.mjs)：直接检查 Verify 模板字段、浏览器运行模式、Design handoff、Mock Schema 与 MCP 文档中的关键流程不变量，失败时以非零退出码阻断；
+- [对应静态回归报告](../AI-Coding-Workflow/flow-regression-runs/2026-06-30-coco-cli-headless-browser-static.md)：记录 `deterministic_check: PASS` 与实际执行命令，证明“自然语言合同 → 可执行静态断言”已经有真实落地；
 - [AI Coding](../AI%20Coding.md)：记录“用脚本、结构化字段和模板替代部分自然语言做确定性规范”的工作总结。
 
 ## 【最终收束】
@@ -400,9 +408,11 @@ Workflow
 
 ## 【外部依据】
 
-1. OpenAI. [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/). 2026-02-11。文章说明大型说明文档难以机械验证，并通过 custom linters、CI jobs 与 structural tests 强制关键 invariants。
-2. Anthropic. [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents). 2025-11-26。文章通过 JSON feature list、progress file、Git 和增量执行保存长任务状态，减少跨上下文任务漂移和过早完成。
-3. OpenAI. [Skills in OpenAI API](https://developers.openai.com/cookbook/examples/skills_in_api). 2026。官方示例建议 Skill Script 像小型 CLI 一样运行，提供 deterministic stdout、明确错误和固定输出路径。
+1. OpenAI. [Skills](https://developers.openai.com/plugins/concepts/skills). Skill 以 `SKILL.md` instructions 描述工作流，并可携带 scripts、templates、references 等支持文件；模型在任务匹配后加载完整 instructions。
+2. OpenAI. [Build skills](https://developers.openai.com/plugins/build/skills). 官方明确建议在 workflow 需要 deterministic computation 或 file processing 时使用 `scripts/`，同时强调如果 instructions 与现有工具已经可靠，就不应为了形式增加脚本。
+3. Anthropic. [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices). 官方要求根据任务的 fragility 和 variability 设置合适自由度：开放问题适合文本指导，脆弱且一致性要求高的问题应降低自由度。
+4. Anthropic. [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents). 长任务通过 feature list、progress file 与稳定产物保存跨 Session 状态，减少只依赖模型上下文造成的进度漂移。
+5. OpenAI. [Harness engineering: leveraging Codex in an agent-first world](https://openai.com/index/harness-engineering/). 2026-02-11。文章说明 Documentation alone 无法长期维持关键架构约束，并通过 custom linters 与 structural tests 机械执行 invariants，强调“enforcing invariants, not micromanaging implementations”。
 
 ## 【继续展开】
 
