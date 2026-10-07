@@ -303,4 +303,8 @@ Gate / Evaluation Result
 
 下一步可以继续单独讨论：
 
-> 你提到“用确定性的规则约束不确定的 Agent”，这个原则在 AI Coding Harness 的 Command、Skill、Script 和 Gate 中分别是怎样落地的？
+> Skill / Prompt 的自然语言规范仍然依赖模型理解和执行，怎样把其中可以确定化的部分下沉成结构化状态、Script、Test、Lint 或 Static Check，从而提高长任务执行可靠性？
+
+项目面试回答见 [AI Coding 如何通过确定性工程机制提高 Agent 长任务可靠性](./AI-Coding如何通过确定性工程机制提高Agent长任务可靠性.md)。
+
+对应通用知识见 [Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性](<../../Full-Stack-AI-NOTES/QA/Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性.md>)。
