@@ -824,11 +824,13 @@ Anthropic 在介绍 Agent Eval 时也提到，已经有团队使用 Browser Agen
 
 每一个 Test Case 不能只留下： PASS。
 
-还应该尽可能保存与结论对应的 Evidence（验收证据），例如截图、页面状态、接口请求与响应、操作轨迹、Console Log（控制台日志）、Mock 命中记录和 Assertion Result（断言结果）。
+还应该保存能够直接支撑当前断言的 Evidence（验收证据），例如截图、页面状态、接口请求与响应、Console Log（控制台日志）、Mock 命中记录、命令结果和 Assertion Result（断言结果）。
 
 最终形成：
 
 Test Case → Expected Result → Actual Result → Evidence → PASS / FAIL
+
+这里需要把**结果证据**与**执行轨迹**分开：结果证据回答“功能是否真的满足当前断言”；Trace / Trajectory 回答“Agent 做过什么、为什么成功或失败”。如果审批、Tool 顺序、禁止行为等执行过程本身就是验收合同的一部分，Trace 才直接成为该断言的证据；否则不能因为轨迹完整就推导结果正确。
 
 这样功能验收的结果才具有可审查性。
 
@@ -841,6 +843,26 @@ Test Case → Expected Result → Actual Result → Evidence → PASS / FAIL
 **第三，证据充分性。** 每一个 PASS / FAIL 是否有对应的截图、日志、接口记录、页面状态或者其他可以独立检查的 Evidence。
 
 **第四，一致性。** Agent 的操作轨迹、观察结果、最终系统状态和 PASS / FAIL 结论之间是否一致，避免出现“执行过程实际上失败，但最终仍然输出通过”的情况。
+
+### 【项目实践：字节 AI Coding Verify 将验收结论结构化为证据闭环】
+
+字节 AI Coding Workflow 把这一通用验收思想进一步落成逐 Case 的 Evidence Mapping：Test Case 先声明 positive / negative / visual assertion 与需要的证据类型；Verify 执行后再记录 `observed_value`、`evidence_type`、`evidence_ref` 和 `coverage_result`。只有验证已执行、证据已持久化、证据类型与断言匹配、实际观察值能够支撑验收事实时，当前项才能关闭。
+
+这类机制的重点不是“多生成一份验收文档”，而是把原本开放的“Agent 觉得通过”转换为可以机械检查的合同：
+
+~~~text
+Assertion
+    ↓
+Observed Value
+    ↓
+Persistent Evidence
+    ↓
+Deterministic Gate
+    ↓
+PASS / Review / Blocked
+~~~
+
+详细项目实现与面试回答见 [《AI Coding 如何保证 Agent 验收结论可信》](../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)。其中的 Case Result 字段和 Verify Gate 是当前项目实现；本节只保留可以迁移到其他 AI Coding 系统的验收原则。
 
 ---
 

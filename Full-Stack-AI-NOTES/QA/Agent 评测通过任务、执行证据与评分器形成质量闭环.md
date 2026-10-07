@@ -189,6 +189,33 @@ LangChain 当前的 Trajectory Evaluation 也支持对 Tool 序列进行 `strict
 
 > **Outcome / Output 主要回答“任务最后做对了吗”；Trajectory 主要回答“任务是怎么完成的、为什么失败”，而在安全、合规和强流程约束场景中，Trajectory 本身也会成为硬性验收对象。**
 
+### 【项目实践映射：AI Coding Verify 把 PASS 转换成可审计证据】
+
+如果把这套通用评测机制放回真实 AI Coding 交付，可以进一步理解“为什么 Agent 不能自己宣布验收通过”。
+
+在字节 AI Coding Workflow 中，单个 Test Case 会先定义断言和所需证据，Verify 阶段再把实际执行结果写成结构化 Case Result：
+
+~~~text
+Assertion
+    ↓
+Observed Value
+    ↓
+Evidence Type
+    ↓
+Evidence Ref
+    ↓
+Coverage Result
+~~~
+
+这里的关键不是字段数量，而是把两类信息分开：
+
+- **结果证据**直接回答当前断言是否成立，例如页面状态、Network 请求、命令结果或真实环境状态；
+- **执行轨迹**主要用于解释 Agent 做过什么、为什么失败以及应该从哪里恢复，不能因为轨迹完整就自动推导 Outcome 正确。
+
+能够机械检查的条件继续交给确定性 Gate，例如是否真的执行、是否留下持久化证据、证据类型是否匹配、所有必需验收事实是否闭合；高风险或开放判断再交给人工复核。
+
+这正是“Task → Evidence → Grader / Gate”在一次软件交付验收中的具体落地。完整项目面试回答见 [《AI Coding 如何保证 Agent 验收结论可信》](../../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)；更完整的通用体系继续阅读 [《Agent Eval 与 Benchmark》](../A-Agent-Eval与Benchmark.md)。
+
 ## 2. 评分器与 Rubric 共同定义任务验收方式
 
 ### 【评测方式：Code-based、Model-based 与 Human Review】
