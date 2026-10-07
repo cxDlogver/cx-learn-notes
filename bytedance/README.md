@@ -59,6 +59,7 @@
 | [AI Coding 工作流面试问答](docs/AI-Coding工作流面试问答.md) | 面试主入口：工作流目标、设计原则、真实案例、个人贡献边界与结果口径 |
 | [如何避免错误需求生成错误 Test Case](docs/AI-Coding如何避免错误需求生成错误Test-Case.md) | 面试追问：需求澄清、Test Case 前置、覆盖审查与人工 Gate |
 | [如何保证 Agent 验收结论可信](docs/AI-Coding如何保证Agent验收结论可信.md) | 面试追问：Assertion、Observed Value、Evidence Mapping、确定性 Gate 与 Trace/Outcome 边界 |
+| [如何通过确定性工程机制提高 Agent 长任务可靠性](docs/AI-Coding如何通过确定性工程机制提高Agent长任务可靠性.md) | 面试追问：把自然语言软约束下沉为结构化状态、Script/Test/Lint 与可执行 Gate，区分 Agent 不确定推理和系统确定性约束 |
 | [联盟运营平台前端仓库技术架构总览.md](联盟运营平台前端仓库技术架构总览.md) | 前端仓库架构与工程基础 |
 | [如何让Agent可靠执行Skill-汇报分享.md](如何让Agent可靠执行Skill-汇报分享.md) | Skill 可靠执行、门禁和工程边界 |
 | [产品验收新范式：Agentbuddy团队实践.md](产品验收新范式：Agentbuddy团队实践.md) | 主稿引用的产品验收实践 |
