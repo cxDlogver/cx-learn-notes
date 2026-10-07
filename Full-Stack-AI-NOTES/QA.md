@@ -133,47 +133,88 @@ Harness 持续提供 Tool、Memory、权限、Checkpoint、Trace 等运行支撑
 - **追问：确定性 Workflow 和模型动态决策应该怎样组合？**
   - 可继续阅读：[Agent 编排通过代码与模型分配不同范围的执行决策权](<./QA/Agent 编排通过代码与模型分配不同范围的执行决策权.md>)。
 
-## 3. Agent Eval 与 Benchmark 的任务质量评测框架
+## 3. Agent Eval 与 Benchmark 的五层评测设计框架
 
 ### 【提问】
 
-- 一个 Agent 到底应该怎么评测，不能只看最终回答吗？
-- Agent Eval 中 Task、Trial、Trace、Outcome 和 Grader 是什么关系？
-- AI 在 Verify 阶段怎样证明 PASS，而不是“自己执行、自己宣布通过”？
-- pass@k、pass^k 和普通成功率分别说明什么？
+- 如果让你设计一套 Agent Benchmark，你会从哪些层次考虑？
+- Agent Task 什么算成功，Rubric、Grader、Metric 分别是什么？
+- 为什么不能只看最终回答，也不能只看 Trace？
+- pass@k、pass^k、Cost 和 Reliability 分别属于哪一层？
+- 怎样在保证评测质量的同时控制 Benchmark 成本？
 
 ### 【回答框架】
 
-核心判断：Agent Eval 的本质不是“给模型输出打一个分”，而是建立一条**从任务成功标准到可验证证据，再到评分和版本比较**的闭环。之所以不能只看最终回答，是因为 Agent 可以声称完成任务，但真实环境可能根本没有发生预期变化。
+核心判断：Agent Benchmark 评测的是 Agent / Harness 完成**完整 Task** 的能力，而不是单次 Model Call。为了避免把评测对象、评分方法、统计指标和能力维度混在一起，统一按五层设计：
 
-因此回答首先要从“怎样证明成功”出发。成功标准必须在执行前由 Task 定义；Agent 真正运行一次形成 Trial；Trial 之后不能直接相信自然语言答案，而要收集 Output、外部 Outcome、Trace / Trajectory 和 Cost 等证据。只有有了证据，Grader 才能按任务性质判断是否成功。
-
-```text
-先定义什么叫成功
+~~~text
+1. 评测目标
 → Task / Success Criteria
+→ Exact Criteria / Rubric
 
-让 Agent 在明确条件下真实执行
+2. 评测角度
+→ 结果：Outcome / Output
+→ 过程：Trajectory / Trace
+
+3. 评测方法
+→ Deterministic / Code-based
+→ Model-based
+→ Human Review
+
+4. 评测指标
+→ Success Rate / Rubric Score
+→ pass@k / pass^k / Variance
+→ Cost / Latency / Safety Metrics
+
+5. 评测维度
+→ Effectiveness
+→ Reliability
+→ Efficiency
+→ Safety
+~~~
+
+其中几个边界必须明确：
+
+~~~text
+Rubric
+→ 规定“评什么”
+→ 属于评测目标中的 Success Criteria 表达
+
+Grader
+→ 规定“怎么判”
+→ 属于评测方法
+
+Outcome / Trace
+→ 是证据来源
+→ 属于评测角度
+
+pass^k / Cost
+→ 是具体 Metric
+→ 属于评测指标
+
+Reliability / Efficiency
+→ 是解释一组指标的能力类别
+→ 属于评测维度
+~~~
+
+五层之外还有一套运行体系：
+
+~~~text
+Dataset / Evaluation Suite
+→ Evaluation Harness
+→ Task
 → Trial
+→ Evidence
+→ Grader
+→ Metrics Aggregation
+→ Benchmark Result
+~~~
 
-执行结束后收集可验证事实
-→ Output + Outcome + Trace / Trajectory + Cost
+它解决“怎样把评测真正跑起来”，不是第六层评测维度。
 
-根据证据类型选择判断方式
-→ Code Grader / Rubric Model / Human Review
+边界上，开放 Task 也不意味着必须全部使用 LLM-as-Judge。可以先用 Rubric 把任务拆成 Criterion，再把文件存在、Schema、引用数量、数据库状态、测试结果等可客观判断部分转成 Verifier / Deterministic Grader，只把真正需要语义判断的部分交给 Model / Human。
 
-把单次判断聚合成系统能力
-→ Success Rate / pass@k / pass^k / Cost / Stability
-
-固定任务集、预算、版本和评分口径
-→ Eval Suite / Benchmark
-
-持续比较新旧版本
-→ Regression
-```
-
-这条链也解释了几个常见概念的关系：Trace 是“发生了什么”的过程证据，不等于 Eval；Grader 是判定机制，不等于 Benchmark；单次 Trial 的成功也不能代表系统稳定性，所以才需要成功率、pass@k、pass^k 等聚合指标。
-
-边界上，指标必须服务于任务目标：确定性任务优先使用可验证的代码或环境结果，开放质量问题才更多依赖 Rubric / Model Grader，并在高风险或争议场景加入人工复核。最终应收束为：**先定义成功，再运行任务，再取得证据，再评分，最后通过固定评测集和指标做版本回归。**
+最终应收束为：**先定义成功，再决定从哪里取证，再选择评分方法，再用多 Trial 指标量化，最后从有效性、可靠性、效率和安全四个维度解释 Agent 能力。**
 
 ### 【完整回答】
 
@@ -183,8 +224,8 @@ Harness 持续提供 Tool、Memory、权限、Checkpoint、Trace 等运行支撑
 
 - **追问：Trace 为什么只能提供证据，不能直接等于 Eval？**
   - 可继续阅读：[Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程](<./QA/Agent 可观测体系通过 Trace、Span、指标与审计解释执行过程.md>)。
-- **追问：长任务中的阶段验收怎样进入 Agent Eval？**
-  - 可继续阅读：[Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复](<./QA/Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复.md>)。
+- **追问：能够确定判断的 Rubric Criterion 为什么应该优先转成 Verifier？**
+  - 可继续阅读：[Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性](<./QA/Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性.md>)。
 - **项目实践：AI Coding 的 Verify 阶段怎样把 PASS 结论落到可复核证据？**
   - 可继续阅读：[AI Coding 如何保证 Agent 验收结论可信](../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)。
 
