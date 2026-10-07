@@ -446,6 +446,8 @@ Harness 持续提供 Tool、Memory、权限、Checkpoint、Trace 等运行支撑
   - 可继续阅读：[Harness、Runtime 与 Loop 分别承担运行支撑、执行管理和决策循环](<./QA/Harness、Runtime 与 Loop 分别承担运行支撑、执行管理和决策循环.md>)。
 - **追问：复杂编排跨越多个阶段后，怎样保存进度并支持中断恢复？**
   - 可继续阅读：[Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复](<./QA/Agent 长任务通过任务分解、持久化状态与验收实现持续推进和恢复.md>)。
+- **追问：已经确定的规则怎样避免只停留在自然语言软约束，而进一步变成结构化状态和确定性检查？**
+  - 通用机制继续阅读：[Agent 完整学习教程](<./A-Agent学习教程.md>)；真实 AI Coding 实践见 [AI Coding 如何通过确定性工程机制提高 Agent 长任务可靠性](../bytedance/docs/AI-Coding如何通过确定性工程机制提高Agent长任务可靠性.md)。
 
 ## 9. URL 导航与浏览器页面渲染流程
 
