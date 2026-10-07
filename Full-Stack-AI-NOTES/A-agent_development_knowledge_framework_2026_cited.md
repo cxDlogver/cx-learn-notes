@@ -1545,95 +1545,207 @@ flowchart TD
 
 # 18. Agent Eval：为什么不能只测最终答案？
 
-Agent 不是单轮 Input → Output。一次任务可能包含多轮 Model、Tool、环境修改、Retry、Handoff 和 Approval，因此评测需要同时看最终 Outcome、执行过程、稳定性、成本和安全，而不是只检查最后一段文本。完整知识已经独立整理到 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
+Agent 不是单轮 Input → Output。一次任务可能包含多轮 Model、Tool、环境修改、Retry、Handoff 和 Approval，因此评测需要从完整 Task 出发，而不是只检查最后一段文本。
 
-核心链路可以压缩为：
+完整方法统一见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。本文只保留上位框架：
 
 ~~~text
-Task
-→ Trial
-→ Trace / Transcript + Outcome
-→ Grader
+评测设计体系
+1. 评测目标
+2. 评测角度
+3. 评测方法
+4. 评测指标
+5. 评测维度
+
+评测运行体系
+Dataset / Suite
 → Evaluation Harness
-→ Evaluation Suite / Benchmark
+→ Task
+→ Trial
+→ Evidence
+→ Grader
+→ Metrics
+→ Benchmark
 ~~~
 
-其中 Trace 记录一次 Trial 经历了什么，Outcome 记录环境最终变成什么；Eval 使用这些运行证据判断 Task 是否真正成功。Anthropic 对 Task、Trial、Grader、Transcript / Trace、Outcome、Evaluation Harness 与 Evaluation Suite 的定义和多 Trial 方法，统一在独立文档中维护。 [17](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+Anthropic 对 Task、Trial、Grader、Transcript / Trace、Outcome、Evaluation Harness 与 Evaluation Suite 的定义，统一由专项文档维护。 [17](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
 ---
 
-# 19. 业务价值评估与 Agent 能力评测属于两个层面
+# 19. 五层评测设计框架必须区分目标、证据、方法、指标和维度
 
-业务 Agent 最终既要看 Agent 能否完成任务，也要看它是否真正改善业务结果：
+设计 Agent Benchmark 时，五层回答的是五个不同问题：
 
 ~~~text
-Agent Eval
-→ Outcome / Reliability / Trajectory / Efficiency / Safety
+评测目标
+→ 什么叫成功？
+→ Task / Success Criteria / Rubric
+
+评测角度
+→ 从哪里取得证据？
+→ Outcome / Output / Trace
+
+评测方法
+→ 怎样判断证据？
+→ Deterministic / Model / Human
+
+评测指标
+→ 怎样量化表现？
+→ Success Rate / pass@k / pass^k / Cost / Latency
+
+评测维度
+→ 这些数字说明哪类能力？
+→ Effectiveness / Reliability / Efficiency / Safety
+~~~
+
+必须避免把不同层级概念并列。例如 Outcome / Trace 是评测角度；pass^k 和 Cost 是指标；Reliability 和 Efficiency 才是上位评测维度。
+
+---
+
+# 20. 评测目标先定义 Success Criteria，再决定怎样评分
+
+一个 Eval Task 不应该只有 Prompt。至少需要明确 Input、Initial Environment、Success Criteria、Constraints、Allowed Tools / Permissions 和必要 Budget。
+
+明确结果可以使用 Exact / Verifiable Criteria；开放任务则通过 Rubric 把成功拆成多个 Criterion。
+
+~~~text
+Task
+→ Success Criteria
+   ├─ Exact Criteria
+   └─ Rubric Criteria
+~~~
+
+Rubric 负责定义“评什么”，不负责规定“谁来评分”。同一个 Criterion 可以交给代码、模型或人工判断。
+
+例如：
+
+~~~text
+Criterion：必须包含至少 2 个一手来源
+→ 程序可以检查来源数量与类型
+
+Criterion：结论是否真正由证据支持
+→ Model / Human 可能更合适
+~~~
+
+---
+
+# 21. 评测角度从结果和过程获取不同证据
+
+结果面：
+
+~~~text
+Outcome
+→ 真实环境最终状态
+
+Output
+→ 最终交付物
+~~~
+
+过程面：
+
+~~~text
+Trajectory / Trace
+→ Model Turn / Tool / Retry / Handoff / Approval / Guardrail
+~~~
+
+因此：
+
+~~~text
+Outcome / Output
+→ 主要回答“最后做对了吗”
+
+Trace
+→ 主要回答“怎么做的、为什么成功或失败”
+~~~
+
+只有当审批、权限、禁止 Tool 等过程本身属于 Task Constraint 时，Trace 才直接成为硬性评分对象。
+
+---
+
+# 22. 评分方法优先确定性，再补模型和人工判断
+
+Agent Eval 常见三类 Grader：
+
+~~~text
+Deterministic / Code-based
+→ Test / Schema / Database / File / Static Rule
+
+Model-based
+→ 开放式语义质量 / Rubric
+
+Human Review
+→ 高风险 / 高歧义 / Model Judge 校准
+~~~
+
+核心原则：
+
+> **能够通过确定性规则客观判断的问题，不应该优先交给另一个模型判断。**
+
+开放 Task 也可以先把 Rubric 中可检查的部分转成 Verifier。例如文件存在、引用数量、Schema、测试结果都可以脚本验收；只有真正需要语义判断的 Criterion 再交给 Model / Human。
+
+---
+
+# 23. 指标用于量化，维度用于解释 Agent 能力
+
+Agent 的非确定性要求同一个 Task 运行多个 Trial，再通过指标量化：
+
+~~~text
+任务效果
+→ Success Rate / Rubric Score / Criterion Pass Rate
+
+稳定性
+→ pass@1 / pass@k / pass^k / Variance / Retry Rate
+
+效率
+→ Latency / Turns / Tokens / Cost / Successful Task
+
+安全
+→ Violation / Unauthorized Action / Approval Bypass
+~~~
+
+这些仍然只是 Metrics。最终再归入能力维度：
+
+~~~text
+Effectiveness
+→ 能不能做对
+
+Reliability
+→ 能不能稳定做对
+
+Efficiency
+→ 做对需要多少资源
+
+Safety
+→ 是否在允许边界内完成
+~~~
+
+因此：
+
+~~~text
+pass^k
+→ 指标
+
+Reliability
+→ 维度
+
+Cost
+→ 指标
+
+Efficiency
+→ 维度
+~~~
+
+业务 KPI 与 Agent Technical Evaluation 仍应分开：
+
+~~~text
+Agent Technical Evaluation
+→ Effectiveness / Reliability / Efficiency / Safety
 
 Business KPI
 → 时间节省 / Throughput / 人力成本 / 覆盖率 / 解决率 / 用户满意度
 ~~~
 
-两层可以关联，但不能互相替代。Agent Eval 分数提高不直接等于业务 ROI 提高；业务 KPI 改善也不能证明 Agent 的运行机制已经稳定。具体指标与边界见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
-
----
-
-# 20. Agent Eval 指标按结果、稳定性、过程、成本和安全组织
-
-本文只保留指标框架，不在综合文档重复维护完整定义：
-
-- **Outcome / Capability**：Task Success、Goal Completion、Correct Outcome；
-- **Reliability**：Pass@1、pass@k、pass^k、多 Trial 波动、Crash / Recovery；
-- **Trajectory Quality**：无效 Tool、重复 Loop、错误 Delegation、策略违规；
-- **Efficiency**：Token、Model Call、Tool Call、Latency、Cost / Successful Task；
-- **Safety**：越权操作、审批绕过、敏感信息泄漏、Prompt Injection 等。
-
-Agent 的非确定性、多 Trial 与 pass@k / pass^k 的适用边界统一见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
-
----
-
-# 21. Benchmark 需要同时覆盖公开能力、领域任务和回归保护
-
-生产 Agent 不能只依赖 Public Benchmark。工程上通常还需要企业自己的 Domain Evaluation Suite，以及由历史 Badcase 和 Production Failure 形成的 Regression Suite。
-
-~~~text
-Public Benchmark
-→ 外部可比较的基础能力
-
-Domain Benchmark / Eval Suite
-→ 企业真实任务
-
-Regression Suite
-→ 历史失败与关键能力保护
-~~~
-
-Benchmark、Evaluation Suite 与 Regression Case 的完整关系见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
-
----
-
-# 22. Eval Task 必须把成功标准和环境结果写清楚
-
-一个 Task 不应该只有 Prompt。至少需要明确 Input、Initial Environment、Success Criteria、Constraints 与 Graders。对于能通过环境状态验证的任务，应优先检查真实 Outcome，而不是相信 Agent 自报“已完成”。
-
-例如 Coding Agent 的成功标准可以落到补丁、测试结果、修改范围和安全约束；业务 Agent 可以检查数据库、工单、订单或其他真实资源状态。
-
-Task / Trial / Outcome 的数据链路与示例统一见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
-
----
-
-# 23. Grader 应优先使用确定性证据，再补模型与人工判断
-
-Agent Eval 常见三类 Grader：
-
-~~~text
-Code-based / Deterministic
-+ Model-based
-+ Human
-~~~
-
-能够通过 Test、Database State、Tool 参数或权限规则直接验证的事实，应优先使用确定性 Grader；开放式文本质量和复杂策略可以使用 Model-based Grader，并通过 Human Review 做校准。高风险安全条件更适合作为硬门禁，而不是由平均分抵消。
-
-完整 Grader 设计、Evaluation Harness 与持续回归方法见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
+Benchmark、Evaluation Suite、Regression Case、Eval Validation 与项目实践的完整关系统一见 [《Agent Eval 与 Benchmark》](./A-Agent-Eval与Benchmark.md)。
 
 ---
 
