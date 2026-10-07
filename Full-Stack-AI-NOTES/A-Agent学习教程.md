@@ -4498,6 +4498,43 @@ Agentic Core
 
 生产 Agent 通常不是 Code Orchestration 与 Model Orchestration 的二选一，而是 Hybrid：确定性外壳控制必须稳定的边界，Agent 自主内核处理不可预先写死的部分。
 
+### 【确定性外壳需要把可验证规则从自然语言下沉为可执行约束】
+
+“确定性外壳”不能只理解成多写几条 `MUST` 或把规则放进更长的 Prompt。只要规则仍然需要模型自己读取、记忆、解释并判断是否满足，它就仍然属于软约束。
+
+更稳定的做法是先区分两类信息：
+
+~~~text
+需要语义理解、上下文推理、方案选择
+→ 保留给 Agent
+
+存在明确状态、枚举、阈值或客观结果
+→ 结构化 State / Artifact
+→ Schema / Script / Test / Lint
+→ 形成可重复检查结果
+~~~
+
+例如，一个长任务如果只要求“所有功能完成后再结束”，Agent 仍可能因为上下文压缩或判断偏差而过早宣布完成。更可靠的方式是先把任务拆成结构化状态：
+
+~~~text
+item_id
+status
+evidence_ref
+result
+~~~
+
+再由程序检查必填项、状态合法性、证据文件、测试退出码或未关闭 blocker。这样原本需要模型自己解释的规则，就被转换成系统可以直接计算的条件。
+
+OpenAI 在 Harness Engineering 的真实工程实践中指出，大型说明文档存在难以机械验证的问题，因此会把关键架构 invariant 编码进 custom linters、CI jobs 和 structural tests；其原则是约束真正重要的边界，而不是微观规定 Agent 的每一个实现动作。[[25]](https://openai.com/index/harness-engineering/) OpenAI 的 Skills 实践也建议把 Skill Script 设计成可直接运行的小型 CLI，输出 deterministic stdout、明确失败并写入固定路径，以承接可重复、可程序化的操作。[[32]](https://developers.openai.com/cookbook/examples/skills_in_api)
+
+Anthropic 对长任务 Agent 的实验也说明了状态外部化的价值：通过结构化 feature list、progress file 和 Git 保存跨上下文进度，后续 Agent 不需要依赖对历史对话的猜测来判断任务做到哪里。[[18]](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+
+因此“确定性外壳 + 自主内核”还可以进一步理解为：
+
+> **让 Agent 负责不确定性，让工程系统负责确定性。**
+
+在真实 AI Coding 项目中的具体落地，可继续查看 [《AI Coding 如何通过确定性工程机制提高 Agent 长任务可靠性》](../bytedance/docs/AI-Coding如何通过确定性工程机制提高Agent长任务可靠性.md)。该项目把 Verify 的 Case、Observed Result、Evidence 和状态结构化，并将可机械判断的部分进一步交给确定性检查；这些实现属于项目实践，本文保留的是可迁移到其他 Agent 系统的通用原则。
+
 ### 【Checkpoint、Artifact 和 Context 分别承担不同连续性】
 
 ~~~text
@@ -4928,4 +4965,4 @@ Cost / SLA
 
 [30] SHINN, N. et al. [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366). 2023.
 
-[31] YAO, S. et al. [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601). 2023.
+[31] YAO, S. et al. [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601). 2023.\n\n[32] OPENAI. [Skills in OpenAI API](https://developers.openai.com/cookbook/examples/skills_in_api)[EB/OL]. [2026-10-07].
