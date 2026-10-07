@@ -1,800 +1,809 @@
 # Agent Eval 与 Benchmark
 
-Agent Eval（Agent 评测）用于回答：**一个 Agent 在给定任务、工具和环境中，能否稳定、低成本、安全地完成真实目标。** 它不能只检查最终文本，因为 Agent 会经历多轮模型调用、Tool Call、环境状态变化、失败恢复和人工介入；一次看似正确的最终回答，也可能来自错误过程，甚至没有真正改变目标环境。Anthropic 将 Agent Eval 拆成 Task、Trial、Grader、Transcript / Trace、Outcome、Evaluation Harness 与 Evaluation Suite 等对象。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+## 【知识概述】
 
-本文使用下面的主链组织知识：
+Agent Eval（Agent 评测）解决的核心问题不是“模型最后回答得像不像正确答案”，而是：
+
+> **在给定任务、环境和约束下，Agent 能否稳定、有效、安全，并以可接受的成本完成真实任务。**
+
+Agent 与单轮 LLM 不同。一次 Agent Task 往往包含多轮 Model Call、Tool Call、环境状态变化、重试、Handoff、审批与恢复，因此评测对象是一次完整任务执行，而不是某一次模型调用。Anthropic 将 Task、Trial、Grader、Transcript / Trace、Outcome、Evaluation Harness 与 Evaluation Suite 作为 Agent Eval 的基本运行对象；OpenAI 也以 Trace、Grader、Dataset 和 Eval Run 组织 Agent 工作流评测。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) [[2]](https://developers.openai.com/api/docs/guides/agent-evals)
+
+为了避免把“评什么”“怎么跑”“怎么算”混在一起，本文使用两套互补框架：
 
 ~~~text
+一、评测设计体系
+回答：一套 Agent Benchmark 应该怎样设计？
+
+评测目标
+→ 评测角度
+→ 评测方法
+→ 评测指标
+→ 评测维度
+
+
+二、评测运行体系
+回答：这套评测怎样真正运行起来？
+
+Dataset / Evaluation Suite
+→ Evaluation Harness
+→ Task
+→ Trial
+→ Evidence
+→ Grader
+→ Metrics Aggregation
+→ Benchmark Result
+~~~
+
+这里的“五层评测设计体系”是本文为了工程理解建立的统一框架，不是 Anthropic、OpenAI 或其他机构规定的行业标准术语。外部资料用于校准每一层中的 Task、Outcome、Trace、Grader、Metric 等概念边界。
+
+---
+
+## 1. Agent Benchmark 先评完整任务，而不是一次模型调用
+
+### 【Task 是一次完整任务的评测单元】
+
+Anthropic 将 Task 定义为具有明确输入和成功标准的一次测试，将 Agent 对同一个 Task 的一次完整尝试称为 Trial。由于 Agent 运行具有非确定性，同一个 Task 往往需要多个 Trial 才能判断稳定性。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+因此：
+
+~~~text
+Model Call
+→ 一次模型推理
+
+Agent Run / Trial
+→ 模型通过多轮推理和工具调用完成一次任务尝试
+
 Task
-  ↓
-Trial
-  ↓
-Agent Run
-  ├── Trace / Transcript：过程发生了什么
-  └── Outcome：环境最终变成什么
-          ↓
-        Grader
-          ↓
-Evaluation Harness
-          ↓
-Evaluation Suite / Benchmark
-          ↓
-版本比较、回归保护与持续改进
-~~~
-
-如果还不理解 Agent Runtime、State、Checkpoint 与 Trace 的运行边界，先阅读 [《Agent System 研发知识梳理》](./A-Agent-System研发知识梳理.md)。如果关注 AI Coding 中“什么算正确、怎样验收代码产物”，可以同时阅读 [《项目工程化设计》](./X-项目工程化设计.md)。
-
-## 1. Agent Eval 评测的是完整任务执行而不只是最终回答
-
-### 【普通 LLM Eval 与 Agent Eval 的评测对象不同】
-
-单轮 LLM Eval 往往可以抽象为：
-
-~~~text
-Input
-  ↓
-Model
-  ↓
-Output
-  ↓
-Grader
-~~~
-
-Agent 的执行更接近：
-
-~~~text
-Task
-  ↓
-Model
-  ↓
-Tool
-  ↓
-Environment Changes
-  ↓
-Model
-  ↓
-Retry / Handoff / Approval
-  ↓
-Final Output + Final Environment State
-~~~
-
-因此 Agent Eval 至少需要同时回答：
-
-- **结果是否正确**：目标环境最终是否达到预期状态；
-- **过程是否合理**：Tool、Handoff、Retry、Approval 等执行轨迹是否符合约束；
-- **多次执行是否稳定**：同一个 Task 在多次 Trial 中是否持续成功；
-- **资源是否合理**：时间、Token、Model Call、Tool Call 与成本是否可接受；
-- **安全边界是否满足**：是否出现越权、危险操作、绕过审批或敏感信息泄漏。
-
-### 【Agent Eval 与业务 KPI 不是同一层评估】
-
-Agent Eval 主要判断 Agent / Harness 在任务上的能力与可靠性；业务 KPI 判断这套系统上线后是否真正创造业务价值。
-
-~~~text
-Agent Eval
-→ 任务是否完成
-→ 运行是否稳定
-→ 成本是否可接受
-→ 行为是否安全
-
-Business KPI
-→ 是否缩短业务处理时间
-→ 是否提升覆盖量 / Throughput
-→ 是否降低人力成本
-→ 是否改善转化、解决率或满意度
-~~~
-
-业务 Agent 最终需要同时看两层，但不能用业务 KPI 替代 Agent Eval，也不能因为 Agent Eval 分数提高，就直接推断业务价值一定提高。
-
-## 2. Task、Trial、Trace 与 Outcome 构成一次评测的数据链路
-
-### 【Task 定义输入、环境和成功标准】
-
-Task（任务 / 测试用例）是一项有明确输入和成功标准的测试。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-一个工程化 Task 不应只写 Prompt，还需要明确：
-
-~~~text
-Task
-├── Input
-├── Initial Environment
-├── Success Criteria
-├── Constraints
-├── Graders
-└── Reference Solution
-~~~
-
-例如 Coding Agent 的一个任务可以写成：
-
-~~~yaml
-task_id: fix_auth_bypass_001
-
-input:
-  issue: "空密码可以绕过认证"
-
-environment:
-  repository: auth-service
-  branch: eval-fixture
-
-success_criteria:
-  - empty_password_is_rejected
-  - existing_login_behavior_is_preserved
-
-constraints:
-  - must_not_disable_authentication
-  - must_not_modify_unrelated_modules
-
-graders:
-  - unit_test
-  - regression_test
-  - diff_scope_check
-  - security_rule_check
-
-reference_solution:
-  patch: "known-good-fix.diff"
-  expected: "passes all required graders"
-~~~
-
-Task 的标准必须足够明确，让正确执行任务的 Agent 有机会通过；如果 Grader 检查了 Task 从未说明的隐藏条件，最终分数反映的可能是 Task 设计问题，而不是 Agent 能力。Anthropic 也强调 Task 与 Grader 的成功标准需要清晰且可验证。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-Reference Solution（参考解）用于证明两件事：**Task 本身可解，且当前 Grader 配置至少能够接受一个已知正确结果。** Anthropic 建议为 Task 准备一个能够通过全部关键 Grader 的已知工作解，用它检查任务规范、环境和评分器是否配置正确。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-Reference Solution 不是“Agent 必须模仿的执行路径”。它只负责验证 Task 和 Grader 的可用性：
-
-~~~text
-Reference Solution
-→ 证明 Task 可解
-→ 证明 Grader 能接受正确结果
-
-Agent Trial
-→ 可以采用其他合法路径
-→ 只要 Outcome 和必须遵守的约束正确
-~~~
-
-因此，Agent 的实现路径不应该因为与 Reference Solution 不同就自动失败。
-
-### 【Dataset 把真实任务分布转换成可重复评测样本】
-
-单个 Task 定义“怎样测试一个场景”，Dataset（评测数据集 / Task Portfolio）解决的是另一个问题：**应该选择哪些 Task，才能让评测结果代表真正关心的能力、风险和真实任务分布。**
-
-一个可持续维护的 Dataset 通常不是随意收集大量 Case，而是从不同来源持续形成具有代表性的任务组合：
-
-~~~text
-真实任务空间
-  ↓
-候选 Case 来源
-  ├── 产品需求与人工验收 → Capability Case
-  ├── 风险与策略边界     → Safety Case
-  ├── 生产日志与用户反馈 → Real-world Case
-  ├── 历史失败           → Regression Case
-  └── 新能力边界         → Challenge Case
-          ↓
-清洗 / 去重 / 标注 / 成功标准确认
-          ↓
-Dataset
-          ↓
-按评测目标组织为 Evaluation Suite
-~~~
-
-上游输入是真实需求、生产行为、历史失败和风险边界；这一层解决“测试样本是否代表真正问题”，输出是可以被 Harness 重复加载的 Task 集合。进入下一层 Trial 后，评测系统才开始回答 Agent 在这些任务上实际表现怎样。OpenAI 的 Evaluation Best Practices 也把 Collect Dataset 放在定义目标之后、定义指标和持续评测之前，并建议综合生产数据、领域数据、人工整理数据、合成数据和历史数据。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
-
-Dataset 的质量不能只用 Case 数量衡量。更重要的是：
-
-| 维度 | 需要回答的问题 |
-| --- | --- |
-| Coverage | 关键能力、失败模式和风险是否被覆盖 |
-| Representativeness | Case 是否接近真实任务分布，而不是只覆盖容易构造的样本 |
-| Difficulty | 是否同时存在基础任务与能够继续区分能力上限的困难任务 |
-| Risk Distribution | 低频但高风险场景是否因为占比低而被总体平均分掩盖 |
-| Label / Grader Quality | Success Criteria、Reference Solution 和 Grader 是否能够公平判断结果 |
-
-如果 Dataset 与生产分布明显失配，即使分数很高，也不能直接推断真实系统同样可靠。OpenAI 将“不忠实反映生产流量模式的数据集”列为 Eval 设计的反模式，并建议覆盖 typical、edge 与 adversarial cases。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
-
-Dataset 还需要同时覆盖**行为应该发生**和**行为不应该发生**的 Case。Anthropic 指出，单边 Eval 会产生单边优化：如果只测试“需要搜索时是否搜索”，Agent 可能通过“几乎总是搜索”获得高分，却没有学会什么时候不应该搜索。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-~~~text
-Behavior Eval
-  ├── Positive Case：条件满足时，目标行为应该发生
-  └── Negative Case：条件不满足时，目标行为不应该发生
-~~~
-
-因此 Tool Selection、Handoff、Approval、Search、Retry 等行为型 Eval，都应检查触发不足与过度触发两个方向，而不是只验证其中一侧。
-
-Dataset 同时存在一个开发边界：**反复针对固定 Eval Case 调整 Prompt、Tool 或 Harness，可能得到对这些 Case 的局部优化，而不是可泛化能力。** 工程上可以把数据职责区分为：
-
-~~~text
-Development Set
-→ 用于日常迭代、定位和快速反馈
-
-Holdout / Fresh Set
-→ 用未参与直接优化的 Case 检查泛化
-
-Regression Set
-→ 保存历史失败和关键已获得能力，持续防止退化
-~~~
-
-这不是要求所有 Agent Eval 都采用固定的数据集比例，而是强调“用于优化的样本”和“用于独立验证的样本”不能在概念上完全混为一体。OpenAI 的评测实践同样使用 held-out set 说明独立验证，并把持续扩充 Eval Set 作为 Continuous Evaluation 的一部分。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
-
-Dataset 也不仅验证 Agent，还能帮助验证 Grader。对带有人类标签、Reference Solution 或专家判断的样本，可以比较自动 Grader 与人工判断：
-
-~~~text
-Dataset Sample
-  ↓
-Human Label / Reference Solution
-  ↓
-Automated Grader
-  ↓
-Agreement / Disagreement
-  ↓
-Grader Calibration
-~~~
-
-因此 Reference Solution、Transcript Review 与 Grader Calibration 不是彼此孤立的质量手段：它们共同保证“Task 可解、Case 有代表性、Grader 能公平测量”。
-
-### 【Trial 是 Task 的一次具体执行】
-
-Trial（一次尝试）表示 Agent 对同一个 Task 的一次完整运行。由于模型输出和 Agent 路径具有非确定性，同一个 Task 应根据评测目标运行多次 Trial，而不是把单次 Pass / Fail 当成稳定能力结论。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-~~~text
-Task A
-├── Trial 1 → Pass
-├── Trial 2 → Fail
-├── Trial 3 → Pass
-└── Trial 4 → Pass
-~~~
-
-不同 Trial 应尽量从干净、隔离的环境开始，避免上一轮残留文件、缓存、数据库状态或资源耗尽影响下一轮结果。否则测到的可能是基础设施噪声，而不是 Agent 的真实能力。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-### 【Trace 记录过程，Outcome 记录最终环境状态】
-
-本文统一使用下面的职责边界：
-
-| 对象 | 回答的问题 | 典型内容 |
-| --- | --- | --- |
-| Trace / Transcript / Trajectory | 这次 Trial 经历了什么 | Model Turn、Tool Call、Tool Result、Handoff、Retry、Approval、Token、延迟 |
-| Outcome | Trial 结束后环境最终变成什么 | 文件、测试结果、数据库记录、工单状态、资源状态 |
-| Final Output | Agent 最后对用户说了什么 | 文本回答、结构化结果 |
-
-OpenAI Agents SDK 的 Tracing 会记录 Agent Run 中的模型生成、Tool Call、Handoff、Guardrail 和自定义事件，适合用来调试、可视化和监控运行过程。[[2]](https://openai.github.io/openai-agents-python/tracing/)
-
-**Trace 不是 Eval。** Trace 是 Runtime 产生的运行事实；Eval 可以读取 Trace、Outcome、Final Output 和资源消耗，再由 Grader 判断是否满足 Task 的成功标准。
-
-~~~text
-Runtime
-  ↓
-Trace ─────────┐
-Outcome ───────┼→ Grader → Eval Result
-Final Output ──┤
-Cost / Latency ┘
-~~~
-
-### 【Outcome 优先检查真实环境，而不是相信 Agent 自报完成】
-
-Anthropic 将 Outcome 定义为 Trial 结束时环境中的最终状态。例如 Agent 说“机票已经预订”并不能证明成功，真正需要检查的是环境中是否存在对应预订记录。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-同样，在软件工程 Agent 中：
-
-~~~text
-Agent：
-“修复完成，测试已通过”
-        ↓
-不能直接算成功
-
-Environment Outcome：
-├── 补丁是否真实存在
-├── 目标测试是否通过
-├── 回归测试是否通过
-├── 是否修改了无关文件
-└── 安全约束是否仍成立
-        ↓
-Grader
-~~~
-
-因此，能通过代码、数据库、文件系统或业务状态验证的结果，应优先使用真实环境证据，而不是只评价最终自然语言。
-
-### 【项目实践：AI Coding Verify 把验收结论落到证据闭环】
-
-在真实 AI Coding 交付中，这条通用原则可以继续落成“**断言 → 实际观察值 → 持久化证据 → Gate**”的验收链路，而不是让 Coding Agent 在执行后直接写一句“PASS”。
-
-字节 AI Coding Workflow 的 Verify 阶段就是一个具体实践：Test Case 预先声明 positive / negative / visual assertion 与 evidence requirement；运行时再把每个断言映射到 `observed_value`、`evidence_type` 和 `evidence_ref`。只有验证已经执行、结果已经记录、证据类型与断言匹配、持久化证据能够支持观察值时，当前验收项才能关闭。
-
-这也进一步验证了前面的职责边界：
-
-~~~text
-Outcome / Runtime Evidence
-→ 主要证明“最终结果是否满足任务目标”
-
-Trace / Execution Record
-→ 主要解释“Agent 做了什么、为什么成功或失败”
-
-Deterministic Gate
-→ 检查能够机械判断的证据完整性和合同条件
-
-Human Review
-→ 处理高风险、开放语义或自动判断存在争议的部分
-~~~
-
-因此，Trace 很重要，但不能因为执行路径完整就推导任务结果正确；同样，Agent 的自然语言 Summary 也不能替代真实 Outcome。只有当 Tool 顺序、审批、权限或禁止行为本身就是 Task 的明确约束时，相应 Trace 才直接成为 Grader 的验收对象。
-
-项目实践可继续查看 [《AI Coding 如何保证 Agent 验收结论可信》](../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)，其中保留了具体的 Case Result 字段、Evidence Mapping 和 Verify Gate 实现；本文只维护可迁移到其他 Agent 系统的通用评测机制。
-
-## 3. Grader 根据任务性质组合确定性、模型和人工判断
-
-### 【Grader 判断 Trial 的某一方面是否满足标准】
-
-Grader（评分器）是检查 Agent 表现的评分逻辑。一个 Task 可以同时配置多个 Grader，每个 Grader 又可以包含多个 Assertion（断言）。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-生产评测通常组合三类 Grader：
-
-| Grader | 适合判断 | 优点 | 主要限制 |
-| --- | --- | --- | --- |
-| Code-based / Deterministic | 测试是否通过、数据库状态、Tool 参数、权限规则、静态分析 | 快、便宜、稳定、易复现 | 对开放式质量判断不够灵活 |
-| Model-based | 文本质量、解释完整性、开放式策略、Rubric | 能处理自然语言和多种正确答案 | 本身具有非确定性，需要校准 |
-| Human | 高价值任务、专业判断、模糊边界、Judge 校准 | 能提供专家判断 | 成本高、速度慢 |
-
-[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-### 【Outcome、Policy Constraint 与 Implementation Path 需要分开评分】
-
-Agent Eval 可以读取完整 Trace，但**能观察路径不等于应该规定唯一路径**。更稳定的做法是先区分三类评测对象：
-
-| 评测对象 | 主要问题 | 是否适合硬性约束 |
-| --- | --- | --- |
-| Outcome | 最终任务是否真正完成 | 是 |
-| Policy / Safety Constraint | 是否满足权限、审批、安全、合规等必须规则 | 是 |
-| Implementation Path / Trajectory | Agent 具体用了什么 Tool、什么顺序、怎样规划 | 通常不是唯一答案 |
-
-例如 Coding Agent 可以要求：
-
-~~~text
-必须：
-→ 修复目标缺陷
-→ 保持回归测试通过
-→ 不修改无关模块
-→ 不越权访问资源
-
-通常不应该要求：
-→ 必须先 read_file
-→ 再 edit_file
-→ 再 run_tests
-→ 严格按唯一顺序执行
-~~~
-
-因为 Agent 可能找到设计者没有预设、但同样正确的执行路径。Anthropic 也指出，过度限定具体 Tool Call 或中间步骤容易产生脆弱评测；更可靠的方式通常是优先检查 Outcome，并只对真正属于业务、安全或合规要求的路径约束做硬性评分。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-Trajectory 仍然有价值，但更多用于解释和诊断：
-
-~~~text
-Outcome Grading
-→ 判断“有没有真正完成”
-
-Constraint Grading
-→ 判断“有没有违反必须遵守的边界”
-
-Trajectory Analysis / Trace Grading
-→ 判断“为什么成功或失败”
-→ 发现低效、循环、错误 Tool、错误 Handoff
-~~~
-
-OpenAI 当前也将 Trace Grading 定义为对一次 Agent workflow 的完整 Trace 进行结构化评分，可用于检查 Tool 选择、Handoff、Guardrail 与安全策略等 workflow-level 行为。[[6]](https://developers.openai.com/api/docs/guides/agent-evals)
-
-### 【优先使用最确定的证据，再增加主观评分】
-
-如果结果可以通过真实系统状态判断，就优先使用确定性 Grader：
-
-~~~text
-代码是否通过测试
-→ Test Runner
-
-数据库是否产生退款记录
-→ State Check
-
-是否调用了越权 Tool
-→ Trace / Policy Check
-
-回答是否清晰、有同理心
-→ Model-based / Human Rubric
-~~~
-
-这并不意味着 Model-based Grader 没有价值，而是不要用模型评分替代本来可以直接验证的事实。
-
-OpenAI Agents SDK 当前还提供 provider-neutral 的 deterministic testing utilities，可以在不调用真实模型和外部 Provider 的情况下测试 Tool Execution、Handoff、Guardrail、Retry、Session 等 SDK / Application 自己负责的编排行为。[[3]](https://openai.github.io/openai-agents-python/testing/) 这类测试不是完整 Agent Eval，但可以成为确定性 Grader 或回归证据的一部分。
-
-### 【评分可以是二值、加权或混合规则】
-
-不同 Task 的通过条件可以不同：
-
-~~~text
-Binary
-→ 所有关键 Grader 必须通过
-
-Weighted
-→ 多个 Grader 按权重形成总分
-
-Hybrid
-→ 安全 / 权限是硬门禁
-→ 质量 / 风格再按 Rubric 评分
+→ 被重复评测的任务定义
 ~~~
 
 例如：
 
 ~~~text
-Security Test     必须 Pass
-Regression Test   必须 Pass
-Task Completion   ≥ 0.9
-Explanation       ≥ 4 / 5
+Task：修复认证绕过问题
+
+Agent Trial：
+读取代码
+→ 定位问题
+→ 修改实现
+→ 运行测试
+→ 根据失败继续修复
+→ 最终结束
 ~~~
 
-高风险条件更适合 Gate，而不是让平均分把严重失败“抵消”掉。
+评测的是整条 Trial，而不是其中某一次 Model Response。
 
-## 4. Evaluation Harness、Evaluation Suite 与 Benchmark 负责规模化重复评测
+### 【Benchmark 是固定评测协议，不只是一个成功率】
 
-### 【Evaluation Harness 负责把评测端到端运行起来】
+本文把 Benchmark 理解为：
 
-Evaluation Harness（评测运行底座）负责把 Task 真正执行起来，并完成环境初始化、Agent 调用、Trace 记录、Grader 执行和结果聚合。Anthropic 将其描述为运行 Eval 的基础设施。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+> **固定任务集、环境、运行预算、执行协议、评分规则和指标口径，用于重复比较不同 Agent、Model、Prompt、Tool 或 Harness 版本。**
+
+所以“Agent 能否稳定完成任务”是 Benchmark 想回答的重要问题，但 Benchmark 本身还需要保证：
 
 ~~~text
-Evaluation Harness
-├── Load Task
-├── Reset Environment
-├── Run Trial
-├── Collect Trace / Outcome
-├── Run Graders
-└── Aggregate Results
+Task Set 固定或版本可追踪
+Environment 可复现
+Budget 可比较
+Grader 口径稳定
+Metric 定义明确
 ~~~
 
-它和 Agent Harness 不是同一个概念：
+否则两个版本即使得到不同分数，也无法判断差异来自 Agent 能力还是评测条件变化。
+
+---
+
+## 2. 五层评测设计体系从成功标准逐步推导到能力判断
 
 ~~~text
-Agent Harness
-→ 让 Model 能够作为 Agent 运行
+1. 评测目标
+   什么叫成功？
 
-Evaluation Harness
-→ 运行、观察、评分 Agent
+        ↓
+
+2. 评测角度
+   从哪里取得判断成功与失败的证据？
+
+        ↓
+
+3. 评测方法
+   用什么机制根据证据做判断？
+
+        ↓
+
+4. 评测指标
+   怎样把一次或多次 Trial 结果量化？
+
+        ↓
+
+5. 评测维度
+   这些指标最终说明 Agent 哪方面能力？
 ~~~
 
-### 【Evaluation Suite 组织一组具有共同目标的 Task】
+五层不是五组平行名词，而是一个逐层收敛的设计过程。
 
-Evaluation Suite 是为某类能力或行为组织的一组 Task。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+---
 
-Dataset 与 Evaluation Suite 的职责不同：Dataset 负责保存和维护可评测的 Task Portfolio，Suite 负责按照某个评测目标选择、组织其中的 Task。一个 Task 可以因为能力、风险或历史失败来源进入 Dataset，再根据当前目标进入 Capability、Safety 或 Regression Suite。
+## 3. 第一层：评测目标定义 Task 什么算成功
+
+### 【Success Criteria 必须先于 Agent 执行定义】
+
+第一层回答：
+
+> **这个 Task 满足什么条件，才算真正完成？**
+
+一个工程化 Task 至少应明确：
 
 ~~~text
-Task Source
-  ↓
-Dataset：维护可重复评测的任务集合
-  ↓ 按目标选择与组织
-Evaluation Suite
-  ↓
-Evaluation Harness 执行 Trial
+Input
+Initial Environment
+Success Criteria
+Constraints
+Allowed Tools / Permissions
+Budget
 ~~~
 
-例如 Coding Agent 可以分别维护：
+例如：
+
+~~~yaml
+task:
+  goal: 修复空密码认证绕过
+
+success_criteria:
+  - 空密码必须被拒绝
+  - 正常登录保持可用
+  - 回归测试通过
+
+constraints:
+  - 不得关闭认证
+  - 不得修改无关模块
+~~~
+
+如果执行结束以后才临时决定“什么算成功”，评测结果就会随着 Reviewer 的解释变化。
+
+OpenAI 的 Evaluation Best Practices 也强调设计 task-specific eval，并让测试贴近真实生产分布，而不是使用过于泛化的指标。[[3]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+
+### 【明确结果使用 Exact Criteria，开放任务使用 Rubric 拆解】
+
+不同 Task 的成功标准形式不同。
+
+#### <u>明确结果</u>
+
+例如：
 
 ~~~text
-Capability Suite
-├── bug fix
-├── feature implementation
-├── refactor
-└── repository exploration
-
-Safety Suite
-├── secret access
-├── destructive command
-└── permission boundary
-
-Regression Suite
-├── historical badcase 001
-├── historical badcase 002
-└── production failure 003
+计算结果必须等于 42
+订单状态必须变成 refunded
+指定测试必须通过
+文件必须存在
 ~~~
 
-Anthropic 区分 Capability Eval 与 Regression Eval：前者用于探索 Agent 能做到什么以及提升空间，后者用于保护过去已经能稳定完成的能力，避免版本升级后退化。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+Success Criteria 可以直接表达成精确条件。
 
-两者不是永远平行的集合。一个困难 Task 可以先进入 Capability Suite，用来推动能力提升；当 Agent 对这类 Task 已经能够稳定通过后，可以把它“毕业”到 Regression Suite，持续防止后续版本退化：
+#### <u>开放结果</u>
+
+例如：
 
 ~~~text
-New Difficult Task
-  ↓
-Capability Suite
-  ↓
-Agent / Prompt / Tool / Harness 改进
-  ↓
-多次 Trial 稳定通过
-  ↓
-Regression Suite
-  ↓
-持续回归保护
+撰写研究报告
+生成技术方案
+完成客服沟通
+输出代码 Review
 ~~~
 
-Anthropic 将这种从 capability eval 向 regression suite 的迁移作为长期维护 Eval 的重要方式。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+不存在唯一 expected answer，需要通过 Rubric（评分细则）把“好”拆成具体 Criterion：
 
-### 【Benchmark 是更稳定、可重复的比较基准】
+~~~text
+Rubric
+├─ 事实正确性
+├─ 需求覆盖度
+├─ 引用可靠性
+├─ 分析逻辑
+└─ 输出格式
+~~~
 
-行业并不存在唯一统一的 Benchmark 定义。本文把 Benchmark 作为一种工程组织方式理解：**固定 Task 集、环境、运行协议和评分规则，用于重复比较模型、Harness、Prompt、Tool 或版本变化。**
+需要特别区分：
 
-**下面的 Public / Domain / Regression 三类只是本文为了工程理解建立的组织模型，不是行业统一标准。** 它们分别强调“外部比较、内部领域能力、历史能力保护”三个目标。
+> **Rubric 属于“评什么”的标准定义，不等于“怎么评分”。**
 
-可以分三层：
+同一个 Rubric Criterion 后续既可以由代码判断，也可以由 Model Grader 或 Human Review 判断。
 
-| 层级 | 作用 | 示例 |
-| --- | --- | --- |
-| Public Benchmark | 与外部公开任务和其他系统比较基础能力 | SWE-bench [[4]](https://www.swebench.com/)、GAIA [[5]](https://arxiv.org/abs/2311.12983) 等 |
-| Domain Benchmark / Eval Suite | 用企业真实任务评估领域能力 | 客服退款、研发缺陷修复、运营诊断 |
-| Regression Suite | 用历史失败和关键成功场景保护已获得能力 | Production Badcase、重大事故、关键权限场景 |
+例如：
 
-公共 Benchmark 可以提供外部可比性，但生产 Agent 最终仍需要 Domain Task 和 Regression Suite，因为企业自己的 Tool、环境、规则、权限和成功标准无法被公共数据集完整覆盖。
+~~~text
+Criterion：必须包含 3 个一手来源
+→ 可以由程序检查引用数量和来源类型
 
-## 5. Agent 的非确定性要求通过多 Trial 区分能力上限与稳定性
+Criterion：结论是否真正由证据支持
+→ 可能需要 Model / Human 判断
+~~~
 
-### 【单次成功不能代表稳定能力】
+因此：
 
-Agent 每次运行可能选择不同 Tool、不同路径和不同中间决策，因此同一个 Task 可能出现：
+~~~text
+评测目标
+→ Success Criteria
+   ├─ Exact / Verifiable Criteria
+   └─ Rubric Criteria
+~~~
+
+而不是把“Rubric”和“确定性评分”当成同一层的两种方法。
+
+### 【Reference Solution 用于验证评测标准本身可用】
+
+对于重要 Task，可以准备已知正确的 Reference Solution。
+
+它主要证明：
+
+~~~text
+Task 本身可解
++
+当前 Grader 能接受一个已知正确结果
+~~~
+
+Reference Solution 不是要求 Agent 模仿唯一执行路径。Anthropic 明确建议使用已知可通过所有关键 Grader 的参考解验证 Task 与 Grader 配置。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+---
+
+## 4. 第二层：评测角度决定从结果还是过程取证
+
+第二层回答：
+
+> **Agent 执行完成以后，我们从哪里判断它做得怎么样？**
+
+Agent Eval 的评测角度可以统一成：
+
+~~~text
+结果面
+├─ Outcome
+└─ Output
+
+过程面
+└─ Trajectory / Trace
+~~~
+
+### 【Outcome：真实环境最终变成什么】
+
+Outcome 是 Trial 结束时目标环境的最终状态。
+
+例如 Agent 说：
+
+~~~text
+“退款已经完成。”
+~~~
+
+并不能证明任务成功。真正的 Outcome 可能是：
+
+~~~text
+database.order.status == refunded
+refund_record exists
+refund_amount == expected
+~~~
+
+Anthropic 也用订票场景说明：Agent 声称“已经订票”不等于成功，真正需要检查环境中是否存在对应 Reservation。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+因此只要 Task 存在可以观察的外部状态，应优先验证 Outcome。
+
+### 【Output：最终交付物本身就是任务结果】
+
+部分任务没有明显外部环境变化，最终 Output 本身就是主要产物：
+
+~~~text
+Research Agent → 研究报告
+Analysis Agent → 分析结论
+Customer Service Agent → 最终回复
+~~~
+
+这时 Output 需要根据 Task Success Criteria 和 Rubric 直接评测。
+
+### 【Trajectory / Trace：Agent 是怎样完成任务的】
+
+Trace 记录一次 Trial 的完整执行过程，例如：
+
+~~~text
+Model Turn
+Tool Call
+Tool Result
+Handoff
+Retry
+Approval
+Guardrail
+Intermediate Result
+~~~
+
+OpenAI 将 Trace 定义为 Agent workflow 的端到端运行记录，并支持通过 Trace Grading 检查 Tool、Handoff、Guardrail 和 workflow-level 行为。[[2]](https://developers.openai.com/api/docs/guides/agent-evals)
+
+Trace 主要有两个作用：
+
+1. **解释成功或失败原因**；
+2. **检查过程本身是否违反硬约束**。
+
+因此：
+
+~~~text
+Outcome / Output
+→ 主要回答“最后做对了吗？”
+
+Trace / Trajectory
+→ 主要回答“怎么做的、为什么成功或失败？”
+
+当审批、权限、禁止行为、Tool 使用本身是 Task Constraint
+→ Trace 也成为直接验收对象
+~~~
+
+这里不能把 Outcome 和 Trace 拆成两个体系层级，它们属于同一个“评测角度”问题。
+
+---
+
+## 5. 第三层：评测方法决定怎样把证据变成判断
+
+第三层回答：
+
+> **已经拿到 Outcome、Output 和 Trace 以后，具体通过什么机制判断它们是否满足 Success Criteria？**
+
+Agent Eval 常见三类 Grader：
+
+| 评测方法 | 适合判断 | 优点 | 主要限制 |
+| --- | --- | --- | --- |
+| Deterministic / Code-based | Exact Match、Test、Schema、数据库状态、文件状态、Tool 参数、静态规则 | 快、便宜、稳定、可重复 | 难处理开放语义 |
+| Model-based | 开放式内容质量、复杂 Rubric、语义一致性 | 灵活、可规模化 | 本身非确定，需要校准 |
+| Human Review | 高风险、高歧义、专家判断、Judge 校准 | 判断质量高 | 成本高、速度慢 |
+
+Anthropic 推荐尽可能使用 deterministic graders，在代码不足以判断时使用 model graders，并谨慎使用 human graders；OpenAI 同样提供 string check、code execution、model grader 等不同评分机制。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) [[4]](https://developers.openai.com/api/docs/guides/graders)
+
+### 【方法选择遵循“能确定就不要再次引入模型不确定性”】
+
+推荐顺序：
+
+~~~text
+Criterion 存在明确 Ground Truth
+→ Deterministic Grader
+
+无法代码化，但可以通过明确 Rubric 判断
+→ Model-based Grader
+
+高风险 / 高歧义 / Model Judge 低置信 / 校准场景
+→ Human Review
+~~~
+
+这同时降低两个成本：
+
+~~~text
+评测不确定性
++
+评测运行成本
+~~~
+
+### 【Verifier 可以把开放任务的一部分转成确定性评分】
+
+“开放任务”不代表整个任务必须全部交给 Model Judge。
+
+例如：
+
+~~~text
+Task：撰写一份研究报告
+~~~
+
+原本可能直接让另一个模型判断“这篇报告好不好”。
+
+更稳定的做法是先拆 Rubric：
+
+~~~text
+必须存在结论章节
+必须包含至少 5 个来源
+至少 2 个一手来源
+每个核心 Claim 必须绑定 Citation
+引用 URL 必须可解析
+指定格式必须满足 Schema
+分析质量需要语义判断
+~~~
+
+其中前五项都可以提前构造 Verifier，通过 Script / Rule / Schema 自动验收；只有最后的开放质量判断再交给模型或人工。
+
+因此：
+
+~~~text
+Open-ended Task
+        ↓
+Rubric / Criteria 分解
+        ↓
+能够客观验证的部分
+→ Verifier / Deterministic Grader
+
+仍然需要语义判断的部分
+→ Model / Human
+~~~
+
+这不是把开放任务“变成完全确定”，而是尽可能提高确定性评测比例。
+
+### 【Grader 与 Rubric 不同】
+
+必须保持：
+
+~~~text
+Rubric
+→ 判断标准是什么
+
+Grader
+→ 用什么机制执行判断
+~~~
+
+例如：
+
+~~~text
+Rubric Criterion：事实必须有一手来源
+        ↓
+Grader A：程序检查 Citation Mapping
+Grader B：模型判断 Claim 是否真的被来源支持
+~~~
+
+一个 Criterion 可以组合多个 Grader，一个 Task 也可以同时存在 Hard Gate 和 Weighted Score。
+
+---
+
+## 6. 第四层：评测指标把 Trial 结果转换成可比较数值
+
+第四层回答：
+
+> **完成一次或多次 Trial 后，用什么数字描述表现？**
+
+Metric（指标）是具体可计算的量，不等于能力维度。
+
+### 【任务效果指标】
+
+~~~text
+Trial Success Rate
+Task Success Rate
+Rubric Score
+Criterion Pass Rate
+Failure Rate
+~~~
+
+跨 Task 聚合时还需要明确 Macro / Micro 等统计口径，避免因为不同 Task 的 Trial 数不同而产生误导。
+
+### 【非确定性与稳定性指标】
+
+Agent 同一个 Task 多次运行可能不同：
 
 ~~~text
 Trial 1 → Pass
-Trial 2 → Pass
-Trial 3 → Fail
+Trial 2 → Fail
+Trial 3 → Pass
 Trial 4 → Pass
 ~~~
 
-这时只报告“这个 Task 通过了”会隐藏稳定性问题。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+因此需要多 Trial 指标。
 
-### 【pass@k 关注多次尝试中至少成功一次】
+#### <u>pass@k</u>
 
-pass@k 适合回答：
+回答：
 
-> 给 Agent k 次机会，是否有能力至少找到一次正确解？
+> 给 Agent k 次机会，是否至少能够成功一次？
 
-随着 k 增加，至少成功一次的机会通常会提高。它更适合“一次找到可用解即可”的任务，例如候选方案搜索、某些代码解题或探索型任务。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+适合候选方案生成、搜索、探索型 Coding 等允许多次尝试的任务。
 
-### 【pass^k 关注连续多次都成功】
+#### <u>pass^k</u>
 
-pass^k 适合回答：
+回答：
 
-> 同一个任务连续执行 k 次，是否每次都可靠成功？
+> 同一个任务连续执行 k 次，是否每次都成功？
 
-如果把每次 Trial 的成功率简化为独立的 p，那么连续 k 次全部成功可以直观写成：
+它更强调 Consistency / Reliability。
+
+如果简化假设每次独立且单次成功率为 p：
 
 ~~~text
 pass^k ≈ p^k
 ~~~
 
-例如单次成功率为 75%，连续三次都成功约为：
+Anthropic 明确区分 pass@k 和 pass^k：前者关注多次机会中至少一次成功，后者关注连续成功的一致性。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+还可以记录：
 
 ~~~text
-0.75³ ≈ 42%
+Score Variance
+Retry Rate
+Recovery Rate
+Timeout Rate
+Tool Failure Rate
+Escalation Rate
 ~~~
 
-这类指标更适合客服、支付、权限操作等用户期望“每次都可靠”的场景。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+### 【效率指标】
 
-**pass@k 与 pass^k 回答的是两个不同问题，不应选一个作为所有 Agent 的统一指标。** 是否使用哪一个，要根据产品允许“多试几次找到一个答案”还是要求“每次都稳定成功”来决定。具体 Benchmark 的统计估计方式也可能不同，本文不把上述直观关系当成所有 Benchmark 的唯一计算实现。
+~~~text
+Latency
+P50 / P95 Latency
+Turns
+Model Calls
+Tool Calls
+Input / Output Tokens
+Cost per Trial
+Cost per Task
+Cost per Successful Task
+~~~
 
-## 6. Agent Eval 指标需要同时覆盖结果、稳定性、过程、成本和安全
+其中 Cost per Successful Task 往往比单纯平均 Cost 更能体现真实生产效率，因为失败 Trial 同样消耗资源。
 
-### 【指标分层比堆叠单一总分更容易定位问题】
+### 【安全指标】
 
-可以把 Agent Eval 指标分成五个技术维度，再把业务价值作为独立一层：
+~~~text
+Policy Violation Rate
+Unauthorized Action Rate
+Approval Bypass Rate
+Sensitive Data Exposure Rate
+Unsafe Tool Call Rate
+Guardrail Trigger Rate
+~~~
 
-| 维度 | 典型指标 | 主要回答 |
+需要特别区分：
+
+> **Cost 是指标，不是上位能力维度；pass^k 是指标，Reliability 才是维度。**
+
+---
+
+## 7. 第五层：评测维度解释这些指标说明什么能力
+
+第五层回答：
+
+> **这些分数最终是在评价 Agent 的哪一类能力？**
+
+本文将 Agent Technical Evaluation 收敛为四个核心维度：
+
+| 评测维度 | 核心问题 | 典型指标 |
 | --- | --- | --- |
-| Outcome / Capability | Task Success、Goal Completion、Correct Outcome | 任务能不能做对 |
-| Reliability | Pass@1、pass@k、pass^k、Trial Variance、Crash / Recovery Rate | 是否稳定 |
-| Trajectory Quality | Invalid Tool Call、Repeated Loop、Wrong Delegation、Policy Violation | 过程是否合理 |
-| Efficiency | Token / Task、Model Calls、Tool Calls、Latency、Cost / Successful Task | 成本是否合理 |
-| Safety | Unauthorized Action、Approval Bypass、Secret Leakage、Prompt Injection Success | 是否安全 |
-| Business Value | Time Saving、Throughput、Coverage、Human Cost、Satisfaction | 上线后是否创造价值 |
+| Effectiveness（有效性） | 能不能把任务做对 | Success Rate、Rubric Score、Criterion Pass Rate |
+| Reliability（可靠性） | 能不能持续稳定做对 | pass^k、Variance、Failure / Retry / Recovery Rate |
+| Efficiency（效率） | 完成任务消耗多少时间和资源 | Latency、Turns、Token、Tool Call、Cost / Successful Task |
+| Safety（安全性） | 是否在允许边界内完成 | Violation、Unauthorized Action、Approval Bypass、Leakage |
 
-一个 Agent 从 80% 成功率提升到 82%，如果 Cost / Successful Task 增加十倍，不一定是更好的生产方案。反过来，成本很低但 Outcome 不正确也没有价值。因此指标需要围绕具体产品目标一起看。
-
-### 【Trajectory 指标用于解释为什么成功或失败】
-
-最终 Outcome 相同的两次 Trial，过程质量可能完全不同：
+维度是对指标的语义归类，因此不能再把下面这些概念并列：
 
 ~~~text
-Trial A
-→ 2 次 Tool Call
-→ 正确完成
-
-Trial B
-→ 17 次重复查询
-→ 3 次无效 Tool
-→ 2 次 Retry
-→ 最终也完成
+Outcome
+Reliability
+Trajectory
+Efficiency
+Safety
 ~~~
 
-Outcome 都是 Pass，但 Trial B 的成本、稳定性和未来失败风险更高。Trace 可以提供这类过程证据，但是否算“好”仍需要 Grader 或指标规则判断。
-
-## 7. Agent Eval 应进入持续开发与回归闭环
-
-### 【Success Criteria 应在开发前定义，而不是失败后倒推】
-
-Agent Eval 与软件工程中的验证前置有相同思想：先定义“什么算正确”，再实现和评测。
+因为它们不在同一个抽象层：
 
 ~~~text
-Agent Goal
-  ↓
-Success Criteria
-  ↓
-Task / Eval Case
-  ↓
-Trial
-  ↓
-Trace + Outcome + Evidence
-  ↓
-Grader
-  ↓
-Pass / Fail / Score
-  ↓
-Regression Suite
+Outcome / Trajectory
+→ 评测角度
+
+Reliability / Efficiency / Safety
+→ 评测维度
 ~~~
 
-这与 [《项目工程化设计》](./X-项目工程化设计.md) 中：
+### 【Trajectory Quality 不单独作为固定一级维度】
+
+Trace 中可以产生很多指标，例如 Invalid Tool Call、Repeated Loop、Wrong Delegation、Approval Bypass、Turns、Tool Calls。
+
+这些指标最终可以根据业务含义映射到不同维度：
 
 ~~~text
-Requirement
-→ Acceptance Criteria
-→ Test Case
-→ Actual Result
-→ Evidence
-→ Pass / Fail
+Repeated Loop / Excessive Turns
+→ Efficiency / Reliability
+
+Wrong Delegation
+→ Effectiveness / Reliability
+
+Approval Bypass
+→ Safety
 ~~~
 
-存在明确对应关系，但两者评测对象不同：
+因此 Trajectory 本身更适合作为评测角度和证据来源，而不是与 Reliability、Efficiency、Safety 并列的固定能力维度。
 
-| 软件工程验收 | Agent Eval |
-| --- | --- |
-| 证明软件产物是否满足 Requirement | 证明 Agent / Harness 是否能稳定完成 Task |
-| Test Case 针对产品功能 | Eval Task 针对 Agent 行为与环境 Outcome |
-| Unit / Integration / E2E 可作为证据 | Test Result 也可以成为 Agent Grader 的输入 |
-| 一次确定性测试通常有稳定结果 | 同一 Agent Task 往往需要多个 Trial |
+### 【Business Value 与 Agent Technical Evaluation 分开】
 
-因此 AI Coding 场景可以复用 Requirement / Acceptance Criteria / Test Case 作为 Outcome Grader 的重要输入，但**不能把软件 Test Case 直接等同于完整的 Agent Eval Task**。Agent Eval 还需要明确 Initial Repository State、Allowed Tools、Permissions、Environment Reset、Trial Count、时间 / Token Budget 以及 Agent-level Safety Constraints，再评测 Agent 是否能够稳定、安全、低成本地产生正确的软件交付。
-
-### 【Eval 自身也需要验证，失败不能直接归因给 Agent】
-
-Eval Result 不是天然正确的测量结果。一次失败可能来自 Agent，也可能来自 Task、Grader、Environment 或 Evaluation Harness 本身。
+Agent 技术评测回答：
 
 ~~~text
-Eval Failure
-  ↓
-Failure Analysis
-  ├── Agent Failure
-  ├── Task Ambiguity
-  ├── Grader Error
-  ├── Environment Instability
-  └── Harness / Infrastructure Problem
-  ↓
-确认归因
-  ↓
-Agent Fix / Eval Fix
+Agent 能不能正确、稳定、高效、安全地完成任务？
 ~~~
 
-因此当某个 Task 在大量 Trial 中持续失败时，不应该立即得出“Agent 没有能力”的结论。Anthropic 特别指出，如果前沿模型在大量 Trial 中仍然是 0% 成功，通常应先重新检查 Task 规范和 Grader；Reference Solution 也用于验证这把“尺子”本身是否可用。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-Eval Validation 至少可以包含：
-
-- **Reference Solution**：证明 Task 可解、关键 Grader 可以通过；
-- **Transcript Review**：人工抽查 Trial，确认失败归因是否公平；
-- **Grader Calibration**：对 Model-based Grader 与人工判断做一致性检查；
-- **Environment Validation**：确认环境初始化、依赖、权限和资源状态稳定；
-- **Dataset Review**：检查 Task 是否过度单一、失衡或已经饱和。
-
-Anthropic 建议持续阅读失败 Trial 的 Transcript，因为它能区分“Agent 真正做错”与“Grader 拒绝了合法方案”。Capability Eval 接近 100% 后也会逐渐失去继续衡量能力增长的信号，需要增加更困难的 Task 或将已稳定任务迁入 Regression Suite。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-### 【生产数据与失败持续推动 Dataset Evolution】
-
-一个可持续 Eval 体系不只把单次 Production Failure 写成 Regression Case，还需要持续从生产日志、用户反馈、失败 Trial 和新需求中挖掘 Case，让 Dataset 随真实任务分布和系统能力一起演化：
+业务价值评估回答：
 
 ~~~text
-Production Logs / User Feedback / Trial Results
-  ↓
-Failure Mining 与新场景发现
-  ↓
-Case Selection
-  ↓
-Task 定义与 Success Criteria
-  ↓
-Dataset / Evaluation Suite
-  ↓
-多次 Trial
-  ↓
-Trace + Outcome
-  ↓
-Grader
-  ↓
-Failure Analysis
-  ├── Agent / Prompt / Tool / Harness 改进
-  └── Eval Task / Grader / Environment 修正
-          ↓
-重新运行
-          ↓
-新的生产事实继续进入 Dataset
+这套 Agent 是否真的值得部署？
 ~~~
 
-生产失败仍然是其中最重要的输入之一：
+业务指标可能包括 Time Saving、Throughput、Human Cost、Coverage、Resolution Rate、User Satisfaction 和 Business Conversion。
+
+Agent Eval 分数提高不等于业务 ROI 一定提高；业务 KPI 改善也不能证明 Agent 的技术执行机制已经可靠。
+
+---
+
+## 8. 评测运行体系把五层设计真正执行起来
+
+五层评测设计说明“怎么设计评测”，Evaluation Harness 说明“怎么把评测跑起来”。
 
 ~~~text
-Production Failure
-  ↓
-Root Cause
-  ↓
-New Eval Task
-  ↓
-Regression Suite
-  ↓
-Next Version
-  ↓
-Re-run
+真实任务空间
+        ↓
+Dataset
+保存候选 Task
+
+        ↓ 按评测目标组织
+
+Evaluation Suite
+选择本轮要评的 Task
+
+        ↓
+
+Evaluation Harness
+初始化环境、执行 Trial、收集证据、运行 Grader
+
+        ↓
+
+Task
+定义 Input + Success Criteria + Constraints
+
+        ↓
+
+Multiple Trials
+Agent 真实运行
+
+        ↓
+
+Evidence
+Outcome / Output / Trace + Usage / Latency
+
+        ↓
+
+Graders
+Deterministic / Model / Human
+
+        ↓
+
+Metrics Aggregation
+Success / pass@k / pass^k / Cost / Safety ...
+
+        ↓
+
+Evaluation Dimensions
+Effectiveness / Reliability / Efficiency / Safety
+
+        ↓
+
+Benchmark Result
+版本比较 / Regression / 发布判断
 ~~~
 
-OpenAI 建议在开发过程中持续记录运行事实，从日志中挖掘新的 Eval Case，并在每次变化中持续评测、逐步扩展 Eval Set。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices) Anthropic 也将 Evaluation Suite 视为需要长期维护的 living artifact：真实失败、产品需求和能力变化会不断产生新的 Task。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+Anthropic 将 Evaluation Harness 定义为运行 Eval 的基础设施，包括运行 Task、记录过程、评分和聚合结果。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
-因此 Dataset Evolution 的目标不是机械增加 Case 数量，而是让评测集合持续覆盖当前真实任务、关键风险、历史回归和新的能力边界。
+OpenAI 当前也建议：调试 Agent workflow 时先利用 Trace 定位行为问题，当需要可重复比较时再进入 Dataset 与 Eval Run。[[2]](https://developers.openai.com/api/docs/guides/agent-evals)
 
-## 8. 项目中的 Agent Benchmark 调研属于实践映射而不是已实现 Eval 系统
+### 【Dataset 与 Evaluation Suite 不同】
 
-### 【仓库项目材料能够确认的是调研和方法总结】
+~~~text
+Dataset
+→ 保存和维护可以被评测的 Task Portfolio
 
-仓库的 [转正答辩材料](../转正答辩/实习生转正答辩.md) 能确认两项相关实践：
+Evaluation Suite
+→ 根据某个目标选取并组织 Task
+~~~
+
+例如：
+
+~~~text
+Dataset
+├─ 普通功能 Task
+├─ Edge Case
+├─ Production Failure
+├─ Safety Case
+└─ Challenge Case
+
+Evaluation Suite
+├─ Capability Suite
+├─ Safety Suite
+└─ Regression Suite
+~~~
+
+### 【Evaluation Harness 与 Agent Harness 不同】
+
+~~~text
+Agent Harness
+→ 让 Model 能够执行任务
+
+Evaluation Harness
+→ 运行、观察和评分 Agent
+~~~
+
+评测的对象实际上是 Model + Agent Harness 在给定 Task 和环境中的整体表现。
+
+---
+
+## 9. Benchmark 还要保证评测体系本身可信
+
+Agent Eval 的失败不一定来自 Agent，也可能来自 Task Ambiguity、Grader Error、Environment Instability、Harness Bug 或 Dataset Bias。
+
+因此需要验证 Eval 本身：
+
+~~~text
+Reference Solution
+→ 证明 Task 可解、Grader 可接受正确结果
+
+Transcript Review
+→ 检查失败是否公平
+
+Grader Calibration
+→ 对齐 Model Grader 与 Human Judgment
+
+Environment Validation
+→ 保证 Trial 从稳定、隔离环境开始
+~~~
+
+Anthropic 强调，Task 说明必须和 Grader 真正检查的条件一致；如果强模型大量 Trial 仍然 0% 通过，应先检查 Task 或 Grader 是否有问题。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+OpenAI 也把 Vibe-based evals、数据集不能反映真实生产分布、不校准自动评分等列为评测反模式。[[3]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+
+---
+
+## 10. 项目实践：Agent Benchmark 调研属于方法框架沉淀
+
+当前仓库项目材料能够确认的实践是：
 
 1. 调研企业 Agent 的任务评分问题，并整理《企业 Agent 任务评分思路》；
-2. 调研 Agent Benchmark 的成本来源和可行降本方向，并形成《Agent 评测如何降低 Benchmark 运行成本》报告。
+2. 调研 Agent Benchmark 的成本来源和降本方向，并形成《Agent 评测如何降低 Benchmark 运行成本》报告。
 
-相关可视化材料还记录了“保存输出、Trace 与终态以支持增量运行和重新评分”“正式发布或重大变更仍运行 Full Benchmark”“高风险、低置信度或评分冲突进入人工复核”等方法边界。[Benchmark 降本调研图](../转正答辩/assets/team-contribution/03-benchmark-cost-reduction-summary.svg)
+对应项目材料：[陈相实习生转正答辩](../bytedance/陈相实习生转正答辩.md)。
 
-这些内容可以映射到本章：
-
-~~~text
-运行成本
-→ 控制 Task / Trial 范围
-
-评分成本
-→ 优先确定性 Grader
-→ 必要时 Model / Human
-
-重复执行成本
-→ 保存 Trace / Outcome
-→ 支持重新评分
-
-发布风险
-→ 增量 Eval + Full Benchmark 边界
-~~~
-
-### 【当前证据不能证明已经实现 Evaluation Harness】
-
-上述内容属于**项目调研和方法总结**。当前 Full-Stack-AI-NOTES/source/ 中没有能够证明已经实现完整 Evaluation Harness、自动增量 Benchmark Runner 或统一 Grader Runtime 的对应源码，因此不能把这些方法写成已经落地的系统能力。
-
-如果未来真正实现 Eval Harness，应再补：
+这些实践可以映射到五层体系：
 
 ~~~text
-Task Schema
-Trial Runner
-Environment Reset
-Trace Collector
-Grader Runtime
-Result Aggregator
-Regression Store
+任务评分调研
+→ 评测目标 / 评测角度 / 评测方法
+
+Benchmark 降本调研
+→ 评测方法 / 评测指标 / Efficiency 维度
 ~~~
 
-并用 source/ 中的可运行实现和测试作为证据。
+当前仓库没有证据证明已经完整实现统一 Evaluation Harness、自动 Benchmark Runner 或 Grader Runtime，因此面试中应表述为：
 
-## 9. 参考文献
+> **参与 Agent Benchmark 与企业任务评分调研，形成评测方法和成本治理框架，为团队后续评测体系建设提供参考。**
 
-[1] ANTHROPIC. [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)[EB/OL]. 2026-01-09[2026-09-30].
+而不能扩大成“独立建设了一套完整 Agent Benchmark 平台”。
 
-[2] OPENAI. [Tracing - OpenAI Agents SDK](https://openai.github.io/openai-agents-python/tracing/)[EB/OL]. [2026-09-30].
+---
 
-[3] OPENAI. [Testing - OpenAI Agents SDK](https://openai.github.io/openai-agents-python/testing/)[EB/OL]. [2026-09-30].
+## 11. 五层体系与运行对象的最终对应关系
 
-[4] SWE-BENCH. [SWE-bench](https://www.swebench.com/)[EB/OL]. [2026-09-30].
+| 层级 | 解决的问题 | 核心对象 |
+| --- | --- | --- |
+| 评测目标 | 什么叫任务成功 | Task、Success Criteria、Rubric、Constraints |
+| 评测角度 | 从哪里取得判断证据 | Outcome、Output、Trajectory / Trace |
+| 评测方法 | 怎样做出判断 | Deterministic Grader、Model Grader、Human Review、Verifier |
+| 评测指标 | 怎样量化单次和多次表现 | Success Rate、Rubric Score、pass@k、pass^k、Cost、Latency、Violation Rate |
+| 评测维度 | 最终说明哪类 Agent 能力 | Effectiveness、Reliability、Efficiency、Safety |
 
-[5] MIALON, Grégoire; FOURRIER, Clémentine; SWIFT, Craig; WOLF, Thomas; LECUN, Yann; SCIALOM, Thomas. [GAIA: a benchmark for General AI Assistants](https://arxiv.org/abs/2311.12983)[EB/OL]. 2023-11-21[2026-09-30].
+运行体系负责：
 
-[6] OPENAI. [Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals)[EB/OL]. [2026-09-30].
+~~~text
+Dataset / Suite
+→ Harness
+→ Task
+→ Trial
+→ Evidence
+→ Grader
+→ Metric
+→ Benchmark
+~~~
 
-[7] OPENAI. [Evaluation best practices](https://developers.openai.com/api/docs/guides/evaluation-best-practices)[EB/OL]. [2026-10-07].
+一句话收束：
 
-[8] OPENAI. [Getting started with datasets](https://developers.openai.com/api/docs/guides/evaluation-getting-started)[EB/OL]. [2026-10-07].
+> **先用评测目标定义什么叫成功，再从结果和轨迹获取证据，用合适的评分方法判断证据，通过多 Trial 指标量化表现，最后从有效性、可靠性、效率和安全四个维度评价 Agent；Evaluation Harness 则负责把这一整套设计稳定、可重复地跑起来。**
 
-> OpenAI 当前正在弃用旧 Evals Platform：官方计划于 2026-10-31 将其设为只读，并于 2026-11-30 关闭。本文使用 Dataset、Eval Run、Trace、Grader 等概念时均按通用评测对象理解，不把旧平台的具体产品形态作为 Agent Eval 的稳定架构定义。[[7]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+---
+
+## 12. 参考资料
+
+[1] Anthropic. [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)[EB/OL]. 2026-01-09。
+
+[2] OpenAI. [Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals)[EB/OL]. 核验日期：2026-10-07。
+
+[3] OpenAI. [Evaluation best practices](https://developers.openai.com/api/docs/guides/evaluation-best-practices)[EB/OL]. 核验日期：2026-10-07。
+
+[4] OpenAI. [Graders](https://developers.openai.com/api/docs/guides/graders)[EB/OL]. 核验日期：2026-10-07。
