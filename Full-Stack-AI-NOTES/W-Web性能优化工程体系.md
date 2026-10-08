@@ -771,99 +771,438 @@ Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖�
 
 ## 6. 任务调度与更新优化控制执行顺序、更新频率和单次峰值
 
-### 【任务调度关注的是“什么时候执行”和“是否占用关键时刻”】
+上一章解决的是**减少 JavaScript 必须执行的工作量**：通过改进算法、缩小响应式依赖和控制对象分配，让同一业务结果以更少的计算成本完成。但必要工作并不一定都能继续缩短。例如一次大数据转换仍要处理几十万条记录，或者网络事件不断触发地图、图表更新。这时即使算法已经合理，连续执行的工作仍可能长时间占据主线程。
 
-浏览器主线程需要处理 JavaScript Task、Microtask、用户交互及部分渲染工作。即使每个计算本身都必要，如果连续执行时间过长，也可能推迟下一次输入或绘制机会。因此调度优化主要改变**任务执行时机、优先级、让步机会、触发频率和单次工作规模**，而不是让算法凭空变快。
+**任务调度优化要回答的是：必要工作怎样分阶段执行、什么时候执行、一次执行多少、是否必须由页面主线程执行。** 它不等于操作系统层面的 CPU 抢占：浏览器一般不会任意打断正在执行的同步 JavaScript 函数，再强行插入 Layout/Paint。应用或框架通常需要在安全的位置主动归还执行权。这就是协作式调度（Cooperative Scheduling）。
 
 ~~~text
-待执行工作：
-   用户输入 / 关键视图更新 / 计算任务 / 后台统计
-                          ↓
-按照业务语义判断优先级和截止时间
-           ┌──────────────┼──────────────┐
-           ▼              ▼              ▼
-     必须及时处理      必须处理但可让步      可以延后
-           ↓              ↓              ↓
-       优先执行       分片 / Yield      适时或空闲运行
-           └──────────────┼──────────────┘
-                          ▼
-               重要输入和视觉更新及时获得机会
+页面需要处理一批必要工作
+            ↓
+① 是否能够在保证正确性的前提下减少工作总量？
+   └─ 是 → 第 5 章：算法 / 响应式 / 内存优化
+            ↓ 仍存在连续阻塞或执行时机冲突
+② 工作能否分成可独立提交或可暂停的阶段？
+   └─ 是 → 拆分短批次 → 主动 Yield → 浏览器获得其他任务/渲染机会
+            ↓
+③ 工作何时才有业务价值？
+   ├─ 与下一次视觉更新相关 → rAF：绘制前调度
+   ├─ 可推迟的后台工作     → Idle：空闲时调度
+   └─ 有不同重要性         → Scheduler：优先级调度
+            ↓
+④ 输入频率是否超过消费能力？
+   └─ 是 → 合批 / 节流 / 更新合并 / 队列 / 背压 / 取消
+            ↓
+⑤ 是否存在可脱离 DOM 的持续 CPU 热点？
+   └─ 是 → 评估 Worker，把计算移出页面主线程
+            ↓
+用长任务、输入延迟、帧耗时、队列积压与总完成时间共同验收
 ~~~
 
-⑤ 与 ④ 的关键差别是：④ 减少计算和组件更新**实际要做的工作**，⑤ 决定这些工作**怎样安排而不阻塞更紧急的任务**。因此优先减少无意义工作，再考虑切分或调度有必要的工作。[[27]](https://web.dev/articles/optimize-long-tasks/)
+以上是**选择优化手段的判断顺序，而非浏览器固定的运行阶段**。任务拆分、时机控制与负载控制可以同时使用。缩短长任务与提升用户响应性相关，但不表示任务越多或越少就一定更好：一个 200ms 长任务拆成多个 10ms 任务，Task 数量反而增加，总 CPU 计算量也未必下降。本章优化目标是**减少连续阻塞、保护关键交互和渲染时机，并让必要任务按可接受的时延完成**。Long Task 通常以持续超过 50ms 的任务作为观测对象；低于 50ms 的连续工作也可能错过帧预算。[[27]](https://web.dev/articles/optimize-long-tasks/)
 
-### 【先缩短长任务，再对可分片工作让出执行权】
+### 【完整示例：长列表计算通过时间切片与主动让步继续执行】
 
-最常见的错误是把 Promise、async/await 当成自动防止主线程阻塞的工具。一个同步函数即便写在 async 内部，在遇到真正的让步点之前仍可能占用主线程。
+#### <u>1. 同步长任务为什么会延迟交互与渲染</u>
 
-- **删除**：避免过期任务、无效轮询和重复计算。
-- **缩短**：降低任务中不可中断部分的计算量。
-- **Yield（主动让出）**：在非紧急且可中断的阶段划分工作，让更高优先级输入或绘制有机会执行。
-- **转移**：CPU 密集、无需直接 DOM 操作的工作可以考虑 Worker，代价是线程资源和数据通信。
-- **取消**：页面已经切换或结果过期时，不再继续消耗资源计算已经没有意义的工作。
-
-概念代码：
+假设一批 100 条记录都要执行 `processOne(item)`，单条平均需要约 3ms。最直接的实现是同步循环：
 
 ~~~js
-// 可逐块处理的任务；批次大小应由真实单次 CPU 成本决定。
-async function processChunks(items, processOne) {
-  for (let start = 0; start < items.length; start += 40) {
-    const end = Math.min(start + 40, items.length);
-    for (let i = start; i < end; i++) processOne(items[i]);
-
-    // 在支持的浏览器中主动让出；需要按兼容性提供降级。
-    if (globalThis.scheduler?.yield) {
-      await globalThis.scheduler.yield();
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
+function processLargeList(items) {
+  for (const item of items) {
+    processOne(item);
   }
 }
 ~~~
 
-它只说明“允许浏览器在任务之间执行其他工作”，并不意味着 40 是最佳分片，也不保证执行总耗时下降。真正业务处理可能需要保序、取消、事务原子性或错误恢复，必须保留这些约束。
+如果每条确实耗时 3ms，总同步计算约为 300ms。当前 Task 的 JavaScript 调用栈在 `for` 完成前不会自然结束，浏览器便难以及时执行后续点击事件回调、下一轮可执行 Task，以及需要主线程参与的样式计算、布局和绘制。即使屏幕上已有上一帧内容，用户仍可能感觉按钮“点不动”。这里的时间是假设，不是所有数据操作必然执行 3ms。
 
-### 【不同调度 API 的职责不能混用】
+~~~text
+单个 Task 开始
+   ↓
+同步处理 100 条记录（约 300ms）
+   ├─ 用户点击事件：可能等待
+   ├─ rAF/页面更新：可能等待
+   └─ 后续 Timer：可能等待
+   ↓
+当前同步调用栈执行结束
+   ↓
+Microtask Checkpoint（处理满足执行条件的微任务）
+   ↓
+浏览器根据当前条件安排其他 Task 或视觉更新
+~~~
 
-| 调度能力 | 适合的工作 | 风险与边界 |
+这里并非 CPU 永远只有一条线程：浏览器还有网络、合成、栅格化等线程和进程，但与页面 JavaScript 共享渲染主线程的工作不能随意插入当前同步调用栈。浏览器规范中的 Event Loop 也不必与某一实现线程严格一一对应。[[28]](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
+
+#### <u>2. 完整的限时分批代码将大任务拆成可让步的工作单元</u>
+
+下面使用**每批约 8ms 的时间预算**演示，而不是硬编码每批 40 条。每条记录的真实处理成本可能不同，以时间而非纯条数作为条件，更容易控制连续执行的峰值。
+
+~~~js
+// 假设 processOne 是一次同步处理，items 按顺序处理即可。
+// 返回 Promise<void>；需要完整结果的调用者应 await。
+async function processLargeList(items) {
+  // 记录本批开始的时间，而不是整个任务第一次开始的时间。
+  let sliceStart = performance.now();
+
+  for (const item of items) {
+    // 当前这一项仍然在页面主线程同步执行。
+    processOne(item);
+
+    // 已连续处理约 8ms，就在当前这一项完成后让出执行权。
+    if (performance.now() - sliceStart >= 8) {
+      if (globalThis.scheduler?.yield) {
+        // 使用原生主动让步 API，稍后在后续 Task 恢复。
+        await globalThis.scheduler.yield();
+      } else {
+        // 不支持 yield 时，用未来的 Timer Task 作为回退。
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+
+      // 该 async 函数恢复之后，重新计算下一批的时间预算。
+      sliceStart = performance.now();
+    }
+  }
+}
+
+// 需要等完整处理结束时：
+// await processLargeList(items);
+~~~
+
+按“每条 3ms”的假设，前几次迭代的过程如下：
+
+| 处理进度 | 本批累计同步耗时 | 是否达到 8ms | 后续行为 |
+| --- | --- | --- | --- |
+| 第 1 条完成 | 3ms | 否 | 继续处理第 2 条 |
+| 第 2 条完成 | 6ms | 否 | 继续处理第 3 条 |
+| 第 3 条完成 | 9ms | 是 | 执行 `await scheduler.yield()`，暂停函数 |
+| 后续任务恢复 | 新一批从 0 开始计时 | — | 从第 4 条继续，而不是重新开始 |
+| 后续记录处理完 | — | — | `for` 正常结束，返回的 Promise 完成 |
+
+可以把它理解为“处理三条 → 主动让步 → 再处理三条”，但这**不是按固定三条分批**：若某一条只耗时 0.1ms，同一批会处理更多条；若单条耗时 20ms，执行到检查条件时就已经超过预算。
+
+代码中四处关键语句的职责各不相同：
+
+1. **`performance.now()`** 是用来测量本段执行了多久的单调时间来源。它不负责调度，也不能中断函数。
+2. **`if (elapsed >= 8)`** 决定何时尝试让步；检查发生在每条 `processOne` 之后，因此 8ms 是软预算，而不是硬性的单次执行上限。
+3. **`await scheduler.yield()` 或 Timer Promise** 才真正让当前异步函数暂停，并把后续工作留给另一个执行机会；不属于自动新开线程。
+4. **重置 `sliceStart`** 让恢复后的下一批拥有新预算，否则总耗时已经超过 8ms 后，后续每一条都可能触发一次让步，造成大量不必要的调度。
+
+如果要求用户取消、切换页面后不再处理旧任务，实际还需在循环或批次边界检查 `AbortSignal`，并在失败时清理“正在处理”的状态。若算法需要中途持有无法暂停的锁、依赖一次同步返回或者不能容忍分段的可见中间结果，则应重新设计数据提交边界，而不能只在任意位置插入 `await`。
+
+#### <u>3. await 后续是微任务，但 Promise 何时完成决定是否跨 Task</u>
+
+这里最容易产生的疑问是：**“`await` 后面的代码不是都作为微任务执行吗？为什么它还能让浏览器获得渲染机会？”** 关键不在于后续是不是 Promise Reaction，而在于被等待的 Promise **什么时候完成**。
+
+比较下面三种方式：
+
+~~~js
+// A：Promise 已经 fulfilled，后续通常在当前 Task 的微任务检查点恢复。
+await Promise.resolve();
+continueWork();
+
+// B：Promise 一开始是 pending；由未来的 Timer Task 调用 resolve。
+await new Promise(resolve => setTimeout(resolve, 0));
+continueWork();
+
+// C：yield 安排未来的优先级续接任务，并在其中恢复 async 函数。
+await globalThis.scheduler.yield();
+continueWork();
+~~~
+
+~~~text
+A. 已经完成的 Promise
+当前 Task 执行同步部分
+       ↓
+await Promise.resolve() 暂停函数
+       ↓
+当前 Task 结束 → Microtask Checkpoint
+       ↓
+微任务执行 continueWork()
+       ↓
+浏览器之后才可能获得视觉更新机会
+结论：没有产生必要的后续 Task 边界。
+
+
+B. 等待 Timer Promise
+当前 Task → 注册 setTimeout → await 暂停并结束当前执行
+       ↓
+浏览器能够安排其他 Task / 视觉更新（不保证一定 Paint）
+       ↓
+后续 Timer Task 执行 resolve()
+       ↓
+在相应 Microtask Checkpoint 恢复 continueWork()
+结论：Timer 创造了跨 Task 的让步机会。
+
+
+C. 等待 scheduler.yield()
+当前 Task → await yield → 暂停函数并归还执行权
+       ↓
+浏览器安排输入、渲染或其他任务的执行机会
+       ↓
+yield 的后续优先级 Task 到来
+       ↓
+Promise 完成，继续该 async 函数剩余计算
+结论：yield 明确用于主动让步和续接任务。
+~~~
+
+这三种写法的 `continueWork()` 都可以通过 Promise 的微任务机制恢复，但 **A 的 Promise 已经完成，B 和 C 则要等待未来任务才能满足恢复条件**。因此“`await` 会产生微任务”与“`await scheduler.yield()` 能跨 Task 主动让步”并不矛盾。MDN 和 web.dev 都明确指出 `scheduler.yield()` 会让出执行权，并通过后续任务继续异步函数。[[29]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield) [[27]](https://web.dev/articles/optimize-long-tasks/)
+
+浏览器会在 Microtask Checkpoint 持续执行已排队微任务，直到队列被清空；如果微任务反复产生新微任务，可能发生 Microtask Starvation（微任务饥饿）。所以**连续 `await Promise.resolve()`、递归 `queueMicrotask` 或大量 `Promise.then`，不是可靠的长计算切片机制**。另一方面，`await fetch(...)` 等待尚未完成的 I/O，可以让当前函数暂时结束，但这种等待由业务异步结果决定，不是控制 CPU 分片的专门调度策略。规范模型及示例见 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)。[[28]](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
+
+#### <u>4. 时间切片缩短连续阻塞，但需要权衡完整任务完成时间</u>
+
+把约 300ms 的计算分为多个短片段，不代表计算量变少；反而会增加任务排队与上下文恢复等开销。它优化的是**最大连续主线程占用、关键输入的等待机会**，不是必然降低整个列表的完成时间。
+
+还有三个需要在实际工程中验证的约束。其一，若 `processOne(item)` 单次就需要 100ms，外部的 8ms 检查无法强行打断函数内部；必须把函数继续拆成可恢复的子步骤，或转入 Worker。其二，让出主线程只创造浏览器重新调度的机会，**并不保证每次让步后都会发生一次 Paint**，因为渲染还取决于刷新机会、当前页面可见性及实际是否需要更新。其三，过小的切片预算可能使整体完成时间恶化；过大的预算则可能继续错过交互和帧更新。实际应测量每批耗时、完整任务耗时、输入延迟及页面帧表现，再确定预算。
+
+### 【任务拆分 API 的差别在于如何创建后续执行机会】
+
+完整示例建立了“工作单元 + 主动让步 + 恢复执行”的模型，接下来区分不同实现。**不是所有异步 API 都能给渲染让路，也不是任何 API 能中断已经开始的任意同步函数**。
+
+#### <u>1. setTimeout 和 MessageChannel 将剩余工作安排为后续 Task</u>
+
+`setTimeout(fn, 0)` 注册 Timer，延迟条件满足后回调才能作为后续 Task 参与调度。0ms 不是立即运行或精确执行时间；嵌套定时器可能受到最小延迟限制，后台标签还可能被节流。[[30]](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html)
+
+如果不使用 `async/await`，也可以显式保存处理游标：
+
+~~~js
+function processByTimer(items, processOne) {
+  let cursor = 0;
+
+  function runChunk() {
+    const start = performance.now();
+
+    while (cursor < items.length && performance.now() - start < 8) {
+      processOne(items[cursor++]);
+    }
+
+    if (cursor < items.length) {
+      setTimeout(runChunk, 0); // 将剩余工作安排到后续 Task
+    }
+  }
+
+  runChunk();
+}
+~~~
+
+这里的 `cursor` 记录已处理进度，所以函数重新进入时不会从第一项开始。与 `await` 版本相比，它没有直接返回“整个列表完成”的 Promise；如果调用者需要知道完成时间、取消或错误，必须另行提供完成回调或 Promise，并处理异常。外层 8ms 同样不能约束单条计算的最大耗时。
+
+`MessageChannel` 的两端 Port 可通过 `postMessage` 发送消息，消息到达后在另一端触发回调，调度器可借此安排一个新的 Task。它常用于自定义工作循环或框架内部调度，而不是“发出消息就能抢占当前 JS”。**当前回调必须主动返回，后续消息事件才有机会运行。**
+
+仓库中的 [React Scheduler 学习源码](https://github.com/cxDlogver/cx-learn-notes/blob/main/course/r1/packages/scheduler/src/forks/Scheduler.js) 提供了具体实现：`workLoop` 会检查 `shouldYieldToHost()`，在合适边界停止继续处理任务；其宿主调度逻辑可以使用 `MessageChannel` 安排下一段执行。它不是依靠 rAF 自动切断所有任务，也不代表 React 或浏览器可强行打断普通同步函数。该源码是学习仓库收录的实现，不表示其他项目采用了同一调度器。
+
+#### <u>2. scheduler.yield 以优先级续接任务恢复当前工作</u>
+
+`scheduler.yield()` 是专门的主动让步 API，返回的 Promise 会在后续的调度任务中完成，以便恢复 `await` 之后的代码。它默认使用 `user-visible` 任务优先级，续接任务相对于同优先级的普通 `scheduler.postTask` 会有提升后的排队位置；在 `scheduler.postTask` 内部使用时，可继承外围任务优先级。[[29]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield)
+
+~~~js
+async function updateAfterFeedback() {
+  showImmediateFeedback(); // 尽早提交关键状态
+  await scheduler.yield(); // 后续步骤安排到新任务中继续
+  runNonCriticalCalculation();
+}
+~~~
+
+这里仍然需要注意，`showImmediateFeedback()` 如果只改变 DOM 或框架状态，浏览器**有机会**在中间进行渲染，但不能承诺每次 `yield` 后就立刻可见。若反馈本身受后续状态一致性约束，还需要避免短暂呈现错误中间态。
+
+浏览器兼容性必须单独检测；不支持时可以采用 Timer Promise 回退，但 Timer 不具备 `yield` 的优先级续接语义，不应声称二者调度效果完全相同。[[27]](https://web.dev/articles/optimize-long-tasks/)
+
+#### <u>3. Promise 与微任务只适合短续接，不属于跨 Task 让步手段</u>
+
+`Promise.then`、`queueMicrotask`、已经完成的 Promise 后的 `await` 适合维持当前操作后的短小顺序收尾，但不适合把 CPU 密集循环拆成几十个微任务。即使代码被拆成多个回调，也可能在同一轮微任务检查点连续执行，浏览器依然没有合适的 Task 和渲染机会。
+
+因此 API 选择要先确认**续接在哪个调度边界发生**：
+
+| 调度方式 | 续接位置或主要语义 | 能否作为通常的跨 Task 让步 | 主要局限 |
+| --- | --- | --- | --- |
+| `await Promise.resolve()` / `queueMicrotask` | 当前轮 Microtask Checkpoint | 否 | 微任务链可能延迟渲染与后续任务 |
+| `setTimeout` | 后续 Timer Task | 是 | 执行延迟不精确，可能限频 |
+| `MessageChannel` | 后续消息事件 Task | 是 | 需要自建工作队列和让步边界 |
+| `scheduler.yield()` | 带优先级语义的后续任务 | 是 | 兼容性需检测，不能打断当前同步函数内部 |
+| `await fetch(...)` | 等 I/O 结果后由 Promise 机制恢复 | 会暂停当前函数，但不是按时间预算切分 CPU 任务 | 取决于异步结果何时完成 |
+
+以上是任务拆分的完整运行逻辑。更深层的浏览器 Task Queue、Microtask Checkpoint 与 Rendering Opportunity 机制在 [Event Loop 专项文档](./B-浏览器主线程Event Loop与任务调度完整知识体系.md) 展开，本章重点保持在优化目标、手段和代价。
+
+### 【执行时机与优先级控制使关键工作获得合适的调度机会】
+
+任务切片解决的是**一段工作连续占用多久**；但非紧急工作即使每次很短，若在用户点击或即将绘制时集中执行，也可能争抢关键时刻。因此第二条核心方向是依据任务业务语义选择调度时机。
+
+#### <u>1. requestAnimationFrame 使视觉工作贴近下一次绘制前执行</u>
+
+`requestAnimationFrame(callback)` 请求浏览器在下一次合适的重绘前执行回调，特别适合动画、地图轨迹、图表视觉状态或按帧提交。它的职责是“**什么时候处理视觉变化**”，并不是“让浏览器空闲时执行”；rAF 回调依然占用主线程，调用频率通常与显示刷新率相关，后台标签页可能降频或暂停。[[31]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+
+~~~js
+const pending = [];
+let frameId = null;
+
+function onNewPoints(points) {
+  pending.push(...points);
+  if (frameId === null) {
+    frameId = requestAnimationFrame(flushFrame);
+  }
+}
+
+function flushFrame() {
+  frameId = null;
+  const batch = pending.splice(0, 20); // 示例值，不能视作通用预算
+
+  if (batch.length) {
+    updateMap(batch);
+  }
+
+  if (pending.length > 0) {
+    frameId = requestAnimationFrame(flushFrame);
+  }
+}
+~~~
+
+这段代码将“收到多少批消息”与“预约多少次视觉更新”分开：第一次数据到达请求 rAF，后续数据到达时如果已经有等待执行的帧回调，不会再重复注册；每次回调取一批，然后根据队列剩余量决定是否再次预约。这里的 `20` 只控制取出的数据数，**没有保证 `updateMap(batch)` 足够快**；`splice(0, 20)` 对超大数组也可能存在搬移成本，真正的大型队列可改为游标或环形缓冲。
+
+这个机制已有直接项目实践：[QHZHC 浏览器主线程与实时任务调度](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/docs/%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%BB%E7%BA%BF%E7%A8%8B%E4%B8%8E%E5%AE%9E%E6%97%B6%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6.md) 分析了真实 `FrameTelemetryQueue` 的 `frameHandle` 去重、`maxPerFrame` 最大取数、`budgetMs` 取数时间控制。**取数预算不覆盖后续 `onFrame`、Vue 更新和地图/图表提交**，因此还需要独立测量提交耗时与 Long Animation Frame，不能因为用了 rAF 就直接断言绘制流畅。rAF 的回调执行也不代表 GPU 最终呈现已经完成。
+
+#### <u>2. requestIdleCallback 将可延迟的后台工作安排在空闲时段</u>
+
+`requestIdleCallback` 适合缓存整理、轻量统计、非紧急预处理等不影响当前交互的工作。回调得到 `IdleDeadline`，可以通过 `timeRemaining()` 查询浏览器估计当前空闲期还剩多少时间；这个估计值可能随新任务到来而变化，不能当作不可突破的硬截止时间。[[32]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) [[33]](https://developer.mozilla.org/en-US/docs/Web/API/IdleDeadline/timeRemaining)
+
+~~~js
+function runWhenIdle(items, processOne) {
+  // 此示例只负责无需保证立即完成的后台工作。
+  if (!globalThis.requestIdleCallback) {
+    // 生产环境需根据业务时效设计降级，不应静默丢掉必要任务。
+    return;
+  }
+
+  let cursor = 0;
+
+  function run(deadline) {
+    while (cursor < items.length && deadline.timeRemaining() > 1) {
+      processOne(items[cursor++]);
+    }
+    if (cursor < items.length) {
+      requestIdleCallback(run);
+    }
+  }
+
+  requestIdleCallback(run);
+}
+~~~
+
+代码先请求一次空闲回调，空闲期间逐条处理；当剩余时间不足时退出回调，并安排后续空闲时段继续。若页面始终繁忙或后台策略限制，任务可能久久得不到执行。MDN 建议对必须完成的工作考虑 `timeout`，但一旦超时，回调可能在并不空闲时执行，并且 `timeRemaining()` 可能返回 0；此时若无条件执行一大批任务，反而可能制造新的主线程阻塞。兼容性同样需要检查。[[32]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback)
+
+因此，**Idle 是“可以等时再做”，不是“强制抢出一段 CPU 时间”**；有明确完成期限的工作应根据时效目标选择有保障的后续 Task 或优先级任务，并自行控制单次执行规模。
+
+#### <u>3. scheduler.postTask 为待执行工作设置不同优先级</u>
+
+`scheduler.postTask(callback, options)` 允许根据业务重要性调度任务，并返回用于接收结果的 Promise。优先级包括 `user-blocking`、`user-visible`、`background`，默认是 `user-visible`。静态 `priority` 表示不可变优先级；需要运行前动态调整时，应通过 `TaskController` 的 `signal` 和 `setPriority()` 管理。该 API 在一些常用浏览器仍需兼容性检测。[[34]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask)
+
+~~~js
+if (globalThis.scheduler?.postTask) {
+  scheduler.postTask(updateImportantUI, {
+    priority: 'user-blocking',
+  });
+
+  scheduler.postTask(buildNonCriticalIndex, {
+    priority: 'background',
+  });
+}
+~~~
+
+两项工作尚未开始时，调度器可以优先考虑更紧急的任务；但是 `background` 回调一旦开始运行，其中某个不可中断的 100ms 同步循环仍然可能阻塞主线程。**优先级安排的是任务获得执行机会的顺序，不等于已运行的同步函数自动被抢占**。`scheduler.postTask` 与 `scheduler.yield` 经常配合：前者安排尚未开始的工作，后者让已经开始的可分段工作主动让步，并在后续任务中恢复。
+
+三种调度意图因此不能互换：
+
+| 调度方向 | 核心提问 | 主要机制 |
 | --- | --- | --- |
-| requestAnimationFrame（rAF） | 下一次绘制前准备相关的动画/视觉状态 | rAF 仅提供调度机会，不会自动拆短同步计算 |
-| Task / setTimeout | 一般延迟、分片后继续执行 | 不具备精确帧语义，计时器可能受后台限频 |
-| scheduler.postTask / scheduler.yield（可用时） | 按优先级安排或主动让步的任务 | 依赖目标浏览器支持，必须考虑降级 |
-| requestIdleCallback | 非紧急、可等待的后台工作 | 触发时机不确定，不能承诺关键交互截止时间 |
-| Web Worker | 不需要直接访问 DOM 的 CPU 密集工作 | 消息传输、序列化、内存以及最终 UI 提交仍有成本 |
-| Microtask / Promise 回调 | 当前 Task 完成之后的短续接工作 | 无界 Microtask 链可能妨碍浏览器获得渲染机会 |
+| 绘制前安排视觉工作 | 这次变化何时提交才能配合下一次画面更新？ | rAF |
+| 利用非关键空闲时间 | 这件后台工作是否可以等到空闲再做？ | requestIdleCallback |
+| 按任务紧急程度排序 | 哪些已经准备好的任务更值得优先执行？ | scheduler.postTask / TaskController |
 
-rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗时循环从 click 回调移动到 rAF 并不能令它消失。[[28]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+`setTimeout` 则主要表达未来某个延迟条件满足后的执行机会，不是精确帧调度，也不保证更高任务优先级。以上机制并不能独立解决“每次执行的工作过大”，仍需与前述时间切片或第 5 章的计算优化配合。
 
-这一层的正式深入文档为 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)，不在本篇重复整个事件循环模型。
+### 【高频任务合并与背压控制重复提交和长期积压】
 
-### 【批量、节流、增量和背压分别改变不同的工作成本】
+除单次长任务外，还有一类场景：每个更新都很短，但一秒内不断有消息、输入和状态变化，主线程几乎没有空档，或者待处理队列持续变长。此时应同时观察**每秒产生多少工作、每次消费多少、队列中尚有多少及最旧任务已经等待多久**。
 
-当状态变化密集出现时，需要同时考虑**单位时间工作总量**和**一次连续执行的峰值**：
+#### <u>1. 合批、节流、防抖和更新合并改变触发与提交成本</u>
 
-| 策略 | 主要减少或控制什么 | 不适用时的风险 |
+这四种策略经常被混用，实际上针对不同的输入语义：
+
+| 策略 | 主要机制 | 适合的任务 | 风险 |
+| --- | --- | --- | --- |
+| Batch（合批） | 将多次输入收集成一次处理或提交，减少重复固定成本 | 批量状态变更、图表提交 | 单次批次过大形成新的长任务 |
+| Throttle（节流） | 限定单位时间内最多处理的频率 | 滚动跟随、持续刷新 | 可能遗漏必须逐条处理的事件 |
+| Debounce（防抖） | 连续触发后等输入稳定再处理一次 | 搜索条件、输入校验 | 持续输入时可能一直推迟 |
+| Coalescing（更新合并） | 多次状态变化只提交有价值的最终视觉状态 | ECharts setOption、状态刷新 | 业务事件本身可能不能被丢弃 |
+
+例如 [QHZHC 的 Charts.vue](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/QHZHC_Web/src/views/DataVisualization/components/Charts.vue) 中，`scheduleUpdateOptions()` 首次被调用后注册一个 120ms Timer；在 Timer 执行之前的后续调用看到已有 `chartUpdateTimer` 就不再注册新更新，最后合并为一次 `updateOptions()`。**它不是把一次很重的 `updateOptions()` 拆短，而是减少高频调用导致的重复提交次数。** 若单次 `updateOptions()` 已经耗时过长，仍需继续优化绘制与计算工作。
+
+#### <u>2. 背压与取消防止队列长期超出消费能力</u>
+
+高频场景中，即使每个批次都让步，输入速率如果长期大于消费速率，队列仍会累积：
+
+~~~text
+WebSocket 每秒输入 1000 条
+            ↓
+待处理队列持续入队
+            ↓
+页面每秒只能消费 300 条
+            ↓
+每秒净积压约 700 条
+            ↓
+队首等待时间变长、画面越来越落后于真实时间
+~~~
+
+这样的页面可能表面 FPS 尚可，但显示的数据已经严重滞后。因此背压（Backpressure）不是简单地“无限减少渲染次数”，而是根据消费能力影响上游数据输入、选取安全的降采样策略、限制可视活动窗口或调整队列消费。是否可以丢弃中间点，要依据数据业务价值：实时展示的中间位置可能可以合并，订单变更、告警和审计事件通常不允许随意丢失。
+
+**取消（Cancellation）** 则用于终止已经失去业务价值的后续工作，例如用户切换页面后旧查询结果、旧筛选任务和过期渲染队列。取消需要有明确的生命周期、请求标识和清理逻辑；它不保证已经执行的副作用能够被回滚，也不能在多个消费者共享同一任务时随意影响其他消费者。
+
+#### <u>3. 自适应控制根据帧预算与队列状态调整处理规模</u>
+
+固定 Batch 只能在某一种设备、某个历史规模和某种输入速率下合适。负载持续变化时，可以周期性采集真实 rAF 帧间隔、单次提交耗时 P95、队列长度、队首等待时间，以及输入/消费速率，再逐步调整批次大小或上游输入档位。控制策略需要冷却、滞回和渐进恢复，防止批量值在不同档位间反复振荡。
+
+此机制在 [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md) 中有更深入的分析。项目层面可以进一步阅读 [QHZHC AdaptiveRenderController.ts](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/QHZHC_Web/src/views/DataVisualization/services/AdaptiveRenderController.ts)：它根据 FPS、队列与提交耗时做决策，但这是根据实际实时可视化业务构建的反馈控制，不应该直接升级成所有 Web 页面必须使用的通用手段。
+
+本章对工作责任的划分仍须明确：**第 5 章的增量计算减少需要计算多少，第 6 章的合批、优先级和背压控制何时执行多少，第 7 章的图形增量更新决定画面真正重建多少。** 三者可以配合，却不能互相替代。
+
+### 【Worker 将可独立计算的任务迁移到页面主线程之外】
+
+如果必要的纯 CPU 计算很重，且继续分片带来过多调度开销，可以评估将工作移到 Web Worker。与上述手段不同，Worker 让 JavaScript 在另一个 Worker 上运行，而不是将同一段工作反复放回页面主线程的后续 Task。
+
+~~~text
+没有 Worker：
+主线程 → 大数据解析与计算（持续占用）→ 再更新页面
+
+引入 Worker：
+页面主线程 ── 数据 / 请求 ──→ Worker：计算、解析、聚合
+    │                                │
+    ├─ 继续响应输入与视觉工作          │
+    └─ 收到结果后做必要 UI 提交 ←──────┘
+~~~
+
+Worker 适合不需要直接访问 DOM 的排序、空间计算、批量转换、压缩等任务；它**不能直接操作页面 DOM 或替代 Vue / React 对页面的实际 DOM Commit**。消息传递可能发生结构化克隆，也可以在符合条件时传递 ArrayBuffer 等可转移对象的所有权，以降低复制成本。迁移还引入 Worker 启动、通信与内存占用，因此对于很短的任务或频繁往返的大对象，未必更快。[[35]](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)
+
+对于 Canvas 应用，可以在 API 和图形库支持的前提下考虑 OffscreenCanvas，把相应 Canvas 绘制工作交给 Worker；这属于更进一步的图形工作迁移，不代表普通 DOM 绘制都可以交由 Worker。是否使用 Worker 应由真实 CPU Profile 决定：若主要瓶颈在页面 Map/Chart Commit、主线程布局或 GPU 绘制，仅把 JSON 解析移进 Worker 不会消除主要瓶颈。
+
+QHZHC 的 [浏览器主线程与实时任务调度](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/docs/%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%BB%E7%BA%BF%E7%A8%8B%E4%B8%8E%E5%AE%9E%E6%97%B6%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6.md) 将 Worker 明确列为“出现可独立迁移的纯计算热点后再考虑”的方案，优先分析已存在的 Vue、ECharts 与地图提交成本。框架是否通过 Worker、Fiber 或特定 Scheduler 实现其他能力，应分别以源码为准。
+
+### 【任务调度优化通过主线程阻塞、交互反馈与数据时效共同验收】
+
+任务调度不应以“改用了 rAF”“增加了 `await`”或“Long Task 计数下降”作为完成标准，而要验证**让出的执行机会是否真正改善用户需要的结果**。对同一输入规模、同一设备或受控测试环境，至少检查以下几类证据：
+
+| 观察目标 | 对应证据 | 要排除的错误结论 |
 | --- | --- | --- |
-| Batch（合批） | 减少多次提交的固定成本 | 批次过大，单次处理反而超过帧预算 |
-| Throttle（节流） | 限制持续事件触发处理的频率 | 忽略了需要逐条处理的事件 |
-| Debounce（防抖） | 将一串连续输入收敛为一轮最终处理 | 持续输入时结果可能长期不更新 |
-| Incremental（增量） | 减少对未变化数据与视图的重复计算 | 需要正确识别变化范围和失效条件 |
-| Backpressure（背压） | 防止工作输入长期超过处理容量 | 不能随意丢失重要业务数据 |
-| Cancellation（取消） | 避免过期任务和订阅继续执行 | 必须维护完成状态、清理和副作用安全 |
+| 连续主线程占用是否缩短 | Performance Main Thread、单次 Task 持续时间与长任务数 | 没有超过 50ms 就意味着不会掉帧 |
+| 输入能否更快得到反馈 | 点击/输入等待、处理耗时与 INP | JS 回调结束就等于已经 Paint |
+| 视觉更新是否及时 | rAF 间隔、Frame Time P95、LoAF、Style/Layout/Paint 相关时间 | rAF 每次回调都代表实际完整显示一帧 |
+| 更新队列是否持续积压 | 待处理数量、队首等待时间、输入与消费速率 | FPS 变好就代表数据没有延迟 |
+| 必要任务有没有正确完成 | 任务总耗时、取消/失败数、数据顺序与一致性 | 切片后必然减少总 CPU 用量 |
+| 调度是否引入新成本 | 批量大小、Timer/Task 数、通信开销和内存占用 | 任务切得越碎越好 |
 
-例如更新合批可能降低每秒视图提交次数，但如果单次 Batch 使某次 rAF 回调执行 70ms，画面仍可能明显卡顿。正确的批次设计不只是降低次数，还需要使关键单次工作量留在预算内。
+验证时可用 Chrome Performance 的 Main、Event Log、Bottom-Up / Call Tree 查看长时间执行的调用栈，再结合交互与帧相关记录定位是 Script、框架更新还是 Style/Layout/Paint 占用时间。[[26]](https://developer.chrome.com/docs/devtools/performance/reference) 对实时数据还要独立测量 rAF 机会与实际视图提交次数，不把 `onPacket` 触发频率误当 FPS；当页面在后台或被隐藏时，rAF 频率可能降低，应明确采样条件。
 
-增量计算本身的计算成本属于 ④，最终图形增量更新属于 ⑥，而**何时取出变化并安排提交**是 ⑤ 的核心。对于高频数据，还要检查处理队列是否持续积压；表面 FPS 正常不代表最新内容已经及时显示。
+优化通常存在成本转移：时间切片可能增加调度与总完成时间；合批能降低重复提交次数但可能造成单次超预算；Idle 不影响关键时刻却可能导致后台结果长期未完成；Worker 释放页面主线程却可能增加通信与内存压力。因此工程验收应同时保证数据正确、重要交互及时、必要任务完成、视觉变化稳定，并说明具体收益来自哪种机制。
 
-### 【自适应更新属于反馈控制手段，不是通用的首次优化】
-
-负载和设备能力变化时，可以用任务耗时、帧压力、积压长度和数据新鲜度作为反馈信号，小幅调整工作频率或批量。但这种策略有明确边界：
-
-- 需要滞回、冷却与渐进恢复，避免档位反复振荡；
-- 必须保持交互响应和重要数据时效，而不是为了 FPS 数字无限降级；
-- 如果单次工作的实际成本随数据规模上升，长期只降低输入频率不能替代增量计算和渲染优化。
-
-更深入的测量与更新控制案例见 [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)。其工作负载参数与案例不应上升为所有 Web 页面都需要的通用控制模型。
+**本章的核心收束是：第 5 章减少必须做的工作；第 6 章用任务切分和让步控制连续阻塞，用执行时机与优先级保护关键工作，用合批与背压防止持续积压，必要时用 Worker 将可独立执行的计算迁出页面主线程；第 7 章再减少真正的布局、绘制和图形负担。**
 
 ## 7. 浏览器渲染优化减少样式布局、绘制合成与图形资源成本
 
@@ -908,7 +1247,7 @@ elements.forEach((el, i) => {
 });
 ~~~
 
-这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[29]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[36]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 
 深入基础见 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)，大型列表的实际实现与复杂度分析见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
 
@@ -930,7 +1269,7 @@ elements.forEach((el, i) => {
 但它仍有约束：
 
 - 合成图层和纹理可能占用额外内存；不必要的层提升和复杂图层组合会增加资源压力。
-- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[29]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[36]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 - Canvas、WebGL 可能涉及 Buffer、Texture、Framebuffer 和异步 GPU 工作；主线程中调用接口很快，不证明 GPU 已完成实际绘制。
 - 浏览器托管 DOM 图层与显式图形 API 的资源管理语义不同；必要时使用对应引擎的销毁或复用机制，不能一概套用 JS GC 的行为。
 
@@ -1082,5 +1421,12 @@ Web 性能优化工程体系（本篇：六大领域的方案主入口）
 25. Chrome for Developers. [Record heap snapshots](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots). JS Heap Snapshot、Retainers 与内存泄漏定位。
 26. Chrome for Developers. [Performance panel reference](https://developer.chrome.com/docs/devtools/performance/reference/). Main/Memory 记录与分段 CPU、内存分析。
 27. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
-28. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
-29. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
+28. WHATWG. [HTML Standard — Event loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops). Event Loop、Task、Microtask Checkpoint 和 Rendering Opportunity。
+29. MDN. [Scheduler.yield()](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield). 主动让步与优先级续接机制。
+30. WHATWG. [HTML Standard — Timers and user prompts](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html). Timer 任务和延迟机制。
+31. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
+32. MDN. [Window.requestIdleCallback()](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback). 空闲时回调、超时与兼容性。
+33. MDN. [IdleDeadline.timeRemaining()](https://developer.mozilla.org/en-US/docs/Web/API/IdleDeadline/timeRemaining). 空闲预算估计与边界。
+34. MDN. [Scheduler.postTask()](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask). 任务优先级、延迟及取消。
+35. MDN. [Using Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). Worker 与主线程通信、计算迁移边界。
+36. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
