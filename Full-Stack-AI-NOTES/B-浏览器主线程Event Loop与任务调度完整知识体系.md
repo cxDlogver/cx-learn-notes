@@ -434,6 +434,8 @@ Microtask Checkpoint 长时间无法结束时，同样会让后续 Rendering 和
 
 ## 5. 主线程优化依次采用减少工作、主动 Yield 与 Worker Offload
 
+本节调度手段在 [Web 性能优化工程体系的⑤ 任务调度与更新优化](./W-Web性能优化工程体系.md#6-任务调度与更新优化控制执行顺序更新频率和单次峰值) 中有工程归属。减少工作总量优先在 JavaScript/状态领域处理；这里深入任务让步、Worker 与浏览器执行机会的机制。
+
 ### 【减少工作、主动让出与 Worker Offload 三类优化路径】
 
 #### <u>第一条是 Reduce Work：先问这项工作是否必须做</u>
