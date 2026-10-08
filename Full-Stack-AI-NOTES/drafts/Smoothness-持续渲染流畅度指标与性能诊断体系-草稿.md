@@ -115,3 +115,162 @@ Frame Budget 不满足时可能出现显示更新延后或旧帧重复，但不�
 ### 【诊断指标查明具体成本】
 
 Long Task（单个主线程长任务）提供任务级阻塞线索；LoAF（Long Animation Frame，长动画帧）提供帧级时间归因；Chrome Performance Trace、LoAF Script Attribution、强制同步布局、GC、Paint / GPU 和组件 Profiler 用于进一步定位具体原因。**LoAF 的 50ms 不是流畅度预算，也不是 Long Task 的计数。**[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+
+
+## 4. rAF 的采集和统计必须避免把调度间隔误读成渲染耗时
+
+### 【原生 rAF 时间戳能够测到什么】
+
+每一次 requestAnimationFrame 的回调都得到浏览器提供的时间戳，连续两个回调时间戳相减得到一次观察到的 Frame Interval：
+
+~~~js
+let previous = null;
+let rafId = 0;
+const intervals = [];
+
+function sample(timestamp) {
+  if (previous !== null) {
+    intervals.push(timestamp - previous);
+  }
+  previous = timestamp;
+  rafId = requestAnimationFrame(sample);
+}
+
+rafId = requestAnimationFrame(sample);
+
+// 结束采样时取消回调，并及时统计和清理。
+function stopSampling() {
+  cancelAnimationFrame(rafId);
+}
+~~~
+
+这段代码只用于说明时间来源，不能直接部署到所有页面的线上监控：数组无上限增长、后台恢复可能产生异常间隔、永远运行会占用调度资源，每帧计算百分位数或 Console.log 更可能干扰页面。[[1]](https://web.dev/articles/smoothness)
+
+### 【真正的生产设计要规定采样窗口和有效状态】
+
+建议明确以下四类采集上下文：
+
+1. **更新需求**：业务当前是否真的处于连续视觉更新中？静态页面没有连续动画需求，不应用同一目标 FPS 判定故障。
+2. **页面可见性**：document.visibilityState 不是 visible 时应暂停采样，恢复时清空上一次时间戳，避免把后台停留时间作为一个长 Frame。
+3. **设备基线**：60Hz、120Hz 与可变刷新率下 rAF 期望频率不同。可以结合短时空闲基线和业务目标建立当前的 Budget，而不是一律按 16.7ms。
+4. **窗口与限量**：只在必要活动时间内采集有限样本，先保存低成本数字，结束时再计算 P95、超预算比例、极端间隔和连续卡顿长度。
+
+Google 对 rAF FPS 测量的研究明确提醒：常驻轮询会干扰浏览器的空闲机会，在可变刷新率下产生误报，而且无法覆盖所有合成线程的视觉更新。应把 rAF 采样设计为**受控的辅助观察**。[[1]](https://web.dev/articles/smoothness)
+
+### 【Frame Interval P95 如何理解】
+
+假设某个活跃持续动画窗口采集到 100 个有效 ΔrAF 样本，大多数是 16.7ms，少量是 33ms、50ms。平均 FPS 可能仍接近 60，但 Frame Interval P95 会显示尾部延迟明显增长。
+
+因此，帧间隔的尾部分位数比只取平均 FPS 更适合发现间歇性卡顿；同时应检查最长间隔、卡顿出现时的业务阶段和是否存在连续多次超预算。需要注意各统计窗口独立：**某窗口的 P95 不能直接拼成整次访问的 P95**，应保留采样方法和统计分布口径。
+
+## 5. Long Task 与 LoAF 是两种不同观察范围的 50ms 诊断信号
+
+### 【Long Task 是任务级证据，LoAF 是长帧级证据】
+
+Long Tasks API 面向主线程 Task。一个持续执行超过 50ms 的任务可能阻碍新输入、rAF 和页面渲染。LoAF 则从帧更新角度记录总计超过 50ms 的工作，即使它由多个较短 Task、rAF 回调和布局工作累积而成。
+
+| 假设情况 | Long Task | LoAF | 判断意义 |
+| --- | --- | --- | --- |
+| 单个同步计算 90ms | 可能记录 | 也可能记录 | 主线程被长时间占用 |
+| 三个 20ms Task 加 10ms 渲染 | 单个 Task 未超过 50ms | 可能记录 | 累积帧成本过高 |
+| 120Hz 下 20ms 的帧更新 | 通常没有 | 不达到 50ms 阈值 | 仍可能严重超出 8.3ms 的刷新周期 |
+| 总计 >50ms 但最终无需渲染 | 可能记录 | 可能记录，renderStart=0 | 不能假设存在样式布局阶段 |
+| compositor 线程滚动 | 主线程可能很忙 | LoAF 可能有 | 用户可见滚动仍可能流畅 |
+
+这是解释 LoAF 和 Long Task 为什么应联合使用的关键。**LoAF 数量不是 Long Task 数量，二者不是一一对应，也都不是标准掉帧数。**[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+### 【LoAF 的 duration 与 blockingDuration 不同】
+
+LoAF.duration 是一次长帧记录的总持续时间，而 blockingDuration 是其对输入或其他高优先级任务的阻塞贡献，并非 duration - 50 的简单差值。官方算法会按组成帧的 Task 和最终渲染工作的相对时间计算。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+**LoAF.duration 很高而 blockingDuration 低**，仍可能因为多个可让步的较短任务积累而使画面迟迟不更新；但它对输入的压力可能不同于单个 120ms 不让步的任务。
+
+**LoAF.duration 与 blockingDuration 都很高**，不仅是 Smoothness 的风险，还应该联查 INP 的 Input Delay、Processing Duration 和 Presentation Delay。
+
+LoAF 的 50ms 是记录门槛，不代表帧只有超过 50ms 才算掉帧。尤其在 90Hz/120Hz 下，远低于 50ms 的帧也可能错过重要更新。
+
+## 6. LoAF 的时间归因可在完整字段时形成三个分析区间
+
+### 【原生字段和边界】
+
+Long Animation Frames API 提供的关键字段包括：
+
+| 字段 | 含义 |
+| --- | --- |
+| startTime | 本次长帧相关工作起点 |
+| duration | 长帧总时长，不含最终呈现时间 |
+| renderStart | 渲染周期开始，包含 rAF 回调 |
+| styleAndLayoutStart | 样式与布局计算开始 |
+| blockingDuration | 对高优先级任务的阻塞贡献 |
+| firstUIEventTimestamp | 与该帧关联的首个 UI 输入时刻 |
+| scripts | 浏览器能够归因到的脚本信息 |
+
+注意 renderStart 可能为 0（该次工作没有进入渲染周期）；styleAndLayoutStart 在某些情况下也不可用。不要假设每条 LoAF 都可以无条件减出完整的三个阶段。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+### 【官方的两级结构与方便定位的三段解释】
+
+定义：
+
+~~~text
+t0 = startTime
+t1 = renderStart
+t2 = styleAndLayoutStart
+t3 = startTime + duration
+~~~
+
+官方第一层分解：
+
+~~~text
+有渲染周期时：
+Work Duration   = t1 - t0
+Render Duration = t3 - t1
+
+没有渲染周期时：
+Work Duration   = duration
+Render Duration = 0
+~~~
+
+在 t1 和 t2 均有效且时序正常时，可以进一步形成：
+
+~~~text
+t0
+ ↓ ① 渲染前的 Task/JS 等工作
+t1 = renderStart
+ ↓ ② 进入渲染周期后的布局前工作：rAF 回调等
+t2 = styleAndLayoutStart
+ ↓ ③ 样式布局开始后的剩余渲染相关工作
+t3 = endTime
+~~~
+
+对应：
+
+~~~text
+① Pre-render Work       = t1 - t0
+② Render Pre-layout     = t2 - t1
+③ Style/Layout and Later = t3 - t2
+LoAF Duration           = ① + ② + ③
+~~~
+
+第三段虽然有时被称为 Style and Layout Duration，但从一个时间区间不能直接确定全部毫秒都是 Layout 计算，它还可能包含相关后续工作；若想分别确认 Style、Layout、Paint、Compositor、GPU，必须进一步查看 DevTools Performance Trace。LoAF 的 duration 也不能视为显示器最终 Presented Frame Latency。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+### 【完整算例】
+
+假设：
+
+~~~text
+startTime = 1000ms
+renderStart = 1065ms
+styleAndLayoutStart = 1085ms
+duration = 115ms
+endTime = 1115ms
+~~~
+
+| 区间 | 计算 | 耗时 |
+| --- | --- | ---: |
+| 渲染前工作 | 1065 - 1000 | 65ms |
+| 渲染周期布局前工作 | 1085 - 1065 | 20ms |
+| 样式布局开始后的工作 | 1115 - 1085 | 30ms |
+| 总 LoAF Duration | 1115 - 1000 | 115ms |
+
+该例优先怀疑渲染前 Task 或 JavaScript 工作；还需 LoAF scripts、Long Task、Main Thread 调用树证明具体函数和工作量。单独凭 65ms 不能认定某一个函数一定是根因。
