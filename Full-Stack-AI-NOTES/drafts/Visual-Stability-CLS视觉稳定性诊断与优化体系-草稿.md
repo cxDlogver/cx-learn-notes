@@ -71,6 +71,41 @@ CLS（最严重的一组位移得分）
 
 ## 2. 单次 Layout Shift 以影响面积和移动距离共同计分
 
+### 【渲染帧、视口与 Session Window 是三个不同的概念】
+
+CLS 的完整计算需要区分三种完全不同的尺度。它们的前后关系是：**浏览器在渲染帧之间发现位移，借助视口衡量单次位移，再按照 Session Window 汇总多次位移。**
+
+| 概念 | 解决的问题 | 具体含义 | 常见误解 |
+| --- | --- | --- | --- |
+| Rendering Frame（渲染帧） | 是否真的移动？ | 对比相邻渲染帧中已有可见元素的布局位置 | 每帧都必须产生 Shift |
+| Viewport（视口） | 这次移动的影响程度有多大？ | 作为 Impact Fraction 和 Distance Fraction 的空间基准 | 视口就是 Session Window |
+| LayoutShift Entry（位移记录） | 某次位置变化的总影响是多少？ | 浏览器将该次位移中的多个不稳定元素共同计算为一个 value | 每个元素分别生成一个得分，再自行求和 |
+| Session Window（会话窗口） | 哪些连续位移算成一组？ | 按 1 秒间隔、最长 5 秒将连续有效 Shift 分组并累加 | 每一秒采样一次最大值 |
+
+图示：
+
+~~~text
+浏览器上一帧的可见布局
+          ↓ 与下一渲染帧比较
+浏览器发现多个已有元素改变起始位置
+          ↓
+视口内的受影响面积 × 最大位移比例
+          ↓
+一个 LayoutShift Entry（可能包含多个受影响元素）
+          ↓ 持续有新 Shift 记录
+每个有效 Shift 按时间进入 Session Window
+          ↓
+窗口内每条 Entry.value 相加
+          ↓
+从多个 Session Window 中选最高得分
+          ↓
+页面当前 CLS
+~~~
+
+例如一个广告容器突然变高，将标题、正文和按钮一起向下推。在这次布局更新里，三个元素可能共同贡献到**一个** Layout Shift Score，不能把“文章标题移动 0.05、正文移动 0.08、按钮移动 0.04”简单当成三个独立 Shift 再相加。只有浏览器真正提供了不同的 Shift Entry，才按会话窗口规则累加每条 Entry.value。[[1]](https://web.dev/articles/cls)
+
+因此用户所说的“每秒最大偏移量”不属于 CLS 的算法；真正的计算周期由**实际发生的布局变化**触发，而不是每秒定时扫描全页面。
+
 ### 【Layout Shift 的成立条件是已有可见元素的布局位置改变】
 
 根据 Layout Instability API，某个元素在相邻两个渲染帧中，若它在视口内可见部分的起始位置发生变化，就可能成为 Unstable Element（不稳定元素），浏览器为该帧产生 Layout Shift 记录。[[1]](https://web.dev/articles/cls) [[3]](https://developer.mozilla.org/en-US/docs/Web/API/LayoutShift)
@@ -135,6 +170,14 @@ CLS = max(所有窗口的累计 value)
 ~~~
 
 不能仅依据相邻两次偏移小于 1 秒就无限累加；5 秒上限是另外一条同时生效的限制。不能把整个页面生命周期内所有 Shift 直接求和作为 CLS；那是已经被调整过的旧指标口径。
+
+### 【一秒是相邻偏移的分组间隔，不是固定采样周期】
+
+假设浏览器在 0.20s、0.70s、1.30s 连续检测到三个有效 Layout Shift，这三个时刻可以进入同一窗口，因为相邻间隔分别是 0.50s 和 0.60s，且总时长不到 5 秒。假设下一个有效 Shift 在 4.00s，距离上一条已经超过 1 秒，则开始新的窗口。整个过程中并不存在“在 0～1 秒、1～2 秒分别求一次最大分数”的操作。[[1]](https://web.dev/articles/cls)
+
+对于同一窗口，**既不是每秒保留最大的一条，也不是只计每次偏移中移动最远的那个元素**。移动最远的元素用于定义单条位移的 Distance Fraction，但一条 Shift 的影响区域还包括该帧其他不稳定元素的可见范围；窗口得分则需要累计**每一次有效 Shift Entry 的 value**。
+
+窗口可以从任意时间点的 Shift 开始，不要求起点是 0s、1s、2s 的整数秒。1 秒和 5 秒是为了**判断是否续接当前窗口**的两个上限，不能被误当成测量 FPS、每秒位移峰值或页面截图周期。
 
 ### 【完整数字示例：选择最大窗口而不是全部求和】
 
@@ -413,6 +456,28 @@ p.currentRect.top   = 320
 
 被观测的 h1 和 p **是受害者**。真正改变布局的是上游 banner-slot 的高度。优化的核心是让广告有稳定空间，而不是给正文补一个抵消位移的 transform。Chrome DevTools 的布局偏移洞察也提醒：工具给出的 culprit 可能只是推测，必须核对实际时序。[[2]](https://web.dev/articles/optimize-cls) [[6]](https://developer.chrome.com/docs/performance/insights/cls-culprit)
 
+### 【API 的来源信息可以直接确定什么，不能直接确定什么】
+
+浏览器 Layout Instability API、web-vitals 标准版、web-vitals Attribution 版分别提供不同深度的信息：
+
+| 数据层级 | 数据对象 / API | 直接可知 | 无法直接保证 |
+| --- | --- | --- | --- |
+| 页面级结果 | onCLS 的 metric.value | 当前最大会话窗口累计分数 | 整个页面发生过哪些 DOM 改动 |
+| 最大窗口 | metric.entries | 构成当前最大窗口的 LayoutShift Entries | 页面生命周期中所有窗口的 Shift 历史 |
+| 单次布局偏移 | LayoutShift.value、startTime、hadRecentInput | 一次 Shift 的时间、得分及是否参与 CLS | 唯一 Root Cause 是哪个组件 |
+| 受影响元素 | LayoutShift.sources | 受影响 DOM、移动前后位置（在支持范围内） | 所有移动元素的完整列表 |
+| 最大单次偏移摘要 | attribution.largestShiftEntry / largestShiftSource / largestShiftTarget | 最大窗口中最有代表性的单次偏移和其受影响元素线索 | 该 Source 就是引发位移的元素 |
+| 组件/代码根因 | DevTools Performance + DOM/CSS/Network + Framework Profiler + 实验 | 可形成并验证代码级根因 | 一次 onCLS 回调自动提供完整原因 |
+
+**LayoutShift.sources 最多提供 5 个受影响元素。** 若一次布局偏移影响超过 5 个可见元素，浏览器通常仅返回影响最大的 5 个，不能仅凭 sources 缺少某个节点就断言该节点没有移动。[[11]](https://developer.mozilla.org/en-US/docs/Web/API/LayoutShift/sources)
+
+这里还有一个容易误会的顺序差异：
+
+- 原生 LayoutShift.sources 通常按受影响程度排序，sources[0] 可用于查看该条 Shift 最有影响的受影响元素；但它仍不是自动定位的根因。[[7]](https://developer.mozilla.org/en-US/docs/Web/API/LayoutShiftAttribution)
+- 当前 web-vitals 的 largestShiftSource 默认选择**最大 Shift 的 sources 中按文档顺序最靠前的元素**，而 largestShiftTarget 是为这个元素生成的选择器；它们不保证是“影响最大的 source”，也不保证它们属于修改布局的组件。若使用 generateTarget，自定义目标生成方式还会影响返回的字符串。[[8]](https://github.com/GoogleChrome/web-vitals/blob/main/src/types/cls.ts)
+
+因此，对于一次大的 CLS，正确分析顺序应该是：先从 metric.entries 找最大窗口，必要时检查窗口中的**多条** LayoutShift，再从每条 Entry 的 sources 看移动区域与方向。largestShiftTarget 适合作为问题入口和报告分组标签，不能作为已确认根因。
+
 ### 【从 Shift 到 Root Cause 建立五步证据链】
 
 1. **定位时间**：最大 Session Window 何时发生？在加载期、阅读期、滚动懒加载还是路由切换期间？
@@ -422,6 +487,56 @@ p.currentRect.top   = 320
 5. **验证假设**：临时预留容器高度、限制组件插入、替换字体或冻结数据更新后，Shift 是否消失？
 
 因果证据强度应分层：sources 证明**谁移动**；DOM / Trace / Network 说明**可能是谁导致**；受控实验才进一步证明**改变该因素会让位移改善**。不能把某段 Layout CPU 执行时间直接当成 CLS 根因。
+
+### 【定位具体组件需要补充业务区域标识和代码执行证据】
+
+即便通过 sources[].node 拿到 DOM 节点，也只能确定这个节点发生过移动，**不能自动知道哪个 Vue 组件、哪条状态更新或哪次接口响应使它移动**。浏览器 Layout Shift API 不会提供“责任组件路径”和“触发代码行号”。
+
+如果需要在监控平台中实现组件级诊断，可由业务组件在关键容器上加稳定的区域标识：
+
+~~~html
+<section data-perf-region="dashboard-summary">
+  <!-- 仪表盘汇总区域 -->
+</section>
+~~~
+
+在支持来源节点的浏览器中，从受影响元素向上寻找最近的受控区域：
+
+~~~js
+// 仅用于前端运行时记录受影响区域，不是自动根因识别。
+function getAffectedRegion(node) {
+  if (!(node instanceof Element)) return 'unknown';
+
+  return node
+    .closest('[data-perf-region]')
+    ?.getAttribute('data-perf-region') ?? 'unknown';
+}
+
+// 从 entry.sources 获得 source.node 后，可调用：
+// getAffectedRegion(source.node)
+~~~
+
+这里的返回值只能命名为 **Affected Region（受影响区域）**，不能命名为 Root Cause Component。
+
+后续应按时间戳关联其他证据：
+
+~~~text
+LayoutShift Source → 被移动的 DOM 和受影响区域
+        ↓
+previousRect / currentRect → 位移方向、距离与共同模式
+        ↓
+检查父级/前序兄弟容器 → 谁新占用了文档流空间？
+        ↓
+Network / Resource / 字体可用时刻 → 是否刚有内容到达？
+        ↓
+Vue / React Profiler / DOM Mutation / CSS 变化
+        ↓
+锁定哪一次组件更新或样式应用改变布局约束
+        ↓
+禁用或调整候选逻辑，复现实验验证
+~~~
+
+例如 shift sources 指向 article-body、article-heading，不等于这两个组件出错；真正让它们整体下移的原因可能是 Banner 的高度、字体替换或同一个父容器插入内容。对线上样本做脱敏、限制数据量，不得直接上报 DOM 节点、用户文本、敏感业务属性或完整调用栈。
 
 ## 11. 原生 Performance API 与 web-vitals 负责不同层次的采集计算
 
@@ -749,3 +864,4 @@ CLS 不是耗时阶段拆分问题，而是**几何位移发生、何时集中�
 8. GoogleChrome / web-vitals. [CLSAttribution](https://github.com/GoogleChrome/web-vitals/blob/main/src/types/cls.ts). 最大 Shift 的归因类型。
 9. GoogleChrome / web-vitals. [attribution/onCLS.ts](https://github.com/GoogleChrome/web-vitals/blob/main/src/attribution/onCLS.ts). 最大单次 Shift、受影响元素和 Attribution 计算。
 10. GoogleChrome / web-vitals. [onCLS.ts](https://github.com/GoogleChrome/web-vitals/blob/main/src/onCLS.ts). 指标更新、reportAllChanges、hidden、BFCache 和支持的 Soft Navigation。
+11. MDN. [LayoutShift.sources](https://developer.mozilla.org/en-US/docs/Web/API/LayoutShift/sources). 单次 Layout Shift 最多暴露五个受影响元素的归因限制。
