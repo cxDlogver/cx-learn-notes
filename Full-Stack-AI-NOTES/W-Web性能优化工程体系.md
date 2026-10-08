@@ -220,29 +220,164 @@ CSR、SSR、SSG、Hybrid Rendering 不是简单的“越后出现越先进”，
 
 完整渲染策略关系参见 [Web 渲染架构](./W-Web渲染架构.md)，SSR 数据依赖与 HTML/Payload/Hydration 的具体分工参见 [服务端渲染完整链路](./F-服务端渲染完整链路.md)。
 
-### 【数据访问优化首先减少关键查询依赖和重复计算】
+### 【关键请求的等待时间由数据依赖关系决定】
 
-服务端优化不限于页面 SSR，还包括普通 API、BFF（面向前端的后端聚合服务）及数据交付：
+以文章列表页为例，服务端要返回一份完整数据，通常不仅要取得文章，还可能需要查询作者、站点配置和推荐内容。页面慢并不一定是某一条 SQL 非常慢，也可能是这些查询被安排成了不必要的等待链。
 
-- **缩短请求关键路径**：避免同步等待非必要的数据或串行执行相互独立的查询；首屏必要数据与非关键数据可按业务可见性分开。
-- **降低数据访问成本**：对有证据的慢查询优化索引、执行计划、连接池、数据量和查询次数；不能把“加索引”当成所有慢接口的固定答案。
-- **避免重复请求与 N+1 查询**：适用时批量取数、聚合接口或复用同一请求期间已经取得的结果；但巨型聚合接口可能放大单次响应和耦合。
-- **控制传输模型**：响应只包含需要的字段与当前场景必要数据，减少重复 JSON 序列化和冗余 Payload；不能为了少传字段破坏业务数据正确性。
-- **复用可共享结果**：服务端数据/页面缓存可以避免重复计算，却必须考虑身份隔离、失效条件、版本一致性和可容忍陈旧时间。
+假设文章列表与站点配置没有数据依赖，却采用连续 await：
 
-这里的“服务端缓存”主要减少**生成结果的计算或查询**，虽然也可能进一步配合 HTTP 缓存影响网络层，但责任边界依实际缓存位置划分，不应混淆它们的更新语义。
+~~~js
+const articles = await getArticles();      // 查询文章列表
+const config = await getSiteConfig();       // 等文章查询结束后才开始
+return { articles, config };
+~~~
 
-### 【流式和分阶段响应优化关键可见内容的到达顺序】
+第二个查询即使不需要第一个结果，也必须等它完成才会开始。对于相互独立且允许同时执行的读取，可以改为：
 
-当必须在服务端完成全部工作才能返回 HTML 时，慢数据源可能使所有内容被迫等待。支持流式响应的技术可以在适用条件下先交付已经准备好的内容，随后交付剩余部分，缩短重要内容的等待。
+~~~js
+const [articles, config] = await Promise.all([
+  getArticles(),
+  getSiteConfig(),
+]);
+return { articles, config };
+~~~
 
-但流式输出**并不会自动降低总服务器计算成本**，也不保证最终 LCP 更好：如果 LCP 元素依赖的部分仍然晚到，或者客户端渲染、Hydration 和 CSS 尚未就绪，就可能只是移动了等待位置。
+两次读取由此尽早同时发起，整体等待更多取决于较慢的一项，而不是强制累加等待时间。但并行没有让每次数据库查询本身变快：如果数据库连接池容量不足、数据库已经处于高负载，增加并行查询可能进一步放大资源竞争。并且只有**数据依赖、事务顺序和权限校验允许独立执行**的工作才适合这样处理。[[16]](https://nextjs.org/docs/app/getting-started/fetching-data)
 
-决策应该围绕三件事：最初能否输出可用内容、后续数据是否会影响布局稳定性、客户端是否需要承担额外 Hydration/JavaScript 工作。
+相反，查询文章作者通常必须先知道文章中的 `author_id`，因此先取得文章，再根据作者 ID 查询，是有真实依赖的。优化应从这条实际依赖出发，考虑批量获取关联数据、在数据库内联结，或在允许时调整数据组织方式，而不是机械地把所有 await 替换成 Promise.all。
 
-### 【服务端交付效果必须与客户端成本一起衡量】
+同样，推荐文章、统计数据等非关键内容如果不影响当前必须返回的结果，就不应该无条件加入首屏响应的等待链。对于普通 API，可以按业务接口的返回契约拆分必要与非必要数据；对于服务端渲染，可以在框架支持时使用后文的流式交付。这里优化的是**先完成什么、后完成什么**，不是简单地把一次接口拆成越多请求越好。
 
-本领域直接关注 Server Timing、关键查询耗时、请求间依赖、HTML 生成与输出时刻；对最终用户仍要检查 LCP、接口可用性、Hydration 与缓存新鲜度。把 ② 优化到极致可能把过多工作挪到 ④，因此这两处需要协同设计，而不是两边分别宣称“处理更少”。
+### 【数据库查询优化先辨别单次查询慢还是调用次数过多】
+
+第一种情况是**单次 SQL 就执行很慢**。例如文章列表需要按发布时间倒序展示已发布内容：
+
+~~~sql
+SELECT id, title, author_id
+FROM articles
+WHERE status = 'published'
+ORDER BY published_at DESC
+LIMIT 20;
+~~~
+
+当数据量增长时，需要检查数据库实际如何查找与排序，而不是看见慢接口就直接添加索引。以 PostgreSQL 为例，可以对可安全执行的查询观察执行计划：
+
+~~~sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, title, author_id
+FROM articles
+WHERE status = 'published'
+ORDER BY published_at DESC
+LIMIT 20;
+~~~
+
+其中，`EXPLAIN` 展示数据库选择的扫描、连接、排序等执行方式，`ANALYZE` 实际执行查询并给出耗时，`BUFFERS` 提供缓冲区访问情况。需要结合返回行数、扫描范围和排序开销，再判断是否适合建立匹配筛选与排序条件的索引，或调整查询条件、分页方式。执行计划的估算成本不等同于毫秒时间，`EXPLAIN ANALYZE` 也不是完整 API 耗时，因为它并不自动覆盖应用业务逻辑、网络传输等所有阶段。[[13]](https://www.postgresql.org/docs/current/using-explain.html)
+
+第二种情况是**单次 SQL 不慢，但执行了很多次**。最典型的是 N+1 查询：先查询 N 篇文章，再为每篇文章分别查询作者。以下以常见 ORM（对象关系映射工具）的调用形式说明：
+
+~~~js
+const articles = await db.article.findMany({ where: { status: 'published' } });
+
+// 文章列表查询 1 次；每篇文章再分别查询作者。
+const authors = await Promise.all(
+  articles.map(article =>
+    db.user.findUnique({ where: { id: article.authorId } })
+  )
+);
+~~~
+
+如果文章列表有 20 篇，逻辑上就产生了 1 次列表查询和最多 20 次作者查询。即使作者查询并发执行，请求数量、数据库连接与调度工作仍然存在；部分 ORM 可能自行合并满足条件的请求，但不能默认所有调用都会自动批量化。[[14]](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance)
+
+若当前页面只需要展示这些作者的基本信息，可以先收集去重后的作者 ID，一次批量查询：
+
+~~~js
+const authorIds = [...new Set(articles.map(article => article.authorId))];
+const authors = await db.user.findMany({
+  where: { id: { in: authorIds } }
+});
+~~~
+
+然后在内存中按 ID 建立映射，把作者信息关联回文章。数据库也可以通过 JOIN 一次读取关联数据；到底选择 JOIN、批量 IN 查询还是 ORM 的关联预取，要看重复行、结果规模、索引、查询计划与框架能力。这里减少的是**数据库往返和重复查询**，并非浏览器发出的 HTTP 请求数量。批量获取后仍应按授权范围过滤，不能因为一次性查询更快而放宽数据权限。
+
+### 【响应生成只保留必要数据，并避免重复计算稳定结果】
+
+数据库查询结束后，服务端通常还要进行字段组装、业务判断和 JSON 序列化。假设文章列表只展示标题、作者名和发布时间，却先读取全部文章正文、内容附件和完整用户资料，再在响应前手动删字段，那么数据库读取、应用对象构造和序列化都做了额外工作。
+
+更合适的方式，是在查询和数据映射时就明确列表视图所需的字段；文章详情需要完整正文，则由详情接口按权限返回。对于分页列表，还应限制一次读取的记录范围，不应先查询全部记录再在 Node.js 中截取其中一页。这样减少的是**服务端读取与组装不需要的数据**；最终 HTTP 字节降低属于协同收益，但此处不展开传输压缩或静态资源优化。
+
+当一个前端页面需要多个后端系统提供的数据时，BFF（Backend for Frontend，面向前端的后端聚合层）可以统一组织这些数据。例如文章页同时需要文章信息和作者摘要，BFF 可以在服务端按依赖顺序或可并行关系调用下游，再返回与页面使用场景匹配的结构。不过，聚合不能无限扩大：如果把慢速推荐、统计分析等全部塞入同一个必须完整返回的接口，反而可能让用户长期等待最慢的下游服务。
+
+对于**重复读取但不经常变化的计算结果**，可以考虑在服务端复用。例如“公开文章分类列表”每次都要执行相同查询与整理，在允许短期陈旧时，可先按版本或查询条件读取服务端缓存；命中则复用结果，未命中才查询数据库并保存。随后分类发生新增、修改、删除时，应根据业务要求主动失效或更新缓存，否则虽然少了查询，却可能持续返回错误分类。
+
+这类缓存保存的是**服务端查询或计算的结果**，它不要求浏览器已经保存该 HTTP 响应，也不等于 CDN 可以把结果共享给所有用户。缓存键要覆盖真正影响结果的语言、筛选条件、权限或租户边界；账号私有结果不应混进公共缓存。还需要控制容量和失效时间，并评估热门键同时失效时大量请求一起回源的问题。具体缓存选择应依据数据更新频率、允许陈旧的时间与身份边界决定，不把“所有查询都放 Redis”当作统一方案。
+
+### 【流式交付让已完成的页面内容不必等待慢模块】
+
+如果服务端渲染文章列表页时，文章列表已经查出，但侧边栏推荐仍在等待另一个服务，而整个页面只允许在所有模块准备好后一次性输出 HTML，那么原本已准备好的文章列表也被迫等待推荐结果。
+
+**流式服务端渲染（Streaming SSR）**允许在框架和部署链路支持时先发送已生成的 HTML，后续模块准备好再逐步补充。这里改变的是内容交付顺序：主内容不必为了某个较慢的非关键模块等待全部完成。它不会让推荐查询本身执行得更快。[[15]](https://react.dev/reference/react-dom/server/renderToPipeableStream)
+
+以 React 的服务端 Suspense 能力为例，假设文章列表能够较早完成，而推荐模块的数据请求较慢，可以把推荐内容放在单独的边界内：
+
+~~~jsx
+function ArticlePage() {
+  return (
+    <main>
+      <ArticleList />
+      <Suspense fallback={<RecommendationSkeleton />}>
+        <Recommendations />
+      </Suspense>
+    </main>
+  );
+}
+~~~
+
+服务器可以在初始页面结构准备好时开始输出，而不是等待推荐模块全部完成。以下只展示 Node.js 服务端发送 HTML 的关键步骤，`response` 是实际 HTTP 响应对象，组件、错误处理与运行环境需由完整应用提供：
+
+~~~jsx
+const { pipe } = renderToPipeableStream(<ArticlePage />, {
+  onShellReady() {
+    response.setHeader('Content-Type', 'text/html; charset=utf-8');
+    pipe(response);
+  },
+});
+~~~
+
+`onShellReady` 触发时代表初始页面结构已准备好；调用 `pipe` 开始向响应流写出内容。后续尚未完成的 Suspense 内容，可以在准备好后继续输出。上述示例验证的是**可以先交付已准备好的页面部分**，而不是保证每个项目的服务端组件、代理和浏览器都会立即将首批字节显示出来。
+
+实际使用还要考虑四个约束。首先，初始结构本身不能被慢数据阻塞，否则流式输出仍然要等待。其次，推荐内容替换占位区域时应预留合理空间，避免页面跳动。再次，代理缓冲、内容压缩或平台实现可能影响分块到达和浏览器显示时机。最后，一旦响应已经开始发送，HTTP 状态码和部分响应头就不能再像输出前一样修改；后续错误需要走框架支持的错误边界与恢复流程。
+
+对于本来就是一个完整 JSON 结果且业务必须拿到全部字段才能处理的普通 API，改成分块输出未必有意义，甚至会增加客户端解析和状态管理成本。因此是否流式交付，主要取决于**是否存在可以独立展示的先完成部分**。
+
+### 【分段测量用于判断优化究竟缩短了哪段等待】
+
+从浏览器 Network 面板看到接口 Waiting 时间较长，并不能直接判断是 SQL 慢。一次完整请求可能经历排队、网络往返、服务端等连接池、执行数据库查询、调用下游接口、生成响应等过程。若只测量前端收到结果的总时间，很容易对错误环节做优化。
+
+例如对文章列表接口记录以下阶段：
+
+~~~text
+API 请求进入服务端
+       ↓
+读取必要数据（文章查询、作者批量查询等）
+       ↓
+执行业务检查与结果组装
+       ↓
+序列化并写出响应
+       ↓
+客户端收到结果
+~~~
+
+可以在实际代码中分别记录数据库查询、下游调用和应用组装的耗时。对适合向客户端暴露的指标，HTTP `Server-Timing` 响应头可以将分段结果关联到浏览器开发者工具，例如：[[17]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing)
+
+~~~http
+Server-Timing: db;dur=80.2, app;dur=23.7
+~~~
+
+这里的数字只是报文格式示例，不是实测结果。分段若存在并行或嵌套，不能直接把各个阶段毫秒数相加当作总耗时；且 Server-Timing 可能泄露后台信息，生产环境需要控制暴露的指标和访问范围。
+
+优化完成后，应在相同数据规模、并发水平与缓存条件下比较：查询次数是否减少，慢 SQL 的执行计划是否改善，服务端响应首字节和最后一个字节何时输出，以及用户真正需要的内容何时可用。若数据库耗时已经很低，接口依然很慢，就应继续查连接池等待、下游服务、应用组装或响应路径；若仅仅提前返回占位 HTML，也不能据此宣称重要内容已经更早出现。
+
+这一节的直接目标是**减少服务端为生成正确响应所需的查询、计算和等待**。网络传输的请求次数与连接成本由上一节讨论，浏览器拿到数据以后的 JavaScript 执行与页面更新则由后续章节继续处理。
 
 ## 4. 资源加载优化改变资源体积、发现顺序和必要下载范围
 
@@ -717,3 +852,8 @@ Web 性能优化工程体系（本篇：六大领域的方案主入口）
 10. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
 11. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
 12. MDN. [Using the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch). Fetch 请求取消与 AbortController 的行为。
+13. PostgreSQL Documentation. [Using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html). 执行计划、EXPLAIN ANALYZE 与数据库执行测量。
+14. Prisma Documentation. [Query optimization](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance). N+1 查询问题、批量获取与关联加载。
+15. React Documentation. [renderToPipeableStream](https://react.dev/reference/react-dom/server/renderToPipeableStream). 流式服务端渲染与 onShellReady。
+16. Next.js Documentation. [Fetching Data](https://nextjs.org/docs/app/getting-started/fetching-data). 独立数据的并行获取与逐步交付。
+17. MDN. [Server-Timing header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing). 服务端分段耗时的 HTTP 响应头。
