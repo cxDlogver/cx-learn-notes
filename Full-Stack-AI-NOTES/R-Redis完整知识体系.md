@@ -2293,6 +2293,24 @@ Outbox 解决 Database → Broker 的可靠交接；Broker 解决 Message → Co
 
 Redis Cache 丢失后，从 Database 重新生成，通常比复杂双向同步更自然。
 
+
+### 【跨 Redis 与数据库的双写是否需要 Outbox，必须先确认数据权威与一致性时限】
+
+双写并不天然要求 Outbox。数据库事实和可重建 Cache 之间，可以用 Cache-Aside、TTL、失效重试、版本 Key 处理有限陈旧；业务数据库记录成功以后必须可靠产生独立后续任务/通知，才更适合在本地事务里保存 Outbox 意图，并由后台 Relay 重试。Outbox 保证待执行事实不会在进程故障时被忘记，**它本身不是 PostgreSQL + Redis 的跨库 ACID，也不提供即时同步完成保证**。
+
+特别是 Session：如果身份认证只以 Redis Session Key 为准，先删除 PostgreSQL 的 user_sessions，随后 Redis DEL 失败，Redis 内的旧会话仍可能通过授权检查。即使把 DEL 写成 Outbox Job，也只保证未来重试，不能证明 Logout 的瞬间已撤销访问；要先定义即时授权权威、同步撤销失败时的 Fail-closed 语义、允许的有效窗口和清理机制。若反过来让数据库成为会话权威，也不应让旧 Redis 缓存绕过撤销检查。
+
+~~~text
+是否发生双写？
+   └─ 是 → 哪一份数据是权威？
+              ├─ 第二份是派生 Cache → Invalidation / TTL / 回源 / Version
+              ├─ 第二份是必须完成的异步工作 → Outbox / DB Job / Relay
+              └─ 第二份直接决定安全授权 → 即时有效性检查 / 撤销，不可只靠异步重试
+~~~
+
+当前 Browser Monitor 的 SessionGuard 只读取 Redis 而不做 PostgreSQL Miss Fallback；登录时先写 PostgreSQL 再 Redis，退出时并发 DEL Redis 与 DELETE PostgreSQL，故存在不同的部分失败窗口。源码分析见 [Browser Monitor 账号认证专题](https://github.com/cxDlogver/browser-monitor/blob/main/docs/账号认证Session与CSRF源码实战分析.md)；通用安全边界见 [身份认证与会话管理](./W-Web身份认证会话控制与访问控制体系.md)。参考：[AWS Transactional Outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)。
+
+
 ### 【强一致、有限陈旧与最终一致必须按 State Semantics 选择】
 
 ~~~text
@@ -2597,6 +2615,42 @@ Replication / Failover
 | Operational Stats | 统计出现缺口 | 状态看板不完整 | 视业务要求 |
 
 同一个 Redis Instance 可能混合不同 Reliability Class，因此未来可能需要 Instance Splitting、不同 Persistence、不同 Eviction、不同 HA 和不同 Access Control。
+
+
+### 【Redis 承载 BullMQ Job 时，持久化保证与缓存业务不同】
+
+本章介绍 Redis RDB/AOF、内存淘汰和主从切换后，还需要将这些机制放回 Job Queue 工作负载检验。使用 BullMQ 默认 Redis Backend 时，Queue.add 写入的不是 Node.js 进程内 Map，而是独立 Redis Server 的 Job Payload、等待索引、延迟状态和执行锁。API 退出、Worker 崩溃和 Redis Server 崩溃是三种故障，不能统一回答成“Redis 是内存数据库，所以任务会消失”。
+
+~~~text
+API / Worker 退出
+  → Redis Server 仍持有原有 Dataset
+  → Job 仍可能被其他 Worker 领取或等待 stalled 恢复
+
+Redis Server 正常重启
+  → 是否保留 Dataset 取决于实际持久化文件 / 数据卷
+
+Redis 突然断电
+  → RDB 的恢复点为最近 Snapshot
+  → AOF everysec 可能丢失尚未刷盘的近期变更
+  → Replication 提高可用性但不能替代独立 Backup
+
+Redis 内存不足
+  → 普通 Cache 可能接受 LRU/LFU 淘汰
+  → Job Queue 被任意淘汰则会破坏队列状态，应配置 noeviction
+~~~
+
+对应的常见生产配置：
+
+~~~ini
+appendonly yes
+appendfsync everysec
+maxmemory-policy noeviction
+~~~
+
+这不是绝对零丢失保证，还应有持久化卷、容量监控、数据备份和故障恢复验证。BullMQ 的 Job 成功完成后还可能根据 removeOnComplete 等策略删除记录，因此不应把队列 Job 当成永久业务审计表。生产端应在 Redis 不可用时较快告知提交失败，消费端通常应具备重连恢复能力；业务任务状态、最终报告以及外部副作用仍需明确权威存储与幂等措施。
+
+**工具版本边界：** BullMQ 官方现提供可选 PostgreSQL Backend；Redis 是默认且更成熟的选择，本段只讨论 Redis Backend，不把它误认为工具唯一的数据存储实现。队列库、后端存储和业务状态是三个层次。参考：[BullMQ Going to production](https://docs.bullmq.io/guide/going-to-production)、[BullMQ PostgreSQL backend](https://docs.bullmq.io/guide/postgresql)、[Redis Persistence](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)。
+
 
 ## 7. Redis 的水平扩展需要理解 Replication、Sharding、Cluster 与 Hash Slot
 
