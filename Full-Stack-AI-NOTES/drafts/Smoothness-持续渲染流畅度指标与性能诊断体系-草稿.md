@@ -509,3 +509,176 @@ Queue Empty + Frame Healthy
 2. **Incremental vs Full Rebuild**：保留相同新增点规模，只改变更新策略，比较 Commit Duration 是否仍随 H 线性上升。
 
 如果只有真实重绘随 H 明显变慢，则应进入 Geometry/Scene 的历史依赖分析，而不是继续提高 batch 试图掩盖成本。这个框架也适用于 Canvas、WebGL、图表以及响应式列表。
+
+## 11. 性能定位从异常结果逐层进入函数和场景级证据
+
+### 【先定位哪个可见更新窗口不符合预期】
+
+~~~text
+用户报告滚动不顺、动画停顿或实时轨迹卡顿
+    ↓
+这段时间是否有重要的持续视觉更新？
+    ├─ 否 → 不直接使用 FPS 解释用户体验
+    └─ 是 → 确定目标刷新节奏与设备基线
+                 ↓
+             rAF Frame Interval P95 / Budget Hit Rate / Longest Gap
+                 ↓
+             与 Queue Age、Commit Duration、Memory 同时对比
+                 ↓
+             是否有 LoAF / Long Task？
+             ├─ 有 → 拆 Work / Pre-layout / Layout-and-later
+             │        ↓
+             │      Script Attribution / Trace 证据
+             └─ 没有 → 检查 <50ms 的超预算帧、Compositor/GPU、
+                         实际视觉变化、浏览器限频与测量能力
+                 ↓
+             候选瓶颈来自数据量 N、更新次数 K、
+             单次成本 C、历史 H，还是设备预算 B？
+                 ↓
+             单变量实验复现与验证
+                 ↓
+             整体流畅度、数据新鲜度和交互质量共同改善？
+~~~
+
+必须按次序从可观察异常收敛到候选根因。发现 LoAF 不意味着主线程某一个函数一定很慢；rAF FPS 较低不意味着一定是掉了同样数量的屏幕帧；GPU 负担重也不能简单用减少 JS Bundle 字节数来解决。
+
+### 【五组实验逐步确认根因】
+
+| 实验 | 固定条件 | 变化条件 | 主要判断 |
+| --- | --- | --- | --- |
+| Idle Baseline | 设备、视口和应用 | 暂停持续负载 | 页面本身与浏览器基线开销 |
+| Empty rAF / No-op | 相同 rAF 采样和输入 | 执行空提交 | 是否是真正渲染成本造成恶化 |
+| Batch Sweep | rate、H、数据内容 | 逐档调整 batch | 更新次数 K 与单次成本 C 的权衡 |
+| Rate Sweep | batch、H、画质 | 逐步调整 rate | N 是否超过可持续处理容量 |
+| History Sweep | rate、batch、设备 | 改变历史 H | 是否存在随 H 增长的重复工作 |
+| Feature / Scene Off | 其他数据与业务条件 | 禁用一个图层或绘制模块 | 是否是特定渲染路径瓶颈 |
+
+用同一台机器、同等网络、相同数据和足够重复的测试对比，才能避免把缓存差异、设备限频、浏览器版本变化误认成某项优化的效果。
+
+### 【真实例子：批次减少了更新次数，FPS 却下降】
+
+假设原本每帧只处理 1 点，后来提高 batch 至 100，地图更新次数减少，但单次渲染提交时间从几毫秒上升到 70ms，LoAF 显著增加。
+
+这说明“减少重复更新次数”确实优化了 K，但单次 C 又突破了 Frame Budget。应该寻找**使单次 C 不超预算的合理批量**，而不是认定 batch 越大越好。
+
+假设 batch=10 时较稳定，但页面运行 30 分钟后又变慢；如果 History Sweep 显示单次提交耗时随历史 H 增长，则根因可能在全量轨迹更新或 Scene Object 扩张，需要增量 Geometry、分块或可见对象裁剪，而不能只依靠动态降 rate 维持表面的 FPS。
+
+## 12. RUM 采集、结果指标验收与监控开销边界
+
+### 【一个采样窗口需有自己的上下文与数据口径】
+
+建议在每个有效活跃视觉窗口记录：
+
+~~~text
+App / Version / Route / View
+        ↓
+Device / Browser / Visibility / Refresh Baseline
+        ↓
+Active Visual Update Window（有实际画面更新需求）
+        ↓
+Result：rAF FPS、Frame Interval P95、Budget Hit、Longest Gap
+        ↓
+Progress：Queue、Arrival / Consume、Batch、Commit Duration
+        ↓
+Diagnostics：LoAF Duration / Blocking / Stages / Scripts、Long Task
+        ↓
+采样量、采样时长、能力支持、统计版本
+~~~
+
+示例监控数据结构（仅供理解设计）：
+
+~~~json
+{
+  "type": "performance",
+  "name": "smoothness",
+  "context": {
+    "route": "/live",
+    "version": "2.4.1",
+    "viewId": "view-example",
+    "deviceClass": "mobile",
+    "visibility": "visible",
+    "samplingWindowMs": 10000,
+    "refreshBaselineHz": 60
+  },
+  "result": {
+    "rafFps": 48,
+    "frameIntervalP95Ms": 34,
+    "budgetHitRate": 0.72,
+    "longestGapMs": 110
+  },
+  "progress": {
+    "arrivalRate": 600,
+    "consumeRate": 580,
+    "queueLength": 150,
+    "oldestQueueAgeMs": 900,
+    "commitDurationP95Ms": 24
+  },
+  "diagnostics": {
+    "loafCount": 5,
+    "loafMaxDurationMs": 115,
+    "longTaskCount": 4
+  }
+}
+~~~
+
+其中 rafFps、Frame Interval P95 与 Budget Hit Rate 是**rAF 观测口径**而非真正显示器最终帧率。LoAF Count 与 Long Task Count 是同一个采样窗口内两种不同类型的记录数，不能直接相加称为掉帧数。Long Gap、Jank、LoAF Rate 都需要明确分母（例如每活跃分钟、每采样窗口），不能把一条业务自定义数值称为官方 Core Web Vital。
+
+### 【观测系统不能成为新的卡顿来源】
+
+在线上：
+- 不应对所有页面永久运行高成本 rAF Polling。
+- 只有存在连续视觉更新需求时才进行短时、有限采样；页面 hidden 立即暂停，恢复时重置上次时刻。
+- 避免每帧打印日志、做复杂统计、序列化大型数据、触发 DOM 几何读取或直接发网络请求。
+- LoAF 天然只记录严重长帧，适合异常抽样；scripts 要按采样率与权限过滤，避免上传敏感 URL、路径和用户数据。
+- 浏览器不支持 LoAF、Entry 过早丢失或无归因数据时要明确标记，不能把“无法测得”写为“没有问题”。
+- 不应把不同刷新率、不同可见性和不同业务目标帧率的样本混为一个无解释的全站 FPS 达标率。
+
+### 【Lab 与 Field 各有不同目标】
+
+**Lab（实验室）**：固定数据负载、设备、刷新率、视口、历史规模、网络和 CPU 条件，通过 Chrome Performance Trace 观察 Main、Frames、Rendering、Raster、Compositor、GPU，并与 LoAF、业务 Commit 和 Queue 数据建立时间关联。对实时/长期运行问题需要覆盖历史状态增长后的表现。
+
+**Field（真实用户）**：按 Route、Version、Device、目标刷新基线和活跃视觉场景分群，比较 rAF Interval P95、Long Gap、预算命中率、LoAF 频次、Queue Age 和业务可用性，同时关注 INP，防止为了流畅度将用户操作变得迟缓。
+
+验收应保留两项同时成立的约束：
+
+~~~text
+视觉结果
+重要连续更新在当前场景预算内尽量稳定呈现
+         +
+过程正确性
+数据处理持续追得上，用户看到足够新的状态
+~~~
+
+结果指标改善但业务数据越来越旧，不构成完整成功；业务吞吐提高但画面持续严重卡顿，也不构成完整成功。
+
+## 13. 与前面三篇草稿及正式知识体系的关系
+
+本稿只作为第四类用户体验 Smoothness 的独立草稿，**暂不加入 GitHub 知识体系索引、不新增 QA、不改正式知识正文**。
+
+- [Loading / LCP 四阶段诊断草稿](./Loading-LCP四阶段性能诊断与优化体系-草稿.md)：文档、资源与最终绘制等待。
+- [Responsiveness / INP 三阶段诊断草稿](./Responsiveness-INP三阶段交互响应性能诊断与优化体系-草稿.md)：输入、事件处理、下一次绘制等待。
+- [Visual Stability / CLS 诊断草稿](./Visual-Stability-CLS视觉稳定性诊断与优化体系-草稿.md)：布局偏移、最大会话窗口与造成位置变化的原因。
+- [Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)：四类用户体验与端到端性能优化。
+- [性能专项优化](../X-性能专项优化.md)：指标采集、PerformanceObserver、LoAF、Long Task 和 RUM。
+- [页面流畅度与连续渲染性能完整知识体系](../Y-页面流畅度与连续渲染性能完整知识体系.md)：N/K/C/H/B、可视化对象、批量渲染与控制器的深入专项。
+
+最终四类体验的诊断路径：
+
+~~~text
+Loading → LCP → TTFB / Resource Delay / Duration / Render Delay
+Responsiveness → INP → Input Delay / Processing / Presentation Delay
+Visual Stability → CLS → 最大 Session Window / Shift / Source / Root Cause
+Smoothness → 自定义 Frame 结果体系
+              ├─ rAF Frame Interval / FPS / Budget Hit
+              ├─ LoAF / Long Task / Trace
+              └─ 数据新鲜度 / Queue / Commit / History
+~~~
+
+### 【参考文献】
+
+1. Google / web.dev. [Towards an animation smoothness metric](https://web.dev/articles/smoothness). 重要视觉更新、合成线程、FPS 局限、帧完整性与动画性能研究。
+2. Google / web.dev. [Rendering performance](https://web.dev/articles/rendering-performance). 显示刷新预算、Style/Layout/Paint/Composite 与优化原则。
+3. MDN. [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). rAF 时间戳、回调调用条件、前后台与不同刷新率。
+4. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). LoAF 50ms 门槛、时间拆分、blockingDuration、scripts、特殊无渲染记录。
+5. W3C. [Long Animation Frames API Working Draft](https://www.w3.org/TR/long-animation-frames/). Long Animation Frames API 的工作草案。
+6. GoogleChrome / web-vitals. [官方实现与 Attribution 文档](https://github.com/GoogleChrome/web-vitals). 标准 Web Vitals 与 INP 长帧归因的关系。
