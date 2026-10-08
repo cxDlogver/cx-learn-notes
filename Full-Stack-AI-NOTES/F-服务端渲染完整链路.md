@@ -49,6 +49,8 @@ HTML 与序列化数据（HTML + Serialized Payload）
 
 ## 1. SSR 把首次页面生成提前到 HTTP 响应返回之前
 
+SSR 的成本分配属于 [Web 性能优化工程体系的② 服务端与数据交付优化](./W-Web性能优化工程体系.md#3-服务端与数据交付优化缩短内容生成和必要数据依赖)。本文继续详细解释请求、数据、HTML、Payload 与 Hydration 链路；SSR 本身不保证端到端性能必然改善。
+
 ### 【SSR 改变的是首次主要内容的生成位置】
 
 客户端渲染（Client-Side Rendering，CSR）中，主要页面 UI 通常依赖浏览器下载并执行 JavaScript 后生成：
