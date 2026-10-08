@@ -786,7 +786,7 @@ Web请求优化的核心是“精准调控资源加载的数量、优先级和�
 
 ## Service Worker 离线缓存实践
 
-HTTP 缓存、浏览器/CDN/Nginx 多级缓存、ETag/Last-Modified、内容 Hash、过期与 stale-while-revalidate，以及 Service Worker/Cache Storage 的协议与生命周期概念，已统一收敛到 [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md)。
+浏览器、CDN、Web 服务器的 HTTP 响应缓存、ETag/Last-Modified、内容 Hash、过期及 stale-while-revalidate 的协议机制，统一收敛到 [HTTP 缓存机制知识体系](./H-HTTP缓存机制知识体系.md)。
 
 本节保留**Service Worker 可复现的注册、安装、激活、资源缓存、离线验证操作**，作为通用机制之外的实践参考；其中资源缓存策略、版本清理和离线限制应以主知识文档为准。
 
