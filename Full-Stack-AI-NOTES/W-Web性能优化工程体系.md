@@ -112,23 +112,9 @@ LCP、INP、CLS 和持续流畅度描述用户体验的结果；它们不是本�
 
 ### 【网络缓存的职责是避免重复传输，而不是替代内容计算】
 
-HTTP 缓存的核心是利用已经取得的响应。需要区分浏览器私有缓存、CDN 等共享缓存、未过期响应复用及过期后的条件验证：
+网络缓存主要解决**对已有 HTTP 响应重复传输、重复回源**的成本。浏览器 HTTP Cache、CDN 和启用代理缓存的 Nginx 并不共享一个物理缓存；它们各自依据缓存资格、Cache Key / Vary、新鲜度、条件验证与版本更新策略复用响应。长期可缓存的内容哈希资源和会变化的 HTML/API 需要不同规则。
 
-| 方案 | 减少的成本 | 重要约束 |
-| --- | --- | --- |
-| 可缓存静态响应 | 重复请求和传输 | 内容需要正确版本化并允许复用 |
-| 内容哈希文件名 + 较长新鲜期 | 版本固定资源的重复传输和重新验证 | HTML 必须更新引用，新旧资源发布衔接要稳定 |
-| ETag / Last-Modified 验证 | 过期时重复传输完整响应正文 | 仍可能需要一次往返，不是完全无请求 |
-| CDN 缓存 | 用户到源站的请求与跨区域传输 | Cache Key、Vary、鉴权、个性化响应、安全范围 |
-| stale-while-revalidate | 允许在特定条件下先使用陈旧响应并异步验证 | 用户可接受的陈旧时长、实现与缓存策略 |
-
-示意：
-
-~~~http
-Cache-Control: public, max-age=31536000, immutable
-~~~
-
-这种长期新鲜度设置只适用于**URL 对应内容不会被原地修改**的版本化资源；不应套用到会动态变化、包含个性化敏感数据的 HTML/API。MDN 对 Cache-Control、条件验证与 immutable 的行为有独立说明。[[3]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+完整缓存的请求链路、ETag / Last-Modified / 304、s-maxage、stale-while-revalidate、Nginx proxy_cache 和 Service Worker / Cache Storage 统一由 [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md) 维护。这里仅保留其工程定位：**缓存能减少重复网络成本，却不会自动减少首次访问的原始文件体积、脚本执行或图片解码成本**。[[3]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 ### 【网络优化的边界是传输能力而非全部页面性能】
 
