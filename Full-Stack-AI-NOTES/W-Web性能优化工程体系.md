@@ -467,3 +467,206 @@ rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗�
 - 如果单次工作的实际成本随数据规模上升，长期只降低输入频率不能替代增量计算和渲染优化。
 
 更深入的测量与更新控制案例见 [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)。其工作负载参数与案例不应上升为所有 Web 页面都需要的通用控制模型。
+
+## 7. 浏览器渲染优化减少样式布局、绘制合成与图形资源成本
+
+### 【渲染优化关注可视状态转换成新画面时的实际工作】
+
+即使网络请求完成、应用计算已经得到正确的可视状态，浏览器仍可能需要 Style、Layout、Paint、Raster、Composite 等工作。它们的一部分可能发生在主线程，一部分由其他线程或 GPU 完成；实际是否需要重做全部阶段，取决于元素变化和浏览器内部缓存。[[11]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
+
+~~~text
+应用提交 DOM / Style / 绘图状态变化
+                   ↓
+Style（计算受影响元素的样式）
+                   ↓
+Layout（需要时重新确定几何尺寸和位置）
+                   ↓
+Paint（需要时生成绘制内容）
+                   ↓
+Raster（把绘制内容转成像素）
+                   ↓
+Composite / GPU（合成图层并提交画面）
+                   ↓
+用户获得新的可见结果
+~~~
+
+此图是方便理解的概念流程，不是每次更新必然执行的固定顺序，更不能直接把整个流程都归入 JavaScript。⑥ 的优化目标是**少做不必要的布局、绘制、像素生成和图形资源重建**，不是只让组件更新函数更快。
+
+### 【Style 和 Layout 优化重在缩小受影响几何范围】
+
+常见的渲染成本来源是复杂 DOM 依赖、高频尺寸变化，以及强制同步布局。典型的 Layout Thrashing 指在同一执行路径里多次穿插对布局的修改与尺寸读取，使浏览器提前或重复计算布局。
+
+可采用的技术：
+
+1. **减少参与布局的活动节点**：大量行和元素可用虚拟列表保留当前可见及必要缓冲节点。业务完整数据不一定要同时进入 DOM。
+2. **稳定布局约束**：图片、广告位、异步内容应尽量提前确定空间，避免加载完成后推挤周围内容。
+3. **控制重算影响范围**：避免频繁更改会向祖先或大量子节点传播影响的布局属性；必要时评估 CSS containment 或 content-visibility，并理解尺寸与显示语义。
+4. **避免同步读写交错**：将必要几何读取与 DOM 写入合理分组，减少布局在同一个任务中被反复强制执行。
+
+~~~js
+// 示例：先集中读取尺寸，再提交变化。
+const positions = elements.map(el => el.getBoundingClientRect().left);
+elements.forEach((el, i) => {
+  el.style.transform = 'translateX(' + Math.round(positions[i]) + 'px)';
+});
+~~~
+
+这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[12]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+
+深入基础见 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)，大型列表的实际实现与复杂度分析见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
+
+### 【Paint 与 Raster 优化减少需要重新处理的像素与复杂绘制】
+
+画面内容即使不影响 Layout，仍可能需要重新 Paint 或 Raster。大面积变化、复杂视觉样式、持续变化的 Canvas 内容、大量可见对象都可能增加相应成本。
+
+- 对没有改变的视觉区域尽量避免无意义重绘，评估静态层与动态层分离、局部更新和预渲染。
+- 控制当前视口内真正参与绘制的对象量，避免所有业务历史都反复进入活动绘制集合。
+- 对需要显示大量复杂内容的场景，可按可视尺度使用 Level of Detail（细节层级），前提是不丢失用户必须看到的信息。
+- 对 Canvas/WebGL 类场景，区分**业务数据变化、图形资源准备与最终画面更新**：应用追加一项数据，并不等于底层几何缓冲一定只更新一个顶点；是否支持增量要由 API 和 Trace 证实。
+
+局部绘制与预渲染通常以更多内存或缓存管理换取减少重复绘制的机会。视口、缩放、样式、遮挡变化时，之前缓存可能需要重建。优化后的真实 Paint/Raster 成本而非代码名词，应作为判断依据。
+
+### 【合成优化和 GPU 资源管理需要避免“所有元素都提升图层”】
+
+有些动画可以通过 Composite 重用已生成的图层，减少主线程上的部分布局或绘制工作。因此在语义允许时，使用 transform/opacity 变更往往比持续改变会触发 Layout 的几何属性更适合动画。
+
+但它仍有约束：
+
+- 合成图层和纹理可能占用额外内存；不必要的层提升和复杂图层组合会增加资源压力。
+- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[12]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+- Canvas、WebGL 可能涉及 Buffer、Texture、Framebuffer 和异步 GPU 工作；主线程中调用接口很快，不证明 GPU 已完成实际绘制。
+- 浏览器托管 DOM 图层与显式图形 API 的资源管理语义不同；必要时使用对应引擎的销毁或复用机制，不能一概套用 JS GC 的行为。
+
+**图形资源的创建、复用、更新、释放统一放在 ⑥**，而不是另设“GPU 资源生命周期优化”。这里关心的是图形成本，JavaScript 对象引用和 GC 则仍归属 ④。
+
+### 【持续渲染成本增长时，应同时检查绘制范围和状态规模】
+
+某些持续更新的画面会随着运行时间积累更多可视对象。如果每新增一点变化，就重复处理全部旧资源，单次更新成本可能不断放大。
+
+~~~text
+活动可见对象规模逐渐增大
+            ↓
+每次更新都重新构建较大画面或图形数据
+            ↓
+单次 Layout / Paint / GPU 工作持续增加
+            ↓
+某些刷新周期无法赶上 → 可见掉帧
+~~~
+
+解决方向仍由成本决定：减少当前活动对象数、增量更新受影响范围、复用稳定图形资源、只绘制当前视口所需内容，并让 ⑤ 的调度控制峰值。
+
+不能为了提升 FPS 直接删除必须保存的业务历史，也不能误将“一次视图重新绘制”与“所有历史 Geometry 重新计算”视为相同开销。
+
+流畅度机制和浏览器帧诊断继续阅读 [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)、[Smoothness 诊断草稿](./drafts/Smoothness-持续渲染流畅度指标与性能诊断体系-草稿.md)。
+
+### 【浏览器渲染优化的结果要回到布局、绘制与真实视觉变化】
+
+局部 DOM 更新减少不一定等于 Style/Layout 成本降低；rAF Callback 快不等于 GPU Presentation 快。验证应分别观察 Style/Layout 耗时、Paint/Raster 负担、GPU/Compositor 工作、Frame Interval 或相关用户可见行为，再判断是否将成本从一个阶段转移到另一个阶段。
+
+## 8. 六大优化领域通过共同成本原理协作，形成可迁移的方案组合
+
+### 【同一个性能问题可能涉及多个领域，但每项优化必须有主要作用点】
+
+六大领域是按**操作对象**分类，并不是要求每个实际问题只能选一个技术领域。以“首屏关键图片较晚显示”为例：
+
+| 观察到的真实成本 | 主要优化领域 | 对应技术方向 |
+| --- | --- | --- |
+| 建立连接耗时很长 | ① 网络传输 | 复用连接、适当预连接或 CDN |
+| 页面 HTML 迟迟生成 | ② 服务端与数据交付 | 缩短必要数据依赖、复用安全结果或预生成 |
+| 图片晚发现或字节过大 | ③ 资源加载 | 初始 HTML 可发现、优先级、响应式尺寸与压缩 |
+| Hydration 中重复计算导致内容延后 | ④ JavaScript 与状态 | 减少初始化和无效计算 |
+| 非关键长任务占据主线程 | ⑤ 任务调度与更新 | 将非紧急工作推迟、让步或移出主线程 |
+| 图片就绪后页面仍需大量重布局和绘制 | ⑥ 浏览器渲染 | 缩小 DOM/Layout/Paint 影响范围 |
+
+这张表的目的不是重讲 LCP 诊断，而是说明：**同一可见结果由多个运行领域的成本共同决定**。先看实际高成本出在哪里，再调用对应领域的技术方法。
+
+### 【避免把解决不同成本的问题错误归为同一项技术】
+
+| 容易混淆的方案 | 正确区别 |
+| --- | --- |
+| CDN vs 图片压缩 | CDN 改善传输路径与缓存；图片压缩减少资源字节，也可能影响解码 |
+| SSR vs 浏览器渲染优化 | SSR 改变内容生成阶段；Style/Layout/Paint 决定浏览器如何产生画面 |
+| Tree Shaking vs 减少运行时计算 | Tree Shaking 删除打包阶段可证明无用的代码；运行时性能还要检查真正执行的业务工作 |
+| Memoization vs HTTP 缓存 | 都是复用，但一个避免重复 JS 计算，一个避免或减少网络传输 |
+| 算法优化 vs Task Yield | 前者减少工作总量；后者改变主线程连续占用和让步机会 |
+| Batch vs 增量更新 | Batch 主要减少提交次数；增量减少未变化数据被重复处理，两者可同时需要 |
+| 减少组件更新 vs 减少 Paint | 分别优化应用框架计算和浏览器像素工作，不保证完全同步下降 |
+| 控制 JS Heap vs 释放 GPU Buffer | 两类资源管理位于不同运行机制，不应混为同一个“内存优化 API” |
+
+实际方案可能跨域协同，但**每一项工作的收益与代价必须分开解释**。例如对页面同时做 SSR、图片压缩和任务让步，可以提高整体体验，但不能因为总指标改善就声称每项技术都产生了同等收益。
+
+### 【组合优化最终要避免成本从上游转移到下游】
+
+可预测的几个重要取舍：
+
+- SSR 缩短客户端生成内容的时间，却可能增加服务端计算和 Hydration 工作；必须观察端到端时间。
+- 代码分割减少初始下载执行量，但拆得过细可能导致关键业务功能触发额外网络等待。
+- 缓存减少传输或计算，却增加空间、失效和版本一致性成本。
+- 提高资源优先级让关键请求更早发起，却可能争用其他关键资源。
+- 增大 Batch 可能减少提交次数，却让单次更新突破帧预算。
+- 用合成图层减少 Layout/Paint，可能增加 GPU 内存和合成开销。
+
+因此优化方案的完整描述应包括：**作用领域、减少的成本、发生的代价转移、适用条件、必要的业务正确性约束**。这是工程方案而不是技术名词清单。
+
+## 9. 现有 Full-Stack-AI-NOTES 文档按照六大领域形成唯一入口与专项深入关系
+
+### 【本篇承担优化方案的主入口，原有内容不需要强行合并删除】
+
+当前已有文档分别覆盖页面总体性能、SSR、CDN 缓存、预加载、构建、Vue 更新、Event Loop、Chrome 渲染和连续流畅度。它们有不同的深入价值，全部搬进本文只会重复定义与增加维护成本。
+
+推荐稳定关系为：
+
+~~~text
+Web 性能优化工程体系（本篇：六大领域的方案主入口）
+│
+├─ 内容交付优化
+│  ├─ ① 网络 → CDN 缓存与浏览器缓存 / 网络知识
+│  ├─ ② 服务端 → Web 渲染架构 / 服务端渲染完整链路
+│  └─ ③ 资源 → 资源优化实战 / 静态资源预加载 / 编译构建优化
+│
+├─ 应用执行优化
+│  ├─ ④ JS 与状态 → Vue 应用级性能 / V8 原理 / 虚拟列表
+│  └─ ⑤ 调度与更新 → Event Loop 与任务调度 / 连续更新机制
+│
+└─ 视觉呈现优化
+   └─ ⑥ 浏览器渲染 → Chrome 渲染机制 / Canvas 与可视化性能
+
+其他入口：
+  Web 性能优化完整知识体系 → 端到端性能总览、体验与成本关系
+  性能专项优化 → 指标采集、监控 SDK、RUM 数据管理
+  四类体验专项草稿 → 各类结果指标和阶段归因（不是本篇方案分类）
+~~~
+
+本篇按运行成本分类后，**旧版 [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md) 保留其“端到端全景导览”作用**，不再作为六大优化方案的第二套平行主文档。具体知识由已有专项承担，本篇只解释属于哪个领域、机制如何起作用和什么时候可用。
+
+### 【已有专项材料的建议定位】
+
+| 现有文档 | 后续角色 | 建议处理 |
+| --- | --- | --- |
+| Web 性能优化完整知识体系 | 用户体验到端到端运行机制的概览 | 保留正文，补充指向本篇的优化方案主入口 |
+| CDN 缓存与浏览器缓存 | ① 网络缓存和发布版本的独立深入文档 | 保留，补充 ① 入口 |
+| Web 渲染架构 / 服务端渲染完整链路 | ② 内容生成成本与策略机制 | 保留，连接 ② |
+| 资源优化实战 / 静态资源预加载 | ③ 资源体积、加载、字体、请求策略的历史深度材料 | 保留，优先逐步去除跨领域重复而非一次性删除 |
+| 编译构建与打包全面优化 | ③ 线上产物优化；同时含开发构建效率 | 保留并区分线上性能与研发构建时间 |
+| Vue 应用级性能分析及优化 | ④ 组件状态和内存执行的框架专项 | 保留；其 DevTools 章节不成为优化方案的独立领域 |
+| Event Loop 与任务调度 | ⑤ 调度机制的深入主入口 | 保留，建立 ⑤ 双向引用 |
+| 基于 Chrome 浏览器渲染原理 | ⑥ 渲染与 GPU 工作机制 | 保留，关联 ⑥ |
+| 页面流畅度与连续渲染 | ⑤/⑥ 的专项测量与持续更新问题 | 保留其诊断深度，不把场景参数升格为通用优化框架 |
+| 性能专项优化 | 监控采集与 RUM 能力 | 不纳入六大优化领域，也不重复改写 |
+
+这一调整不代表所有旧资料都已经按新规范逐章重写。**优先确立一个优化方案主入口并建立必要的双向引用**，后续发现某项概念出现定义冲突或重复时，再按机制边界局部重构。
+
+## 10. 参考文献
+
+1. MDN. [Populating the page: how browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work). 页面从网络资源、解析执行到布局绘制的关联。
+2. MDN. [rel="preconnect"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect). 预连接对跨域网络准备的影响。
+3. MDN. [HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching). 浏览器/共享缓存、版本资源、条件验证与新鲜度。
+4. MDN. [Critical rendering path](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path). HTML、CSS、JS 对初次画面输出的依赖。
+5. Google / web.dev. [Optimize Largest Contentful Paint](https://web.dev/articles/optimize-lcp). 关键资源发现与加载优先级的优化机制。
+6. Google / web.dev. [Optimize resource loading with the Fetch Priority API](https://web.dev/articles/fetch-priority). 资源优先级、预加载与按需加载边界。
+7. Vue.js. [Performance](https://vuejs.org/guide/best-practices/performance). 应用加载、状态稳定性、组件更新和代码分割。
+8. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代与并发回收、分配和内存管理。
+9. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
+10. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
+11. MDN. [Populating the page: how browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work). Style、Layout、Paint、合成的运行顺序与区别。
+12. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
