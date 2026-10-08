@@ -2,48 +2,45 @@
 
 ## 【知识概述】
 
-**Agent 编排关注的是：复杂任务有哪些执行单元，它们怎样交接，以及每一步由代码还是模型决定下一步。** 选择编排方式时，先区分确定的业务约束与需要现场判断的问题，再决定是否引入多个 Agent，才能避免把流程形状、并发方式和自主决策混成一个概念。
+Agent 编排不是把所有工作都拆成多个 Agent，而是回答**执行阶段怎样连接、下一步由谁决定，以及交接后由谁继续控制任务**。判断顺序应当从已有业务约束开始：可以明确表达的阶段和完成条件由代码约束；需要根据最新观察动态选择的局部动作才交给模型；只有动态任务确实需要分工时，再选择多 Agent 协作模式。
 
-### 【确定的关系由流程约束，开放的问题由模型判断】
+这种区分既符合 Anthropic 关于 Workflow 与 Agent 的工程判断，也与 OpenAI Agents SDK 对代码控制和 LLM 控制两种编排方式的区分相吻合。[[1]](https://www.anthropic.com/engineering/building-effective-agents) [[2]](https://openai.github.io/openai-agents-python/multi_agent/)。
 
-以“修复登录错误并交付结果”为例，修复后需要验证，发布前需要满足检查与授权条件，这些关系通常可以提前表达。**Workflow（工作流）**用预定义的步骤、分支和规则组织任务，代码负责判断阶段是否具备继续推进的条件。
+## 【提问】
 
-但要读取哪些文件、问题发生在哪一层、失败测试需要怎样修复，往往取决于任务运行时获得的信息。可以把这些局部问题交给模型进行 **Planning（规划）**，在新证据出现后进行 **Replanning（重新规划）**。Anthropic 对工作流与 Agent 的区分，也主要落在执行路径由预定义代码安排，还是由模型动态决定这一点。[[1]](https://www.anthropic.com/engineering/building-effective-agents)
+- Workflow、Agent Orchestration 和 Multi-Agent Orchestration 有什么区别？
+- 如何判断任务的下一步由确定性代码选择，还是由模型动态规划？
+- Manager、Handoff 与 Parallel 之间是怎样的关系？
+- 在真实业务中，怎样组合固定业务阶段与动态 Agent 执行？
 
-因此，同一个任务可以由固定工作流管理外层阶段，同时让阶段内部的 Agent 动态排查。模型负责分析不确定部分，测试、权限和阶段检查等明确约束仍由相应机制落实。模型生成了“跳过验证”的计划，也不意味着流程必须接受它。
+## 【回答框架】
 
-### 【把决策权、执行结构和控制权分开理解】
+核心判断：**把执行关系、决策权和交接控制权拆开考虑，再根据任务的确定程度选择编排机制。** 若业务阶段和依赖关系已确定，就没有必要让模型重新判断；当局部步骤必须依据工具结果现场调整时，再让 Agent 规划；若任务需要多种专业能力，才进一步确定是由 Manager 统一收敛，还是通过 Handoff 转移处理权。
 
-**决策权（Decision Authority）**回答“谁决定下一步”：代码可按规则选择分支，模型可根据上下文选择工具或子任务。**执行结构（Execution Topology）**回答“步骤怎样连接”：是顺序、并行，还是允许回到前一节点。**控制权归属（Control Ownership）**回答“谁继续统筹当前任务”：委派一次子任务以后，是回到原 Agent，还是由另一个 Agent 接管后续处理。
+~~~text
+业务目标与明确约束
+    ↓
+已知的阶段依赖、权限和完成标准
+    → Workflow / Code Orchestration 固定
+    ↓
+无法提前确定的局部步骤
+    → Agent Planning / Replanning 动态安排
+    ↓
+确实需要多个执行角色？
+    → Manager 统一控制 / Handoff 移交处理权
+    ↓
+代码与模型共同推进，测试和门禁检查结果
+~~~
 
-例如，代码可以让两个模型调用并行检查不同模块，虽然使用了多个模型，但执行关系仍由代码决定。模型也可以在单 Agent 内动态选择工具，并不需要多个 Agent 才具备规划能力。把这三个维度分开，才能准确描述系统究竟把多少决策交给了模型。
+这套关系不是预设所有框架都存在固定的树状包含结构。决策权属于谁、任务如何并行、控制权是否移交，是能够交叉组合的不同维度。最后回到可执行边界：模型能提出计划，但高风险业务操作、完成条件和审批必须继续由可信系统落实。
 
-### 【Manager 与 Handoff 表达不同交接关系】
+## 【完整回答】
 
-**Manager（管理者模式）**由中央 Agent 委派专业 Agent 完成局部工作，再接收结果并决定后续行动。例如，主 Agent 让测试 Agent 分析失败用例，拿到结果后仍由主 Agent 决定修复方案和最终交付。专业 Agent 的任务结束，会把结果返回给调用方。
+我认为，Agent 编排最重要的不是选择一个听起来先进的架构名词，而是**在既有业务约束下，把确定性步骤交给程序，把需要根据环境变化动态判断的步骤交给模型**。如果没有先理解任务哪些部分已经确定，就直接引入多 Agent 或开放式规划，反而容易增加协调开销，让业务控制范围难以解释。
 
-**Handoff（移交模式）**则将当前处理权交给另一个 Agent。例如，通用客服识别出技术故障后，把当前处理流程移交给技术支持 Agent，由后者继续响应。在这种交接中，关键是明确后续由谁处理，以及随移交传递哪些必要信息，而不是仅仅增加一次子任务调用。
+### 【一、先明确任务中哪些执行关系可以由代码决定】
 
-**Parallel（并行）**说明哪些工作可以同时进行；**Graph（图结构）**用节点和转移关系表达执行过程。并行需要处理依赖、共享资源和结果汇总，图中的分支可以由代码规则或模型判断决定。因此 Manager、Handoff、Parallel 和 Graph 不属于同一组互斥选项，可以在适当条件下组合使用。
-
-```text
-外层工作流：明确目标 → 修复阶段 → 验证阶段 → 满足条件后交付
-修复阶段内部：模型读取信息 → 选择工具 → 根据结果调整计划
-需要专业协作时：
-  委派局部分析并接收结果 → Manager
-  由另一个 Agent 接管后续处理 → Handoff
-可独立开展的工作：在处理依赖和资源约束后并行执行
-```
-
-### 【组合机制时，必须明确交接和验收边界】
-
-这种由代码与模型共同控制的方式可称为 **Hybrid Orchestration（混合编排）**。它需要明确每个单元的输入、输出、可用工具、失败处理和验收条件。模型可以选择怎样完成局部任务，但其自主范围仍受权限、时间和调用预算等限制；多个 Agent 的结果也需要核对，不能因为产生了多份分析就默认提高了质量。
-
-外层固定、内层动态是一种常见设计思路，实际边界仍应按业务需求确定。增加 Agent 数量也会增加信息交接、协调成本和失败位置，只有专业分工或并行等收益足够明确时，才值得引入更多执行单元。正文会先比较代码与模型的决策范围，再展开 Manager、Handoff 及其组合方式，重点始终是“谁决定、怎样执行、由谁继续负责”。
-
-## 1. 编排先划分执行结构与下一步决策权
-
-### 【Orchestration 的核心：分配执行控制权】
+#### 【编排首先解决执行责任与控制权分配】
 
 Agent Orchestration（Agent 编排）本质上是在管理两件事情：
 
@@ -61,7 +58,7 @@ Execution Structure（执行结构） + Decision Right（下一步决策权）
 
 所以，**Orchestration 的核心不是提高 Agent 自主性，而是确定“哪些决策应该由代码控制，哪些决策才值得交给模型”。**
 
-### 【确定性 Workflow：能够提前定义的执行关系优先由代码编排】
+#### 【确定性 Workflow 固定业务阶段与先后约束】
 
 Anthropic 将 Workflow 定义为 LLM 和 Tool 沿着预定义代码路径运行的系统；同时建议从能够解决问题的最简单方案开始，只在确有需要时增加 Agent 自主性，因为 Agent 往往会用更高的延迟和成本换取更强的任务适应能力。[[1]](https://www.anthropic.com/engineering/building-effective-agents)
 
@@ -93,9 +90,9 @@ OpenAI Agents SDK 也明确指出，代码编排可以让 Agent Flow 在速度�
 
 模型应该主要承担无法提前穷举、需要理解当前环境，并且必须根据执行结果实时调整的决策。
 
-## 2. 模型在约束范围内规划动态任务并按需组织多个 Agent
+### 【二、只有路径无法提前确定时才需要模型编排】
 
-### 【模型编排：只有无法提前确定的局部执行路径才交给模型】
+#### 【在确定性外层释放局部模型决策能力】
 
 即使一个任务整体很复杂，也通常不意味着需要把整个 Workflow 都交给模型。更常见的是在确定性 Business Workflow 中，把局部无法提前确定的复杂阶段交给模型：
 
@@ -111,7 +108,7 @@ OpenAI Agents SDK 也明确指出，代码编排可以让 Agent Flow 在速度�
 
 OpenAI 将这种情况描述为 Open-ended Task（开放任务）：模型可以根据当前任务自主进行 Planning（规划）、使用 Tool 获取信息并采取行动，再根据结果继续决定后续步骤。[[2]](https://openai.github.io/openai-agents-python/multi_agent/)
 
-#### <u>1. Planning 与 Replanning 是模型编排的基础</u>
+##### 【Planning 与 Replanning 是模型编排的基础】
 
 模型编排首先解决的不是“调用哪个 Agent”，而是“当前任务应该怎样完成”。一个长任务可以按照下面的循环持续推进：
 
@@ -130,7 +127,7 @@ Goal → Plan → Execute → Observe / Evaluate → Plan 仍有效？ → Conti
 
 这样既保留模型面对未知问题时的适应能力，又不让任务目标随着 Agent 的推理过程发生漂移。
 
-#### <u>2. 只有任务需要多个专业 Agent 时，才进一步进入 Multi-Agent Orchestration</u>
+##### 【只有任务需要多个专业 Agent 时，才进一步进入 Multi-Agent Orchestration】
 
 Planning 可能发现任务需要 Research Agent、Frontend Agent、Backend Agent、Test Agent 等不同专业能力，这时才需要进一步设计多个 Agent 之间的控制关系。
 
@@ -146,7 +143,7 @@ LLM Orchestration
 
 而不是把 Planning、Manager、Handoff 当成三个并列的编排方式。
 
-#### <u>3. Manager：中央 Agent 保留控制权</u>
+##### 【Manager：中央 Agent 保留控制权】
 
 OpenAI Agents SDK 中对应的是 Agents as tools（Agent 作为工具）模式：Manager Agent 把专业 Agent 暴露成 Tool 调用，专业 Agent 完成任务后把结果返回 Manager，Manager 继续负责后续决策和最终输出。[[2]](https://openai.github.io/openai-agents-python/multi_agent/)
 
@@ -166,7 +163,7 @@ Anthropic 的 Orchestrator-workers 也属于相近思想：中央 LLM 根据当�
 
 需要注意，Manager 和 Parallelism（并行）不是同一个概念。Manager 可以串行调用 Worker，也可以并行分发多个互不依赖的任务；Manager 描述的是**控制权集中在哪里**，Parallelism 描述的是**多少任务同时执行**。[[2]](https://openai.github.io/openai-agents-python/multi_agent/)
 
-#### <u>4. Handoff：当前 Agent 将控制权交给另一个 Agent</u>
+##### 【Handoff：当前 Agent 将控制权交给另一个 Agent】
 
 Handoff（控制权转移）采用另一种关系：当前 Agent 判断另一个 Agent 更适合继续处理，就把后续任务的控制权直接交给它。例如：
 
@@ -187,9 +184,9 @@ Handoff：Agent A → Agent B → Agent C
 
 Handoff 的一条控制链通常表现为单一 Active Agent 的连续切换，但这不意味着整个 Agent System 不能并行。外层 Workflow 仍然可以启动多个执行分支，Handoff 后的 Agent 也可以继续把其他 Agent 作为 Tool 使用。OpenAI 官方明确说明 Manager 和 Handoff 两种模式可以组合。[[2]](https://openai.github.io/openai-agents-python/multi_agent/)
 
-## 3. 混合编排用确定性业务阶段约束动态执行
+### 【三、以混合编排同时保留业务约束和动态判断】
 
-### 【Hybrid Orchestration：外层保持确定性，内层按需释放模型自主性】
+#### 【混合编排结合确定性外层与动态内层】
 
 生产环境中的 Agent System 通常既不会全部由代码固定，也不会把整个任务完全交给模型自由决定。OpenAI 官方明确指出 Code Orchestration 与 LLM Orchestration 可以混合使用。[[2]](https://openai.github.io/openai-agents-python/multi_agent/)
 
@@ -248,7 +245,7 @@ Anthropic 建议从能够完成任务的最简单方案开始，只有在任务�
 
 > **外层 Business Workflow 尽量保持确定性，用代码固定业务阶段、约束和验收边界；只有 Workflow 内部无法提前确定的复杂任务，才交给模型进行 Planning 和 Replanning；只有当这些动态任务确实需要多个专业 Agent 时，再进一步使用 Manager 或 Handoff 组织 Multi-Agent。**
 
-### 【从“决策权”继续进入“确定性约束”】
+#### 【从“决策权”继续进入“确定性约束”】
 
 当某个步骤已经决定由代码或规则控制以后，还要继续回答一个更细的问题：**这个规则只是写在 Prompt / Skill 里，还是已经变成系统能够直接验证的约束？**
 
@@ -265,7 +262,7 @@ Anthropic 建议从能够完成任务的最简单方案开始，只有在任务�
 
 这比简单讨论“应该用 Workflow、Manager 还是 Handoff”更准确，因为它真正解释了这些机制分别处在哪一层，以及为什么会出现在这一层。
 
-### 【相邻问题：确定规则怎样从自然语言下沉为可执行约束】
+#### 【相邻问题：确定规则怎样从自然语言下沉为可执行约束】
 
 本题回答的是“**哪些决策交给代码、哪些决策交给模型**”。沿着这个结论继续向工程实现深入，会出现另一个独立问题：
 
@@ -298,7 +295,7 @@ Anthropic 建议从能够完成任务的最简单方案开始，只有在任务�
 
 ---
 
-## 4. 参考文献
+## 【参考资料】
 
 [1] Anthropic. [Building Effective AI Agents](<https://www.anthropic.com/engineering/building-effective-agents>)[EB/OL]. 核验日期：2026-10-04。
 
