@@ -749,17 +749,11 @@ ETag: "phone-list-v8"
 
 另一个用户的浏览器尚无 app.a81f.js；若访问到已存该脚本且新鲜的 CDN 节点，可以直接从 CDN 取得脚本，而不再访问 Web 服务器。这解释了浏览器缓存侧重减少单个浏览器重复请求，CDN 缓存侧重多个用户共享同一公开响应。
 
-### 【案例三：公开产品 API 过期但允许短暂使用旧结果】
+### 【案例三：公开产品 API 过期时区分“可以先返回”和“必须先验证”】
 
-假设产品列表返回：
+这一场景沿用第 4 章中已经给出完整 HTTP 响应报文的产品列表：业务明确允许列表短暂陈旧，服务器使用 `max-age=60, stale-while-revalidate=30`，缓存节点也确认支持该策略。用户在缓存年龄第 70 秒发起请求时，CDN 可先返回 v8，再向上游验证；应用更新到 v9，CDN 保存新响应，但用户当前已经拿到的 v8 不会自动在页面上替换。要在当前页面反映 v9，需要前端另行发起数据更新。
 
-~~~http
-HTTP/1.1 200 OK
-Cache-Control: public, max-age=60, stale-while-revalidate=30
-ETag: "phone-list-v8"
-~~~
-
-一个支持该规则的缓存，在前 60 秒内可按新鲜响应直接返回；60～90 秒的适用窗口若收到请求，可先返回旧列表 v8，同时条件验证。上游返回 304 则继续使用正文并更新元数据；上游返回 200 和 v9 则缓存新响应以供后续使用。**已经发出的 v8 响应不会因后台刷新自动变成 v9**。该机制只应作用于业务允许短暂陈旧的公开数据，不能直接用于支付、权限等时效敏感结果。
+对照另一种策略：如果响应是 `max-age=600, s-maxage=3600`，则共享缓存过期后必须成功验证，不能照搬上述“第 70 秒先返回旧内容”的 SWR 时序。**缓存行为先由响应规则和业务可容忍陈旧程度决定，再由具体 CDN/代理产品实现。** 因此，案例中的两个响应头组合是相互区分的方案，不是应当放在同一条 Cache-Control 中叠加的清单。
 
 ### 【案例四：发布新版时必须让 HTML 发现新的 Hash URL】
 
@@ -779,8 +773,6 @@ ETag: "phone-list-v8"
 
 若某公开 API 在 Web 服务器显式开启 proxy_cache，则 CDN MISS 后请求先到 Web 服务器：Web 服务器可能命中自己保存的上游响应并返回，应用服务器仍然不会参与；如果代理缓存也 MISS 或需要验证，才继续请求应用。若 Web 服务器只是执行 proxy_pass、未启用 HTTP 代理缓存，则不存在这一额外命中层。静态文件服务则是另一条直接读取部署文件的路径。**不能从“CDN MISS”推导“一定查询了数据库”，也不能从“Web 服务器返回了静态 JS”推导“proxy_cache HIT”。**
 
-
-
 ### 【浏览器开发工具只能说明客户端看到的结果，不能凭空推断上游所有层】
 
 Chrome DevTools 的 Network 和 Application 面板可以分别查看请求与缓存状态：
@@ -795,20 +787,17 @@ Chrome DevTools 的 Network 和 Application 面板可以分别查看请求与缓
 
 Age 可以帮助判断当前响应被某层缓存保存或验证后经历的估计年龄，但缺少 Age 并不能直接证明“源站被访问”。CDN 的 CF-Cache-Status、X-Cache 等是供应商或配置相关字段，不能当成 RFC 统一必须存在的头。
 
-### 【一次浏览器协商请求需要同时辨别客户端与 CDN 的处理】
+### 【通过一份页面更新故障记录，依次确认浏览器、CDN 与 Web 服务器的责任】
 
-~~~text
-案例：本地有过期 app.js
-    ↓
-浏览器构造 If-None-Match 请求
-    ↓
-CDN 可能使用自身新鲜副本直接验证（下游看到 304）
-    或 CDN 自己向 Nginx / 其它上游发起验证
-    ↓
-浏览器最终继续使用已存正文
-~~~
+假设官网已从 `app.a81f.js` 发布到 `app.b92d.js`，用户反馈“发布后仍看到旧页面”。直接让用户清空缓存可能掩盖原因，应先用 DevTools Network 在**普通导航**下确认浏览器取得的 `/index.html` 究竟是什么版本，而不是先检查旧 JS 本身。
 
-因此看到 304 只能说明**某个验证条件认为内容未变化**。它不能单独证明文件由应用服务器生成、CDN 发生 MISS 或本次请求读取了数据库。
+**第一步，核对 HTML 的请求与响应。** 如果浏览器直接使用仍新鲜的旧 HTML，页面将继续引用 `app.a81f.js`；此时应该检查 HTML 缓存策略及其更新发现机制。如果浏览器向网络发 `If-None-Match: "html-v3"`，并得到 304，说明负责该次验证的 CDN 或上游认为 HTML 尚未变化。此时需要用 CDN/源站日志进一步确认究竟是谁判断的“未变化”，不能把所有 304 都归因于最终应用。
+
+**第二步，比较 CDN 与源站提供的 HTML 版本。** 如果浏览器得到了 200，但正文仍指向旧脚本，可能是 CDN 保留旧 HTML、副本验证策略不正确，也可能是 Web 服务器部署目录里还没有新 HTML。此时应检查 CDN 状态、对应源站文件和多实例发布一致性。如果 HTML 已经引用 `app.b92d.js`，问题就不在“旧 HTML 是否更新”，而应检查新资源 URL 能否取得。
+
+**第三步，确认新 JS 的真正请求路径。** 新 URL 的浏览器缓存一般不会命中旧 URL 的副本。浏览器若请求 `/assets/app.b92d.js` 遇到 404，检查新文件是否已经部署到 Web 服务器、CDN 回源路径是否正确；如果旧页面中的动态 import 仍在请求 `app.a81f.js` 并发生 404，则检查是否过早清理旧构建产物。
+
+**第四步，把结果关联到正确的缓存层。** 浏览器 Network 显示本地命中，只能说明本次未为了该资源进入网络；CDN HIT 说明边缘可以满足下游请求；Nginx 的 `$upstream_cache_status` 只有在走代理缓存的相应 location 时才能说明代理 HIT/MISS；Web 服务器读取磁盘静态文件并不等于 `proxy_cache HIT`。这套排查顺序可以把“URL 发现错误”“缓存变体错误”“副本过期”“源站部署缺失”区分成可验证的不同故障。
 
 ### 【安全与故障场景不可为了命中率而牺牲正确性】
 
@@ -844,6 +833,5 @@ CDN 可能使用自身新鲜副本直接验证（下游看到 304）
 6. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
 7. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
 8. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
-
 9. Cloudflare. [Cache Keys](https://developers.cloudflare.com/cache/how-to/cache-keys/). 边缘缓存键的默认组成及自定义配置示例。
 10. Cloudflare. [Vary](https://developers.cloudflare.com/cache/concepts/vary/). 响应变体如何与 CDN 缓存规则共同工作。
