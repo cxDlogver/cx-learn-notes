@@ -629,6 +629,9 @@ function deleteUserWithTxLifecycle(db, id) {
 
 ### 4. Cache API
 
+Cache Storage 的 Request/Response 存储模型与浏览器 HTTP Cache 的自动 Cache-Control 新鲜度管理不同。其 Service Worker 拦截、Cache First / Network First / SWR 策略、离线更新和多级 HTTP 缓存关系，见 [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md)。
+
+
 > Cache API 是浏览器提供的用于缓存 HTTP 请求与响应的存储机制，通常与 Service Worker 配合使用。它以 Request 为 key、Response 为值，用于实现离线访问、资源预缓存和网络性能优化。Cache API 不适合存储业务数据，而是专门用于缓存网络结果，开发者需要自行控制缓存策略和更新时机。在工程中，Cache API 主要用于静态资源和接口响应的缓存，与 IndexedDB 这种本地数据存储方案职责不同。
 
 #### 【什么是Cache API】
