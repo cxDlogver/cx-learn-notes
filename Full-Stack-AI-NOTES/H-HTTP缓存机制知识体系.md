@@ -526,6 +526,8 @@ Web 服务器不会自动读取开发者电脑里的项目，也不会在浏览�
 构建产物（准备发布）
   dist/
     ├── index.html
+    ├── images/
+    │   └── phone-101.jpg
     └── assets/
         ├── app.a81f.js
         └── style.b72c.css
@@ -533,6 +535,8 @@ Web 服务器不会自动读取开发者电脑里的项目，也不会在浏览�
 生产运行环境（示例中的服务器）
   /srv/site/dist/
     ├── index.html
+    ├── images/
+    │   └── phone-101.jpg
     └── assets/
         ├── app.a81f.js
         └── style.b72c.css
