@@ -87,33 +87,153 @@ HTTP 响应缓存必须考虑请求方法、状态码、授权、响应指令和
 
 请求携带 Authorization 时，**共享缓存的复用受到额外协议约束**；服务器响应如果可能根据 Cookie、用户 ID、角色或权限变化，还需要确保响应不能被其他访问者不当地复用。不能仅凭请求 URL 相同就认定可共享。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
-### 【缓存键决定哪个副本与请求匹配】
+### 【Cache Key 负责寻找资源副本，Vary 负责区分同一资源的响应变体】
 
-HTTP 缓存键至少包含请求方法和目标 URI 等信息；响应头 Vary 可要求缓存匹配某些请求头形成的响应变体。例如压缩协商：
+**Cache Key（缓存键）是缓存系统用来查找已保存 HTTP 响应的匹配依据**。它不是一个固定叫做 `Cache-Key` 的 HTTP 请求头，也不是每次随机生成的字段。RFC 9111 规定，缓存键至少与请求方法和目标 URI 有关；缓存实现还可以纳入缓存分区、部分请求头和其他信息。要区分：Cache Key 解决“该找哪一份响应”，后面的新鲜度判断才解决“找到了以后现在能不能直接用”。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
+
+继续使用全文的公开产品官网。用户选择“手机”时浏览器发出：
 
 ~~~http
+GET /public-api/products?category=phone HTTP/1.1
+Host: www.example.com
+~~~
+
+应用服务器返回：
+
+~~~http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: public, max-age=600
+
+{"category":"phone","items":[{"id":101,"name":"Phone A"}]}
+~~~
+
+假设 CDN 已判断该响应允许共享缓存，它需要保存的不只是 JSON 正文，还包括能让后续请求找到这份正文的请求信息及缓存元数据。可用下面的**概念性映射**理解（不是任何 CDN 真实的磁盘文件名）：
+
+~~~text
+Cache Key（示意）
+  GET + https://www.example.com/public-api/products?category=phone
+      ↓ 对应缓存条目
+手机列表 JSON + 缓存控制字段 + 响应时间等元数据
+~~~
+
+随后用户选择“电脑”，请求变成 `GET /public-api/products?category=laptop`。`category` 改变了响应内容，因此这两个请求必须得到不同的缓存匹配结果。如果 CDN 错误地将 `category` 从 Cache Key 排除，就可能把先前的手机列表交给电脑分类用户。反之，追踪参数确实不影响响应内容时，在验证业务条件后排除它，可能减少无意义的缓存版本。**自定义 Cache Key 是以内容正确性为前提改善共享命中率，而不是通过忽略所有参数换取高命中。**
+
+但只按请求方法和 URL 匹配仍有另一个问题：**同一个 URL 也可能根据请求头返回不同的 HTTP 表示**。例如官网脚本始终使用 `/assets/app.a81f.js` 这个 URL，Web 服务器根据浏览器支持的压缩方式返回 Brotli 或 gzip。下面观察完整的两次请求。
+
+**第一次请求：用户 A 的浏览器支持 Brotli。**
+
+~~~http
+GET /assets/app.a81f.js HTTP/1.1
+Host: www.example.com
+Accept-Encoding: br
+~~~
+
+服务器选择 Brotli 压缩脚本并返回。下方只展示协议头，省略二进制压缩正文：
+
+~~~http
+HTTP/1.1 200 OK
+Content-Type: text/javascript
+Content-Encoding: br
+Cache-Control: public, max-age=600
 Vary: Accept-Encoding
 ~~~
 
-如果同一 URL 根据内容语言产生不同表示，可能需要 Vary: Accept-Language；但随意将 Cookie、Authorization 等高基数字段加入 CDN 缓存键并不自动等价于安全隔离。
+这里的 `Accept-Encoding: br` 是**请求头**，表达浏览器接受 Brotli；`Content-Encoding: br` 是**响应头**，告诉浏览器这次收到的脚本正文采用 Brotli 编码；**`Vary: Accept-Encoding` 也是响应头，它要求缓存以后复用该响应时，再比较原始请求与当前请求中由 Vary 指出的请求头**。所以 `Vary` 不是缓存名字，也不是重新产生一个独立存储区。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
-CDN 通常还提供业务自定义 Cache Key 策略，例如包含或排除指定 Query 参数、选取 Host、Header；**该配置可能比原始 URL 更复杂，且可能改变缓存命中与安全语义**。例如忽略一个实际影响响应内容的查询参数，会将不同内容错误合并为同一副本；反之加入大量无关参数可能降低命中率。
-
-### 【过期时间用于判断新鲜度，不负责通知文件更新】
-
-示例响应：
+**第二次请求：用户 B 请求完全相同的脚本 URL，但只支持 gzip。**
 
 ~~~http
-Cache-Control: public, max-age=600, s-maxage=3600
-Date: Thu, 08 Oct 2026 07:00:00 GMT
-ETag: "asset-v12"
+GET /assets/app.a81f.js HTTP/1.1
+Host: www.example.com
+Accept-Encoding: gzip
 ~~~
 
-在其他条件允许时，浏览器私有缓存依据 max-age=600 的新鲜度期限，共享缓存可以依据 s-maxage=3600。它们是**各自的存储与复用决策**，并不是浏览器先缓存十分钟、十分钟后 CDN 自动再缓存一小时的分段执行过程。
+CDN 即使通过基本缓存键找到先前的 Brotli 副本，也不能直接交给此次请求：先前保存副本所对应的 `Accept-Encoding` 是 `br`，现在是 `gzip`，不满足这份响应的 Vary 变体匹配条件。因此 CDN 应寻找适用于 gzip 的另一份缓存副本，或者继续向源站获取。假设回源后服务器提供 gzip 版本：
 
-在计算年龄时，缓存需要考虑 Date、Age 以及传输和驻留时间。Expires 是绝对过期日期，适用的 max-age 通常优先于 Expires；s-maxage 对共享缓存优先于 max-age/Expires。资源被判为 stale（已过期）表示不能再无条件按普通新鲜副本使用，**不表示对应缓存文件已经从磁盘消失**。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
+~~~http
+HTTP/1.1 200 OK
+Content-Type: text/javascript
+Content-Encoding: gzip
+Cache-Control: public, max-age=600
+Vary: Accept-Encoding
+~~~
 
-如果不显式设置新鲜度，部分状态码和响应仍可能使用启发式缓存，因此对需要清晰更新语义的站点应明确设置缓存头，而不是依赖浏览器猜测。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+能够正确处理这类变体的缓存可在相同 URL 下保存不同编码的响应，之后根据请求头选对版本。**这证明的是“同一 URL 的响应正文不一定按同一种编码交付”，而不是“只要有 Vary 就必然缓存命中”**。不同压缩编码如果使用强 ETag，也须确保验证器对应正确的表示字节，不能直接把两套压缩响应的强 ETag 当作同一个字节版本。[[3]](https://www.rfc-editor.org/rfc/rfc9110)
+
+~~~text
+再次请求 /assets/app.a81f.js
+      ↓
+① 基本 Cache Key：匹配请求方法和目标 URL 等
+      ↓
+② Vary：检查此前响应声明需要比较的请求头
+   ├─ 不匹配 → 不能直接使用这个压缩版本，另找变体或回源
+   └─ 匹配   → 找到适用于当前请求的响应版本
+                     ↓
+③ 再检查 Cache-Control、新鲜度和其他复用条件
+   ├─ 满足 → 返回这个响应
+   └─ 不满足 → 验证或重新取得响应
+~~~
+
+官网若按语言返回内容，也可以针对 `Accept-Language` 使用 `Vary: Accept-Language`，但它与压缩编码属于同一种**响应变体匹配机制**，不需要另起一个无关示例。CDN 具体支持哪些 Vary 字段、如何默认生成或自定义缓存键，需要查阅实际服务商配置，不应假设源站发出一个 Vary 就自动解决共享安全问题。若把 Cookie、Authorization 等高基数字段全部加入 CDN 键，还可能造成命中率下降和隐私隔离风险；**缓存键设计不能代替业务授权判断**。[[9]](https://developers.cloudflare.com/cache/how-to/cache-keys/) [[10]](https://developers.cloudflare.com/cache/concepts/vary/)
+
+### 【新鲜度通过 max-age、s-maxage 和响应年龄判断是否允许直接复用】
+
+**缓存键和 Vary 已经找到了“正确版本”，新鲜度（Freshness）才判断“这份版本是否还能不经验证直接返回”。** 缓存不会因为 TTL 到期自动通知源站“请更新文件”，也不会保证在到期时立即删除本地副本。TTL（Time To Live，在此表示缓存新鲜度期限）和“存储副本在物理介质上存在多久”是两个问题。
+
+仍然使用官网公开产品列表。假设源站在 **2026 年 10 月 8 日 07:00 GMT** 生成列表 v8，并返回：
+
+~~~http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Thu, 08 Oct 2026 07:00:00 GMT
+Cache-Control: public, max-age=600, s-maxage=3600
+ETag: "phone-list-v8"
+
+{"category":"phone","items":[{"id":101,"name":"Phone A"}]}
+~~~
+
+逐项理解它们怎样进入实际判断：
+
+- `max-age=600`：响应新鲜度寿命为 **600 秒（10 分钟）**，浏览器私有 HTTP Cache 按适用规则使用它，不是“收到之后无论此前经历多久都再算十分钟”。
+- `s-maxage=3600`：**s 是 shared（共享）**，因此 CDN 和启用 HTTP 代理缓存的 Web 服务器等共享缓存以 **3600 秒（1 小时）** 作为该响应的新鲜度寿命，优先于 `max-age`、`Expires`。它不是独立缓存层，也不是延迟一小时以后才能请求 CDN。
+- `Date`：这份响应的时间信息，是计算缓存年龄的依据之一；它不是“应用部署时间”。
+- `ETag`：只有需要核对列表内容是否变化时才作为验证器使用，与计时和 Cache Key 不同。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
+
+再让另一位用户在 **07:02 GMT** 请求同一列表。假设 CDN 在 07:00 左右已经取得副本，其缓存仍然新鲜，便直接响应浏览器并携带（为便于理解而简化的）年龄：
+
+~~~http
+HTTP/1.1 200 OK
+Date: Thu, 08 Oct 2026 07:00:00 GMT
+Age: 120
+Cache-Control: public, max-age=600, s-maxage=3600
+ETag: "phone-list-v8"
+~~~
+
+`Age: 120` 表示这份响应距离源站生成或成功验证，估计已经经过 **120 秒**，并不表示 CDN 给浏览器重新分配了一份 120 秒的 TTL。浏览器第一次收到它时，计算 600 秒的新鲜期要考虑已有年龄。因此在暂时忽略传输时延和修正项的教学假设下：浏览器约还剩 600 - 120 = **480 秒新鲜时间**；CDN 的共享副本距离 3600 秒上限还约有 3480 秒。这也是为什么不能说“浏览器先缓存十分钟，十分钟以后 CDN 再缓存一小时”。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
+
+~~~text
+07:00  源站生成产品列表 v8，CDN 取得并保存响应
+         ↓
+07:02  浏览器首次访问，CDN 返回缓存结果（Age 约 120 秒）
+       浏览器私有缓存按 max-age=600 计算，约剩 480 秒
+       CDN 共享缓存按 s-maxage=3600 计算，约剩 3480 秒
+         ↓
+07:11  同一浏览器再次访问该产品列表
+       浏览器原副本的估计年龄已约 660 秒，超过 max-age=600
+         ↓
+       浏览器不能按本地新鲜副本直接返回，转而发起条件请求
+         ↓
+       CDN 此时对应副本仍处于 s-maxage=3600 的新鲜期
+       CDN 有能力且匹配条件时，可直接处理下游验证
+       若列表 v8 未变，浏览器可得到 304 并继续使用本地正文
+~~~
+
+这里把“谁的缓存过期”与“请求实际到达哪一层”关联起来了：**浏览器过期，不表示 CDN 同时过期，更不表示必须进入 Web 服务器或应用数据库**。RFC 9111 的实际年龄计算还会计入 `Date`、`Age`、网络往返与节点驻留时间，不能直接用本机当前时间减 Date 代替完整算法。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
+
+还要明确 **`s-maxage` 有不止一个作用**：它不仅为共享缓存选择新鲜度寿命，还包含共享缓存过期后必须成功重新验证才能复用的要求。因此不能把 `s-maxage=3600` 和 `stale-while-revalidate=30` 简单理解为“CDN 超过 3600 秒后自然可以先返回旧数据 30 秒”。后文讨论 SWR 时，将使用**不包含 s-maxage 的独立示例**，避免把相互制约的缓存指令直接叠加。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
+
+最后补充 `Expires`：它是表示绝对过期时间的响应头；当适用的 `max-age` 存在时，优先采用后者；在共享缓存中有 `s-maxage` 时，优先采用共享缓存规则。部分响应若没有显式设置新鲜度，缓存仍可能按规范允许的启发式算法估计期限，因此发布时需要明确响应更新要求，而不是依赖浏览器猜测。响应被判为 stale（已过期）表示不能再按普通新鲜副本无条件返回，**不意味着缓存正文已从磁盘或内存物理删除**。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 ### 【“强缓存”与“协商缓存”是同一份响应的两种使用路径】
 
