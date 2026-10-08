@@ -267,7 +267,7 @@ LCP 资源完成加载
 
 第一条是定位步骤，第二条是用于解释等待成本的资源生命周期。两者并非同一件事：监控应该先确认发生了什么体验问题，再根据浏览器阶段找证据，而不是见到 LCP 高便直接使用图片压缩、CDN 或 SSR。
 
-本章原始专项采用两级体系：
+性能异常诊断采用两级体系：
 
 - **结果指标（Result Metric）**：LCP，判断页面主要内容显示是否过慢；FCP 可以补充最早内容显示的时机，但不替代 LCP。
 - **诊断指标与证据（Diagnostic Data）**：TTFB、Resource Load Delay / Duration、Element Render Delay，以及更底层的 Navigation Timing、Resource Timing、Long Task、Performance Trace、Server Timing 等，负责解释“为什么慢”。
@@ -2209,15 +2209,15 @@ Lab 三段耗时与总交互时延回归
 #### <u>1. 本章与现有知识正文的关系</u>
 
 
-本章仅为独立草稿，不进入知识体系索引、不新增 QA、不修改现有主文档。正式通用知识入口仍是：
+本篇已将交互响应诊断正式整合至第 4 章；以下通用文档分别承担全景架构、监控采集、主线程执行和持续流畅度的机制深入：
 
 - [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md)：用户体验分层、浏览器执行与优化总框架。
 - [性能专项优化](./X-性能专项优化.md)：Web Vitals、PerformanceObserver、Event Timing、LoAF 和 RUM 数据采集专项。
 - [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)：Task、Microtask、Rendering Opportunity、Scheduler 等机制。
 - [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)：持续视觉更新的 Frame、Queue、LoAF 与长期运行成本。
-- [Loading-LCP 四阶段性能诊断与优化体系草稿](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：与本章并列的加载体验草稿。
+- [Loading / LCP 四阶段诊断章节](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：本篇第 3 章的加载体验完整分析。
 
-后续纳入正式知识体系时，应优先将通用机制补到现有主入口，在需要详细学习 INP 三阶段的位置建立交叉引用；不得直接复制成几篇平行的同义全文。
+INP 三阶段的归因机制、指标语义、原始 API 与完整示例在本章保留；跨领域优化技术统一通过《Web 性能优化工程体系》深入，不建立另一套平行的技术定义。
 
 
 ## 5. Visual Stability 通过 CLS 计分与布局根因定位页面跳动
@@ -3451,15 +3451,15 @@ Field：按同分群观察 CLS P75/P95、样本数、浏览器支持率、最大
 #### <u>1. 本章与现有通用知识文档的关系</u>
 
 
-本章作为 Visual Stability 的独立讨论草稿，暂不接入知识索引，不新增 QA，不修改已有正式正文。相关稳定入口：
+Visual Stability 已作为本篇第 5 章正式纳入统一指标诊断体系；下列文档提供渲染原理、监控采集和其他专项的深入机制：
 
 - [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md)：用户体验四维模型与浏览器渲染成本。
 - [性能专项优化](./X-性能专项优化.md)：Layout Shift 与 CLS 采集、指标聚合、监控 SDK、RUM。
 - [浏览器主线程、Event Loop 与任务调度](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)：Layout/Render 的浏览器调度背景。
 - [Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)：Style、Layout、Paint、Composite。
 - [Web 渲染架构](./W-Web渲染架构.md)：SSR/CSR、客户端水合与可见 DOM。
-- [Loading / LCP 诊断草稿](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：文档与关键资源时间成本。
-- [Responsiveness / INP 诊断草稿](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)：输入、事件处理与下一帧时延。
+- [Loading / LCP 诊断章节](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：文档与关键资源时间成本。
+- [Responsiveness / INP 诊断章节](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)：输入、事件处理与下一帧时延。
 - [页面流畅度与连续渲染性能体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)：连续视觉更新、Frame/LoAF 等。
 
 统一理解：
@@ -4614,11 +4614,11 @@ LoAF 有助于分析交互的长帧贡献，但不能将它直接当成 INP；Sm
 **【通用知识入口与专项分析边界】**
 
 
-本章是第四类用户体验的通用知识草稿，暂不写入知识体系索引、QA 或正式正文。
+Smoothness 已作为本篇第 6 章正式纳入四类用户体验诊断体系，但仍保留独立的帧时序、LoAF、内存与数据新鲜度分析；相关资料如下：
 
-- [Loading / LCP 诊断草稿](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：加载时延与阶段归因。
-- [Responsiveness / INP 诊断草稿](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)：交互延迟的分段与诊断。
-- [Visual Stability / CLS 诊断草稿](#5-visual-stability-通过-cls-计分与布局根因定位页面跳动)：布局偏移的计算、来源与真正根因。
+- [Loading / LCP 诊断章节](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：加载时延与阶段归因。
+- [Responsiveness / INP 诊断章节](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)：交互延迟的分段与诊断。
+- [Visual Stability / CLS 诊断章节](#5-visual-stability-通过-cls-计分与布局根因定位页面跳动)：布局偏移的计算、来源与真正根因。
 - [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md)：整个 Web 页面性能框架。
 - [性能专项优化](./X-性能专项优化.md)：监控 SDK、PerformanceObserver 和 RUM。
 - [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)：现有相关知识积累，其中偏向实时可视化的项目性方法不应被当作本章的通用主线。
@@ -4717,7 +4717,7 @@ CLS 是对非预期布局位移的量化，通常选取页面中得分最高的 
 
 LayoutShift.sources 记录的通常是**位置发生改变的受影响元素**，而不是天然的 Root Cause。例如正文被顶部新插入的模块推开，受影响者可能是正文，根因却是未预留空间的顶部模块。[[45]](https://web.dev/articles/debug-layout-shifts)
 
-见 [Visual Stability / CLS 诊断草稿](#5-visual-stability-通过-cls-计分与布局根因定位页面跳动)。
+见 [Visual Stability / CLS 诊断章节](#5-visual-stability-通过-cls-计分与布局根因定位页面跳动)。
 
 
 **【Smoothness 用帧结果识别异常，再结合 LoAF 三个时间区间】**
@@ -4737,7 +4737,7 @@ LoAF 结束
 
 LoAF 的第三段**不是纯 Layout 时间**，LoAF 也不能完整测量 GPU 最终呈现成本；没有有效 renderStart 的 Entry 不应生硬拆三段。LoAF 记录阈值为 50ms，而 60Hz 刷新周期约 16.7ms，**达不到 LoAF 记录门槛的工作仍可能引起掉帧**。
 
-因此 Work 高先查任务、同步计算、GC；Pre-layout 高先查 rAF 回调与同步提交；第三段高继续查浏览器 Style/Layout/Paint；主线程证据不足时查 GPU、合成和设备。详情见 [Smoothness 诊断草稿](#6-smoothness-通过帧稳定性和-loaf-归因定位持续卡顿)。
+因此 Work 高先查任务、同步计算、GC；Pre-layout 高先查 rAF 回调与同步提交；第三段高继续查浏览器 Style/Layout/Paint；主线程证据不足时查 GPU、合成和设备。详情见 [Smoothness 诊断章节](#6-smoothness-通过帧稳定性和-loaf-归因定位持续卡顿)。
 
 
 #### <u>2. 根据异常阶段查找底层证据，才能从“慢在哪里”走到“为什么慢”</u>
@@ -5099,14 +5099,14 @@ Correlation：页面实例 / 指标实例 / 事件时间 / Trace 或操作标识
 #### <u>1. 本章作为四类性能专项的统一诊断入口</u>
 
 
-本章不取代各专项文档的完整知识深度，而是回答“当监控发现某项指标恶化后，从哪里开始、经过哪些证据、最后怎样优化和验证”。
+本篇第 3～6 章已分别保留四类专项的计算细节、诊断证据与完整案例；本章只抽取它们共同的证据判断与因果验证机制，回答“指标恶化后如何确认技术根因，并连接优化方案”。
 
 - [Loading / LCP 四阶段性能诊断与优化体系](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)：加载期四段与关键资源证据。
 - [Responsiveness / INP 三阶段交互响应性能诊断与优化体系](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)：输入、处理、呈现与交互对象归因。
 - [Visual Stability / CLS 视觉稳定性诊断与优化体系](#5-visual-stability-通过-cls-计分与布局根因定位页面跳动)：最大 Session Window、Shift Sources 与根因。
 - [Smoothness 持续渲染流畅度诊断体系](#6-smoothness-通过帧稳定性和-loaf-归因定位持续卡顿)：Frame Interval、LoAF 时间区间、GC 与渲染瓶颈。
 
-正式的全景入口为 [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md)。本次只维护草稿，**暂不修改正式知识正文、知识体系索引或 QA**。
+本篇承担四类性能指标的正式诊断主入口；[Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md) 保留端到端性能背景，[Web 性能优化工程体系](./W-Web性能优化工程体系.md) 承担六大优化技术机制主入口，[性能专项优化](./X-性能专项优化.md) 承担测量采集与 RUM 数据体系。
 
 
 ## 8. 参考文献
