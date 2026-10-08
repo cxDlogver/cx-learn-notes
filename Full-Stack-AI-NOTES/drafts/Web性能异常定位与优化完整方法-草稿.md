@@ -228,3 +228,126 @@ LoAF 的第三段**不是纯 Layout 时间**，LoAF 也不能完整测量 GPU �
 
 因此 Work 高先查任务、同步计算、GC；Pre-layout 高先查 rAF 回调与同步提交；第三段高继续查浏览器 Style/Layout/Paint；主线程证据不足时查 GPU、合成和设备。详情见 [Smoothness 诊断草稿](./Smoothness-持续渲染流畅度指标与性能诊断体系-草稿.md)。
 
+## 5. 根据异常阶段查找底层证据，才能从“慢在哪里”走到“为什么慢”
+
+### 【阶段归因必须继续落到真实工作与执行主体】
+
+把 LCP、INP 或 LoAF 拆成多个阶段，解决的是**主要等待发生在哪一段**；真正根因则需要回答：这一段工作由什么触发、由谁执行、执行了多久、有哪些不必要的依赖或重复工作。
+
+| 阶段现象 | 下一步最关键的证据 | 候选根因 | 当前不能直接推出的结论 |
+| --- | --- | --- | --- |
+| LCP TTFB 高 | Document Timing、重定向/连接/等待、服务端 Trace | CDN、网络 RTT、服务端渲染或数据查询 | TTFB 高不等于数据库查询慢 |
+| LCP Resource Load Delay 高 | 请求 Start、Initiator、Resource Priority、HTML 资源发现 | 图片晚发现、客户端插入、优先级错配 | 不能断言图片文件过大 |
+| LCP Resource Load Duration 高 | Response/Waiting、Transfer Size、下载耗时和 Cache | 带宽、文件尺寸、压缩、缓存或资源服务慢 | 不能断言所有时间都用在下载 |
+| LCP Element Render Delay 高 | Main Thread、DOM 插入、CSS、Layout/Paint、Hydration | 资源已就绪但内容晚渲染 | 不能仅凭此阶段推断服务端慢 |
+| INP Input Delay 高 | 输入时间线与同期 Main Thread Task | 页面其他 JS 抢占主线程 | 不能断言按钮事件函数执行慢 |
+| INP Processing Duration 高 | Event Callback、Framework Profiler、JS Call Tree | 同步计算、重复更新、复杂事件处理 | 不能直接归因于 CSS Paint |
+| INP Presentation Delay 高 | rAF、LoAF、Style/Layout/Paint | 组件提交/重布局/绘制成本 | 不能直接归因于 API 请求 |
+| CLS 最大 Shift 窗口 | LayoutShift Entries、Sources、DOM/Style Mutation | 图片尺寸不确定、内容插入、字体替换 | 受影响元素未必就是根因 |
+| Smoothness Work/Pre-layout 高 | LoAF、Task、Script Attribution、User Timing | 同步计算、rAF 更新、GC、框架提交 | 不能只凭 LoAF 证明具体函数有问题 |
+| Paint/Composite/GPU 问题 | Rendering/Raster/GPU Track、帧录像 | 大量重绘、纹理传输、复杂图层 | 不能用 rAF FPS 精确衡量实际呈现 |
+
+需要**同一时间窗口、同一页面实例**中的原始数据来支持归因。不同用户、不同页面状态的堆栈或网络请求只能提供候选规律，不能与单次异常简单拼接成同一条证据链。
+
+### 【网络分析需要区分请求发起晚、首字节等待和内容下载慢】
+
+Network Waterfall 不是只看请求的 Total Duration。至少检查：资源请求什么时候发起、是否存在 Redirect、连接建立与 TLS、Waiting (TTFB)、Content Download、是否命中缓存，以及资源的 Initiator 和 Priority。Chrome DevTools 的 Performance 和 Network 工具提供请求时间、优先级和执行时间的对应关系。[[7]](https://developer.chrome.com/docs/devtools/performance/reference/)
+
+~~~text
+发现关键资源获取较慢
+      ↓
+首先区分：请求开始时间是否晚？
+  ├─ 是 → 请求发现/执行依赖/优先级/预加载时机
+  └─ 否 → 已经及时发起
+           ↓
+       哪段网络工作耗时？
+         ├─ Redirect / DNS / Connect / TLS → 路由与连接问题
+         ├─ Waiting / First Byte → 服务器、CDN 与网络往返
+         └─ Content Download → 实际字节量、带宽、传输与缓存
+~~~
+
+例如资源实际传输体积较大时，可以进一步比较浏览器提供的 transferSize、encodedBodySize 等（可得时）、资源格式、Content Download 与压缩策略；如果下载阶段并不慢，但请求要等较长时间才被发现，那么压缩这张图未必是主要优化方向。
+
+“连接不稳定”也应有对应证据，如重复请求、错误、重新建连、超时或不同网络环境差异，不能从一条长请求的总耗时直接下结论。是否是服务器耗时，需要服务端相关日志或 Trace 与客户端时序结合验证。
+
+### 【主线程问题要落实到 Task、函数和组件更新范围】
+
+Input Delay 高、LoAF Work 高或 rAF Pre-layout 高时，先查看该时间段是否有 Long Task，或是否由多段较短 Task、框架提交与浏览器渲染工作共同造成长帧。之后进入 Call Tree、Bottom-up、LoAF Script Attribution、Source Map 和必要的业务 User Timing。
+
+~~~text
+结果指标异常
+     ↓
+定位主线程忙碌或长帧的时间范围
+     ↓
+定位对应 Task / Event Callback / rAF Callback
+     ↓
+归因到可解释的代码与组件
+     ↓
+判断同步工作是否真的必要？
+   ├─ 非必要：删除、缓存、合并、取消过期任务
+   ├─ 有必要但不紧急：异步调度、让出主线程、Worker（若适用）
+   └─ 必须同帧完成：减少计算量、组件树和视觉更新范围
+     ↓
+重新观察该阶段时间及最终交互和帧结果
+~~~
+
+**减少 Long Task 是调度与主线程占用的优化，不等于所有渲染问题都必须先减少 Long Task。** Paint 或 GPU 很重时，JS 函数已经很短也可能掉帧；同样，拆分一个必须同步提交的图形更新，若改变内容一致性或不能实际让出执行机会，也未必有效。
+
+### 【浏览器渲染工作需要细分样式、布局、绘制和合成】
+
+在浏览器中，状态计算与 DOM 更新只是画面变化的上游。浏览器之后可能还要执行 Recalculate Style、Layout、Paint、Raster 和 Composite 等工作，其中部分可以按不同情况由不同线程承担。
+
+| Trace 显示热点 | 重点检查的工作 | 对应的通用优化思路 |
+| --- | --- | --- |
+| Recalculate Style | 样式匹配与受影响节点范围 | 减少无意义样式变化、控制作用范围 |
+| Layout / Forced Reflow | 几何重算、DOM 尺寸读写交错、复杂布局依赖 | 批量 DOM 读写、减少布局影响树 |
+| Paint | 绘制区域、复杂阴影和效果、重复像素生成 | 缩小变化区域、缓存不会变化的内容 |
+| Raster / Compositor / GPU | 图层、纹理、上传、复合与图形处理 | 合理复用资源、减少过度图层和无效绘制 |
+| Framework Commit | 单次状态更新影响的组件数量 | 避免未变化的组件或数据反复更新 |
+
+浏览器渲染阶段并非每帧都要完整执行。仅修改符合合成条件的 transform、opacity 等属性可能避免某些 Layout/Paint 工作，但过量图层仍可能占内存及合成预算。[[8]](https://web.dev/articles/rendering-performance)
+
+### 【内存问题还要区分高分配、无效保留与对象规模增长】
+
+“内存越来越大”不等于“GC 一定造成页面卡顿”。至少要考虑：
+
+1. **Allocation Rate 过高**：高频创建临时对象，增加分配成本与可能的年轻代 GC 频率。
+2. **Live Set 持续扩大**：大量对象一直被引用，GC 标记、复制、整理及引用维护可能更复杂。
+3. **对象工作集合扩大**：每次更新都处理更多对象，使 JS、Style/Layout、Paint 成本增加，即使 GC 不明显也会卡顿。
+4. **非 JS Heap 或设备内存压力**：DOM、图像、图形资源与系统内存管理可能参与性能退化。
+
+Chrome 的 Memory 工具可使用 Allocation Sampling、Heap Snapshot 和 Retainers，结合 Performance Trace 中的 GC 工作与异常帧时间确定候选原因。没有 GC 与帧结果的相关证据时，不能因为 Heap Used 上升便宣布“GC 导致掉帧”。[[9]](https://developer.chrome.com/docs/devtools/memory-problems)
+
+这一知识点的内存和 GC 机制详见 [Smoothness 的内存诊断章节](./Smoothness-持续渲染流畅度指标与性能诊断体系-草稿.md)。
+
+## 6. 根因确认以后，按网络、资源、执行与渲染等层面选择优化措施
+
+### 【每一种优化都应明确改变哪个成本】
+
+| 已确认的瓶颈 | 对应优化 | 应该改善的直接证据 | 需检查的副作用 |
+| --- | --- | --- | --- |
+| 文档首字节交付慢 | 减少重定向、适当缓存、优化 CDN/服务器和 HTML 生成 | TTFB 及对应 Navigation Timing | 缓存一致性、个性化内容和资源开销 |
+| LCP 资源发现晚 | 让关键资源在 HTML 中可发现、合适的 preload / priority | Resource Load Delay 和请求 Start | 过度抢占其他关键资源 |
+| 资源传输过大 | 图片尺寸、编码格式、压缩、响应式资源、缓存与连接优化 | 资源传输字节、下载时间、LCP | 清晰度、解码成本和兼容性 |
+| LCP 元素资源就绪但晚呈现 | 减少阻塞 CSS/JS、尽早生成关键内容、优化 Hydration | Element Render Delay、实际 LCP | SSR/CSR 复杂度与其他交互 |
+| 输入等待长 | 减少无关长任务、合理调度工作、主线程让步 | Input Delay、Long Task、INP | 任务总完成时间、优先级公平 |
+| 事件处理长 | 缩短同步处理、减少重复状态更新、取消无效任务 | Processing Duration、INP | 反馈和业务状态正确性 |
+| 下一帧等待长 | 缩小 DOM/组件提交范围、优化 Layout/Paint | Presentation Delay、INP | 布局行为和视觉完整性 |
+| CLS 大偏移 | 提前确定媒体尺寸、预留异步内容空间、稳定字体与动态插入 | 最大 Shift Window、CLS | 初始占位与真实内容差异 |
+| 动画回调或单次同步更新过重 | 删除重复计算、缓存、控制每次处理量、适当合并更新 | Pre-layout、Frame Interval P95 | 合并过多会增加单次峰值 |
+| Paint / GPU 成本高 | 缩小重绘范围、按需处理、复用资源、合理图层与画质 | Paint/Raster/GPU 与真实帧结果 | 显存、视觉质量和管理复杂度 |
+| GC 或长期对象增长 | 减少无必要分配、及时清理引用、控制驻留与工作集合 | GC、Allocation、CPU、Frame P95 | 不可变状态与资源生命周期约束 |
+
+例如：拆分一个 100ms 的长任务能让主线程在任务间隙处理更高优先级工作，但不一定降低总 CPU 使用量；增量更新能减少反复处理未变化数据的成本，但必须由对应框架和图形 API 支持；批处理能减少固定更新开销，却可能放大单次工作峰值。应同时关注**总成本、单次峰值和重要视觉更新截止时间**，不能简单地认为某个优化手段越多越好。
+
+### 【优化的终点不是某个诊断指标下降，而是用户结果改善】
+
+性能成本可能从一个阶段转移到另一个阶段。例如主图提前下载后，若页面仍等客户端脚本执行后才创建 DOM，原本的 Resource Load Delay 下降了，Element Render Delay 却可能增加；LCP 总结果不一定变好。
+
+类似地：减少同步 JS 处理却引入很多额外异步提交，INP 的 Processing Duration 可能缩短，但 Presentation Delay 可能增长；缩小 Paint 成本却创建过多 GPU 图层，则可能带来其他图形资源压力。
+
+因此选定优化以后，必须同时验证：
+- 对应原始瓶颈是否真的下降；
+- 最终 LCP/INP/CLS/Frame 结果是否改善；
+- 是否造成其他体验、功能和资源使用回归。
+
