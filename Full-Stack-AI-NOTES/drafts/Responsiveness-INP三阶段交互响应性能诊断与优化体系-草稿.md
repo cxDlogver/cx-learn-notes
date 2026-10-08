@@ -591,6 +591,145 @@ onINP((metric) => {
 
 该代码解决了“一次页面访问的 INP 结果如何附带三段归因”的问题。还需要处理上下文关联、采样策略、事件重复报告、页面后台化结算和上报成本，不宜将回调触发次数直接当作新的页面访问数。
 
+### 【reportAllChanges 只决定什么时候报告，不决定如何计算 INP】
+
+web-vitals 的 onINP 在注册后持续通过浏览器 Event Timing 观察用户交互，将 Event Entry 按 interactionId 关联、更新最慢候选，并根据当前交互总数估计页面 INP。**reportAllChanges 为 false，不意味着只有页面隐藏才开始计算。** false 和 true 的内部计算逻辑相同，区别是是否在候选值变化时立即执行用户的 callback。[[12]](https://github.com/GoogleChrome/web-vitals/blob/main/src/onINP.ts)
+
+| 行为 | reportAllChanges=false（默认） | reportAllChanges=true |
+| --- | --- | --- |
+| 持续监听 Event Timing | 是 | 是 |
+| 维护每个交互与当前 INP 候选 | 是 | 是 |
+| 第一次形成有效候选便报告 | 通常不 | 是 |
+| 候选变化便尝试报告 | 不立即报告 | 是 |
+| 页面变为 hidden | 强制尝试报告最新值 | 强制尝试报告最新值 |
+| 支持的 Soft Navigation 边界 | 可强制结算上一导航 | 可强制结算上一导航 |
+| 每次点击都回调 | 否 | 否 |
+| 候选排名及三阶段归因算法 | 相同 | 相同 |
+
+其内部逻辑可抽象为：
+
+~~~text
+接收新的 Event Timing 记录
+         ↓
+处理已有 interactionId，维护最慢交互列表
+         ↓
+依据当前交互总数计算代表性交互
+         ↓
+INP 候选值是否发生变化？
+    ├─ 否 → 不必产生候选更新报告
+    └─ 是 → 更新 metric.value 和 metric.entries
+                ↓
+             reportAllChanges=true？
+             ├─ 是 → 尝试立即调用 callback
+             └─ 否 → 保留新值但不立即通知
+                              ↓
+                       页面变为 hidden
+                              ↓
+                 处理缓冲记录并强制尝试报告
+~~~
+
+真实源码中，onINP 的更新逻辑和 bindReporter 报告逻辑是分开的：前者每次处理 Entry 后更新 Metric，后者在强制报告或 reportAllChanges 开启时，根据新旧值决定是否真正调用 callback；相同值可被去重，metric.delta 表示相较上次报告值的变化量。[[12]](https://github.com/GoogleChrome/web-vitals/blob/main/src/onINP.ts) [[14]](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/bindReporter.ts)
+
+### 【false 并不严格保证一个页面访问只上报一次】
+
+例如交互较少的一次页面访问：
+
+| 时刻 | 发生的交互或生命周期事件 | 页面当前 INP 候选 | 默认 false 是否通知 |
+| --- | --- | ---: | --- |
+| 1s | 点击 A：80ms | 80ms | 不立即回调 |
+| 3s | 点击 B：160ms | 160ms | 不立即回调 |
+| 5s | 点击 C：100ms | 160ms | 不立即回调 |
+| 7s | 点击 D：320ms | 320ms | 不立即回调 |
+| 9s | 用户切换到其他标签页，页面 hidden | 320ms | 报告当前值 |
+| 12s | 用户重新返回页面 | 320ms | 不立即回调 |
+| 15s | 点击 E：450ms | 450ms | 不立即回调 |
+| 20s | 页面再次 hidden | 450ms | 更新报告 |
+
+页面第一次 hidden 并不意味着这次浏览生命周期永远终止。浏览器可能恢复执行，因此需要持续观察。如果下一次 hidden 时指标与上次报告相同，则 bindReporter 通常会抑制重复回调。另一方面，支持的软导航边界或从 bfcache 恢复可能建立新的指标测量周期，不能一概当成同一个页面 INP 实例。[[12]](https://github.com/GoogleChrome/web-vitals/blob/main/src/onINP.ts)
+
+### 【导致 INP 候选值变化的三个核心场景】
+
+**第一类：出现比当前候选更慢的交互。**
+
+~~~text
+交互 A：100ms → INP 候选 100ms
+交互 B：80ms  → 仍为 100ms
+交互 C：300ms → 更新为 300ms
+交互 D：150ms → 仍为 300ms
+~~~
+
+在交互数不足 50 的情况下，这种情况最直观。reportAllChanges=true 也不会为交互 B、D 的每一次点击都报告一次，因为当前指标没有变化。
+
+**第二类：同一 interactionId 的后续 Event Entry 更慢。**
+
+~~~text
+Interaction #101
+  pointerdown：80ms
+      ↓ 已经建立候选
+  click：160ms
+      ↓ 同一个 Interaction 的代表延迟更新
+Interaction #101：160ms
+~~~
+
+这是同一次用户操作的事件记录逐步到达并完善候选，不代表又发生一次点击；web-vitals 的处理过程中允许已有 interactionId 的候选更新。[[11]](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/InteractionManager.ts)
+
+**第三类：交互总数改变导致所选排名变化。**
+
+~~~text
+交互累计 49 次
+→ 选第 1 慢交互
+
+交互累计到 50 次
+→ 选第 2 慢交互
+
+因此即使没有更慢点击，
+INP 候选也可能下降。
+~~~
+
+类似地，达到 100 次交互时可以改选第 3 慢。这意味着 INP 不必随着页面使用时间单调升高；reportAllChanges=true 下的 metric.delta 也**可能为负数**。这是指标算法本身的允许现象，并不自动说明性能突然改善。[[11]](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/InteractionManager.ts)
+
+### 【metric.id 与 interactionId 的关系决定如何理解多次回调】
+
+~~~text
+当前 Navigation 的 INP Metric
+    ├─ metric.id → 标识本次指标实例
+    ├─ metric.value → 本次最新 INP 结果
+    ├─ metric.delta → 相对上次 callback 报告值的变化
+    └─ metric.entries → 当前选中慢交互关联的 Event Timing
+          └─ entry.interactionId → 标识那次用户交互
+~~~
+
+一次页面生命周期内，Metric 对象及 metric.id 可以保持不变，当前最慢交互却可能从 interactionId=101 更新为 interactionId=108。**不能用交互 ID 当作当前页面 INP 指标的主键**；反过来，Metric ID 也不能拿来判断两个 Event 是否属于同一次操作。
+
+下面示例可在开发环境观察这种关系：
+
+~~~ts
+import { onINP } from 'web-vitals/attribution';
+
+onINP((metric) => {
+  const a = metric.attribution;
+
+  console.log({
+    metricId: metric.id,
+    inp: metric.value,
+    delta: metric.delta,
+    relatedEvents: metric.entries.map((entry) => ({
+      name: entry.name,
+      interactionId: entry.interactionId,
+      duration: entry.duration,
+      startTime: entry.startTime
+    })),
+    inputDelay: a.inputDelay,
+    processingDuration: a.processingDuration,
+    presentationDelay: a.presentationDelay
+  });
+}, {
+  reportAllChanges: true
+});
+~~~
+
+**开启 true 是观察 INP 候选变化，不是记录页面每一个交互。** 如果需要按钮级交互分布，需要独立、受控、可脱敏的事件采样。线上正式评价使用默认 false 通常足够，但后台仍需正确处理同一次访问的更新报告。
+
 ### 【为什么不建议手写完整 INP 计算】
 
 手写从 Event Timing 到 INP 需要处理：
@@ -714,6 +853,38 @@ Chrome 新的 Soft Navigation 支持及 web-vitals 对软导航的支持，会�
 **Sampling**：既要获得总体真实用户的代表性，又要能对慢交互做有限额的增强归因。若只上报异常用户、不记录正常样本，不能直接把该样本集合的 P75 当作所有用户的 P75。
 
 **Aggregation**：每次 Document 访问的最终 INP 需要去重；对报告过的候选更新应处理 metric.id / delta / 终态，不应把同一访问的每一次候选提升当作独立访问样本。按 Route / Version / Device / Browser / Load State 聚合时，要明确对应的是“整次访问 INP”还是“某次特定交互延迟”。
+
+### 【一次页面可能多次上报 INP，必须以指标实例更新而不是累加】
+
+对于 Browser RUM 服务端，最容易出现的数据问题是把同一页面访问的多个 INP 回调都当作独立用户样本。例如：
+
+~~~text
+同一次页面访问
+metric.id = A
+
+第一次 hidden：
+metric.value = 320ms
+
+返回页面继续使用
+
+第二次 hidden：
+metric.value = 450ms
+~~~
+
+这仍然是同一 Metric A 的更新；正确做法是按 Navigation / Metric 实例去重或覆盖，只让一个有效的页面级 INP 值进入最终线上分布，而不是把 320ms 和 450ms 都当作两次访问参与 P75。若使用 reportAllChanges=true，这种更新可能更加频繁。
+
+| 标识 | 用于识别什么 | 禁止的用法 |
+| --- | --- | --- |
+| interactionId | 同一次用户操作的相关 Event Entry | 不能当作一次页面访问的 INP 样本主键 |
+| metric.id | 当前 INP 指标实例的报告身份 | 不表示所有事件都拥有同一交互 ID |
+| metric.entries | 被选中的慢交互 Event Timing 记录 | 不能当作全部用户交互历史 |
+| metric.value | 当前 INP 结果值 | 不应该把多次报告求和 |
+| metric.delta | 与上一次报告值的差值 | 可能为负，不能无条件当成性能收益 |
+| View / Navigation / Session | 页面与用户会话归属 | 不能简单以 Session ID 聚合所有软导航成一次访问 |
+
+实际数据链应为：**Metric 在同一测量周期内更新 → SDK 携带 Metric ID、Navigation / View 和上报时间 → 后端更新同一指标实例 → 形成每次访问一个有效 INP → 计算版本/设备/路由分群 P75**。软导航、bfcache 等触发的新测量周期要按实际库的规范重新确定边界，不能混合计算。
+
+另外，metric.entries 往往只保留当前慢交互有关的 Event Entry，且记录可能受观察门槛与浏览器支持限制；不能误认为它们就是页面里所有 click 事件的完整列表。
 
 ## 10. 诊断决策树从三段耗时导向最有证据的优化类别
 
@@ -871,3 +1042,7 @@ Lab 三段耗时与总交互时延回归
 8. MDN. [PerformanceEventTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEventTiming). 原始 Event Timing 字段、观察阈值与计算示例。
 9. Chrome for Developers. [INP breakdown](https://developer.chrome.com/docs/performance/insights/inp-breakdown). DevTools 三阶段诊断。
 10. Google / web.dev. [Find slow interactions in the field](https://web.dev/articles/find-slow-interactions-in-the-field). 在线上收集慢交互归因。
+11. GoogleChrome. [InteractionManager.ts](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/InteractionManager.ts). interactionId 归组、慢交互候选与按交互总数选择 INP。
+12. GoogleChrome. [onINP.ts](https://github.com/GoogleChrome/web-vitals/blob/main/src/onINP.ts). Event Timing 观察阈值、候选更新、hidden 与软导航报告时机。
+13. GoogleChrome. [attribution/onINP.ts](https://github.com/GoogleChrome/web-vitals/blob/main/src/attribution/onINP.ts). INP 的帧级 Event 关联、三阶段归因和计时边界。
+14. GoogleChrome. [bindReporter.ts](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/bindReporter.ts). reportAllChanges、forceReport、delta 与去重机制。
