@@ -377,6 +377,21 @@ Message Broker
 
 它只解决“任务怎样可靠产生”这一段；任务怎样领取、重复执行、失败恢复和扩展，仍然要继续设计。
 
+
+### 【跨 PostgreSQL 与 Redis 的双写需要治理，但不必机械地使用 Outbox】
+
+双写指一次业务操作修改两个独立状态系统，其中一个成功、另一个失败会形成 Partial Failure。是否需要 Outbox 必须继续判断两份数据的权威关系与一致性时限：
+
+| 场景 | 优先机制 | 为什么 |
+| --- | --- | --- |
+| DB 权威、Redis 是可重建 Cache | Cache-Aside / Invalidation / TTL / Version | 缓存可能短时陈旧，不要求每次写都传播一条持久事件 |
+| Raw Event 成功存库后必须触发后台加工 | 同事务 Outbox / DB Job | API 承诺接受后，待加工任务不能因进程退出而被忘记 |
+| 业务状态改变后必须可靠通知异构下游 | Outbox + Relay / Broker + Consumer 幂等 | 保证待通知意图持久，并能最终重试 |
+| Session Logout 必须立即阻止旧 Token | 明确在线授权权威 + 同步撤销 / fail-closed | 异步 Outbox 只能最终重试 Redis 删除，不能保证即时撤销 |
+
+如果 Session 在线校验仅信任 Redis，则即便数据库先删除会话行，Redis DEL 失败仍可能让旧 Token 被接受。Outbox 可作为后台修复，**不能把“最终删除”冒充“用户退出立刻生效”**。反之若 PostgreSQL 是权威，也不能允许不经权威失效检查的旧 Redis 缓存继续放行。应从谁有最终判断权、失效时限、错误时拒绝还是回源、审计与清理路径推导方案。见 [会话与访问控制通用文档](./W-Web身份认证会话控制与访问控制体系.md) 和 [Browser Monitor Session 源码](https://github.com/cxDlogver/browser-monitor/blob/main/docs/账号认证Session与CSRF源码实战分析.md)。
+
+
 ## 3. 安全消费通过任务状态、Claim 与 Lease 管理处理所有权
 
 ### 【Task State Machine 把异步任务从一条记录变成可恢复生命周期】
@@ -1194,6 +1209,231 @@ Offset 尚未 Commit
 ~~~
 
 因此 Kafka Consumer 仍然要继续进入下一章的 At-least-once 与 Idempotency。
+
+
+### 【BullMQ 把 Job 调度与业务 Workflow 分开，Worker 不一定需要调用 Agent】
+
+Node.js 后台任务的职责链应先区分三层：Producer 接收并交接 Job，Queue Backend 保存调度与重试状态，Worker 领取并执行 Processor。Processor 可以调用普通函数、固定 Workflow、LLM Tool Chain，或确实需要自主决策时才使用 Agent。把一个固定的“解析文档 → 提取信息 → 生成报告 → 校验结果”称为 LLM Workflow 往往比称为 Agent 更准确。
+
+~~~text
+POST /analysis-tasks
+      ↓
+API：创建业务 task_id，完成身份和输入校验
+      ↓ Queue.add("analyze", { taskId, documentId })
+Job Store：保存等待 Job、重试参数、锁与状态
+      ↓
+Worker：取得 Job 并调用 Processor
+      ↓
+固定 Workflow：parse → extract → generate → validate
+      ↓
+Database / Object Storage：保存报告与业务任务终态
+      ↓
+GET /analysis-tasks/{id}：前端查询持久状态
+~~~
+
+以传统 Redis Backend 的 BullMQ 为例：
+
+~~~ts
+import { Queue, Worker } from "bullmq";
+const connection = { host: "127.0.0.1", port: 6379 };
+
+const queue = new Queue("document-analysis", { connection });
+const job = await queue.add(
+  "analyze",
+  { taskId: "task-1001", documentId: "doc-1001" },
+  { jobId: "task-1001", attempts: 3,
+    backoff: { type: "exponential", delay: 1000 } },
+);
+// API 返回 HTTP 202 / taskId，而不是等待 Worker 完成
+
+const worker = new Worker(
+  "document-analysis",
+  async job => {
+    const report = await runFixedAnalysisWorkflow(job.data.documentId);
+    await saveReportIdempotently(job.data.taskId, report);
+    return { saved: true };
+  },
+  { connection, concurrency: 2 },
+);
+~~~
+
+Queue.add 只代表 Job 已被提交给队列，执行过程由 Worker 开始；处理函数正常返回时可进入 completed，抛异常则按 attempts/backoff 重试或进入 failed。多个 Worker 进程可竞争同一 Queue，而 Worker 的 concurrency 控制该实例内同时处理 Job 的数量。对模型调用等 I/O 工作可提升并发；CPU 密集型工作还应考虑隔离进程或线程。Job 领取和锁续租避免正常情况下并发重复处理，但 Worker 处理已产生副作用后、确认完成前崩溃，仍可能重新执行：必须用业务 taskId、唯一键、阶段产物对账保护最终结果。
+
+**版本边界：** BullMQ 的默认、较成熟的 Backend 是 Redis，但当前官方文档也提供可选 PostgreSQL Backend（需核对实际使用版本与功能支持）。不要写成“BullMQ 在任何版本下必须依赖 Redis”。这里的对比聚焦最常见的 Redis Backend；使用 PostgreSQL Backend 也不自动意味着业务双写语义无需设计。
+
+参考：[BullMQ Workers](https://docs.bullmq.io/guide/workers)、[Retrying failing jobs](https://docs.bullmq.io/guide/retrying-failing-jobs)、[Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)、[PostgreSQL backend](https://docs.bullmq.io/guide/postgresql)。
+
+### 【Redis 内的队列任务是共享状态，是否能重启恢复取决于 Persistence 与存储部署】
+
+API Process、Worker Process 和 Redis Server 是不同的运行实体。API 或 Worker 停止，不会自动抹除已经写进独立 Redis Server 的 Job；Redis 自身断电、磁盘卷丢失或 Key 被淘汰时，则是另一类问题。
+
+| 事件 | 对 Job 的影响 |
+| --- | --- |
+| API Process 退出 | 已经成功写入 Redis 的 Job 仍可由其他 Worker 消费 |
+| Worker Process 崩溃 | active Job 可能因锁失效进入 stalled 并被重新调度；不是严格一次执行 |
+| Redis 正常重启，文件与卷保留 | 可从有效 RDB/AOF 恢复已持久化状态 |
+| Redis 突然断电 | 可能丢失最近尚未持久化的一段变更 |
+| Redis 无持久化或永久卷被删除 | 队列历史可能不可恢复 |
+| Redis maxmemory 任意淘汰队列 Key | 可能破坏 Job 数据与调度索引，不应把任务队列视为普通易失 Cache |
+| Job 主动删除、自动清理或过期 | 对应数据可能按业务配置消失，与系统崩溃无关 |
+
+Redis 以内存保存工作集，但提供 RDB（定期 Snapshot）、AOF（追加写命令并在重启时重放）以及组合方案。AOF 的 appendfsync everysec 平衡性能和持久性，却仍可能在故障时损失最近尚未 fsync 的数据；appendfsync always 刷盘更积极，成本更高。Redis 命令已经返回、AOF 已追加、操作系统已经 fsync、其他副本已经收到，是不同的确认边界，不能合并称作“完全持久化”。
+
+~~~ini
+appendonly yes
+appendfsync everysec
+maxmemory-policy noeviction
+~~~
+
+这些只是典型配置：还需要保存 AOF 的持久化数据卷、内存与磁盘容量治理、备份和恢复演练。BullMQ 官方建议 AOF 和 noeviction，并区别 Producer 的快速失败与 Worker 的自动重连策略。Redis 的 Replication 可以提高故障可用性，却不等于无损备份；自动 Failover 也可能存在复制延迟。Job 写入成功 ≠ 已执行业务成功 ≠ 在所有故障下绝不丢失。
+
+参考：[Redis Persistence](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)、[BullMQ Going to production](https://docs.bullmq.io/guide/going-to-production)。
+
+### 【PostgreSQL Job Table 与 BullMQ 的区别在于谁实现调度和恢复机制】
+
+Database-backed Job Store 将 Job 作为一条 PostgreSQL 记录，应用 Worker 自己实现 Poll、Claim、Lease、Retry、Dead Letter；BullMQ 以库和 Backend 提供任务状态机、Worker 消费、失败重试等能力。二者都需要业务级幂等。
+
+| 对比维度 | PostgreSQL Job Table | BullMQ 默认 Redis Backend |
+| --- | --- | --- |
+| 数据位置 | PostgreSQL Row / WAL | Redis Key 与数据结构 / RDB / AOF |
+| 业务事实同库事务 | 可直接一次事务写入业务行和 Job | PostgreSQL + Redis 是两个独立系统，存在双写窗口 |
+| Worker 领取 | 行锁、FOR UPDATE SKIP LOCKED、状态字段 | 内置领取、锁、续租和 stalled 检测 |
+| 失败重试 | 应用设计 attempts、available_at、Dead Letter | 库内置 attempts、backoff 与失败状态 |
+| 核心成本 | 数据库轮询/索引压力，自行维护 Claim/Lease | Redis 运维、队列存储与连接、跨存储边界 |
+| 适用倾向 | 任务与关系数据紧密耦合、任务规模可控 | 异构任务和调度需求增多，需要复用队列工具 |
+
+**不能用“Redis 不持久、PostgreSQL 持久”选择方案。** 应比较实际持久化策略、数据语义、运行成本、吞吐与故障恢复。Worker 在两种模式下都可能重复执行外部副作用。
+
+### 【Raw Event 与 Job State 可以单表合并，也可以双表分离，还可以用引用减少冗余】
+
+每一条监控事件包含两类不同信息：Raw Event 表达已发生的业务事实；Job State 表达它是否已被后台投影，谁持有处理权，何时重试。
+
+**单表：** telemetry_jobs 同时保存 event JSONB、status、attempts、available_at、locked_at 等。API 只写一行，Worker 直接更新该行。无需为一个业务事实额外写 Outbox；适合 Raw Payload 只作为一次处理输入、且任务和原始数据查询生命周期可以合并的系统。但时序范围查询、历史压缩、任务状态频繁更新、失败任务延长保留会争用一张表的索引和物理生命周期。
+
+**双表并复制 Payload：** telemetry_events 是时序事实表，outbox_tasks 另保存相同 event JSONB 和任务状态。两张表同事务写入，任务无需回表即可投影；代价是 JSON 重复和写入量更高。两张表可分别配置读写索引、清理时间与权限。
+
+**双表但 Outbox 只保存 Reference：** telemetry_events 保存 Payload；outbox_tasks 保存 project_id / event_id / occurred_at 等定位键及 Job 状态。它减少内容冗余，但每次领取任务需要额外回表，并要求原始事件在所有相关任务完成、人工处理或永久失败前不能被保留策略清除。
+
+~~~text
+选择前先回答：
+原始事件处理成功后是否仍需检索、统计、审计与重放？
+原始事件与 Job 的清理时间、索引和更新频率是否相同？
+是否允许 Worker 每次回表读取 Raw Payload？
+失败任务是否可能留存得比原始事件更久？
+业务事实与待处理任务必须以何种事务语义一起产生？
+~~~
+
+没有所谓“必须两张表”的规则。当前 Browser Monitor 对 Raw Event 提供明细查询、连续聚合和独立 30 天保留，对已完成 Outbox 另有更短清理策略，所以不能只删除 Raw 表而不改所有业务接口与数据治理。项目证据见 [Browser Monitor 异步任务专项](https://github.com/cxDlogver/browser-monitor/blob/main/docs/异步任务与Worker可靠消费体系源码学习.md)。
+
+
+### 【Kafka Topic 由 Broker 自己持久化为 Partition Log，而不是存入 Redis 或 PostgreSQL】
+
+Kafka Producer 将消息追加到 Kafka Broker 管理的分区日志中；一个 Topic 分为多个 Partition，各有独立递增 Offset 和日志段文件（Log Segment、Offset Index、Time Index 等），由 Kafka 自己管理磁盘、复制和保留策略。默认将数据存到 Broker 的本地持久化目录；若明确启用并配置 Tiered Storage，旧 Segment 可以转到外部存储。Page Cache 与内存提高吞吐，但消息日志不是仅存在 Kafka 进程堆内存。Kafka 的 KRaft 元数据管理与存放业务 Partition Log 的职责也不同。
+
+~~~text
+Producer
+   ↓ topic=telemetry-events
+Kafka Broker Cluster
+   ├─ Partition 0：offset 0 → 1 → 2 → ...
+   ├─ Partition 1：offset 0 → 1 → 2 → ...
+   └─ 副本 Replica / Log Segment / Retention
+          ├─ Consumer Group A：性能投影
+          ├─ Consumer Group B：异常分析
+          └─ Consumer Group C：原始事件归档
+~~~
+
+Offset 只在对应 Partition 内有意义。多个 Group 可以独立处理同一批消息，一个 Group 已读完并不删除其他 Group 仍可能消费的消息；删除由 retention.ms、retention.bytes、log compaction 等保留策略决定。Broker 进程重启而日志卷仍可读取时，可恢复记录；实际故障保证还依赖副本数、acks、min.insync.replicas、备份与存储系统。Kafka 的优势是一个可多次读取的持久事件日志，不是自动完成每条 Job 内部步骤。
+
+参考：[Apache Kafka Design](https://kafka.apache.org/41/design/design/)、[Kafka Tiered Storage](https://kafka.apache.org/41/operations/tiered-storage/)。
+
+### 【Kafka 可以持久化不同 Consumer Group 的 Offset，但不自动保存业务 Step 状态】
+
+经典 Consumer Group 使用组名区分独立消费进度；每个组对每个 Topic Partition 有自己的 Committed Offset：
+
+~~~text
+Group performance + telemetry-events + Partition 0 → next offset 120
+Group performance + telemetry-events + Partition 1 → next offset 80
+
+Group error       + telemetry-events + Partition 0 → next offset 95
+Group error       + telemetry-events + Partition 1 → next offset 70
+~~~
+
+经典 Consumer Group 的 Group Coordinator 将 Offset Commit 记录写入 Kafka 内部 Compact Topic：__consumer_offsets。这是 Broker 自身管理和持久化的进度，不需要另建 Redis / PostgreSQL 来保存。提交 Offset 5 的含义是下次从第 5 条读取（如 0～4 业务已处理完成）。同一 Group 内不同 Consumer Instance 分担 Partition，Rebalance 后新实例继承组在分区上的已提交位置，而非继承旧实例本地内存位置。
+
+要区分四个层级：
+
+| 层级 | 含义 | 谁持有 |
+| --- | --- | --- |
+| Record Offset | 消息在某个 Partition 中的持久位置 | Kafka Log |
+| Current Position | 当前实例 Fetch 到哪里，可能领先业务处理 | Consumer 内存 |
+| Committed Offset | 重启/分区重新分配后从哪里读 | Group Coordinator + __consumer_offsets |
+| Task Checkpoint | 一条消息内部解析、调用模型、存报告进行到哪一步 | 应用数据库或专门状态存储 |
+
+Committed Offset 不是永久存储，长期不活跃组可能按保留策略过期；源 Topic 自身消息也可能因 retention 删除。恢复是否成功需同时看位点与原始消息是否存在。消费实例正在运行的任务位置，更不能仅凭已提交水位判断。
+
+参考：[Kafka Consumer Offset Tracking](https://kafka.apache.org/41/implementation/distribution/)、[KafkaConsumer commitSync](https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html)。
+
+### 【Kafka 重读消息只恢复消费边界，长任务需要业务 Checkpoint 续跑】
+
+假设 offset 100 对应文档分析 Task T，内部步骤是：①解析文档 ②提取信息 ③调用 LLM ④保存报告。Consumer 在完成步骤 ②、调用 LLM 时崩溃，Kafka 若未提交 offset 101，则可能从 offset 100 重新消费，但无法自动知道步骤 ①②已完成。
+
+业务可以建立持久检查点：
+
+~~~sql
+CREATE TABLE analysis_tasks (
+  task_id UUID PRIMARY KEY,
+  status TEXT NOT NULL,
+  current_step TEXT,
+  checkpoint JSONB NOT NULL DEFAULT '{}'::jsonb,
+  result_ref TEXT,
+  attempt_count INT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+~~~
+
+~~~json
+{
+  "status": "RUNNING",
+  "current_step": "generate_report",
+  "checkpoint": {
+    "parse": { "status": "COMPLETED", "resultRef": "parsed/doc-1001" },
+    "extract": { "status": "COMPLETED", "resultRef": "facts/doc-1001" },
+    "generate": { "status": "RUNNING" }
+  }
+}
+~~~
+
+重启顺序：
+
+~~~text
+Consumer 接管 Partition → 重读 Offset 100
+    ↓
+根据 task_id 查业务任务
+    ↓
+若 SUCCEEDED：幂等跳过
+否则读取 Checkpoint，核实中间产物真正持久且仍可用
+    ↓
+跳过可确认完成的步骤，从不确定步骤恢复/对账
+    ↓
+先持久化最终业务结果及终态
+    ↓
+在正确分区上提交 Offset 101
+~~~
+
+单有 Checkpoint 不足以保证绝对只执行一次。**模型调用已成功，但 Worker 在保存返回结果前崩溃**，下次仍可能再次调用；需要外部幂等键、operation ID、结果对账，无法查询时要接受重复费用的可能。若业务结果已经提交但 Offset 还未提交，下次必须识别完成任务并直接跳过副作用。若业务未完成却先提交 Offset，就可能永久跳过任务。
+
+| 时刻 | Kafka 恢复行为 | 业务应对 |
+| --- | --- | --- |
+| Fetch 后、执行业务前崩溃 | 从上次 Committed Offset 重读 | 重新开始 |
+| Step 1、2 产物与 Checkpoint 已持久化 | 重读原 Job | 核实结果、跳过已完成步骤 |
+| 外部服务成功但本地 Checkpoint 还没写 | 重读 Job | 查询外部结果，否则可能重复 |
+| 写入业务终态成功、Offset Commit 失败 | 重读 Job | SUCCEEDED 幂等跳过 |
+| Offset 已 Commit、业务尚未成功 | 不会自动重读该记录 | 数据丢失风险，应避免 |
+
+**分区位点提交必须维护连续完成前缀。** Offset 10 未完成，不能因并发处理的 11、12 已成功，就提交 13；否则 10 会被跳过。处理持续数分钟时还要管理 poll、max.poll.interval、Rebalance、分区所有权和任务执行服务的分离，避免长任务卡住消费者心跳/轮询。Kafka 为异步事件传输而设计，业务长任务未必适合始终占着同一个 Consumer 消费调用栈；可以先可靠入库 Job，然后确认 Kafka Offset，让独立 Worker 执行。
+
+Kafka 的 Exactly-once 事务语义能够覆盖 Kafka 输入位点与 Kafka 输出 Topic 的事务性写入（Kafka Streams 还组织状态恢复），**不自动覆盖外部 PostgreSQL、对象存储或 LLM API 的副作用**。跨系统仍需幂等键、Inbox/Checkpoint、结果校验与必要补偿。参考：[Kafka Delivery Semantics](https://kafka.apache.org/41/design/design/)、[Kafka Streams Core Concepts](https://kafka.apache.org/41/documentation/streams/core-concepts/)。
+
 
 ### 【Database Job Store、RabbitMQ、SQS、Kafka 应从工作语义和消费模型选择】
 
