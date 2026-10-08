@@ -209,7 +209,7 @@ AI Coding 是工程交付方式之一，需要沿“需求事实 → 规范与�
 | 安全与隐私 | 身份、资源和租户权限是否贯穿 API、检索与工具；敏感信息、密钥和不可信输入怎样处理 | [身份与权限](Full-Stack-AI-NOTES/W-Web身份认证会话控制与访问控制体系.md)、[Agent System](Full-Stack-AI-NOTES/A-Agent-System研发知识梳理.md) |
 | 可靠性 | 超时、重复、部分失败、断线和重启后，状态与业务结果怎样恢复和核对 | [服务端可靠性](Full-Stack-AI-NOTES/F-服务端可靠性体系.md)、[WebSocket](Full-Stack-AI-NOTES/W-WebSocket完整知识体系.md)、[异步任务](Full-Stack-AI-NOTES/F-服务端异步任务与消息处理体系.md) |
 | 性能与容量 | 资源、网络、主线程、服务、数据与模型各自消耗多少；瓶颈怎样被实验确认 | [Web 性能](Full-Stack-AI-NOTES/W-Web性能优化完整知识体系.md)、[页面流畅度](Full-Stack-AI-NOTES/Y-页面流畅度与连续渲染性能完整知识体系.md) |
-| 可观测性 | 请求、任务、模型与工具是否能关联；日志、指标、Trace 和结果能否定位失败 | [性能采集与 RUM](Full-Stack-AI-NOTES/X-性能专项优化.md)、[Agent Eval](Full-Stack-AI-NOTES/A-Agent-Eval与Benchmark.md) |
+| 可观测性 | 请求、任务、模型与工具是否能关联；日志、指标、Trace 和结果能否定位失败 | [性能采集与 RUM](Full-Stack-AI-NOTES/X-性能测量与真实用户监控专项.md)、[Agent Eval](Full-Stack-AI-NOTES/A-Agent-Eval与Benchmark.md) |
 | 成本与资源 | 模型调用、检索、存储、重试和运行时预算怎样受控；质量与成本怎样权衡 | [Agent System](Full-Stack-AI-NOTES/A-Agent-System研发知识梳理.md)、[Agent Eval](Full-Stack-AI-NOTES/A-Agent-Eval与Benchmark.md) |
 | 验证与回归 | 结论对应什么样本、环境和判定方法；改动后如何发现退化 | [软件交付](Full-Stack-AI-NOTES/R-软件交付与CI-CD工程体系.md)、[Agent Eval](Full-Stack-AI-NOTES/A-Agent-Eval与Benchmark.md) |
 
