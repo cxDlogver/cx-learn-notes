@@ -453,3 +453,222 @@ self.addEventListener('fetch', event => {
 实现完整 PWA 离线能力还要考虑首次访问、首次激活、更新检查、激活策略、正在运行的旧页面、缓存清理、后台数据新鲜度和浏览器配额。不能把浏览器 Network 中出现 from ServiceWorker 等同于“所有后端功能都能离线运行”。
 
 与页面内容生成缓存（SSR/ISR/SWR）、API 状态缓存等关系可继续阅读 [Web 渲染架构](./W-Web渲染架构.md) 和 [浏览器存储方式](./L-浏览器存储方式.md)。它们分别属于内容生成/数据存储机制，不能代替本篇 HTTP 响应缓存的协议语义。
+
+## 7. 资源版本与缓存失效构成一次发布更新的完整生命周期
+
+### 【内容哈希文件名负责改变 URL，而不是删除旧缓存】
+
+构建工具会基于资源内容生成带有指纹的文件，例如：
+
+~~~text
+旧版本 index.html
+  └─ /assets/app.8a31f.js
+新版本 index.html
+  └─ /assets/app.9b72d.js
+~~~
+
+app 的内容变化后，资源 URL 从 app.8a31f.js 变为 app.9b72d.js。因此浏览器、CDN 和 Nginx 代理缓存会将它视为不同目标资源；它们无需先删除所有旧副本，新 URL 即可触发自己的缓存获取流程。
+
+这个过程称为 **Cache Busting（通过版本化 URL 绕开旧副本）**。它不是对旧 URL 发送 purge、不是清空浏览器缓存，更不代表缓存策略会自动知道“代码版本已经更新”。[[10]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control)
+
+### 【页面入口 HTML 的更新决定用户何时发现新的资源 URL】
+
+完整部署链路应关注“先有资源，再让 HTML 引用它”的发布顺序：
+
+~~~text
+构建完成新 HTML、JS、CSS 等产物
+                ↓
+首先确保新版本静态资源已在源站 / CDN 可获取
+                ↓
+发布或切换引用新文件名的 HTML
+                ↓
+浏览器请求或验证 HTML（不能长期无条件用旧入口）
+                ↓
+浏览器解析新版 HTML，发现新的内容 Hash URL
+                ↓
+网络侧和浏览器侧按照各自缓存规则请求/存储新资源
+                ↓
+旧版本仍被打开的页面，可以继续获取必要的旧资源
+                ↓
+版本淘汰窗口之后再清理旧资源
+~~~
+
+如果把旧静态文件过早删除，而仍有用户保留旧 HTML 或旧 JS 的动态 import 引用，就可能出现 Chunk 404、模块加载失败甚至页面白屏。
+
+HTML、JSON Manifest 或其他版本入口往往不具备内容哈希命名，常用可验证缓存或受控的短时新鲜度；如果关键更新必须即时可见，则需要显式更新机制。Nginx 和 CDN 上的 Cache Purge 可以加快共享缓存更新，但**CDN purge 不会自动删除全部用户设备上的 HTTP Cache 和 Cache Storage**。
+
+### 【immutable 表示新鲜期内表示不变，必须配合版本 URL】
+
+对内容 Hash 命名且部署保证不可原地更改的静态文件，可采用：
+
+~~~http
+Cache-Control: public, max-age=31536000, immutable
+~~~
+
+max-age 表示大约一年的新鲜度时间，immutable 告知支持该指令的缓存：**在仍然新鲜时响应不会变化**，从而减少不必要的重新验证。它不是无限期存储，也不是禁止浏览器或用户手动清除资源，更不是自动使 HTML 引用改变。[[11]](https://www.rfc-editor.org/rfc/rfc8246)
+
+反例：/assets/app.js 每次部署都在原 URL 上覆盖内容，却配置了长期 max-age/immutable。用户可能继续使用旧 JS，直到新鲜期、版本路径或其他主动机制允许其发现新内容；仅更新服务器磁盘文件并不能自动使本地缓存失效。
+
+### 【Service Worker 和 CDN 需要额外考虑版本接管与主动清理】
+
+HTTP 内容 Hash 解决的是**请求 URL 指向不同版本**，但 Service Worker 常缓存“离线首页”“应用壳”等稳定路径，必须决定安装新版本后：
+
+- 何时开始安装与接管新脚本；
+- 如何为新缓存命名并下载必需资源；
+- 新旧标签页并存期间的运行兼容性；
+- 何时删除旧命名 CacheStorage、如何避免不必要的存储膨胀；
+- 是否允许离线时继续使用旧应用壳，是否需要向用户提示版本更新。
+
+CDN 的主动刷新与回源规则由服务商实现；Service Worker 的本地缓存清理由页面/worker 策略与浏览器存储配额决定；两者与内容 Hash 配合，但不会自动互相清理。可在实际需要时使用 Workbox 等工具简化预缓存清单、版本更新和运行时缓存策略，仍要审查资源资格和数据安全。
+
+## 8. 依据资源性质组合多层缓存策略，避免一种规则用于所有请求
+
+### 【HTML、内容 Hash 资源、公开数据和个人数据具有不同缓存目标】
+
+| 资源类别 | 常见缓存设计思路 | 为什么这样设计 | 必须满足的条件 |
+| --- | --- | --- | --- |
+| 带内容 Hash 的 JS/CSS/图片/字体 | 允许长期新鲜度、immutable | URL 随内容变化，可安全复用特定版本 | 资源 URL 不原地覆写，HTML 正确切换版本 |
+| 无 Hash 的 HTML/应用入口 | no-cache + ETag 等验证器，或短时受控缓存 | 页面需要发现新资源 URL，同时可避免不必要的正文重传 | 更新频率、个性化差异和入口缓存策略明确 |
+| 公开且更新较慢的 API | 视情况设置 s-maxage、验证器、SWR | 在明确可容忍陈旧的条件下减少回源 | 响应能被安全共享，Cache Key 正确 |
+| 登录态或个人资料响应 | private 与必要的验证/短期限；敏感内容可 no-store | 防止共享缓存向其他人复用数据 | Cookie、Authorization、权限变化、退出后数据清理充分考虑 |
+| 实时性强的业务操作响应 | 明确禁止不适当存储或采用强验证策略 | 避免使用失效的业务状态 | 不以提高 HIT 率为目标 |
+| PWA 离线应用壳 | Service Worker 预缓存稳定、必要的资源 | 在断网时仍提供基本页面与交互 | 资源版本、权限、存储配额和更新机制明确 |
+
+这张表是**选择策略的原则，不是任何站点可直接复制的统一生产配置**。含用户权限的响应、可公开访问但带随机广告或地域差异的响应，不能只看“GET + 200”便允许共享。
+
+### 【同一 URL 应明确哪些变化属于缓存键，哪些变化要求换 URL】
+
+如果内容差异来自身份、权限或账号，应首先判断是否允许共享；如果来自语言、Accept-Encoding 等协商字段，考虑 Vary 与 CDN 变体配置；如果是构建静态文件内容改变，优先通过内容 Hash URL 区分版本；如果是时间变化的公开数据，则按可容忍陈旧范围设置新鲜度与验证机制。
+
+例如图片资源中的 width=320 和 width=1280 查询参数若实际返回不同尺寸图片，则不能随意在 Cache Key 中丢弃影响内容的 width 参数。类似地，对公开 API 仅按路径生成缓存键，却忽略查询条件，会出现错误内容串用。
+
+### 【不同缓存位置的时间策略是独立生效的】
+
+一个典型公开响应可能声明：
+
+~~~http
+Cache-Control: public, max-age=60, s-maxage=600, stale-while-revalidate=30
+ETag: "public-list-v7"
+Vary: Accept-Encoding
+~~~
+
+解释如下：
+
+1. 浏览器私有 HTTP 缓存可依据 max-age=60 判断自身新鲜度。
+2. CDN 或合规共享缓存可依据 s-maxage=600 判断共享副本是否新鲜。
+3. 允许支持该指令的缓存，在其适用的新鲜期之后的额外 30 秒内按 SWR 条件使用过期副本并异步验证。
+4. ETag 用于需要验证时的表示版本比较。
+5. Vary 限制响应变体的正确匹配。
+
+这里**不是同一份资源先缓存 60 秒、然后转移到 CDN 缓存 600 秒**。它们是不同节点收到相应请求时独立执行的缓存决策。是否真正命中、是否允许异步更新，也取决于缓存自身状态和实现支持。
+
+### 【浏览器 HTTP Cache、Service Worker 策略和页面结果 SWR 不能互相替代】
+
+“缓存”一词在不同技术中可能分别指：
+
+- **HTTP Cache**：以请求/响应和标准缓存字段管理 HTTP 表示副本；
+- **Service Worker Cache Storage**：应用在浏览器本地显式存储 Request/Response 并编排离线与联网逻辑；
+- **Nginx proxy_cache / CDN Cache**：网络中间节点复用上游的 HTTP 响应；
+- **服务端数据缓存 / SSR、SWR、ISR**：应用或框架复用查询结果、页面生成结果并按内容策略更新。
+
+前三类属于本篇的网络响应缓存主线；最后一类主要是 [② 服务端与数据交付优化](./W-Web性能优化工程体系.md#3-服务端与数据交付优化缩短内容生成和必要数据依赖) 与 [Web 渲染架构](./W-Web渲染架构.md) 的内容生产/更新机制。
+
+不同技术可能使用相同术语 **SWR**，但究竟缓存的是 HTTP Response、框架 HTML 结果还是应用数据，必须根据缓存所有者、存储位置、失效触发和新鲜度规则确认。
+
+## 9. 多级缓存需要按“实际命中层 → 响应状态 → 失效原因”验证
+
+### 【浏览器开发工具只能说明客户端看到的结果，不能凭空推断上游所有层】
+
+Chrome DevTools 的 Network 和 Application 面板可以分别查看请求与缓存状态：
+
+| 观察位置 | 能确认什么 | 不能直接确认什么 |
+| --- | --- | --- |
+| Network 的 Size / Timing | 本地缓存命中、部分请求发起与时延、304/200 等 | CDN 是否访问了应用数据库 |
+| Response Headers | Cache-Control、ETag、Last-Modified、Age、Vary 等 | Header 存在不等于每层实际缓存命中 |
+| Application → Service Workers | worker 注册、激活、控制状态 | 已注册不等于当前页所有请求都受控 |
+| Application → Cache Storage | 应用显式保存的 Request/Response | 不代表浏览器 HTTP Cache 的全部内容 |
+| CDN 控制台/日志 | 具体节点 HIT/MISS/REVALIDATED、回源与缓存刷新 | 不能单靠浏览器一个状态字段完成全链路判断 |
+| Nginx 的 access log / upstream_cache_status | 代理缓存 HIT、MISS、EXPIRED、REVALIDATED 等状态 | 需确认对应 location 真正启用了 proxy_cache |
+| 应用日志或 Trace | 请求是否到达后端、生成/查询/序列化开销 | 应用没有记录不一定意味着用户没有发出请求 |
+
+Age 可以帮助判断当前响应被某层缓存保存或验证后经历的估计年龄，但缺少 Age 并不能直接证明“源站被访问”。CDN 的 CF-Cache-Status、X-Cache 等是供应商或配置相关字段，不能当成 RFC 统一必须存在的头。
+
+### 【一次浏览器协商请求需要同时辨别客户端与 CDN 的处理】
+
+~~~text
+案例：本地有过期 app.js
+    ↓
+浏览器构造 If-None-Match 请求
+    ↓
+CDN 可能使用自身新鲜副本直接验证（下游看到 304）
+    或 CDN 自己向 Nginx / 其它上游发起验证
+    ↓
+浏览器最终继续使用已存正文
+~~~
+
+因此看到 304 只能说明**某个验证条件认为内容未变化**。它不能单独证明文件由应用服务器生成、CDN 发生 MISS 或本次请求读取了数据库。
+
+### 【排查更新不生效应依次检查 URL、HTML、缓存节点与 SW】
+
+~~~text
+用户发现页面版本未更新
+           ↓
+1. HTML 是否已经发布新资源 URL？
+    ├─ 否 → HTML / 页面生成 / HTML CDN 缓存与验证
+    └─ 是
+           ↓
+2. 浏览器实际请求的是新 URL 还是旧 URL？
+    ├─ 旧 URL → 入口页面或运行中的旧客户端尚未更新
+    └─ 新 URL
+           ↓
+3. CDN/Nginx 源站是否都能取得新资源？
+    ├─ 不可达 → 发布顺序、文件映射、旧资源删除或回源
+    └─ 可达
+           ↓
+4. 是否由 Service Worker / Cache Storage 返回旧副本？
+    ├─ 是 → 检查 SW 控制、Cache Name、Runtime 策略
+    └─ 否 → 检查 HTTP Cache / CDN TTL / 变体验证
+           ↓
+5. 在相同部署版本和请求条件下重新验证
+~~~
+
+排查时应先记录普通请求的真实行为，然后才考虑禁用浏览器缓存或绕开 CDN；否则可能在调试中主动隐藏真正的缓存问题。
+
+### 【安全与故障场景不可为了命中率而牺牲正确性】
+
+- 私有响应不应因为“提高 CDN HIT”而错误地与公开内容共享。
+- no-store 不会自动清除历史旧副本；退出登录不等于 Cache Storage 自动删除敏感数据。
+- SW 的离线回退应与身份状态协调，避免误把旧的权限内容当作当前有效信息。
+- stale-if-error 只能用于明确允许陈旧的响应，不能默认用在支付状态、权限校验或关键安全数据上。
+- CDN purge 及版本切换要考虑多节点传播、失败回滚和长期开启的旧页面。
+- 共享缓存还需要防止不正确 Cache Key、Vary 和源站输入差异产生的缓存污染或错误复用。
+
+## 10. Full-Stack-AI-NOTES 的缓存知识保留一个通用主入口
+
+### 【缓存机制统一由本篇维护，其它文档保留自己的工程职责】
+
+| 关联文档 | 本篇与该文档的边界 |
+| --- | --- |
+| [Web 性能优化工程体系](./W-Web性能优化工程体系.md) | 六大优化领域的分类入口；本篇深入其网络缓存机制 |
+| [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md) | 负责 Nginx/Caddy 公网入口、静态部署与上游代理拓扑；本篇负责 HTTP 缓存决策 |
+| [Web 渲染架构](./W-Web渲染架构.md) | 负责 CSR/SSR/SSG/Hybrid、SWR/ISR 的内容生成与更新策略；本篇负责 HTTP 响应副本 |
+| [资源优化实战](./Z-资源优化实战.md) | 资源压缩、请求优化、浏览器存储和 Service Worker 的可复现示例；本篇集中协议机制 |
+| [静态资源预加载方法](./J-静态资源预加载方法及实践笔记（完整版）.md) | 负责资源何时发现、何时提前请求；本篇负责取得响应后能否复用 |
+| [浏览器存储方式](./L-浏览器存储方式.md) | 对比 Web Storage、IndexedDB、Cache Storage 的应用数据存储语义；本篇负责 Response 缓存及离线流程 |
+| [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md) | 保留用户体验与端到端成本总览，不复制缓存协议的完整定义 |
+
+本次将旧的 CDN/浏览器缓存独立笔记和散落在资源优化材料中的 HTTP/Service Worker 概念统一整理到本篇；**QA 保留面试问答视角，但其概念应引用本篇而不是另建第二套正式定义**。项目源码、运行配置和真实收益仍以具体工程分析为证据，不进入通用机制定义。
+
+## 11. 参考文献
+
+1. IETF. [RFC 9111: HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111). 私有/共享缓存、缓存键、新鲜度、校验和 Cache-Control 语义。
+2. MDN. [HTTP Caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching). 浏览器缓存、启发式缓存、刷新与版本资源实践。
+3. IETF. [RFC 9110: HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110). ETag、Last-Modified、条件请求和 304。
+4. IETF. [RFC 5861: HTTP stale response extensions](https://www.rfc-editor.org/rfc/rfc5861). stale-while-revalidate 与 stale-if-error。
+5. NGINX. [Serve Static Content](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/). Nginx root、alias 和 try_files 的静态文件语义。
+6. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
+7. MDN. [Using Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers). 注册生命周期、fetch 拦截、离线响应。
+8. MDN. [Cache API](https://developer.mozilla.org/en-US/docs/Web/API/Cache). 请求响应配对、更新与 Cache Storage 生命周期。
+9. MDN. [PWA Caching](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Caching). 预缓存、运行时缓存及网络/离线策略。
+10. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
+11. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
