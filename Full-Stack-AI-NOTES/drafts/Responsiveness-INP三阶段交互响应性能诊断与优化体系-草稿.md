@@ -123,6 +123,97 @@ Interaction Latency
 
 如果这次交互所在的同一帧还处理了其他相关事件，单条 Entry 的处理时间和整个交互处理窗口也未必完全相同。这正是生产实现建议使用 Google 的 web-vitals Attribution、而不自行把某个事件的 processingEnd 减去 processingStart 当成整体 INP 的原因。[[3]](https://github.com/GoogleChrome/web-vitals)
 
+### 【Event、Interaction 与 INP Metric 是三个不同的统计层次】
+
+一个用户点击可以产生多个 DOM Event，但不意味着每次点击都产生一个独立的 INP 指标。必须先区分浏览器事件、逻辑用户交互和页面级结果：
+
+~~~text
+用户操作一次（例如点击按钮）
+    ↓ 浏览器可能派发多个相关事件
+pointerdown、pointerup、click
+    ↓ 根据非零 interactionId 关联
+一个 Interaction（逻辑用户交互）
+    ↓ 从该交互相关的 Event Timing 记录确定响应延迟
+一个 Interaction Latency（交互延迟）
+    ↓ 页面生命周期内持续挑选最慢或接近最慢交互
+一个页面导航测量周期的 INP Metric
+    ↓ RUM 服务端按页面访问聚合
+INP P75 / P95
+~~~
+
+**interactionId 是浏览器的事件关联 ID，而不是 web-vitals 生成的 INP 指标 ID。** 同一次鼠标点击所产生且可观察到的 pointerdown、pointerup、click 等相关事件，通常具有相同的非零 interactionId；用户之后再次点击，即使仍是同一按钮，也属于另一次逻辑交互，应使用另一个 ID。键盘交互也可能产生 keydown、keyup 等相关事件。实际输入事件序列、可观察的 Entry 数量因输入方式和浏览器实现而异。[[2]](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEventTiming/interactionId)
+
+| 对象 | 标识 | 表达的含义 |
+| --- | --- | --- |
+| DOM Event | event.type、触发时间 | 浏览器派发的一个具体事件 |
+| PerformanceEventTiming | name、startTime、duration 等 | 浏览器暴露的某个事件耗时记录 |
+| Interaction | 非零 interactionId | 同一次用户操作关联的 Event Timing 记录 |
+| INP Metric | metric.id | 一个导航测量周期内当前的 INP 结果实例 |
+| RUM 页面访问样本 | Navigation / View / Session ID | 对多个用户页面访问进行统计的样本身份 |
+
+示意：
+
+~~~text
+用户第一次点击 A：
+pointerdown  interactionId=101
+pointerup    interactionId=101
+click        interactionId=101
+        ↓
+Interaction #101
+
+用户第二次点击 A：
+pointerdown  interactionId=108
+pointerup    interactionId=108
+click        interactionId=108
+        ↓
+Interaction #108
+~~~
+
+101、108 都只是假设数字。可靠的判断依据是浏览器返回的**非零 interactionId 相等**。不能通过两个事件时间接近、来自同一个 DOM 元素或事件名称相同自行合并。**interactionId 为 0 的事件不能统统归为同一次交互**；它不构成有效的交互归组键。对跨导航或跨浏览上下文的记录还必须结合 View / Navigation / 时间范围确定归属。
+
+### 【同一个 Interaction 的多个事件时延不应相加】
+
+对于一组同 ID 的 Event Timing，每条 Entry 可能具有自己的 startTime、processingStart、processingEnd 和 duration，且相关事件可能共享下一次绘制时机。
+
+当前 web-vitals 的交互候选管理过程是：
+
+1. 处理一个新的 Event Timing Entry，忽略无法成为交互候选的无效 interactionId；
+2. 如果该 ID 对应已经存在的交互候选，则更新该交互，而不是创建另一次用户操作；
+3. 如果新 Entry 的 duration 更大，则把该交互的代表延迟更新为更慢的值；等长且起点一致的相关 Entry 可一起保留以供归因；
+4. 按交互延迟排序，仅维护最慢的一小组候选。
+
+例如同一交互 ID=101 已观测到 80ms 的事件，后来又收到同 ID 的 160ms Entry，那么这次交互的候选延迟可能更新为 160ms。不能把 80+160 作为一次交互的耗时。当前实现使用 InteractionManager 以交互 ID 关联事件及其候选延迟。[[11]](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/InteractionManager.ts)
+
+**并非每个 DOM Event 都会产生可通过 PerformanceObserver 读取的 Entry。** Event Timing 的默认观察门槛约为 104ms，可配置的最低 durationThreshold 为 16ms；web-vitals 当前默认观察阈值为 40ms，并对很快的首次交互作必要的兜底，避免低于阈值的页面完全没有数值。这些阈值是采集成本与精度的折中，不意味着短交互不存在。[[8]](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEventTiming) [[12]](https://github.com/GoogleChrome/web-vitals/blob/main/src/onINP.ts)
+
+### 【页面 INP 从多次交互中挑选高位延迟，不计算所有事件的平均值】
+
+假设一次页面访问发生如下交互：
+
+| 交互 | 延迟 |
+| --- | ---: |
+| 点击菜单 | 45ms |
+| 打开筛选 | 120ms |
+| 输入关键词 | 60ms |
+| 点击查询 | 650ms |
+| 关闭弹窗 | 85ms |
+
+由于交互次数较少，页面级 INP 通常为 650ms；不等于这些值的平均数，也不是五次之和。
+
+当交互次数 N 较大时，为了避免极少数极端慢交互过度主导长时间使用的页面，INP 使用基于交互总次数的高位候选选择。当前 web-vitals 的估计索引（候选按延迟从高到低排列，索引从 0 开始）为：
+
+~~~text
+candidateIndex = floor(N / 50)
+
+N=1～49    → 第 1 慢
+N=50～99   → 第 2 慢
+N=100～149 → 第 3 慢
+~~~
+
+这意味着第 50 次交互到来后，即使新的交互并不慢，代表值仍可能从第 1 慢变成第 2 慢，**INP 候选可能降低**。实际实现保留有限的最慢候选列表，但仍通过浏览器维护的交互总数决定选择哪一个，不需要把用户所有点击事件完整存储。[[1]](https://web.dev/articles/inp) [[11]](https://github.com/GoogleChrome/web-vitals/blob/main/src/lib/InteractionManager.ts)
+
+最后还存在第二层聚合：每次有效页面导航测量周期产生一个页面级 INP 样本，服务器收集大量页面访问后再按 Version、Route、Device 等计算 INP P75 / P95。把不同用户每次点击的 Event Duration 全部混在一起求 P75，得到的并不是官方 Core Web Vitals INP。若需要每一个按钮的完整延迟分布，必须另建交互级的事件采样统计。
+
 ## 3. Input Delay 诊断的是输入发生时主线程为什么不能及时处理
 
 ### 【Input Delay 是处理开始前的等待，不是事件处理函数的成本】
@@ -347,6 +438,70 @@ observer.observe({
 ~~~
 
 这段代码的主要价值在于理解数据来源：浏览器产生 Event Timing Entry → SDK 订阅 → 按 interactionId 关联。它不会自行还原完整 INP 的异常值处理、跨帧/多事件规则、页面隐藏结算及 iframe 边界。
+
+### 【原生 Event Timing API 的三个阶段如何计算】
+
+浏览器通过 PerformanceObserver 观察 event Entry 后，提供 PerformanceEventTiming 的下列时间字段：
+
+| 字段 | 意义 | 诊断阶段 |
+| --- | --- | --- |
+| startTime | 输入事件发生时刻 | Input Delay 起点 |
+| processingStart | 开始分发这条事件 | Input Delay 终点、Processing 起点 |
+| processingEnd | 结束分发这条事件 | Processing 终点、Presentation 起点 |
+| duration | 事件发生到下一次绘制的近似耗时（存在量化） | 估算 Presentation 终点 |
+| interactionId | 浏览器给同一次用户操作的事件标识 | 关联 Event Entries |
+
+对**单条 Event Timing Entry**，可以得到：
+
+~~~text
+eventInputDelay = processingStart - startTime
+eventProcessing = processingEnd - processingStart
+eventPresentation ≈ startTime + duration - processingEnd
+~~~
+
+假设 startTime=100ms、processingStart=180ms、processingEnd=250ms、duration=240ms，则单条事件的输入等待约 80ms、事件处理约 70ms、呈现等待约 90ms，合计近似 240ms。这里 duration 受到计时精度量化影响，因此必须明确是事件级近似值。
+
+最小事件归组代码：
+
+~~~js
+// 仅用于理解原始数据和 interactionId，不能直接投产作为 INP 计算器。
+const groups = new Map();
+
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    const id = entry.interactionId;
+    if (!id) continue;
+
+    const sample = {
+      eventType: entry.name,
+      startTime: entry.startTime,
+      duration: entry.duration,
+      inputDelay: entry.processingStart - entry.startTime,
+      processingDuration: entry.processingEnd - entry.processingStart,
+      approximatePresentationDelay:
+        entry.startTime + entry.duration - entry.processingEnd
+    };
+
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(sample);
+    console.log('Interaction', id, groups.get(id));
+  }
+});
+
+observer.observe({
+  type: 'event',
+  buffered: true,
+  durationThreshold: 16
+});
+~~~
+
+这个演示直接说明如何以浏览器的 ID 而不是点击目标或事件时间进行归组。**线上 SDK 不能把不清理的 Map 一直保留在内存**；需要采样、容量控制和回收，还要处理页面生命周期与隐私。
+
+**为什么它不等于最终 INP 三阶段？**
+
+第一，一次 Interaction 可能包含多个 Entry，事件级公式无法直接决定整个交互的处理窗口。第二，当前 web-vitals 的 attribution 实现除了按 interactionId 确定候选，还可能按接近的呈现时刻把同一帧的 Event Timing 汇总起来，取该帧的最早处理起点和最晚处理终点来计算阶段。第三，浏览器 duration 有时间精度量化，可能出现不合理的边界，库还会作非负钳制和异常处理。因此一次交互的正式 Attribution 与单条 click Entry 直接相减不一定完全相同。[[13]](https://github.com/GoogleChrome/web-vitals/blob/main/src/attribution/onINP.ts)
+
+**生产监控建议**：Event Timing 原生 Entry 用来解释事件归组与定位执行过程；正式 INP 及其 Input Delay、Processing Duration、Presentation Delay 优先使用 web-vitals/attribution，避免自己重复实现交互候选和帧级归因规则。
 
 ### 【Long Task 只描述“单段主线程工作长”，不能直接解释是哪段 INP】
 
