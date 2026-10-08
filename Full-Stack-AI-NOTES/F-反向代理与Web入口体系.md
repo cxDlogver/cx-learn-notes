@@ -260,7 +260,7 @@ Return Response
 
 ### 【Web Server 还可以直接返回静态资源】
 
-Nginx 直接读取磁盘静态文件与 Nginx 启用 proxy_cache 复用上游响应，是两种不同机制。关于浏览器、CDN、Nginx 到源站的多级缓存决策、缓存键和过期验证，参见 [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md)；本篇继续解释公开入口和反向代理路由。
+Nginx 直接读取磁盘静态文件与 Nginx 启用 proxy_cache 复用上游响应，是两种不同机制。关于浏览器、CDN、Nginx 到源站的多级缓存决策、缓存键和过期验证，参见 [HTTP 缓存机制知识体系](./H-HTTP缓存机制知识体系.md)；本篇继续解释公开入口和反向代理路由。
 
 
 Web Server 可以不经过 Application Service，直接返回：
