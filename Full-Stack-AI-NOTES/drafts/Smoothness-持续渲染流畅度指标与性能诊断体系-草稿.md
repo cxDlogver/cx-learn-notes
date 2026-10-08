@@ -2,7 +2,7 @@
 
 > 草稿状态：第四类用户体验独立讨论稿，暂不加入知识体系索引、QA 或正式知识正文；示例数值均不代表真实项目结果。
 >
-> 分析主线：视觉卡顿现象 → FPS 与帧间隔判断 → LoAF 三阶段归因 → JS/渲染/GC/队列确认根因 → 分阶段优化 → Lab 与 RUM 验收。
+> 分析主线：用户视觉异常 → FPS / 帧间隔 / 帧预算的初步判断 → LoAF 分段归因 → JavaScript、样式布局、绘制合成与 GC 的证据分析 → 对应优化 → Lab 与 RUM 验收。
 >
 > 核心认识：Smoothness 没有与 LCP、INP、CLS 等价的统一 Core Web Vital。必须分别观察帧稳定性（结果）、数据更新是否追得上（过程）、为什么某帧超时（诊断）。
 
@@ -10,7 +10,7 @@
 
 ### 【首先确认用户在哪个视觉场景感到不流畅】
 
-流畅度分析应首先来自用户实际感知：滚动突然停顿、地图拖拽跟手性差、动画不连续、实时轨迹运行越久越卡。需要固定**页面、设备、刷新率、用户操作和具体发生时段**，区分偶发卡顿、持续掉帧、长期退化和实时数据落后。静态页面没有连续更新需求时，低 rAF FPS 本身不是故障。
+流畅度分析应首先来自用户实际感知：滚动突然停顿、拖拽反馈不连贯、动画跳帧、持续视觉更新运行越久越慢。需要固定**页面、设备、刷新率、用户操作和具体发生时段**，区分偶发卡顿、持续掉帧和长期退化，并确认重要画面更新是否及时。静态页面没有连续更新需求时，低 rAF FPS 本身不是故障。
 
 ~~~text
 用户感觉画面不流畅
@@ -35,10 +35,10 @@ LoAF / Long Task / Trace 定位时间消耗
 | Visual Stability | 既有内容是否发生非预期位置变化？ | CLS |
 | Smoothness | 重要画面变化能否连续、及时呈现？ | 场景化 Frame 稳定性指标集合 |
 
-只有存在重要的连续视觉更新时，帧节奏才具有用户体验意义。静态文章没有每帧动画需求，即使 rAF 回调很少也不代表卡顿；地图移动、拖拽、实时轨迹、Canvas/WebGL 动画或持续更新图表则依赖稳定更新。
+只有存在重要的连续视觉更新时，帧节奏才具有用户体验意义。静态文章没有每帧动画需求，即使 rAF 回调很少也不代表卡顿；交互滚动、拖拽、过渡动画、Canvas/WebGL 或其他持续变化的视觉内容则需要按照业务目标检验更新节奏。
 
 ~~~text
-用户操作 / 动画状态 / 实时数据
+用户输入 / 动画状态 / 需要更新的可视内容
      ↓
 产生新的视觉更新需求
      ↓
@@ -218,7 +218,7 @@ styleAndLayoutStart：浏览器正式样式布局阶段开始
 endTime = startTime + duration
 ~~~
 
-官方第一层先拆 Work 和 Render；在有有效字段的 LoAF 中，再把 Render 拆为 Pre-layout 与 Style/Layout 开始后的区间。**Work 高**先看 JS/任务/GC；**Pre-layout 高**先看 rAF 回调、地图或框架提交及强制同步布局；**第三段高**再深入 Style、Layout、Paint 等 Trace。第三段不能直接认定为纯 Layout 时间，也不覆盖完整屏幕最终呈现；无 renderStart 的记录不能机械做三段减法。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+官方第一层先拆 Work 和 Render；在有有效字段的 LoAF 中，再把 Render 拆为 Pre-layout 与 Style/Layout 开始后的区间。**Work 高**先看 JS/任务/GC；**Pre-layout 高**先看 rAF 回调、动画和组件提交及强制同步布局；**第三段高**再深入 Style、Layout、Paint 等 Trace。第三段不能直接认定为纯 Layout 时间，也不覆盖完整屏幕最终呈现；无 renderStart 的记录不能机械做三段减法。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【原生字段和边界】
 
@@ -282,49 +282,49 @@ LoAF Duration           = ① + ② + ③
 
 第三段虽然有时被称为 Style and Layout Duration，但从一个时间区间不能直接确定全部毫秒都是 Layout 计算，它还可能包含相关后续工作；若想分别确认 Style、Layout、Paint、Compositor、GPU，必须进一步查看 DevTools Performance Trace。LoAF 的 duration 也不能视为显示器最终 Presented Frame Latency。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
-### 【Pre-layout 具体执行什么，地图的“渲染准备”是否都属于这一阶段】
+### 【Pre-layout 的主要工作是帧回调和布局前的同步状态更新】
 
-LoAF 的三个区间必须以**实际执行时间**分类，而不能简单按业务函数名分类。Pre-layout 是本次 LoAF 的渲染周期已经开始、正式样式与布局阶段尚未开始的时间窗口，即：
+LoAF 的三个区间必须根据**实际执行时间**分类，而不是根据业务函数名称判断。Pre-layout 指本次帧的渲染周期已经开始、正式样式布局阶段尚未开始的时间窗口：
 
 ~~~text
 LoAF startTime
-   ↓ Work：进入渲染周期之前的主线程工作
+    ↓ Work：普通 JS Task 与渲染周期前的工作
 renderStart
-   ↓ Pre-layout：渲染周期已开始，但未到正式 Style/Layout
+    ↓ Pre-layout：rAF 回调、动画数据更新、同步提交
 styleAndLayoutStart
-   ↓ Style/Layout 及后续相关工作
+    ↓ Style/Layout 及后续相关工作
 LoAF endTime
 ~~~
 
-其中 Pre-layout 可能包括：
+这一时间区间可能出现：
 
-1. **rAF 回调**：读取当批队列、动画插值、轨迹点转换、更新摄像机或图层状态；
-2. **业务同步计算**：在 rAF 中执行的坐标转换、路径拼接、排序、Geometry 构建；
-3. **框架或地图库的同步提交**：在这一时间窗口里执行的组件状态提交、数据源调用、Canvas 2D 绘图命令或 WebGL 指令提交；
-4. **与本次渲染周期对齐的其他回调工作**：具体以浏览器实际调度和 Trace 为准。
+1. **rAF 回调执行**：根据当前时间计算动画状态、选择本帧需要执行的更新，以及少量同步数据计算。
+2. **视觉状态准备**：动画插值、组件状态计算、根据变化集合更新相关数据。
+3. **同步视图提交**：DOM 样式与结构修改、框架的同步工作、Canvas 或 WebGL API 的同步调用等。是否计入这一区间取决于它们何时执行。
+4. **强制同步样式与布局**：如果在同一个 JS 回调里先写布局属性又立即读取 offsetWidth / getBoundingClientRect，可能使浏览器提前计算 Style/Layout，即使正式的 styleAndLayoutStart 尚未到达。
 
-**并非所有地图数据处理都算 Pre-layout。** 例如 WebSocket onmessage 中解析和入队，如果发生在 renderStart 前，它们属于 Work；若数据处理被安排到 Worker，不会直接计入页面主线程 LoAF 的脚本阶段；若地图库把 Geometry 处理放到后台 Worker，rAF 中的同步 API 返回耗时可能很小，真正几何生成成本却在异步阶段。
+**不是所有视觉更新准备都算 Pre-layout。** 某个数据转换操作若发生在普通任务里、位于 renderStart 之前，就应看 Work；被 Worker 执行的计算不直接计入页面主线程 LoAF；某个 UI API 同步返回也不代表异步的渲染和屏幕呈现已经完成。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ~~~js
-socket.onmessage = (event) => {
-  // 通常由普通消息任务驱动；落在 renderStart 前则属于 Work。
-  pending.push(...JSON.parse(event.data));
-};
+const pendingChanges = [];
 
-function tick() {
-  // 以下同步代码若执行于 renderStart 与 styleAndLayoutStart 之间，
-  // 则属于 LoAF 的 Pre-layout 时间区间。
-  const batch = pending.splice(0, 100);
-  const positions = batch.map(convertPoint);
-  mapLayer.update(positions);
-  requestAnimationFrame(tick);
+// 假设输入回调作为普通 Task 执行。
+// 若它发生在 renderStart 之前，就属于 Work 区间。
+function onUpdate(nextState) {
+  pendingChanges.push(nextState);
 }
-requestAnimationFrame(tick);
+
+function frame() {
+  // 这里的同步执行若发生在正式 Style/Layout 之前，
+  // 通常归入 Pre-layout 时间区间。
+  const updates = pendingChanges.splice(0, 20);
+  applyVisibleUpdates(updates);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
 ~~~
 
-这不是“地图渲染框架每一帧都会严格这样执行”的规范流程。地图 API 的同步调用可能只是安排后续 Worker 或 GPU 工作，不能凭 mapLayer.update 的函数名认定完整图形绘制都在 Pre-layout。
-
-**Pre-layout 中也可能发生 Forced Style/Layout。** 例如 rAF 回调先修改 DOM 样式，再立刻读取 offsetHeight，浏览器可能被迫提前计算布局。Pre-layout 是一个**时间区间**，并不保证其中绝对没有样式和布局计算。LoAF 的 scripts[].forcedStyleAndLayoutDuration 可提示脚本中的强制布局，具体工作还需 Chrome Trace 核验。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+这只是用于说明任务时序的代码：实际工程不应在没有更新需求时无限循环 rAF，也不能假定 applyVisibleUpdates 的同步返回代表屏幕已经完成绘制。对于长帧中真正昂贵的函数，要继续查看 scripts 和 Performance Trace，而不是只凭 Pre-layout 数值做结论。
 
 ### 【完整算例】
 
@@ -410,10 +410,10 @@ LoAF.scripts 在满足浏览器归因条件时，可能包含 startTime、durati
 | 阶段或异常 | 常见现象 | 下一步证据 | 候选原因 |
 | --- | --- | --- | --- |
 | Work 高 | rAF 回调被推迟、长任务多 | Main Thread、Long Task、GC、LoAF scripts | 同步计算或消息回调占用 |
-| Pre-layout 高 | rAF 回调、地图提交时间长 | JS Profile、Framework Profiler、Forced Layout | 动画逻辑、过大批次、状态更新 |
+| Pre-layout 高 | rAF 回调与视图状态提交时间长 | JS Profile、Framework Profiler、Forced Layout | 动画逻辑、过量单帧工作、状态更新 |
 | Style/Layout 后区间高 | 帧内渲染相关成本高 | Style、Layout、Paint、Rendering Trace | DOM/Canvas 更新范围过大 |
-| JS 时间正常但视觉仍卡 | 地图 WebGL、复杂视觉场景不顺 | Raster、Compositor、GPU | Draw Call、纹理和合成成本 |
-| 运行越久越卡 | Heap、历史对象数或 GC 尖峰增长 | Heap Snapshot、Allocation Sampling、History Sweep | 内存保留或全量重建 |
+| JS 时间正常但视觉仍卡 | 复杂动画或图形场景不顺 | Raster、Compositor、GPU | 图形调用、纹理和合成成本 |
+| 运行越久越卡 | Heap、存活对象或 GC 尖峰增长 | Heap Snapshot、Allocation Sampling、长期性能对照 | 内存保留、持续分配或重复更新 |
 
 LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因；需要相同时间范围的多种证据和受控实验。
 
@@ -421,7 +421,7 @@ LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因
 
 **现象**：Frame Interval P95 增大、LoAF Work Duration 高、长任务与页面数据预处理时刻重叠。
 
-**常见原因**：同步 JSON 解析、排序、批量数据转换、复杂循环、第三方脚本、GC、持续 WebSocket 消息回调占用主线程。
+**常见原因**：同步 JSON 解析、排序、批量数据转换、复杂循环、第三方脚本、GC、持续事件或定时任务占用主线程。
 
 **诊断证据**：Long Task、LoAF.scripts、Main Thread、业务 User Timing、数据量和内存分配。
 
@@ -433,11 +433,11 @@ LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因
 
 **现象**：Render Pre-layout 区间高，每次 rAF 一次性处理过大数据，组件提交耗时持续增加。
 
-**常见原因**：一次消费全部队列、超大 batch、每新增一个点都引发全图刷新、图表状态或响应式依赖更新范围大。
+**常见原因**：一次执行大量待更新任务、重复创建完整视图、过多组件同时提交，或响应式依赖影响范围过大。
 
 **诊断证据**：LoAF Script Attribution、业务 Commit Duration、框架 Profiler、Batch Size 与更新次数。
 
-**优化方向**：合并重复更新、减少每次提交的工作、限制单帧 batch、及时丢弃无意义的重复中间状态。
+**优化方向**：合并重复更新、减少每次提交的工作、把不紧急的更新分散到其他执行机会，并避免无意义的中间状态重复提交。
 
 **边界**：requestAnimationFrame 只提供调度时机，不会自动把 100ms 同步任务切碎。
 
@@ -474,9 +474,9 @@ LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因
 | 问题 | 常见现象 | 需要验证的证据 | 优化方向 |
 | --- | --- | --- | --- |
 | Allocation Churn（频繁短生命周期分配） | Heap 频繁上涨/回落，间歇性掉帧 | GC Trace、Allocation Sampling、尖峰与帧时刻相关性 | 减少高频路径中不必要的临时数组、对象和复制 |
-| Retained Memory（长期存活对象增加） | 页面运行越久占用越高，可能出现更贵的回收或重绘 | Heap Snapshot、Retainers、History Size、Commit Duration | 清理无效引用；将完整业务历史与活动渲染对象解耦 |
+| Retained Memory（长期存活对象增加） | 页面运行越久占用越高，可能出现回收或重复计算成本增加 | Heap Snapshot、Retainers、存活对象和提交耗时 | 清理无效引用、减少不必要的长期驻留对象 |
 
-举例：每新增轨迹点都执行 history = [...history, point]，并对全量 history 进行 map 转换。随着历史 H 增加，每次都分配新数组和大量中间对象；不仅应用计算时间随 H 增大，还可能引入越来越多 GC 压力。相反，合理的追加或增量更新减少无必要分配，但不能为了减少对象创建而破坏 React/Vue 的状态正确性。
+例如一个动画更新函数每帧创建大量临时数组、转换全部可见对象数据，即使最终只改变少量视觉元素，也会产生多余的 CPU 工作与内存分配。减少不必要的中间对象有助于降低 GC 压力；但在 React/Vue 等框架中仍须遵守状态更新语义，不能为了避免分配而随意原地修改状态。
 
 **“Heap 大”并不等于“GC 导致掉帧”。** 需要在 DevTools Performance 中证明 GC 事件与长帧或 rAF 尖峰重叠，再使用 Memory 的 Allocation Sampling、Heap Snapshot 找高分配函数和被持续保留的对象。Heap 锯齿是线索而非充分证据；合法保留的历史数据也不一定是泄漏。[[7]](https://developer.chrome.com/docs/devtools/memory-problems)
 
@@ -486,542 +486,159 @@ LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因
 
 后台标签 rAF 可能暂停；静态页面并不需要持续更新；低功耗或可变刷新率模式可能改变采样间隔。这些都要求先确认页面有重要的持续视觉更新需求，再评价目标 FPS。
 
-## 6. 持续更新还需分析队列、负载与历史数据的长期成本
+## 6. 根据已定位的瓶颈选择渲染与运行时优化策略
 
-### 【帧稳定不代表业务视觉结果及时】
+### 【优化的目标是减少必要工作的成本，而不是机械提高 FPS】
 
-实时可视化还要检查数据 Arrival Rate、Consume Rate、Queue Length、Queue Age、Batch Size 和 Commit Duration。FPS 正常但 Queue Age 持续增长，表示画面可能越来越旧；队列很短但每次提交导致卡顿，则是不同的瓶颈。需要把视觉结果与处理进度放在同一时间窗口。
+分析从视觉异常进入了 rAF 与 LoAF 时间阶段，完成 JS、渲染、合成或内存证据的验证以后，才能合理选择优化。不同瓶颈的优化目标不同：有的要减少**任务总量**，有的要减少**单次执行峰值**，有的要减少**不必要的重复渲染**，还有的要控制**长期内存和对象生命周期**。
 
-### 【实时展示还必须区分帧节奏和数据时效】
+| 根因类型 | 典型问题 | 对应的优化方式 | 验证指标与副作用 |
+| --- | --- | --- | --- |
+| Work：同步任务阻塞 | 大计算或第三方脚本连续占用主线程 | 删除重复计算、缩短同步路径、拆分非紧急任务；适用时使用 Worker | Long Task、Work、INP；Worker 有传输成本 |
+| Pre-layout：动画回调过重 | 每次 rAF 都做大量计算与组件更新 | 只处理变化数据、缓存可复用结果、合并更新、限制每次同步处理量 | Pre-layout、回调耗时、Frame Interval；过度拆分也有成本 |
+| 强制同步 Style/Layout | DOM 写后立即读取布局，反复触发计算 | 集中读取几何信息、批量修改样式、减少反复读写 | Forced Style/Layout、Trace；确保状态一致 |
+| Style/Layout 成本 | DOM 规模或样式依赖范围过大 | 减少同时参与布局的节点、虚拟化、调整隔离边界 | Style/Layout 耗时；注意滚动与可访问性 |
+| Paint/Raster/Composite 成本 | 像素变化区域大、图层与视觉效果复杂 | 缓存静态内容、减少绘制区域、恰当使用合成动画、控制图层数量 | Paint/Raster/GPU 和真实回放；缓存可能增加内存 |
+| GC / 内存成本 | 高频临时对象、无效长期引用 | 降低不必要的 Allocation、及时清理监听器/资源、控制对象生存期 | GC/Allocation/Heap 与帧尖峰相关性 |
+| 频繁视觉更新 | 相同结果在短时间内重复提交 | 合并非必要更新、按视觉变化需求调度、减少冗余提交 | 视觉时效与单次成本；不要牺牲交互响应 |
+| 长期运行成本增长 | 可见对象和保留状态持续扩大 | 按需管理活跃对象、增量处理、减少重复计算与绘制 | 长时间样本中的 Frame P95、Heap 与 CPU 趋势 |
+
+这些是通用问题类型，而非某个实时平台的参数调优清单。具体工作负载可能涉及网路速率、队列、特定地图 Geometry 和 GPU Buffer，但这些细节须由对应业务或项目分析文档展开。
+
+### 【长任务调度优化应兼顾交互响应和连续视觉更新】
+
+当 Work 阶段以 CPU 密集计算为主时，单纯把计算放进 rAF 不会使任务变轻；它只改变执行时机。如果 70ms 计算不需要在当前帧同步完成，可将其拆为能够让出主线程的非紧急片段，或者在数据边界允许时转移到 Worker。
+
+但如果拆得太细、每段都带来调度开销，也可能损害总体吞吐；如果使用 setTimeout 而没有优先级策略，非关键任务仍可能占用关键交互与动画时刻。所以优化时应同时测量 Long Task、INP、Frame Interval P95 与完成必要业务工作的总时间。
+
+### 【动画和绘制优化应遵循最小必要视觉更新】
+
+Pre-layout 中的工作可以通过减少每次 rAF 中的计算、避免对没有变化的元素提交更新来降低；Style/Layout 中可以通过缩小 DOM 影响范围来降低；Paint 与合成中则应考虑变化像素区域、图层复用和 GPU 工作。
+
+渲染代码采用 transform/opacity 不必然让所有视觉效果都无成本，依然应关注合成图层内存、动画时长以及是否发生 GPU 压力。只有监测到对应瓶颈，才能说明某项缓存、隔离或动画属性调整是否有效。[[3]](https://web.dev/articles/rendering-performance)
+
+### 【内存和 GC 优化需要先证明造成了可见卡顿】
+
+高 Heap 或锯齿曲线不能直接证明垃圾回收导致掉帧。要先找到与 rAF 长间隔或 LoAF 异常重合的 GC 工作，再定位 Allocation Sampling 和持续保留对象的来源，最后通过减少临时分配与清理无效引用复测。
+
+**不应强行追求零对象分配。** 适度分配是正常 JavaScript 行为，错误复用对象可能引入状态污染、缓存泄漏或交互错误。内存优化须同时保证业务状态正确性。[[6]](https://v8.dev/blog/trash-talk) [[7]](https://developer.chrome.com/docs/devtools/memory-problems)
+
+### 【复杂可视化的专项策略不属于通用框架主线】
+
+如果瓶颈出现在特定可视化引擎的数据源更新、Geometry 构建、GPU Buffer 或分段历史绘制，应将其放进对应的专项分析，而不是将“轨迹点 / rate / batch / Feature 更新”作为 Smoothness 的普遍处理流程。其一般化问题仍然是：是否存在重复工作、是否每次都处理未变化的内容、最终是否超出了当前帧的预算。
+
+讨论中的针对性推演已单独保存为[实时轨迹持续渲染与历史数据成本：项目专项分析（草稿）](./项目分析-实时轨迹持续渲染与历史数据性能-草稿.md)，用于和通用的帧预算、工作时间归因机制建立关联；未核实的项目实现不作为通用知识的依据。
+
+## 7. 通过实验和真实用户数据验证流畅度优化效果
+
+### 【从观测结果建立可复现、可证伪的原因假设】
+
+完成阶段归因后，必须将诊断表达为明确的因果假设，例如：
 
 ~~~text
-数据产生 → 网络接收 → 待处理队列
-                         ↓
-                    分批消费与提交
-                         ↓
-                     更新视觉画面
+观察到：活动动画窗口的 Frame Interval P95 明显上升
+    ↓
+记录 LoAF：多数长帧集中在 Work 或 Pre-layout
+    ↓
+定位到某类同步执行工作与异常时间段重叠
+    ↓
+假设：该类工作导致关键视觉更新超过截止时间
+    ↓
+固定设备、页面和视觉变化，减少或移除这类工作
+    ↓
+比较 LoAF 阶段耗时、Frame Interval、视觉录制和交互响应
+    ↓
+判断假设得到支持，或继续调查其他原因
 ~~~
 
-页面可以持续 60 FPS，却因为队列延迟越来越大而显示旧数据；也可以很快消费所有数据，但单次巨大更新让画面不断卡顿。因此对于实时展示，要同时考核 Visual Continuity（视觉连续性）、Data Freshness（数据新鲜度）与 Interaction Quality（交互质量）。
+如果仅仅做完某个优化动作却没有对比原始问题，是无法证明方案真实提升了用户视觉体验的。GC、强制布局、绘制、合成等原因，也应按同一套实验逻辑验证。
 
-### 【过程指标反映能否追上业务视觉更新需求】
+### 【实验应按所怀疑的瓶颈改变一个关键条件】
 
-| 过程指标 | 诊断目的 |
+| 对照实验 | 适用诊断方向 | 主要判断 |
+| --- | --- | --- |
+| 空闲基线与持续视觉变化对照 | 浏览器基础成本与动画需求 | 是否是持续视觉更新带来的压力 |
+| 业务回调空执行 / 实际执行对照 | rAF 或业务同步计算 | JS 本身是否占据了主要帧预算 |
+| 原始 DOM 更新 / 限制影响范围 | Style / Layout | 布局范围是否放大耗时 |
+| 保留/关闭复杂视觉效果 | Paint / Composite / GPU | 视觉渲染效果是否主导瓶颈 |
+| 正常分配 / 减少临时对象 | GC / 分配压力 | GC 次数、暂停与帧尖峰是否下降 |
+| 新开页面 / 长期运行 | 资源生命周期与内存 | 是否存在随运行时长加重的问题 |
+| 低端/高刷新率设备对照 | 设备预算差异 | 优化是否覆盖目标使用环境 |
+
+实验必须固定其他条件，记录浏览器版本、设备负载、页面可见性、视口、网络与交互序列。对每个候选根因，也应该能描述“如果这个假设正确，哪一个诊断指标应显著变化”。
+
+### 【RUM 需要分清结果指标与异常诊断明细】
+
+Smoothness 目前没有统一 Core Web Vital。线上可以保留受控活动窗口的观察数据：
+
+~~~text
+Context：App / Version / Route / View / Device / Browser
+     ↓
+Sampling Context：是否有重要连续更新、Visibility、目标刷新周期
+     ↓
+Result：rAF FPS、Frame Interval P95、Longest Gap、超预算比例
+     ↓
+Diagnosis：LoAF Count / Duration / Blocking / Work / Pre-layout
+           Long Task / Scripts Attribution、可用时的用户计时信息
+     ↓
+可选业务语义：关键视觉更新延迟（只有业务明确需要时才采集）
+~~~
+
+结果中的 rAF FPS 只是主线程动画回调密度，不能冒充真实 Presented FPS；LoAF 只代表超过 50ms 的长帧，缺乏 LoAF 不等于未发生超过刷新预算的更新延迟。LoAF Rate 等自定义频次必须说明分母和采样窗口，不能混算不同刷新率和有/无动画需求的用户。
+
+### 【监控 SDK 不能因为观测本身引入新的长帧】
+
+采样时应有界、按需：仅对需要连续更新的活动窗口使用短时 rAF 测量，页面 hidden 时暂停并重置上一帧时间戳；避免逐帧触发网络请求、打印日志、读取布局或做昂贵统计。LoAF 诊断可以低成本收集异常帧，但也需要限制采样量、过滤 URL/函数来源中的敏感信息、标识浏览器不支持和缓冲数据缺失。
+
+### 【最终必须回到用户视觉体验与跨指标验证】
+
+**Lab** 使用 Chrome Performance 录制 Main、Frames、Rendering、Raster、Compositor、GPU、Memory，结合场景录像和复现实验验证哪种工作消耗了预算。
+
+**Field** 按浏览器、设备、路由、刷新目标与视觉活动窗口分群，验证 Frame Interval P95、Jank、Longest Gap 等是否改善，同时关注 INP、页面可用性和业务正确性；如果视觉节奏改善但用户交互变慢，不能认定为完整成功。
+
+~~~text
+视觉异常是否减少？
+    +
+导致异常的具体阶段时间是否下降？
+    +
+交互与功能是否依旧正确？
+    ↓
+三者一致才形成可靠的流畅度优化结论
+~~~
+
+## 8. 与其他用户体验和现有知识文档建立关系
+
+### 【四类体验指标分别回答不同的问题】
+
+| 体验维度 | 主要结果与诊断 |
 | --- | --- |
-| Data Arrival Rate | 数据有多快进入系统 |
-| Consume / Commit Rate | 页面单位时间真正处理或提交多少工作 |
-| Queue Length / Oldest Queue Age | 数据是否持续积压，画面是否越来越旧 |
-| Batch Size | 每次渲染提交多少点或元素 |
-| Commit Duration P95 | 业务视图提交是否在超出安全预算 |
-| Visual State Age | 当前画面相对业务最新状态落后多久 |
-| Render Request Rate | 每秒需要或实际请求多少次视觉更新 |
-| Historical Visible Object Count | 有多少历史对象仍参与绘制 |
-
-结果帧节奏正常、Queue Age 持续增长并不是健康实时页面。过程指标应与帧结果指标同时查看。
-
-### 【N、K、C、H、B 分别代表五个不同层面的压力】
-
-对于持续渲染场景，可以抽象五个变量来分析成本：
-
-| 变量 | 中文含义 | 主要风险 |
-| --- | --- | --- |
-| N | 单位时间进入并需要可视化的数据数量 | 输入量超过系统处理容量 |
-| K | 单位时间触发状态提交、重绘的次数 | 重复支付固定更新成本 |
-| C | 每次状态提交、计算和绘制的成本 | 单次工作突破帧预算 |
-| H | 已积累的历史数据或可视对象规模 | 新增一个点仍要处理全部历史 |
-| B | 设备、刷新率与浏览器实际可用预算 | 不同设备或场景容量不同 |
-
-这不是标准浏览器公式，而是一套分析工程瓶颈的抽象。一个简单说明模型：
-
-~~~text
-Cost Per Update
-≈ Fixed Cost + Per-item Cost × Current Batch + History-dependent Cost(H)
-
-每秒整体更新工作量
-≈ K × Cost Per Update
-
-期望同时满足：
-每次重要更新的工作量 < 可用帧预算
-数据消费速度 >= 数据到达速度
-~~~
-
-模型用来回答“为什么卡”，不是保证所有浏览器 Rendering 和 GPU 工作都呈线性增长。真实数据必须通过 Profiling 证明。
-
-### 【N 过高：视觉数据需求超过设备容量】
-
-高频 WebSocket 轨迹、数万行表格、多个高密度地图图层或复杂 Canvas 粒子场景，单位时间新增可视化对象过多。
-
-对应优化是降低无意义的数据绘制工作：Sampling（采样）、Aggregation（聚合）、Level of Detail（细节层级）、可视区域过滤、降低远处/非重点对象精度。业务数据的完整存储与实时绘制量可以分离，不能为了流畅度盲目丢失异常点、峰值或轨迹关键转折。
-
-### 【K 过高：同样总数据量被反复提交】
-
-假设每秒新增 20 个点。方案一每新增一点就重新触发整个地图视图更新，共 20 次；方案二合并成 4 次、每次 5 个点，可能减少重复的固定框架与绘图成本。
-
-但是 batch 不是越大越好。若每次 batch 太大，即使 K 降低，单次 C 仍可能超帧预算。优化应结合“提交次数减少了多少”和“每次提交的尾部耗时增加了多少”分析。
-
-### 【C 和 H 相互放大：历史轨迹成为持续成本】
-
-例如新收到 1 个点，却在每次地图更新时重新复制历史数组、重新构建全部 Polyline Geometry、重建所有 Feature 或重新计算可视对象样式。这些操作会让新增点的代价受 H 影响。
-
-~~~text
-时间推进 / 历史 H 增长
-    ↓
-每新增一个点都扫描或重建历史 H
-    ↓
-单次 Commit Duration 增大
-    ↓
-开始超过 Frame Budget
-    ↓
-LoAF 增加、Frame Interval P95 上升
-    ↓
-数据队列可能进一步积压
-~~~
-
-优先考虑增量更新、分段轨迹、Geometry 缓存、只重绘有变化的块、视口裁剪、减少 Scene Graph 对象数量。业务历史可以长期在服务端保留，但不应要求所有历史数据在客户端每一帧重新参与绘制。
-
-### 【B 变化：不能在单一开发机上决定固定最优值】
-
-同一个批量更新方案，在低端移动设备、高刷新率屏幕、后台任务繁忙与空闲环境下，最大可安全处理的数据量不同。对自适应系统，目标不是找到永久固定 batch，而是根据实际 Frame Pressure 与队列状态选择安全的吞吐和质量水平。
-
-### 【输入 rate 和更新 batch 是两条不同的控制线】
-
-~~~text
-服务端 rate：每秒发送多少点
-          ↓
-WebSocket
-          ↓
-客户端待渲染 Queue
-          ↓
-rAF 调度
-  每次取 batch 个点
-          ↓
-更新图表、地图或 Canvas
-          ↓
-浏览器实际准备和显示新画面
-~~~
-
-rate 改变输入量 N；batch 改变一次更新的工作量和单位时间更新次数 K；队列连接两条控制线，反映处理进度是否跟得上。
-
-| Frame Interval | Queue / Queue Age | 代表性问题 |
-| --- | --- | --- |
-| 稳定 | 稳定且很低 | 画面连续、数据及时 |
-| 稳定 | 持续增长 | FPS 尚可，但内容越来越旧 |
-| 频繁超预算 | 队列已消化 | 吞吐够快，但单次更新造成顿挫 |
-| 频繁超预算 | 持续增长 | 既不流畅，也越来越落后 |
-
-因此需要同时观察 Arrival Rate、Consume Rate、Queue Length、Oldest Queue Age、Commit Duration P95、Frame Interval P95。高 FPS 不是可以忽略 Queue Age 的理由。
-
-### 【自适应调节的三个基本场景】
-
-~~~text
-Queue Growing + Frame Budget Healthy
-→ 可逐步增大 batch，尝试提高消费吞吐
-
-Queue Growing + Frame Budget Exceeded
-→ 不应继续盲目增大 batch
-→ 应减少无意义数据绘制、提高增量能力、降低输入/画质
-
-Queue Empty + Frame Healthy
-→ 在观察稳定性后谨慎恢复质量或输出速率
-~~~
-
-这属于离散反馈控制思路。为避免不断在档位间来回跳，应设计 Hysteresis（滞回）、Cooldown（冷却期）和渐进恢复。控制器不应只根据一秒内平均 FPS 调节，否则偶发尖峰和历史成本会被掩盖。
-
-## 7. 通过实时地图新增轨迹点检验历史更新和绘制成本
-
-### 【新增一点不等于地图必须重建全部历史】
-
-一条轨迹新增 P10001 时，先分清**业务历史数据是否重新处理全部点**、**Geometry 或 GPU Buffer 是否重新构建/上传**、**当前可见地图是否重新绘制**。完全可能前两者按增量维护，最后仍用已有 Geometry 绘制新画面。下列 Canvas 2D、WebGL、GeoJSON 数据源的区别，用于把前面确定的时间热点映射到实际实现，而不应被误当作所有地图库的统一内部流水线。
-
-### 【实时地图新增一个点涉及四层工作，而不是一次“渲染”操作】
-
-以已经存在 10,000 个历史轨迹点、服务端又推送 P10001 为例，整个链路可以分成四个长期有效的层次：
-
-~~~text
-① 数据接收与逻辑状态更新（管理业务数据）
-   WebSocket 收到 P10001
-       ↓ 校验经纬度 / 解析时间 / 规范化结构
-   将 P10001 加入历史数据与待渲染队列
-       ↓
-② 图形数据准备与资源更新（生成可供地图引擎使用的数据）
-   rAF 取出 batch
-       ↓ 坐标投影、连接末尾线段或更新 Feature
-   Geometry / 图层数据源 / GPU Buffer 更新
-       ↓
-③ 地图图形绘制（生成这一帧的图形内容）
-   引擎提交 Draw Commands
-       ↓ GPU 执行、Raster、Compositor
-   与底图及其他图层合成
-       ↓
-④ 屏幕呈现（最终用户看见）
-   显示链路在刷新机会提交新画面
-~~~
-
-四层只是**按职责划分**，不表示所有地图引擎把工作固定安排到四个连续的主线程任务。地图引擎可能利用 Worker 解析数据或构建 Geometry，Canvas2D 的绘图则可能与应用 JS 在同一任务中执行；WebGL 调用主要提交命令，GPU 真正绘制的时间不一定包含在调用耗时里。
-
-对于新增点，从几何语义看只需要添加末尾线段：
-
-~~~text
-已有：P1 — P2 — … — P9999 — P10000
-新增：P1 — P2 — … — P9999 — P10000 — P10001
-                                    ↑ 新线段
-~~~
-
-但是**“只需要新增一条线段”是几何语义上的最小变更，不是所有地图 API 都保证做到的最小计算量**。
-
-### 【历史数据重处理、Geometry 重建和地图画面重绘是三种不同的“全量”】
-
-| 层次 | “全量”的具体含义 | 增量优化重点 |
-| --- | --- | --- |
-| 业务数据处理 | 新增一个点就遍历或复制所有历史点 | 追加、增量坐标转换、少创建临时对象 |
-| 图形数据源与 Geometry | 新增一个点就重新解析全部 LineString、构造所有顶点、上传全部缓冲 | 分块、增量 Feature 或顶点、复用 GPU Buffer |
-| 画面绘制与合成 | 新画面需要重新提交当前视口内的部分/全部 Draw Call | 图层缓存、可视范围过滤、按需绘制、减少 GPU 工作 |
-
-**即使每次更新都重新绘制当前视口，也不代表之前的经纬度、线段 Geometry、纹理与 GPU Buffer 全部被重新计算。** 某些引擎会每帧绘制可见图层，但持续复用不变的图形资源；真正要防范的是“新点触发所有历史资源再次处理”的成本随着 H 增长。
-
-反过来，即使应用代码只是 history.push(newPoint)，如果随后调用的是包含全部历史轨迹的 source.setData(fullGeoJSON)，地图内部仍可能按整套 Source 更新。Mapbox GL JS 官方性能模型把 Source Update Time 与该 Source 的顶点数、引用层数等联系起来，并建议将频繁变动的数据与大型静态数据源分离。[[8]](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/)
-
-### 【Canvas 2D、WebGL 和 GeoJSON 地图库有不同的更新策略】
-
-**Canvas 2D：固定视图可以只追加末尾像素。**
-
-~~~js
-// lastPoint 和 newPoint 已经是同一张 Canvas 的像素坐标。
-// 仅适合旧图像可以保留、视图没有整体变化的情况。
-function appendSegment(ctx, lastPoint, newPoint) {
-  ctx.beginPath();
-  ctx.moveTo(lastPoint.x, lastPoint.y);
-  ctx.lineTo(newPoint.x, newPoint.y);
-  ctx.stroke();
-}
-~~~
-
-如果地图可以复用旧像素，新增点只需绘制末尾线段。但是一旦地图缩放、平移、改变投影、样式、需要擦除轨迹或恢复遮挡内容，先前像素可能不再正确，需要重绘受影响区域、分层缓存或重绘全部必要画面。MDN 也建议针对复杂 Canvas 场景预渲染静态区域、采用分层 Canvas 和减少无谓重绘。[[9]](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
-
-**WebGL：可以重用已构建的 GPU Geometry。**
-
-~~~text
-历史点 → 已有 Vertex Buffer（GPU 顶点缓冲）
-                        ↓
-新增点 → 构建最后一段线的新增顶点
-                        ↓
-若引擎具备可追加/局部更新的 Buffer 管理
-  → 只上传相关新数据，旧 Geometry 保持复用
-                        ↓
-GPU 重新绘制所需的可见线段或图层
-~~~
-
-WebGL 具备局部 Buffer 更新能力，但**某个地图库的 Polyline API 是否提供顶点级追加，是另一个问题**。对于仅暴露“替换整条线”接口的图库，应用即便只更新一个点，也可能触发整个线的 Geometry 重新构建。
-
-**GeoJSON 数据源：差量到 Feature，不一定差量到顶点。**
-
-例如：
-
-~~~js
-// 通用 GeoJSON Source 更新示意：向引擎提交完整历史轨迹。
-history.push(newPoint);
-source.setData({
-  type: 'Feature',
-  properties: {},
-  geometry: {
-    type: 'LineString',
-    coordinates: history
-  }
-});
-~~~
-
-这里 history.push 本身是追加，但 setData 仍传入整个历史数组。是否重新解析、重建和重绘、在哪个 Worker 中完成，要按具体图库实现和 Profile 确认。对于 MapLibre GL JS，GeoJSONSource.updateData() 支持按唯一 Feature ID 做差量增删改，前提是数据源里的 Feature 有可用且唯一的 ID。[[10]](https://maplibre.org/maplibre-gl-js/docs/API/classes/GeoJSONSource/)
-
-然而 MapLibre 的 GeoJSONFeatureDiff 用 newGeometry **替换一个 Feature 的完整 Geometry**，而不是提供向同一个 LineString 的末尾追加一个坐标的通用方法。若整条 10,000 点轨迹只有一个 Feature，更新该 Feature 的 Geometry 仍可能涉及它的所有顶点。[[11]](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/GeoJSONFeatureDiff/)
-
-因此可以探索把历史轨迹拆为稳定 Chunk 与一个活动 Chunk：
-
-~~~text
-完整业务历史轨迹
-  ├─ Chunk 1：P1～P1000       已封存
-  ├─ Chunk 2：P1000～P2000    已封存
-  ├─ ...
-  └─ Active Chunk：当前新增点继续追加
-       ├─ P10000
-       └─ P10001
-~~~
-
-只有活动 Chunk 接受新的坐标；封存的 Chunk 尽可能复用已有 Feature、Geometry 与缓存。实现需处理块边界线段重叠、连线连续性、样式匹配，以及过多 Chunk 带来的 Source/Layer/Draw Call 成本，不能把 Chunk 无限拆细。**Feature 级增量、Geometry 级增量和最终 Draw Call 是否减少，分别验证。**
-
-### 【业务“渲染前”与 LoAF Pre-layout 的分类边界】
-
-LoAF 的阶段基于时间位置，而不是地图函数的业务职责，因此还要重新映射：
-
-| 地图工作 | 常见执行位置 | LoAF 中的可能归属 |
-| --- | --- | --- |
-| WebSocket 消息解析与历史入队 | 普通消息 Task | 若在 renderStart 之前，属于 Work |
-| 地理坐标转换与预处理 | 主线程消息 Task / rAF / Worker | 取决于时机；Worker 不直接计入主线程 LoAF |
-| rAF 取出 batch 并提交地图更新 | rAF 同步回调 | 通常属于 Pre-layout |
-| rAF 中同步生成 Geometry 或绘制 Canvas | rAF 回调 | 可处于 Pre-layout，即使函数名叫 render |
-| WebGL 画图命令的 CPU 提交 | 地图渲染回调 | JS 提交可能属于 Pre-layout |
-| 浏览器 CSS Style / Layout | 渲染更新阶段 | 与 LoAF 的 styleAndLayoutStart 相关 |
-| 地图库 Worker / GPU 绘制与合成 | 异步线程或设备 | 普通 LoAF 分段不提供完整 GPU/呈现时间 |
-
-**地图 WebGL 绘制不等于浏览器 CSS Layout。** 渲染引擎可能在 rAF 期间提交 WebGL 命令，使同步提交时间计入 Pre-layout，但 GPU 的真正绘制与最终屏幕呈现不一定体现在这里。所以 mapLayer.update() 同步返回很快，不能说明新轨迹已经完成屏幕呈现。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
-
-### 【通过 History Sweep 和受控插桩判断当前到底是哪种全量】
-
-要证明“历史越多越卡”到底发生在业务数据、Geometry 还是最终绘制层，必须分别测量；示意：
-
-~~~js
-function updateTrajectory(batch) {
-  const t0 = performance.now();
-  appendToBusinessHistory(batch);
-  const t1 = performance.now();
-  submitToMapSource(batch);
-  const t2 = performance.now();
-
-  record({
-    historyUpdateMs: t1 - t0,
-    sourceCallMs: t2 - t1
-  });
-}
-~~~
-
-代码解释：
-
-- historyUpdateMs 只代表业务历史数据更新的同步耗时；
-- sourceCallMs 只代表地图 Source API 的同步返回成本；
-- **不能把 sourceCallMs 当成完整 Geometry 构建、Worker 执行、Raster、GPU 或屏幕呈现耗时**。需要结合地图 Source 加载完成信号、引擎事件和 Chrome Trace 分析后续异步成本。
-
-建议固定输入 rate、batch、地图视口、设备与数据内容，仅改变历史规模 H，采集 Frame Interval P95、LoAF Work/Pre-layout、业务提交耗时、地图更新相关 Trace、Memory 与 GC。再做三个对照：
-
-1. **No-op Update**：保留同样的数据到达与 rAF 调度，但不提交地图图层。若帧稳定，说明真正地图更新链路有明显压力。
-2. **Full Source vs Chunk / Incremental**：相同轨迹和视口，分别整体 setData 与分段/差量更新，比较 Geometry 处理和真正画面成本。
-3. **Fixed Camera vs Pan/Zoom**：固定视口时是否能复用旧像素、几何和资源？缩放、平移、变更样式时是否仍然需要更多重绘？
-
-结果解释：如果随着 H 增加，JS historyUpdateMs 变长，优先检查历史遍历与对象分配；如果同步 API 很快、但 LoAF/地图 Worker 或 GPU Trace 随 H 变长，优先分析图库的数据源、Geometry 与绘制方式；如果增量更新只改善 CPU 解析，GPU 仍随可见顶点数明显增加，就需要考虑视口裁剪、LOD、分层和可见对象规模控制。
-
-这套三层区分是实时轨迹之外同样可迁移的性能判断方法：**追加业务状态 ≠ 增量更新几何 ≠ 局部重绘画面**。
-
-## 8. 根据已经确认的根因选择对应优化方案
-
-### 【优化应对准工作总量、重复次数或单帧峰值】
-
-| 根因 | 优先优化策略 | 验证依据 | 主要取舍 |
-| --- | --- | --- | --- |
-| Work 高：同步任务过重 | 减少计算、拆解非关键任务、适用时使用 Worker | Work、Long Task、INP、Frame Interval | Worker 消息和复制有开销 |
-| Pre-layout 高：rAF 和视图提交过重 | 减小单帧 batch、缓存坐标、合并更新、减少组件提交 | Pre-layout、Commit P95、Frame P95 | batch 过小会增大重复固定成本 |
-| 强制同步 Style/Layout | DOM 读取与修改分批、减少强制测量 | forcedStyleAndLayoutDuration、Trace | 读写时序必须保持业务正确 |
-| Style/Layout 高 | 缩小 DOM 和响应式更新范围、虚拟化、布局隔离 | Rendering Track 中的相关耗时 | 复杂交互需要同步调整 |
-| Paint/Raster/GPU 高 | 局部更新、缓存静态层、复用 Geometry/纹理、LOD | Paint / Raster / GPU 和真实视觉录制 | 缓存占内存；LOD 有画质取舍 |
-| GC 尖峰 | 减少高频路径临时分配、管理对象生命周期 | Allocation Sampling、GC、Frame P95 | 不破坏框架状态不可变性 |
-| 历史 H 越大越慢 | 分段轨迹、增量 Buffer、视口裁剪、滑动渲染集 | History Sweep 和地图更新 Trace | 分块和缓存有维护成本 |
-| Queue Age 持续增长 | 背压、采样/聚合、根据容量调 batch 和 rate | Consume Rate、Queue Age、端到端可见延迟 | 需保留关键业务数据 |
-
-### 【优化之后必须验证用户看到的新画面更及时】
-
-~~~text
-找出异常时间窗口
-  ↓
-确定 LoAF 阶段和候选原因
-  ↓
-减少相应工作量、重复频率或单帧峰值
-  ↓
-比较 Frame Interval 与 LoAF 时长是否改善
-  ↓
-同时核对 Queue Age、INP、画质、数据完整性
-  ↓
-符合业务目标才视为真正优化
-~~~
-
-例如增大 batch 可能减少渲染次数却放大单次 C，使 Pre-layout 变差；Worker 可能减少 Work 却不影响地图的 GPU Geometry 重建。不能用“执行了某项优化技术”代替可验证的性能效果。
-
-## 9. 通过受控实验、线上监控与最终体验闭环验证
-
-### 【诊断输出必须是可证伪的因果假设】
-
-完整的问题记录可以统一成：视觉现象 → 结果指标变化 → LoAF / Trace 的主要耗时阶段 → 结合内存、对象、队列和地图数据源形成根因假设 → 只改变一项关键条件 → 重新测量帧稳定性与业务进度。尤其要覆盖弱设备、冷加载、长历史、持续数据输入，而不是只在空闲开发机上观察平均 FPS。
-
-### 【诊断历史 H 是否构成根因的最小对照实验】
-
-先固定输入 rate、batch、视口和数据生成方式，分别在 H=1千、1万、5万等不同历史规模下测量单次提交时长、LoAF 与 Frame P95。
-
-再做两个实验：
-
-1. **No-op / Empty Render**：保留相同 rAF 调度与数据输入，但不执行实际地图重绘，判断调度本身是否昂贵。
-2. **Incremental vs Full Rebuild**：保留相同新增点规模，只改变更新策略，比较 Commit Duration 是否仍随 H 线性上升。
-
-如果只有真实重绘随 H 明显变慢，则应进入 Geometry/Scene 的历史依赖分析，而不是继续提高 batch 试图掩盖成本。这个框架也适用于 Canvas、WebGL、图表以及响应式列表。
-
-### 【先定位哪个可见更新窗口不符合预期】
-
-~~~text
-用户报告滚动不顺、动画停顿或实时轨迹卡顿
-    ↓
-这段时间是否有重要的持续视觉更新？
-    ├─ 否 → 不直接使用 FPS 解释用户体验
-    └─ 是 → 确定目标刷新节奏与设备基线
-                 ↓
-             rAF Frame Interval P95 / Budget Hit Rate / Longest Gap
-                 ↓
-             与 Queue Age、Commit Duration、Memory 同时对比
-                 ↓
-             是否有 LoAF / Long Task？
-             ├─ 有 → 拆 Work / Pre-layout / Layout-and-later
-             │        ↓
-             │      Script Attribution / Trace 证据
-             └─ 没有 → 检查 <50ms 的超预算帧、Compositor/GPU、
-                         实际视觉变化、浏览器限频与测量能力
-                 ↓
-             候选瓶颈来自数据量 N、更新次数 K、
-             单次成本 C、历史 H，还是设备预算 B？
-                 ↓
-             单变量实验复现与验证
-                 ↓
-             整体流畅度、数据新鲜度和交互质量共同改善？
-~~~
-
-必须按次序从可观察异常收敛到候选根因。发现 LoAF 不意味着主线程某一个函数一定很慢；rAF FPS 较低不意味着一定是掉了同样数量的屏幕帧；GPU 负担重也不能简单用减少 JS Bundle 字节数来解决。
-
-### 【五组实验逐步确认根因】
-
-| 实验 | 固定条件 | 变化条件 | 主要判断 |
-| --- | --- | --- | --- |
-| Idle Baseline | 设备、视口和应用 | 暂停持续负载 | 页面本身与浏览器基线开销 |
-| Empty rAF / No-op | 相同 rAF 采样和输入 | 执行空提交 | 是否是真正渲染成本造成恶化 |
-| Batch Sweep | rate、H、数据内容 | 逐档调整 batch | 更新次数 K 与单次成本 C 的权衡 |
-| Rate Sweep | batch、H、画质 | 逐步调整 rate | N 是否超过可持续处理容量 |
-| History Sweep | rate、batch、设备 | 改变历史 H | 是否存在随 H 增长的重复工作 |
-| Feature / Scene Off | 其他数据与业务条件 | 禁用一个图层或绘制模块 | 是否是特定渲染路径瓶颈 |
-
-用同一台机器、同等网络、相同数据和足够重复的测试对比，才能避免把缓存差异、设备限频、浏览器版本变化误认成某项优化的效果。
-
-### 【真实例子：批次减少了更新次数，FPS 却下降】
-
-假设原本每帧只处理 1 点，后来提高 batch 至 100，地图更新次数减少，但单次渲染提交时间从几毫秒上升到 70ms，LoAF 显著增加。
-
-这说明“减少重复更新次数”确实优化了 K，但单次 C 又突破了 Frame Budget。应该寻找**使单次 C 不超预算的合理批量**，而不是认定 batch 越大越好。
-
-假设 batch=10 时较稳定，但页面运行 30 分钟后又变慢；如果 History Sweep 显示单次提交耗时随历史 H 增长，则根因可能在全量轨迹更新或 Scene Object 扩张，需要增量 Geometry、分块或可见对象裁剪，而不能只依靠动态降 rate 维持表面的 FPS。
-
-### 【一个采样窗口需有自己的上下文与数据口径】
-
-建议在每个有效活跃视觉窗口记录：
-
-~~~text
-App / Version / Route / View
-        ↓
-Device / Browser / Visibility / Refresh Baseline
-        ↓
-Active Visual Update Window（有实际画面更新需求）
-        ↓
-Result：rAF FPS、Frame Interval P95、Budget Hit、Longest Gap
-        ↓
-Progress：Queue、Arrival / Consume、Batch、Commit Duration
-        ↓
-Diagnostics：LoAF Duration / Blocking / Stages / Scripts、Long Task
-        ↓
-采样量、采样时长、能力支持、统计版本
-~~~
-
-示例监控数据结构（仅供理解设计）：
-
-~~~json
-{
-  "type": "performance",
-  "name": "smoothness",
-  "context": {
-    "route": "/live",
-    "version": "2.4.1",
-    "viewId": "view-example",
-    "deviceClass": "mobile",
-    "visibility": "visible",
-    "samplingWindowMs": 10000,
-    "refreshBaselineHz": 60
-  },
-  "result": {
-    "rafFps": 48,
-    "frameIntervalP95Ms": 34,
-    "budgetHitRate": 0.72,
-    "longestGapMs": 110
-  },
-  "progress": {
-    "arrivalRate": 600,
-    "consumeRate": 580,
-    "queueLength": 150,
-    "oldestQueueAgeMs": 900,
-    "commitDurationP95Ms": 24
-  },
-  "diagnostics": {
-    "loafCount": 5,
-    "loafMaxDurationMs": 115,
-    "longTaskCount": 4
-  }
-}
-~~~
-
-其中 rafFps、Frame Interval P95 与 Budget Hit Rate 是**rAF 观测口径**而非真正显示器最终帧率。LoAF Count 与 Long Task Count 是同一个采样窗口内两种不同类型的记录数，不能直接相加称为掉帧数。Long Gap、Jank、LoAF Rate 都需要明确分母（例如每活跃分钟、每采样窗口），不能把一条业务自定义数值称为官方 Core Web Vital。
-
-### 【观测系统不能成为新的卡顿来源】
-
-在线上：
-- 不应对所有页面永久运行高成本 rAF Polling。
-- 只有存在连续视觉更新需求时才进行短时、有限采样；页面 hidden 立即暂停，恢复时重置上次时刻。
-- 避免每帧打印日志、做复杂统计、序列化大型数据、触发 DOM 几何读取或直接发网络请求。
-- LoAF 天然只记录严重长帧，适合异常抽样；scripts 要按采样率与权限过滤，避免上传敏感 URL、路径和用户数据。
-- 浏览器不支持 LoAF、Entry 过早丢失或无归因数据时要明确标记，不能把“无法测得”写为“没有问题”。
-- 不应把不同刷新率、不同可见性和不同业务目标帧率的样本混为一个无解释的全站 FPS 达标率。
-
-### 【Lab 与 Field 各有不同目标】
-
-**Lab（实验室）**：固定数据负载、设备、刷新率、视口、历史规模、网络和 CPU 条件，通过 Chrome Performance Trace 观察 Main、Frames、Rendering、Raster、Compositor、GPU，并与 LoAF、业务 Commit 和 Queue 数据建立时间关联。对实时/长期运行问题需要覆盖历史状态增长后的表现。
-
-**Field（真实用户）**：按 Route、Version、Device、目标刷新基线和活跃视觉场景分群，比较 rAF Interval P95、Long Gap、预算命中率、LoAF 频次、Queue Age 和业务可用性，同时关注 INP，防止为了流畅度将用户操作变得迟缓。
-
-验收应保留两项同时成立的约束：
-
-~~~text
-视觉结果
-重要连续更新在当前场景预算内尽量稳定呈现
-         +
-过程正确性
-数据处理持续追得上，用户看到足够新的状态
-~~~
-
-结果指标改善但业务数据越来越旧，不构成完整成功；业务吞吐提高但画面持续严重卡顿，也不构成完整成功。
-
-## 10. 与 Loading、Responsiveness 和 Visual Stability 建立知识关联
-
-本稿只作为第四类用户体验 Smoothness 的独立草稿，**暂不加入 GitHub 知识体系索引、不新增 QA、不改正式知识正文**。
-
-- [Loading / LCP 四阶段诊断草稿](./Loading-LCP四阶段性能诊断与优化体系-草稿.md)：文档、资源与最终绘制等待。
-- [Responsiveness / INP 三阶段诊断草稿](./Responsiveness-INP三阶段交互响应性能诊断与优化体系-草稿.md)：输入、事件处理、下一次绘制等待。
-- [Visual Stability / CLS 诊断草稿](./Visual-Stability-CLS视觉稳定性诊断与优化体系-草稿.md)：布局偏移、最大会话窗口与造成位置变化的原因。
-- [Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)：四类用户体验与端到端性能优化。
-- [性能专项优化](../X-性能专项优化.md)：指标采集、PerformanceObserver、LoAF、Long Task 和 RUM。
-- [页面流畅度与连续渲染性能完整知识体系](../Y-页面流畅度与连续渲染性能完整知识体系.md)：N/K/C/H/B、可视化对象、批量渲染与控制器的深入专项。
-
-最终四类体验的诊断路径：
-
-~~~text
-Loading → LCP → TTFB / Resource Delay / Duration / Render Delay
-Responsiveness → INP → Input Delay / Processing / Presentation Delay
-Visual Stability → CLS → 最大 Session Window / Shift / Source / Root Cause
-Smoothness → 自定义 Frame 结果体系
-              ├─ rAF Frame Interval / FPS / Budget Hit
-              ├─ LoAF / Long Task / Trace
-              └─ 数据新鲜度 / Queue / Commit / History
-~~~
-
-**四类体验的界限**：LCP 管加载等待、INP 管交互响应、CLS 管非预期布局位移，Smoothness 管连续重要视觉更新的稳定性。LoAF 也能帮助定位 INP 慢交互中的长帧，但它不是独立 Core Web Vital。 GoogleChrome/web-vitals 的官方实现和归因资料可作为与 INP 关联的参考。[[12]](https://github.com/GoogleChrome/web-vitals)
-
-## 11. 参考文献
-
-1. Google / web.dev. [Towards an animation smoothness metric](https://web.dev/articles/smoothness). 重要视觉更新、合成线程、FPS 局限、帧完整性与动画性能研究。
-2. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). LoAF 50ms 门槛、时间拆分、blockingDuration、scripts、特殊无渲染记录。
-3. Google / web.dev. [Rendering performance](https://web.dev/articles/rendering-performance). 显示刷新预算、Style/Layout/Paint/Composite 与优化原则。
-4. MDN. [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). rAF 时间戳、回调调用条件、前后台与不同刷新率。
-5. W3C. [Long Animation Frames API Working Draft](https://www.w3.org/TR/long-animation-frames/). Long Animation Frames API 的工作草案。
-6. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代垃圾回收、主线程暂停与并发/并行/增量优化。
-7. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Allocation Sampling、Heap Snapshot 与 GC 排查。
-8. Mapbox. [Improve the performance of Mapbox GL JS maps](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/). Source/Layer/Vertex 成本模型和高频变化数据源拆分。
-9. MDN. [Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas). Canvas 预渲染、分层与减少重绘的优化方法。
-10. MapLibre GL JS. [GeoJSONSource](https://maplibre.org/maplibre-gl-js/docs/API/classes/GeoJSONSource/). setData 与按 Feature ID 差量更新的 API 和前置条件。
-11. MapLibre GL JS. [GeoJSONFeatureDiff](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/GeoJSONFeatureDiff/). Feature Geometry 的整体替换语义。
-12. GoogleChrome / web-vitals. [官方实现与 Attribution 文档](https://github.com/GoogleChrome/web-vitals). 标准 Web Vitals 与 INP 长帧归因的关系。
+| Loading | LCP 与文档、资源、渲染延迟 |
+| Responsiveness | INP 与输入等待、处理、呈现延迟 |
+| Visual Stability | CLS 与 Layout Shift、Session Window、根因 |
+| Smoothness | 重要视觉更新需求、Frame Interval、LoAF 与帧阶段归因 |
+
+LoAF 有助于分析交互的长帧贡献，但不能将它直接当成 INP；Smoothness 自定义 rAF 指标也不属于既有 Core Web Vitals。[[8]](https://github.com/GoogleChrome/web-vitals)
+
+### 【通用知识入口与专项分析边界】
+
+本稿是第四类用户体验的通用知识草稿，暂不写入知识体系索引、QA 或正式正文。
+
+- [Loading / LCP 诊断草稿](./Loading-LCP四阶段性能诊断与优化体系-草稿.md)：加载时延与阶段归因。
+- [Responsiveness / INP 诊断草稿](./Responsiveness-INP三阶段交互响应性能诊断与优化体系-草稿.md)：交互延迟的分段与诊断。
+- [Visual Stability / CLS 诊断草稿](./Visual-Stability-CLS视觉稳定性诊断与优化体系-草稿.md)：布局偏移的计算、来源与真正根因。
+- [Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)：整个 Web 页面性能框架。
+- [性能专项优化](../X-性能专项优化.md)：监控 SDK、PerformanceObserver 和 RUM。
+- [页面流畅度与连续渲染性能完整知识体系](../Y-页面流畅度与连续渲染性能完整知识体系.md)：现有相关知识积累，其中偏向实时可视化的项目性方法不应被当作本稿的通用主线。
+
+专项场景只在机制对应位置提供必要链接，**不以项目中的参数、代码组织或优化结果反向定义通用知识框架**。
+
+## 9. 参考文献
+
+1. Google / web.dev. [Towards an animation smoothness metric](https://web.dev/articles/smoothness). 动画流畅度、重要视觉更新、合成线程与 FPS 局限。
+2. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). LoAF 50ms 记录门槛、Work / Render 分解、Pre-layout、Scripts 与 Blocking Duration。
+3. Google / web.dev. [Rendering performance](https://web.dev/articles/rendering-performance). Frame Budget、渲染阶段与主线程更新成本。
+4. MDN. [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). rAF 时间戳、刷新率与后台暂停。
+5. W3C. [Long Animation Frames API Working Draft](https://www.w3.org/TR/long-animation-frames/). Long Animation Frames 标准草案。
+6. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代、增量、并发 GC 与主线程暂停。
+7. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Heap、Allocation、Retainers 和 GC 的诊断。
+8. GoogleChrome / web-vitals. [Official project and attribution information](https://github.com/GoogleChrome/web-vitals). Web Vitals 和性能归因的边界。
