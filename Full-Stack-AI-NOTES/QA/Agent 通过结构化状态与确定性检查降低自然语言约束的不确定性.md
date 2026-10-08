@@ -95,7 +95,7 @@ OpenAI 在 Harness Engineering 中提出，应把真正重要的架构不变量�
 
 字节 AI Coding Workflow 中已经有多处对应实践：
 
-- [AI Coding 如何通过确定性工程机制提高 Agent 可靠性](../../bytedance/docs/AI-Coding如何通过确定性工程机制提高Agent可靠性.md)：面试视角下的完整项目回答。
+- [AI Coding 如何通过确定性工程机制提高 Agent 可靠性](../../bytedance/docs/AI-Coding如何通过确定性工程机制提高Agent长任务可靠性.md)：面试视角下的完整项目回答。
 - [如何编写让 Agent 可靠执行的 Skill](../../bytedance/如何让Agent可靠执行Skill-汇报分享.md)：围绕结构化合同、脚本校验、增量记录和 Gate 回溯的专项调研。
 - [浏览器运行合同静态检查脚本](../../bytedance/AI-Coding-Workflow/scripts/check_browser_runtime_contract.mjs)：把跨多个流程文件的重要 Browser Runtime Contract 下沉成真实可执行的静态检查。
 - [静态回归记录](../../bytedance/AI-Coding-Workflow/flow-regression-runs/2026-06-30-coco-cli-headless-browser-static.md)：记录脚本执行后的 deterministic check 结果。
