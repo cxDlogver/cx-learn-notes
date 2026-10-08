@@ -59,6 +59,7 @@
 | [AI Coding 工作流面试问答](docs/AI-Coding工作流面试问答.md) | 面试主入口：工作流目标、设计原则、真实案例、个人贡献边界与结果口径 |
 | [如何避免错误需求生成错误 Test Case](docs/AI-Coding如何避免错误需求生成错误Test-Case.md) | 面试追问：需求澄清、Test Case 前置、覆盖审查与人工 Gate |
 | [如何定位测试通过但需求验收错误](docs/AI-Coding如何定位测试通过但需求验收错误.md) | 完整面试回答：测试标准与需求共同偏差、UAT 反向追溯、清空按钮简例、Repair 回流与回归；正文就近引用项目事实及权威资料 |
+| [AI 全栈异步文档分析任务架构设计](docs/AI-全栈异步文档分析任务架构设计.md) | 第 2 题完整存档：原始题目、四项回答要点、九部分标准回答、任务生命周期、幂等/重试/恢复和官方依据 |
 | [如何保证 Agent 验收结论可信](docs/AI-Coding如何保证Agent验收结论可信.md) | 面试追问：Assertion、Observed Value、Evidence Mapping、确定性 Gate 与 Trace/Outcome 边界 |
 | [如何通过确定性工程机制提高 Agent 长任务可靠性](docs/AI-Coding如何通过确定性工程机制提高Agent长任务可靠性.md) | 面试追问：把自然语言软约束下沉为结构化状态、Script/Test/Lint 与可执行 Gate，区分 Agent 不确定推理和系统确定性约束 |
 | [联盟运营平台前端仓库技术架构总览.md](联盟运营平台前端仓库技术架构总览.md) | 前端仓库架构与工程基础 |
