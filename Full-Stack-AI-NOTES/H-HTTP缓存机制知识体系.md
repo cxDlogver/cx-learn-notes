@@ -183,6 +183,74 @@ CDN 取得条件请求
 
 不是“浏览器一旦协商缓存失效，就必须跳过 CDN 到应用服务器”。每个中间节点都可能持有副本、执行自己的验证，并为下游提供适当响应。304 的具体生成者需要结合 CDN 日志、Age、Cache-Status 或供应商命中字段判断。
 
+## 3. 浏览器 HTTP Cache 管理本机响应存储、强缓存与条件验证
+
+### 【浏览器缓存保存的是 HTTP 响应副本，而不是永久保存源站文件】
+
+继续使用产品官网的场景：用户第一次访问 /index.html，浏览器解析其中的 /assets/app.a81f.js，再分别从网络取得 HTML 和 JS 响应。如果响应允许保存，浏览器可以在其 HTTP 缓存中保存响应正文、HTTP 状态、请求关联信息，以及 Cache-Control、ETag、Last-Modified、Date 等元数据，供后续同类请求复用。浏览器可以用内存、磁盘等方式实现存储，也可能因存储分区、容量、隐私策略和主动清理淘汰副本。**内存缓存与磁盘缓存是实现方式，强缓存与协商缓存是复用方式；这两组概念不是一一对应的。** [[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+
+浏览器缓存主要为当前用户代理在符合隔离规则的上下文里服务，不是所有用户共享一个浏览器缓存。即使用户以前请求过 app.a81f.js，也不保证它此刻仍存在；即使存在，也不保证允许当前请求直接复用。RFC 9111 规范缓存的存储与复用约束，但不强制缓存永久保存响应。
+
+### 【浏览器如何根据缓存键与 Vary 找到正确的响应版本】
+
+假设第一次请求：
+
+~~~http
+GET /guide HTTP/1.1
+Host: www.example.com
+Accept-Language: zh-CN
+~~~
+
+源站返回中文版指南，附带：
+
+~~~http
+HTTP/1.1 200 OK
+Cache-Control: public, max-age=600
+Vary: Accept-Language
+ETag: "guide-zh-v1"
+~~~
+
+浏览器可以保存此响应。之后用户请求同一 /guide，但 Accept-Language: en-US；此时目标 URL 虽相同，Vary 所指定的请求头却不匹配，中文副本不能直接满足英文请求。浏览器需要查找适用的英文变体，或者请求网络获取。这里先完成的是**副本查找与响应变体匹配**，还没有进入“是否过期”的问题。
+
+当浏览器再次请求 /assets/app.a81f.js，如果方法、URL、存储分区、适用的 Vary 等条件可以定位正确副本，下一步才检查响应的 Cache-Control、新鲜度以及本次请求缓存模式。**找到匹配副本并不等于已经可以返回它。**
+
+### 【新鲜副本直接复用是前端常说的强缓存】
+
+假设部署文件名带内容 Hash、不会在相同 URL 原地覆写，静态 JS 返回：
+
+~~~http
+HTTP/1.1 200 OK
+Cache-Control: public, max-age=31536000, immutable
+ETag: "app-a81f"
+~~~
+
+浏览器已经保存此响应，之后普通请求在新鲜期内且允许直接复用时，可以直接取得缓存正文，不必为了 JS 请求 CDN。开发者工具可能显示 from memory cache 或 from disk cache，但这是浏览器诊断标签，不是两种 HTTP 缓存协议。
+
+浏览器也可以存储 HTML，但 HTML 通常承担发现新 JS URL 的职责，往往不宜使用与不可变资源相同的超长新鲜期。例如返回 Cache-Control: no-cache 的 HTML 可以存储，但再次复用前必须验证；如果使用较短的 max-age，则在允许的新鲜期内仍可能直接复用。是否缓存 HTML 取决于用户差异、更新要求和发布机制，不是“HTML 永远禁止存储”。
+
+### 【副本不允许直接复用时，浏览器可能发起条件请求】
+
+假设浏览器已存储 ETag 为 "html-v3" 的 /index.html，而响应声明 no-cache。当用户再次导航到该 HTML，浏览器可以向 CDN 发：
+
+~~~http
+GET /index.html HTTP/1.1
+Host: www.example.com
+If-None-Match: "html-v3"
+~~~
+
+若处理该请求的服务器或缓存节点确认 HTML 没变化，可返回 304 Not Modified，浏览器更新缓存元数据、继续使用已有正文。若新 HTML 已变为 v4，则返回 200 与新正文，浏览器使用新响应并按存储规则更新副本。**协商缓存不是独立的缓存存储区；ETag 是需要验证时的表示标识，不是直接判断缓存是否存在的 Cache Key。**
+
+如果浏览器没有副本或没有适用验证器，可能重新取得完整表示。浏览器看到 304 只说明某处进行了条件验证；它不证明本次请求一定到达了最终应用服务器，因为 CDN 也可能响应 304。
+
+### 【普通导航、刷新、强制刷新与 fetch 缓存模式改变本次请求语义】
+
+用户正常访问、刷新页面、强制刷新与页面代码调用 fetch 并指定 cache 模式，可能形成不同的请求缓存控制。普通访问更可能复用新鲜响应；刷新可能触发重新验证；强制刷新通常绕开通常的缓存复用路径。fetch 的 cache: "no-cache" 是调用端设置的请求模式，不可与响应中的 Cache-Control: no-cache 混为一谈。DevTools 的 Disable cache 也会人为改变结果。因此排查“用户一直看到旧版本”时，必须先观察普通请求，再将刷新结果作为对照。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+
+### 【浏览器副本与 CDN 副本各有独立的新鲜度与清理时机】
+
+某次 CDN Purge 不会直接删除已经存于大量用户设备上的 app.a81f.js。假如新版本已经生成 app.b92d.js，浏览器取得引用新 URL 的 HTML 后，会将新脚本当成新的目标资源请求，而不需要先等旧 app.a81f.js 的本地缓存过期。相反，如果旧 HTML 还被本地直接复用，浏览器可能始终没有机会发现新 URL。这也是发布策略中要把 HTML 入口和内容 Hash 静态文件区别对待的根本原因。
+
+
 ## 4. CDN 通过分布式共享缓存、变体与回源策略降低源站压力
 
 ### 【CDN 主要减少地域传输和重复访问源站】
@@ -241,7 +309,24 @@ Cache-Control: public, max-age=600, stale-while-revalidate=30
    → 一般不能再仅凭该指令直接使用旧副本，须按正常规则处理
 ~~~
 
-要注意：**SWR 不是固定的定时任务**。如果资源在额外窗口内没有请求，并不保证缓存会主动刷新；再次请求可能需要等待验证。SWR 的 HTTP 指令可能由浏览器、CDN 或代理按自身支持范围实现；它与 Nuxt 页面生成策略中使用同名 SWR 的工程接口、Service Worker 程序中手写 stale-first 行为有联系但不等价。[[4]](https://www.rfc-editor.org/rfc/rfc5861)
+要注意：**SWR 不是固定的定时任务**。如果资源在额外窗口内没有请求，并不保证缓存会主动刷新；再次请求可能需要等待验证。SWR 的 HTTP 指令可能由浏览器、CDN 或代理按自身支持范围实现；它与服务端框架生成结果的同名 SWR 策略不同：这里管理的是 HTTP 响应副本。[[4]](https://www.rfc-editor.org/rfc/rfc5861)
+
+### 【CDN 首次回源成功，不代表响应必然会成为可共享缓存】
+
+例如第一个用户请求 GET /public-api/products?category=phone，当前 CDN 节点没有匹配副本，便向 Web 服务器和应用服务器取得列表。即便应用返回 200，CDN 仍要检查请求方法、状态码、响应的 Cache-Control、Authorization、Set-Cookie、变体字段及供应商规则。只有确认响应可供不同用户安全共享，才应保存副本。个人订单 /api/orders 即使同样是 GET + 200，也不应不加区分地缓存为全体用户可读取的内容。
+
+### 【CDN Cache Key 不可以忽略决定内容的查询参数】
+
+产品列表的 category=phone 与 category=laptop 是不同内容。如果 CDN 缓存键错误地只使用路径 /public-api/products 而忽略 category，就会把手机列表错误复用于电脑列表；相反，如果跟踪参数完全不改变内容，经过验证后可考虑不把它们计入缓存键。实际默认 Key 包含的 URL、查询参数、Host、请求头及其规范化策略由厂商实现，不存在适用于所有 CDN 的唯一固定拼接规则。以 Cloudflare 为例，可通过 Cache Rules 配置自定义 Cache Key。[[9]](https://developers.cloudflare.com/cache/how-to/cache-keys/)
+
+对于 Vary: Accept-Language 这类响应变体，缓存系统需要确保查到的是正确语言版本。**Vary 是源站返回的响应头，CDN 能否据此生成或选择正确缓存变体，需要看供应商支持与具体配置。**以 Cloudflare 的 Vary 机制为例，相关行为还与 Vary 缓存规则配置和规范化策略相关，不应由 HTTP 头存在这一事实直接推断其配置已完成。[[10]](https://developers.cloudflare.com/cache/concepts/vary/)
+
+### 【CDN 的缓存 HIT、验证、后台刷新和 Purge 是不同状态】
+
+CDN 命中缓存键后，如果响应仍新鲜、共享资格和请求条件都满足，可以直接返回。若已过期，可能向源站使用 If-None-Match 验证，源站返回 304 时保留已有正文、更新元数据；内容变化则更新为新的 200 正文。适用 SWR 且实现支持时可在规定窗口内先返回旧内容并后台验证；发生符合 stale-if-error 规则的故障时可能退回旧内容。主动 Purge 则是站点显式要求清理共享副本，不能当作自然过期或版本 Hash 的别名。
+
+CDN 常由多个节点构成：A 节点 HIT 不代表 B 节点一定 HIT，节点容量淘汰、地理区域、回源拓扑、失效传播都影响观察结果。浏览器发起的 If-None-Match 也可能直接由 CDN 用自己持有的可验证响应回答 304，不一定到达 Web 服务器。定位时要同时查看 CDN 状态、Age、响应头和源站日志。
+
 
 ## 5. Web 服务器需要区分静态文件服务与真正启用的 HTTP 代理缓存
 
@@ -347,6 +432,21 @@ Nginx 可以通过 proxy_cache_use_stale 的 updating、error、timeout 等条�
 Nginx 的部署路由、静态文件与应用服务器职责详情见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。本篇只解释 Nginx 与响应缓存的关系，不重复通用反向代理的全部知识。
 
 
+### 【Web 服务器的三个工作模式需要按存储与请求流区分】
+
+Web 服务器直接对 /assets/app.a81f.js 使用 root、alias 或其他静态路径映射读取文件时，没有保存某个应用服务返回的 HTTP 副本，因此不属于 proxy_cache。普通反向代理通过 proxy_pass 等配置转发到应用，如果没有开启缓存，正常情况下每次需要上游内容的请求都可能继续转发。**只有显式启用代理缓存、具备相应存储空间与配置时，才在 Web 服务器入口形成独立的一层 HTTP 响应缓存。** Apache HTTP Server 或 Caddy 是否支持相同行为需要查看其对应模块/插件，本文用 Nginx 作为可核验示例。
+
+### 【Nginx 代理缓存的存储、新鲜度与物理清理分别管理】
+
+Nginx 示例中的 proxy_cache_path 设置磁盘缓存位置、共享元数据区、容量和 inactive 淘汰参数；proxy_cache_key 定义请求如何匹配已有响应；proxy_cache_valid 指定响应在合适规则下的缓存有效期；proxy_cache_revalidate 使用验证器检查过期副本；proxy_cache_lock 减少热点首次 MISS 时重复回源。注意 **inactive 不是 HTTP max-age，它描述不活跃缓存条目可能被清理的时机，而不是响应是否新鲜**。上游 Cache-Control、Expires、X-Accel-Expires、Set-Cookie 与 Vary 等还会影响代理缓存是否存储、怎样复用。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+
+启用 proxy_cache_use_stale updating / error 等条件，可以在允许情况下复用过期响应；proxy_cache_background_update 能在返回允许的旧响应时发起后台更新；它们是 Nginx 实现接口，与 HTTP Cache-Control: stale-while-revalidate 的目标相似，但不能当成各类 Web 服务器都支持的通用开关。不要为了测试命中率使用强行忽略上游禁止缓存字段的设置，否则存在跨用户数据混用的风险。
+
+### 【Web 服务器静态文件更新不负责通知浏览器和 CDN】
+
+发布 app.b92d.js 只是源站增加了一份带新 URL 的文件；HTML 必须更新引用并被浏览器重新取得，客户端才会请求新的资源。若源站始终在同一个 /assets/app.js URL 原地覆盖，即使磁盘文件已经变化，下游仍可能按长期 TTL 直接使用旧响应。静态源文件还应配合 ETag/Last-Modified、正确的 Cache-Control 与保留旧 Hash chunk 的发布策略。新文件先于新 HTML 可用，以及回滚时旧文件仍可访问，是版本正确性的条件。
+
+
 ## 6. 资源内容 Hash、缓存过期与版本发布形成完整更新周期
 
 ### 【内容哈希文件名负责改变 URL，而不是删除旧缓存】
@@ -388,7 +488,7 @@ app 的内容变化后，资源 URL 从 app.8a31f.js 变为 app.9b72d.js。因�
 
 如果把旧静态文件过早删除，而仍有用户保留旧 HTML 或旧 JS 的动态 import 引用，就可能出现 Chunk 404、模块加载失败甚至页面白屏。
 
-HTML、JSON Manifest 或其他版本入口往往不具备内容哈希命名，常用可验证缓存或受控的短时新鲜度；如果关键更新必须即时可见，则需要显式更新机制。Nginx 和 CDN 上的 Cache Purge 可以加快共享缓存更新，但**CDN purge 不会自动删除全部用户设备上的 HTTP Cache 和 Cache Storage**。
+HTML、JSON Manifest 或其他版本入口往往不具备内容哈希命名，常用可验证缓存或受控的短时新鲜度；如果关键更新必须即时可见，则需要显式更新机制。Nginx 和 CDN 上的 Cache Purge 可以加快共享缓存更新，但**CDN purge 不会自动删除全部用户设备上的 HTTP Cache**。
 
 ### 【immutable 表示新鲜期内表示不变，必须配合版本 URL】
 
@@ -444,7 +544,77 @@ Vary: Accept-Encoding
 这里**不是同一份资源先缓存 60 秒、然后转移到 CDN 缓存 600 秒**。它们是不同节点收到相应请求时独立执行的缓存决策。是否真正命中、是否允许异步更新，也取决于缓存自身状态和实现支持。
 
 
+### 【同一份资源的更新机制分布在不同阶段而不是互相替代】
+
+| 机制 | 决策发生在哪里 | 实际解决什么问题 | 不能替代的职责 |
+| --- | --- | --- | --- |
+| 内容 Hash 文件名 | 前端构建与发布 | 资源内容变化后产生新的 URL，以新缓存键获取新版 | 不删除浏览器或 CDN 中的旧响应 |
+| max-age / s-maxage | 适用的浏览器或共享 HTTP 缓存 | 判定副本现在是否新鲜 | 不在时间到达时强制服务器重建文件 |
+| ETag / Last-Modified | 条件请求被处理时 | 资源未变可返回 304，避免重传整个正文 | 不是缓存键，也不会主动推送更新 |
+| stale-while-revalidate | 支持指令且满足窗口的缓存节点 | 可先回应旧正文，同时验证或刷新 | 不保证窗口内没有请求也会定时刷新 |
+| CDN Purge / 代理缓存清理 | 对应缓存系统的管理操作 | 主动失效该层共享缓存副本 | 不会清理所有用户浏览器缓存 |
+| immutable | HTTP 缓存复用新鲜响应时 | 声明该 URL 在新鲜期内不会变化 | 不能用于内容会在相同 URL 原地覆写的文件 |
+
+这里的核心是**缓存协议管理已取得的 HTTP 响应，构建发布系统管理资源 URL 与源站文件**。一旦两条线分开，就能解释为什么服务器已经部署新文件，浏览器仍然可以正常使用旧脚本；也能解释为什么带 Hash 的文件可以设很长的新鲜度，而 HTML 往往需要能及时重新验证。
+
+
 ## 7. 通过同一官网请求场景验证缓存命中、过期与发布更新
+
+### 【案例一：官网首次访问时，MISS 怎样沿链路到达静态文件】
+
+~~~text
+浏览器第一次请求 /index.html
+    → 本地 HTTP Cache 无副本
+    → CDN 当前边缘节点无副本
+    → Web 服务器从静态目录读取 index.html → 响应 200
+    → CDN / 浏览器分别按存储资格决定是否保存
+
+浏览器解析 HTML 发现 /assets/app.a81f.js
+    → 浏览器此 URL MISS
+    → CDN 此 URL MISS
+    → Web 服务器读取 app.a81f.js → 响应 200
+    → 若允许长期缓存，CDN 和浏览器各自保存响应副本
+~~~
+
+这里 Web 服务器处理了静态文件请求，但可能没有启用任何 HTTP 代理缓存；应用服务器也未必参与。每层是否保存响应，要独立验证 HTTP 头和对应节点状态。
+
+### 【案例二：同一个用户再次访问与另一个用户首次访问】
+
+如果 app.a81f.js 仍处于浏览器允许直接复用的新鲜期，原用户第二次访问时 JS 可以本地返回，不需要到 CDN。与此同时 index.html 可能因为 no-cache 要求验证，浏览器对 HTML 发 If-None-Match 并得到 304，所以同一次导航里“HTML 发网络验证、JS 完全本地复用”是合理的。
+
+另一个用户的浏览器尚无 app.a81f.js；若访问到已存该脚本且新鲜的 CDN 节点，可以直接从 CDN 取得脚本，而不再访问 Web 服务器。这解释了浏览器缓存侧重减少单个浏览器重复请求，CDN 缓存侧重多个用户共享同一公开响应。
+
+### 【案例三：公开产品 API 过期但允许短暂使用旧结果】
+
+假设产品列表返回：
+
+~~~http
+HTTP/1.1 200 OK
+Cache-Control: public, max-age=60, stale-while-revalidate=30
+ETag: "phone-list-v8"
+~~~
+
+一个支持该规则的缓存，在前 60 秒内可按新鲜响应直接返回；60～90 秒的适用窗口若收到请求，可先返回旧列表 v8，同时条件验证。上游返回 304 则继续使用正文并更新元数据；上游返回 200 和 v9 则缓存新响应以供后续使用。**已经发出的 v8 响应不会因后台刷新自动变成 v9**。该机制只应作用于业务允许短暂陈旧的公开数据，不能直接用于支付、权限等时效敏感结果。
+
+### 【案例四：发布新版时必须让 HTML 发现新的 Hash URL】
+
+~~~text
+旧 HTML 引用 /assets/app.a81f.js
+构建新产物    /assets/app.b92d.js
+先发布新 JS 至 Web 服务器或源站存储
+再发布引用新文件的 HTML
+浏览器下次重新获取/验证 HTML，发现 app.b92d.js
+浏览器与 CDN 对新 URL 重新匹配/请求/保存
+旧 app.a81f.js 可以继续为仍然打开的旧页面提供资源
+~~~
+
+如果用户长期看到旧版本，首先判断用户当前取得的是不是旧 HTML；如果新 HTML 已经到达，但新 JS 404，检查新文件是否先于 HTML 发布、Web 服务器静态路由是否正确，或旧 chunk 是否被过早删除。简单删除 CDN 对旧 JS 的缓存，不能保证用户的旧 HTML 自动改为引用新 URL。
+
+### 【案例五：Web 服务器自己也启用代理缓存时请求路径怎样变化】
+
+若某公开 API 在 Web 服务器显式开启 proxy_cache，则 CDN MISS 后请求先到 Web 服务器：Web 服务器可能命中自己保存的上游响应并返回，应用服务器仍然不会参与；如果代理缓存也 MISS 或需要验证，才继续请求应用。若 Web 服务器只是执行 proxy_pass、未启用 HTTP 代理缓存，则不存在这一额外命中层。静态文件服务则是另一条直接读取部署文件的路径。**不能从“CDN MISS”推导“一定查询了数据库”，也不能从“Web 服务器返回了静态 JS”推导“proxy_cache HIT”。**
+
+
 
 ### 【浏览器开发工具只能说明客户端看到的结果，不能凭空推断上游所有层】
 
@@ -509,3 +679,6 @@ CDN 可能使用自身新鲜副本直接验证（下游看到 304）
 6. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
 7. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
 8. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
+
+9. Cloudflare. [Cache Keys](https://developers.cloudflare.com/cache/how-to/cache-keys/). 边缘缓存键的默认组成及自定义配置示例。
+10. Cloudflare. [Vary](https://developers.cloudflare.com/cache/concepts/vary/). 响应变体如何与 CDN 缓存规则共同工作。
