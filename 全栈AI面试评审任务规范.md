@@ -166,7 +166,7 @@ RAG（Retrieval-Augmented Generation，检索增强生成）把外部资料检�
 
 数据治理继续检查文档版本、更新删除、权限过滤、敏感内容和资料中的不可信指令。模型可读取资料，不意味着资料有权修改执行规则。
 
-当前实践入口：[AI Flow 企业知识库全链路手册](<cx-dify-ai/miaoma-aiflow/docs/妙码AI-Flow企业知识库RAG全链路使用与答辩手册.md>)。知识索引尚未把 LLM / RAG 独立入口和依赖关系显式建模；应标明这一知识组织缺口，不能据此断言所有现有正文都没有相关内容。
+当前实践入口：[AI Flow 企业知识库全链路手册](<miaoma-aiflow/docs/妙码AI-Flow企业知识库RAG全链路使用与答辩手册.md>)。知识索引尚未把 LLM / RAG 独立入口和依赖关系显式建模；应标明这一知识组织缺口，不能据此断言所有现有正文都没有相关内容。
 
 ### 【工作流、Agent 与受控执行】
 
@@ -262,7 +262,7 @@ AI Coding 是工程交付方式之一，需要沿“需求事实 → 规范与�
 | Browser Monitor，专题 | 全栈浏览器监控系统：业务页面接入 SDK，平台接收、处理、聚合并查询事件；用于集中验证监控、可观测性、服务端链路和全栈工程能力 | 浏览器采集、协议契约、API、Outbox（待消费事件记录）、Worker、数据库、会话权限、看板与部署；连接前后端、数据、可靠性和可观测性 | [README](browser-monitor/README.md)、[服务端全链路](browser-monitor/docs/浏览器监控平台-服务端全链路.md)、[Worker 消费](browser-monitor/docs/异步任务与Worker可靠消费体系源码学习.md)、[Session 与 CSRF](browser-monitor/docs/账号认证Session与CSRF源码实战分析.md)、[部署记录](browser-monitor/docs/Railway部署记录.md) | 作为专题能力证据使用，不因系统覆盖面广而默认成为主要项目。SDK、共享协议和平台有不同运行及发布职责；架构与检查入口不能证明线上规模、可靠性百分比或本人独立实现全部模块 |
 | 全球清洁能源开发潜力评估系统，专题 | 面向科研机构的能源数据可视化系统；围绕地图、图表、资源缓存、请求优化、分层渲染与性能验证承载可视化和性能专题 | 接口契约、资源加载、地图与图表生命周期、全栈迁移、性能实验及视觉验证 | [简历](Full-Stack-AI-NOTES/resource/简历.md)、[README](qhfg-energy-platform/README.md)、[后端契约](qhfg-energy-platform/docs/backend-contract.md)、[性能结果](qhfg-energy-platform/docs/performance/results.md)、[优化过程](qhfg-energy-platform/docs/performance/optimization-log.md)、[验证结果](qhfg-energy-platform/docs/validation/results.md) | fixture、恢复的源数据、真实服务三个环境分开；默认隔离数据不证明生产验收。保留移动数据页 TBT 回退，导航 TBT 不能当线上 INP；原来没有实际三维入口，不编造旧三维基线 |
 | 软件漏洞虚拟化检测系统，专题 | 简历记录担任项目负责人，统筹项目推进与团队协作、参与关键方案决策；用于项目推进、架构决策、协作沟通和安全相关专题 | 需求与架构拆分、工具接入、结果展示、团队协作、项目推进与验收 | [简历项目描述](Full-Stack-AI-NOTES/resource/简历.md)、[项目概述](Full-Stack-AI-NOTES/X-项目概述.md)、[专项材料](Full-Stack-AI-NOTES/L-漏洞虚拟化项目.md) | 作为专题能力证据使用；当前已有负责人经历和叙述入口，但检测算法、模型、安全效果与个人实现仍需另找证据，不能由项目名称或负责人身份推断 |
-| cx-dify-ai / AI Flow，补充 | 课程与已有应用的分析、RAG 配置和联调实践；用于补充当前主要项目未充分覆盖的 RAG 与 Workflow 知识和实践 | 资料切分、向量与全文检索、证据注入、DAG、变量传递、SSE、节点 Trace、发布快照和 API 鉴权 | [全链路手册及工作边界](<cx-dify-ai/miaoma-aiflow/docs/妙码AI-Flow企业知识库RAG全链路使用与答辩手册.md>)、[课程资料](<cx-dify-ai/docs/企业级类扣子、Dify AI 应用引擎架构设计与实践面试专项突击.md>) | 补充 RAG / Workflow，不提升为主要项目；当前执行主链为自研 DAG + RAG，依赖声明不能证明 LangGraph 执行或自治 Agent。验收采用确定性 Ollama 协议桩，不能证明真实模型延迟、语义质量或幻觉率 |
+| miaoma-aiflow / AI Flow，补充 | 课程与已有应用的分析、RAG 配置和联调实践；用于补充当前主要项目未充分覆盖的 RAG 与 Workflow 知识和实践 | 资料切分、向量与全文检索、证据注入、DAG、变量传递、SSE、节点 Trace、发布快照和 API 鉴权 | [全链路手册及工作边界](<miaoma-aiflow/docs/妙码AI-Flow企业知识库RAG全链路使用与答辩手册.md>)、[课程资料](<miaoma-aiflow/docs/企业级类扣子、Dify AI 应用引擎架构设计与实践面试专项突击.md>) | 补充 RAG / Workflow，不提升为主要项目；当前执行主链为自研 DAG + RAG，依赖声明不能证明 LangGraph 执行或自治 Agent。验收采用确定性 Ollama 协议桩，不能证明真实模型延迟、语义质量或幻觉率 |
 
 表中的知识分支回到第 2 章寻找通用主入口。项目目录负责详细实现，本规范只保留选题所需的定位和边界。
 

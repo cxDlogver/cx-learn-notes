@@ -21,7 +21,7 @@ cd cx-learn-notes
 git submodule update --init --recursive
 ```
 
-`official-network`、`browser-monitor`、`qhzhc-realtime-platform` 和 `qhfg-energy-platform` 都由各自仓库管理；修改子模块代码后，先提交并推送子模块，再在本仓库提交对应的版本指针。
+`official-network`、`browser-monitor`、`qhzhc-realtime-platform`、`qhfg-energy-platform` 和 `miaoma-aiflow` 都由各自仓库管理；修改子模块代码后，先提交并推送子模块，再在本仓库提交对应的版本指针。
 
 ## 保持 SDK 调用
 
@@ -80,3 +80,14 @@ pnpm dev
 [性能指标](https://github.com/cxDlogver/qhfg-energy-platform/blob/main/docs/performance/results.md) · [完整优化过程](https://github.com/cxDlogver/qhfg-energy-platform/blob/main/docs/performance/optimization-log.md) · [功能与视觉验证](https://github.com/cxDlogver/qhfg-energy-platform/blob/main/docs/validation/results.md)。保留48次Lighthouse Node API审计，含退化候选与未解决的移动数据页TBT回退。
 
 更新该子模块时先提交并推送独立仓库，再在父仓库更新版本指针。
+
+## AI Flow 项目
+
+[miaoma-aiflow](https://github.com/cxDlogver/miaoma-aiflow) 独立维护，本仓库通过根目录 `miaoma-aiflow/` 子模块固定引用。课程笔记、RAG 手册、图片和验收样本统一放在项目的 `docs/`；课程阶段源码和两份原始 ZIP 保留在 [Resource/miaoma-aiflow](Resource/miaoma-aiflow)。
+
+```bash
+git submodule update --init miaoma-aiflow
+cd miaoma-aiflow
+```
+
+该项目使用独立的 pnpm 9.12.3 workspace。环境配置与启动步骤见 [项目 README](miaoma-aiflow/README.md) 和 [全链路手册](miaoma-aiflow/docs/妙码AI-Flow企业知识库RAG全链路使用与答辩手册.md)。
