@@ -550,7 +550,7 @@ Minor GC（较频繁地回收年轻代）
                   Major GC（涉及更广的对象图）
 ~~~
 
-年轻代回收的部分工作与**存活对象需要复制和追踪的规模**有关，因此不能把每次 Minor GC 的耗时简单理解为年轻代分配过的所有垃圾大小；老年代回收则可能包含更广范围的对象标记、整理与引用更新。V8 对这些阶段采用并行 Scavenger、并发标记与增量工作，以减少主线程停顿。[[9]](https://v8.dev/blog/orinoco-parallel-scavenger) [[10]](https://v8.dev/blog/concurrent-marking)
+年轻代回收的部分工作与**存活对象需要复制和追踪的规模**有关，因此不能把每次 Minor GC 的耗时简单理解为年轻代分配过的所有垃圾大小；老年代回收则可能包含更广范围的对象标记、整理与引用更新。V8 对这些阶段采用并行 Scavenger、并发标记与增量工作，以减少主线程停顿。[[8]](https://v8.dev/blog/orinoco-parallel-scavenger) [[9]](https://v8.dev/blog/concurrent-marking)
 
 由此理解“为什么存活对象增多可能让回收变贵”：假如一个长期驻留的对象图包含更多仍然可达的节点与引用关系，在其他条件相近时，需要标记、复制或更新的对象可能更多。但**Heap 扩大一倍不意味着 GC 必然耗时翻倍**，还受代际分布、存活率、碎片化、回收时机、堆容量及并发策略影响。[[6]](https://v8.dev/blog/trash-talk)
 
@@ -591,7 +591,7 @@ Young Generation 的可用空间快速减少
 
 一个常见线索是 Heap Used 随分配持续上升，GC 后又下降，形成锯齿曲线；但锯齿是自动内存管理的正常表现之一，**并不意味着每一次回落都发生了用户可见的掉帧**。只有 GC 的暂停时刻与异常帧相关，且减少分配/回收后帧结果实际改善，才能判断它是显著的流畅度瓶颈。[[7]](https://developer.chrome.com/docs/devtools/memory-problems)
 
-**不要把 Array.map、临时对象或不可变状态更新一概当成低性能代码。** V8 对短生命周期对象的回收已有针对性优化；如果没有实测证据，强行改成复杂对象池，可能增加长期驻留对象与状态错误的风险。[[9]](https://v8.dev/blog/orinoco-parallel-scavenger)
+**不要把 Array.map、临时对象或不可变状态更新一概当成低性能代码。** V8 对短生命周期对象的回收已有针对性优化；如果没有实测证据，强行改成复杂对象池，可能增加长期驻留对象与状态错误的风险。[[8]](https://v8.dev/blog/orinoco-parallel-scavenger)
 
 ### 【长期存活对象增多与真正的内存泄漏属于不同问题】
 
@@ -998,7 +998,7 @@ Diagnosis：LoAF Count / Duration / Blocking / Work / Pre-layout
 | Visual Stability | CLS 与 Layout Shift、Session Window、根因 |
 | Smoothness | 重要视觉更新需求、Frame Interval、LoAF 与帧阶段归因 |
 
-LoAF 有助于分析交互的长帧贡献，但不能将它直接当成 INP；Smoothness 自定义 rAF 指标也不属于既有 Core Web Vitals。[[8]](https://github.com/GoogleChrome/web-vitals)
+LoAF 有助于分析交互的长帧贡献，但不能将它直接当成 INP；Smoothness 自定义 rAF 指标也不属于既有 Core Web Vitals。[[10]](https://github.com/GoogleChrome/web-vitals)
 
 ### 【通用知识入口与专项分析边界】
 
@@ -1022,6 +1022,6 @@ LoAF 有助于分析交互的长帧贡献，但不能将它直接当成 INP；Sm
 5. W3C. [Long Animation Frames API Working Draft](https://www.w3.org/TR/long-animation-frames/). Long Animation Frames 标准草案。
 6. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代、增量、并发 GC 与主线程暂停。
 7. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Heap、Allocation、Retainers 和 GC 的诊断。
-8. GoogleChrome / web-vitals. [Official project and attribution information](https://github.com/GoogleChrome/web-vitals). Web Vitals 和性能归因的边界。
-9. V8. [Orinoco: young generation garbage collection](https://v8.dev/blog/orinoco-parallel-scavenger). Young Generation、Scavenger、存活对象复制与回收。
-10. V8. [Concurrent marking in V8](https://v8.dev/blog/concurrent-marking). 增量和并发标记、主线程暂停与内存压力。
+8. V8. [Orinoco: young generation garbage collection](https://v8.dev/blog/orinoco-parallel-scavenger). Young Generation、Scavenger、存活对象复制与回收。
+9. V8. [Concurrent marking in V8](https://v8.dev/blog/concurrent-marking). 增量和并发标记、主线程暂停与内存压力。
+10. GoogleChrome / web-vitals. [Official project and attribution information](https://github.com/GoogleChrome/web-vitals). Web Vitals 和性能归因的边界。
