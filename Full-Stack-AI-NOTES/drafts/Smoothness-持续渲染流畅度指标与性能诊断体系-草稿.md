@@ -254,6 +254,50 @@ LoAF Duration           = ① + ② + ③
 
 第三段虽然有时被称为 Style and Layout Duration，但从一个时间区间不能直接确定全部毫秒都是 Layout 计算，它还可能包含相关后续工作；若想分别确认 Style、Layout、Paint、Compositor、GPU，必须进一步查看 DevTools Performance Trace。LoAF 的 duration 也不能视为显示器最终 Presented Frame Latency。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
+### 【Pre-layout 具体执行什么，地图的“渲染准备”是否都属于这一阶段】
+
+LoAF 的三个区间必须以**实际执行时间**分类，而不能简单按业务函数名分类。Pre-layout 是本次 LoAF 的渲染周期已经开始、正式样式与布局阶段尚未开始的时间窗口，即：
+
+~~~text
+LoAF startTime
+   ↓ Work：进入渲染周期之前的主线程工作
+renderStart
+   ↓ Pre-layout：渲染周期已开始，但未到正式 Style/Layout
+styleAndLayoutStart
+   ↓ Style/Layout 及后续相关工作
+LoAF endTime
+~~~
+
+其中 Pre-layout 可能包括：
+
+1. **rAF 回调**：读取当批队列、动画插值、轨迹点转换、更新摄像机或图层状态；
+2. **业务同步计算**：在 rAF 中执行的坐标转换、路径拼接、排序、Geometry 构建；
+3. **框架或地图库的同步提交**：在这一时间窗口里执行的组件状态提交、数据源调用、Canvas 2D 绘图命令或 WebGL 指令提交；
+4. **与本次渲染周期对齐的其他回调工作**：具体以浏览器实际调度和 Trace 为准。
+
+**并非所有地图数据处理都算 Pre-layout。** 例如 WebSocket onmessage 中解析和入队，如果发生在 renderStart 前，它们属于 Work；若数据处理被安排到 Worker，不会直接计入页面主线程 LoAF 的脚本阶段；若地图库把 Geometry 处理放到后台 Worker，rAF 中的同步 API 返回耗时可能很小，真正几何生成成本却在异步阶段。
+
+~~~js
+socket.onmessage = (event) => {
+  // 通常由普通消息任务驱动；落在 renderStart 前则属于 Work。
+  pending.push(...JSON.parse(event.data));
+};
+
+function tick() {
+  // 以下同步代码若执行于 renderStart 与 styleAndLayoutStart 之间，
+  // 则属于 LoAF 的 Pre-layout 时间区间。
+  const batch = pending.splice(0, 100);
+  const positions = batch.map(convertPoint);
+  mapLayer.update(positions);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+~~~
+
+这不是“地图渲染框架每一帧都会严格这样执行”的规范流程。地图 API 的同步调用可能只是安排后续 Worker 或 GPU 工作，不能凭 mapLayer.update 的函数名认定完整图形绘制都在 Pre-layout。
+
+**Pre-layout 中也可能发生 Forced Style/Layout。** 例如 rAF 回调先修改 DOM 样式，再立刻读取 offsetHeight，浏览器可能被迫提前计算布局。Pre-layout 是一个**时间区间**，并不保证其中绝对没有样式和布局计算。LoAF 的 scripts[].forcedStyleAndLayoutDuration 可提示脚本中的强制布局，具体工作还需 Chrome Trace 核验。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
 ### 【完整算例】
 
 假设：
@@ -383,6 +427,23 @@ LoAF.scripts 在满足浏览器归因条件时，可能包含 startTime、durati
 
 **边界**：rAF 和 LoAF 都不能完整测量最终屏幕呈现链路。[[1]](https://web.dev/articles/smoothness)
 
+### 【GC 与对象分配压力：周期性停顿和长期内存增长是两类问题】
+
+持续渲染中，GC（Garbage Collection，垃圾回收）并不是应用显式调用的业务任务，而是 JS 引擎为回收不可达对象付出的运行时成本。部分 GC 阶段会暂停主线程 JS，因此如果暂停与下一帧工作竞争，就可能推迟 rAF、状态提交和渲染准备，形成 Frame Interval 尖峰。V8 已采用分代、并发、并行和增量回收减轻暂停，但不能认为 GC 对主线程没有任何影响。[[7]](https://v8.dev/blog/trash-talk)
+
+要区分两类表现：
+
+| 问题 | 常见现象 | 需要验证的证据 | 优化方向 |
+| --- | --- | --- | --- |
+| Allocation Churn（频繁短生命周期分配） | Heap 频繁上涨/回落，间歇性掉帧 | GC Trace、Allocation Sampling、尖峰与帧时刻相关性 | 减少高频路径中不必要的临时数组、对象和复制 |
+| Retained Memory（长期存活对象增加） | 页面运行越久占用越高，可能出现更贵的回收或重绘 | Heap Snapshot、Retainers、History Size、Commit Duration | 清理无效引用；将完整业务历史与活动渲染对象解耦 |
+
+举例：每新增轨迹点都执行 history = [...history, point]，并对全量 history 进行 map 转换。随着历史 H 增加，每次都分配新数组和大量中间对象；不仅应用计算时间随 H 增大，还可能引入越来越多 GC 压力。相反，合理的追加或增量更新减少无必要分配，但不能为了减少对象创建而破坏 React/Vue 的状态正确性。
+
+**“Heap 大”并不等于“GC 导致掉帧”。** 需要在 DevTools Performance 中证明 GC 事件与长帧或 rAF 尖峰重叠，再使用 Memory 的 Allocation Sampling、Heap Snapshot 找高分配函数和被持续保留的对象。Heap 锯齿是线索而非充分证据；合法保留的历史数据也不一定是泄漏。[[8]](https://developer.chrome.com/docs/devtools/memory-problems)
+
+最后注意：LoAF 脚本归因里的 pauseDuration 不等于 GC Duration，它主要用于同步对话框、同步 XHR 等暂停时段；GC 归因依赖更具体的性能或内存记录，不能用该字段替代。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
 ### 【测量条件不成立引起误判】
 
 后台标签 rAF 可能暂停；静态页面并不需要持续更新；低功耗或可变刷新率模式可能改变采样间隔。这些都要求先确认页面有重要的持续视觉更新需求，再评价目标 FPS。
@@ -509,6 +570,172 @@ Queue Empty + Frame Healthy
 2. **Incremental vs Full Rebuild**：保留相同新增点规模，只改变更新策略，比较 Commit Duration 是否仍随 H 线性上升。
 
 如果只有真实重绘随 H 明显变慢，则应进入 Geometry/Scene 的历史依赖分析，而不是继续提高 batch 试图掩盖成本。这个框架也适用于 Canvas、WebGL、图表以及响应式列表。
+
+### 【实时地图新增一个点涉及四层工作，而不是一次“渲染”操作】
+
+以已经存在 10,000 个历史轨迹点、服务端又推送 P10001 为例，整个链路可以分成四个长期有效的层次：
+
+~~~text
+① 数据接收与逻辑状态更新（管理业务数据）
+   WebSocket 收到 P10001
+       ↓ 校验经纬度 / 解析时间 / 规范化结构
+   将 P10001 加入历史数据与待渲染队列
+       ↓
+② 图形数据准备与资源更新（生成可供地图引擎使用的数据）
+   rAF 取出 batch
+       ↓ 坐标投影、连接末尾线段或更新 Feature
+   Geometry / 图层数据源 / GPU Buffer 更新
+       ↓
+③ 地图图形绘制（生成这一帧的图形内容）
+   引擎提交 Draw Commands
+       ↓ GPU 执行、Raster、Compositor
+   与底图及其他图层合成
+       ↓
+④ 屏幕呈现（最终用户看见）
+   显示链路在刷新机会提交新画面
+~~~
+
+四层只是**按职责划分**，不表示所有地图引擎把工作固定安排到四个连续的主线程任务。地图引擎可能利用 Worker 解析数据或构建 Geometry，Canvas2D 的绘图则可能与应用 JS 在同一任务中执行；WebGL 调用主要提交命令，GPU 真正绘制的时间不一定包含在调用耗时里。
+
+对于新增点，从几何语义看只需要添加末尾线段：
+
+~~~text
+已有：P1 — P2 — … — P9999 — P10000
+新增：P1 — P2 — … — P9999 — P10000 — P10001
+                                    ↑ 新线段
+~~~
+
+但是**“只需要新增一条线段”是几何语义上的最小变更，不是所有地图 API 都保证做到的最小计算量**。
+
+### 【历史数据重处理、Geometry 重建和地图画面重绘是三种不同的“全量”】
+
+| 层次 | “全量”的具体含义 | 增量优化重点 |
+| --- | --- | --- |
+| 业务数据处理 | 新增一个点就遍历或复制所有历史点 | 追加、增量坐标转换、少创建临时对象 |
+| 图形数据源与 Geometry | 新增一个点就重新解析全部 LineString、构造所有顶点、上传全部缓冲 | 分块、增量 Feature 或顶点、复用 GPU Buffer |
+| 画面绘制与合成 | 新画面需要重新提交当前视口内的部分/全部 Draw Call | 图层缓存、可视范围过滤、按需绘制、减少 GPU 工作 |
+
+**即使每次更新都重新绘制当前视口，也不代表之前的经纬度、线段 Geometry、纹理与 GPU Buffer 全部被重新计算。** 某些引擎会每帧绘制可见图层，但持续复用不变的图形资源；真正要防范的是“新点触发所有历史资源再次处理”的成本随着 H 增长。
+
+反过来，即使应用代码只是 history.push(newPoint)，如果随后调用的是包含全部历史轨迹的 source.setData(fullGeoJSON)，地图内部仍可能按整套 Source 更新。Mapbox GL JS 官方性能模型把 Source Update Time 与该 Source 的顶点数、引用层数等联系起来，并建议将频繁变动的数据与大型静态数据源分离。[[9]](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/)
+
+### 【Canvas 2D、WebGL 和 GeoJSON 地图库有不同的更新策略】
+
+**Canvas 2D：固定视图可以只追加末尾像素。**
+
+~~~js
+// lastPoint 和 newPoint 已经是同一张 Canvas 的像素坐标。
+// 仅适合旧图像可以保留、视图没有整体变化的情况。
+function appendSegment(ctx, lastPoint, newPoint) {
+  ctx.beginPath();
+  ctx.moveTo(lastPoint.x, lastPoint.y);
+  ctx.lineTo(newPoint.x, newPoint.y);
+  ctx.stroke();
+}
+~~~
+
+如果地图可以复用旧像素，新增点只需绘制末尾线段。但是一旦地图缩放、平移、改变投影、样式、需要擦除轨迹或恢复遮挡内容，先前像素可能不再正确，需要重绘受影响区域、分层缓存或重绘全部必要画面。MDN 也建议针对复杂 Canvas 场景预渲染静态区域、采用分层 Canvas 和减少无谓重绘。[[12]](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
+
+**WebGL：可以重用已构建的 GPU Geometry。**
+
+~~~text
+历史点 → 已有 Vertex Buffer（GPU 顶点缓冲）
+                        ↓
+新增点 → 构建最后一段线的新增顶点
+                        ↓
+若引擎具备可追加/局部更新的 Buffer 管理
+  → 只上传相关新数据，旧 Geometry 保持复用
+                        ↓
+GPU 重新绘制所需的可见线段或图层
+~~~
+
+WebGL 具备局部 Buffer 更新能力，但**某个地图库的 Polyline API 是否提供顶点级追加，是另一个问题**。对于仅暴露“替换整条线”接口的图库，应用即便只更新一个点，也可能触发整个线的 Geometry 重新构建。
+
+**GeoJSON 数据源：差量到 Feature，不一定差量到顶点。**
+
+例如：
+
+~~~js
+// 通用 GeoJSON Source 更新示意：向引擎提交完整历史轨迹。
+history.push(newPoint);
+source.setData({
+  type: 'Feature',
+  properties: {},
+  geometry: {
+    type: 'LineString',
+    coordinates: history
+  }
+});
+~~~
+
+这里 history.push 本身是追加，但 setData 仍传入整个历史数组。是否重新解析、重建和重绘、在哪个 Worker 中完成，要按具体图库实现和 Profile 确认。对于 MapLibre GL JS，GeoJSONSource.updateData() 支持按唯一 Feature ID 做差量增删改，前提是数据源里的 Feature 有可用且唯一的 ID。[[10]](https://maplibre.org/maplibre-gl-js/docs/API/classes/GeoJSONSource/)
+
+然而 MapLibre 的 GeoJSONFeatureDiff 用 newGeometry **替换一个 Feature 的完整 Geometry**，而不是提供向同一个 LineString 的末尾追加一个坐标的通用方法。若整条 10,000 点轨迹只有一个 Feature，更新该 Feature 的 Geometry 仍可能涉及它的所有顶点。[[11]](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/GeoJSONFeatureDiff/)
+
+因此可以探索把历史轨迹拆为稳定 Chunk 与一个活动 Chunk：
+
+~~~text
+完整业务历史轨迹
+  ├─ Chunk 1：P1～P1000       已封存
+  ├─ Chunk 2：P1000～P2000    已封存
+  ├─ ...
+  └─ Active Chunk：当前新增点继续追加
+       ├─ P10000
+       └─ P10001
+~~~
+
+只有活动 Chunk 接受新的坐标；封存的 Chunk 尽可能复用已有 Feature、Geometry 与缓存。实现需处理块边界线段重叠、连线连续性、样式匹配，以及过多 Chunk 带来的 Source/Layer/Draw Call 成本，不能把 Chunk 无限拆细。**Feature 级增量、Geometry 级增量和最终 Draw Call 是否减少，分别验证。**
+
+### 【业务“渲染前”与 LoAF Pre-layout 的分类边界】
+
+LoAF 的阶段基于时间位置，而不是地图函数的业务职责，因此还要重新映射：
+
+| 地图工作 | 常见执行位置 | LoAF 中的可能归属 |
+| --- | --- | --- |
+| WebSocket 消息解析与历史入队 | 普通消息 Task | 若在 renderStart 之前，属于 Work |
+| 地理坐标转换与预处理 | 主线程消息 Task / rAF / Worker | 取决于时机；Worker 不直接计入主线程 LoAF |
+| rAF 取出 batch 并提交地图更新 | rAF 同步回调 | 通常属于 Pre-layout |
+| rAF 中同步生成 Geometry 或绘制 Canvas | rAF 回调 | 可处于 Pre-layout，即使函数名叫 render |
+| WebGL 画图命令的 CPU 提交 | 地图渲染回调 | JS 提交可能属于 Pre-layout |
+| 浏览器 CSS Style / Layout | 渲染更新阶段 | 与 LoAF 的 styleAndLayoutStart 相关 |
+| 地图库 Worker / GPU 绘制与合成 | 异步线程或设备 | 普通 LoAF 分段不提供完整 GPU/呈现时间 |
+
+**地图 WebGL 绘制不等于浏览器 CSS Layout。** 渲染引擎可能在 rAF 期间提交 WebGL 命令，使同步提交时间计入 Pre-layout，但 GPU 的真正绘制与最终屏幕呈现不一定体现在这里。所以 mapLayer.update() 同步返回很快，不能说明新轨迹已经完成屏幕呈现。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+### 【通过 History Sweep 和受控插桩判断当前到底是哪种全量】
+
+要证明“历史越多越卡”到底发生在业务数据、Geometry 还是最终绘制层，必须分别测量；示意：
+
+~~~js
+function updateTrajectory(batch) {
+  const t0 = performance.now();
+  appendToBusinessHistory(batch);
+  const t1 = performance.now();
+  submitToMapSource(batch);
+  const t2 = performance.now();
+
+  record({
+    historyUpdateMs: t1 - t0,
+    sourceCallMs: t2 - t1
+  });
+}
+~~~
+
+代码解释：
+
+- historyUpdateMs 只代表业务历史数据更新的同步耗时；
+- sourceCallMs 只代表地图 Source API 的同步返回成本；
+- **不能把 sourceCallMs 当成完整 Geometry 构建、Worker 执行、Raster、GPU 或屏幕呈现耗时**。需要结合地图 Source 加载完成信号、引擎事件和 Chrome Trace 分析后续异步成本。
+
+建议固定输入 rate、batch、地图视口、设备与数据内容，仅改变历史规模 H，采集 Frame Interval P95、LoAF Work/Pre-layout、业务提交耗时、地图更新相关 Trace、Memory 与 GC。再做三个对照：
+
+1. **No-op Update**：保留同样的数据到达与 rAF 调度，但不提交地图图层。若帧稳定，说明真正地图更新链路有明显压力。
+2. **Full Source vs Chunk / Incremental**：相同轨迹和视口，分别整体 setData 与分段/差量更新，比较 Geometry 处理和真正画面成本。
+3. **Fixed Camera vs Pan/Zoom**：固定视口时是否能复用旧像素、几何和资源？缩放、平移、变更样式时是否仍然需要更多重绘？
+
+结果解释：如果随着 H 增加，JS historyUpdateMs 变长，优先检查历史遍历与对象分配；如果同步 API 很快、但 LoAF/地图 Worker 或 GPU Trace 随 H 变长，优先分析图库的数据源、Geometry 与绘制方式；如果增量更新只改善 CPU 解析，GPU 仍随可见顶点数明显增加，就需要考虑视口裁剪、LOD、分层和可见对象规模控制。
+
+这套三层区分是实时轨迹之外同样可迁移的性能判断方法：**追加业务状态 ≠ 增量更新几何 ≠ 局部重绘画面**。
 
 ## 11. 性能定位从异常结果逐层进入函数和场景级证据
 
@@ -682,3 +909,9 @@ Smoothness → 自定义 Frame 结果体系
 4. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). LoAF 50ms 门槛、时间拆分、blockingDuration、scripts、特殊无渲染记录。
 5. W3C. [Long Animation Frames API Working Draft](https://www.w3.org/TR/long-animation-frames/). Long Animation Frames API 的工作草案。
 6. GoogleChrome / web-vitals. [官方实现与 Attribution 文档](https://github.com/GoogleChrome/web-vitals). 标准 Web Vitals 与 INP 长帧归因的关系。
+7. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代垃圾回收、主线程暂停与并发/并行/增量优化。
+8. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Allocation Sampling、Heap Snapshot 与 GC 排查。
+9. Mapbox. [Improve the performance of Mapbox GL JS maps](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/). Source/Layer/Vertex 成本模型和高频变化数据源拆分。
+10. MapLibre GL JS. [GeoJSONSource](https://maplibre.org/maplibre-gl-js/docs/API/classes/GeoJSONSource/). setData 与按 Feature ID 差量更新的 API 和前置条件。
+11. MapLibre GL JS. [GeoJSONFeatureDiff](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/GeoJSONFeatureDiff/). Feature Geometry 的整体替换语义。
+12. MDN. [Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas). Canvas 预渲染、分层与减少重绘的优化方法。
