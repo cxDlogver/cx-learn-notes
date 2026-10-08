@@ -2590,6 +2590,48 @@ Resource Existence Leak
 
 ---
 
+
+### 【跨数据库与 Redis 保存 Session 时，必须先定义在线授权权威和撤销生效时间】
+
+Session 同时出现在 PostgreSQL 与 Redis 中，不足以直接判定“必须使用事务性 Outbox”。首先要区分：数据库保存的是长期会话关系，还是每次鉴权必须检查的最终状态；Redis 只是可重建的 Cache，还是当前 SessionGuard 直接接受或拒绝请求的在线认证依据。两者的数据职责不同，意味着不同的故障窗口。
+
+以常见双写登录为例：
+
+~~~text
+Login → 验证身份
+  ↓
+PostgreSQL INSERT user_sessions
+  ↓
+Redis SET session:<tokenHash> ... EX <ttl>
+  ↓
+Set-Cookie / Response
+~~~
+
+两个写入分属不同存储，不能由 PostgreSQL 的单库事务共同回滚。DB 成功、Redis 写失败，可能留下不再可使用的 Session 行；Redis 成功而响应丢失，则可能留下一份客户端尚未取得 Token 的有效状态。可以根据真实风险采用补偿清理、会话过期、审计以及严格的响应语义，不必默认引入异步 Outbox 让登录稍后才生效。
+
+**退出登录的风险方向不同于缓存失效：**
+
+~~~text
+DB DELETE user_sessions 已提交
+  ↓
+Redis DEL session:<tokenHash> 失败
+  ↓
+如果 Guard 只信 Redis Key，旧 Token 仍可能被接受
+~~~
+
+此时问题不是用户信息显示了旧缓存，而是安全授权可能继续生效。将“删除 Redis Key”放进 Outbox，能保证删除意图持久并在后台反复尝试，却无法自动保证“用户收到 Logout 成功响应的那一刻旧 Token 已失效”。因而必须先明确定义：
+
+1. **Authority**：谁对 Session 是否有效具有最终判断权？若是数据库，Redis 命中不能绕过权威撤销状态；若是 Redis，撤销成功必须以该实时鉴权边界为依据。
+2. **Consistency Window**：要求即时生效、有限短时陈旧，还是允许最终一致？密码重置和高风险账户操作应采用更严格的撤销语义。
+3. **Failure Policy**：Redis 断连或 DELETE 失败时是否拒绝敏感请求、是否能保证 Token 继续被禁止、成功响应如何定义？不可 Fail-open。
+4. **Fallback**：Redis Miss 后是否读取数据库？如果 DB 中仍有过期或已经撤销的 Session 行，盲目回源会使已失效 Token 复活，因此必须验证所有权、过期和撤销状态。
+5. **Async Repair**：哪些只是非阻断清理或跨系统通知，可以放入 Outbox/Queue？哪些即时安全要求不可推迟到后台？
+
+这里的架构结论不局限于 Session：只要 Redis 在运行时直接决定权限、安全限流或其他高风险决策，就不能无条件把 Redis 当成可丢失的性能 Cache。与此相对，用户资料缓存的短时陈旧常可用 Cache-Aside / TTL / Version 管理；订单事件或后台加工任务的可靠交接才更适合 Transactional Outbox。
+
+具体实例参见 [Browser Monitor 账号认证 Session 实战](https://github.com/cxDlogver/browser-monitor/blob/main/docs/账号认证Session与CSRF源码实战分析.md)，对照 [服务端异步任务的 Outbox 机制](./F-服务端异步任务与消息处理体系.md)。安全原则参考：[OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)。
+
+
 ## 3. 访问控制体系在可信身份之上决定具体资源操作是否允许
 
 Authentication 已经得到：
