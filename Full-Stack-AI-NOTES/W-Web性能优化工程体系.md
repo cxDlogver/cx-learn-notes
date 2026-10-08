@@ -621,9 +621,9 @@ function appendRecord(record) {
 
 第二种方式在“只追加有效记录”的前提下，将每次维护总额的计算从遍历全部记录改为常数级更新。这个示例揭示的是**减少重复计算范围**，但它并非完整的金额系统：如果有删除、修改、撤销、精度或重新同步的情况，必须同步更新总额，必要时校验并重建；不能为了省去全量计算而放弃结果正确性。
 
-除此以外，计算成本还常来自**选择了不符合访问模式的数据结构**。如果应用频繁根据 ID 查找历史记录，每次执行 \`records.find(...)\` 都可能扫描数组；可以按 ID 构建 \`Map\`，换取平均更快的重复查找，但创建与维护索引本身增加时间和内存，并且数据变化时必须保持索引一致。一次性查询很少时，直接扫描反而更简单。
+除此以外，计算成本还常来自**选择了不符合访问模式的数据结构**。如果应用频繁根据 ID 查找历史记录，每次执行 `records.find(...)` 都可能扫描数组；可以按 ID 构建 `Map`，换取平均更快的重复查找，但创建与维护索引本身增加时间和内存，并且数据变化时必须保持索引一致。一次性查询很少时，直接扫描反而更简单。
 
-当多处代码反复执行相同的过滤、排序或转换，也可以考虑共享计算结果。**Memoization / 计算缓存**通过稳定输入复用已经算出的结果，减少重复求值；在 Vue 中，\`computed\` 能根据其响应式依赖缓存派生值。但缓存只在相应依赖不变、复用频率足够时才有意义；结果创建新对象、依赖范围过大、缓存维护成本过高，都可能削弱收益。Vue 也会针对稳定的计算值减少不必要的下游触发，具体行为应结合框架版本和返回值稳定性理解。[[20]](https://vuejs.org/guide/best-practices/performance)
+当多处代码反复执行相同的过滤、排序或转换，也可以考虑共享计算结果。**Memoization / 计算缓存**通过稳定输入复用已经算出的结果，减少重复求值；在 Vue 中，`computed` 能根据其响应式依赖缓存派生值。但缓存只在相应依赖不变、复用频率足够时才有意义；结果创建新对象、依赖范围过大、缓存维护成本过高，都可能削弱收益。Vue 也会针对稳定的计算值减少不必要的下游触发，具体行为应结合框架版本和返回值稳定性理解。[[20]](https://vuejs.org/guide/best-practices/performance)
 
 还有一种常见浪费是**同一份数据在一次处理流程中被重复转换**：多个组件各自执行大数组的过滤、映射、序列化；或者每次页面状态微小变化都重新创建大量中间数组。应尽量明确衍生结果由谁计算、何时失效，并只处理当前活动数据集合。大型历史数据可以完整保留以供业务查询，但不代表当前一次搜索或绘图必须扫描全部记录。减少处理规模和减少中间对象，还可以降低后文的分配及 GC 压力。
 
@@ -648,7 +648,7 @@ function appendRecord(record) {
          生成必要变化，再交给浏览器处理
 ~~~
 
-Vue 3 主要使用 \`Proxy\` 实现普通对象的响应式访问拦截，\`ref\` 则通过 \`.value\` 的访问器实现追踪与触发。依赖建立在实际属性访问与活跃的响应式计算之间，不是给大型对象的每个字段安装持续运行的轮询任务。例如一个组件只读取 \`user.name\`，另一个只读取 \`user.age\`，修改 \`name\` **不会仅仅因为两个字段同属于 \`user\` 对象，就自动通知后一个组件**。[[25]](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+Vue 3 主要使用 `Proxy` 实现普通对象的响应式访问拦截，`ref` 则通过 `.value` 的访问器实现追踪与触发。依赖建立在实际属性访问与活跃的响应式计算之间，不是给大型对象的每个字段安装持续运行的轮询任务。例如一个组件只读取 `user.name`，另一个只读取 `user.age`，修改 `name` **不会仅仅因为两个字段同属于 `user` 对象，就自动通知后一个组件**。[[21]](https://vuejs.org/guide/extras/reactivity-in-depth.html)
 
 三个阶段的成本必须分别判断：
 
@@ -662,7 +662,7 @@ Vue 3 主要使用 \`Proxy\` 实现普通对象的响应式访问拦截，\`ref\
 
 **第一类手段：对确实不需要深层追踪的大型数据使用浅层响应式。**
 
-\`ref\`、\`reactive\` 默认支持深层响应式，但不是在创建对象的瞬间就为所有嵌套字段完成全部代理与订阅；Vue 对嵌套对象的代理处理可以在被访问时发生。若页面每次需要读取大型嵌套数组的海量属性，Proxy 访问和依赖追踪成本可能逐渐变得显著。Vue 官方指出，这通常出现在一次渲染访问大量嵌套属性的特定场景，并提供 \`shallowRef\` / \`shallowReactive\` 让内部对象保持原始状态。[[20]](https://vuejs.org/guide/best-practices/performance) [[26]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
+`ref`、`reactive` 默认支持深层响应式，但不是在创建对象的瞬间就为所有嵌套字段完成全部代理与订阅；Vue 对嵌套对象的代理处理可以在被访问时发生。若页面每次需要读取大型嵌套数组的海量属性，Proxy 访问和依赖追踪成本可能逐渐变得显著。Vue 官方指出，这通常出现在一次渲染访问大量嵌套属性的特定场景，并提供 `shallowRef` / `shallowReactive` 让内部对象保持原始状态。[[20]](https://vuejs.org/guide/best-practices/performance) [[22]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
 
 ~~~js
 import { ref, shallowRef } from 'vue';
@@ -679,11 +679,11 @@ function replaceHistory(nextHistory) {
 }
 ~~~
 
-这与“把大数组拆成许多小的响应式变量”不同。其实际收益是**不再为大型数组内部对象提供深层代理读取与依赖追踪**。代价是 \`history.value[0].status = 'done'\` 这样的内部原地修改不会自动通知 Vue；若希望视图更新，必须按约定替换根引用或单独建立真正需要变化的状态。对于频繁细粒度修改的大型数据，强制每次复制整个数组又可能引入 O(N) 的复制与分配成本，不能机械套用 \`shallowRef\`。
+这与“把大数组拆成许多小的响应式变量”不同。其实际收益是**不再为大型数组内部对象提供深层代理读取与依赖追踪**。代价是 `history.value[0].status = 'done'` 这样的内部原地修改不会自动通知 Vue；若希望视图更新，必须按约定替换根引用或单独建立真正需要变化的状态。对于频繁细粒度修改的大型数据，强制每次复制整个数组又可能引入 O(N) 的复制与分配成本，不能机械套用 `shallowRef`。
 
 **第二类手段：让监听与衍生计算只依赖实际需要的字段。**
 
-假设组件只需在当前选中项变化时更新侧栏，却使用 \`watch(reactiveObject, callback)\` 直接深度监听包含大量历史记录的整个对象。深度监听需要遍历嵌套数据以建立相关依赖，内部任何被监听的变化都可能触发不必要的回调。更合适的方式是精确指定所需状态：
+假设组件只需在当前选中项变化时更新侧栏，却使用 `watch(reactiveObject, callback)` 直接深度监听包含大量历史记录的整个对象。深度监听需要遍历嵌套数据以建立相关依赖，内部任何被监听的变化都可能触发不必要的回调。更合适的方式是精确指定所需状态：
 
 ~~~js
 import { reactive, watch } from 'vue';
@@ -700,13 +700,13 @@ watch(
 );
 ~~~
 
-这里的优化来自**减少深度遍历、缩小依赖及业务回调范围**；并不是 Vue 会主动不断轮询 \`state.history\`。需要确实感知整个对象变化的业务仍然可以使用深度监听，但必须意识到监听范围的真实成本。Vue 普通组件更新与默认 Watcher 回调会进行批量调度；\`flush: 'sync'\` 监听器则可能在多次同步修改时重复触发，应谨慎用于高频大数据。[[27]](https://vuejs.org/guide/essentials/watchers.html)
+这里的优化来自**减少深度遍历、缩小依赖及业务回调范围**；并不是 Vue 会主动不断轮询 `state.history`。需要确实感知整个对象变化的业务仍然可以使用深度监听，但必须意识到监听范围的真实成本。Vue 普通组件更新与默认 Watcher 回调会进行批量调度；`flush: 'sync'` 监听器则可能在多次同步修改时重复触发，应谨慎用于高频大数据。[[23]](https://vuejs.org/guide/essentials/watchers.html)
 
 **第三类手段：减少被状态变化无意义触发的组件更新。**
 
 组件的渲染函数是一个执行单位。当它依赖的某个属性变化后，即使模板中其他字段的值没变，组件仍可能重新计算自身的虚拟 DOM；但 Vue 不会因此必然修改所有真实 DOM 节点。
 
-例如在列表中直接把全局的 \`activeId\` 传给每一个子组件，那么选中项变化时，每个子组件收到的 \`activeId\` 都可能变化。可以让父组件先计算每行的布尔状态，只传稳定的 \`active\` 值：
+例如在列表中直接把全局的 `activeId` 传给每一个子组件，那么选中项变化时，每个子组件收到的 `activeId` 都可能变化。可以让父组件先计算每行的布尔状态，只传稳定的 `active` 值：
 
 ~~~vue
 <!-- 大多数列表项的 active 值保持不变，可避免无关子组件更新。 -->
@@ -718,19 +718,19 @@ watch(
 />
 ~~~
 
-选中项从 A 切换到 B 时，大多数列表项的 \`active\` 始终是 \`false\`，因此在其他 Props 稳定、没有其他状态依赖的前提下，它们可以跳过无关更新。对于真正不会再次变化的子树，可以考虑 \`v-once\`；对于已证明昂贵的大型列表或子树，可根据正确的依赖选择使用 \`v-memo\`。但如果 Memo 的依赖列表遗漏了会影响渲染结果的数据，页面也可能显示过期内容。[[20]](https://vuejs.org/guide/best-practices/performance)
+选中项从 A 切换到 B 时，大多数列表项的 `active` 始终是 `false`，因此在其他 Props 稳定、没有其他状态依赖的前提下，它们可以跳过无关更新。对于真正不会再次变化的子树，可以考虑 `v-once`；对于已证明昂贵的大型列表或子树，可根据正确的依赖选择使用 `v-memo`。但如果 Memo 的依赖列表遗漏了会影响渲染结果的数据，页面也可能显示过期内容。[[20]](https://vuejs.org/guide/best-practices/performance)
 
-最后，**同一段同步代码连续修改多个响应式字段，不等于同一组件会立刻渲染多次**。Vue 将 DOM 更新缓冲到下一个更新周期，并对同一组件的更新进行合批去重。但批量调度没有消除每次 Proxy 属性写入的处理，也没有让一次本来需要遍历 10 万条记录的组件渲染自动缩小到一条。跨不同更新周期或同步监听器仍可能带来额外执行。[[26]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) [[27]](https://vuejs.org/guide/essentials/watchers.html)
+最后，**同一段同步代码连续修改多个响应式字段，不等于同一组件会立刻渲染多次**。Vue 将 DOM 更新缓冲到下一个更新周期，并对同一组件的更新进行合批去重。但批量调度没有消除每次 Proxy 属性写入的处理，也没有让一次本来需要遍历 10 万条记录的组件渲染自动缩小到一条。跨不同更新周期或同步监听器仍可能带来额外执行。[[22]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) [[23]](https://vuejs.org/guide/essentials/watchers.html)
 
 这一分支的优化判断可以归纳为：**是否需要深度追踪 → 实际依赖哪些属性 → 变化后哪些消费者真正需要重新计算**。框架详细 API 与组件实践继续阅读 [Vue 应用级性能分析及优化](./V-Vue应用级性能分析及优化.md)，大型列表的 DOM 规模控制参见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。列表虚拟化主要减少节点数量及后续渲染成本，不能作为所有 Proxy 开销的直接替代。
 
 ### 【内存管理优化控制对象分配、GC 和长期数据规模】
 
-JavaScript 的内存管理优化不是手动销毁每个变量，而是**控制对象创建、持有引用与最终不再使用对象的生命周期**。V8 的垃圾回收（GC）负责识别不可达对象并回收内存；应用侧需要避免无意义地反复创建对象，也要在对象确实不需要时解除不必要的引用。[[21]](https://v8.dev/blog/trash-talk)
+JavaScript 的内存管理优化不是手动销毁每个变量，而是**控制对象创建、持有引用与最终不再使用对象的生命周期**。V8 的垃圾回收（GC）负责识别不可达对象并回收内存；应用侧需要避免无意义地反复创建对象，也要在对象确实不需要时解除不必要的引用。[[24]](https://v8.dev/blog/trash-talk)
 
-第一类成本是**对象分配速率（Allocation Rate）**。例如高频消息处理中，每次都通过 \`filter().map()\` 创建多个临时数组，这些对象虽然很快可以被回收，但创建本身占用 CPU，并可能增加 GC 频率。可以先确认这些中间数组是否真的被不同业务步骤使用，再考虑合并遍历、复用稳定结果或采用增量计算；不以“彻底避免对象分配”为目标，也不能破坏不可变状态与数据正确性。
+第一类成本是**对象分配速率（Allocation Rate）**。例如高频消息处理中，每次都通过 `filter().map()` 创建多个临时数组，这些对象虽然很快可以被回收，但创建本身占用 CPU，并可能增加 GC 频率。可以先确认这些中间数组是否真的被不同业务步骤使用，再考虑合并遍历、复用稳定结果或采用增量计算；不以“彻底避免对象分配”为目标，也不能破坏不可变状态与数据正确性。
 
-第二类成本是**长期存活对象规模（Live Set）**。如果缓存、历史数组或闭包长期持有对象，GC 就不能回收仍可达的对象。随着数据规模扩大，垃圾回收可能需要处理更多对象，内存容量压力也会增加。但要注意：**Heap 变大不意味着 GC 时间一定同比增长，更不意味着所有卡顿都来自 GC**。V8 使用分代、增量、并发等回收机制，不同类型对象的实际回收开销需要以 Profile 为证据。[[21]](https://v8.dev/blog/trash-talk)
+第二类成本是**长期存活对象规模（Live Set）**。如果缓存、历史数组或闭包长期持有对象，GC 就不能回收仍可达的对象。随着数据规模扩大，垃圾回收可能需要处理更多对象，内存容量压力也会增加。但要注意：**Heap 变大不意味着 GC 时间一定同比增长，更不意味着所有卡顿都来自 GC**。V8 使用分代、增量、并发等回收机制，不同类型对象的实际回收开销需要以 Profile 为证据。[[24]](https://v8.dev/blog/trash-talk)
 
 第三类成本是**历史数据规模增长带来的业务计算工作**。例如轨迹页面持续接收新坐标：
 
@@ -744,9 +744,9 @@ function appendPoint(point) {
 }
 ~~~
 
-如果 \`history\` 不断增长，单次 \`map\` 的遍历成本也会增长；把 \`history\` 改成普通数组或 \`shallowRef\`，并不能消除这次全量遍历。优化时要优先辨别是否能够**只转换新数据、只更新受影响的结果**；如果图形库内部仍重新创建整个图形对象，还要到 ⑥ 检查绘制与图形数据处理能力。保存完整业务历史，与每次都处理全部历史，是两件不同的事。
+如果 `history` 不断增长，单次 `map` 的遍历成本也会增长；把 `history` 改成普通数组或 `shallowRef`，并不能消除这次全量遍历。优化时要优先辨别是否能够**只转换新数据、只更新受影响的结果**；如果图形库内部仍重新创建整个图形对象，还要到 ⑥ 检查绘制与图形数据处理能力。保存完整业务历史，与每次都处理全部历史，是两件不同的事。
 
-最后，内存泄漏常来自已经失去业务意义但仍被引用的对象，如未清理的全局事件监听器、定时器、订阅、组件卸载后的闭包或无限增长的缓存。对象从页面消失，不代表其 JS 引用已经消失；需要在相应生命周期停止订阅、清理引用、限制缓存容量。对象池可能减少分配，但也可能增加长期存活对象，不应在没有测量的情况下成为通用优化策略。Chrome Heap Snapshot 能通过引用保留链帮助定位无法回收的对象。[[29]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
+最后，内存泄漏常来自已经失去业务意义但仍被引用的对象，如未清理的全局事件监听器、定时器、订阅、组件卸载后的闭包或无限增长的缓存。对象从页面消失，不代表其 JS 引用已经消失；需要在相应生命周期停止订阅、清理引用、限制缓存容量。对象池可能减少分配，但也可能增加长期存活对象，不应在没有测量的情况下成为通用优化策略。Chrome Heap Snapshot 能通过引用保留链帮助定位无法回收的对象。[[25]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
 
 因此，在内存不断增长时，应依次辨别：**是持续分配但正常回收、长期存活数据合理增加、对象意外泄漏，还是重复遍历越来越大的数据集合**。四种现象的直接优化手段不同。JavaScript 对象与引用管理在本节讨论；⑤ 负责持续任务的触发与停止，⑥ 负责 Canvas / GPU 资源的管理，不能把 JS Heap 当作全部页面内存的唯一指标。
 
@@ -763,9 +763,9 @@ function appendPoint(point) {
 | 数据为什么始终无法释放？ | 多次操作后的存活对象、Retainers 引用链 | Memory / Heap Snapshot；区分正常缓存与异常保留 |
 | 用户真实感受是否改善？ | 交互处理耗时、INP、必要内容可用时间、连续渲染表现 | 在性能专项和 RUM 中验证端到端结果 |
 
-Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖追踪与触发；Chrome DevTools 能通过 Performance 记录函数与主线程工作，通过 Memory 和 Heap Snapshot 检查分配及引用保留。分析工具本身也有采集开销，应在一致条件下对照并结合生产环境结果判断。[[25]](https://vuejs.org/guide/extras/reactivity-in-depth.html) [[28]](https://developer.chrome.com/docs/devtools/performance/reference/) [[29]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
+Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖追踪与触发；Chrome DevTools 能通过 Performance 记录函数与主线程工作，通过 Memory 和 Heap Snapshot 检查分配及引用保留。分析工具本身也有采集开销，应在一致条件下对照并结合生产环境结果判断。[[21]](https://vuejs.org/guide/extras/reactivity-in-depth.html) [[26]](https://developer.chrome.com/docs/devtools/performance/reference/) [[25]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
 
-例如，要验证 \`shallowRef\` 是否真正改善一个大型列表，不应只比较 Heap 数值，而要在**同样的展示数据、组件数量和操作流程下**比较实际计算与组件渲染耗时，并检查内部数据修改不再自动触发更新是否符合业务要求。要验证增量计算，也要对照删除、修改和重放数据等边界场景，保证不会因为缓存或增量状态失效造成错误结果。
+例如，要验证 `shallowRef` 是否真正改善一个大型列表，不应只比较 Heap 数值，而要在**同样的展示数据、组件数量和操作流程下**比较实际计算与组件渲染耗时，并检查内部数据修改不再自动触发更新是否符合业务要求。要验证增量计算，也要对照删除、修改和重放数据等边界场景，保证不会因为缓存或增量状态失效造成错误结果。
 
 **本章追求的是 JS 实际工作总量、无效状态计算和内存管理成本的下降；即使单次工作已经充分优化，仍然无法在主线程预算内完成时，再进入 ⑤ 讨论任务调度。** 算法减负与任务让步可以配合，但不能将它们描述为同一种优化。
 
@@ -790,7 +790,7 @@ Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖�
                重要输入和视觉更新及时获得机会
 ~~~
 
-⑤ 与 ④ 的关键差别是：④ 减少计算和组件更新**实际要做的工作**，⑤ 决定这些工作**怎样安排而不阻塞更紧急的任务**。因此优先减少无意义工作，再考虑切分或调度有必要的工作。[[22]](https://web.dev/articles/optimize-long-tasks/)
+⑤ 与 ④ 的关键差别是：④ 减少计算和组件更新**实际要做的工作**，⑤ 决定这些工作**怎样安排而不阻塞更紧急的任务**。因此优先减少无意义工作，再考虑切分或调度有必要的工作。[[27]](https://web.dev/articles/optimize-long-tasks/)
 
 ### 【先缩短长任务，再对可分片工作让出执行权】
 
@@ -834,7 +834,7 @@ async function processChunks(items, processOne) {
 | Web Worker | 不需要直接访问 DOM 的 CPU 密集工作 | 消息传输、序列化、内存以及最终 UI 提交仍有成本 |
 | Microtask / Promise 回调 | 当前 Task 完成之后的短续接工作 | 无界 Microtask 链可能妨碍浏览器获得渲染机会 |
 
-rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗时循环从 click 回调移动到 rAF 并不能令它消失。[[23]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗时循环从 click 回调移动到 rAF 并不能令它消失。[[28]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
 
 这一层的正式深入文档为 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)，不在本篇重复整个事件循环模型。
 
@@ -908,7 +908,7 @@ elements.forEach((el, i) => {
 });
 ~~~
 
-这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[24]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[29]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 
 深入基础见 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)，大型列表的实际实现与复杂度分析见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
 
@@ -930,7 +930,7 @@ elements.forEach((el, i) => {
 但它仍有约束：
 
 - 合成图层和纹理可能占用额外内存；不必要的层提升和复杂图层组合会增加资源压力。
-- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[24]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[29]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 - Canvas、WebGL 可能涉及 Buffer、Texture、Framebuffer 和异步 GPU 工作；主线程中调用接口很快，不证明 GPU 已完成实际绘制。
 - 浏览器托管 DOM 图层与显式图形 API 的资源管理语义不同；必要时使用对应引擎的销毁或复用机制，不能一概套用 JS GC 的行为。
 
@@ -1075,12 +1075,12 @@ Web 性能优化工程体系（本篇：六大领域的方案主入口）
 18. MDN. [rel="modulepreload"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload). 预加载模块并准备模块映射的机制。
 19. MDN. [Lazy loading](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading). 延迟加载的运行条件与限制。
 20. Vue.js. [Performance](https://vuejs.org/guide/best-practices/performance). 应用加载、状态稳定性、组件更新和代码分割。
-21. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代与并发回收、分配和内存管理。
-22. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
-23. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
-24. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
-25. Vue.js. [Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html). Vue 3 Proxy、属性依赖追踪、触发和调试钩子。
-26. Vue.js. [Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html). 深层与浅层响应式、嵌套代理及批量 DOM 更新时机。
-27. Vue.js. [Watchers](https://vuejs.org/guide/essentials/watchers.html). 深层 Watcher 遍历与同步/批量回调行为。
-28. Chrome for Developers. [Performance panel reference](https://developer.chrome.com/docs/devtools/performance/reference/). Main/Memory 记录与分段 CPU、内存分析。
-29. Chrome for Developers. [Record heap snapshots](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots). JS Heap Snapshot、Retainers 与内存泄漏定位。
+21. Vue.js. [Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html). Vue 3 Proxy、属性依赖追踪、触发和调试钩子。
+22. Vue.js. [Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html). 深层与浅层响应式、嵌套代理及批量 DOM 更新时机。
+23. Vue.js. [Watchers](https://vuejs.org/guide/essentials/watchers.html). 深层 Watcher 遍历与同步/批量回调行为。
+24. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代与并发回收、分配和内存管理。
+25. Chrome for Developers. [Record heap snapshots](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots). JS Heap Snapshot、Retainers 与内存泄漏定位。
+26. Chrome for Developers. [Performance panel reference](https://developer.chrome.com/docs/devtools/performance/reference/). Main/Memory 记录与分段 CPU、内存分析。
+27. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
+28. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
+29. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
