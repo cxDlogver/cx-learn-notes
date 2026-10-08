@@ -140,7 +140,7 @@ function getArticleList(queryString) {
 
 第一次调用创建请求并保存 Promise；第二个组件在请求未完成时使用同一个 Promise，因此共享了同一次获取结果。这里记录的是**正在进行的工作**，并不是长期缓存结果：请求结束后即删除记录，后续是否需要再次访问由应用判断，并交给 HTTP 缓存机制决定是否能够复用响应。示例只适用于约定好的同一权限与请求范围；真实系统还必须区分请求方法、URL 与查询参数、身份或租户、相关请求头以及会影响结果的请求体。不能仅以“URL 相同”为依据合并不同用户的数据，更不能未经业务幂等性判断就合并提交、支付等有副作用的操作。
 
-另一个常见问题是**旧请求已经没有展示价值，但仍在执行**。用户快速从“草稿”切换到“已发布”，草稿查询尚未返回，此时不应该让迟到的草稿结果覆盖当前页面。对于支持取消的 fetch，可以通过 AbortController 中止旧请求；但取消是减少继续消耗资源的机会，**并不保证请求尚未到达服务器，更不意味着已经执行的服务端操作会被撤销**。即使进行了取消，界面也应使用当前查询标识或请求序号防止过期结果覆盖新结果。[[12]](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+另一个常见问题是**旧请求已经没有展示价值，但仍在执行**。用户快速从“草稿”切换到“已发布”，草稿查询尚未返回，此时不应该让迟到的草稿结果覆盖当前页面。对于支持取消的 fetch，可以通过 AbortController 中止旧请求；但取消是减少继续消耗资源的机会，**并不保证请求尚未到达服务器，更不意味着已经执行的服务端操作会被撤销**。即使进行了取消，界面也应使用当前查询标识或请求序号防止过期结果覆盖新结果。[[2]](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
 请求去重和取消不可混用：**去重解决多个调用者需要同一结果，取消解决旧结果已经不再需要。** 若多个组件共享在途请求，一个组件退出时不能直接终止其他组件仍依赖的请求；应按消费者引用关系或请求拥有者来管理取消。
 
@@ -167,7 +167,7 @@ HTTP 缓存还必须保证返回的是**当前请求有权使用、版本正确�
 <link rel="preconnect" href="https://api.example.org" crossorigin>
 ~~~
 
-预连接准备的是后续可能使用的连接，并不会提前调用 API。浏览器可能根据情况部分执行或忽略提示；对大量并不确定会访问的域名滥用预连接，也会占用连接与设备资源。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect)
+预连接准备的是后续可能使用的连接，并不会提前调用 API。浏览器可能根据情况部分执行或忽略提示；对大量并不确定会访问的域名滥用预连接，也会占用连接与设备资源。[[4]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect)
 
 请求依赖关系也会带来额外等待。若两个 HTTP 请求互不依赖，完全串行执行就会让第二个请求平白等待第一个结束；适当并发可以缩短取得全部必要结果的时间。但如果第二个请求确实需要第一个返回的标识，就不能为了并发而跳过这个依赖。并发数量同样不是越大越好，过度并发可能竞争连接、带宽与服务端处理能力。
 
@@ -207,7 +207,7 @@ HTTP 缓存还必须保证返回的是**当前请求有权使用、版本正确�
 
 ### 【页面生成策略通过改变计算时机重新分配成本】
 
-CSR、SSR、SSG、Hybrid Rendering 不是简单的“越后出现越先进”，而是让相同页面内容在不同阶段生成：[[4]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path)
+CSR、SSR、SSG、Hybrid Rendering 不是简单的“越后出现越先进”，而是让相同页面内容在不同阶段生成：[[5]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path)
 
 | 策略 | 页面内容的主要生成位置 | 能减少的某类成本 | 新增或转移的成本 |
 | --- | --- | --- | --- |
@@ -242,7 +242,7 @@ const [articles, config] = await Promise.all([
 return { articles, config };
 ~~~
 
-两次读取由此尽早同时发起，整体等待更多取决于较慢的一项，而不是强制累加等待时间。但并行没有让每次数据库查询本身变快：如果数据库连接池容量不足、数据库已经处于高负载，增加并行查询可能进一步放大资源竞争。并且只有**数据依赖、事务顺序和权限校验允许独立执行**的工作才适合这样处理。[[16]](https://nextjs.org/docs/app/getting-started/fetching-data)
+两次读取由此尽早同时发起，整体等待更多取决于较慢的一项，而不是强制累加等待时间。但并行没有让每次数据库查询本身变快：如果数据库连接池容量不足、数据库已经处于高负载，增加并行查询可能进一步放大资源竞争。并且只有**数据依赖、事务顺序和权限校验允许独立执行**的工作才适合这样处理。[[6]](https://nextjs.org/docs/app/getting-started/fetching-data)
 
 相反，查询文章作者通常必须先知道文章中的 `author_id`，因此先取得文章，再根据作者 ID 查询，是有真实依赖的。优化应从这条实际依赖出发，考虑批量获取关联数据、在数据库内联结，或在允许时调整数据组织方式，而不是机械地把所有 await 替换成 Promise.all。
 
@@ -271,7 +271,7 @@ ORDER BY published_at DESC
 LIMIT 20;
 ~~~
 
-其中，`EXPLAIN` 展示数据库选择的扫描、连接、排序等执行方式，`ANALYZE` 实际执行查询并给出耗时，`BUFFERS` 提供缓冲区访问情况。需要结合返回行数、扫描范围和排序开销，再判断是否适合建立匹配筛选与排序条件的索引，或调整查询条件、分页方式。执行计划的估算成本不等同于毫秒时间，`EXPLAIN ANALYZE` 也不是完整 API 耗时，因为它并不自动覆盖应用业务逻辑、网络传输等所有阶段。[[13]](https://www.postgresql.org/docs/current/using-explain.html)
+其中，`EXPLAIN` 展示数据库选择的扫描、连接、排序等执行方式，`ANALYZE` 实际执行查询并给出耗时，`BUFFERS` 提供缓冲区访问情况。需要结合返回行数、扫描范围和排序开销，再判断是否适合建立匹配筛选与排序条件的索引，或调整查询条件、分页方式。执行计划的估算成本不等同于毫秒时间，`EXPLAIN ANALYZE` 也不是完整 API 耗时，因为它并不自动覆盖应用业务逻辑、网络传输等所有阶段。[[7]](https://www.postgresql.org/docs/current/using-explain.html)
 
 第二种情况是**单次 SQL 不慢，但执行了很多次**。最典型的是 N+1 查询：先查询 N 篇文章，再为每篇文章分别查询作者。以下以常见 ORM（对象关系映射工具）的调用形式说明：
 
@@ -286,7 +286,7 @@ const authors = await Promise.all(
 );
 ~~~
 
-如果文章列表有 20 篇，逻辑上就产生了 1 次列表查询和最多 20 次作者查询。即使作者查询并发执行，请求数量、数据库连接与调度工作仍然存在；部分 ORM 可能自行合并满足条件的请求，但不能默认所有调用都会自动批量化。[[14]](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance)
+如果文章列表有 20 篇，逻辑上就产生了 1 次列表查询和最多 20 次作者查询。即使作者查询并发执行，请求数量、数据库连接与调度工作仍然存在；部分 ORM 可能自行合并满足条件的请求，但不能默认所有调用都会自动批量化。[[8]](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance)
 
 若当前页面只需要展示这些作者的基本信息，可以先收集去重后的作者 ID，一次批量查询：
 
@@ -315,7 +315,7 @@ const authors = await db.user.findMany({
 
 如果服务端渲染文章列表页时，文章列表已经查出，但侧边栏推荐仍在等待另一个服务，而整个页面只允许在所有模块准备好后一次性输出 HTML，那么原本已准备好的文章列表也被迫等待推荐结果。
 
-**流式服务端渲染（Streaming SSR）**允许在框架和部署链路支持时先发送已生成的 HTML，后续模块准备好再逐步补充。这里改变的是内容交付顺序：主内容不必为了某个较慢的非关键模块等待全部完成。它不会让推荐查询本身执行得更快。[[15]](https://react.dev/reference/react-dom/server/renderToPipeableStream)
+**流式服务端渲染（Streaming SSR）**允许在框架和部署链路支持时先发送已生成的 HTML，后续模块准备好再逐步补充。这里改变的是内容交付顺序：主内容不必为了某个较慢的非关键模块等待全部完成。它不会让推荐查询本身执行得更快。[[9]](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
 以 React 的服务端 Suspense 能力为例，假设文章列表能够较早完成，而推荐模块的数据请求较慢，可以把推荐内容放在单独的边界内：
 
@@ -367,7 +367,7 @@ API 请求进入服务端
 客户端收到结果
 ~~~
 
-可以在实际代码中分别记录数据库查询、下游调用和应用组装的耗时。对适合向客户端暴露的指标，HTTP `Server-Timing` 响应头可以将分段结果关联到浏览器开发者工具，例如：[[17]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing)
+可以在实际代码中分别记录数据库查询、下游调用和应用组装的耗时。对适合向客户端暴露的指标，HTTP `Server-Timing` 响应头可以将分段结果关联到浏览器开发者工具，例如：[[10]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing)
 
 ~~~http
 Server-Timing: db;dur=80.2, app;dur=23.7
@@ -433,11 +433,11 @@ Content-Encoding: br
 Vary: Accept-Encoding
 ~~~
 
-其中 `Accept-Encoding` 表示客户端支持的内容编码，`Content-Encoding` 告知服务端实际选用的编码；`Vary` 帮助缓存正确区分不同编码的响应变体。上面的请求行与响应头是两条报文的简化拼接，不表示它们在同一个方向发送。代码压缩改变交付文件的表示形式，HTTP 内容压缩改变网络传输时的编码，两者可以叠加。对于 JPEG、WebP、AVIF 和常见音视频等本身已经压缩的格式，再叠加通用 HTTP 压缩往往收益有限，甚至可能增加开销。[[18]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression)
+其中 `Accept-Encoding` 表示客户端支持的内容编码，`Content-Encoding` 告知服务端实际选用的编码；`Vary` 帮助缓存正确区分不同编码的响应变体。上面的请求行与响应头是两条报文的简化拼接，不表示它们在同一个方向发送。代码压缩改变交付文件的表示形式，HTTP 内容压缩改变网络传输时的编码，两者可以叠加。对于 JPEG、WebP、AVIF 和常见音视频等本身已经压缩的格式，再叠加通用 HTTP 压缩往往收益有限，甚至可能增加开销。[[11]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression)
 
 **图片体积优化需要分别考虑分辨率、编码格式和压缩质量。** 分辨率是图片实际拥有多少像素；图片在页面中的 CSS 显示宽度与设备像素密度，决定了它大约需要多少像素才能清晰显示。编码格式决定这些像素怎样存储；JPEG、PNG、WebP、AVIF 各有适用场景。将 PNG 转成 WebP 或 AVIF 并不自动降低分辨率，同样尺寸的图片也可能因为编码不同而占用不同字节。
 
-例如一张原始图片宽 2400 像素，但手机页面只用它展示宽约 360 CSS 像素的缩略图，直接下载原图通常没有必要。可以在构建或图片服务端准备 480、960、1440 像素等版本，让浏览器按显示宽度、设备像素密度和可选资源选择合适版本。HTML 的 `srcset` 给出候选文件及其真实像素宽度；`sizes` 告诉浏览器不同视口下图片预计占用多宽。[[19]](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)
+例如一张原始图片宽 2400 像素，但手机页面只用它展示宽约 360 CSS 像素的缩略图，直接下载原图通常没有必要。可以在构建或图片服务端准备 480、960、1440 像素等版本，让浏览器按显示宽度、设备像素密度和可选资源选择合适版本。HTML 的 `srcset` 给出候选文件及其真实像素宽度；`sizes` 告诉浏览器不同视口下图片预计占用多宽。[[12]](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)
 
 ~~~html
 <!-- 资源路径是预先生成的不同像素版本；sizes 表示图片预计显示宽度 -->
@@ -455,9 +455,9 @@ Vary: Accept-Encoding
 
 这里宽高属性同时提供固有长宽比，帮助浏览器在图片加载前预留展示空间。它们不会强制每个设备下载 960 像素版本，真正的文件选择由浏览器根据候选列表与显示条件完成。若图片服务支持参数化裁剪或缩放，也可以通过实际显示场景生成变体；必须同时控制服务端转换成本、缓存变体规模和画质。
 
-对于编码格式，照片类内容通常可比较 JPEG、WebP、AVIF 的实际画质和字节；需要无损精细边缘、透明效果或特定兼容性的图片，还要评估 PNG、无损 WebP 或其他选择。WebP/AVIF 往往有压缩效率优势，但**格式更先进不等于所有图片都必然更小或解码更快**。可以用 `<picture>` 提供格式候选和后备图片，在实际设备上比较视觉效果、文件大小与解码表现。[[20]](https://web.dev/articles/choose-the-right-image-format)
+对于编码格式，照片类内容通常可比较 JPEG、WebP、AVIF 的实际画质和字节；需要无损精细边缘、透明效果或特定兼容性的图片，还要评估 PNG、无损 WebP 或其他选择。WebP/AVIF 往往有压缩效率优势，但**格式更先进不等于所有图片都必然更小或解码更快**。可以用 `<picture>` 提供格式候选和后备图片，在实际设备上比较视觉效果、文件大小与解码表现。[[13]](https://web.dev/articles/choose-the-right-image-format)
 
-字体同样存在“文件包含内容远大于当前页面所需”的情况。对于确实使用自定义字体的页面，可以减少不必要的字重、选择适合 Web 的字体格式（如 WOFF2），再根据实际语言文字进行**字体子集化**：将大字体中的字符拆分为较小的字形集合，并通过 `unicode-range` 指定相应覆盖范围。这样浏览器只需要下载当前文本所需的字形资源，但拆分过细也会增加请求与管理复杂度。视频、动图等媒体则需结合清晰度、编码格式、首帧与播放需要组织内容，而不是一律交付最高分辨率。[[24]](https://web.dev/articles/optimize-webfont-loading)
+字体同样存在“文件包含内容远大于当前页面所需”的情况。对于确实使用自定义字体的页面，可以减少不必要的字重、选择适合 Web 的字体格式（如 WOFF2），再根据实际语言文字进行**字体子集化**：将大字体中的字符拆分为较小的字形集合，并通过 `unicode-range` 指定相应覆盖范围。这样浏览器只需要下载当前文本所需的字形资源，但拆分过细也会增加请求与管理复杂度。视频、动图等媒体则需结合清晰度、编码格式、首帧与播放需要组织内容，而不是一律交付最高分辨率。[[14]](https://web.dev/articles/optimize-webfont-loading)
 
 以上优化减少的是**每一份资源本身要付出的字节成本**。其中具体的构建工具配置、图片压缩流水线和字体处理细节，可继续进入 [资源优化实战](./Z-资源优化实战.md)；本篇不重复大量工具参数。
 
@@ -465,7 +465,7 @@ Vary: Accept-Encoding
 
 仅仅压缩已有文件还不够。如果构建产物中包含页面根本不使用的功能，即使压缩比很高，最终仍然要付出不必要的体积成本。第二层要处理的是**资源是否真的需要被包含**，而不是怎样把已经包含的资源再压小一些。
 
-**Tree Shaking（未使用代码消除）**通常利用 ES Modules 的静态 `import` / `export` 关系，分析模块中哪些导出被真正使用，并在可以证明不影响程序行为时移除无用代码。[[21]](https://webpack.js.org/guides/tree-shaking/)
+**Tree Shaking（未使用代码消除）**通常利用 ES Modules 的静态 `import` / `export` 关系，分析模块中哪些导出被真正使用，并在可以证明不影响程序行为时移除无用代码。[[15]](https://webpack.js.org/guides/tree-shaking/)
 
 ~~~js
 // math.js：一个模块提供两项功能。
@@ -479,7 +479,7 @@ console.log(sum(2, 3));
 
 如果 `multiply` 没有其他有效引用，且删除它不会改变必须保留的副作用，构建工具就可能在生产产物中去掉它。这个示例证明的是**静态依赖关系使未使用导出的裁剪成为可能**，不是只要使用 `import` 就一定能删掉所有其他代码。
 
-为什么 Tree Shaking 必须检查副作用？因为有的模块即使没有导出被使用，导入时仍可能注册全局监听、修改运行环境或注入样式。例如 `import './global.css'` 依赖的就是样式生效；如果错误地把含有此类行为的模块全部标记为无副作用，构建工具可能连必要样式也一起移除。因此 `sideEffects` 等声明必须符合真实模块行为，不能为了缩小包体盲目统一设置。[[21]](https://webpack.js.org/guides/tree-shaking/)
+为什么 Tree Shaking 必须检查副作用？因为有的模块即使没有导出被使用，导入时仍可能注册全局监听、修改运行环境或注入样式。例如 `import './global.css'` 依赖的就是样式生效；如果错误地把含有此类行为的模块全部标记为无副作用，构建工具可能连必要样式也一起移除。因此 `sideEffects` 等声明必须符合真实模块行为，不能为了缩小包体盲目统一设置。[[15]](https://webpack.js.org/guides/tree-shaking/)
 
 除了 Tree Shaking，还应分析其他冗余来源。例如完整引入庞大的图标集合，却只使用其中几个图标；引入功能相近的多个依赖；维护已经不被业务引用的样式；同一依赖在不同打包边界意外出现多份。这些问题分别可能通过按需导出、替换依赖、CSS 清理和构建产物分析得到改善。
 
@@ -495,7 +495,7 @@ console.log(sum(2, 3));
 
 在完成压缩与无用内容消除后，剩下的资源也不一定要在首屏全部加载。例如文章列表、首屏图片和页面基本样式是用户一进入页面就需要的，而评论区下方图片、详情编辑器或后续路由所用代码可以稍后取得。第三层优化的目的，不是再删掉这些功能，而是**根据资源何时真正被需要，决定何时发现、发起和优先处理它们**。
 
-浏览器发现资源的时机并不一致。HTML 中直接声明的 `<img src>` 或样式链接，通常可以较早被浏览器发现；如果一张关键背景图片必须等待外部 CSS 下载与解析，或必须执行 JavaScript 才能生成对应 URL，它的请求可能开始得更晚。在关键图片尚未开始请求之前，即使网络连接和图片体积已经优化，首屏仍要承受这段额外等待。Google 的 LCP 优化指南特别强调关键资源的可发现性及其加载优先级。[[5]](https://web.dev/articles/optimize-lcp)
+浏览器发现资源的时机并不一致。HTML 中直接声明的 `<img src>` 或样式链接，通常可以较早被浏览器发现；如果一张关键背景图片必须等待外部 CSS 下载与解析，或必须执行 JavaScript 才能生成对应 URL，它的请求可能开始得更晚。在关键图片尚未开始请求之前，即使网络连接和图片体积已经优化，首屏仍要承受这段额外等待。Google 的 LCP 优化指南特别强调关键资源的可发现性及其加载优先级。[[16]](https://web.dev/articles/optimize-lcp)
 
 **对于当前页面确定需要的关键资源，先确保它自然地、尽早地被发现**。如果首屏主视觉本身就是初始 HTML 中的 `<img>`，优先保留明确的 `src` / `srcset`，让浏览器正常发现；对于确定重要的图片，可以通过 `fetchpriority="high"` 提示提高相对请求优先级：
 
@@ -515,9 +515,9 @@ console.log(sum(2, 3));
       as="image" fetchpriority="high">
 ~~~
 
-Preload 主要改变**发现并开始获取的时机**，Fetch Priority 主要提供**请求重要程度的提示**。它们不保证浏览器严格执行指定顺序，也不是所有关键资源都必须重复声明一次 Preload。如果资源 URL、类型、跨域方式或响应式图片选择条件与实际使用不一致，可能造成冗余下载或无效预加载。尤其字体预加载要注意相应 `crossorigin` 配置。[[6]](https://web.dev/articles/fetch-priority)
+Preload 主要改变**发现并开始获取的时机**，Fetch Priority 主要提供**请求重要程度的提示**。它们不保证浏览器严格执行指定顺序，也不是所有关键资源都必须重复声明一次 Preload。如果资源 URL、类型、跨域方式或响应式图片选择条件与实际使用不一致，可能造成冗余下载或无效预加载。尤其字体预加载要注意相应 `crossorigin` 配置。[[17]](https://web.dev/articles/fetch-priority)
 
-对于 ES Module，还存在 `modulepreload`，用于提前获取模块并进行适当的解析、编译及模块映射准备；它与仅提前取得一般资源的 `preload` 具有不同语义，浏览器对依赖模块的预加载行为也受实现与配置影响。[[23]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload) 对于未来路由可能才会用到的资源，`prefetch` 等提示属于另一类推测性加载：未来是否访问仍不确定，不能与当前页面的关键资源预加载混用。具体 Hint 语义和工程选择统一进入 [静态资源预加载方法及实践笔记](./J-静态资源预加载方法及实践笔记（完整版）.md)。
+对于 ES Module，还存在 `modulepreload`，用于提前获取模块并进行适当的解析、编译及模块映射准备；它与仅提前取得一般资源的 `preload` 具有不同语义，浏览器对依赖模块的预加载行为也受实现与配置影响。[[18]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload) 对于未来路由可能才会用到的资源，`prefetch` 等提示属于另一类推测性加载：未来是否访问仍不确定，不能与当前页面的关键资源预加载混用。具体 Hint 语义和工程选择统一进入 [静态资源预加载方法及实践笔记](./J-静态资源预加载方法及实践笔记（完整版）.md)。
 
 **对于当前视口不需要的资源，则考虑 Lazy Loading（懒加载）**。例如屏幕下方的图片可使用原生属性：
 
@@ -529,7 +529,7 @@ Preload 主要改变**发现并开始获取的时机**，Fetch Priority 主要�
      alt="正文后续配图">
 ~~~
 
-浏览器会根据距离视口等条件决定实际请求时机，因此 Lazy Loading 不是保证“滚动到图片正好出现才下载”。首屏关键图片，尤其可能成为 LCP 元素的图片，通常不应盲目使用 `loading="lazy"`，否则可能增加资源发现后的等待。图片和 iframe 等资源的懒加载行为与适用条件参见 MDN。[[22]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading)
+浏览器会根据距离视口等条件决定实际请求时机，因此 Lazy Loading 不是保证“滚动到图片正好出现才下载”。首屏关键图片，尤其可能成为 LCP 元素的图片，通常不应盲目使用 `loading="lazy"`，否则可能增加资源发现后的等待。图片和 iframe 等资源的懒加载行为与适用条件参见 MDN。[[19]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading)
 
 JavaScript 功能也可以按需获取。**代码分割（Code Splitting）**让构建工具把不同入口或动态模块边界生成多个文件；**动态导入（Dynamic Import）**可以在功能真正被触发时再开始加载对应模块：
 
@@ -541,7 +541,7 @@ async function openEditor() {
 }
 ~~~
 
-这段代码说明的是加载时机与初始交付范围的变化，并不表示编辑器已经从项目中被删除，也不保证构建工具一定生成最合适的分包。分包太细可能增加模块依赖和请求等待；如果用户进入页面后必须立即使用编辑器，延迟到点击时才加载反而会产生交互等待。具体模块分包和执行优化可继续阅读 [编译构建与打包全面优化](./B-编译构建与打包全面优化.md) 与后文“JavaScript 与状态优化”，避免在此重复客户端 CPU 计算问题。[[7]](https://vuejs.org/guide/best-practices/performance)
+这段代码说明的是加载时机与初始交付范围的变化，并不表示编辑器已经从项目中被删除，也不保证构建工具一定生成最合适的分包。分包太细可能增加模块依赖和请求等待；如果用户进入页面后必须立即使用编辑器，延迟到点击时才加载反而会产生交互等待。具体模块分包和执行优化可继续阅读 [编译构建与打包全面优化](./B-编译构建与打包全面优化.md) 与后文“JavaScript 与状态优化”，避免在此重复客户端 CPU 计算问题。[[20]](https://vuejs.org/guide/best-practices/performance)
 
 对于脚本，`async`、`defer` 与 `type="module"` 还会影响脚本加载及执行相对 HTML 解析的关系：传统 `defer` 脚本在 HTML 解析完成后按顺序执行，`async` 脚本可在可执行时运行而不保证与其他异步脚本的顺序，模块脚本具有自己的模块加载与延迟执行语义。这些属性不能让脚本的实际计算成本凭空消失。对于首屏关键 CSS，也不能简单全部改成异步或懒加载，因为必要样式迟到可能推迟正确显示。详细主线程执行与浏览器渲染分别交给后续章节。
 
@@ -592,7 +592,7 @@ async function openEditor() {
 - SSR/SSG 可让 HTML 更早出现，但客户端仍可能承担 Hydration；不能把服务端输出成功当作交互完全就绪。
 - 第三方脚本也占执行预算，需要判断是否必须位于关键路径，是否可以延后或有更轻的替代方案。
 
-具体的页面生成/Hydration 边界见 [Web 渲染架构](./W-Web渲染架构.md) 和 [服务端渲染完整链路](./F-服务端渲染完整链路.md)。Vue 官方也把加载阶段的代码分割与运行阶段的状态更新性能分别讨论。[[7]](https://vuejs.org/guide/best-practices/performance)
+具体的页面生成/Hydration 边界见 [Web 渲染架构](./W-Web渲染架构.md) 和 [服务端渲染完整链路](./F-服务端渲染完整链路.md)。Vue 官方也把加载阶段的代码分割与运行阶段的状态更新性能分别讨论。[[20]](https://vuejs.org/guide/best-practices/performance)
 
 ### 【计算优化从复杂度、变化范围和复用已计算结果入手】
 
@@ -626,7 +626,7 @@ async function openEditor() {
 - 大列表先减少应用层的无效计算，浏览器层再通过虚拟化减少实际参与 DOM/Layout 的节点。
 - 避免无意义的重复状态提交；何时合并和让出执行机会交给 ⑤ 处理。
 
-Vue 的 Props Stability、v-once、v-memo 等是框架特例，背后的通用机制是**减少不必要的组件更新**；不要直接把某个 API 当作所有框架通用的性能规则。[[7]](https://vuejs.org/guide/best-practices/performance)
+Vue 的 Props Stability、v-once、v-memo 等是框架特例，背后的通用机制是**减少不必要的组件更新**；不要直接把某个 API 当作所有框架通用的性能规则。[[20]](https://vuejs.org/guide/best-practices/performance)
 
 深入入口：[Vue 应用级性能分析及优化](./V-Vue应用级性能分析及优化.md)、[动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
 
@@ -642,7 +642,7 @@ Vue 的 Props Stability、v-once、v-memo 等是框架特例，背后的通用�
 | 数据规模增长导致重复工作 | 即使 GC 不明显，每次业务计算也可能越来越重 | 增量计算、索引、限制活动工作集 |
 | 盲目使用对象池 | 降低部分创建成本，却可能增加长期存活规模 | 只有在 Profile 证明收益时使用 |
 
-V8 使用分代、增量和并发 GC，因此 Heap 较大不意味着一定会卡顿；要区分 Allocation Rate、GC 暂停与业务数据增长导致的 CPU 工作。[[8]](https://v8.dev/blog/trash-talk)
+V8 使用分代、增量和并发 GC，因此 Heap 较大不意味着一定会卡顿；要区分 Allocation Rate、GC 暂停与业务数据增长导致的 CPU 工作。[[21]](https://v8.dev/blog/trash-talk)
 
 JS 对象/订阅的引用清理属于本领域；**持续定时任务何时停止执行**还涉及 ⑤，**Canvas/GPU 资源的创建与释放**则放在 ⑥。这些内容按照对象所处的执行职责分布，不再另设“资源生命周期优化”一级章节。可继续阅读 [V8 引擎原理笔记](./J-JavaScript V8引擎原理详解笔记.md) 和 [Smoothness / GC 专项](./drafts/Smoothness-持续渲染流畅度指标与性能诊断体系-草稿.md)。
 
@@ -673,7 +673,7 @@ JS 对象/订阅的引用清理属于本领域；**持续定时任务何时停�
                重要输入和视觉更新及时获得机会
 ~~~
 
-⑤ 与 ④ 的关键差别是：④ 减少计算和组件更新**实际要做的工作**，⑤ 决定这些工作**怎样安排而不阻塞更紧急的任务**。因此优先减少无意义工作，再考虑切分或调度有必要的工作。[[9]](https://web.dev/articles/optimize-long-tasks/)
+⑤ 与 ④ 的关键差别是：④ 减少计算和组件更新**实际要做的工作**，⑤ 决定这些工作**怎样安排而不阻塞更紧急的任务**。因此优先减少无意义工作，再考虑切分或调度有必要的工作。[[22]](https://web.dev/articles/optimize-long-tasks/)
 
 ### 【先缩短长任务，再对可分片工作让出执行权】
 
@@ -717,7 +717,7 @@ async function processChunks(items, processOne) {
 | Web Worker | 不需要直接访问 DOM 的 CPU 密集工作 | 消息传输、序列化、内存以及最终 UI 提交仍有成本 |
 | Microtask / Promise 回调 | 当前 Task 完成之后的短续接工作 | 无界 Microtask 链可能妨碍浏览器获得渲染机会 |
 
-rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗时循环从 click 回调移动到 rAF 并不能令它消失。[[10]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗时循环从 click 回调移动到 rAF 并不能令它消失。[[23]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
 
 这一层的正式深入文档为 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)，不在本篇重复整个事件循环模型。
 
@@ -791,7 +791,7 @@ elements.forEach((el, i) => {
 });
 ~~~
 
-这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[11]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[24]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 
 深入基础见 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)，大型列表的实际实现与复杂度分析见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
 
@@ -813,7 +813,7 @@ elements.forEach((el, i) => {
 但它仍有约束：
 
 - 合成图层和纹理可能占用额外内存；不必要的层提升和复杂图层组合会增加资源压力。
-- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[11]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[24]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 - Canvas、WebGL 可能涉及 Buffer、Texture、Framebuffer 和异步 GPU 工作；主线程中调用接口很快，不证明 GPU 已完成实际绘制。
 - 浏览器托管 DOM 图层与显式图形 API 的资源管理语义不同；必要时使用对应引擎的销毁或复用机制，不能一概套用 JS GC 的行为。
 
@@ -939,26 +939,26 @@ Web 性能优化工程体系（本篇：六大领域的方案主入口）
 ## 10. 参考文献
 
 1. MDN. [Populating the page: how browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work). 页面从网络资源、解析执行到布局绘制的关联。
-2. MDN. [rel="preconnect"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect). 预连接对跨域网络准备的影响。
+2. MDN. [Using the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch). Fetch 请求取消与 AbortController 的行为。
 3. MDN. [HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching). 浏览器/共享缓存、版本资源、条件验证与新鲜度。
-4. MDN. [Critical rendering path](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path). HTML、CSS、JS 对初次画面输出的依赖。
-5. Google / web.dev. [Optimize Largest Contentful Paint](https://web.dev/articles/optimize-lcp). 关键资源发现与加载优先级的优化机制。
-6. Google / web.dev. [Optimize resource loading with the Fetch Priority API](https://web.dev/articles/fetch-priority). 资源优先级、预加载与按需加载边界。
-7. Vue.js. [Performance](https://vuejs.org/guide/best-practices/performance). 应用加载、状态稳定性、组件更新和代码分割。
-8. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代与并发回收、分配和内存管理。
-9. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
-10. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
-11. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
-12. MDN. [Using the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch). Fetch 请求取消与 AbortController 的行为。
-13. PostgreSQL Documentation. [Using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html). 执行计划、EXPLAIN ANALYZE 与数据库执行测量。
-14. Prisma Documentation. [Query optimization](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance). N+1 查询问题、批量获取与关联加载。
-15. React Documentation. [renderToPipeableStream](https://react.dev/reference/react-dom/server/renderToPipeableStream). 流式服务端渲染与 onShellReady。
-16. Next.js Documentation. [Fetching Data](https://nextjs.org/docs/app/getting-started/fetching-data). 独立数据的并行获取与逐步交付。
-17. MDN. [Server-Timing header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing). 服务端分段耗时的 HTTP 响应头。
-18. MDN. [Compression in HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression). HTTP 内容压缩、编码协商与 Vary 的关系。
-19. MDN. [Using responsive images in HTML](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images). srcset / sizes、显示宽度与浏览器选择图片版本。
-20. Google / web.dev. [Choose the right image format](https://web.dev/articles/choose-the-right-image-format). PNG、JPEG、WebP、AVIF 的格式选择与压缩取舍。
-21. webpack. [Tree Shaking](https://webpack.js.org/guides/tree-shaking/). ESM 静态依赖、副作用与未使用模块消除。
-22. MDN. [Lazy loading](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading). 延迟加载的运行条件与限制。
-23. MDN. [rel="modulepreload"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload). 预加载模块并准备模块映射的机制。
-24. Google / web.dev. [Optimize WebFont loading and rendering](https://web.dev/articles/optimize-webfont-loading). 字体子集化与字体加载策略。
+4. MDN. [rel="preconnect"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect). 预连接对跨域网络准备的影响。
+5. MDN. [Critical rendering path](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path). HTML、CSS、JS 对初次画面输出的依赖。
+6. Next.js Documentation. [Fetching Data](https://nextjs.org/docs/app/getting-started/fetching-data). 独立数据的并行获取与逐步交付。
+7. PostgreSQL Documentation. [Using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html). 执行计划、EXPLAIN ANALYZE 与数据库执行测量。
+8. Prisma Documentation. [Query optimization](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance). N+1 查询问题、批量获取与关联加载。
+9. React Documentation. [renderToPipeableStream](https://react.dev/reference/react-dom/server/renderToPipeableStream). 流式服务端渲染与 onShellReady。
+10. MDN. [Server-Timing header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing). 服务端分段耗时的 HTTP 响应头。
+11. MDN. [Compression in HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression). HTTP 内容压缩、编码协商与 Vary 的关系。
+12. MDN. [Using responsive images in HTML](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images). srcset / sizes、显示宽度与浏览器选择图片版本。
+13. Google / web.dev. [Choose the right image format](https://web.dev/articles/choose-the-right-image-format). PNG、JPEG、WebP、AVIF 的格式选择与压缩取舍。
+14. Google / web.dev. [Optimize WebFont loading and rendering](https://web.dev/articles/optimize-webfont-loading). 字体子集化与字体加载策略。
+15. webpack. [Tree Shaking](https://webpack.js.org/guides/tree-shaking/). ESM 静态依赖、副作用与未使用模块消除。
+16. Google / web.dev. [Optimize Largest Contentful Paint](https://web.dev/articles/optimize-lcp). 关键资源发现与加载优先级的优化机制。
+17. Google / web.dev. [Optimize resource loading with the Fetch Priority API](https://web.dev/articles/fetch-priority). 资源优先级、预加载与按需加载边界。
+18. MDN. [rel="modulepreload"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload). 预加载模块并准备模块映射的机制。
+19. MDN. [Lazy loading](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading). 延迟加载的运行条件与限制。
+20. Vue.js. [Performance](https://vuejs.org/guide/best-practices/performance). 应用加载、状态稳定性、组件更新和代码分割。
+21. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代与并发回收、分配和内存管理。
+22. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
+23. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
+24. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
