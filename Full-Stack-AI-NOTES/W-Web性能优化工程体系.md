@@ -472,7 +472,7 @@ rAF 是刷新前的回调，不表示画面最终已经被 GPU 呈现；把耗�
 
 ### 【渲染优化关注可视状态转换成新画面时的实际工作】
 
-即使网络请求完成、应用计算已经得到正确的可视状态，浏览器仍可能需要 Style、Layout、Paint、Raster、Composite 等工作。它们的一部分可能发生在主线程，一部分由其他线程或 GPU 完成；实际是否需要重做全部阶段，取决于元素变化和浏览器内部缓存。[[11]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
+即使网络请求完成、应用计算已经得到正确的可视状态，浏览器仍可能需要 Style、Layout、Paint、Raster、Composite 等工作。它们的一部分可能发生在主线程，一部分由其他线程或 GPU 完成；实际是否需要重做全部阶段，取决于元素变化和浏览器内部缓存。[[1]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
 
 ~~~text
 应用提交 DOM / Style / 绘图状态变化
@@ -505,13 +505,13 @@ Composite / GPU（合成图层并提交画面）
 
 ~~~js
 // 示例：先集中读取尺寸，再提交变化。
-const positions = elements.map(el => el.getBoundingClientRect().left);
+const widths = elements.map(el => el.getBoundingClientRect().width);
 elements.forEach((el, i) => {
-  el.style.transform = 'translateX(' + Math.round(positions[i]) + 'px)';
+  el.style.maxWidth = Math.round(widths[i]) + 'px';
 });
 ~~~
 
-这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[12]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[11]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 
 深入基础见 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)，大型列表的实际实现与复杂度分析见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
 
@@ -533,7 +533,7 @@ elements.forEach((el, i) => {
 但它仍有约束：
 
 - 合成图层和纹理可能占用额外内存；不必要的层提升和复杂图层组合会增加资源压力。
-- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[12]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[11]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
 - Canvas、WebGL 可能涉及 Buffer、Texture、Framebuffer 和异步 GPU 工作；主线程中调用接口很快，不证明 GPU 已完成实际绘制。
 - 浏览器托管 DOM 图层与显式图形 API 的资源管理语义不同；必要时使用对应引擎的销毁或复用机制，不能一概套用 JS GC 的行为。
 
@@ -668,5 +668,4 @@ Web 性能优化工程体系（本篇：六大领域的方案主入口）
 8. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代与并发回收、分配和内存管理。
 9. Google / web.dev. [Optimize long tasks](https://web.dev/articles/optimize-long-tasks/). 主线程长任务、分片与让步。
 10. MDN. [Window.requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). 动画帧调度与回调时机。
-11. MDN. [Populating the page: how browsers work](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work). Style、Layout、Paint、合成的运行顺序与区别。
-12. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
+11. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
