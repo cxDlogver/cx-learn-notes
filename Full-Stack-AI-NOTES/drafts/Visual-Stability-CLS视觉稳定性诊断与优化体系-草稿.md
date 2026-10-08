@@ -1065,7 +1065,7 @@ Field：按同分群观察 CLS P75/P95、样本数、浏览器支持率、最大
 本稿作为 Visual Stability 的独立讨论草稿，暂不接入知识索引，不新增 QA，不修改已有正式正文。相关稳定入口：
 
 - [Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)：用户体验四维模型与浏览器渲染成本。
-- [性能专项优化](../X-性能专项优化.md)：Layout Shift 与 CLS 采集、指标聚合、监控 SDK、RUM。
+- [性能测量与真实用户监控专项](../X-性能测量与真实用户监控专项.md)：Layout Shift 与 CLS 采集、指标聚合、监控 SDK、RUM。
 - [浏览器主线程、Event Loop 与任务调度](../B-浏览器主线程Event Loop与任务调度完整知识体系.md)：Layout/Render 的浏览器调度背景。
 - [Chrome 浏览器渲染原理](../J-基于Chrome浏览器渲染原理.md)：Style、Layout、Paint、Composite。
 - [Web 渲染架构](../W-Web渲染架构.md)：SSR/CSR、客户端水合与可见 DOM。
