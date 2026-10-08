@@ -351,3 +351,197 @@ Chrome 的 Memory 工具可使用 Allocation Sampling、Heap Snapshot 和 Retain
 - 最终 LCP/INP/CLS/Frame 结果是否改善；
 - 是否造成其他体验、功能和资源使用回归。
 
+## 7. 通过完整案例验证从 LCP 回归到资源优化的判断过程
+
+### 【第一步：确认新版移动端首页发生了可比的 LCP 回归】
+
+假设监控发现一次网站发布后，首页移动端 LCP P75 明显变慢（以下为虚构数据）：
+
+| 维度 | 基线版本 | 新版本 |
+| --- | --- | --- |
+| Route | 首页 / | 首页 / |
+| 设备 | Mobile | Mobile |
+| 导航 | 硬导航 | 硬导航 |
+| LCP P75 | 1.95s | 3.07s |
+| 回归幅度 | — | +1.12s |
+
+必须先核对两组访问的采集规则、浏览器分布、网络和缓存条件、样本量以及发布时间。如果新版本的移动端访问大部分来自更慢的网络，那么“版本导致回归”的假设还不能成立。
+
+在确认归因口径一致、环境具有可比性后，再筛选新版和基线版中具有代表性的具体访问与时间线。
+
+### 【第二步：按 LCP 四阶段寻找主要变化，而不是直接开始改图片大小】
+
+假设两次具有可比条件的代表性访问，其四段耗时如下：
+
+| LCP 阶段 | 基线访问示例 | 新版访问示例 | 变化 |
+| --- | ---: | ---: | ---: |
+| TTFB | 0.50s | 0.52s | +0.02s |
+| Resource Load Delay | 0.15s | 1.25s | +1.10s |
+| Resource Load Duration | 0.85s | 0.84s | -0.01s |
+| Element Render Delay | 0.45s | 0.46s | +0.01s |
+| **单次四段合计** | **1.95s** | **3.07s** | **+1.12s** |
+
+**注意统计口径：**此表是单次访问或具体可比样本的示意分解，不能将四个阶段各自的 P75 相加声称得到整体 LCP P75。上一个表的版本聚合 P75 与这里的具体访问时间分段，是两个需要区分的数据层级；相同数字只是便于演示。
+
+在这一示例中，主要增加的时间集中在 **Resource Load Delay**，说明浏览器并未及时开始加载最终 LCP 资源。当前最优先的调查方向不是文件下载带宽，而是**资源发现与请求调度**。
+
+### 【第三步：在 Network 中确认请求为什么晚发起，并回到源码】
+
+需要找出新版真正的 LCP 元素和对应请求，检查：
+
+~~~text
+主 HTML 首字节到达时刻：两版本相近
+                  ↓
+最终 LCP 资源请求开始时刻：新版明显更晚
+                  ↓
+Network Initiator：谁触发了关键资源请求？
+                  ↓
+主 HTML 中能否发现该资源？是否需要等待 JS 执行？
+                  ↓
+资源的 Priority、是否被 CSS/框架状态延后？
+                  ↓
+检查与该请求相关的本次发布代码
+                  ↓
+形成候选根因：新版改变了关键资源的发现时机
+~~~
+
+例如基线版在 HTML 中就有关键图片，新版本改为客户端组件执行一段逻辑后才插入该图片。若 Network Initiator、HTML 结构与源码变更都支持这一时序，便可以形成“图片请求发现太晚”的候选根因。
+
+但如果请求实际上很早发起，且 Time Waiting/Content Download 的结果与分段报告不一致，那么应先检查资源归因或测量条件，而不是为维护最初猜测而强行修改代码。
+
+### 【第四步：选择资源发现优化，而不是从无关技术手段入手】
+
+假设根因得到确认，可考虑使必要关键资源在初始 HTML 中更早可被浏览器发现、避免不必要的客户端计算依赖，并为确实重要的资源设置适当加载优先级或预加载策略。
+
+本例并不首先支持“压缩图片解决回归”，因为 Resource Load Duration 基本稳定；也不支持“优化服务端 SQL 解决回归”，因为 TTFB 基本稳定。它们可以有其他价值，但不是本次回归的首要证据支持方向。
+
+### 【第五步：复测资源时间线与最终 LCP，并防止成本转移】
+
+优化后，应比较：
+
+1. 关键图片请求 Start Time 是否前移，Initiator 是否符合预期。
+2. Resource Load Delay 是否明显下降。
+3. LCP 的单次测试和同群体 RUM 是否同步改善。
+4. 图片质量、缓存行为、其他资源优先级以及 INP/CLS 是否受损。
+5. 灰度与正式发布后回归幅度是否持续稳定。
+
+如果资源提前下载了，但页面依然在客户端 Hydration 完成后才将元素插入 DOM，那么 Resource Load Delay 的改善可能被 Element Render Delay 增长抵消。**最终验收对象仍然是用户看到主要内容的时刻，而不是某个子阶段单独下降。**[[2]](https://web.dev/articles/optimize-lcp)
+
+### 【同一套方法对 INP、CLS 和 Smoothness 也成立】
+
+下面三个案例只展示**如何迁移通用判断流程**，具体机制由专项文档维护：
+
+| 用户结果异常 | 第一层归因 | 继续确认的执行证据 | 对应优化与验证 |
+| --- | --- | --- | --- |
+| 某路由上的特定点击 INP 增长 | Processing Duration 占主要增量 | Call Tree 显示事件处理同步执行重复筛选与大范围组件更新 | 缩短事件路径、减少重复更新，复测 Processing Duration 与最终 INP |
+| 某版本 CLS 上升 | 最大 Session Window 中正文被向下推移 | Shift Sources 指向被推动的正文；DOM Trace 显示顶部新内容未预留空间 | 给上游异步模块稳定的占位，复测窗口 Score 与最终 CLS |
+| 某设备的连续动画顿挫 | Frame Interval P95 和 LoAF Pre-layout 明显增加 | rAF 内重复计算和同步视图提交占用时间；排除 GPU/GC 其他候选 | 减少单帧同步工作或重复提交，复测长帧分段和真实视觉效果 |
+
+这里的三条是典型**假设和证据的组合**，不代表看到某个阶段变长就能直接宣布根因。所有优化仍要通过目标设备与相同工作负载下的对照证实。
+
+## 8. 实验室定位与线上真实用户验收共同构成优化闭环
+
+### 【Lab 负责证明原因，Field 负责确认用户受益】
+
+| 层次 | 解决的问题 | 推荐数据和方法 |
+| --- | --- | --- |
+| Lab（实验室） | 某一段工作到底为什么慢？ | 固定设备、网络、缓存、页面操作，录制 Network、Performance、Memory、画面 |
+| 控制实验或灰度 | 改动是否确实降低既定瓶颈，而非环境变化？ | 同样条件对照、单变量变化、记录可重复结果 |
+| Field（真实用户） | 真实用户的异常比例和 P75 是否改善？ | Version / Route / Device / Browser 等同口径分群 |
+| 功能与体验验收 | 更快是否影响操作、画质与业务正确性？ | 交互回归、视觉验证、错误率、其他 CWV 和业务行为 |
+
+Lighthouse 或一次本地 Trace 只能帮助寻找候选原因，不应代替持续的真实访问分布监控。Field 数据也不能替代 Trace 中的函数调用和网络请求细节；它们作用不同但应能通过上下文衔接。
+
+### 【每一次优化必须明确可证伪的假设】
+
+适合沉淀的记录不是“使用了懒加载，性能提升”，而是：
+
+~~~text
+异常身份：
+  Version + Route + Device + Navigation / Interaction + 时间窗口
+
+现象：
+  LCP / INP / CLS / Frame 的哪个结果恶化？幅度与样本量是多少？
+
+阶段：
+  哪一段增长？哪一个偏移窗口、交互或长帧受影响？
+
+证据：
+  对应 Network / Task / Layout / Paint / GC 发生了什么？
+
+根因假设：
+  为什么这项工作会导致这次异常？有哪些备选原因？
+
+操作：
+  修改哪一项工作？预期哪个阶段成本下降？
+
+验证：
+  相同条件的阶段、最终指标、功能及其他指标如何变化？
+
+结论：
+  因果得到支持 / 暂无充分证据 / 继续调查其他分支
+~~~
+
+比如减少 Resource Load Delay 后发现 LCP 并未变化，就不能只引用“Request Start 变早”宣布成功，应继续检查 Element Render Delay。与此类似，单纯降低 Heap 或提升 FPS 平均值，也不一定解决用户真正感到的停顿。
+
+### 【监控 SDK 的角色是贯穿上下文与证据，而不是重做全部测量算法】
+
+采集层建议分离：
+
+~~~text
+Metric Result：最终或更新中的指标结果
+      +
+Attribution：对应的阶段、关键资源、交互或长帧
+      +
+Context：发布、路由、设备、生命周期、采样能力
+      +
+Correlation：页面实例 / 指标实例 / 事件时间 / Trace 或操作标识
+      ↓
+过滤、采样、脱敏、组批上报
+      ↓
+服务端按访问与指标实例聚合，不重复累计回调
+      ↓
+按版本和页面维度发现与复盘性能回归
+~~~
+
+浏览器原始 Entry、官方 web-vitals 指标实现与业务埋点不是同一层。LCP/INP/CLS 的页面级计算要遵循相应生命周期，不能把每次归因回调当成一位独立用户；LoAF 是长帧事件而不是页面唯一指标，rAF Frame Interval 则是窗口统计。业务 SDK 负责规范数据格式与上下文、时间关联，不应重新发明不必要的官方指标计算。
+
+同时还要注意采集行为本身可能占用主线程：不要每帧序列化大型对象、打印日志、读取布局或立即发送网络请求；对敏感 URL、脚本归因、选择器和用户相关字段做过滤或脱敏，对 API 不支持与样本缺失显式记录。[[10]](https://github.com/GoogleChrome/web-vitals)
+
+### 【发布回归检测不能只盯一个结果指标】
+
+若某项修复改善 LCP，却令 INP 变差，可能只是将开销从初次加载转移到了后续交互。若减少主线程 Paint，却增加 GPU 内存和合成压力，也可能在其他设备引发新问题。
+
+因此必须明确：
+
+- **主结果指标**：本次异常的目标是否改善？
+- **阶段证据**：此前定位到的瓶颈是否降低？
+- **用户群体**：目标设备、路由与版本分群是否改善？
+- **交叉回归**：其他三类体验、功能正确性、资源和内存是否保持可接受？
+- **持续监控**：下一次发布是否能够更早发现同类回归？
+
+性能优化的工程目标是获得**可解释、可复现、可验证的用户体验改善**，而不是积累一组不指向根因的技术清单。
+
+## 9. 本稿作为四类性能专项的统一诊断入口
+
+本稿不取代各专项文档的完整知识深度，而是回答“当监控发现某项指标恶化后，从哪里开始、经过哪些证据、最后怎样优化和验证”。
+
+- [Loading / LCP 四阶段性能诊断与优化体系](./Loading-LCP四阶段性能诊断与优化体系-草稿.md)：加载期四段与关键资源证据。
+- [Responsiveness / INP 三阶段交互响应性能诊断与优化体系](./Responsiveness-INP三阶段交互响应性能诊断与优化体系-草稿.md)：输入、处理、呈现与交互对象归因。
+- [Visual Stability / CLS 视觉稳定性诊断与优化体系](./Visual-Stability-CLS视觉稳定性诊断与优化体系-草稿.md)：最大 Session Window、Shift Sources 与根因。
+- [Smoothness 持续渲染流畅度诊断体系](./Smoothness-持续渲染流畅度指标与性能诊断体系-草稿.md)：Frame Interval、LoAF 时间区间、GC 与渲染瓶颈。
+
+正式的全景入口为 [Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)。本次只维护草稿，**暂不修改正式知识正文、知识体系索引或 QA**。
+
+## 10. 参考文献
+
+1. Google / web.dev. [Towards an animation smoothness metric](https://web.dev/articles/smoothness). FPS、帧节奏与持续视觉更新边界。
+2. Google / web.dev. [Optimize Largest Contentful Paint](https://web.dev/articles/optimize-lcp). LCP 四阶段与资源发现、获取、渲染的关系。
+3. Google / web.dev. [Optimize Interaction to Next Paint](https://web.dev/articles/optimize-inp). Input Delay、Processing Duration、Presentation Delay。
+4. Google / web.dev. [Cumulative Layout Shift](https://web.dev/articles/cls). Session Window、CLS 和用户输入边界。
+5. Google / web.dev. [Debug layout shifts](https://web.dev/articles/debug-layout-shifts). LayoutShift.sources 与真正的上游原因。
+6. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). Work/Render/Pre-layout、Script Attribution 和 50ms 门槛。
+7. Chrome for Developers. [Performance panel reference](https://developer.chrome.com/docs/devtools/performance/reference/). Network、Task、Rendering 和执行证据。
+8. Google / web.dev. [Rendering performance](https://web.dev/articles/rendering-performance). Frame Budget、Style/Layout/Paint/Composite。
+9. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Heap、Allocation Sampling、Retainers。
+10. GoogleChrome. [web-vitals](https://github.com/GoogleChrome/web-vitals). 指标实现与原始 Entry/Attribution 的关系。
