@@ -270,6 +270,9 @@ Nuxt Image 的 sizes 会生成响应式尺寸候选；其 screens 配置用于�
 
 ### 【缓存优化解决重复传输，不解决首次访问的原始成本】
 
+浏览器 HTTP Cache、CDN、Nginx 以及 Service Worker 的缓存位置与版本失效规则，统一参见 [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md)。本节只保留缓存对资源加载成本的影响和实际性能验证，不重复定义完整缓存协议。
+
+
 HTTP Cache（HTTP 缓存）与 CDN Cache（CDN 缓存）用于避免重复回源或重复下载。对内容哈希稳定的静态文件，常见策略是长期 max-age + immutable；资源更新时通过新 URL 完成 Cache Busting（缓存破坏 / 版本更新）。[[13]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 但是缓存命中之前，首次访问仍要承担资源真实大小和解码成本。因此“已经上 CDN / 已经强缓存”不能作为“大资源不需要继续优化”的理由。
