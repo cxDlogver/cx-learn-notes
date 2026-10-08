@@ -1,6 +1,6 @@
 # HTTP 缓存、浏览器缓存与 CDN 共享缓存
 
-HTTP 缓存通过复用已取得的响应，减少重复传输和源站计算。浏览器 HTTP 缓存通常服务于当前客户端；CDN 与启用缓存功能的反向代理属于共享缓存，可以为多个请求者复用响应。**缓存能否复用不仅取决于位置，还取决于是否允许存储、缓存键是否匹配、响应是否新鲜，以及过期后能否验证。** [ [1] ](https://www.rfc-editor.org/rfc/rfc9111)
+HTTP 缓存通过复用已取得的响应，减少重复传输和源站计算。浏览器 HTTP 缓存通常服务于当前客户端；CDN 与启用缓存功能的反向代理属于共享缓存，可以为多个请求者复用响应。**缓存能否复用不仅取决于位置，还取决于是否允许存储、缓存键是否匹配、响应是否新鲜，以及过期后能否验证。** [[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
 > 页面导航会重新发现页面引用的资源，但不代表每次都重新下载。导航和渲染的完整链路见 [Web 渲染架构](./W-Web渲染架构.md)。
 
@@ -20,7 +20,7 @@ HTTP 缓存通过复用已取得的响应，减少重复传输和源站计算。
 响应沿请求路径返回，符合存储规则的缓存可以保存副本
 ```
 
-图中的 CDN 与反向代理并非所有部署都存在，也不是必然启用缓存。请求首先受浏览器控制，浏览器无法直接复用时才需要网络响应；网络侧是否命中决定是否继续回源。缓存是否真正保存响应，仍由协议规则和部署配置决定。[ [1] ](https://www.rfc-editor.org/rfc/rfc9111)
+图中的 CDN 与反向代理并非所有部署都存在，也不是必然启用缓存。请求首先受浏览器控制，浏览器无法直接复用时才需要网络响应；网络侧是否命中决定是否继续回源。缓存是否真正保存响应，仍由协议规则和部署配置决定。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
 ### 【浏览器 HTTP 缓存与 CDN 缓存的差异】
 
@@ -38,7 +38,7 @@ HTTP 缓存通过复用已取得的响应，减少重复传输和源站计算。
 
 ### 【存储资格与共享范围】
 
-HTTP 缓存并非对所有响应都无条件存储。请求方法、状态码、授权信息和缓存指令都会影响存储资格；共享缓存尤其需要避免跨用户复用私人内容。[ [1] ](https://www.rfc-editor.org/rfc/rfc9111)
+HTTP 缓存并非对所有响应都无条件存储。请求方法、状态码、授权信息和缓存指令都会影响存储资格；共享缓存尤其需要避免跨用户复用私人内容。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
 - `Cache-Control: no-store`：要求缓存不存储该请求或响应的相关内容；它不是清除历史副本的命令。
 - `Cache-Control: no-cache`：可以存储，但未经成功验证不得直接用存储响应满足后续请求；并非“完全不缓存”。
@@ -50,7 +50,7 @@ HTTP 缓存并非对所有响应都无条件存储。请求方法、状态码、
 
 ### 【新鲜度与过期时间】
 
-缓存已存储响应后，需要判断它是否仍然新鲜。`Cache-Control: max-age=N` 定义响应的新鲜度生命周期（秒），`Expires` 则使用绝对时间；存在适用的 `max-age` 时，它优先于 `Expires`。缓存会结合响应时间、`Date`、`Age` 等计算当前年龄，不能简单把每次命中都当作重新获得完整有效期。[ [1] ](https://www.rfc-editor.org/rfc/rfc9111)
+缓存已存储响应后，需要判断它是否仍然新鲜。`Cache-Control: max-age=N` 定义响应的新鲜度生命周期（秒），`Expires` 则使用绝对时间；存在适用的 `max-age` 时，它优先于 `Expires`。缓存会结合响应时间、`Date`、`Age` 等计算当前年龄，不能简单把每次命中都当作重新获得完整有效期。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
 `s-maxage` 为共享缓存指定新鲜度期限，并在共享缓存中优先于 `max-age` 或 `Expires`；浏览器私有缓存不按它覆盖自己的 `max-age`。
 
@@ -62,9 +62,9 @@ Cache-Control: public, max-age=600, s-maxage=3600
 
 ### 【强缓存与过期响应】
 
-前端常说的“强缓存”，通常指已有副本仍新鲜时直接复用，无须为该次复用发送验证请求。过期响应一般不能无条件复用，但在明确允许的条件下可以使用过期副本，例如 `stale-while-revalidate` 允许在指定窗口内提供过期响应并异步重新验证。[ [1] ](https://www.rfc-editor.org/rfc/rfc9111) [ [3] ](https://www.rfc-editor.org/rfc/rfc5861)
+前端常说的“强缓存”，通常指已有副本仍新鲜时直接复用，无须为该次复用发送验证请求。过期响应一般不能无条件复用，但在明确允许的条件下可以使用过期副本，例如 `stale-while-revalidate` 允许在指定窗口内提供过期响应并异步重新验证。[[1]](https://www.rfc-editor.org/rfc/rfc9111) [[3]](https://www.rfc-editor.org/rfc/rfc5861)
 
-`immutable` 表示新鲜期内响应内容不会变化，支持该扩展的客户端可以避免不必要的重新验证；它不保证任何刷新操作都绝不会联网。[ [4] ](https://www.rfc-editor.org/rfc/rfc8246)
+`immutable` 表示新鲜期内响应内容不会变化，支持该扩展的客户端可以避免不必要的重新验证；它不保证任何刷新操作都绝不会联网。[[4]](https://www.rfc-editor.org/rfc/rfc8246)
 
 新鲜度解决“能否直接使用”的问题；一旦需要确认资源是否变化，就进入条件请求。
 
@@ -72,7 +72,7 @@ Cache-Control: public, max-age=600, s-maxage=3600
 
 ### 【ETag 与 Last-Modified】
 
-`ETag` 是服务端为选定表示提供的实体标签，不必理解为全局唯一文件 Hash；`Last-Modified` 表示服务端声明的最后修改时间。客户端可以在后续请求中分别使用 `If-None-Match`、`If-Modified-Since` 发起条件请求。[ [2] ](https://www.rfc-editor.org/rfc/rfc9110)
+`ETag` 是服务端为选定表示提供的实体标签，不必理解为全局唯一文件 Hash；`Last-Modified` 表示服务端声明的最后修改时间。客户端可以在后续请求中分别使用 `If-None-Match`、`If-Modified-Since` 发起条件请求。[[2]](https://www.rfc-editor.org/rfc/rfc9110)
 
 ```http
 GET /app.js HTTP/1.1
@@ -80,7 +80,7 @@ If-None-Match: "v2"
 If-Modified-Since: Wed, 07 Oct 2026 10:00:00 GMT
 ```
 
-对于同时存在这两个条件的请求，接收方必须忽略 `If-Modified-Since`，以 `If-None-Match` 的规则判断；它们不是必须同时满足的两个独立条件。[ [2] ](https://www.rfc-editor.org/rfc/rfc9110)
+对于同时存在这两个条件的请求，接收方必须忽略 `If-Modified-Since`，以 `If-None-Match` 的规则判断；它们不是必须同时满足的两个独立条件。[[2]](https://www.rfc-editor.org/rfc/rfc9110)
 
 ### 【304 与 200 的处理链路】
 
@@ -103,7 +103,7 @@ CDN 缓存命中可以减少源站压力与跨地域延迟，但并不意味着�
 
 ### 【缓存键与响应变体】
 
-缓存键通常至少涉及目标资源标识，但 CDN 还可能按查询参数、请求头等配置划分副本。HTTP 的 `Vary` 响应头要求缓存复用时考虑指定请求头是否匹配，例如内容编码差异；它并不意味着所有 CDN 会自动把任意业务身份字段纳入安全的缓存键。[ [1] ](https://www.rfc-editor.org/rfc/rfc9111)
+缓存键通常至少涉及目标资源标识，但 CDN 还可能按查询参数、请求头等配置划分副本。HTTP 的 `Vary` 响应头要求缓存复用时考虑指定请求头是否匹配，例如内容编码差异；它并不意味着所有 CDN 会自动把任意业务身份字段纳入安全的缓存键。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
 ```http
 Vary: Accept-Encoding
@@ -117,7 +117,7 @@ CDN 节点可能在源站故障时继续提供已有副本，但必须具备可�
 
 ## 5. 浏览器 HTTP 缓存与可编程存储属于不同机制
 
-浏览器 HTTP Cache 由 HTTP 语义与浏览器实现管理；`localStorage` 属于 Web Storage API，由应用显式读写，不会自动根据 `Cache-Control` 存储 HTTP 响应。Cache Storage 则通过 Cache API 显式保存 Request/Response 对，常与 Service Worker 配合使用。[ [5] ](https://developer.mozilla.org/en-US/docs/Web/API/Cache) [ [6] ](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+浏览器 HTTP Cache 由 HTTP 语义与浏览器实现管理；`localStorage` 属于 Web Storage API，由应用显式读写，不会自动根据 `Cache-Control` 存储 HTTP 响应。Cache Storage 则通过 Cache API 显式保存 Request/Response 对，常与 Service Worker 配合使用。[[5]](https://developer.mozilla.org/en-US/docs/Web/API/Cache) [[6]](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 
 Service Worker 可以拦截其控制范围内的请求并自行选择缓存或网络策略，因此“浏览器 HTTP 缓存 → CDN → 源站”只是常见简化路径，不是覆盖所有浏览器应用的固定执行顺序。
 
@@ -133,7 +133,7 @@ Service Worker 可以拦截其控制范围内的请求并自行选择缓存或�
 Cache-Control: public, max-age=31536000, immutable
 ```
 
-其中 31536000 秒约为一年；长期缓存适用于 URL 随内容变化且旧版本仍可取得的资源。此配置不能保证所有 CDN 自动缓存，也不能保证浏览器刷新时绝不验证。[ [1] ](https://www.rfc-editor.org/rfc/rfc9111) [ [4] ](https://www.rfc-editor.org/rfc/rfc8246)
+其中 31536000 秒约为一年；长期缓存适用于 URL 随内容变化且旧版本仍可取得的资源。此配置不能保证所有 CDN 自动缓存，也不能保证浏览器刷新时绝不验证。[[1]](https://www.rfc-editor.org/rfc/rfc9111) [[4]](https://www.rfc-editor.org/rfc/rfc8246)
 
 ### 【HTML 负责发现新资源版本】
 
