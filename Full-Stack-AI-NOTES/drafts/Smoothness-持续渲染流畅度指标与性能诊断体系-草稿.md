@@ -80,7 +80,7 @@ FPS（更新频率） + Frame Interval P95（尾部间隔）
     └─ 是 → 进入 LoAF / Long Task / Performance Trace
 ~~~
 
-注意 **rAF Frame Interval 不是每帧实际 Layout/Paint 耗时**；LoAF.duration 只覆盖超过 50ms 的长帧，并非全部帧的精确绘制时长，低于 50ms 的超预算帧也应继续追查。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+注意 **rAF Frame Interval 不是每帧实际 Layout/Paint 耗时**；LoAF.duration 只覆盖超过 50ms 的长帧，并非全部帧的精确绘制时长，低于 50ms 的超预算帧也应继续追查。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【刷新率决定理论帧预算，不应硬编码 16.7ms】
 
@@ -93,11 +93,11 @@ FPS（更新频率） + Frame Interval P95（尾部间隔）
 | 120Hz | 8.33ms |
 | 144Hz | 6.94ms |
 
-这是显示刷新机会间隔，不等于 JS 可以独占的执行预算；浏览器内部工作需要时间，设备可能出现可变刷新率或节能限频。一个 20ms 的视觉工作，在 60Hz 和 120Hz 条件下造成的超预算程度不同。[[2]](https://web.dev/articles/rendering-performance)
+这是显示刷新机会间隔，不等于 JS 可以独占的执行预算；浏览器内部工作需要时间，设备可能出现可变刷新率或节能限频。一个 20ms 的视觉工作，在 60Hz 和 120Hz 条件下造成的超预算程度不同。[[3]](https://web.dev/articles/rendering-performance)
 
 ### 【rAF 提供的是下一次绘制前的调度机会】
 
-requestAnimationFrame 会在浏览器下次重绘之前尝试调用传入的函数；持续注册可形成相邻回调时间戳之差 ΔrAF。浏览器通常按刷新率调度，但后台标签或隐藏 iframe 会暂停或降低频率。[[3]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+requestAnimationFrame 会在浏览器下次重绘之前尝试调用传入的函数；持续注册可形成相邻回调时间戳之差 ΔrAF。浏览器通常按刷新率调度，但后台标签或隐藏 iframe 会暂停或降低频率。[[4]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
 
 必须区分：
 
@@ -174,11 +174,11 @@ Google 对 rAF FPS 测量的研究明确提醒：常驻轮询会干扰浏览器�
 
 Long Task 观察单个主线程任务，LoAF 观察一次长帧相关的多个任务、rAF 和渲染工作，因此**没有超过 50ms 的单个 Task，也可能出现总耗时超过 50ms 的 LoAF**。若画面在 120Hz 下每帧用 20ms，虽然可能不断超出 8.3ms 刷新周期，却不达到 LoAF 50ms 记录阈值。
 
-LoAF.duration 表示长帧整体工作时间，blockingDuration 表示与高优先级输入阻塞相关的估计，不应混为一谈。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+LoAF.duration 表示长帧整体工作时间，blockingDuration 表示与高优先级输入阻塞相关的估计，不应混为一谈。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【诊断指标查明具体成本】
 
-Long Task（单个主线程长任务）提供任务级阻塞线索；LoAF（Long Animation Frame，长动画帧）提供帧级时间归因；Chrome Performance Trace、LoAF Script Attribution、强制同步布局、GC、Paint / GPU 和组件 Profiler 用于进一步定位具体原因。**LoAF 的 50ms 不是流畅度预算，也不是 Long Task 的计数。**[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+Long Task（单个主线程长任务）提供任务级阻塞线索；LoAF（Long Animation Frame，长动画帧）提供帧级时间归因；Chrome Performance Trace、LoAF Script Attribution、强制同步布局、GC、Paint / GPU 和组件 Profiler 用于进一步定位具体原因。**LoAF 的 50ms 不是流畅度预算，也不是 Long Task 的计数。**[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【Long Task 是任务级证据，LoAF 是长帧级证据】
 
@@ -192,17 +192,17 @@ Long Tasks API 面向主线程 Task。一个持续执行超过 50ms 的任务可
 | 总计 >50ms 但最终无需渲染 | 可能记录 | 可能记录，renderStart=0 | 不能假设存在样式布局阶段 |
 | compositor 线程滚动 | 主线程可能很忙 | LoAF 可能有 | 用户可见滚动仍可能流畅 |
 
-这是解释 LoAF 和 Long Task 为什么应联合使用的关键。**LoAF 数量不是 Long Task 数量，二者不是一一对应，也都不是标准掉帧数。**[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+这是解释 LoAF 和 Long Task 为什么应联合使用的关键。**LoAF 数量不是 Long Task 数量，二者不是一一对应，也都不是标准掉帧数。**[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【LoAF 的 duration 与 blockingDuration 不同】
 
-LoAF.duration 是一次长帧记录的总持续时间，而 blockingDuration 是其对输入或其他高优先级任务的阻塞贡献，并非 duration - 50 的简单差值。官方算法会按组成帧的 Task 和最终渲染工作的相对时间计算。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+LoAF.duration 是一次长帧记录的总持续时间，而 blockingDuration 是其对输入或其他高优先级任务的阻塞贡献，并非 duration - 50 的简单差值。官方算法会按组成帧的 Task 和最终渲染工作的相对时间计算。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 **LoAF.duration 很高而 blockingDuration 低**，仍可能因为多个可让步的较短任务积累而使画面迟迟不更新；但它对输入的压力可能不同于单个 120ms 不让步的任务。
 
 **LoAF.duration 与 blockingDuration 都很高**，不仅是 Smoothness 的风险，还应该联查 INP 的 Input Delay、Processing Duration 和 Presentation Delay。
 
-LoAF 的 50ms 是记录门槛，不代表帧只有超过 50ms 才算掉帧。尤其在 90Hz/120Hz 下，远低于 50ms 的帧也可能错过重要更新。
+LoAF 的 50ms 是记录门槛，不代表帧只有超过 50ms 才算掉帧。相关字段与记录机制亦可对照 W3C 工作草案。[[5]](https://www.w3.org/TR/long-animation-frames/)尤其在 90Hz/120Hz 下，远低于 50ms 的帧也可能错过重要更新。
 
 ## 4. 按 LoAF 的 Work、Pre-layout 与 Style/Layout 区间定位耗时阶段
 
@@ -218,7 +218,7 @@ styleAndLayoutStart：浏览器正式样式布局阶段开始
 endTime = startTime + duration
 ~~~
 
-官方第一层先拆 Work 和 Render；在有有效字段的 LoAF 中，再把 Render 拆为 Pre-layout 与 Style/Layout 开始后的区间。**Work 高**先看 JS/任务/GC；**Pre-layout 高**先看 rAF 回调、地图或框架提交及强制同步布局；**第三段高**再深入 Style、Layout、Paint 等 Trace。第三段不能直接认定为纯 Layout 时间，也不覆盖完整屏幕最终呈现；无 renderStart 的记录不能机械做三段减法。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+官方第一层先拆 Work 和 Render；在有有效字段的 LoAF 中，再把 Render 拆为 Pre-layout 与 Style/Layout 开始后的区间。**Work 高**先看 JS/任务/GC；**Pre-layout 高**先看 rAF 回调、地图或框架提交及强制同步布局；**第三段高**再深入 Style、Layout、Paint 等 Trace。第三段不能直接认定为纯 Layout 时间，也不覆盖完整屏幕最终呈现；无 renderStart 的记录不能机械做三段减法。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【原生字段和边界】
 
@@ -234,7 +234,7 @@ Long Animation Frames API 提供的关键字段包括：
 | firstUIEventTimestamp | 与该帧关联的首个 UI 输入时刻 |
 | scripts | 浏览器能够归因到的脚本信息 |
 
-注意 renderStart 可能为 0（该次工作没有进入渲染周期）；styleAndLayoutStart 在某些情况下也不可用。不要假设每条 LoAF 都可以无条件减出完整的三个阶段。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+注意 renderStart 可能为 0（该次工作没有进入渲染周期）；styleAndLayoutStart 在某些情况下也不可用。不要假设每条 LoAF 都可以无条件减出完整的三个阶段。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【官方的两级结构与方便定位的三段解释】
 
@@ -280,7 +280,7 @@ t3 = endTime
 LoAF Duration           = ① + ② + ③
 ~~~
 
-第三段虽然有时被称为 Style and Layout Duration，但从一个时间区间不能直接确定全部毫秒都是 Layout 计算，它还可能包含相关后续工作；若想分别确认 Style、Layout、Paint、Compositor、GPU，必须进一步查看 DevTools Performance Trace。LoAF 的 duration 也不能视为显示器最终 Presented Frame Latency。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+第三段虽然有时被称为 Style and Layout Duration，但从一个时间区间不能直接确定全部毫秒都是 Layout 计算，它还可能包含相关后续工作；若想分别确认 Style、Layout、Paint、Compositor、GPU，必须进一步查看 DevTools Performance Trace。LoAF 的 duration 也不能视为显示器最终 Presented Frame Latency。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【Pre-layout 具体执行什么，地图的“渲染准备”是否都属于这一阶段】
 
@@ -324,7 +324,7 @@ requestAnimationFrame(tick);
 
 这不是“地图渲染框架每一帧都会严格这样执行”的规范流程。地图 API 的同步调用可能只是安排后续 Worker 或 GPU 工作，不能凭 mapLayer.update 的函数名认定完整图形绘制都在 Pre-layout。
 
-**Pre-layout 中也可能发生 Forced Style/Layout。** 例如 rAF 回调先修改 DOM 样式，再立刻读取 offsetHeight，浏览器可能被迫提前计算布局。Pre-layout 是一个**时间区间**，并不保证其中绝对没有样式和布局计算。LoAF 的 scripts[].forcedStyleAndLayoutDuration 可提示脚本中的强制布局，具体工作还需 Chrome Trace 核验。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+**Pre-layout 中也可能发生 Forced Style/Layout。** 例如 rAF 回调先修改 DOM 样式，再立刻读取 offsetHeight，浏览器可能被迫提前计算布局。Pre-layout 是一个**时间区间**，并不保证其中绝对没有样式和布局计算。LoAF 的 scripts[].forcedStyleAndLayoutDuration 可提示脚本中的强制布局，具体工作还需 Chrome Trace 核验。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【完整算例】
 
@@ -388,7 +388,7 @@ if (PerformanceObserver.supportedEntryTypes?.includes(
 }
 ~~~
 
-这段代码通过原生 LoAF Entry 读取长帧对应的 Work、Pre-layout 和 Layout 开始后的三个时间区间。字段缺失时必须用 null 表示不可用，不能强行算出负数或虚构渲染阶段。该 API 只上报严重长帧，不能直接据此得到**全部正常帧**的三阶段分布；浏览器支持和缓冲区也限制了数据完整性。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+这段代码通过原生 LoAF Entry 读取长帧对应的 Work、Pre-layout 和 Layout 开始后的三个时间区间。字段缺失时必须用 null 表示不可用，不能强行算出负数或虚构渲染阶段。该 API 只上报严重长帧，不能直接据此得到**全部正常帧**的三阶段分布；浏览器支持和缓冲区也限制了数据完整性。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【Script Attribution 可以定位哪些函数参与长帧】
 
@@ -401,7 +401,7 @@ LoAF.scripts 在满足浏览器归因条件时，可能包含 startTime、durati
 - 哪些脚本工作集中在 Render Start 之前或之后；
 - 是否需要使用 Chrome Trace 进一步排查具体算法、框架更新或复杂布局。
 
-但它不是完整 CPU Profile：跨源 iframe、Worker、Service Worker 或某些独立执行环境未必有 Script Attribution；GPU 工作、浏览器合成或部分渲染成本也不能被这些脚本字段全面解释。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+但它不是完整 CPU Profile：跨源 iframe、Worker、Service Worker 或某些独立执行环境未必有 Script Attribution；GPU 工作、浏览器合成或部分渲染成本也不能被这些脚本字段全面解释。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ## 5. 结合 JS、浏览器渲染、GC 与设备信号确定卡顿根因
 
@@ -467,7 +467,7 @@ LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因
 
 ### 【GC 与对象分配压力：周期性停顿和长期内存增长是两类问题】
 
-持续渲染中，GC（Garbage Collection，垃圾回收）并不是应用显式调用的业务任务，而是 JS 引擎为回收不可达对象付出的运行时成本。部分 GC 阶段会暂停主线程 JS，因此如果暂停与下一帧工作竞争，就可能推迟 rAF、状态提交和渲染准备，形成 Frame Interval 尖峰。V8 已采用分代、并发、并行和增量回收减轻暂停，但不能认为 GC 对主线程没有任何影响。[[7]](https://v8.dev/blog/trash-talk)
+持续渲染中，GC（Garbage Collection，垃圾回收）并不是应用显式调用的业务任务，而是 JS 引擎为回收不可达对象付出的运行时成本。部分 GC 阶段会暂停主线程 JS，因此如果暂停与下一帧工作竞争，就可能推迟 rAF、状态提交和渲染准备，形成 Frame Interval 尖峰。V8 已采用分代、并发、并行和增量回收减轻暂停，但不能认为 GC 对主线程没有任何影响。[[6]](https://v8.dev/blog/trash-talk)
 
 要区分两类表现：
 
@@ -478,9 +478,9 @@ LoAF 时间位置只能提供候选方向，不能自动给出具体代码根因
 
 举例：每新增轨迹点都执行 history = [...history, point]，并对全量 history 进行 map 转换。随着历史 H 增加，每次都分配新数组和大量中间对象；不仅应用计算时间随 H 增大，还可能引入越来越多 GC 压力。相反，合理的追加或增量更新减少无必要分配，但不能为了减少对象创建而破坏 React/Vue 的状态正确性。
 
-**“Heap 大”并不等于“GC 导致掉帧”。** 需要在 DevTools Performance 中证明 GC 事件与长帧或 rAF 尖峰重叠，再使用 Memory 的 Allocation Sampling、Heap Snapshot 找高分配函数和被持续保留的对象。Heap 锯齿是线索而非充分证据；合法保留的历史数据也不一定是泄漏。[[8]](https://developer.chrome.com/docs/devtools/memory-problems)
+**“Heap 大”并不等于“GC 导致掉帧”。** 需要在 DevTools Performance 中证明 GC 事件与长帧或 rAF 尖峰重叠，再使用 Memory 的 Allocation Sampling、Heap Snapshot 找高分配函数和被持续保留的对象。Heap 锯齿是线索而非充分证据；合法保留的历史数据也不一定是泄漏。[[7]](https://developer.chrome.com/docs/devtools/memory-problems)
 
-最后注意：LoAF 脚本归因里的 pauseDuration 不等于 GC Duration，它主要用于同步对话框、同步 XHR 等暂停时段；GC 归因依赖更具体的性能或内存记录，不能用该字段替代。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+最后注意：LoAF 脚本归因里的 pauseDuration 不等于 GC Duration，它主要用于同步对话框、同步 XHR 等暂停时段；GC 归因依赖更具体的性能或内存记录，不能用该字段替代。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【测量条件不成立引起误判】
 
@@ -679,7 +679,7 @@ Queue Empty + Frame Healthy
 
 **即使每次更新都重新绘制当前视口，也不代表之前的经纬度、线段 Geometry、纹理与 GPU Buffer 全部被重新计算。** 某些引擎会每帧绘制可见图层，但持续复用不变的图形资源；真正要防范的是“新点触发所有历史资源再次处理”的成本随着 H 增长。
 
-反过来，即使应用代码只是 history.push(newPoint)，如果随后调用的是包含全部历史轨迹的 source.setData(fullGeoJSON)，地图内部仍可能按整套 Source 更新。Mapbox GL JS 官方性能模型把 Source Update Time 与该 Source 的顶点数、引用层数等联系起来，并建议将频繁变动的数据与大型静态数据源分离。[[9]](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/)
+反过来，即使应用代码只是 history.push(newPoint)，如果随后调用的是包含全部历史轨迹的 source.setData(fullGeoJSON)，地图内部仍可能按整套 Source 更新。Mapbox GL JS 官方性能模型把 Source Update Time 与该 Source 的顶点数、引用层数等联系起来，并建议将频繁变动的数据与大型静态数据源分离。[[8]](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/)
 
 ### 【Canvas 2D、WebGL 和 GeoJSON 地图库有不同的更新策略】
 
@@ -696,7 +696,7 @@ function appendSegment(ctx, lastPoint, newPoint) {
 }
 ~~~
 
-如果地图可以复用旧像素，新增点只需绘制末尾线段。但是一旦地图缩放、平移、改变投影、样式、需要擦除轨迹或恢复遮挡内容，先前像素可能不再正确，需要重绘受影响区域、分层缓存或重绘全部必要画面。MDN 也建议针对复杂 Canvas 场景预渲染静态区域、采用分层 Canvas 和减少无谓重绘。[[12]](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
+如果地图可以复用旧像素，新增点只需绘制末尾线段。但是一旦地图缩放、平移、改变投影、样式、需要擦除轨迹或恢复遮挡内容，先前像素可能不再正确，需要重绘受影响区域、分层缓存或重绘全部必要画面。MDN 也建议针对复杂 Canvas 场景预渲染静态区域、采用分层 Canvas 和减少无谓重绘。[[9]](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
 
 **WebGL：可以重用已构建的 GPU Geometry。**
 
@@ -762,7 +762,7 @@ LoAF 的阶段基于时间位置，而不是地图函数的业务职责，因此
 | 浏览器 CSS Style / Layout | 渲染更新阶段 | 与 LoAF 的 styleAndLayoutStart 相关 |
 | 地图库 Worker / GPU 绘制与合成 | 异步线程或设备 | 普通 LoAF 分段不提供完整 GPU/呈现时间 |
 
-**地图 WebGL 绘制不等于浏览器 CSS Layout。** 渲染引擎可能在 rAF 期间提交 WebGL 命令，使同步提交时间计入 Pre-layout，但 GPU 的真正绘制与最终屏幕呈现不一定体现在这里。所以 mapLayer.update() 同步返回很快，不能说明新轨迹已经完成屏幕呈现。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+**地图 WebGL 绘制不等于浏览器 CSS Layout。** 渲染引擎可能在 rAF 期间提交 WebGL 命令，使同步提交时间计入 Pre-layout，但 GPU 的真正绘制与最终屏幕呈现不一定体现在这里。所以 mapLayer.update() 同步返回很快，不能说明新轨迹已经完成屏幕呈现。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
 
 ### 【通过 History Sweep 和受控插桩判断当前到底是哪种全量】
 
@@ -1009,19 +1009,19 @@ Smoothness → 自定义 Frame 结果体系
               └─ 数据新鲜度 / Queue / Commit / History
 ~~~
 
-**四类体验的界限**：LCP 管加载等待、INP 管交互响应、CLS 管非预期布局位移，Smoothness 管连续重要视觉更新的稳定性。LoAF 也能帮助定位 INP 慢交互中的长帧，但它不是独立 Core Web Vital。
+**四类体验的界限**：LCP 管加载等待、INP 管交互响应、CLS 管非预期布局位移，Smoothness 管连续重要视觉更新的稳定性。LoAF 也能帮助定位 INP 慢交互中的长帧，但它不是独立 Core Web Vital。 GoogleChrome/web-vitals 的官方实现和归因资料可作为与 INP 关联的参考。[[12]](https://github.com/GoogleChrome/web-vitals)
 
 ## 11. 参考文献
 
 1. Google / web.dev. [Towards an animation smoothness metric](https://web.dev/articles/smoothness). 重要视觉更新、合成线程、FPS 局限、帧完整性与动画性能研究。
-2. Google / web.dev. [Rendering performance](https://web.dev/articles/rendering-performance). 显示刷新预算、Style/Layout/Paint/Composite 与优化原则。
-3. MDN. [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). rAF 时间戳、回调调用条件、前后台与不同刷新率。
-4. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). LoAF 50ms 门槛、时间拆分、blockingDuration、scripts、特殊无渲染记录。
+2. Chrome for Developers. [Long Animation Frames API](https://developer.chrome.com/docs/web-platform/long-animation-frames). LoAF 50ms 门槛、时间拆分、blockingDuration、scripts、特殊无渲染记录。
+3. Google / web.dev. [Rendering performance](https://web.dev/articles/rendering-performance). 显示刷新预算、Style/Layout/Paint/Composite 与优化原则。
+4. MDN. [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). rAF 时间戳、回调调用条件、前后台与不同刷新率。
 5. W3C. [Long Animation Frames API Working Draft](https://www.w3.org/TR/long-animation-frames/). Long Animation Frames API 的工作草案。
-6. GoogleChrome / web-vitals. [官方实现与 Attribution 文档](https://github.com/GoogleChrome/web-vitals). 标准 Web Vitals 与 INP 长帧归因的关系。
-7. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代垃圾回收、主线程暂停与并发/并行/增量优化。
-8. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Allocation Sampling、Heap Snapshot 与 GC 排查。
-9. Mapbox. [Improve the performance of Mapbox GL JS maps](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/). Source/Layer/Vertex 成本模型和高频变化数据源拆分。
+6. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代垃圾回收、主线程暂停与并发/并行/增量优化。
+7. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Allocation Sampling、Heap Snapshot 与 GC 排查。
+8. Mapbox. [Improve the performance of Mapbox GL JS maps](https://docs.mapbox.com/help/troubleshooting/mapbox-gl-js-performance/). Source/Layer/Vertex 成本模型和高频变化数据源拆分。
+9. MDN. [Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas). Canvas 预渲染、分层与减少重绘的优化方法。
 10. MapLibre GL JS. [GeoJSONSource](https://maplibre.org/maplibre-gl-js/docs/API/classes/GeoJSONSource/). setData 与按 Feature ID 差量更新的 API 和前置条件。
 11. MapLibre GL JS. [GeoJSONFeatureDiff](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/GeoJSONFeatureDiff/). Feature Geometry 的整体替换语义。
-12. MDN. [Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas). Canvas 预渲染、分层与减少重绘的优化方法。
+12. GoogleChrome / web-vitals. [官方实现与 Attribution 文档](https://github.com/GoogleChrome/web-vitals). 标准 Web Vitals 与 INP 长帧归因的关系。
