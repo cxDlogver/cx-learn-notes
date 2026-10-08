@@ -159,7 +159,7 @@ Cache-Control: public, max-age=600
 Vary: Accept-Encoding
 ~~~
 
-能够正确处理这类变体的缓存可在相同 URL 下保存不同编码的响应，之后根据请求头选对版本。**这证明的是“同一 URL 的响应正文不一定按同一种编码交付”，而不是“只要有 Vary 就必然缓存命中”**。不同压缩编码如果使用强 ETag，也须确保验证器对应正确的表示字节，不能直接把两套压缩响应的强 ETag 当作同一个字节版本。[[3]](https://www.rfc-editor.org/rfc/rfc9110)
+能够正确处理这类变体的缓存可在相同 URL 下保存不同编码的响应，之后根据请求头选对版本。**这证明的是“同一 URL 的响应正文不一定按同一种编码交付”，而不是“只要有 Vary 就必然缓存命中”**。不同压缩编码如果使用强 ETag，也须确保验证器对应正确的表示字节，不能直接把两套压缩响应的强 ETag 当作同一个字节版本。[[2]](https://www.rfc-editor.org/rfc/rfc9110)
 
 ~~~text
 再次请求 /assets/app.a81f.js
@@ -175,7 +175,7 @@ Vary: Accept-Encoding
    └─ 不满足 → 验证或重新取得响应
 ~~~
 
-官网若按语言返回内容，也可以针对 `Accept-Language` 使用 `Vary: Accept-Language`，但它与压缩编码属于同一种**响应变体匹配机制**，不需要另起一个无关示例。CDN 具体支持哪些 Vary 字段、如何默认生成或自定义缓存键，需要查阅实际服务商配置，不应假设源站发出一个 Vary 就自动解决共享安全问题。若把 Cookie、Authorization 等高基数字段全部加入 CDN 键，还可能造成命中率下降和隐私隔离风险；**缓存键设计不能代替业务授权判断**。[[9]](https://developers.cloudflare.com/cache/how-to/cache-keys/) [[10]](https://developers.cloudflare.com/cache/concepts/vary/)
+官网若按语言返回内容，也可以针对 `Accept-Language` 使用 `Vary: Accept-Language`，但它与压缩编码属于同一种**响应变体匹配机制**，不需要另起一个无关示例。CDN 具体支持哪些 Vary 字段、如何默认生成或自定义缓存键，需要查阅实际服务商配置，不应假设源站发出一个 Vary 就自动解决共享安全问题。若把 Cookie、Authorization 等高基数字段全部加入 CDN 键，还可能造成命中率下降和隐私隔离风险；**缓存键设计不能代替业务授权判断**。[[3]](https://developers.cloudflare.com/cache/how-to/cache-keys/) [[4]](https://developers.cloudflare.com/cache/concepts/vary/)
 
 ### 【新鲜度通过 max-age、s-maxage 和响应年龄判断是否允许直接复用】
 
@@ -233,7 +233,7 @@ ETag: "phone-list-v8"
 
 还要明确 **`s-maxage` 有不止一个作用**：它不仅为共享缓存选择新鲜度寿命，还包含共享缓存过期后必须成功重新验证才能复用的要求。因此不能把 `s-maxage=3600` 和 `stale-while-revalidate=30` 简单理解为“CDN 超过 3600 秒后自然可以先返回旧数据 30 秒”。后文讨论 SWR 时，将使用**不包含 s-maxage 的独立示例**，避免把相互制约的缓存指令直接叠加。[[1]](https://www.rfc-editor.org/rfc/rfc9111)
 
-最后补充 `Expires`：它是表示绝对过期时间的响应头；当适用的 `max-age` 存在时，优先采用后者；在共享缓存中有 `s-maxage` 时，优先采用共享缓存规则。部分响应若没有显式设置新鲜度，缓存仍可能按规范允许的启发式算法估计期限，因此发布时需要明确响应更新要求，而不是依赖浏览器猜测。响应被判为 stale（已过期）表示不能再按普通新鲜副本无条件返回，**不意味着缓存正文已从磁盘或内存物理删除**。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+最后补充 `Expires`：它是表示绝对过期时间的响应头；当适用的 `max-age` 存在时，优先采用后者；在共享缓存中有 `s-maxage` 时，优先采用共享缓存规则。部分响应若没有显式设置新鲜度，缓存仍可能按规范允许的启发式算法估计期限，因此发布时需要明确响应更新要求，而不是依赖浏览器猜测。响应被判为 stale（已过期）表示不能再按普通新鲜副本无条件返回，**不意味着缓存正文已从磁盘或内存物理删除**。[[5]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 ### 【强缓存与协商缓存分别对应直接复用和验证后复用】
 
@@ -253,11 +253,11 @@ ETag: "phone-list-v8"
                  └─ 200 已改变 → 取得新正文并按规则保存
 ~~~
 
-这张图证明两种路径都可能涉及同一份此前保存的 HTTP 响应，而不是物理存储位置的区分。没有缓存副本时，只能尝试取得新响应；即使有副本，如果本次请求通过刷新、fetch cache 模式等要求重新获取，也可能不能走普通的新鲜副本路径。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+这张图证明两种路径都可能涉及同一份此前保存的 HTTP 响应，而不是物理存储位置的区分。没有缓存副本时，只能尝试取得新响应；即使有副本，如果本次请求通过刷新、fetch cache 模式等要求重新获取，也可能不能走普通的新鲜副本路径。[[5]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 ### 【ETag 与 Last-Modified 在发生条件请求时验证响应是否改变】
 
-上一节的浏览器在 07:11 已有手机列表 v8 正文，但不能直接按新鲜缓存复用，因此它需要问网络侧：“我手里的版本 v8 还是当前版本吗？”服务器之前提供的**ETag（Entity Tag，实体标签）**就是一个表示版本的验证器，并不要求与构建文件名里的内容 Hash 相同。另一种验证器 **Last-Modified（最后修改时间）**表达服务器认定的表示修改日期。ETag 与 Last-Modified 都**不负责查找缓存**，也不会在服务端更新的瞬间主动通知所有浏览器。[[3]](https://www.rfc-editor.org/rfc/rfc9110)
+上一节的浏览器在 07:11 已有手机列表 v8 正文，但不能直接按新鲜缓存复用，因此它需要问网络侧：“我手里的版本 v8 还是当前版本吗？”服务器之前提供的**ETag（Entity Tag，实体标签）**就是一个表示版本的验证器，并不要求与构建文件名里的内容 Hash 相同。另一种验证器 **Last-Modified（最后修改时间）**表达服务器认定的表示修改日期。ETag 与 Last-Modified 都**不负责查找缓存**，也不会在服务端更新的瞬间主动通知所有浏览器。[[2]](https://www.rfc-editor.org/rfc/rfc9110)
 
 浏览器此前收到了 `ETag: "phone-list-v8"`，便向 CDN 发出：
 
@@ -286,7 +286,7 @@ Cache-Control: public, max-age=600, s-maxage=3600
 {"category":"phone","items":[{"id":101,"name":"Phone A"},{"id":102,"name":"Phone B"}]}
 ~~~
 
-如果原响应提供的是 `Last-Modified: Wed, 07 Oct 2026 10:00:00 GMT`，请求可用 `If-Modified-Since` 进行时间条件验证。时间戳存在粒度和服务端实现约束，不必然能够识别所有快速发生的变化；若同一请求同时包含 `If-None-Match` 与 `If-Modified-Since`，符合 HTTP 语义的接收者应优先按 If-None-Match 条件判断。弱 ETag（例如 `W/"phone-list-v8"`）可以按弱比较判断语义等价，不能认为它代表字节严格一致。[[3]](https://www.rfc-editor.org/rfc/rfc9110)
+如果原响应提供的是 `Last-Modified: Wed, 07 Oct 2026 10:00:00 GMT`，请求可用 `If-Modified-Since` 进行时间条件验证。时间戳存在粒度和服务端实现约束，不必然能够识别所有快速发生的变化；若同一请求同时包含 `If-None-Match` 与 `If-Modified-Since`，符合 HTTP 语义的接收者应优先按 If-None-Match 条件判断。弱 ETag（例如 `W/"phone-list-v8"`）可以按弱比较判断语义等价，不能认为它代表字节严格一致。[[2]](https://www.rfc-editor.org/rfc/rfc9110)
 
 这组请求与响应要验证的是：**304 如何让缓存复用已经保存的正文、200 如何替换为新内容**。它没有证明是哪一层生成了 304；判断 CDN 是否回源，仍需要 CDN 和 Web 服务器访问日志。
 
@@ -317,7 +317,7 @@ CDN 查找自己的 v8 副本并检查共享新鲜度
 
 ### 【浏览器存储的是响应副本，内存缓存与磁盘缓存只是实现方式】
 
-首次访问官网时，浏览器先请求 `/index.html`，解析 HTML 后请求 `/assets/app.a81f.js`；JS 在运行时还可能请求 `/public-api/products?category=phone`。对每个网络响应，浏览器依据 HTTP 方法、响应状态、响应头、缓存分区和自身策略决定是否保存，并为可存响应保留必要的正文、头字段、验证器与匹配信息。浏览器可能使用内存、磁盘或其他内部存储结构，也可能因为容量或隐私策略主动驱逐副本。**“from memory cache”和“from disk cache”描述浏览器实现或 DevTools 看到的来源，不等于强缓存与协商缓存两种不同的协议机制。** [[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+首次访问官网时，浏览器先请求 `/index.html`，解析 HTML 后请求 `/assets/app.a81f.js`；JS 在运行时还可能请求 `/public-api/products?category=phone`。对每个网络响应，浏览器依据 HTTP 方法、响应状态、响应头、缓存分区和自身策略决定是否保存，并为可存响应保留必要的正文、头字段、验证器与匹配信息。浏览器可能使用内存、磁盘或其他内部存储结构，也可能因为容量或隐私策略主动驱逐副本。**“from memory cache”和“from disk cache”描述浏览器实现或 DevTools 看到的来源，不等于强缓存与协商缓存两种不同的协议机制。** [[5]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 另外，浏览器缓存通常是用户代理管理的私有缓存，还会按站点上下文等因素进行分区。两个用户即使处于同一 CDN 服务区域，也不会因此共享同一个浏览器本地缓存；同一用户的不同浏览器配置、隐私窗口与站点分区，也不保证能够复用完全相同的本地副本。
 
@@ -373,7 +373,7 @@ If-None-Match: "html-v3"
 
 ### 【导航、刷新、强制刷新和 fetch 的 cache 模式会改变本次缓存处理】
 
-同一个 `/index.html`，用户以普通导航打开、点击浏览器刷新、执行强制刷新和开发者在脚本中配置不同 `fetch(..., { cache: ... })`，可能产生不同的请求缓存控制。普通访问可正常复用新鲜响应；刷新往往提出更积极的重新验证要求；强制刷新通常绕开通常的本地复用路径。这里的 fetch `cache: "no-cache"` 是调用者指定的**请求端缓存模式**，而 `Cache-Control: no-cache` 是服务器返回的**响应缓存指令**，不能因为名称相似就认为它们是一个设置。浏览器版本和 DevTools 的 Disable cache 也可能改变观察结果。[[2]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+同一个 `/index.html`，用户以普通导航打开、点击浏览器刷新、执行强制刷新和开发者在脚本中配置不同 `fetch(..., { cache: ... })`，可能产生不同的请求缓存控制。普通访问可正常复用新鲜响应；刷新往往提出更积极的重新验证要求；强制刷新通常绕开通常的本地复用路径。这里的 fetch `cache: "no-cache"` 是调用者指定的**请求端缓存模式**，而 `Cache-Control: no-cache` 是服务器返回的**响应缓存指令**，不能因为名称相似就认为它们是一个设置。浏览器版本和 DevTools 的 Disable cache 也可能改变观察结果。[[5]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 排查“页面更新了但用户仍看到旧资源”时，应先记录**普通导航时的 URL、状态码、请求头、响应头和 Size/Transferred 提示**，然后再通过刷新/禁用缓存做对照测试。如果一开始就在 DevTools 勾选 Disable cache，反而可能绕过用户真实遇到的失效链路。
 
@@ -427,9 +427,9 @@ GET /public-api/products?category=laptop HTTP/1.1
 Host: www.example.com
 ~~~
 
-如果某条 CDN Cache Rule 被错误设置为“忽略所有 Query 参数”，CDN 便可能把两条请求归入同一个缓存键，导致电脑分类用户拿到手机列表。反过来，若营销参数 `utm_source` 已经由应用确认不影响响应正文，站点可以评估从缓存键中排除它以减少无意义版本。**是否将 Query、Host、请求头或其他属性纳入缓存键，要先问“它改变了响应内容吗”，再权衡命中率**。不同 CDN 产品的默认 Cache Key 和配置范围并不一致。[[9]](https://developers.cloudflare.com/cache/how-to/cache-keys/)
+如果某条 CDN Cache Rule 被错误设置为“忽略所有 Query 参数”，CDN 便可能把两条请求归入同一个缓存键，导致电脑分类用户拿到手机列表。反过来，若营销参数 `utm_source` 已经由应用确认不影响响应正文，站点可以评估从缓存键中排除它以减少无意义版本。**是否将 Query、Host、请求头或其他属性纳入缓存键，要先问“它改变了响应内容吗”，再权衡命中率**。不同 CDN 产品的默认 Cache Key 和配置范围并不一致。[[3]](https://developers.cloudflare.com/cache/how-to/cache-keys/)
 
-对于上一章介绍的压缩协商，CDN 还要保证相同脚本 URL 的不同 Content-Encoding 版本不会错误交付；服务器通过 `Vary: Accept-Encoding` 声明响应变体，而 CDN 的具体压缩归一化、Vary 支持和缓存键配置仍由供应商实现。站点应通过两组真实请求头分别测试，而不能仅凭源站已经返回 Vary 就宣布变体问题解决。[[10]](https://developers.cloudflare.com/cache/concepts/vary/)
+对于上一章介绍的压缩协商，CDN 还要保证相同脚本 URL 的不同 Content-Encoding 版本不会错误交付；服务器通过 `Vary: Accept-Encoding` 声明响应变体，而 CDN 的具体压缩归一化、Vary 支持和缓存键配置仍由供应商实现。站点应通过两组真实请求头分别测试，而不能仅凭源站已经返回 Vary 就宣布变体问题解决。[[4]](https://developers.cloudflare.com/cache/concepts/vary/)
 
 ### 【CDN 命中后还要判断共享缓存是否新鲜、请求是否允许直接复用】
 
@@ -452,7 +452,7 @@ ETag: "phone-list-v8"
 {"category":"phone","items":[{"id":101,"name":"Phone A"}]}
 ~~~
 
-假设 CDN 按这套指令处理缓存，并且实现支持 SWR：取得响应后 0～60 秒的请求可使用新鲜副本；到第 70 秒又有用户请求，此时属于额外允许的 30 秒过期窗口，CDN 可**先返回 v8 正文给这位用户**，同时用 ETag 向上游验证。上游 304 表示 v8 未变，CDN 更新元数据；上游 200 返回 v9 时，CDN 保存新副本，**先前那位已收到 v8 的用户不会被 HTTP 缓存自动换成 v9**。如果直到第 91 秒都没有成功更新，不能仅凭 SWR 指令继续无限复用旧结果。[[4]](https://www.rfc-editor.org/rfc/rfc5861)
+假设 CDN 按这套指令处理缓存，并且实现支持 SWR：取得响应后 0～60 秒的请求可使用新鲜副本；到第 70 秒又有用户请求，此时属于额外允许的 30 秒过期窗口，CDN 可**先返回 v8 正文给这位用户**，同时用 ETag 向上游验证。上游 304 表示 v8 未变，CDN 更新元数据；上游 200 返回 v9 时，CDN 保存新副本，**先前那位已收到 v8 的用户不会被 HTTP 缓存自动换成 v9**。如果直到第 91 秒都没有成功更新，不能仅凭 SWR 指令继续无限复用旧结果。[[6]](https://www.rfc-editor.org/rfc/rfc5861)
 
 另一个机制 stale-if-error 只在符合指定错误条件、过期窗口及协议限制时允许返回旧副本，目的是故障降级而非后台刷新。订单状态、库存扣减和授权结果等不允许陈旧的业务响应，不应因为降低延迟就默认使用这些过期复用机制。对具体 CDN 还需核验它是否支持相关指令，以及自定义 Edge TTL、规则优先级是否改变实际行为。
 
@@ -479,7 +479,7 @@ Web 服务器可以由 Nginx、Apache HTTP Server、Caddy 等软件承担，主�
 | 反向代理并启用 proxy_cache | 按配置的缓存键、响应资格和新鲜度检查已有上游响应 | Nginx 可以成为一层独立的共享 HTTP Cache |
 | 其它静态托管源站 | 对象存储、托管平台直接给出文件 | 不一定存在 Nginx，也不一定有应用服务器 |
 
-静态文件“存在于磁盘上”并不等于“缓存副本已经失效或即将失效”。Nginx 静态文件可以一直存在直到部署替换或删除，HTTP Cache-Control 影响的是**下游浏览器/CDN 能否复用响应**；若没有额外配置，不能把磁盘文件自动解释为 proxy_cache。[[5]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
+静态文件“存在于磁盘上”并不等于“缓存副本已经失效或即将失效”。Nginx 静态文件可以一直存在直到部署替换或删除，HTTP Cache-Control 影响的是**下游浏览器/CDN 能否复用响应**；若没有额外配置，不能把磁盘文件自动解释为 proxy_cache。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
 
 ### 【静态文件服务通过部署路径和响应头影响下游缓存】
 
@@ -508,7 +508,7 @@ server {
 }
 ~~~
 
-try_files 负责按映射位置查找文件或内部跳转；示例里的 /assets/ 路径未命中会返回 404，不会自动去应用服务器。**不能将 SPA fallback 用在所有静态文件上**，否则构建资源缺失时可能返回 HTML 而不是正确的 JS/CSS 资源，产生 MIME 类型及部署错误。[[5]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
+try_files 负责按映射位置查找文件或内部跳转；示例里的 /assets/ 路径未命中会返回 404，不会自动去应用服务器。**不能将 SPA fallback 用在所有静态文件上**，否则构建资源缺失时可能返回 HTML 而不是正确的 JS/CSS 资源，产生 MIME 类型及部署错误。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
 
 这里的 max-age 需要与 URL 不变性和发布顺序配合。若构建产物不带内容版本或允许原地覆盖，则不宜无条件设置一年 immutable。
 
@@ -561,13 +561,13 @@ http {
 
 在这个例子中，用户发 `GET /public-api/products?category=phone`，Nginx 请求的目标属于 `/public-api/`，因此会进入已开启 `proxy_cache` 的 location；它使用 `$request_uri` 作为缓存键的一部分，从而保留 `category=phone`。相同分类且同一键的第二次请求，如果上游响应允许存储、代理已经保存副本并且还可以直接复用，就能由代理缓存返回，不必再次进入应用服务。假设 Nginx 返回 `X-Cache-Status: MISS` 或 `X-Cache-Status: HIT`，这个字段只说明**当前这层代理缓存的状态**，不说明浏览器或 CDN 是否命中。
 
-若应用返回产品列表并携带 `Cache-Control: public, max-age=600, s-maxage=3600`，HTTP 响应头的相关缓存规则会影响 Nginx 代理缓存；示例里的 `proxy_cache_valid 200 5m` 是针对状态码的候选缓存期限，不能简单理解为强制覆盖所有上游控制字段。Nginx 文档说明，上游的 `X-Accel-Expires`、`Expires`、`Cache-Control` 等可以对缓存时间形成更高优先级的控制；收到 `Set-Cookie` 的响应一般不会进入默认代理缓存；也会处理 Vary 中的请求头变体。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+若应用返回产品列表并携带 `Cache-Control: public, max-age=600, s-maxage=3600`，HTTP 响应头的相关缓存规则会影响 Nginx 代理缓存；示例里的 `proxy_cache_valid 200 5m` 是针对状态码的候选缓存期限，不能简单理解为强制覆盖所有上游控制字段。Nginx 文档说明，上游的 `X-Accel-Expires`、`Expires`、`Cache-Control` 等可以对缓存时间形成更高优先级的控制；收到 `Set-Cookie` 的响应一般不会进入默认代理缓存；也会处理 Vary 中的请求头变体。[[8]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 真实业务如果有用户级参数、授权头、Cookie、地理位置或租户信息影响响应，就必须在开启共享代理缓存前完成安全设计。示例假定 `/public-api/` 是经过业务审查的匿名公开接口，**并不代表仅按路径区分就能安全缓存任意接口**。不要通过强制忽略 `Cache-Control`、`Set-Cookie` 等上游字段来人为制造 HIT。
 
 ### 【代理缓存的磁盘存储周期和 HTTP 新鲜期需要分别管理】
 
-Nginx 前面配置的 `proxy_cache_path /var/cache/nginx/public_api` 是保存上游响应副本的目录，`keys_zone=public_api_cache:10m` 让 Nginx 使用共享内存区维护缓存键和元数据，`max_size=1g` 用于约束缓存容量。`inactive=30m` 描述缓存条目在一段时间**未被访问时**可以被清理，不是 HTTP `max-age=1800` 的意思。一个仍有用户持续访问的响应，在 HTTP 意义上可能已过期但物理文件依然存在；一个长时间没有请求的副本，也可能因容量或不活跃淘汰从存储中消失。这就是缓存**新鲜度**与**存储保留时间**不能混为一谈的原因。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+Nginx 前面配置的 `proxy_cache_path /var/cache/nginx/public_api` 是保存上游响应副本的目录，`keys_zone=public_api_cache:10m` 让 Nginx 使用共享内存区维护缓存键和元数据，`max_size=1g` 用于约束缓存容量。`inactive=30m` 描述缓存条目在一段时间**未被访问时**可以被清理，不是 HTTP `max-age=1800` 的意思。一个仍有用户持续访问的响应，在 HTTP 意义上可能已过期但物理文件依然存在；一个长时间没有请求的副本，也可能因容量或不活跃淘汰从存储中消失。这就是缓存**新鲜度**与**存储保留时间**不能混为一谈的原因。[[8]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 Nginx 在代理缓存命中但副本过期以后，如果此前保存了 ETag 或 Last-Modified，可以通过 `proxy_cache_revalidate on` 允许对上游发条件验证。上游若回 304，Nginx 不用重复下载相同的产品 JSON，只需按规则刷新缓存元数据；上游若回 200 和 v9，则取得新版正文并更新可存副本。
 
@@ -581,7 +581,7 @@ proxy_cache_use_stale updating;
 proxy_cache_background_update on;
 ~~~
 
-设产品列表 v8 已保存在 Nginx 代理缓存中，HTTP 缓存策略允许其在更新期间返回过期内容。当用户请求触发更新时，`proxy_cache_background_update on` 允许 Nginx 对过期条目启动后台子请求；`proxy_cache_use_stale updating` 允许更新中的其它请求使用旧副本，从而减少多个用户同时等待应用查询。后台更新得到 304 时，代理保留 v8 正文并更新缓存元数据；得到 200 和 v9 时，代理保存新的可缓存响应。**实际能否先返回旧正文还要遵守上游响应指令及缓存配置，不代表开启这两行就能无视 must-revalidate 或适用 s-maxage 的严格约束**。相关指令分别解决“过期时能否用旧响应”和“是否在后台触发更新”，不能与所有 CDN 的 SWR 实现视为同一开关。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+设产品列表 v8 已保存在 Nginx 代理缓存中，HTTP 缓存策略允许其在更新期间返回过期内容。当用户请求触发更新时，`proxy_cache_background_update on` 允许 Nginx 对过期条目启动后台子请求；`proxy_cache_use_stale updating` 允许更新中的其它请求使用旧副本，从而减少多个用户同时等待应用查询。后台更新得到 304 时，代理保留 v8 正文并更新缓存元数据；得到 200 和 v9 时，代理保存新的可缓存响应。**实际能否先返回旧正文还要遵守上游响应指令及缓存配置，不代表开启这两行就能无视 must-revalidate 或适用 s-maxage 的严格约束**。相关指令分别解决“过期时能否用旧响应”和“是否在后台触发更新”，不能与所有 CDN 的 SWR 实现视为同一开关。[[8]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 ### 【Web 服务器静态文件更新不负责通知浏览器和 CDN】
 
@@ -599,14 +599,14 @@ Nginx 的公开入口、静态文件与应用服务器的路由职责详见 [反
 
 ~~~text
 旧版本 index.html
-  └─ /assets/app.8a31f.js
+  └─ /assets/app.a81f.js
 新版本 index.html
-  └─ /assets/app.9b72d.js
+  └─ /assets/app.b92d.js
 ~~~
 
-app 的内容变化后，资源 URL 从 app.8a31f.js 变为 app.9b72d.js。因此浏览器、CDN 和 Nginx 代理缓存会将它视为不同目标资源；它们无需先删除所有旧副本，新 URL 即可触发自己的缓存获取流程。
+app 的内容变化后，资源 URL 从 app.a81f.js 变为 app.b92d.js。因此浏览器、CDN 和 Nginx 代理缓存会将它视为不同目标资源；它们无需先删除所有旧副本，新 URL 即可触发自己的缓存获取流程。
 
-这个过程称为 **Cache Busting（通过版本化 URL 绕开旧副本）**。它不是对旧 URL 发送 purge、不是清空浏览器缓存，更不代表缓存策略会自动知道“代码版本已经更新”。[[7]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control)
+这个过程称为 **Cache Busting（通过版本化 URL 绕开旧副本）**。它不是对旧 URL 发送 purge、不是清空浏览器缓存，更不代表缓存策略会自动知道“代码版本已经更新”。[[9]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control)
 
 ### 【页面入口 HTML 的更新决定用户何时发现新的资源 URL】
 
@@ -636,10 +636,10 @@ HTML、JSON Manifest 或其他版本入口往往不具备内容哈希命名，�
 
 ### 【内容 Hash 文件的长期缓存必须建立在 URL 不变性上】
 
-对于官网生成的 `/assets/app.9b72d.js`，构建系统保证该 URL 对应的文件内容在此版本生命周期内不再原地覆写。浏览器从新版 HTML 发现这个资源路径并首次请求时，Web 服务器可返回：
+对于官网生成的 `/assets/app.b92d.js`，构建系统保证该 URL 对应的文件内容在此版本生命周期内不再原地覆写。浏览器从新版 HTML 发现这个资源路径并首次请求时，Web 服务器可返回：
 
 ~~~http
-GET /assets/app.9b72d.js HTTP/1.1
+GET /assets/app.b92d.js HTTP/1.1
 Host: www.example.com
 ~~~
 
@@ -651,7 +651,7 @@ Cache-Control: public, max-age=31536000, immutable
 （此处省略实际 JavaScript 文件正文）
 ~~~
 
-`max-age=31536000` 表示大约一年的新鲜度寿命；`immutable` 向支持该指令的客户端表明在仍然新鲜时这份表示不会变化，因而可以减少不必要的验证。它并不是“无限期保存”或“禁止用户删除缓存”，也不会让旧 HTML 自动引用新脚本。**只有内容变更必然换 URL，长期 immutable 才与发布机制一致**。[[8]](https://www.rfc-editor.org/rfc/rfc8246)
+`max-age=31536000` 表示大约一年的新鲜度寿命；`immutable` 向支持该指令的客户端表明在仍然新鲜时这份表示不会变化，因而可以减少不必要的验证。它并不是“无限期保存”或“禁止用户删除缓存”，也不会让旧 HTML 自动引用新脚本。**只有内容变更必然换 URL，长期 immutable 才与发布机制一致**。[[10]](https://www.rfc-editor.org/rfc/rfc8246)
 
 反例也要放回同一个场景：若脚本始终叫做 `/assets/app.js`，部署时直接覆写源站磁盘文件，却向浏览器声明一年的 `max-age` 和 `immutable`，浏览器可能在新鲜期内根本不请求更新后的内容。此时即使源站文件已经更新成功，也不等于浏览器能立刻读到新版。可用内容 Hash 改 URL，从缓存键层面让新版与旧版自然分开；源站仍需保证两者在各自使用期间都可访问。
 
@@ -705,7 +705,7 @@ ETag: "phone-list-v8"
 {"category":"phone","items":[{"id":101,"name":"Phone A"}]}
 ~~~
 
-某缓存节点已保存此响应，且累计年龄按教学假设从 0 开始：前 60 秒它是新鲜的；第 70 秒有新请求时，在符合 SWR 和其他复用条件的前提下可以先返回 v8，并在后台验证；上游若回 200 与 v9，更新的是缓存后续可提供的副本，不意味着已收到 v8 的页面会自动更新。超过第 90 秒仍无成功验证时，不能仅凭 SWR 无限返回旧值。**这一组不包含 s-maxage，正是为了避免忽略它的严格重新验证语义**。[[4]](https://www.rfc-editor.org/rfc/rfc5861)
+某缓存节点已保存此响应，且累计年龄按教学假设从 0 开始：前 60 秒它是新鲜的；第 70 秒有新请求时，在符合 SWR 和其他复用条件的前提下可以先返回 v8，并在后台验证；上游若回 200 与 v9，更新的是缓存后续可提供的副本，不意味着已收到 v8 的页面会自动更新。超过第 90 秒仍无成功验证时，不能仅凭 SWR 无限返回旧值。**这一组不包含 s-maxage，正是为了避免忽略它的严格重新验证语义**。[[6]](https://www.rfc-editor.org/rfc/rfc5861)
 
 工程上先确定的是：哪些响应允许跨用户共享？正常情况下多久必须获得较新的数据？在上游变慢或不可用时最多允许返回多旧的正文？浏览器、CDN、Web 服务器是否支持所选指令？回答完这些问题后再配置 TTL、验证器和 SWR，而不是在响应头里一次性塞入所有术语。
 
@@ -826,12 +826,12 @@ Age 可以帮助判断当前响应被某层缓存保存或验证后经历的估�
 ## 9. 参考文献
 
 1. IETF. [RFC 9111: HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111). 私有/共享缓存、缓存键、新鲜度、校验和 Cache-Control 语义。
-2. MDN. [HTTP Caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching). 浏览器缓存、启发式缓存、刷新与版本资源实践。
-3. IETF. [RFC 9110: HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110). ETag、Last-Modified、条件请求和 304。
-4. IETF. [RFC 5861: HTTP stale response extensions](https://www.rfc-editor.org/rfc/rfc5861). stale-while-revalidate 与 stale-if-error。
-5. NGINX. [Serve Static Content](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/). Nginx root、alias 和 try_files 的静态文件语义。
-6. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
-7. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
-8. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
-9. Cloudflare. [Cache Keys](https://developers.cloudflare.com/cache/how-to/cache-keys/). 边缘缓存键的默认组成及自定义配置示例。
-10. Cloudflare. [Vary](https://developers.cloudflare.com/cache/concepts/vary/). 响应变体如何与 CDN 缓存规则共同工作。
+2. IETF. [RFC 9110: HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110). ETag、Last-Modified、条件请求和 304。
+3. Cloudflare. [Cache Keys](https://developers.cloudflare.com/cache/how-to/cache-keys/). 边缘缓存键的默认组成及自定义配置示例。
+4. Cloudflare. [Vary](https://developers.cloudflare.com/cache/concepts/vary/). 响应变体如何与 CDN 缓存规则共同工作。
+5. MDN. [HTTP Caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching). 浏览器缓存、启发式缓存、刷新与版本资源实践。
+6. IETF. [RFC 5861: HTTP stale response extensions](https://www.rfc-editor.org/rfc/rfc5861). stale-while-revalidate 与 stale-if-error。
+7. NGINX. [Serve Static Content](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/). Nginx root、alias 和 try_files 的静态文件语义。
+8. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
+9. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
+10. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
