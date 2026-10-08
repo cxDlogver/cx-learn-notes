@@ -513,36 +513,172 @@ Web 服务器可以由 Nginx、Apache HTTP Server、Caddy 等软件承担，主�
 
 静态文件“存在于磁盘上”并不等于“缓存副本已经失效或即将失效”。Nginx 静态文件可以一直存在直到部署替换或删除，HTTP Cache-Control 影响的是**下游浏览器/CDN 能否复用响应**；若没有额外配置，不能把磁盘文件自动解释为 proxy_cache。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
 
-### 【静态文件服务通过部署路径和响应头影响下游缓存】
+### 【静态构建产物通过部署流程进入 Web 服务器可读取的位置】
 
-示意部署：前端构建文件位于 /srv/site/assets/，静态资源带内容 Hash，且文件 URL 发布后不可原地更改。
+Web 服务器不会自动读取开发者电脑里的项目，也不会在浏览器首次请求时现编译 Vue 或 React 源码。**构建产物必须先进入实际负责交付文件的环境，然后由 Web 服务器将请求路径映射到文件。** “手动上传”只是实现部署的一种办法，不是静态资源服务的必要步骤。
+
+以同一个产品官网为例，源代码通过 Vite 构建后产生以下产物。文件名里的 `a81f`、`b72c` 代表一次构建产生的内容指纹（实际命名以构建工具为准）：
+
+~~~text
+项目源码（开发环境）
+  src/、index.html、package.json
+        ↓ 执行 npm run build
+构建产物（准备发布）
+  dist/
+    ├── index.html
+    └── assets/
+        ├── app.a81f.js
+        └── style.b72c.css
+        ↓ 部署动作：由人员或自动化系统完成
+生产运行环境（示例中的服务器）
+  /srv/site/dist/
+    ├── index.html
+    └── assets/
+        ├── app.a81f.js
+        └── style.b72c.css
+        ↓ Web 服务器按 URL 查找文件，返回 HTTP 响应
+浏览器 GET /assets/app.a81f.js
+~~~
+
+上图包含两个容易混淆的环节。第一，`npm run build` 负责把源码转换成可部署文件，**并不必然负责把文件传到线上服务器**。第二，文件部署结束后，Web 服务器提供这些既有文件，不要求每个 HTTP 请求重新执行构建。常见的部署实现包括：
+
+| 部署方式 | 构建产物怎样到达运行环境 | Web 服务器最终怎样取得文件 |
+| --- | --- | --- |
+| 人工复制 / 上传 | 运维人员用文件传输工具将 `dist/` 上传到服务器目标目录 | 按 `root` 或 `alias` 指向的实际目录读取 |
+| CI/CD 自动部署 | 提交代码触发构建；流水线将产物同步到发布目录，再切换上线版本 | Web 服务器读取已经部署的发布版本，通常不需人工逐次上传 |
+| Docker 多阶段构建 | 构建阶段生成 `dist/`，运行阶段通过 `COPY --from=build` 放入 Web 镜像 | 容器中的 Web 服务器读取镜像内约定的静态目录 |
+| 对象存储 / 托管平台 | 流水线将构建产物发布到对象存储或托管平台 | CDN 可以以对象存储或托管站点为源站，不必经过独立 Nginx |
+
+以 Docker 为例，镜像构建中可以把已完成的前端构建目录复制到 Web 服务器镜像内；实际生产目录由镜像和配置共同决定，**不要求与上图的 /srv/site/dist 完全相同**。Docker 的 `COPY --from` 是在镜像构建阶段复制文件，而不是每次 HTTP 请求时复制。相关部署拓扑与完整多阶段示例见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md) 的“静态 Web 部署”章节。[[11]](https://docs.docker.com/reference/dockerfile)
+
+因此，生产环境的关键条件不是“有人手动上传过”，而是：**目标文件已经部署到本次请求会访问的源站实例或存储位置，并且 Web 服务器进程有权限读取它。** 如果负载均衡后面有多个 Web 服务器实例，构建文件还应保证版本一致；只上传到其中一台实例，可能造成部分用户得到 200、另一些用户得到 404。
+
+### 【Web 服务器先匹配请求路径，再决定读取文件、返回错误还是转发应用】
+
+假设本次官网使用以下部署约定：静态文件在 `/srv/site/dist`，产品列表由运行在 `127.0.0.1:3000` 的 Node.js 应用处理，前端页面采用 SPA（单页应用）路由。Nginx 同时接收对外的 HTML、JS、CSS 和 API 请求，但三种请求对应不同处理方式。
+
+下面是一份**完整的教学配置**，用于说明文件映射与请求路由；生产仍需按 HTTPS、域名、应用进程、安全与错误页要求补全：
 
 ~~~nginx
 server {
     listen 80;
-    root /srv/site;
+    root /srv/site/dist;
+    index index.html;
 
-    # 带内容版本的静态构建产物。该示例假设 /assets/ 只发布不可变文件。
-    location /assets/ {
+    # 版本化静态文件：存在则返回真实文件，找不到直接 404。
+    location ^~ /assets/ {
         try_files $uri =404;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
 
-    # HTML 用于发现新版资源，允许存储但每次复用前验证。
+    # HTML 是发现新版 JS/CSS 的入口；允许存储但复用前要验证。
     location = /index.html {
         add_header Cache-Control "no-cache";
     }
 
-    # 单页应用路由回退，示例未覆盖鉴权与完整部署需求。
+    # 业务 API 不从 dist 目录查找，而是明确交给 Node.js。
+    # 此处只有反向代理，没有启用 proxy_cache。
+    location /public-api/ {
+        proxy_pass http://127.0.0.1:3000;
+    }
+
+    # SPA 页面路由：先找真实文件或目录，否则返回 HTML 入口。
     location / {
         try_files $uri $uri/ /index.html;
     }
 }
 ~~~
 
-try_files 负责按映射位置查找文件或内部跳转；示例里的 /assets/ 路径未命中会返回 404，不会自动去应用服务器。**不能将 SPA fallback 用在所有静态文件上**，否则构建资源缺失时可能返回 HTML 而不是正确的 JS/CSS 资源，产生 MIME 类型及部署错误。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/)
+**第一步：URL 被 location 匹配，决定使用哪组处理规则。** 客户端请求 `/assets/app.a81f.js`，匹配版本化静态文件 location；请求 `/public-api/products?category=phone`，匹配 API location；请求 `/products/123`，进入页面路由 location。配置中的 `^~ /assets/` 使这些版本资源走明确的静态路径规则，避免将本该是 JS 的资源误当成前端页面进行 SPA 回退。
 
-这里的 max-age 需要与 URL 不变性和发布顺序配合。若构建产物不带内容版本或允许原地覆盖，则不宜无条件设置一年 immutable。
+**第二步：仅在静态分支中，Web 服务器才按路径查找部署文件。** 对 `root /srv/site/dist` 而言，URI `/assets/app.a81f.js` 映射到 `/srv/site/dist/assets/app.a81f.js`。如果文件存在且可读，Nginx 返回实际脚本内容；如果文件不存在，`try_files $uri =404` 明确要求返回 404。这里不会自动尝试 Node.js，更不会因客户端需要一个 JS 就重新编译它。
+
+**第三步：API 转发和 SPA 回退有自己的独立语义。** `/public-api/products?category=phone` 进入 `proxy_pass`，交由应用服务生成列表；`/products/123` 不是静态构建文件，而是浏览器前端路由地址，使用 `try_files $uri $uri/ /index.html` 可以内部转向 HTML 入口，浏览器取得 HTML 后再由前端应用处理页面路径。**SPA 回退返回 HTML，并不意味着请求被代理给 Node.js。**
+
+Nginx 的 `root` 会将规范化后的 URI 与指定根目录结合；`alias` 则在 location 中用指定路径**替换匹配到的 URI 前缀**。两者的路径计算方法不同，不能仅凭“都是指定目录”就交换使用。`try_files` 会按顺序检查文件/目录，最后一个参数既可以是 `=404` 等状态码，也可以是内部跳转 URI 或命名 location。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/) [[12]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
+
+### 【静态资源未找到的结果由路由配置决定，不存在统一的应用服务器兜底】
+
+将上一份配置实际应用到不同请求：
+
+| 浏览器请求 | 命中的处理规则 | 文件不存在时的结果 | 会不会交给 Node.js |
+| --- | --- | --- | --- |
+| `GET /assets/app.a81f.js` | 静态资源 location | 若真实文件缺失则直接 404 | 不会 |
+| `GET /assets/app.missing.js` | 静态资源 location | 直接 404，而不是返回 HTML | 不会 |
+| `GET /public-api/products?category=phone` | API 反向代理 | 由应用处理 URL；应用决定是否 200/404 | 会 |
+| `GET /products/123` | SPA 页面 fallback | 若没有同名文件，内部返回 `/index.html` | 不会 |
+| `GET /index.html` | HTML 静态文件 location | 文件缺失时无法提供该入口，按静态文件错误处理 | 不会 |
+
+要特别关注构建文件缺失场景。如果把任意找不到的 URL 都回退成 `/index.html`，当浏览器请求 `/assets/app.missing.js` 时，Web 服务器可能返回 **200 + HTML 正文**。浏览器以 JavaScript 模块的方式使用它时就会发生资源类型不匹配，真实原因反而被隐藏。因此，**版本化静态资源应优先明确返回 404，SPA 页面路由才考虑 HTML fallback**。
+
+确实存在另一种业务需求：服务器只托管已生成的图片，但缺失的某些图片允许交给应用临时生成。这时必须**明确配置**一个回退分支，例如：
+
+~~~nginx
+# 独立替代方案：只有 /generated-images/ 下的资源允许动态生成
+location /generated-images/ {
+    try_files $uri @generate_image;
+}
+
+location @generate_image {
+    proxy_pass http://127.0.0.1:3000;
+}
+~~~
+
+当用户请求 `/generated-images/phone-101.jpg`，且 Web 服务器映射的文件不存在时，`try_files` 的最后一步内部跳转至 `@generate_image`，由应用生成响应。**这才是“未找到静态文件，继续请求应用服务器”的一种明确设计**；它不是 Nginx 普遍的自动兜底，也不应无条件应用到所有 URL。[[12]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
+
+### 【静态文件的 HTTP 缓存时间与源站文件保留时间相互独立】
+
+前面已经确保资源能够到达 Web 服务器并正确路由。接下来要回答“静态资源能不能过期”：**能，但先要说明让什么过期。**
+
+设 `/srv/site/dist/assets/app.a81f.js` 在磁盘上真实存在，Web 服务器第一次向用户返回这个脚本，并添加：
+
+~~~http
+GET /assets/app.a81f.js HTTP/1.1
+Host: www.example.com
+~~~
+
+~~~http
+HTTP/1.1 200 OK
+Content-Type: text/javascript
+Cache-Control: public, max-age=31536000, immutable
+
+（JavaScript 文件响应正文，此处省略）
+~~~
+
+此处 `Cache-Control` 控制的是**浏览器、CDN 等 HTTP 缓存节点对该响应副本的新鲜度和复用**，并没有告诉 Nginx 在 31536000 秒后删除磁盘里的文件。假设一年后源站文件仍存在，浏览器需要重新获取时，Web 服务器照样可以读取该文件并返回；如果部署在一年内主动删除源站旧文件，客户端之后再请求旧 Hash URL 则可能得到 404，哪怕它最初声明过一年的新鲜度。
+
+要区分至少三种生命周期：
+
+| 管理对象 | 由什么决定有效期或保留期 | 期限结束后发生什么 |
+| --- | --- | --- |
+| 浏览器/CDN 中保存的 HTTP 响应副本 | Cache-Control、Expires、Age 和缓存自身策略 | 不能继续按普通新鲜响应无条件复用；可按条件验证或重新获取，物理副本不一定删除 |
+| Web 服务器静态文件目录里的源文件 | 部署系统、发布版本保留、清理任务、存储生命周期规则 | 文件被真正删除或切换版本；与 HTTP TTL 没有自动等价关系 |
+| Web 服务器启用 proxy_cache 后保存的上游响应副本 | 上游缓存字段、proxy_cache_valid、inactive、容量等 | 需要区分 HTTP 过期后的重新验证与磁盘条目因不活跃/容量而被清理 |
+
+这里最后一行专门为下一节作衔接：**直接读取静态文件不等于 proxy_cache；proxy_cache 的响应新鲜度和物理存储淘汰也需要分别管理**。
+
+### 【expires 与 add_header 决定下游缓存指令，不能用它们删除源站文件】
+
+在 Nginx 中，除了前面使用的 `add_header Cache-Control ...`，还可以通过 `expires` 为静态文件设置 HTTP 缓存相关字段。两者虽然都影响响应头，但行为不同：
+
+假设网站还有一张**URL 稳定、允许十分钟新鲜缓存**的公开图片 `/images/phone-101.jpg`，可以在对应 location 使用：
+
+~~~nginx
+location /images/ {
+    try_files $uri =404;
+
+    # 为图片响应设置 HTTP 新鲜度，而不是文件删除时间。
+    expires 10m;
+}
+~~~
+
+对于符合 Nginx 适用状态码条件的响应，这里的 `expires 10m` 会产生或调整 `Expires` 响应头，并产生相应的 `Cache-Control: max-age=600`。因此浏览器或 CDN 保存图片以后，可以按 HTTP 新鲜度规则复用这张图片；**十分钟以后，并不会自动从 /srv/site/dist/images 目录删除 phone-101.jpg**。[[13]](https://nginx.org/en/docs/http/ngx_http_headers_module.html)
+
+前面带内容 Hash 的 JS 则采用 `add_header Cache-Control "public, max-age=31536000, immutable"` 明确表达长期新鲜度与不可变语义；两者属于**不同资源策略**。不应不加检查地在同一个 location 中叠加 `expires 10m` 与另一条设置不同 `max-age` 的 `Cache-Control`，否则会产生重复或冲突的缓存控制信息。
+
+对于 HTML 入口，前述 `Cache-Control: no-cache` 是**可以存储，但每次复用前必须验证**。Nginx 的静态资源服务可以通过 ETag、Last-Modified 等字段参与下游条件请求：浏览器保存 `index.html` 后，再次发送 `If-None-Match` 或 `If-Modified-Since`，如果源站选定的表示未改变，Web 服务器可以返回 304，避免重复传输完整 HTML；内容变化则返回新版正文。Nginx 的静态 ETag 有自身生成规则，不能把它当作与前端构建 Hash 一致的永久标识。[[12]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
+
+这个机制也解释了为什么**相同的磁盘文件可以被 Nginx 反复提供，而浏览器的本地缓存却可能已过期**：源站文件是否存在是文件服务问题；响应是否新鲜是 HTTP 缓存问题；是否再次传输正文则要看条件请求与 304/200 的处理结果。
 
 ### 【Web 服务器只有开启代理缓存才会保存上游 HTTP 响应】
 
@@ -867,3 +1003,6 @@ Age 可以帮助判断当前响应被某层缓存保存或验证后经历的估�
 8. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
 9. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
 10. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
+11. Docker. [Dockerfile reference](https://docs.docker.com/reference/dockerfile). 多阶段构建与 COPY --from 复制构建产物的语义。
+12. NGINX. [ngx_http_core_module](https://nginx.org/en/docs/http/ngx_http_core_module.html). root、alias、try_files、命名 location、静态 ETag 和内部重定向。
+13. NGINX. [ngx_http_headers_module](https://nginx.org/en/docs/http/ngx_http_headers_module.html). expires、add_header 与 HTTP 缓存控制响应头。
