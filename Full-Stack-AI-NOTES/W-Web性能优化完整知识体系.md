@@ -562,7 +562,7 @@ Performance Budget（性能预算）可以定义在多个层级：
 
 RUM（Real User Monitoring，真实用户监控）SDK 会执行 Observer、事件监听、序列化和上报，因此也应有自己的性能边界：使用浏览器原生 Performance Entry、控制采样率、批处理、去重、避免高频同步处理，并在 SDK 初始化较晚时利用 PerformanceObserver 的 buffered 能力读取已产生的条目。MDN 说明 buffered 可以把观察器创建前记录的条目加入回调，但缓冲区仍有容量限制。[[19]](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver/PerformanceObserver)
 
-性能采集、聚合和 RUM 的详细机制继续进入 [性能专项优化](X-性能专项优化.md)；该文档承担监控数据采集与指标计算专项，而本文只说明它为什么是性能优化闭环的验证层。
+性能采集、聚合和 RUM 的详细机制继续进入 [性能测量与真实用户监控专项](X-性能测量与真实用户监控专项.md)；该文档承担监控数据采集与指标计算专项，而本文只说明它为什么是性能优化闭环的验证层。
 
 **项目实践映射：** 从单次采样走向性能工程，需要把采集、聚合、版本上下文和预算串成闭环。official-network 当前已有 Web Vital、Navigation、Resource 与服务端报告代码，同时也保留“自动触发链是否完整”的验证边界，见 [项目分析：性能采集与报告模型](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#7-%E5%BD%93%E5%89%8D%E4%BB%93%E5%BA%93%E5%B7%B2%E7%BB%8F%E5%85%B7%E5%A4%87%E6%80%A7%E8%83%BD%E9%87%87%E9%9B%86%E4%B8%8E%E6%8A%A5%E5%91%8A%E6%A8%A1%E5%9E%8B%E4%BD%86%E5%BF%85%E9%A1%BB%E5%8C%BA%E5%88%86%E5%8D%95%E6%AC%A1%E8%AF%8A%E6%96%AD%E6%8A%A5%E5%91%8A%E5%92%8C%E7%BA%BF%E4%B8%8A%E6%80%A7%E8%83%BD-slo) 与 [性能治理闭环](https://github.com/cxDlogver/official-network/blob/main/docs/Web%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%BD%93%E7%B3%BB%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md#9-%E9%A1%B9%E7%9B%AE%E6%80%A7%E8%83%BD%E6%B2%BB%E7%90%86%E6%9C%80%E7%BB%88%E8%A6%81%E5%BD%A2%E6%88%90%E9%A2%84%E7%AE%97--%E5%BC%80%E5%8F%91%E9%AA%8C%E8%AF%81--%E4%B8%8A%E7%BA%BF-rum--%E5%9B%9E%E5%BD%92%E7%9A%84%E9%97%AD%E7%8E%AF)。
 
@@ -653,7 +653,7 @@ Web 性能优化完整知识体系（端到端全景导览）
 ├─ Runtime / Smoothness
 │  └─ 页面流畅度与连续渲染性能完整知识体系
 └─ Measure / RUM
-   └─ 性能专项优化
+   └─ 性能测量与真实用户监控专项
 ~~~
 
 关联入口：
@@ -668,7 +668,7 @@ Web 性能优化完整知识体系（端到端全景导览）
 - [编译构建与打包全面优化](B-编译构建与打包全面优化.md)
 - [Vue 应用级性能分析及优化](V-Vue应用级性能分析及优化.md)
 - [页面流畅度与连续渲染性能完整知识体系](Y-页面流畅度与连续渲染性能完整知识体系.md)
-- [性能专项优化](X-性能专项优化.md)
+- [性能测量与真实用户监控专项](X-性能测量与真实用户监控专项.md)
 
 
 ## 12. 参考文献
