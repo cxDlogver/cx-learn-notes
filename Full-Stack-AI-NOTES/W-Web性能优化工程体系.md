@@ -29,7 +29,7 @@ Web 页面经历内容交付、应用执行和视觉呈现，三部分形成相�
   并且没有引入不可接受的功能或其他性能代价，才算优化有效。
 ~~~
 
-这幅图是按**工程职责和主要介入位置**组织的逻辑链，不能理解为浏览器总是严格按 ①→⑥ 各执行一次。HTML 交付和资源请求会交叠，脚本执行与渲染反复交替；运行中还会重新发起网络和数据请求。将网络与服务端分开，是为了区分**传输链路成本**和**业务内容生产成本**，而不是说网络必定在服务端执行之前才发生。[[1]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
+这幅图是按**工程职责和主要介入位置**组织的逻辑链，不能理解为浏览器总是严格按 ①→⑥ 各执行一次。HTML 交付和资源请求会交叠，脚本执行与渲染反复交替；运行中还会重新发起网络和数据请求。将网络与服务端分开，是为了区分**传输链路成本**和**业务内容生产成本**，而不是说网络必定在服务端执行之前才发生。[[ 1 ]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
 
 ## 1. 性能优化方案按照执行职责划分为六个领域
 
@@ -140,7 +140,7 @@ function getArticleList(queryString) {
 
 第一次调用创建请求并保存 Promise；第二个组件在请求未完成时使用同一个 Promise，因此共享了同一次获取结果。这里记录的是**正在进行的工作**，并不是长期缓存结果：请求结束后即删除记录，后续是否需要再次访问由应用判断，并交给 HTTP 缓存机制决定是否能够复用响应。示例只适用于约定好的同一权限与请求范围；真实系统还必须区分请求方法、URL 与查询参数、身份或租户、相关请求头以及会影响结果的请求体。不能仅以“URL 相同”为依据合并不同用户的数据，更不能未经业务幂等性判断就合并提交、支付等有副作用的操作。
 
-另一个常见问题是**旧请求已经没有展示价值，但仍在执行**。用户快速从“草稿”切换到“已发布”，草稿查询尚未返回，此时不应该让迟到的草稿结果覆盖当前页面。对于支持取消的 fetch，可以通过 AbortController 中止旧请求；但取消是减少继续消耗资源的机会，**并不保证请求尚未到达服务器，更不意味着已经执行的服务端操作会被撤销**。即使进行了取消，界面也应使用当前查询标识或请求序号防止过期结果覆盖新结果。[[2]](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+另一个常见问题是**旧请求已经没有展示价值，但仍在执行**。用户快速从“草稿”切换到“已发布”，草稿查询尚未返回，此时不应该让迟到的草稿结果覆盖当前页面。对于支持取消的 fetch，可以通过 AbortController 中止旧请求；但取消是减少继续消耗资源的机会，**并不保证请求尚未到达服务器，更不意味着已经执行的服务端操作会被撤销**。即使进行了取消，界面也应使用当前查询标识或请求序号防止过期结果覆盖新结果。[[ 2 ]](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
 请求去重和取消不可混用：**去重解决多个调用者需要同一结果，取消解决旧结果已经不再需要。** 若多个组件共享在途请求，一个组件退出时不能直接终止其他组件仍依赖的请求；应按消费者引用关系或请求拥有者来管理取消。
 
@@ -148,7 +148,7 @@ function getArticleList(queryString) {
 
 应用确认需要获取数据后，并不代表一定要访问远端服务器。浏览器 HTTP 缓存可以依据请求与响应规则，直接使用适合当前请求的已存副本；CDN 等共享缓存则可以在浏览器确实发起网络请求后，复用边缘节点已经保存的响应，从而减少进一步回源。
 
-两者减少的网络成本并不相同。例如再次打开页面时，如果浏览器本地缓存存在允许直接使用的新鲜响应，本次就无需为该响应访问网络；如果浏览器需要访问网络而 CDN 命中，则**浏览器到 CDN 这一段请求仍会发生**，只是 CDN 无需再向源站获取原始内容。若副本过期，需要通过 ETag 或 Last-Modified 进行条件验证，即使最终返回 304 并复用旧正文，仍可能存在网络往返。不能把“命中某层缓存”统一理解为“完全没有 HTTP 请求”。[[3]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+两者减少的网络成本并不相同。例如再次打开页面时，如果浏览器本地缓存存在允许直接使用的新鲜响应，本次就无需为该响应访问网络；如果浏览器需要访问网络而 CDN 命中，则**浏览器到 CDN 这一段请求仍会发生**，只是 CDN 无需再向源站获取原始内容。若副本过期，需要通过 ETag 或 Last-Modified 进行条件验证，即使最终返回 304 并复用旧正文，仍可能存在网络往返。不能把“命中某层缓存”统一理解为“完全没有 HTTP 请求”。[[ 3 ]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
 
 HTTP 缓存还必须保证返回的是**当前请求有权使用、版本正确且符合新鲜度要求的响应**。浏览器和 CDN 依各自的存储资格、请求匹配、新鲜度和验证策略作出决定；是否能够缓存公开内容，与是否能够安全共享用户个人数据，不属于同一个判断。某些业务响应不适合共享缓存，也不应该为了命中率牺牲权限隔离或更新正确性。
 
@@ -167,7 +167,7 @@ HTTP 缓存还必须保证返回的是**当前请求有权使用、版本正确�
 <link rel="preconnect" href="https://api.example.org" crossorigin>
 ~~~
 
-预连接准备的是后续可能使用的连接，并不会提前调用 API。浏览器可能根据情况部分执行或忽略提示；对大量并不确定会访问的域名滥用预连接，也会占用连接与设备资源。[[4]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect)
+预连接准备的是后续可能使用的连接，并不会提前调用 API。浏览器可能根据情况部分执行或忽略提示；对大量并不确定会访问的域名滥用预连接，也会占用连接与设备资源。[[ 4 ]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preconnect)
 
 请求依赖关系也会带来额外等待。若两个 HTTP 请求互不依赖，完全串行执行就会让第二个请求平白等待第一个结束；适当并发可以缩短取得全部必要结果的时间。但如果第二个请求确实需要第一个返回的标识，就不能为了并发而跳过这个依赖。并发数量同样不是越大越好，过度并发可能竞争连接、带宽与服务端处理能力。
 
@@ -207,7 +207,7 @@ HTTP 缓存还必须保证返回的是**当前请求有权使用、版本正确�
 
 ### 【页面生成策略通过改变计算时机重新分配成本】
 
-CSR、SSR、SSG、Hybrid Rendering 不是简单的“越后出现越先进”，而是让相同页面内容在不同阶段生成：[[5]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path)
+CSR、SSR、SSG、Hybrid Rendering 不是简单的“越后出现越先进”，而是让相同页面内容在不同阶段生成：[[ 5 ]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path)
 
 | 策略 | 页面内容的主要生成位置 | 能减少的某类成本 | 新增或转移的成本 |
 | --- | --- | --- | --- |
@@ -242,7 +242,7 @@ const [articles, config] = await Promise.all([
 return { articles, config };
 ~~~
 
-两次读取由此尽早同时发起，整体等待更多取决于较慢的一项，而不是强制累加等待时间。但并行没有让每次数据库查询本身变快：如果数据库连接池容量不足、数据库已经处于高负载，增加并行查询可能进一步放大资源竞争。并且只有**数据依赖、事务顺序和权限校验允许独立执行**的工作才适合这样处理。[[6]](https://nextjs.org/docs/app/getting-started/fetching-data)
+两次读取由此尽早同时发起，整体等待更多取决于较慢的一项，而不是强制累加等待时间。但并行没有让每次数据库查询本身变快：如果数据库连接池容量不足、数据库已经处于高负载，增加并行查询可能进一步放大资源竞争。并且只有**数据依赖、事务顺序和权限校验允许独立执行**的工作才适合这样处理。[[ 6 ]](https://nextjs.org/docs/app/getting-started/fetching-data)
 
 相反，查询文章作者通常必须先知道文章中的 `author_id`，因此先取得文章，再根据作者 ID 查询，是有真实依赖的。优化应从这条实际依赖出发，考虑批量获取关联数据、在数据库内联结，或在允许时调整数据组织方式，而不是机械地把所有 await 替换成 Promise.all。
 
@@ -271,7 +271,7 @@ ORDER BY published_at DESC
 LIMIT 20;
 ~~~
 
-其中，`EXPLAIN` 展示数据库选择的扫描、连接、排序等执行方式，`ANALYZE` 实际执行查询并给出耗时，`BUFFERS` 提供缓冲区访问情况。需要结合返回行数、扫描范围和排序开销，再判断是否适合建立匹配筛选与排序条件的索引，或调整查询条件、分页方式。执行计划的估算成本不等同于毫秒时间，`EXPLAIN ANALYZE` 也不是完整 API 耗时，因为它并不自动覆盖应用业务逻辑、网络传输等所有阶段。[[7]](https://www.postgresql.org/docs/current/using-explain.html)
+其中，`EXPLAIN` 展示数据库选择的扫描、连接、排序等执行方式，`ANALYZE` 实际执行查询并给出耗时，`BUFFERS` 提供缓冲区访问情况。需要结合返回行数、扫描范围和排序开销，再判断是否适合建立匹配筛选与排序条件的索引，或调整查询条件、分页方式。执行计划的估算成本不等同于毫秒时间，`EXPLAIN ANALYZE` 也不是完整 API 耗时，因为它并不自动覆盖应用业务逻辑、网络传输等所有阶段。[[ 7 ]](https://www.postgresql.org/docs/current/using-explain.html)
 
 第二种情况是**单次 SQL 不慢，但执行了很多次**。最典型的是 N+1 查询：先查询 N 篇文章，再为每篇文章分别查询作者。以下以常见 ORM（对象关系映射工具）的调用形式说明：
 
@@ -286,7 +286,7 @@ const authors = await Promise.all(
 );
 ~~~
 
-如果文章列表有 20 篇，逻辑上就产生了 1 次列表查询和最多 20 次作者查询。即使作者查询并发执行，请求数量、数据库连接与调度工作仍然存在；部分 ORM 可能自行合并满足条件的请求，但不能默认所有调用都会自动批量化。[[8]](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance)
+如果文章列表有 20 篇，逻辑上就产生了 1 次列表查询和最多 20 次作者查询。即使作者查询并发执行，请求数量、数据库连接与调度工作仍然存在；部分 ORM 可能自行合并满足条件的请求，但不能默认所有调用都会自动批量化。[[ 8 ]](https://www.prisma.io/docs/orm/v7/prisma-client/queries/advanced/query-optimization-performance)
 
 若当前页面只需要展示这些作者的基本信息，可以先收集去重后的作者 ID，一次批量查询：
 
@@ -315,7 +315,7 @@ const authors = await db.user.findMany({
 
 如果服务端渲染文章列表页时，文章列表已经查出，但侧边栏推荐仍在等待另一个服务，而整个页面只允许在所有模块准备好后一次性输出 HTML，那么原本已准备好的文章列表也被迫等待推荐结果。
 
-**流式服务端渲染（Streaming SSR）**允许在框架和部署链路支持时先发送已生成的 HTML，后续模块准备好再逐步补充。这里改变的是内容交付顺序：主内容不必为了某个较慢的非关键模块等待全部完成。它不会让推荐查询本身执行得更快。[[9]](https://react.dev/reference/react-dom/server/renderToPipeableStream)
+**流式服务端渲染（Streaming SSR）**允许在框架和部署链路支持时先发送已生成的 HTML，后续模块准备好再逐步补充。这里改变的是内容交付顺序：主内容不必为了某个较慢的非关键模块等待全部完成。它不会让推荐查询本身执行得更快。[[ 9 ]](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
 以 React 的服务端 Suspense 能力为例，假设文章列表能够较早完成，而推荐模块的数据请求较慢，可以把推荐内容放在单独的边界内：
 
@@ -367,7 +367,7 @@ API 请求进入服务端
 客户端收到结果
 ~~~
 
-可以在实际代码中分别记录数据库查询、下游调用和应用组装的耗时。对适合向客户端暴露的指标，HTTP `Server-Timing` 响应头可以将分段结果关联到浏览器开发者工具，例如：[[10]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing)
+可以在实际代码中分别记录数据库查询、下游调用和应用组装的耗时。对适合向客户端暴露的指标，HTTP `Server-Timing` 响应头可以将分段结果关联到浏览器开发者工具，例如：[[ 10 ]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Server-Timing)
 
 ~~~http
 Server-Timing: db;dur=80.2, app;dur=23.7
@@ -433,11 +433,11 @@ Content-Encoding: br
 Vary: Accept-Encoding
 ~~~
 
-其中 `Accept-Encoding` 表示客户端支持的内容编码，`Content-Encoding` 告知服务端实际选用的编码；`Vary` 帮助缓存正确区分不同编码的响应变体。上面的请求行与响应头是两条报文的简化拼接，不表示它们在同一个方向发送。代码压缩改变交付文件的表示形式，HTTP 内容压缩改变网络传输时的编码，两者可以叠加。对于 JPEG、WebP、AVIF 和常见音视频等本身已经压缩的格式，再叠加通用 HTTP 压缩往往收益有限，甚至可能增加开销。[[11]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression)
+其中 `Accept-Encoding` 表示客户端支持的内容编码，`Content-Encoding` 告知服务端实际选用的编码；`Vary` 帮助缓存正确区分不同编码的响应变体。上面的请求行与响应头是两条报文的简化拼接，不表示它们在同一个方向发送。代码压缩改变交付文件的表示形式，HTTP 内容压缩改变网络传输时的编码，两者可以叠加。对于 JPEG、WebP、AVIF 和常见音视频等本身已经压缩的格式，再叠加通用 HTTP 压缩往往收益有限，甚至可能增加开销。[[ 11 ]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression)
 
 **图片体积优化需要分别考虑分辨率、编码格式和压缩质量。** 分辨率是图片实际拥有多少像素；图片在页面中的 CSS 显示宽度与设备像素密度，决定了它大约需要多少像素才能清晰显示。编码格式决定这些像素怎样存储；JPEG、PNG、WebP、AVIF 各有适用场景。将 PNG 转成 WebP 或 AVIF 并不自动降低分辨率，同样尺寸的图片也可能因为编码不同而占用不同字节。
 
-例如一张原始图片宽 2400 像素，但手机页面只用它展示宽约 360 CSS 像素的缩略图，直接下载原图通常没有必要。可以在构建或图片服务端准备 480、960、1440 像素等版本，让浏览器按显示宽度、设备像素密度和可选资源选择合适版本。HTML 的 `srcset` 给出候选文件及其真实像素宽度；`sizes` 告诉浏览器不同视口下图片预计占用多宽。[[12]](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)
+例如一张原始图片宽 2400 像素，但手机页面只用它展示宽约 360 CSS 像素的缩略图，直接下载原图通常没有必要。可以在构建或图片服务端准备 480、960、1440 像素等版本，让浏览器按显示宽度、设备像素密度和可选资源选择合适版本。HTML 的 `srcset` 给出候选文件及其真实像素宽度；`sizes` 告诉浏览器不同视口下图片预计占用多宽。[[ 12 ]](https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images)
 
 ~~~html
 <!-- 资源路径是预先生成的不同像素版本；sizes 表示图片预计显示宽度 -->
@@ -455,9 +455,9 @@ Vary: Accept-Encoding
 
 这里宽高属性同时提供固有长宽比，帮助浏览器在图片加载前预留展示空间。它们不会强制每个设备下载 960 像素版本，真正的文件选择由浏览器根据候选列表与显示条件完成。若图片服务支持参数化裁剪或缩放，也可以通过实际显示场景生成变体；必须同时控制服务端转换成本、缓存变体规模和画质。
 
-对于编码格式，照片类内容通常可比较 JPEG、WebP、AVIF 的实际画质和字节；需要无损精细边缘、透明效果或特定兼容性的图片，还要评估 PNG、无损 WebP 或其他选择。WebP/AVIF 往往有压缩效率优势，但**格式更先进不等于所有图片都必然更小或解码更快**。可以用 `<picture>` 提供格式候选和后备图片，在实际设备上比较视觉效果、文件大小与解码表现。[[13]](https://web.dev/articles/choose-the-right-image-format)
+对于编码格式，照片类内容通常可比较 JPEG、WebP、AVIF 的实际画质和字节；需要无损精细边缘、透明效果或特定兼容性的图片，还要评估 PNG、无损 WebP 或其他选择。WebP/AVIF 往往有压缩效率优势，但**格式更先进不等于所有图片都必然更小或解码更快**。可以用 `<picture>` 提供格式候选和后备图片，在实际设备上比较视觉效果、文件大小与解码表现。[[ 13 ]](https://web.dev/articles/choose-the-right-image-format)
 
-字体同样存在“文件包含内容远大于当前页面所需”的情况。对于确实使用自定义字体的页面，可以减少不必要的字重、选择适合 Web 的字体格式（如 WOFF2），再根据实际语言文字进行**字体子集化**：将大字体中的字符拆分为较小的字形集合，并通过 `unicode-range` 指定相应覆盖范围。这样浏览器只需要下载当前文本所需的字形资源，但拆分过细也会增加请求与管理复杂度。视频、动图等媒体则需结合清晰度、编码格式、首帧与播放需要组织内容，而不是一律交付最高分辨率。[[14]](https://web.dev/articles/optimize-webfont-loading)
+字体同样存在“文件包含内容远大于当前页面所需”的情况。对于确实使用自定义字体的页面，可以减少不必要的字重、选择适合 Web 的字体格式（如 WOFF2），再根据实际语言文字进行**字体子集化**：将大字体中的字符拆分为较小的字形集合，并通过 `unicode-range` 指定相应覆盖范围。这样浏览器只需要下载当前文本所需的字形资源，但拆分过细也会增加请求与管理复杂度。视频、动图等媒体则需结合清晰度、编码格式、首帧与播放需要组织内容，而不是一律交付最高分辨率。[[ 14 ]](https://web.dev/articles/optimize-webfont-loading)
 
 以上优化减少的是**每一份资源本身要付出的字节成本**。其中具体的构建工具配置、图片压缩流水线和字体处理细节，可继续进入 [资源优化实战](./Z-资源优化实战.md)；本篇不重复大量工具参数。
 
@@ -465,7 +465,7 @@ Vary: Accept-Encoding
 
 仅仅压缩已有文件还不够。如果构建产物中包含页面根本不使用的功能，即使压缩比很高，最终仍然要付出不必要的体积成本。第二层要处理的是**资源是否真的需要被包含**，而不是怎样把已经包含的资源再压小一些。
 
-**Tree Shaking（未使用代码消除）**通常利用 ES Modules 的静态 `import` / `export` 关系，分析模块中哪些导出被真正使用，并在可以证明不影响程序行为时移除无用代码。[[15]](https://webpack.js.org/guides/tree-shaking/)
+**Tree Shaking（未使用代码消除）**通常利用 ES Modules 的静态 `import` / `export` 关系，分析模块中哪些导出被真正使用，并在可以证明不影响程序行为时移除无用代码。[[ 15 ]](https://webpack.js.org/guides/tree-shaking/)
 
 ~~~js
 // math.js：一个模块提供两项功能。
@@ -479,7 +479,7 @@ console.log(sum(2, 3));
 
 如果 `multiply` 没有其他有效引用，且删除它不会改变必须保留的副作用，构建工具就可能在生产产物中去掉它。这个示例证明的是**静态依赖关系使未使用导出的裁剪成为可能**，不是只要使用 `import` 就一定能删掉所有其他代码。
 
-为什么 Tree Shaking 必须检查副作用？因为有的模块即使没有导出被使用，导入时仍可能注册全局监听、修改运行环境或注入样式。例如 `import './global.css'` 依赖的就是样式生效；如果错误地把含有此类行为的模块全部标记为无副作用，构建工具可能连必要样式也一起移除。因此 `sideEffects` 等声明必须符合真实模块行为，不能为了缩小包体盲目统一设置。[[15]](https://webpack.js.org/guides/tree-shaking/)
+为什么 Tree Shaking 必须检查副作用？因为有的模块即使没有导出被使用，导入时仍可能注册全局监听、修改运行环境或注入样式。例如 `import './global.css'` 依赖的就是样式生效；如果错误地把含有此类行为的模块全部标记为无副作用，构建工具可能连必要样式也一起移除。因此 `sideEffects` 等声明必须符合真实模块行为，不能为了缩小包体盲目统一设置。[[ 15 ]](https://webpack.js.org/guides/tree-shaking/)
 
 除了 Tree Shaking，还应分析其他冗余来源。例如完整引入庞大的图标集合，却只使用其中几个图标；引入功能相近的多个依赖；维护已经不被业务引用的样式；同一依赖在不同打包边界意外出现多份。这些问题分别可能通过按需导出、替换依赖、CSS 清理和构建产物分析得到改善。
 
@@ -495,7 +495,7 @@ console.log(sum(2, 3));
 
 在完成压缩与无用内容消除后，剩下的资源也不一定要在首屏全部加载。例如文章列表、首屏图片和页面基本样式是用户一进入页面就需要的，而评论区下方图片、详情编辑器或后续路由所用代码可以稍后取得。第三层优化的目的，不是再删掉这些功能，而是**根据资源何时真正被需要，决定何时发现、发起和优先处理它们**。
 
-浏览器发现资源的时机并不一致。HTML 中直接声明的 `<img src>` 或样式链接，通常可以较早被浏览器发现；如果一张关键背景图片必须等待外部 CSS 下载与解析，或必须执行 JavaScript 才能生成对应 URL，它的请求可能开始得更晚。在关键图片尚未开始请求之前，即使网络连接和图片体积已经优化，首屏仍要承受这段额外等待。Google 的 LCP 优化指南特别强调关键资源的可发现性及其加载优先级。[[16]](https://web.dev/articles/optimize-lcp)
+浏览器发现资源的时机并不一致。HTML 中直接声明的 `<img src>` 或样式链接，通常可以较早被浏览器发现；如果一张关键背景图片必须等待外部 CSS 下载与解析，或必须执行 JavaScript 才能生成对应 URL，它的请求可能开始得更晚。在关键图片尚未开始请求之前，即使网络连接和图片体积已经优化，首屏仍要承受这段额外等待。Google 的 LCP 优化指南特别强调关键资源的可发现性及其加载优先级。[[ 16 ]](https://web.dev/articles/optimize-lcp)
 
 **对于当前页面确定需要的关键资源，先确保它自然地、尽早地被发现**。如果首屏主视觉本身就是初始 HTML 中的 `<img>`，优先保留明确的 `src` / `srcset`，让浏览器正常发现；对于确定重要的图片，可以通过 `fetchpriority="high"` 提示提高相对请求优先级：
 
@@ -515,9 +515,9 @@ console.log(sum(2, 3));
       as="image" fetchpriority="high">
 ~~~
 
-Preload 主要改变**发现并开始获取的时机**，Fetch Priority 主要提供**请求重要程度的提示**。它们不保证浏览器严格执行指定顺序，也不是所有关键资源都必须重复声明一次 Preload。如果资源 URL、类型、跨域方式或响应式图片选择条件与实际使用不一致，可能造成冗余下载或无效预加载。尤其字体预加载要注意相应 `crossorigin` 配置。[[17]](https://web.dev/articles/fetch-priority)
+Preload 主要改变**发现并开始获取的时机**，Fetch Priority 主要提供**请求重要程度的提示**。它们不保证浏览器严格执行指定顺序，也不是所有关键资源都必须重复声明一次 Preload。如果资源 URL、类型、跨域方式或响应式图片选择条件与实际使用不一致，可能造成冗余下载或无效预加载。尤其字体预加载要注意相应 `crossorigin` 配置。[[ 17 ]](https://web.dev/articles/fetch-priority)
 
-对于 ES Module，还存在 `modulepreload`，用于提前获取模块并进行适当的解析、编译及模块映射准备；它与仅提前取得一般资源的 `preload` 具有不同语义，浏览器对依赖模块的预加载行为也受实现与配置影响。[[18]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload) 对于未来路由可能才会用到的资源，`prefetch` 等提示属于另一类推测性加载：未来是否访问仍不确定，不能与当前页面的关键资源预加载混用。具体 Hint 语义和工程选择统一进入 [静态资源预加载方法及实践笔记](./J-静态资源预加载方法及实践笔记（完整版）.md)。
+对于 ES Module，还存在 `modulepreload`，用于提前获取模块并进行适当的解析、编译及模块映射准备；它与仅提前取得一般资源的 `preload` 具有不同语义，浏览器对依赖模块的预加载行为也受实现与配置影响。[[ 18 ]](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload) 对于未来路由可能才会用到的资源，`prefetch` 等提示属于另一类推测性加载：未来是否访问仍不确定，不能与当前页面的关键资源预加载混用。具体 Hint 语义和工程选择统一进入 [静态资源预加载方法及实践笔记](./J-静态资源预加载方法及实践笔记（完整版）.md)。
 
 **对于当前视口不需要的资源，则考虑 Lazy Loading（懒加载）**。例如屏幕下方的图片可使用原生属性：
 
@@ -529,7 +529,7 @@ Preload 主要改变**发现并开始获取的时机**，Fetch Priority 主要�
      alt="正文后续配图">
 ~~~
 
-浏览器会根据距离视口等条件决定实际请求时机，因此 Lazy Loading 不是保证“滚动到图片正好出现才下载”。首屏关键图片，尤其可能成为 LCP 元素的图片，通常不应盲目使用 `loading="lazy"`，否则可能增加资源发现后的等待。图片和 iframe 等资源的懒加载行为与适用条件参见 MDN。[[19]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading)
+浏览器会根据距离视口等条件决定实际请求时机，因此 Lazy Loading 不是保证“滚动到图片正好出现才下载”。首屏关键图片，尤其可能成为 LCP 元素的图片，通常不应盲目使用 `loading="lazy"`，否则可能增加资源发现后的等待。图片和 iframe 等资源的懒加载行为与适用条件参见 MDN。[[ 19 ]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading)
 
 JavaScript 功能也可以按需获取。**代码分割（Code Splitting）**让构建工具把不同入口或动态模块边界生成多个文件；**动态导入（Dynamic Import）**可以在功能真正被触发时再开始加载对应模块：
 
@@ -541,7 +541,7 @@ async function openEditor() {
 }
 ~~~
 
-这段代码说明的是加载时机与初始交付范围的变化，并不表示编辑器已经从项目中被删除，也不保证构建工具一定生成最合适的分包。分包太细可能增加模块依赖和请求等待；如果用户进入页面后必须立即使用编辑器，延迟到点击时才加载反而会产生交互等待。具体模块分包和执行优化可继续阅读 [编译构建与打包全面优化](./B-编译构建与打包全面优化.md) 与后文“JavaScript 与状态优化”，避免在此重复客户端 CPU 计算问题。[[20]](https://vuejs.org/guide/best-practices/performance)
+这段代码说明的是加载时机与初始交付范围的变化，并不表示编辑器已经从项目中被删除，也不保证构建工具一定生成最合适的分包。分包太细可能增加模块依赖和请求等待；如果用户进入页面后必须立即使用编辑器，延迟到点击时才加载反而会产生交互等待。具体模块分包和执行优化可继续阅读 [编译构建与打包全面优化](./B-编译构建与打包全面优化.md) 与后文“JavaScript 与状态优化”，避免在此重复客户端 CPU 计算问题。[[ 20 ]](https://vuejs.org/guide/best-practices/performance)
 
 对于脚本，`async`、`defer` 与 `type="module"` 还会影响脚本加载及执行相对 HTML 解析的关系：传统 `defer` 脚本在 HTML 解析完成后按顺序执行，`async` 脚本可在可执行时运行而不保证与其他异步脚本的顺序，模块脚本具有自己的模块加载与延迟执行语义。这些属性不能让脚本的实际计算成本凭空消失。对于首屏关键 CSS，也不能简单全部改成异步或懒加载，因为必要样式迟到可能推迟正确显示。详细主线程执行与浏览器渲染分别交给后续章节。
 
@@ -591,7 +591,7 @@ async function openEditor() {
 
 **减少 JavaScript 实际执行量，可能缩短任务耗时、降低形成长任务的风险，为用户输入和浏览器渲染留下机会，但不会自动保证没有长任务。** 对必须执行且仍然较长的计算，怎样分片、Yield、移入 Worker 或控制更新频率，属于后文 ⑤“任务调度与更新优化”；浏览器的 Layout/Paint 属于 ⑥。不能把运行时 CPU 优化与任务调度、DOM 绘制优化混成一种手段。
 
-页面初始化阶段也适用这三类成本判断。即使构建工具已经压缩并按需拆分代码，首屏仍可能同步执行不必要的插件初始化、对象转换、全量缓存构造或 Hydration 计算。应检查这些工作是否真正需要在初始化时完成；删除重复计算属于本章，把非关键模块延后下载属于 ③，重新安排必要任务的执行时机属于 ⑤。SSR 提前交付 HTML 也不意味着客户端 Hydration 已经完成。页面生成与客户端启动的关系详见 [Web 渲染架构](./W-Web渲染架构.md) 和 [服务端渲染完整链路](./F-服务端渲染完整链路.md)。[[20]](https://vuejs.org/guide/best-practices/performance)
+页面初始化阶段也适用这三类成本判断。即使构建工具已经压缩并按需拆分代码，首屏仍可能同步执行不必要的插件初始化、对象转换、全量缓存构造或 Hydration 计算。应检查这些工作是否真正需要在初始化时完成；删除重复计算属于本章，把非关键模块延后下载属于 ③，重新安排必要任务的执行时机属于 ⑤。SSR 提前交付 HTML 也不意味着客户端 Hydration 已经完成。页面生成与客户端启动的关系详见 [Web 渲染架构](./W-Web渲染架构.md) 和 [服务端渲染完整链路](./F-服务端渲染完整链路.md)。[[ 20 ]](https://vuejs.org/guide/best-practices/performance)
 
 ### 【计算成本优化减少业务计算量与重复处理】
 
@@ -623,7 +623,7 @@ function appendRecord(record) {
 
 除此以外，计算成本还常来自**选择了不符合访问模式的数据结构**。如果应用频繁根据 ID 查找历史记录，每次执行 `records.find(...)` 都可能扫描数组；可以按 ID 构建 `Map`，换取平均更快的重复查找，但创建与维护索引本身增加时间和内存，并且数据变化时必须保持索引一致。一次性查询很少时，直接扫描反而更简单。
 
-当多处代码反复执行相同的过滤、排序或转换，也可以考虑共享计算结果。**Memoization / 计算缓存**通过稳定输入复用已经算出的结果，减少重复求值；在 Vue 中，`computed` 能根据其响应式依赖缓存派生值。但缓存只在相应依赖不变、复用频率足够时才有意义；结果创建新对象、依赖范围过大、缓存维护成本过高，都可能削弱收益。Vue 也会针对稳定的计算值减少不必要的下游触发，具体行为应结合框架版本和返回值稳定性理解。[[20]](https://vuejs.org/guide/best-practices/performance)
+当多处代码反复执行相同的过滤、排序或转换，也可以考虑共享计算结果。**Memoization / 计算缓存**通过稳定输入复用已经算出的结果，减少重复求值；在 Vue 中，`computed` 能根据其响应式依赖缓存派生值。但缓存只在相应依赖不变、复用频率足够时才有意义；结果创建新对象、依赖范围过大、缓存维护成本过高，都可能削弱收益。Vue 也会针对稳定的计算值减少不必要的下游触发，具体行为应结合框架版本和返回值稳定性理解。[[ 20 ]](https://vuejs.org/guide/best-practices/performance)
 
 还有一种常见浪费是**同一份数据在一次处理流程中被重复转换**：多个组件各自执行大数组的过滤、映射、序列化；或者每次页面状态微小变化都重新创建大量中间数组。应尽量明确衍生结果由谁计算、何时失效，并只处理当前活动数据集合。大型历史数据可以完整保留以供业务查询，但不代表当前一次搜索或绘图必须扫描全部记录。减少处理规模和减少中间对象，还可以降低后文的分配及 GC 压力。
 
@@ -648,7 +648,7 @@ function appendRecord(record) {
          生成必要变化，再交给浏览器处理
 ~~~
 
-Vue 3 主要使用 `Proxy` 实现普通对象的响应式访问拦截，`ref` 则通过 `.value` 的访问器实现追踪与触发。依赖建立在实际属性访问与活跃的响应式计算之间，不是给大型对象的每个字段安装持续运行的轮询任务。例如一个组件只读取 `user.name`，另一个只读取 `user.age`，修改 `name` **不会仅仅因为两个字段同属于 `user` 对象，就自动通知后一个组件**。[[21]](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+Vue 3 主要使用 `Proxy` 实现普通对象的响应式访问拦截，`ref` 则通过 `.value` 的访问器实现追踪与触发。依赖建立在实际属性访问与活跃的响应式计算之间，不是给大型对象的每个字段安装持续运行的轮询任务。例如一个组件只读取 `user.name`，另一个只读取 `user.age`，修改 `name` **不会仅仅因为两个字段同属于 `user` 对象，就自动通知后一个组件**。[[ 21 ]](https://vuejs.org/guide/extras/reactivity-in-depth.html)
 
 三个阶段的成本必须分别判断：
 
@@ -662,7 +662,7 @@ Vue 3 主要使用 `Proxy` 实现普通对象的响应式访问拦截，`ref` �
 
 **第一类手段：对确实不需要深层追踪的大型数据使用浅层响应式。**
 
-`ref`、`reactive` 默认支持深层响应式，但不是在创建对象的瞬间就为所有嵌套字段完成全部代理与订阅；Vue 对嵌套对象的代理处理可以在被访问时发生。若页面每次需要读取大型嵌套数组的海量属性，Proxy 访问和依赖追踪成本可能逐渐变得显著。Vue 官方指出，这通常出现在一次渲染访问大量嵌套属性的特定场景，并提供 `shallowRef` / `shallowReactive` 让内部对象保持原始状态。[[20]](https://vuejs.org/guide/best-practices/performance) [[22]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
+`ref`、`reactive` 默认支持深层响应式，但不是在创建对象的瞬间就为所有嵌套字段完成全部代理与订阅；Vue 对嵌套对象的代理处理可以在被访问时发生。若页面每次需要读取大型嵌套数组的海量属性，Proxy 访问和依赖追踪成本可能逐渐变得显著。Vue 官方指出，这通常出现在一次渲染访问大量嵌套属性的特定场景，并提供 `shallowRef` / `shallowReactive` 让内部对象保持原始状态。[[ 20 ]](https://vuejs.org/guide/best-practices/performance) [[ 22 ]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
 
 ~~~js
 import { ref, shallowRef } from 'vue';
@@ -700,7 +700,7 @@ watch(
 );
 ~~~
 
-这里的优化来自**减少深度遍历、缩小依赖及业务回调范围**；并不是 Vue 会主动不断轮询 `state.history`。需要确实感知整个对象变化的业务仍然可以使用深度监听，但必须意识到监听范围的真实成本。Vue 普通组件更新与默认 Watcher 回调会进行批量调度；`flush: 'sync'` 监听器则可能在多次同步修改时重复触发，应谨慎用于高频大数据。[[23]](https://vuejs.org/guide/essentials/watchers.html)
+这里的优化来自**减少深度遍历、缩小依赖及业务回调范围**；并不是 Vue 会主动不断轮询 `state.history`。需要确实感知整个对象变化的业务仍然可以使用深度监听，但必须意识到监听范围的真实成本。Vue 普通组件更新与默认 Watcher 回调会进行批量调度；`flush: 'sync'` 监听器则可能在多次同步修改时重复触发，应谨慎用于高频大数据。[[ 23 ]](https://vuejs.org/guide/essentials/watchers.html)
 
 **第三类手段：减少被状态变化无意义触发的组件更新。**
 
@@ -718,19 +718,19 @@ watch(
 />
 ~~~
 
-选中项从 A 切换到 B 时，大多数列表项的 `active` 始终是 `false`，因此在其他 Props 稳定、没有其他状态依赖的前提下，它们可以跳过无关更新。对于真正不会再次变化的子树，可以考虑 `v-once`；对于已证明昂贵的大型列表或子树，可根据正确的依赖选择使用 `v-memo`。但如果 Memo 的依赖列表遗漏了会影响渲染结果的数据，页面也可能显示过期内容。[[20]](https://vuejs.org/guide/best-practices/performance)
+选中项从 A 切换到 B 时，大多数列表项的 `active` 始终是 `false`，因此在其他 Props 稳定、没有其他状态依赖的前提下，它们可以跳过无关更新。对于真正不会再次变化的子树，可以考虑 `v-once`；对于已证明昂贵的大型列表或子树，可根据正确的依赖选择使用 `v-memo`。但如果 Memo 的依赖列表遗漏了会影响渲染结果的数据，页面也可能显示过期内容。[[ 20 ]](https://vuejs.org/guide/best-practices/performance)
 
-最后，**同一段同步代码连续修改多个响应式字段，不等于同一组件会立刻渲染多次**。Vue 将 DOM 更新缓冲到下一个更新周期，并对同一组件的更新进行合批去重。但批量调度没有消除每次 Proxy 属性写入的处理，也没有让一次本来需要遍历 10 万条记录的组件渲染自动缩小到一条。跨不同更新周期或同步监听器仍可能带来额外执行。[[22]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) [[23]](https://vuejs.org/guide/essentials/watchers.html)
+最后，**同一段同步代码连续修改多个响应式字段，不等于同一组件会立刻渲染多次**。Vue 将 DOM 更新缓冲到下一个更新周期，并对同一组件的更新进行合批去重。但批量调度没有消除每次 Proxy 属性写入的处理，也没有让一次本来需要遍历 10 万条记录的组件渲染自动缩小到一条。跨不同更新周期或同步监听器仍可能带来额外执行。[[ 22 ]](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) [[ 23 ]](https://vuejs.org/guide/essentials/watchers.html)
 
 这一分支的优化判断可以归纳为：**是否需要深度追踪 → 实际依赖哪些属性 → 变化后哪些消费者真正需要重新计算**。框架详细 API 与组件实践继续阅读 [Vue 应用级性能分析及优化](./V-Vue应用级性能分析及优化.md)，大型列表的 DOM 规模控制参见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。列表虚拟化主要减少节点数量及后续渲染成本，不能作为所有 Proxy 开销的直接替代。
 
 ### 【内存管理优化控制对象分配、GC 和长期数据规模】
 
-JavaScript 的内存管理优化不是手动销毁每个变量，而是**控制对象创建、持有引用与最终不再使用对象的生命周期**。V8 的垃圾回收（GC）负责识别不可达对象并回收内存；应用侧需要避免无意义地反复创建对象，也要在对象确实不需要时解除不必要的引用。[[24]](https://v8.dev/blog/trash-talk)
+JavaScript 的内存管理优化不是手动销毁每个变量，而是**控制对象创建、持有引用与最终不再使用对象的生命周期**。V8 的垃圾回收（GC）负责识别不可达对象并回收内存；应用侧需要避免无意义地反复创建对象，也要在对象确实不需要时解除不必要的引用。[[ 24 ]](https://v8.dev/blog/trash-talk)
 
 第一类成本是**对象分配速率（Allocation Rate）**。例如高频消息处理中，每次都通过 `filter().map()` 创建多个临时数组，这些对象虽然很快可以被回收，但创建本身占用 CPU，并可能增加 GC 频率。可以先确认这些中间数组是否真的被不同业务步骤使用，再考虑合并遍历、复用稳定结果或采用增量计算；不以“彻底避免对象分配”为目标，也不能破坏不可变状态与数据正确性。
 
-第二类成本是**长期存活对象规模（Live Set）**。如果缓存、历史数组或闭包长期持有对象，GC 就不能回收仍可达的对象。随着数据规模扩大，垃圾回收可能需要处理更多对象，内存容量压力也会增加。但要注意：**Heap 变大不意味着 GC 时间一定同比增长，更不意味着所有卡顿都来自 GC**。V8 使用分代、增量、并发等回收机制，不同类型对象的实际回收开销需要以 Profile 为证据。[[24]](https://v8.dev/blog/trash-talk)
+第二类成本是**长期存活对象规模（Live Set）**。如果缓存、历史数组或闭包长期持有对象，GC 就不能回收仍可达的对象。随着数据规模扩大，垃圾回收可能需要处理更多对象，内存容量压力也会增加。但要注意：**Heap 变大不意味着 GC 时间一定同比增长，更不意味着所有卡顿都来自 GC**。V8 使用分代、增量、并发等回收机制，不同类型对象的实际回收开销需要以 Profile 为证据。[[ 24 ]](https://v8.dev/blog/trash-talk)
 
 第三类成本是**历史数据规模增长带来的业务计算工作**。例如轨迹页面持续接收新坐标：
 
@@ -746,7 +746,7 @@ function appendPoint(point) {
 
 如果 `history` 不断增长，单次 `map` 的遍历成本也会增长；把 `history` 改成普通数组或 `shallowRef`，并不能消除这次全量遍历。优化时要优先辨别是否能够**只转换新数据、只更新受影响的结果**；如果图形库内部仍重新创建整个图形对象，还要到 ⑥ 检查绘制与图形数据处理能力。保存完整业务历史，与每次都处理全部历史，是两件不同的事。
 
-最后，内存泄漏常来自已经失去业务意义但仍被引用的对象，如未清理的全局事件监听器、定时器、订阅、组件卸载后的闭包或无限增长的缓存。对象从页面消失，不代表其 JS 引用已经消失；需要在相应生命周期停止订阅、清理引用、限制缓存容量。对象池可能减少分配，但也可能增加长期存活对象，不应在没有测量的情况下成为通用优化策略。Chrome Heap Snapshot 能通过引用保留链帮助定位无法回收的对象。[[25]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
+最后，内存泄漏常来自已经失去业务意义但仍被引用的对象，如未清理的全局事件监听器、定时器、订阅、组件卸载后的闭包或无限增长的缓存。对象从页面消失，不代表其 JS 引用已经消失；需要在相应生命周期停止订阅、清理引用、限制缓存容量。对象池可能减少分配，但也可能增加长期存活对象，不应在没有测量的情况下成为通用优化策略。Chrome Heap Snapshot 能通过引用保留链帮助定位无法回收的对象。[[ 25 ]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
 
 因此，在内存不断增长时，应依次辨别：**是持续分配但正常回收、长期存活数据合理增加、对象意外泄漏，还是重复遍历越来越大的数据集合**。四种现象的直接优化手段不同。JavaScript 对象与引用管理在本节讨论；⑤ 负责持续任务的触发与停止，⑥ 负责 Canvas / GPU 资源的管理，不能把 JS Heap 当作全部页面内存的唯一指标。
 
@@ -763,7 +763,7 @@ function appendPoint(point) {
 | 数据为什么始终无法释放？ | 多次操作后的存活对象、Retainers 引用链 | Memory / Heap Snapshot；区分正常缓存与异常保留 |
 | 用户真实感受是否改善？ | 交互处理耗时、INP、必要内容可用时间、连续渲染表现 | 在性能专项和 RUM 中验证端到端结果 |
 
-Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖追踪与触发；Chrome DevTools 能通过 Performance 记录函数与主线程工作，通过 Memory 和 Heap Snapshot 检查分配及引用保留。分析工具本身也有采集开销，应在一致条件下对照并结合生产环境结果判断。[[21]](https://vuejs.org/guide/extras/reactivity-in-depth.html) [[26]](https://developer.chrome.com/docs/devtools/performance/reference/) [[25]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
+Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖追踪与触发；Chrome DevTools 能通过 Performance 记录函数与主线程工作，通过 Memory 和 Heap Snapshot 检查分配及引用保留。分析工具本身也有采集开销，应在一致条件下对照并结合生产环境结果判断。[[ 21 ]](https://vuejs.org/guide/extras/reactivity-in-depth.html) [[ 26 ]](https://developer.chrome.com/docs/devtools/performance/reference/) [[ 25 ]](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
 
 例如，要验证 `shallowRef` 是否真正改善一个大型列表，不应只比较 Heap 数值，而要在**同样的展示数据、组件数量和操作流程下**比较实际计算与组件渲染耗时，并检查内部数据修改不再自动触发更新是否符合业务要求。要验证增量计算，也要对照删除、修改和重放数据等边界场景，保证不会因为缓存或增量状态失效造成错误结果。
 
@@ -798,7 +798,7 @@ Vue 官方支持在开发环境中使用响应式调试钩子观察组件依赖�
 用长任务、输入延迟、帧耗时、队列积压与总完成时间共同验收
 ~~~
 
-以上是**选择优化手段的判断顺序，而非浏览器固定的运行阶段**。任务拆分、时机控制与负载控制可以同时使用。缩短长任务与提升用户响应性相关，但不表示任务越多或越少就一定更好：一个 200ms 长任务拆成多个 10ms 任务，Task 数量反而增加，总 CPU 计算量也未必下降。本章优化目标是**减少连续阻塞、保护关键交互和渲染时机，并让必要任务按可接受的时延完成**。Long Task 通常以持续超过 50ms 的任务作为观测对象；低于 50ms 的连续工作也可能错过帧预算。[[27]](https://web.dev/articles/optimize-long-tasks/)
+以上是**选择优化手段的判断顺序，而非浏览器固定的运行阶段**。任务拆分、时机控制与负载控制可以同时使用。缩短长任务与提升用户响应性相关，但不表示任务越多或越少就一定更好：一个 200ms 长任务拆成多个 10ms 任务，Task 数量反而增加，总 CPU 计算量也未必下降。本章优化目标是**减少连续阻塞、保护关键交互和渲染时机，并让必要任务按可接受的时延完成**。Long Task 通常以持续超过 50ms 的任务作为观测对象；低于 50ms 的连续工作也可能错过帧预算。[[ 27 ]](https://web.dev/articles/optimize-long-tasks/)
 
 ### 【完整示例：长列表计算通过时间切片与主动让步继续执行】
 
@@ -831,7 +831,7 @@ Microtask Checkpoint（处理满足执行条件的微任务）
 浏览器根据当前条件安排其他 Task 或视觉更新
 ~~~
 
-这里并非 CPU 永远只有一条线程：浏览器还有网络、合成、栅格化等线程和进程，但与页面 JavaScript 共享渲染主线程的工作不能随意插入当前同步调用栈。浏览器规范中的 Event Loop 也不必与某一实现线程严格一一对应。[[28]](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
+这里并非 CPU 永远只有一条线程：浏览器还有网络、合成、栅格化等线程和进程，但与页面 JavaScript 共享渲染主线程的工作不能随意插入当前同步调用栈。浏览器规范中的 Event Loop 也不必与某一实现线程严格一一对应。[[ 28 ]](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
 
 #### <u>2. 完整的限时分批代码将大任务拆成可让步的工作单元</u>
 
@@ -945,9 +945,9 @@ Promise 完成，继续该 async 函数剩余计算
 结论：yield 明确用于主动让步和续接任务。
 ~~~
 
-这三种写法的 `continueWork()` 都可以通过 Promise 的微任务机制恢复，但 **A 的 Promise 已经完成，B 和 C 则要等待未来任务才能满足恢复条件**。因此“`await` 会产生微任务”与“`await scheduler.yield()` 能跨 Task 主动让步”并不矛盾。MDN 和 web.dev 都明确指出 `scheduler.yield()` 会让出执行权，并通过后续任务继续异步函数。[[29]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield) [[27]](https://web.dev/articles/optimize-long-tasks/)
+这三种写法的 `continueWork()` 都可以通过 Promise 的微任务机制恢复，但 **A 的 Promise 已经完成，B 和 C 则要等待未来任务才能满足恢复条件**。因此“`await` 会产生微任务”与“`await scheduler.yield()` 能跨 Task 主动让步”并不矛盾。MDN 和 web.dev 都明确指出 `scheduler.yield()` 会让出执行权，并通过后续任务继续异步函数。[[ 29 ]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield) [[ 27 ]](https://web.dev/articles/optimize-long-tasks/)
 
-浏览器会在 Microtask Checkpoint 持续执行已排队微任务，直到队列被清空；如果微任务反复产生新微任务，可能发生 Microtask Starvation（微任务饥饿）。所以**连续 `await Promise.resolve()`、递归 `queueMicrotask` 或大量 `Promise.then`，不是可靠的长计算切片机制**。另一方面，`await fetch(...)` 等待尚未完成的 I/O，可以让当前函数暂时结束，但这种等待由业务异步结果决定，不是控制 CPU 分片的专门调度策略。规范模型及示例见 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)。[[28]](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
+浏览器会在 Microtask Checkpoint 持续执行已排队微任务，直到队列被清空；如果微任务反复产生新微任务，可能发生 Microtask Starvation（微任务饥饿）。所以**连续 `await Promise.resolve()`、递归 `queueMicrotask` 或大量 `Promise.then`，不是可靠的长计算切片机制**。另一方面，`await fetch(...)` 等待尚未完成的 I/O，可以让当前函数暂时结束，但这种等待由业务异步结果决定，不是控制 CPU 分片的专门调度策略。规范模型及示例见 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)。[[ 28 ]](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
 
 #### <u>4. 时间切片缩短连续阻塞，但需要权衡完整任务完成时间</u>
 
@@ -961,7 +961,7 @@ Promise 完成，继续该 async 函数剩余计算
 
 #### <u>1. setTimeout 和 MessageChannel 将剩余工作安排为后续 Task</u>
 
-`setTimeout(fn, 0)` 注册 Timer，延迟条件满足后回调才能作为后续 Task 参与调度。0ms 不是立即运行或精确执行时间；嵌套定时器可能受到最小延迟限制，后台标签还可能被节流。[[30]](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html)
+`setTimeout(fn, 0)` 注册 Timer，延迟条件满足后回调才能作为后续 Task 参与调度。0ms 不是立即运行或精确执行时间；嵌套定时器可能受到最小延迟限制，后台标签还可能被节流。[[ 30 ]](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html)
 
 如果不使用 `async/await`，也可以显式保存处理游标：
 
@@ -993,7 +993,7 @@ function processByTimer(items, processOne) {
 
 #### <u>2. scheduler.yield 以优先级续接任务恢复当前工作</u>
 
-`scheduler.yield()` 是专门的主动让步 API，返回的 Promise 会在后续的调度任务中完成，以便恢复 `await` 之后的代码。它默认使用 `user-visible` 任务优先级，续接任务相对于同优先级的普通 `scheduler.postTask` 会有提升后的排队位置；在 `scheduler.postTask` 内部使用时，可继承外围任务优先级。[[29]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield)
+`scheduler.yield()` 是专门的主动让步 API，返回的 Promise 会在后续的调度任务中完成，以便恢复 `await` 之后的代码。它默认使用 `user-visible` 任务优先级，续接任务相对于同优先级的普通 `scheduler.postTask` 会有提升后的排队位置；在 `scheduler.postTask` 内部使用时，可继承外围任务优先级。[[ 29 ]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield)
 
 ~~~js
 async function updateAfterFeedback() {
@@ -1005,7 +1005,7 @@ async function updateAfterFeedback() {
 
 这里仍然需要注意，`showImmediateFeedback()` 如果只改变 DOM 或框架状态，浏览器**有机会**在中间进行渲染，但不能承诺每次 `yield` 后就立刻可见。若反馈本身受后续状态一致性约束，还需要避免短暂呈现错误中间态。
 
-浏览器兼容性必须单独检测；不支持时可以采用 Timer Promise 回退，但 Timer 不具备 `yield` 的优先级续接语义，不应声称二者调度效果完全相同。[[27]](https://web.dev/articles/optimize-long-tasks/)
+浏览器兼容性必须单独检测；不支持时可以采用 Timer Promise 回退，但 Timer 不具备 `yield` 的优先级续接语义，不应声称二者调度效果完全相同。[[ 27 ]](https://web.dev/articles/optimize-long-tasks/)
 
 #### <u>3. Promise 与微任务只适合短续接，不属于跨 Task 让步手段</u>
 
@@ -1029,7 +1029,7 @@ async function updateAfterFeedback() {
 
 #### <u>1. requestAnimationFrame 使视觉工作贴近下一次绘制前执行</u>
 
-`requestAnimationFrame(callback)` 请求浏览器在下一次合适的重绘前执行回调，特别适合动画、地图轨迹、图表视觉状态或按帧提交。它的职责是“**什么时候处理视觉变化**”，并不是“让浏览器空闲时执行”；rAF 回调依然占用主线程，调用频率通常与显示刷新率相关，后台标签页可能降频或暂停。[[31]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+`requestAnimationFrame(callback)` 请求浏览器在下一次合适的重绘前执行回调，特别适合动画、地图轨迹、图表视觉状态或按帧提交。它的职责是“**什么时候处理视觉变化**”，并不是“让浏览器空闲时执行”；rAF 回调依然占用主线程，调用频率通常与显示刷新率相关，后台标签页可能降频或暂停。[[ 31 ]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
 
 ~~~js
 const pending = [];
@@ -1062,7 +1062,7 @@ function flushFrame() {
 
 #### <u>2. requestIdleCallback 将可延迟的后台工作安排在空闲时段</u>
 
-`requestIdleCallback` 适合缓存整理、轻量统计、非紧急预处理等不影响当前交互的工作。回调得到 `IdleDeadline`，可以通过 `timeRemaining()` 查询浏览器估计当前空闲期还剩多少时间；这个估计值可能随新任务到来而变化，不能当作不可突破的硬截止时间。[[32]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) [[33]](https://developer.mozilla.org/en-US/docs/Web/API/IdleDeadline/timeRemaining)
+`requestIdleCallback` 适合缓存整理、轻量统计、非紧急预处理等不影响当前交互的工作。回调得到 `IdleDeadline`，可以通过 `timeRemaining()` 查询浏览器估计当前空闲期还剩多少时间；这个估计值可能随新任务到来而变化，不能当作不可突破的硬截止时间。[[ 32 ]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) [[ 33 ]](https://developer.mozilla.org/en-US/docs/Web/API/IdleDeadline/timeRemaining)
 
 ~~~js
 function runWhenIdle(items, processOne) {
@@ -1087,13 +1087,13 @@ function runWhenIdle(items, processOne) {
 }
 ~~~
 
-代码先请求一次空闲回调，空闲期间逐条处理；当剩余时间不足时退出回调，并安排后续空闲时段继续。若页面始终繁忙或后台策略限制，任务可能久久得不到执行。MDN 建议对必须完成的工作考虑 `timeout`，但一旦超时，回调可能在并不空闲时执行，并且 `timeRemaining()` 可能返回 0；此时若无条件执行一大批任务，反而可能制造新的主线程阻塞。兼容性同样需要检查。[[32]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback)
+代码先请求一次空闲回调，空闲期间逐条处理；当剩余时间不足时退出回调，并安排后续空闲时段继续。若页面始终繁忙或后台策略限制，任务可能久久得不到执行。MDN 建议对必须完成的工作考虑 `timeout`，但一旦超时，回调可能在并不空闲时执行，并且 `timeRemaining()` 可能返回 0；此时若无条件执行一大批任务，反而可能制造新的主线程阻塞。兼容性同样需要检查。[[ 32 ]](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback)
 
 因此，**Idle 是“可以等时再做”，不是“强制抢出一段 CPU 时间”**；有明确完成期限的工作应根据时效目标选择有保障的后续 Task 或优先级任务，并自行控制单次执行规模。
 
 #### <u>3. scheduler.postTask 为待执行工作设置不同优先级</u>
 
-`scheduler.postTask(callback, options)` 允许根据业务重要性调度任务，并返回用于接收结果的 Promise。优先级包括 `user-blocking`、`user-visible`、`background`，默认是 `user-visible`。静态 `priority` 表示不可变优先级；需要运行前动态调整时，应通过 `TaskController` 的 `signal` 和 `setPriority()` 管理。该 API 在一些常用浏览器仍需兼容性检测。[[34]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask)
+`scheduler.postTask(callback, options)` 允许根据业务重要性调度任务，并返回用于接收结果的 Promise。优先级包括 `user-blocking`、`user-visible`、`background`，默认是 `user-visible`。静态 `priority` 表示不可变优先级；需要运行前动态调整时，应通过 `TaskController` 的 `signal` 和 `setPriority()` 管理。该 API 在一些常用浏览器仍需兼容性检测。[[ 34 ]](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask)
 
 ~~~js
 if (globalThis.scheduler?.postTask) {
@@ -1179,7 +1179,7 @@ WebSocket 每秒输入 1000 条
     └─ 收到结果后做必要 UI 提交 ←──────┘
 ~~~
 
-Worker 适合不需要直接访问 DOM 的排序、空间计算、批量转换、压缩等任务；它**不能直接操作页面 DOM 或替代 Vue / React 对页面的实际 DOM Commit**。消息传递可能发生结构化克隆，也可以在符合条件时传递 ArrayBuffer 等可转移对象的所有权，以降低复制成本。迁移还引入 Worker 启动、通信与内存占用，因此对于很短的任务或频繁往返的大对象，未必更快。[[35]](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)
+Worker 适合不需要直接访问 DOM 的排序、空间计算、批量转换、压缩等任务；它**不能直接操作页面 DOM 或替代 Vue / React 对页面的实际 DOM Commit**。消息传递可能发生结构化克隆，也可以在符合条件时传递 ArrayBuffer 等可转移对象的所有权，以降低复制成本。迁移还引入 Worker 启动、通信与内存占用，因此对于很短的任务或频繁往返的大对象，未必更快。[[ 35 ]](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)
 
 对于 Canvas 应用，可以在 API 和图形库支持的前提下考虑 OffscreenCanvas，把相应 Canvas 绘制工作交给 Worker；这属于更进一步的图形工作迁移，不代表普通 DOM 绘制都可以交由 Worker。是否使用 Worker 应由真实 CPU Profile 决定：若主要瓶颈在页面 Map/Chart Commit、主线程布局或 GPU 绘制，仅把 JSON 解析移进 Worker 不会消除主要瓶颈。
 
@@ -1198,7 +1198,7 @@ QHZHC 的 [浏览器主线程与实时任务调度](https://github.com/cxDlogver
 | 必要任务有没有正确完成 | 任务总耗时、取消/失败数、数据顺序与一致性 | 切片后必然减少总 CPU 用量 |
 | 调度是否引入新成本 | 批量大小、Timer/Task 数、通信开销和内存占用 | 任务切得越碎越好 |
 
-验证时可用 Chrome Performance 的 Main、Event Log、Bottom-Up / Call Tree 查看长时间执行的调用栈，再结合交互与帧相关记录定位是 Script、框架更新还是 Style/Layout/Paint 占用时间。[[26]](https://developer.chrome.com/docs/devtools/performance/reference) 对实时数据还要独立测量 rAF 机会与实际视图提交次数，不把 `onPacket` 触发频率误当 FPS；当页面在后台或被隐藏时，rAF 频率可能降低，应明确采样条件。
+验证时可用 Chrome Performance 的 Main、Event Log、Bottom-Up / Call Tree 查看长时间执行的调用栈，再结合交互与帧相关记录定位是 Script、框架更新还是 Style/Layout/Paint 占用时间。[[ 26 ]](https://developer.chrome.com/docs/devtools/performance/reference) 对实时数据还要独立测量 rAF 机会与实际视图提交次数，不把 `onPacket` 触发频率误当 FPS；当页面在后台或被隐藏时，rAF 频率可能降低，应明确采样条件。
 
 优化通常存在成本转移：时间切片可能增加调度与总完成时间；合批能降低重复提交次数但可能造成单次超预算；Idle 不影响关键时刻却可能导致后台结果长期未完成；Worker 释放页面主线程却可能增加通信与内存压力。因此工程验收应同时保证数据正确、重要交互及时、必要任务完成、视觉变化稳定，并说明具体收益来自哪种机制。
 
@@ -1206,98 +1206,373 @@ QHZHC 的 [浏览器主线程与实时任务调度](https://github.com/cxDlogver
 
 ## 7. 浏览器渲染优化减少样式布局、绘制合成与图形资源成本
 
-### 【渲染优化关注可视状态转换成新画面时的实际工作】
+第 5 章已通过减少业务计算、响应式更新和对象管理开销降低 JavaScript 执行成本；第 6 章则通过分片、让步、优先级和负载控制，避免必要工作持续占用关键执行机会。但两者都不能直接保证页面流畅：即使 JavaScript 很快计算出新状态，浏览器仍需将它转换成可以显示的画面，布局、绘制、栅格化、合成和图形提交可能成为新的瓶颈。
 
-即使网络请求完成、应用计算已经得到正确的可视状态，浏览器仍可能需要 Style、Layout、Paint、Raster、Composite 等工作。它们的一部分可能发生在主线程，一部分由其他线程或 GPU 完成；实际是否需要重做全部阶段，取决于元素变化和浏览器内部缓存。[[1]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
+**浏览器渲染优化的对象不是“所有 JavaScript 渲染函数”，而是从可视状态到最终画面的视觉生产成本。** 最重要的问题是：一次变化究竟让浏览器重新处理了哪些内容、涉及哪些阶段、影响了多大范围、哪些旧结果可以复用。它不限于“减少重排重绘”，还包括可见对象规模、像素与图形工作、合成层成本，以及持续场景中不断增长的资源规模。
+
+### 【浏览器渲染流水线决定一次视觉变化需要支付哪些成本】
+
+浏览器处理一般 DOM/CSS 页面时，可将更新过程抽象为以下几类工作：
 
 ~~~text
-应用提交 DOM / Style / 绘图状态变化
-                   ↓
-Style（计算受影响元素的样式）
-                   ↓
-Layout（需要时重新确定几何尺寸和位置）
-                   ↓
-Paint（需要时生成绘制内容）
-                   ↓
-Raster（把绘制内容转成像素）
-                   ↓
-Composite / GPU（合成图层并提交画面）
-                   ↓
-用户获得新的可见结果
+应用提交 DOM / CSS / 可视状态变化
+                  ↓
+Style（样式计算）：确定哪些元素最终使用哪些样式值
+                  ↓ 只有几何依赖发生变化时才需重新布局
+Layout（布局）：计算相关元素的尺寸、位置与排布关系
+                  ↓ 需要更新绘制内容时
+Paint（绘制记录）：确定文字、背景、边框等视觉内容
+                  ↓ 需要新的像素内容时
+Raster（栅格化）：将相应绘制内容转成可供合成的像素
+                  ↓
+Composite（合成）：组合可复用图层、变换与透明度等信息
+                  ↓
+显示管线呈现新画面
 ~~~
 
-此图是方便理解的概念流程，不是每次更新必然执行的固定顺序，更不能直接把整个流程都归入 JavaScript。⑥ 的优化目标是**少做不必要的布局、绘制、像素生成和图形资源重建**，不是只让组件更新函数更快。
+这是便于分析**成本归属**的概念路径，并非每次变化都必然完整经过所有阶段。浏览器内部可能保留布局结果、绘制记录或已栅格化的内容，仅使受影响的局部区域失效；部分合成和栅格化由其他线程或 GPU 参与，不应把“Renderer 主线程”“合成线程”和“GPU”理解成同一资源。浏览器实现细节也会随引擎与版本变化。[[ 1 ]](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work)
 
-### 【Style 和 Layout 优化重在缩小受影响几何范围】
+同样需要避免两个常见误解：
 
-常见的渲染成本来源是复杂 DOM 依赖、高频尺寸变化，以及强制同步布局。典型的 Layout Thrashing 指在同一执行路径里多次穿插对布局的修改与尺寸读取，使浏览器提前或重复计算布局。
+- **布局（Layout/Reflow）和布局偏移（Layout Shift/CLS）不是一回事。** 布局是计算几何信息的工作；布局偏移是用户可见的元素位置意外变化。一次 Layout 不必然产生 CLS，CLS 较小也不意味着 Layout CPU 工作少。
+- **Paint、Raster 与 Composite 不等于“重绘一次就重做整张页面”。** 浏览器可能只重新绘制或栅格化局部失效区域，另一些图层沿用旧结果。合成优化的目的通常是复用这些结果，而不是让所有视觉工作都变成零成本。
 
-可采用的技术：
+以“把一个元素向右移动”为例，其实现方式直接影响需要重新执行的阶段：
 
-1. **减少参与布局的活动节点**：大量行和元素可用虚拟列表保留当前可见及必要缓冲节点。业务完整数据不一定要同时进入 DOM。
-2. **稳定布局约束**：图片、广告位、异步内容应尽量提前确定空间，避免加载完成后推挤周围内容。
-3. **控制重算影响范围**：避免频繁更改会向祖先或大量子节点传播影响的布局属性；必要时评估 CSS containment 或 content-visibility，并理解尺寸与显示语义。
-4. **避免同步读写交错**：将必要几何读取与 DOM 写入合理分组，减少布局在同一个任务中被反复强制执行。
+| 视觉变化 | 常见触发成本 | 优化判断 |
+| --- | --- | --- |
+| 修改影响排布的 `width / height / margin / left` 等 | 样式计算后可能需要 Layout，并影响后续绘制/合成 | 是不是必须改变实际布局关系？能否缩小影响范围？ |
+| 修改 `background-color / box-shadow` 等外观 | 通常不必重新布局，但可能需要 Paint、Raster 和 Composite | 绘制区域有多大，是否存在复杂效果或重复更新？ |
+| 修改 `transform / opacity` | **符合条件时**可复用已绘制图层，主要由 Composite 完成 | 是否真的形成合成优化？有没有额外图层/像素成本？ |
+| 改变 Canvas/WebGL 图形内容 | 与 DOM 的 CSS 布局路径不同，可能涉及 JS 几何处理、Buffer、纹理和绘制命令 | 是否反复重建旧图形？是否有真正的增量更新能力？ |
+
+具体 CSS 属性的影响还取决于布局上下文、动画方式、浏览器实现与已有缓存。**不能简单宣称“重排一定完整重绘”或“用了 transform 就只会合成”。** 当目标是动画流畅度时，还需要区分 JS 发起的一次状态变化、浏览器在每个动画采样点改变属性，以及最后一帧是否及时呈现。[[ 36 ]](https://web.dev/articles/animations-guide)
+
+整个优化可以按“先减少处理对象，再缩小失效范围，最后降低不可避免的绘制/合成成本”推进：
+
+~~~text
+① 减少参与渲染的内容
+   可见 DOM 数量 / 活动图形对象 / 视口与细节范围
+               ↓
+② 减少 Style、Layout 的计算与传播
+   布局依赖 / 几何变化 / 强制同步布局
+               ↓
+③ 减少 Paint、Raster 的失效区域与复杂度
+   视觉变化区域 / 局部更新 / 缓存复用
+               ↓
+④ 对适合的动画复用图层并进行 Composite
+   transform / opacity / 谨慎使用 will-change
+               ↓
+⑤ 管理 Canvas/WebGL 资源和持续场景规模
+   Buffer / Texture / Draw Work / 资源释放
+               ↓
+使用 Performance、Paint Flashing、Layers、帧与交互指标验收
+~~~
+
+这是一套**按瓶颈判断的优化方向**，并非所有页面必须逐项使用。通用的浏览器内部形成画面的过程可深入 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)；本章重点解释这些成本怎样被工程手段改变。
+
+### 【渲染规模与影响范围优化减少当前需要处理的可视对象】
+
+#### <u>1. 渲染规模优化先区分业务数据总量与当前活动内容</u>
+
+页面可能需要保存大量数据，却不需要让这些数据**全部同时参与布局和绘制**。例如历史列表包含 10 万条数据，但屏幕只能显示几十行，如果全部创建 DOM 节点，浏览器就可能维护大量样式、布局与绘制对象；即使 Vue/React 在 JavaScript 层避免了部分组件重新计算，浏览器管理大量活动元素的成本仍然存在。
+
+虚拟列表的主要思想是只创建**可见区 + 必要缓冲区**对应的节点，并用占位或定位维持滚动几何。这主要减少的是当前活动 DOM 与布局/绘制规模，而不是删除业务数据；动态行高、焦点、滚动锚定、可访问性和滚动到指定项是它必须额外维护的正确性边界。
+
+~~~text
+完整业务数据（例如 100000 条）
+             ↓
+根据滚动位置计算可视区与缓冲区
+             ↓
+只生成当前需要的少量行 DOM
+             ↓
+Style / Layout / Paint 面对更小的活动节点集合
+             ↓
+滚动后再更新窗口，并维护正确的虚拟滚动尺寸
+~~~
+
+大型列表的代码、动态行高及复杂度实践见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。其性能收益需要按真实可视行数与更新频率验证；如果列表总共只有十几项，额外引入虚拟化可能弊大于利。
+
+#### <u>2. CSS containment 可以限制某些渲染依赖的传播范围</u>
+
+如果页面由相对独立的内容区块组成，例如文章卡片、独立面板和分区内容，可以使用 CSS `contain` 告诉浏览器：这个子树在某些维度上不需要依赖外部，也不需要让其内部变化影响所有外部内容。
+
+~~~css
+.article-panel {
+  /* 仅适用于内部布局和绘制确实能够独立的区域。 */
+  contain: layout paint;
+}
+~~~
+
+- `contain: layout` 帮助浏览器隔离区域内部的布局依赖，同时可能改变包含块、格式化上下文或层叠关系。
+- `contain: paint` 对绘制越界施加限制，子元素原本应该溢出显示的内容可能被裁剪。
+- `contain: size` 表示容器尺寸不由后代直接决定；若本来依赖内容撑开高度，可能出现尺寸不符合预期。
+- `contain: style` 主要限制计数器等特定样式副作用，不等于 CSS 选择器只能影响当前子树。
+
+因此 containment 不是“无脑加到每个组件上”的通用加速器。只有当业务结构真正满足隔离假设，且布局、定位、溢出与堆叠效果都正确时，才能利用它限制部分重算范围。[[ 37 ]](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Using)
+
+#### <u>3. content-visibility 在合适条件下跳过屏幕外内容的渲染</u>
+
+`content-visibility: auto` 允许浏览器在内容暂时与用户不相关、位于视口外时，跳过其内部部分渲染工作；当内容接近视口、被聚焦或以其他方式变得相关时，再完成所需工作。它的目标是**避免现在就计算与绘制暂时看不到的内容**，不同于虚拟列表直接不创建某些 DOM 节点。[[ 38 ]](https://web.dev/articles/content-visibility)
+
+~~~css
+.long-article-section {
+  content-visibility: auto;
+  /* 帮助尚未实际布局的内容保留估计高度，防止滚动范围忽然变化。 */
+  contain-intrinsic-size: auto 600px;
+}
+~~~
+
+这里 `600px` 是示意的占位尺寸，应该根据实际内容分布估计。过小或过大的占位可能造成滚动条尺度变化或滚动跳动；浏览器在内容已呈现过之后，也可能利用之前记录的尺寸。注意被跳过区域依然可能保留在 DOM 或无障碍树中，某些几何测量 API 还可能迫使浏览器提前处理本想跳过的内容。
+
+**虚拟列表、`contain` 和 `content-visibility` 不是同一机制**：虚拟列表减小真实活动节点集合；contain 告诉浏览器哪些依赖可以隔离；content-visibility 则允许跳过暂时不需要的子树渲染。应根据 DOM 规模、视口分布和交互要求组合，而不是机械叠加全部方案。
+
+### 【Style 与 Layout 优化减少几何计算和强制同步布局】
+
+#### <u>1. Layout 的成本来源是几何依赖与变化影响范围</u>
+
+Layout（也常称 Reflow/重排）负责确定元素实际占据的尺寸与几何位置。会改变尺寸、流式排布、兄弟/祖先几何关系的修改，可能使部分布局结果失效：
+
+~~~css
+.card {
+  width: 240px;
+  height: 120px;
+  margin-left: 12px;
+}
+~~~
+
+当 `width`、`height`、影响布局的 `margin` 或其他几何条件频繁改变时，浏览器可能需要重新计算受影响的元素及其依赖关系。一个元素发生布局变化**不意味着一定重排整个页面**：真实影响范围与布局结构、是否存在独立上下文、尺寸约束和优化缓存有关。
+
+布局性能优化因此有三层问题：是否必要改变几何关系、变化影响了多少元素、是否存在重复触发布局。对于内容加载造成的尺寸变化，应通过图片/视频的 `width`、`height`、`aspect-ratio`，以及广告/异步区域合理占位等方式，使初始布局更稳定。这样既减少不必要的几何调整，也降低用户可见的意外布局偏移风险，但**减少 Layout CPU 与改善 CLS 是两项需要分别验收的结果**。
+
+#### <u>2. 布局抖动来自 JS 交错写入与读取最新几何信息</u>
+
+浏览器可以把多次 DOM/CSS 修改延后，在下一次合适的渲染机会统一处理。但某些几何读取必须获得最新布局结果，可能迫使浏览器立即完成此前失效的布局计算。这叫 Forced Reflow（强制同步布局）；若一次任务中反复触发，就形成 Layout Thrashing（布局抖动）。[[ 39 ]](https://developer.chrome.com/docs/performance/insights/forced-reflow)
 
 ~~~js
-// 示例：先集中读取尺寸，再提交变化。
-const widths = elements.map(el => el.getBoundingClientRect().width);
-elements.forEach((el, i) => {
-  el.style.maxWidth = Math.round(widths[i]) + 'px';
+// 示例：交错写入和读取几何，可能反复强制同步布局。
+for (const element of elements) {
+  element.style.width = '240px';           // 布局失效
+  const height = element.offsetHeight;     // 读取最新布局，可能强制计算
+  useMeasuredHeight(height);
+}
+~~~
+
+如果业务确实需要读取尺寸，可以在状态允许时先集中读取，再集中写入：
+
+~~~js
+// 先读取必要的几何信息。
+const heights = elements.map(element => element.offsetHeight);
+
+// 再提交相关样式修改，避免写入后立刻为下一项反复测量。
+elements.forEach((element, index) => {
+  element.style.minHeight = String(heights[index]) + 'px';
 });
 ~~~
 
-这不是说先读后写就能保证零 Layout，也不是让代码无条件添加 transform；如果无需读取布局，应进一步减少读操作。MDN 在 CSS 性能指南中详细区分了 Render Blocking、Reflow 和动画成本。[[36]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
+**读写分组只是在适用场景下减少重复强制同步计算，不保证一次 Layout 都不会发生。** 如果刚好在读取前已经有尚未应用的样式变化，第一轮读取仍可能触发布局；如果不需要测量，就应从业务逻辑中移除不必要的几何读取。对必须同时依赖读写结果的算法，还可能需要以明确阶段或后续帧推进，并正确维护读写间的依赖。
 
-深入基础见 [基于 Chrome 浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)，大型列表的实际实现与复杂度分析见 [动态高虚拟列表报告](./D-动态高虚拟列表_报告.md)。
+#### <u>3. 优化 Layout 不等于把所有定位变化改成 transform</u>
 
-### 【Paint 与 Raster 优化减少需要重新处理的像素与复杂绘制】
+`transform` 改变的是元素的视觉变换，通常不改变其在普通文档流中原有的布局占位。对于提示浮层的出现、卡片滑动和视觉位移动画，它可能很合适；但若业务目的就是让后续元素重新排布、让容器实际扩张或改变文档几何关系，则不能用“只是看起来移动了”的 `transform` 假装完成真正的布局变化。
 
-画面内容即使不影响 Layout，仍可能需要重新 Paint 或 Raster。大面积变化、复杂视觉样式、持续变化的 Canvas 内容、大量可见对象都可能增加相应成本。
+对于过大的 Layout 开销，应优先用 Chrome Performance 追踪发生布局的 JS 调用栈、相关节点规模和触发原因，再判断是几何工作本来就必要，还是发生了意外的重复布局。性能工具中的 Forced Reflow 诊断能帮助定位读写交错。[[ 39 ]](https://developer.chrome.com/docs/performance/insights/forced-reflow)
 
-- 对没有改变的视觉区域尽量避免无意义重绘，评估静态层与动态层分离、局部更新和预渲染。
-- 控制当前视口内真正参与绘制的对象量，避免所有业务历史都反复进入活动绘制集合。
-- 对需要显示大量复杂内容的场景，可按可视尺度使用 Level of Detail（细节层级），前提是不丢失用户必须看到的信息。
-- 对 Canvas/WebGL 类场景，区分**业务数据变化、图形资源准备与最终画面更新**：应用追加一项数据，并不等于底层几何缓冲一定只更新一个顶点；是否支持增量要由 API 和 Trace 证实。
+### 【Paint 与 Raster 优化减少重新绘制的区域和像素工作】
 
-局部绘制与预渲染通常以更多内存或缓存管理换取减少重复绘制的机会。视口、缩放、样式、遮挡变化时，之前缓存可能需要重建。优化后的真实 Paint/Raster 成本而非代码名词，应作为判断依据。
+#### <u>1. 外观变化可以不重新布局，但仍然需要生成新的视觉内容</u>
 
-### 【合成优化和 GPU 资源管理需要避免“所有元素都提升图层”】
+Paint（绘制）负责组织应如何表现文字、背景、边框、阴影等内容；Raster（栅格化）则把相关绘制内容转换成像素。背景颜色、复杂阴影、边框等变化通常不改变元素几何尺寸，却可能需要更新绘制内容：
 
-有些动画可以通过 Composite 重用已生成的图层，减少主线程上的部分布局或绘制工作。因此在语义允许时，使用 transform/opacity 变更往往比持续改变会触发 Layout 的几何属性更适合动画。
+~~~css
+.card {
+  background-color: #ffffff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
 
-但它仍有约束：
-
-- 合成图层和纹理可能占用额外内存；不必要的层提升和复杂图层组合会增加资源压力。
-- CSS 的 will-change 只是提示浏览器准备可能发生的变化，长期滥用可能使性能变差，MDN 将其作为谨慎采用的优化手段。[[36]](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS)
-- Canvas、WebGL 可能涉及 Buffer、Texture、Framebuffer 和异步 GPU 工作；主线程中调用接口很快，不证明 GPU 已完成实际绘制。
-- 浏览器托管 DOM 图层与显式图形 API 的资源管理语义不同；必要时使用对应引擎的销毁或复用机制，不能一概套用 JS GC 的行为。
-
-**图形资源的创建、复用、更新、释放统一放在 ⑥**，而不是另设“GPU 资源生命周期优化”。这里关心的是图形成本，JavaScript 对象引用和 GC 则仍归属 ④。
-
-### 【持续渲染成本增长时，应同时检查绘制范围和状态规模】
-
-某些持续更新的画面会随着运行时间积累更多可视对象。如果每新增一点变化，就重复处理全部旧资源，单次更新成本可能不断放大。
-
-~~~text
-活动可见对象规模逐渐增大
-            ↓
-每次更新都重新构建较大画面或图形数据
-            ↓
-单次 Layout / Paint / GPU 工作持续增加
-            ↓
-某些刷新周期无法赶上 → 可见掉帧
+.card.is-active {
+  background-color: #eaf3ff;
+}
 ~~~
 
-解决方向仍由成本决定：减少当前活动对象数、增量更新受影响范围、复用稳定图形资源、只绘制当前视口所需内容，并让 ⑤ 的调度控制峰值。
+仅改变背景颜色时，浏览器不一定要重新 Layout，但可能需要重新生成并栅格化变化区域。若内容特别复杂、面积很大，或多层阴影/滤镜持续变化，即使 JS 和 Layout 都很快，Paint/Raster 仍可能成为帧成本的主要部分。
 
-不能为了提升 FPS 直接删除必须保存的业务历史，也不能误将“一次视图重新绘制”与“所有历史 Geometry 重新计算”视为相同开销。
+因此优化方向不是“所有重绘都应被消灭”，而是检查：**变化是否必要？必须变化的区域有多大？静态内容能否缓存？能否避免每帧重新生成相同内容？**
 
-流畅度机制和浏览器帧诊断继续阅读 [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md)、[Smoothness 诊断草稿](./drafts/Smoothness-持续渲染流畅度指标与性能诊断体系-草稿.md)。
+#### <u>2. 局部更新与缓存复用能够避免重复处理未变化内容</u>
 
-### 【浏览器渲染优化的结果要回到布局、绘制与真实视觉变化】
+例如一个仪表盘具有静态背景和持续变动的指针，如果每一帧都清空整个画布再重画所有静态刻度，就可能浪费绘制工作。可以将稳定背景预渲染到独立缓存或静态 Canvas，动态部分只在需要时更新；对于大量背景图、复杂图形的屏幕，还可以只更新明确失效的局部区域。
 
-局部 DOM 更新减少不一定等于 Style/Layout 成本降低；rAF Callback 快不等于 GPU Presentation 快。验证应分别观察 Style/Layout 耗时、Paint/Raster 负担、GPU/Compositor 工作、Frame Interval 或相关用户可见行为，再判断是否将成本从一个阶段转移到另一个阶段。
+但缓存和分层本身有成本：它们可能增加内存占用、缓存失效管理和图形拷贝操作；缩放、设备像素比、颜色/样式变化或画面遮挡也可能迫使缓存重建。浏览器对 DOM 的绘制缓存与应用自己持有 Canvas 位图的缓存不是同一机制，不应直接套用相同 API。
+
+对于静态页面，可以优先减少不必要的大面积外观变化；对于动画页面，则进一步检查 Paint Flashing、Raster 活动和帧成本，验证究竟有没有减少真实绘制。Chrome DevTools Rendering 面板中的 Paint Flashing 可直观看到哪些区域发生了重新绘制。[[ 40 ]](https://developer.chrome.com/docs/devtools/rendering/performance)
+
+#### <u>3. 绘制成本还取决于当前可见对象数量和视觉复杂度</u>
+
+即使每次只改变一个数据值，如果页面中持续活动的可视对象不断增加，图形库也可能维护越来越大的绘制列表、几何数据和缓存，最终让单次画面更新变重。可针对屏幕尺度采取可视区域裁剪、适当的细节层级（LOD，按缩放决定呈现多少细节）、几何简化或分层缓存，前提是不丢失用户必须看到的信息。
+
+这里要区分“源业务数据的完整保留”和“当前活跃绘制集合”。不能为了提高 FPS 就直接删除必须保存的业务历史；可以保存完整数据，但只将视口附近、当前缩放层级需要的图形对象提交给绘制系统。
+
+### 【Composite 优化通过复用已有绘制结果降低部分动画成本】
+
+#### <u>1. transform 与 opacity 的优势来自跳过不必要的布局和绘制</u>
+
+假设有一个浮层，需要在 300ms 内向右滑动 200px。可以采用两种实现方式：
+
+~~~css
+/* 方案 A：直接动画定位属性。 */
+.panel-a {
+  position: absolute;
+  left: 0;
+  transition: left 300ms ease;
+}
+.panel-a.is-open {
+  left: 200px;
+}
+
+/* 方案 B：通过视觉变换移动，不改变元素原有布局占位。 */
+.panel-b {
+  transform: translateX(0);
+  transition: transform 300ms ease;
+}
+.panel-b.is-open {
+  transform: translateX(200px);
+}
+~~~
+
+方案 A 在动画过程中不断改变布局位置，可能反复触发相关 Layout 以及后续绘制。方案 B 在几何语义允许的条件下，将移动表达为视觉坐标变换：浏览器如果能够复用已经绘制、栅格化的图层，那么每个动画采样点无需反复重新计算该元素的正常布局和全部像素，只需调整合成时使用的变换信息。`opacity` 也可能通过对已绘制内容改变合成透明度完成动画。Chrome/web.dev 将 `transform` 与 `opacity` 视为优先评估的高性能动画属性。[[ 36 ]](https://web.dev/articles/animations-guide)
+
+~~~text
+left 动画（典型情况）：
+动画进度更新 left
+    ↓
+几何位置变化 → 相关 Layout
+    ↓
+根据失效区域更新 Paint / Raster
+    ↓
+Composite 得到新画面
+
+transform 动画（满足合成优化条件）：
+前期已有布局、绘制与像素结果
+    ↓
+动画进度更新 transform
+    ↓
+复用已有内容并调整图层位置 / 缩放
+    ↓
+Composite 得到新画面
+~~~
+
+**这个对比描述的是可能发生的最优路径，并非固定保证。** CSS 动画与 JS 每帧设置 `transform` 也不是完全相同的执行模式：如果每一帧先运行很重的 JavaScript 才提交新的 transform 值，主线程仍可能成为瓶颈。某些属性组合、图层失效、滤镜、裁剪和纹理重建也可能阻止纯合成优化。要结合 Performance 的 Animations、Paint/Raster 与 Compositor 证据判断。[[ 26 ]](https://developer.chrome.com/docs/devtools/performance/reference/)
+
+#### <u>2. 合成层不是 DOM 节点的必然对应物，也不是 GPU 加速开关</u>
+
+浏览器可以把页面内容组织为可复用的合成层，由合成阶段使用图层上的已有像素进行位置、透明度与层级组合。但**DOM 元素数量、CSS stacking context（层叠上下文）、绘制层和 compositor layer（合成层）不能直接画等号**。一个元素有 `transform` 并不保证一定获得单独合成层；即使获得图层，也不保证后续变更完全没有主线程工作。
+
+创建更多图层也不是免费的：每个图层可能需要额外纹理、栅格化、上传及管理；大面积透明图层、频繁变化的纹理和图层重叠，可能把本来减少的 Layout/Paint 成本转移成内存、Raster 或 Composite 成本。浏览器会根据硬件能力、属性、内容尺寸和运行时状态进行权衡。
+
+因此“把元素提升合成层”不是一个应当默认执行的优化步骤；**先定位具体瓶颈，再确认图层复用是否带来可测量的收益**。Chrome DevTools 可以通过 Layers、Layer Borders、Performance 的动画与 GPU 轨道观察层及相关工作。[[ 40 ]](https://developer.chrome.com/docs/devtools/rendering/performance)
+
+#### <u>3. will-change 是优化提示，应按动画生命周期谨慎启停</u>
+
+`will-change` 向浏览器提示“此元素的某些属性将要变化”，让浏览器有机会提前做优化准备：
+
+~~~css
+.moving-panel {
+  will-change: transform;
+}
+~~~
+
+但这个声明**不保证创建独立 GPU 图层，也不能把需要布局的 width 动画变成只需合成的动画**。浏览器本来就会为许多动画自动选择合适的优化策略。长期、大量使用 `will-change` 可能导致额外图层及资源持续保留，还可能改变层叠上下文和定位相关行为；MDN 建议把它当作解决现有性能问题的最后手段，而不是所有元素的默认样式。[[ 41 ]](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/will-change)
+
+例如交互开始前的明确准备阶段可以针对少量目标元素设置提示，动画结束后撤销：
+
+~~~js
+const panel = document.querySelector('.moving-panel');
+
+function preparePanelAnimation() {
+  // 仅在已测出收益时提示浏览器准备变换。
+  panel.style.willChange = 'transform';
+}
+
+function finishPanelAnimation() {
+  panel.style.willChange = 'auto';
+}
+
+panel.addEventListener('pointerenter', preparePanelAnimation);
+panel.addEventListener('transitionend', event => {
+  if (event.propertyName === 'transform') finishPanelAnimation();
+});
+// 实际项目应在组件卸载时一并移除监听，并处理动画取消/离开等清理情形。
+~~~
+
+这里的事件只是演示生命周期：如果 pointerenter 和动画开始几乎同时发生，浏览器可能没有足够时间预先准备；如果动画被取消而没有触发 `transitionend`，也需要额外清理。**在没有性能证据时，不应先往整个页面添加 will-change 再寻找优化理由。**
+
+#### <u>4. 动画优化需要同时考虑布局语义、图像质量和可访问性</u>
+
+`transform` 不影响普通文档流的占位，所以不应拿它替代真正需要重新排布内容的布局变化；元素视觉位置改变后，周围元素的空间关系、碰撞和部分定位语义可能仍然保持原状。某些缩放或变换在低分辨率栅格内容上还可能产生模糊，实际仍可能涉及重新栅格化。动画还应尊重 `prefers-reduced-motion` 等用户偏好，确保获得的性能收益不以影响交互可用性为代价。
+
+如果动画轨迹、变换边界、合成失败原因或文字清晰度与预期不符，应优先在代表性设备上录制真实动画，不以“改用了 transform”作为已优化成功的证据。
+
+### 【Canvas 与 WebGL 优化控制图形提交、历史数据与 GPU 资源成本】
+
+#### <u>1. Canvas、WebGL 和 DOM 的渲染成本模型有共同目标但实现不同</u>
+
+DOM/CSS 页面主要由浏览器维护样式、布局和绘制状态；Canvas 2D、WebGL 或地图/图表引擎则可能直接管理画布绘制命令、图形对象、缓冲和纹理。它们最终都要生成画面，但一个地图 Feature 变化不一定映射到一次 DOM Layout，调用图形 API 很快也不表示 GPU 已经完成实际工作。
+
+对于 WebGL，常见成本包括场景对象遍历、几何构造与上传、Buffer/Texture 更新、Draw Call、着色器执行与合成。具体瓶颈取决于图形库和数据分布，不能简单归因于“GPU 过慢”。Canvas 2D 的 `drawImage`、`stroke` 等调用也可能在实际绘制前累积其他工作，其内存与线程实现并不与 WebGL 完全相同。
+
+图形优化要区分三层：**业务数据已经发生变化；绘制前需要重新计算哪些几何/对象；底层图形资源与最终像素究竟更新了多少。** 只有第三层真正得到减负，才可能降低对应的 Raster/GPU 成本。
+
+#### <u>2. 历史数据增长不能被视为必须每次重绘全部历史</u>
+
+实时轨迹页面不断追加点位，常见的低效模式是：
+
+~~~js
+function appendPoint(point) {
+  history.push(point);
+
+  // 每次都把全部历史重新转成坐标数组。
+  const coordinates = history.map(p => [p.lng, p.lat]);
+
+  // 库可能据此重建整个轨迹资源，需查看真实实现。
+  updatePolyline(coordinates);
+}
+~~~
+
+如果历史从 100 个点增长到 10 万个点，虽然每次只新来一个点，`map` 的计算量却随历史规模增长；图形库若重新生成或上传整个几何对象，也可能使单次提交成本继续增加。这里至少要区分两个独立的问题：第 5 章的全量数组转换是否重复计算；第 7 章的底层轨迹图形是否全量重建。仅仅将 `history` 换成普通数组、`shallowRef`，或将消息改用 rAF 消费，都不能自动修复地图内部的全量绘制路径。
+
+正确的优化方向是根据地图/图表引擎真正支持的能力，尽量复用静态图形数据、对变化部分实施增量更新，必要时按照可视窗口和缩放层级控制当前活动图形集合，并对历史轨迹做符合视觉精度要求的简化。**不能假设所有 Polyline API 都支持真正增量 GPU 更新**；可能出现应用只追加一个点，库内部却仍然重新提交完整几何数据的情况。
+
+这个问题可以结合 [页面流畅度与连续渲染性能完整知识体系](./Y-页面流畅度与连续渲染性能完整知识体系.md) 对 N（数据量）、K（更新次数）、C（单次提交成本）、H（历史规模）的区分进行定位。QHZHC 的项目实践 [页面连续渲染流畅度与掉帧优化](https://github.com/cxDlogver/qhzhc-realtime-platform/blob/main/docs/%E9%A1%B5%E9%9D%A2%E8%BF%9E%E7%BB%AD%E6%B8%B2%E6%9F%93%E6%B5%81%E7%95%85%E5%BA%A6%E4%B8%8E%E6%8E%89%E5%B8%A7%E4%BC%98%E5%8C%96.md) 说明了为什么单纯加大 Batch 未必改善真实地图提交的性能。
+
+#### <u>3. 图形资源需要复用与释放，但不能无条件增加缓存</u>
+
+频繁创建销毁纹理、Buffer 或图形对象可能增加 CPU、驱动和 GPU 资源管理成本；适当复用静态几何、纹理和离屏缓存可以降低重复准备。反过来，无上限地保留历史图层、纹理或 Framebuffer，也可能造成显存压力、更多绘制范围和资源竞争。
+
+WebGL 通常要求通过对应的 `deleteBuffer`、`deleteTexture` 等 API 或引擎的资源管理机制释放不再使用的图形资源；页面 JS 对象被 GC 回收不应被当作 GPU 资源已经即时释放的证据。DOM 合成层则是浏览器托管的资源，不等于应用可以用 WebGL API 直接销毁。
+
+必要时可评估 OffscreenCanvas 将受支持的 Canvas 工作移到 Worker，但它改变的是部分工作执行位置，不自动减少需要绘制的内容；同时需验证目标图形库兼容性、Worker 通信和真实 GPU 成本。此处资源生命周期属于本章图形优化，第 5 章只讨论 JavaScript 对象管理，第 6 章负责何时向图形系统提交工作。
+
+### 【渲染优化必须回到真实流水线与用户看到的画面进行验收】
+
+不同优化手段作用于不同阶段，验收时不能只看“FPS 变高”或“减少 DOM 操作”。应先固定有代表性的操作、设备、视口、数据规模与浏览器状态，记录优化前后的同类 Performance Trace，定位最大成本究竟发生在 JavaScript、Style、Layout、Paint、Raster、Composite 还是图形引擎。
+
+| 主要现象 | 应优先检查的证据 | 可验证的优化方向 |
+| --- | --- | --- |
+| 页面一更新就发生较多布局计算 | Performance 中的 Recalculate Style / Layout、受影响节点、Forced Reflow | 减少活动 DOM、约束布局范围、消除几何读写交错 |
+| 滚动/更新导致大面积重复绘制 | Rendering 的 Paint Flashing、Paint/Raster 记录 | 降低复杂外观、减少失效区域、复用静态内容 |
+| CSS 动画出现跳帧 | Animations 中是否为非合成动画，Layout/Paint/Composite 记录，Frame 时长 | 比较 `left` 与 `transform` 的实际路径；适度图层优化 |
+| 使用 will-change 后内存或卡顿反而上升 | Layers、Layer Borders、纹理/栅格化与 GPU 活动 | 关闭多余提示，缩小层面积与保留时间 |
+| 地图或图表运行越久越卡 | 场景对象、几何/纹理更新、绘制提交 P95、历史规模、帧耗时 | 可视裁剪、LOD、真正增量更新、图形资源复用 |
+| 布局或图片加载造成视觉跳动 | Layout Shift 轨道、CLS、元素尺寸与占位 | 设置尺寸/比例及稳定占位；单独确认布局 CPU 变化 |
+
+Chrome DevTools 的 Performance 面板可观察 Main Thread 的 Layout、Paint、GPU 与 Raster 等活动；Rendering 面板的 Paint Flashing 用于定位重新绘制区域，Layer Borders 可帮助观察图层与图块，Layout Shift Regions 帮助观察可见布局偏移。具体工具入口可参考 Chrome 官方文档。[[ 26 ]](https://developer.chrome.com/docs/devtools/performance/reference/) [[ 40 ]](https://developer.chrome.com/docs/devtools/rendering/performance)
+
+真实体验还需要关注帧间隔、Frame Time P95、Long Animation Frame（LoAF）、INP 与 CLS 等结果：同样的平均 FPS 可能包含明显长帧；主线程 rAF 执行频率也不一定等于用户实际看到的完整呈现帧数。尤其在实时页面中，还需观察队列积压和数据新鲜度，避免“绘制少了，看起来更流畅，但内容已经明显落后”。
+
+当测试发现一项优化虽然减少 Layout，却增加 GPU 内存或 Raster 压力，应据实记录成本转移，而不是把某个 CSS 属性或图层个数当作优化成功的指标。对于复杂地图和 Canvas，保存完整业务历史与只绘制当前必须显示的内容可以并存；性能优化不能以悄悄丢弃业务需要的数据为代价。
+
+**本章最终收束为一条成本链：先减少活动渲染对象与失效范围，再优化必要的布局与绘制；适合的动画通过已有图层进行合成，复杂图形场景则管理几何、纹理和 GPU 资源，最后以真实视觉帧和资源开销验收。** 这与第 5 章“减少业务计算”和第 6 章“合理安排执行时机”形成前后衔接，而不是三个互不相关的技巧清单。
 
 ## 8. 六大优化领域通过共同成本原理协作，形成可迁移的方案组合
 
@@ -1429,4 +1704,9 @@ Web 性能优化工程体系（本篇：六大领域的方案主入口）
 33. MDN. [IdleDeadline.timeRemaining()](https://developer.mozilla.org/en-US/docs/Web/API/IdleDeadline/timeRemaining). 空闲预算估计与边界。
 34. MDN. [Scheduler.postTask()](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask). 任务优先级、延迟及取消。
 35. MDN. [Using Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). Worker 与主线程通信、计算迁移边界。
-36. MDN. [CSS performance optimization](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/CSS). 样式阻塞、Layout、动画与 will-change 的优化边界。
+36. Google / web.dev. [How to create high-performance CSS animations](https://web.dev/articles/animations-guide). 不同 CSS 动画属性的布局、绘制与合成成本。
+37. MDN. [Using CSS containment](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Using). layout、paint、size、style containment 的运行语义与布局边界。
+38. Google / web.dev. [content-visibility: the new CSS property that boosts your rendering performance](https://web.dev/articles/content-visibility). 跳过非关键区域渲染与内在尺寸占位。
+39. Chrome for Developers. [Forced reflow](https://developer.chrome.com/docs/performance/insights/forced-reflow). 几何读写交错和强制布局定位。
+40. Chrome for Developers. [Discover issues with rendering performance](https://developer.chrome.com/docs/devtools/rendering/performance). Paint Flashing、Layer Borders 与布局偏移观测。
+41. MDN. [will-change CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/will-change). 预优化提示及滥用导致的图层、内存与层叠代价。
