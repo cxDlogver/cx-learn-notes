@@ -777,11 +777,81 @@ Pre-layout 中的工作可以通过减少每次 rAF 中的计算、避免对没�
 
 ### 【内存和 GC 优化需要先证明造成了可见卡顿】
 
-高 Heap 或锯齿曲线不能直接证明垃圾回收导致掉帧。要先找到与 rAF 长间隔或 LoAF 异常重合的 GC 工作，再定位 Allocation Sampling 和持续保留对象的来源，最后通过减少临时分配与清理无效引用复测。
+内存优化不能简单用“尽可能降低 Heap Used”作为唯一目标，而要对应具体成本：
 
-**不应强行追求零对象分配。** 适度分配是正常 JavaScript 行为，错误复用对象可能引入状态污染、缓存泄漏或交互错误。内存优化须同时保证业务状态正确性。[[6]](https://v8.dev/blog/trash-talk) [[7]](https://developer.chrome.com/docs/devtools/memory-problems)
+~~~text
+Allocation Rate 过高
+    → 减少高频执行路径里的无意义临时分配
+    → 验证 GC 压力及同步任务成本是否下降
+
+Live Set 过大 / 被错误引用
+    → 找出无效保留路径、释放不再需要的引用
+    → 验证 GC 后基线、Major GC 与长期运行是否改善
+
+对象总量持续扩大导致计算变重
+    → 优化每次更新的处理范围或采用增量计算
+    → 验证单次更新的 CPU / Style / Layout / Paint 时间是否下降
+
+浏览器原生或 GPU 资源压力
+    → 清理资源、复用可复用内容、降低不必要驻留
+    → 验证对应资源占用与真实图形帧是否改善
+~~~
+
+高 Heap 或锯齿曲线不能直接证明 GC 导致掉帧。应先确认 GC 与帧异常重叠，再定位高分配函数和无效引用，最后通过受控实验比较 GC、Frame Interval 与用户感知；如果没有对应改善，要继续检查渲染路径。[[6]](https://v8.dev/blog/trash-talk) [[7]](https://developer.chrome.com/docs/devtools/memory-problems)
+
+### 【减少高频无意义分配要兼顾状态正确性和总工作量】
+
+优先检查高频执行路径内重复创建大型临时集合、进行多次数据格式转换、反复复制不变的数据和重新构建无变化的计算结果：
+
+~~~js
+// 对当前全部输入多次产生中间集合：有可能造成高频分配。
+function computeFrame(items) {
+  const filtered = items.filter(item => item.visible);
+  const mapped = filtered.map(item => calculate(item));
+  return mapped;
+}
+~~~
+
+当 Profile 证明这里是瓶颈后，可考虑根据变化集合进行计算、缓存稳定结果、减少多余中间数据传递，或将计算移动到较少占用关键帧的时机。**优化不是把所有 filter/map 改成 for 循环，也不是禁止创建临时对象**：两种写法都可能分配必要的结果数组，性能还取决于数据规模、引擎优化与更新频率。
+
+如果部分处理结果被框架、组件或其他代码视为不可变对象，直接把原数组原地修改可能破坏变更检测和状态共享语义。应先检查当前数据的所有权、生命周期和 API 契约，再决定是否通过复用对象、增量结果或合并更新来降低分配。
+
+### 【清理引用与控制缓存规模要区分泄漏和合理驻留】
+
+真正的资源泄漏，应在组件或功能生命周期结束时释放其不再需要的引用：
+
+~~~js
+function setupFeature(target) {
+  const onResize = () => updateLayout(target);
+  window.addEventListener('resize', onResize);
+
+  // 当使用者销毁功能时，应显式执行清理。
+  return () => {
+    window.removeEventListener('resize', onResize);
+  };
+}
+~~~
+
+这段代码强调的是监听器的生命周期必须与功能生命周期对应，而不是断言所有监听器都会泄漏。类似原则适用于已经结束的订阅、定时器、长时间存在的缓存、Observer、DOM 引用及特定 API 的显式销毁函数。
+
+缓存则要区分**正确的缓存复用**与**没有生命周期或容量边界的无限增长**：只有当缓存持续增长且导致不必要驻留、额外计算或设备压力，才有理由引入有界缓存、按需淘汰、懒加载或工作集收缩。单纯清空缓存可能使数据重复计算与重新下载更频繁，反而增加 CPU、网络或帧负担。
+
+对象池同样不是通用解法：它可能减少频繁创建大型对象的成本，但也会使更多对象保持存活。需要比较分配节省、对象重置复杂度、长期占用、GC 与整体 Frame Stability，再决定是否采用。
+
+### 【内存、GC 和每帧工作量的优化效果必须分别验收】
+
+| 优化动作 | 优先验证的过程证据 | 最终必须改善的用户结果 |
+| --- | --- | --- |
+| 降低临时对象分配 | Allocation Rate、Minor GC 频率、相关 CPU 工作 | 异常帧频次、Frame Interval 尾部 |
+| 清理错误引用 | Heap Snapshot、Retainers、GC 后基线 | 长期运行稳定性，不出现持续退化 |
+| 控制无上限缓存 | 资源驻留规模、缓存命中与重新计算成本 | 帧稳定性、内存稳定性及功能正确性 |
+| 对变化数据做增量计算 | 每次更新的处理对象量与同步执行时间 | 实际视觉更新时延与 FPS 稳定性 |
+| 释放图形资源 | 原生/GPU 资源占用、Raster/Compositor 数据 | 图形场景下的真实画面稳定性 |
+
+一个优化即使降低了内存使用量，也不必然提高页面 FPS；反过来，即使 Heap Used 几乎不变，减少重复计算也可能显著改善 Frame Interval。性能结论需要沿“根因证据 → 操作 → 相同条件结果”的因果链闭环。
 
 当诊断涉及特定图形引擎的增量资源更新时，可以参考[实时轨迹持续渲染的项目专项分析（草稿）](./项目分析-实时轨迹持续渲染与历史数据性能-草稿.md)查看实现粒度与测量边界；案例不构成本节优化原则的定义依据。
+
 
 ## 7. 通过实验和真实用户数据验证流畅度优化效果
 
@@ -820,6 +890,63 @@ Pre-layout 中的工作可以通过减少每次 rAF 中的计算、避免对没�
 | 低端/高刷新率设备对照 | 设备预算差异 | 优化是否覆盖目标使用环境 |
 
 实验必须固定其他条件，记录浏览器版本、设备负载、页面可见性、视口、网络与交互序列。对每个候选根因，也应该能描述“如果这个假设正确，哪一个诊断指标应显著变化”。
+
+### 【DevTools 应按现象进入分配、存活对象与 GC 时间归因】
+
+Chrome DevTools 提供不同视角的证据，必须根据当前问题选择正确工具，而不是只打开 Heap Snapshot 找最大的对象。
+
+#### <u>1. 先用 Performance 证明内存事件与异常帧有关</u>
+
+在能重现问题的设备和场景中，同时记录视觉异常发生的时间与 Performance 时间线：
+
+- 比较相同活动窗口下的 Frame Interval P95、最长停顿与 LoAF 分布。
+- 在异常区间查看 JS Task、GC 相关事件、主线程调用与 Rendering Track。
+- 如果 GC 与 rAF 停顿时间重叠，形成合理的候选假设；如果 GC 没有明显参与，则优先查同步计算、布局或图形工作。
+- 不把一次 LoAF 的 pauseDuration 直接当成 GC Duration，也不以 LoAF 缺失排除低于 50ms 的 GC 影响。
+
+这里只证明**时间相关性**，随后还要用具体分配来源或受控调整证明因果。[[2]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+#### <u>2. 用 Memory Allocation Sampling 确认是谁大量分配</u>
+
+Memory 面板的 Allocation Sampling 可以按函数统计分配情况。先确定需要观察的活动操作与采样时长，再重点寻找：
+
+- 是否有高频函数不断创建新的大型集合；
+- 哪些计算结果本可以按需复用却每次都重新生成；
+- 是否有初始化、订阅或渲染更新函数反复分配相同类别对象。
+
+这只能说明“谁在分配”，并不保证这些分配会被长期保留或造成卡顿。需要同时查看 Performance 中的 GC 与帧变化。[[7]](https://developer.chrome.com/docs/devtools/memory-problems)
+
+#### <u>3. 用 Heap Snapshot 与 Retainers 判断对象为什么还活着</u>
+
+对于长期运行内存持续增长，需要在相似的页面状态、相似的浏览器条件下比较快照，并追踪异常对象的 Retaining Path：
+
+~~~text
+长期运行后 Heap Used 基线增加
+        ↓
+某一类对象数量持续增长
+        ↓
+Heap Snapshot / Retainers 检查引用
+        ↓
+是否仍有业务需要？
+  ├─ 是：判断缓存容量和每次更新成本是否合理
+  └─ 否：定位未解除的监听、订阅、闭包或其他引用
+        ↓
+释放无效引用，重复同样操作与回收对照
+~~~
+
+不能假设 GC 后 Heap Used 必须回到页面初始化时的数值；正常缓存、惰性初始化以及浏览器运行时本身就可能保留必要对象。Heap Snapshot 也具有测量开销，调查时应尽可能避免把其开销与用户正常帧指标混在一起。[[7]](https://developer.chrome.com/docs/devtools/memory-problems)
+
+#### <u>4. 区分高分配、长期驻留和每帧计算成本三种结果</u>
+
+| 检查结果 | 优先假设 | 下一步对照 |
+| --- | --- | --- |
+| 分配速率高、Heap 回落明显、GC 与帧尖峰重叠 | 高频短生命周期对象 + 回收压力 | 减少一处高分配工作，比较 GC 与 Frame P95 |
+| GC 后 Heap 基线持续升高，异常引用路径明确 | 多余长期存活对象或泄漏 | 清理引用并比较对象数和长期帧结果 |
+| GC 不突出，但 JS/布局/绘制成本随对象量增长 | 重复处理的数据/视图工作集合扩大 | 限制更新范围，比较单帧 CPU 与 Rendering 时间 |
+| JS Heap 不高但设备仍存在图形卡顿 | 原生、图形资源或设备内存压力 | 检查 GPU/Compositor 和目标设备条件 |
+
+必须保留**没有内存问题、只是其他工作超帧预算**这一分支。只有当优化前后的证据同时支持内存相关成本与流畅度改善时，才在文档中将其表述为原因。
+
 
 ### 【RUM 需要分清结果指标与异常诊断明细】
 
@@ -896,3 +1023,5 @@ LoAF 有助于分析交互的长帧贡献，但不能将它直接当成 INP；Sm
 6. V8. [Trash talk: the Orinoco garbage collector](https://v8.dev/blog/trash-talk). 分代、增量、并发 GC 与主线程暂停。
 7. Chrome for Developers. [Fix memory problems](https://developer.chrome.com/docs/devtools/memory-problems). Heap、Allocation、Retainers 和 GC 的诊断。
 8. GoogleChrome / web-vitals. [Official project and attribution information](https://github.com/GoogleChrome/web-vitals). Web Vitals 和性能归因的边界。
+9. V8. [Orinoco: young generation garbage collection](https://v8.dev/blog/orinoco-parallel-scavenger). Young Generation、Scavenger、存活对象复制与回收。
+10. V8. [Concurrent marking in V8](https://v8.dev/blog/concurrent-marking). 增量和并发标记、主线程暂停与内存压力。
