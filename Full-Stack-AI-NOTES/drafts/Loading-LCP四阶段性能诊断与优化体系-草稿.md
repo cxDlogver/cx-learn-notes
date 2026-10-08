@@ -714,7 +714,7 @@ LCP 发现异常
 - [性能专项优化](../X-性能专项优化.md)：性能数据自动采集、结果指标、原始 Performance Entry、标准化和 RUM。
 - [Web 渲染架构](../W-Web渲染架构.md)：CSR / SSR / SSG / Hybrid 的内容生成策略与取舍。
 - [服务端渲染完整链路](../F-服务端渲染完整链路.md)：服务端生成与浏览器 Hydration 的具体过程。
-- [Web 多级缓存与离线资源](../W-Web多级缓存与离线资源完整知识体系.md)：缓存与网络复用机制。
+- [HTTP 缓存机制](../H-HTTP缓存机制知识体系.md)：缓存与网络复用机制。
 - [浏览器主线程、Event Loop 与任务调度](../B-浏览器主线程Event Loop与任务调度完整知识体系.md)：主线程阻塞与任务调度。
 - [浏览器渲染原理](../J-基于Chrome浏览器渲染原理.md)：Style、Layout、Paint 和 Composite 过程。
 
