@@ -274,3 +274,115 @@ endTime = 1115ms
 | 总 LoAF Duration | 1115 - 1000 | 115ms |
 
 该例优先怀疑渲染前 Task 或 JavaScript 工作；还需 LoAF scripts、Long Task、Main Thread 调用树证明具体函数和工作量。单独凭 65ms 不能认定某一个函数一定是根因。
+
+## 7. LoAF Observer 与 Script Attribution 负责严重长帧的证据采集
+
+### 【Long Animation Frame Entry 的三阶段拆解代码】
+
+~~~js
+// 教学示例，不能直接在生产环境逐帧 console.log。
+const observer = new PerformanceObserver((list) => {
+  for (const e of list.getEntries()) {
+    const end = e.startTime + e.duration;
+    const hasRender = e.renderStart > 0;
+    const hasLayout = hasRender && e.styleAndLayoutStart > 0;
+
+    const work = hasRender
+      ? Math.max(0, e.renderStart - e.startTime)
+      : e.duration;
+
+    const beforeLayout = hasLayout
+      ? Math.max(0, e.styleAndLayoutStart - e.renderStart)
+      : null;
+
+    const afterLayoutStart = hasLayout
+      ? Math.max(0, end - e.styleAndLayoutStart)
+      : null;
+
+    console.log({
+      duration: e.duration,
+      blockingDuration: e.blockingDuration,
+      work, beforeLayout, afterLayoutStart,
+      scripts: e.scripts
+    });
+  }
+});
+
+if (PerformanceObserver.supportedEntryTypes?.includes(
+  'long-animation-frame'
+)) {
+  observer.observe({
+    type: 'long-animation-frame',
+    buffered: true
+  });
+}
+~~~
+
+这段代码通过原生 LoAF Entry 读取长帧对应的 Work、Pre-layout 和 Layout 开始后的三个时间区间。字段缺失时必须用 null 表示不可用，不能强行算出负数或虚构渲染阶段。该 API 只上报严重长帧，不能直接据此得到**全部正常帧**的三阶段分布；浏览器支持和缓冲区也限制了数据完整性。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+### 【Script Attribution 可以定位哪些函数参与长帧】
+
+LoAF.scripts 在满足浏览器归因条件时，可能包含 startTime、duration、executionStart、sourceURL、sourceFunctionName、sourceCharPosition、invokerType、forcedStyleAndLayoutDuration 和 pauseDuration。
+
+这些字段可以回答：
+
+- 哪个主线程脚本、事件处理器或 rAF 回调参与了长帧；
+- 脚本执行多长时间，是否存在强制同步布局；
+- 哪些脚本工作集中在 Render Start 之前或之后；
+- 是否需要使用 Chrome Trace 进一步排查具体算法、框架更新或复杂布局。
+
+但它不是完整 CPU Profile：跨源 iframe、Worker、Service Worker 或某些独立执行环境未必有 Script Attribution；GPU 工作、浏览器合成或部分渲染成本也不能被这些脚本字段全面解释。[[4]](https://developer.chrome.com/docs/web-platform/long-animation-frames)
+
+## 8. 流畅度异常要按任务、渲染、合成与监控环境分类
+
+### 【主线程渲染前工作过重】
+
+**现象**：Frame Interval P95 增大、LoAF Work Duration 高、长任务与页面数据预处理时刻重叠。
+
+**常见原因**：同步 JSON 解析、排序、批量数据转换、复杂循环、第三方脚本、GC、持续 WebSocket 消息回调占用主线程。
+
+**诊断证据**：Long Task、LoAF.scripts、Main Thread、业务 User Timing、数据量和内存分配。
+
+**优化方向**：减少重复工作、将大任务拆为可让出主线程的批次、控制消息频率，适合并行的非 DOM 计算可以考虑 Worker。
+
+**边界**：Worker 不是 DOM 渲染优化器，还要支付数据传输和序列化成本。
+
+### 【rAF 与框架视图提交过重】
+
+**现象**：Render Pre-layout 区间高，每次 rAF 一次性处理过大数据，组件提交耗时持续增加。
+
+**常见原因**：一次消费全部队列、超大 batch、每新增一个点都引发全图刷新、图表状态或响应式依赖更新范围大。
+
+**诊断证据**：LoAF Script Attribution、业务 Commit Duration、框架 Profiler、Batch Size 与更新次数。
+
+**优化方向**：合并重复更新、减少每次提交的工作、限制单帧 batch、及时丢弃无意义的重复中间状态。
+
+**边界**：requestAnimationFrame 只提供调度时机，不会自动把 100ms 同步任务切碎。
+
+### 【Style、Layout、Paint 与像素更新成本】
+
+**现象**：LoAF styleAndLayoutStart 后的时间较高，Trace 里存在大量 Layout / Paint。
+
+**常见原因**：大 DOM、反复读写尺寸触发强制布局、复杂 CSS、Canvas 全量绘制、图层持续重新生成。
+
+**诊断证据**：Chrome Rendering Track、Forced Style/Layout、Paint 区域、框架组件更新范围、可视对象数量。
+
+**优化方向**：缩小 Layout 和 Paint 影响区域、虚拟化、批量 DOM 读写、增量更新、缓存静态图层。
+
+**边界**：LoAF 第三个时间区间不能证明全部消耗都是 Layout；需要 Trace 判断具体瓶颈。
+
+### 【Compositor、Raster、GPU 或刷新状态造成的瓶颈】
+
+**现象**：主线程和业务 Callback 耗时不明显，实际 Canvas/WebGL 或页面滚动仍出现不连续。
+
+**常见原因**：Draw Call、纹理上传、Raster 负荷、GPU 内存、图层复杂、变动的屏幕刷新率。
+
+**诊断证据**：Chrome Frames、Raster、Compositor、GPU Tracks 和真实设备录制。
+
+**优化方向**：减少图层和对象、控制像素更新区域、纹理复用、画质分级或按需渲染。
+
+**边界**：rAF 和 LoAF 都不能完整测量最终屏幕呈现链路。[[1]](https://web.dev/articles/smoothness)
+
+### 【测量条件不成立引起误判】
+
+后台标签 rAF 可能暂停；静态页面并不需要持续更新；低功耗或可变刷新率模式可能改变采样间隔。这些都要求先确认页面有重要的持续视觉更新需求，再评价目标 FPS。
