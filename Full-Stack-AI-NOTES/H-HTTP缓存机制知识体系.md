@@ -528,7 +528,7 @@ http {
         listen 80;
 
         # 仅对经过业务确认可共享的公开只读数据开启缓存。
-        location /public-data/ {
+        location /public-api/ {
             proxy_pass http://app_backend;
             proxy_cache public_api_cache;
             proxy_cache_key "$scheme$request_method$host$request_uri";
@@ -557,31 +557,37 @@ http {
 - **proxy_cache_lock**：对缓存填充期间的同一个缓存键适用的请求进行协调，减少热点 MISS 同时回源的风险。
 - **X-Cache-Status**：本示例用于调试显示 Nginx 的上游缓存状态，它不是 RFC 强制的标准 HTTP 响应字段。
 
-Nginx 的缓存行为还受 Cache-Control、Expires、X-Accel-Expires、Set-Cookie、Vary 和上游响应条件影响。**proxy_cache_valid 不应被理解为能够覆盖所有不允许存储的响应规则**；是否需要跳过缓存应先从响应语义与业务安全出发。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+在这个例子中，用户发 `GET /public-api/products?category=phone`，Nginx 请求的目标属于 `/public-api/`，因此会进入已开启 `proxy_cache` 的 location；它使用 `$request_uri` 作为缓存键的一部分，从而保留 `category=phone`。相同分类且同一键的第二次请求，如果上游响应允许存储、代理已经保存副本并且还可以直接复用，就能由代理缓存返回，不必再次进入应用服务。假设 Nginx 返回 `X-Cache-Status: MISS` 或 `X-Cache-Status: HIT`，这个字段只说明**当前这层代理缓存的状态**，不说明浏览器或 CDN 是否命中。
 
-### 【Web 服务器代理缓存能够条件验证与复用过期响应】
+若应用返回产品列表并携带 `Cache-Control: public, max-age=600, s-maxage=3600`，HTTP 响应头的相关缓存规则会影响 Nginx 代理缓存；示例里的 `proxy_cache_valid 200 5m` 是针对状态码的候选缓存期限，不能简单理解为强制覆盖所有上游控制字段。Nginx 文档说明，上游的 `X-Accel-Expires`、`Expires`、`Cache-Control` 等可以对缓存时间形成更高优先级的控制；收到 `Set-Cookie` 的响应一般不会进入默认代理缓存；也会处理 Vary 中的请求头变体。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
-Nginx 可以通过 proxy_cache_use_stale 的 updating、error、timeout 等条件，在允许的情况下返回旧副本；结合 proxy_cache_background_update 等能力可以安排后台更新，具体行为还取决于版本、配置和响应规则。
+真实业务如果有用户级参数、授权头、Cookie、地理位置或租户信息影响响应，就必须在开启共享代理缓存前完成安全设计。示例假定 `/public-api/` 是经过业务审查的匿名公开接口，**并不代表仅按路径区分就能安全缓存任意接口**。不要通过强制忽略 `Cache-Control`、`Set-Cookie` 等上游字段来人为制造 HIT。
 
-它们可能达到与 HTTP stale-while-revalidate **相近的“旧结果先返回、后台刷新”效果**，但不能把 Nginx 的代理参数、CDN 的供应商缓存策略和 Cache-Control: stale-while-revalidate 当成同一个自动生效的开关。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+### 【代理缓存的磁盘存储周期和 HTTP 新鲜期需要分别管理】
 
-Nginx 的部署路由、静态文件与应用服务器职责详情见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。本篇只解释 Nginx 与响应缓存的关系，不重复通用反向代理的全部知识。
+Nginx 前面配置的 `proxy_cache_path /var/cache/nginx/public_api` 是保存上游响应副本的目录，`keys_zone=public_api_cache:10m` 让 Nginx 使用共享内存区维护缓存键和元数据，`max_size=1g` 用于约束缓存容量。`inactive=30m` 描述缓存条目在一段时间**未被访问时**可以被清理，不是 HTTP `max-age=1800` 的意思。一个仍有用户持续访问的响应，在 HTTP 意义上可能已过期但物理文件依然存在；一个长时间没有请求的副本，也可能因容量或不活跃淘汰从存储中消失。这就是缓存**新鲜度**与**存储保留时间**不能混为一谈的原因。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
+Nginx 在代理缓存命中但副本过期以后，如果此前保存了 ETag 或 Last-Modified，可以通过 `proxy_cache_revalidate on` 允许对上游发条件验证。上游若回 304，Nginx 不用重复下载相同的产品 JSON，只需按规则刷新缓存元数据；上游若回 200 和 v9，则取得新版正文并更新可存副本。
 
-### 【Web 服务器的三个工作模式需要按存储与请求流区分】
+### 【允许过期复用时，需要显式配置并解释实际请求时序】
 
-Web 服务器直接对 /assets/app.a81f.js 使用 root、alias 或其他静态路径映射读取文件时，没有保存某个应用服务返回的 HTTP 副本，因此不属于 proxy_cache。普通反向代理通过 proxy_pass 等配置转发到应用，如果没有开启缓存，正常情况下每次需要上游内容的请求都可能继续转发。**只有显式启用代理缓存、具备相应存储空间与配置时，才在 Web 服务器入口形成独立的一层 HTTP 响应缓存。** Apache HTTP Server 或 Caddy 是否支持相同行为需要查看其对应模块/插件，本文用 Nginx 作为可核验示例。
+对于一个已经确认能够容忍陈旧的公开接口，可以在理解上游缓存策略以后，另外选择 Nginx 提供的后台更新机制。下例只是展示相关指令之间的组合，**不是对任意 API 的默认推荐配置**：
 
-### 【Nginx 代理缓存的存储、新鲜度与物理清理分别管理】
+~~~nginx
+# 放入前述 location /public-api/，仅适用于允许返回旧公开数据的接口
+proxy_cache_use_stale updating;
+proxy_cache_background_update on;
+~~~
 
-Nginx 示例中的 proxy_cache_path 设置磁盘缓存位置、共享元数据区、容量和 inactive 淘汰参数；proxy_cache_key 定义请求如何匹配已有响应；proxy_cache_valid 指定响应在合适规则下的缓存有效期；proxy_cache_revalidate 使用验证器检查过期副本；proxy_cache_lock 减少热点首次 MISS 时重复回源。注意 **inactive 不是 HTTP max-age，它描述不活跃缓存条目可能被清理的时机，而不是响应是否新鲜**。上游 Cache-Control、Expires、X-Accel-Expires、Set-Cookie 与 Vary 等还会影响代理缓存是否存储、怎样复用。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
-
-启用 proxy_cache_use_stale updating / error 等条件，可以在允许情况下复用过期响应；proxy_cache_background_update 能在返回允许的旧响应时发起后台更新；它们是 Nginx 实现接口，与 HTTP Cache-Control: stale-while-revalidate 的目标相似，但不能当成各类 Web 服务器都支持的通用开关。不要为了测试命中率使用强行忽略上游禁止缓存字段的设置，否则存在跨用户数据混用的风险。
+设产品列表 v8 已保存在 Nginx 代理缓存中，HTTP 缓存策略允许其在更新期间返回过期内容。当用户请求触发更新时，`proxy_cache_background_update on` 允许 Nginx 对过期条目启动后台子请求；`proxy_cache_use_stale updating` 允许更新中的其它请求使用旧副本，从而减少多个用户同时等待应用查询。后台更新得到 304 时，代理保留 v8 正文并更新缓存元数据；得到 200 和 v9 时，代理保存新的可缓存响应。**实际能否先返回旧正文还要遵守上游响应指令及缓存配置，不代表开启这两行就能无视 must-revalidate 或适用 s-maxage 的严格约束**。相关指令分别解决“过期时能否用旧响应”和“是否在后台触发更新”，不能与所有 CDN 的 SWR 实现视为同一开关。[[6]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 ### 【Web 服务器静态文件更新不负责通知浏览器和 CDN】
 
 发布 app.b92d.js 只是源站增加了一份带新 URL 的文件；HTML 必须更新引用并被浏览器重新取得，客户端才会请求新的资源。若源站始终在同一个 /assets/app.js URL 原地覆盖，即使磁盘文件已经变化，下游仍可能按长期 TTL 直接使用旧响应。静态源文件还应配合 ETag/Last-Modified、正确的 Cache-Control 与保留旧 Hash chunk 的发布策略。新文件先于新 HTML 可用，以及回滚时旧文件仍可访问，是版本正确性的条件。
 
+
+
+Nginx 的公开入口、静态文件与应用服务器的路由职责详见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md)。本文关注 Web 服务器作为**源文件提供方**或**显式启用 HTTP 代理缓存时的响应复用节点**，不将操作系统文件缓存和 HTTP 代理缓存混成同一个机制。
 
 ## 6. 资源内容 Hash、缓存过期与版本发布形成完整更新周期
 
