@@ -549,7 +549,7 @@ Web 服务器不会自动读取开发者电脑里的项目，也不会在浏览�
 | Docker 多阶段构建 | 构建阶段生成 `dist/`，运行阶段通过 `COPY --from=build` 放入 Web 镜像 | 容器中的 Web 服务器读取镜像内约定的静态目录 |
 | 对象存储 / 托管平台 | 流水线将构建产物发布到对象存储或托管平台 | CDN 可以以对象存储或托管站点为源站，不必经过独立 Nginx |
 
-以 Docker 为例，镜像构建中可以把已完成的前端构建目录复制到 Web 服务器镜像内；实际生产目录由镜像和配置共同决定，**不要求与上图的 /srv/site/dist 完全相同**。Docker 的 `COPY --from` 是在镜像构建阶段复制文件，而不是每次 HTTP 请求时复制。相关部署拓扑与完整多阶段示例见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md) 的“静态 Web 部署”章节。[[11]](https://docs.docker.com/reference/dockerfile)
+以 Docker 为例，镜像构建中可以把已完成的前端构建目录复制到 Web 服务器镜像内；实际生产目录由镜像和配置共同决定，**不要求与上图的 /srv/site/dist 完全相同**。Docker 的 `COPY --from` 是在镜像构建阶段复制文件，而不是每次 HTTP 请求时复制。相关部署拓扑与完整多阶段示例见 [反向代理与 Web 入口体系](./F-反向代理与Web入口体系.md) 的“静态 Web 部署”章节。[[8]](https://docs.docker.com/reference/dockerfile)
 
 因此，生产环境的关键条件不是“有人手动上传过”，而是：**目标文件已经部署到本次请求会访问的源站实例或存储位置，并且 Web 服务器进程有权限读取它。** 如果负载均衡后面有多个 Web 服务器实例，构建文件还应保证版本一致；只上传到其中一台实例，可能造成部分用户得到 200、另一些用户得到 404。
 
@@ -595,7 +595,7 @@ server {
 
 **第三步：API 转发和 SPA 回退有自己的独立语义。** `/public-api/products?category=phone` 进入 `proxy_pass`，交由应用服务生成列表；`/products/123` 不是静态构建文件，而是浏览器前端路由地址，使用 `try_files $uri $uri/ /index.html` 可以内部转向 HTML 入口，浏览器取得 HTML 后再由前端应用处理页面路径。**SPA 回退返回 HTML，并不意味着请求被代理给 Node.js。**
 
-Nginx 的 `root` 会将规范化后的 URI 与指定根目录结合；`alias` 则在 location 中用指定路径**替换匹配到的 URI 前缀**。两者的路径计算方法不同，不能仅凭“都是指定目录”就交换使用。`try_files` 会按顺序检查文件/目录，最后一个参数既可以是 `=404` 等状态码，也可以是内部跳转 URI 或命名 location。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/) [[12]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
+Nginx 的 `root` 会将规范化后的 URI 与指定根目录结合；`alias` 则在 location 中用指定路径**替换匹配到的 URI 前缀**。两者的路径计算方法不同，不能仅凭“都是指定目录”就交换使用。`try_files` 会按顺序检查文件/目录，最后一个参数既可以是 `=404` 等状态码，也可以是内部跳转 URI 或命名 location。[[7]](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/) [[9]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
 
 ### 【静态资源未找到的结果由路由配置决定，不存在统一的应用服务器兜底】
 
@@ -624,7 +624,7 @@ location @generate_image {
 }
 ~~~
 
-当用户请求 `/generated-images/phone-101.jpg`，且 Web 服务器映射的文件不存在时，`try_files` 的最后一步内部跳转至 `@generate_image`，由应用生成响应。**这才是“未找到静态文件，继续请求应用服务器”的一种明确设计**；它不是 Nginx 普遍的自动兜底，也不应无条件应用到所有 URL。[[12]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
+当用户请求 `/generated-images/phone-101.jpg`，且 Web 服务器映射的文件不存在时，`try_files` 的最后一步内部跳转至 `@generate_image`，由应用生成响应。**这才是“未找到静态文件，继续请求应用服务器”的一种明确设计**；它不是 Nginx 普遍的自动兜底，也不应无条件应用到所有 URL。[[9]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
 
 ### 【静态文件的 HTTP 缓存时间与源站文件保留时间相互独立】
 
@@ -672,11 +672,11 @@ location /images/ {
 }
 ~~~
 
-对于符合 Nginx 适用状态码条件的响应，这里的 `expires 10m` 会产生或调整 `Expires` 响应头，并产生相应的 `Cache-Control: max-age=600`。因此浏览器或 CDN 保存图片以后，可以按 HTTP 新鲜度规则复用这张图片；**十分钟以后，并不会自动从 /srv/site/dist/images 目录删除 phone-101.jpg**。[[13]](https://nginx.org/en/docs/http/ngx_http_headers_module.html)
+对于符合 Nginx 适用状态码条件的响应，这里的 `expires 10m` 会产生或调整 `Expires` 响应头，并产生相应的 `Cache-Control: max-age=600`。因此浏览器或 CDN 保存图片以后，可以按 HTTP 新鲜度规则复用这张图片；**十分钟以后，并不会自动从 /srv/site/dist/images 目录删除 phone-101.jpg**。[[10]](https://nginx.org/en/docs/http/ngx_http_headers_module.html)
 
 前面带内容 Hash 的 JS 则采用 `add_header Cache-Control "public, max-age=31536000, immutable"` 明确表达长期新鲜度与不可变语义；两者属于**不同资源策略**。不应不加检查地在同一个 location 中叠加 `expires 10m` 与另一条设置不同 `max-age` 的 `Cache-Control`，否则会产生重复或冲突的缓存控制信息。
 
-对于 HTML 入口，前述 `Cache-Control: no-cache` 是**可以存储，但每次复用前必须验证**。Nginx 的静态资源服务可以通过 ETag、Last-Modified 等字段参与下游条件请求：浏览器保存 `index.html` 后，再次发送 `If-None-Match` 或 `If-Modified-Since`，如果源站选定的表示未改变，Web 服务器可以返回 304，避免重复传输完整 HTML；内容变化则返回新版正文。Nginx 的静态 ETag 有自身生成规则，不能把它当作与前端构建 Hash 一致的永久标识。[[12]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
+对于 HTML 入口，前述 `Cache-Control: no-cache` 是**可以存储，但每次复用前必须验证**。Nginx 的静态资源服务可以通过 ETag、Last-Modified 等字段参与下游条件请求：浏览器保存 `index.html` 后，再次发送 `If-None-Match` 或 `If-Modified-Since`，如果源站选定的表示未改变，Web 服务器可以返回 304，避免重复传输完整 HTML；内容变化则返回新版正文。Nginx 的静态 ETag 有自身生成规则，不能把它当作与前端构建 Hash 一致的永久标识。[[9]](https://nginx.org/en/docs/http/ngx_http_core_module.html)
 
 这个机制也解释了为什么**相同的磁盘文件可以被 Nginx 反复提供，而浏览器的本地缓存却可能已过期**：源站文件是否存在是文件服务问题；响应是否新鲜是 HTTP 缓存问题；是否再次传输正文则要看条件请求与 304/200 的处理结果。
 
@@ -729,13 +729,13 @@ http {
 
 在这个例子中，用户发 `GET /public-api/products?category=phone`，Nginx 请求的目标属于 `/public-api/`，因此会进入已开启 `proxy_cache` 的 location；它使用 `$request_uri` 作为缓存键的一部分，从而保留 `category=phone`。相同分类且同一键的第二次请求，如果上游响应允许存储、代理已经保存副本并且还可以直接复用，就能由代理缓存返回，不必再次进入应用服务。假设 Nginx 返回 `X-Cache-Status: MISS` 或 `X-Cache-Status: HIT`，这个字段只说明**当前这层代理缓存的状态**，不说明浏览器或 CDN 是否命中。
 
-若应用返回产品列表并携带 `Cache-Control: public, max-age=600, s-maxage=3600`，HTTP 响应头的相关缓存规则会影响 Nginx 代理缓存；示例里的 `proxy_cache_valid 200 5m` 是针对状态码的候选缓存期限，不能简单理解为强制覆盖所有上游控制字段。Nginx 文档说明，上游的 `X-Accel-Expires`、`Expires`、`Cache-Control` 等可以对缓存时间形成更高优先级的控制；收到 `Set-Cookie` 的响应一般不会进入默认代理缓存；也会处理 Vary 中的请求头变体。[[8]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+若应用返回产品列表并携带 `Cache-Control: public, max-age=600, s-maxage=3600`，HTTP 响应头的相关缓存规则会影响 Nginx 代理缓存；示例里的 `proxy_cache_valid 200 5m` 是针对状态码的候选缓存期限，不能简单理解为强制覆盖所有上游控制字段。Nginx 文档说明，上游的 `X-Accel-Expires`、`Expires`、`Cache-Control` 等可以对缓存时间形成更高优先级的控制；收到 `Set-Cookie` 的响应一般不会进入默认代理缓存；也会处理 Vary 中的请求头变体。[[11]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 真实业务如果有用户级参数、授权头、Cookie、地理位置或租户信息影响响应，就必须在开启共享代理缓存前完成安全设计。示例假定 `/public-api/` 是经过业务审查的匿名公开接口，**并不代表仅按路径区分就能安全缓存任意接口**。不要通过强制忽略 `Cache-Control`、`Set-Cookie` 等上游字段来人为制造 HIT。
 
 ### 【代理缓存的磁盘存储周期和 HTTP 新鲜期需要分别管理】
 
-Nginx 前面配置的 `proxy_cache_path /var/cache/nginx/public_api` 是保存上游响应副本的目录，`keys_zone=public_api_cache:10m` 让 Nginx 使用共享内存区维护缓存键和元数据，`max_size=1g` 用于约束缓存容量。`inactive=30m` 描述缓存条目在一段时间**未被访问时**可以被清理，不是 HTTP `max-age=1800` 的意思。一个仍有用户持续访问的响应，在 HTTP 意义上可能已过期但物理文件依然存在；一个长时间没有请求的副本，也可能因容量或不活跃淘汰从存储中消失。这就是缓存**新鲜度**与**存储保留时间**不能混为一谈的原因。[[8]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+Nginx 前面配置的 `proxy_cache_path /var/cache/nginx/public_api` 是保存上游响应副本的目录，`keys_zone=public_api_cache:10m` 让 Nginx 使用共享内存区维护缓存键和元数据，`max_size=1g` 用于约束缓存容量。`inactive=30m` 描述缓存条目在一段时间**未被访问时**可以被清理，不是 HTTP `max-age=1800` 的意思。一个仍有用户持续访问的响应，在 HTTP 意义上可能已过期但物理文件依然存在；一个长时间没有请求的副本，也可能因容量或不活跃淘汰从存储中消失。这就是缓存**新鲜度**与**存储保留时间**不能混为一谈的原因。[[11]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 Nginx 在代理缓存命中但副本过期以后，如果此前保存了 ETag 或 Last-Modified，可以通过 `proxy_cache_revalidate on` 允许对上游发条件验证。上游若回 304，Nginx 不用重复下载相同的产品 JSON，只需按规则刷新缓存元数据；上游若回 200 和 v9，则取得新版正文并更新可存副本。
 
@@ -749,7 +749,7 @@ proxy_cache_use_stale updating;
 proxy_cache_background_update on;
 ~~~
 
-设产品列表 v8 已保存在 Nginx 代理缓存中，HTTP 缓存策略允许其在更新期间返回过期内容。当用户请求触发更新时，`proxy_cache_background_update on` 允许 Nginx 对过期条目启动后台子请求；`proxy_cache_use_stale updating` 允许更新中的其它请求使用旧副本，从而减少多个用户同时等待应用查询。后台更新得到 304 时，代理保留 v8 正文并更新缓存元数据；得到 200 和 v9 时，代理保存新的可缓存响应。**实际能否先返回旧正文还要遵守上游响应指令及缓存配置，不代表开启这两行就能无视 must-revalidate 或适用 s-maxage 的严格约束**。相关指令分别解决“过期时能否用旧响应”和“是否在后台触发更新”，不能与所有 CDN 的 SWR 实现视为同一开关。[[8]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+设产品列表 v8 已保存在 Nginx 代理缓存中，HTTP 缓存策略允许其在更新期间返回过期内容。当用户请求触发更新时，`proxy_cache_background_update on` 允许 Nginx 对过期条目启动后台子请求；`proxy_cache_use_stale updating` 允许更新中的其它请求使用旧副本，从而减少多个用户同时等待应用查询。后台更新得到 304 时，代理保留 v8 正文并更新缓存元数据；得到 200 和 v9 时，代理保存新的可缓存响应。**实际能否先返回旧正文还要遵守上游响应指令及缓存配置，不代表开启这两行就能无视 must-revalidate 或适用 s-maxage 的严格约束**。相关指令分别解决“过期时能否用旧响应”和“是否在后台触发更新”，不能与所有 CDN 的 SWR 实现视为同一开关。[[11]](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 ### 【Web 服务器静态文件更新不负责通知浏览器和 CDN】
 
@@ -774,7 +774,7 @@ Nginx 的公开入口、静态文件与应用服务器的路由职责详见 [反
 
 app 的内容变化后，资源 URL 从 app.a81f.js 变为 app.b92d.js。因此浏览器、CDN 和 Nginx 代理缓存会将它视为不同目标资源；它们无需先删除所有旧副本，新 URL 即可触发自己的缓存获取流程。
 
-这个过程称为 **Cache Busting（通过版本化 URL 绕开旧副本）**。它不是对旧 URL 发送 purge、不是清空浏览器缓存，更不代表缓存策略会自动知道“代码版本已经更新”。[[9]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control)
+这个过程称为 **Cache Busting（通过版本化 URL 绕开旧副本）**。它不是对旧 URL 发送 purge、不是清空浏览器缓存，更不代表缓存策略会自动知道“代码版本已经更新”。[[12]](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control)
 
 ### 【页面入口 HTML 的更新决定用户何时发现新的资源 URL】
 
@@ -823,7 +823,7 @@ Cache-Control: public, max-age=31536000, immutable
 （此处省略实际 JavaScript 文件正文）
 ~~~
 
-`max-age=31536000` 表示大约一年的新鲜度寿命；`immutable` 向支持该指令的客户端表明在仍然新鲜时这份表示不会变化，因而可以减少不必要的验证。它并不是“无限期保存”或“禁止用户删除缓存”，也不会让旧 HTML 自动引用新脚本。**只有内容变更必然换 URL，长期 immutable 才与发布机制一致**。[[10]](https://www.rfc-editor.org/rfc/rfc8246)
+`max-age=31536000` 表示大约一年的新鲜度寿命；`immutable` 向支持该指令的客户端表明在仍然新鲜时这份表示不会变化，因而可以减少不必要的验证。它并不是“无限期保存”或“禁止用户删除缓存”，也不会让旧 HTML 自动引用新脚本。**只有内容变更必然换 URL，长期 immutable 才与发布机制一致**。[[13]](https://www.rfc-editor.org/rfc/rfc8246)
 
 反例也要放回同一个场景：若脚本始终叫做 `/assets/app.js`，部署时直接覆写源站磁盘文件，却向浏览器声明一年的 `max-age` 和 `immutable`，浏览器可能在新鲜期内根本不请求更新后的内容。此时即使源站文件已经更新成功，也不等于浏览器能立刻读到新版。可用内容 Hash 改 URL，从缓存键层面让新版与旧版自然分开；源站仍需保证两者在各自使用期间都可访问。
 
@@ -1031,9 +1031,9 @@ Age 可以帮助判断当前响应被某层缓存保存或验证后经历的估�
 5. MDN. [HTTP Caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching). 浏览器缓存、启发式缓存、刷新与版本资源实践。
 6. IETF. [RFC 5861: HTTP stale response extensions](https://www.rfc-editor.org/rfc/rfc5861). stale-while-revalidate 与 stale-if-error。
 7. NGINX. [Serve Static Content](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/). Nginx root、alias 和 try_files 的静态文件语义。
-8. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
-9. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
-10. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
-11. Docker. [Dockerfile reference](https://docs.docker.com/reference/dockerfile). 多阶段构建与 COPY --from 复制构建产物的语义。
-12. NGINX. [ngx_http_core_module](https://nginx.org/en/docs/http/ngx_http_core_module.html). root、alias、try_files、命名 location、静态 ETag 和内部重定向。
-13. NGINX. [ngx_http_headers_module](https://nginx.org/en/docs/http/ngx_http_headers_module.html). expires、add_header 与 HTTP 缓存控制响应头。
+8. Docker. [Dockerfile reference](https://docs.docker.com/reference/dockerfile). 多阶段构建与 COPY --from 复制构建产物的语义。
+9. NGINX. [ngx_http_core_module](https://nginx.org/en/docs/http/ngx_http_core_module.html). root、alias、try_files、命名 location、静态 ETag 和内部重定向。
+10. NGINX. [ngx_http_headers_module](https://nginx.org/en/docs/http/ngx_http_headers_module.html). expires、add_header 与 HTTP 缓存控制响应头。
+11. NGINX. [ngx_http_proxy_module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html). proxy_cache、缓存有效期、条件验证、锁与过期处理。
+12. MDN. [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control). 内容哈希与缓存指令。
+13. IETF. [RFC 8246: HTTP Immutable Responses](https://www.rfc-editor.org/rfc/rfc8246). immutable 的适用范围与含义。
