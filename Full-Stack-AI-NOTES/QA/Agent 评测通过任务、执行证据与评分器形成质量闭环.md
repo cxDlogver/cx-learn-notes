@@ -2,388 +2,89 @@
 
 ## 【知识概述】
 
-Agent Benchmark 不能只回答“最终答案对不对”，因为 Agent Task 是一个多轮自主执行过程。设计评测体系时，需要先把五个不同层次分开：
+Agent Benchmark 面对的是一次完整 Task 的多轮执行，而不只是模型的一次文本输出。**评测的逻辑顺序应是：先定义什么算成功，再决定从哪里取得证据，再选择谁来评分，然后在多次 Trial 上计算指标，最后解释这些指标代表哪种能力。** 少了前面任何一层，后面的分数都可能失去业务含义。
 
-~~~text
-评测目标
-→ 什么叫成功
-
-评测角度
-→ 从哪里取得证据
-
-评测方法
-→ 用什么机制判断
-
-评测指标
-→ 怎样量化结果
-
-评测维度
-→ 这些数字说明哪类 Agent 能力
-~~~
-
-与之平行的 Evaluation Harness、Dataset、Suite、Task、Trial、Grader 等概念属于**评测运行体系**，负责把五层设计真正执行起来，不应该和五层设计概念混成同一组层级。
-
-这套五层是本知识库为了统一 Agent Eval 概念建立的工程框架，不是行业官方固定分类。Anthropic、OpenAI 的官方资料用于校准 Task、Trial、Outcome、Trace、Grader、Harness 等具体概念。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) [[2]](https://developers.openai.com/api/docs/guides/agent-evals)
+为了避免混淆，本知识库把评测设计组织成“目标、角度、方法、指标、维度”五层。这是用于学习和面试的**工程组织框架，不是某个官方规定的唯一分类**。Anthropic 关于 Task、Trial、Outcome、Transcript 和 Grader 的说明，以及 OpenAI 关于 Agent Evals 与 Graders 的官方资料，可以用来核对其中具体机制。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) [[2]](https://developers.openai.com/api/docs/guides/agent-evals) [[4]](https://developers.openai.com/api/docs/guides/graders)
 
 ## 【提问】
 
-- 如果让你设计一套 Agent Benchmark，你会从哪些层次考虑？
-- 一个 Agent Task 到底怎样定义“成功”？
-- 为什么不能只看最终回答，也不能只看 Trace？
-- Rubric、Grader、Metric 和 Evaluation Dimension 分别是什么？
-- 为什么 Agent Benchmark 不能只看任务完成率？
-- 怎样在保证评测质量的同时控制 Benchmark 成本？
+- 如果让你设计一套 Agent Benchmark，应该先解决哪些问题？
+- Agent Task 的成功标准怎样定义，开放任务又怎样设计 Rubric？
+- Outcome / Output 和 Trace 分别能证明什么，如何选择 Grader？
+- 为什么不能只看单次成功率，pass@k、pass^k、Cost 等怎样解释？
+- 如何将评测质量、可重复性和成本放进同一套设计？
 
 ## 【回答框架】
 
-核心主线：
+直接给出结论：Agent Eval 评估的是完成**完整任务目标**的能力，因此必须让“成功条件、执行事实、评分机制、统计指标”彼此可追溯。首先把任务目标拆成能够检查的 Exact Criteria 和需要语义判断的 Rubric；如果目标未定，任何评分方法都无从判断。随后沿任务执行获取最终 Outcome / Output 与过程 Trace，再按各 Criterion 的性质选择确定性、模型或人工 Grader。由于一次成功可能具有随机性，还要多次运行 Trial，计算成功率、稳定性和成本；最后将这些指标解释为有效性、可靠性、效率和安全能力。
 
 ~~~text
-1. 评测目标
-Task + Success Criteria
-Exact Criteria / Rubric
-
-        ↓
-
-2. 评测角度
-结果面：Outcome / Output
-过程面：Trajectory / Trace
-
-        ↓
-
-3. 评测方法
-Deterministic
-Model-based
-Human Review
-
-        ↓
-
-4. 评测指标
-Success Rate
-Rubric Score
-pass@k / pass^k
-Cost / Latency
-Safety Metrics
-
-        ↓
-
-5. 评测维度
-Effectiveness
-Reliability
-Efficiency
-Safety
+Task / Success Criteria（评测目标）
+   ↓ 确定什么才算成功
+Outcome / Output / Trace（证据角度）
+   ↓ 取得客观结果和执行过程
+Deterministic / Model / Human Grader（评测方法）
+   ↓ 按标准评分
+Success / Consistency / Cost / Safety Metrics（评测指标）
+   ↓ 多次 Trial 汇总
+Effectiveness / Reliability / Efficiency / Safety（能力维度）
 ~~~
 
-运行时再由：
-
-~~~text
-Dataset / Suite
-→ Evaluation Harness
-→ Task
-→ Trial
-→ Evidence
-→ Grader
-→ Aggregate
-→ Benchmark
-~~~
-
-把它真正执行起来。
-
----
+Dataset、Suite、Evaluation Harness 与 Trial 等构成**实际运行这条链的工程系统**，不能与五层分析维度机械相加。给出项目实践时，还需区分调研报告和已落地的 Benchmark 平台。
 
 ## 【完整回答】
 
-如果让我设计一套 Agent Benchmark，我首先会把它看成**完整任务执行评测**，而不是单轮模型输出评分。
+### 【一、从成功条件开始，而不是先选择模型评分器】
 
-Agent 接收任务以后，可能经过多轮推理、Tool Call、环境修改、重试和恢复才完成目标，因此评测需要从五个层次依次设计。
+如果要设计 Agent Benchmark，我首先会判断这项评测具体想证明 Agent 有什么能力、任务结束后什么结果才算成功。Agent 可能经过多轮 Tool Call、重试和环境操作，因此“最后生成一句正确回答”并不能覆盖文件生成、数据库修改或业务流程执行类任务。
 
-### 【第一层：评测目标——先定义什么叫成功】
+对于有明确结果的 Task，可以定义 Exact / Verifiable Criteria，例如生成指定文件、通过测试或把业务对象更新到目标状态；对于研究报告、技术方案等没有唯一标准答案的任务，则需要用 Rubric 把正确性、覆盖面、引用质量和约束满足等要求拆成多个 Criterion（单项评分条件）。
 
-第一层是 Task 的 Success Criteria。
+这里最容易混淆的是 Rubric 与 Grader：**Rubric 规定评什么，Grader 才规定由什么机制来判分**。一个 Criterion 可以由程序、模型或者人工判断，不能因为任务是开放的，就预设全部交给 LLM-as-Judge。Anthropic 的 Agent Evals 官方文章对 Task、Trial、Grader 和结果的职责作了区分。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
-简单任务可能存在明确 Ground Truth：
+### 【二、有了成功标准，才知道应该采集哪一类执行证据】
 
-~~~text
-结果 == 42
-数据库状态 == refunded
-测试全部通过
-~~~
+接下来必须决定怎样从一次 Trial 中取证。对于修改数据库的任务，最直接的成功证据通常是执行结束后的真实数据状态；对于生成报告的任务，则需要检查交付 Output 的内容和结构。单看 Agent 的总结“我已完成”，不能代替对真实结果的检查。
 
-这时可以直接定义精确成功条件。
+但只有 Outcome / Output 也不一定能解释问题。Agent 可能得到了看似正确的最终结果，却绕过审批、使用禁止的工具或重复执行高风险动作。这类任务约束就需要读取 Trace / Trajectory，查看模型调用、工具执行、失败和权限控制等过程。
 
-开放任务没有唯一答案，例如研究报告、技术方案、客服回复，需要通过 Rubric 把成功拆成多个 Criterion：
+因此我会从两个相互补充的角度取得证据：**Outcome / Output 主要回答结果是否达到目标，Trace 主要回答过程怎样发生；当过程本身属于任务约束时，Trace 也直接进入判定。** OpenAI 的 Agent Evals 指南提供了通过执行 Trace 分析和评分工作流表现的方法，但 Trace 的丰富程度不能自动证明任务已成功。[[2]](https://developers.openai.com/api/docs/guides/agent-evals)
 
-~~~text
-正确性
-完整性
-证据质量
-需求覆盖
-表达质量
-~~~
+### 【三、评分方法必须匹配条件的可验证性】
 
-这里最重要的边界是：
+有了任务标准与证据，才选择 Grader。能够精确判断的条件，例如文件存在、Schema 合法、数值匹配、测试退出码，可以采用 Deterministic / Code-based Grader；需要判断文字论证是否合理、信息是否充分的条件，可以采用 Model-based Grader；影响大、歧义高或需要校准评分器时，再加入 Human Review。
 
-> **Rubric 解决“要判断哪些标准”，不是“由谁来判断”。**
+例如评测一份研究报告，不必把“是否存在要求的章节”“引用数量是否达到阈值”“文件格式是否有效”都交给模型判断。它们更适合脚本验证，而“结论是否被证据支持、是否完整回答问题”才需要更开放的评审。
 
-Rubric 中的某个 Criterion 后续可以由程序、模型或人工执行。
+OpenAI 的 [Graders](https://developers.openai.com/api/docs/guides/graders) 与 [Evaluation best practices](https://developers.openai.com/api/docs/guides/evaluation-best-practices) 都强调将评分准则与评测配置具体化。工程取舍是：**能够确定性判断的部分先确定化，把语义评分留给确实需要语义推断的地方**，降低模型评分波动与成本。但确定性并不意味着永远正确：检查规则若与真实目标错位，程序也会稳定地评错。因此需要对评分器本身做校准和错误样本回归。
 
-因此第一层统一成：
+### 【四、单次 Trial 只说明一次结果，多次运行才有可靠性判断】
 
-~~~text
-Task
-→ Success Criteria
-   ├─ Exact / Verifiable Criteria
-   └─ Rubric Criteria
-~~~
+接下来才进入统计指标。对于同一个 Task，Agent 可能一次成功、一次失败、下一次又成功。如果只展示最好的 Trial，就无法解释重复执行时是否可靠。
 
-### 【第二层：评测角度——从结果和过程两个方向获取证据】
+因此在固定任务、环境和评分条件下，应记录成功率与 Rubric 得分，并观察多次运行的分布。比如 `pass@k` 描述给定 k 次尝试时至少出现一次成功的机会，更适合衡量多次尝试能否找到可行解；`pass^k` 更关注连续 k 次都成功，反映重复执行的一致性。实际比较这些指标时必须说明采样协议、次数及统计口径，不能直接把一次观测当成稳定概率。
 
-Agent 结束以后，不能相信它自己说“任务完成”。
+此外，成功率不应该掩盖资源代价。Latency（延迟）、Turns（执行轮数）、Tool Calls、Tokens、总成本和每次成功成本，解释为了达到相同质量花了多少资源；违规操作、审批绕过等指标则反映安全问题。**Metric 是可计算的量，而 Reliability、Efficiency 等是这些数字所服务的能力维度**，不能把它们放在同一层进行并列比较。
 
-结果面首先看 Outcome：
+### 【五、指标只有进入能力维度和比较协议后，才构成有意义的 Benchmark】
 
-~~~text
-真实环境最终是否达到目标状态
-~~~
+最后我会将指标组织成几个能力方向：Effectiveness（有效性）看任务能否正确完成；Reliability（可靠性）看多次运行的一致性；Efficiency（效率）看实现同样结果的时间与成本；Safety（安全）看是否越过权限和行为约束。
 
-如果任务本身是内容生成，则 Output 也是直接评测对象。
+这个划分不是为了凑四个对称名词，而是帮助回答不同决策问题。例如某个新版 Agent 成功率略高但成本增加数倍，结论就不能只写“能力提升”；又如平均分不错但关键操作经常违规，也不应该被称作整体质量良好。
 
-过程面看 Trajectory / Trace：
+只有在 Task、Dataset、环境、评分器和运行次数等核心条件可比时，不同版本的 Benchmark 数字才适合直接比较。改变了成功条件或评分规则，却继续沿用历史得分口径，会造成虚假的进步或退步。
 
-~~~text
-用了什么 Tool
-经过什么 Handoff
-是否 Retry
-是否经过审批
-为什么失败
-~~~
+### 【六、Evaluation Harness 负责稳定地运行评测，而不是另加一个维度】
 
-所以：
+到这里五层解决了“设计一套评测应该如何思考”。真正执行时，还需要 Dataset 保存任务样本，Suite 选择此次评测范围，Evaluation Harness 负责初始化环境、运行 Trial、收集 Evidence、调用 Grader 并聚合指标。Benchmark 则是在尽可能固定的协议下，让这些运行能够重复并进行版本比较。
 
-~~~text
-Outcome / Output
-→ 主要证明“最后做对了吗”
+例如日常小改动可以先运行相关增量和回归样本，大范围模型或 Harness 升级再提高覆盖范围；评分侧优先执行廉价的确定性检查，语义和高风险样本再用模型或人工复核。这样既控制评测开销，也不把所有测试都简化成脚本或一次模型 Judge。是否采用全量评测，应由发布风险和可用预算决定，不能为了降低成本暗中改变比较协议。
 
-Trace
-→ 主要说明“怎么做的、为什么成功或失败”
-~~~
+### 【七、收束：从任务标准追到能力结论，才是完整 Agent Eval】
 
-只有当审批、权限、禁止 Tool 等执行过程本身就是 Task Constraint 时，Trace 才直接成为硬性评分对象。
+所以，设计 Agent Benchmark 最重要的不是先选 Judge 模型或先计算一张指标表，而是**先明确任务成功条件，再从实际执行拿到适配的结果与过程证据，选择可校准的评分方法，经多 Trial 汇总后按有效性、可靠性、效率和安全性解释能力**。Dataset 与 Harness 让这个过程能重复运行，业务风险和成本约束则决定评测覆盖与人工介入的深度。
 
-因此 Outcome 和 Trace 不应该拆成两个体系层，它们都属于“评测角度”。
-
-### 【第三层：评测方法——根据证据选择合适的 Grader】
-
-拿到证据以后，再选择评分方式：
-
-~~~text
-能够客观判断
-→ Deterministic / Code-based Grader
-
-无法代码化但有明确 Rubric
-→ Model-based Grader
-
-高风险 / 高歧义 / Judge 校准
-→ Human Review
-~~~
-
-原则是：
-
-> **能够确定性评分的部分，不要优先再交给模型评分。**
-
-原因不仅是稳定性，还有评测成本。
-
-对于开放任务，也可以提前构造 Verifier，把一部分 Rubric 转成脚本可验证条件。
-
-例如研究报告：
-
-~~~text
-是否存在指定章节
-是否达到引用数量
-是否包含一手来源
-Claim 是否绑定 Citation
-格式是否满足 Schema
-~~~
-
-这些都可以确定性检查；剩余的“分析是否合理”等开放判断再交给 Model / Human。
-
-因此开放 Task 不等于必须全部 LLM-as-Judge。
-
-### 【第四层：评测指标——通过多 Trial 量化实际表现】
-
-一次 Trial 成功不能代表 Agent 稳定。
-
-同一个 Task 可能：
-
-~~~text
-Trial 1 → Pass
-Trial 2 → Fail
-Trial 3 → Pass
-~~~
-
-因此指标至少包括：
-
-~~~text
-Success Rate
-Rubric Score
-Criterion Pass Rate
-Failure Rate
-~~~
-
-以及稳定性相关：
-
-~~~text
-pass@1
-pass@k
-pass^k
-Variance
-Retry Rate
-Recovery Rate
-~~~
-
-其中：
-
-~~~text
-pass@k
-→ k 次尝试至少成功一次
-→ 更偏能力上限 / 探索能力
-
-pass^k
-→ k 次全部成功
-→ 更偏一致性 / 可靠性
-~~~
-
-另外还要记录：
-
-~~~text
-Latency
-Turns
-Tool Calls
-Tokens
-Cost per Task
-Cost per Successful Task
-Policy Violation Rate
-~~~
-
-Metric 只是具体数字。
-
-所以需要明确：
-
-~~~text
-pass^k
-→ 指标
-
-Reliability
-→ 维度
-
-Cost
-→ 指标
-
-Efficiency
-→ 维度
-~~~
-
-### 【第五层：评测维度——从不同能力方向理解指标】
-
-最后才把指标组织成 Agent 能力维度：
-
-| 维度 | 核心问题 | 典型指标 |
-| --- | --- | --- |
-| Effectiveness | 能不能做对 | Success Rate、Rubric Score |
-| Reliability | 能不能稳定做对 | pass^k、Variance、Failure / Retry Rate |
-| Efficiency | 做对需要多少资源 | Latency、Turns、Token、Cost |
-| Safety | 是否在允许边界内完成 | Violation、Unauthorized Action、Approval Bypass |
-
-这里不再把 Outcome、Trajectory 和 Reliability 并列：
-
-~~~text
-Outcome / Trajectory
-→ 评测角度
-
-Reliability / Efficiency / Safety
-→ 评测维度
-~~~
-
-Trajectory 中产生的指标会根据业务意义映射到不同维度。例如重复 Loop 更偏 Efficiency / Reliability，Approval Bypass 属于 Safety。
-
-### 【五层设计之外，还需要 Evaluation Harness 把评测跑起来】
-
-五层回答的是“怎么设计评测”。
-
-运行层负责：
-
-~~~text
-Dataset
-→ 保存 Task Portfolio
-
-Evaluation Suite
-→ 按本轮目标选择 Task
-
-Evaluation Harness
-→ 初始化环境并运行 Trial
-
-Trial
-→ Agent 执行一次完整任务
-
-Evidence
-→ Outcome / Output / Trace
-
-Grader
-→ 执行具体评分
-
-Metrics Aggregation
-→ 汇总多 Trial 指标
-
-Benchmark
-→ 固定协议后做版本比较
-~~~
-
-所以 Task / Trial / Grader / Harness 不是第六、第七层评测维度，而是运行这套设计的工程对象。
-
-### 【评测成本要同时在方法和指标层治理】
-
-Benchmark 成本主要来自：
-
-~~~text
-运行多少 Task
-每个 Task 跑多少 Trial
-使用什么模型
-Tool / 环境执行成本
-Model Grader 调用
-Human Review
-~~~
-
-因此降本可以沿两个方向：
-
-第一，评分方法降本：
-
-~~~text
-能脚本评分
-→ 不使用 Model Judge
-
-能 Model Judge 稳定评分
-→ 不把全部样本交给人工
-
-人工
-→ 重点用于高风险、低置信和校准
-~~~
-
-第二，运行范围降本：
-
-~~~text
-日常变更
-→ Incremental / Regression Eval
-
-重大模型、Prompt、Harness 变化
-→ 扩大评测范围
-
-正式发布 / 高风险变化
-→ Full Benchmark
-~~~
-
-但任何降本都不能改变评测协议到失去可比性。
-
----
+这个思路和单次软件交付验收有联系，但两者范围不同：一项研发需求的 Verify 要判断当前版本是否满足既定验收合同；Benchmark 要在多任务、多次运行条件下测量 Agent 整体能力。若验收合同本身出现误读，需要先处理“正确标准从哪里来”的问题，参见[AI Coding 错误验收的需求追溯与修复回流](./AI%20Coding%20错误验收通过需求追溯与修复回流形成质量闭环.md)。
 
 ## 【项目实践映射】
 
