@@ -1977,6 +1977,8 @@ Lighthouse是Chrome浏览器内置的性能检测工具，可用于检测浏览�
 
 ## 12.浏览器渲染层性能优化思路
 
+浏览器 Style、Layout、Paint、Raster、Composite/GPU 的具体优化方案，统一关联到 [Web 性能优化工程体系的⑥ 浏览器渲染优化](./W-Web性能优化工程体系.md#7-浏览器渲染优化减少样式布局绘制合成与图形资源成本)；本篇保留浏览器内部机制的解释，不将其与 JavaScript 状态更新或任务调度混同。
+
 核心概述：浏览器渲染层性能瓶颈常来自主线程阻塞、Style / Layout / Paint 成本、图形场景复杂度以及不合理的任务调度。优化目标不是“让前端控制 CPU 抢占”，而是**减少不必要工作、缩短一次主线程连续占用时间，并在需要时主动把执行权还给浏览器，让输入处理和 Rendering Opportunity 有机会继续推进。**
 
 浏览器主线程、Event Loop、Task / Microtask、requestAnimationFrame、Timer、Yield 与 Worker 的完整调度关系统一参考 [浏览器主线程、Event Loop 与任务调度完整知识体系](./B-浏览器主线程Event Loop与任务调度完整知识体系.md)。本节只负责渲染层优化。
