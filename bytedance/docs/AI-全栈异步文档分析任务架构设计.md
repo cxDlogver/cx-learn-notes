@@ -480,3 +480,16 @@ BullMQ 官方支持按执行次数和退避策略进行失败重试，也提供�
 - SSE 与 WebSocket 都断开后，前端如何以数据库状态进行恢复和对账？
 - Agent 内部的 Checkpoint 与外部任务状态有什么区别，什么时候需要两层状态？
 
+
+## 【讨论延伸与完整知识追溯】
+
+本题原始题目、原始四项回答要点以及九节完整标准回答均保留在上文。后续围绕“Worker 是否必须启动 Agent → BullMQ 工作方式 → Redis Job 持久化 → PostgreSQL Outbox → Session 双写 → Raw Event 与任务是否合表 → Kafka Topic / Consumer Group / Offset → 长任务 Checkpoint”的讨论，已按知识边界沉淀在以下文件，不将其压缩为单一摘要或混入原题条件：
+
+- [服务端异步任务与消息处理体系](../../Full-Stack-AI-NOTES/F-服务端异步任务与消息处理体系.md)：BullMQ 与数据库 Job Store 的调用、持久化、调度和崩溃恢复；Kafka 自身日志、Consumer Group 的位点持久化、业务 Checkpoint 与 Exactly-once 边界。
+- [Redis 完整知识体系](../../Full-Stack-AI-NOTES/R-Redis完整知识体系.md)：RDB/AOF/fsync、noeviction、Job 的 Redis 故障窗口，以及 Cache / Session / Outbox 的数据权威和一致性边界。
+- [Web 身份认证、会话控制与访问控制体系](../../Full-Stack-AI-NOTES/W-Web身份认证会话控制与访问控制体系.md)：双存储会话的有效性与即时撤销不能只依赖最终一致性。
+- [Browser Monitor：异步任务与 Worker 可靠消费源码](https://github.com/cxDlogver/browser-monitor/blob/main/docs/异步任务与Worker可靠消费体系源码学习.md)：原始监控事件与 PostgreSQL Outbox 的事务、Claim、Retry、Dead Letter 以及单表/双表的真实取舍。
+- [Browser Monitor：Redis 源码](https://github.com/cxDlogver/browser-monitor/blob/main/docs/Redis体系源码学习.md) 与 [认证 Session 源码](https://github.com/cxDlogver/browser-monitor/blob/main/docs/账号认证Session与CSRF源码实战分析.md)：当前代码与 Redis 部署配置、缓存失效及授权撤销的具体故障窗口。
+
+**架构边界复述：** BullMQ / Kafka / Database Job Store 解决异步任务如何保存与交接；Worker 负责消费；固定 Workflow 负责按程序定义的步骤完成业务，LLM 可以只是其中一个步骤，只有确需动态决策时才引入 Agent。Kafka 的已提交 Offset 只表示 Consumer Group 对某 Partition 从哪里恢复，不是 Task 内部阶段记录；多分钟任务的断点续跑还需要持久 Checkpoint、可复用产物和幂等校验。这里列出的 BullMQ/Kafka 方案均为可选设计，**不是 Browser Monitor 当前已经实现的技术栈**。
+
