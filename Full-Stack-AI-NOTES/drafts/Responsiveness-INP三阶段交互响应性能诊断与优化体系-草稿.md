@@ -1025,7 +1025,7 @@ Lab 三段耗时与总交互时延回归
 本稿仅为独立草稿，不进入知识体系索引、不新增 QA、不修改现有主文档。正式通用知识入口仍是：
 
 - [Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)：用户体验分层、浏览器执行与优化总框架。
-- [性能专项优化](../X-性能专项优化.md)：Web Vitals、PerformanceObserver、Event Timing、LoAF 和 RUM 数据采集专项。
+- [性能测量与真实用户监控专项](../X-性能测量与真实用户监控专项.md)：Web Vitals、PerformanceObserver、Event Timing、LoAF 和 RUM 数据采集专项。
 - [浏览器主线程、Event Loop 与任务调度完整知识体系](../B-浏览器主线程Event Loop与任务调度完整知识体系.md)：Task、Microtask、Rendering Opportunity、Scheduler 等机制。
 - [页面流畅度与连续渲染性能完整知识体系](../Y-页面流畅度与连续渲染性能完整知识体系.md)：持续视觉更新的 Frame、Queue、LoAF 与长期运行成本。
 - [Loading-LCP 四阶段性能诊断与优化体系草稿](./Loading-LCP四阶段性能诊断与优化体系-草稿.md)：与本稿并列的加载体验草稿。
