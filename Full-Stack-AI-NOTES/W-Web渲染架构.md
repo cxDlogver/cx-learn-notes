@@ -114,7 +114,7 @@ SSR 所说明的“HTML 在请求时由服务端生成”
 浏览器一定重新下载这个资源
 ~~~
 
-缓存机制继续参考 [CDN缓存与浏览器缓存笔记](./C-CDN缓存与浏览器缓存笔记.md)。
+缓存机制继续参考 [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md)。
 
 ### 【SPA 的核心是在当前 Document 内完成导航】
 
@@ -879,7 +879,7 @@ Hybrid Rendering（混合渲染）
 
 - [服务端渲染完整链路](./F-服务端渲染完整链路.md)：深入 Request-time SSR、Request Context、Payload、Hydration 与 Server / Client 边界；
 - [SPA路由（history路由+hash路由）核心知识点笔记](./S-SPA路由（history路由+hash路由）核心知识点笔记.md)：深入 Client-side Navigation；
-- [CDN缓存与浏览器缓存笔记](./C-CDN缓存与浏览器缓存笔记.md)：深入 Freshness、Validation、TTL 与缓存层；
+- [Web 多级缓存与离线资源完整知识体系](./W-Web多级缓存与离线资源完整知识体系.md)：深入 Freshness、Validation、TTL 与缓存层；
 - [基于Chrome浏览器渲染原理](./J-基于Chrome浏览器渲染原理.md)：继续理解资源如何形成最终画面；
 - [Web 性能优化完整知识体系](./W-Web性能优化完整知识体系.md)：继续分析 TTFB、资源、JavaScript、Hydration 与交互成本。
 
