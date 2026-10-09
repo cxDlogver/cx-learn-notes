@@ -2874,6 +2874,10 @@ await consumer.run({
 34. [Apache Kafka 4.2 CommitFailedException](https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/CommitFailedException.html)：分区重新分配后原 Consumer 的 Offset Commit 可能失败。
 35. [Apache Kafka 4.2 ConsumerRebalanceListener](https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/ConsumerRebalanceListener.html)：消费分区被撤销与重新分配时的应用回调边界。
 36. [KafkaJS 2.1 Consuming](https://kafka.js.org/docs/2.1.0/consuming)：eachMessage 的心跳/长任务时限、eachBatch 的 isRunning、isStale、resolveOffset 行为。
+37. [KafkaJS Producing](https://kafka.js.org/docs/producing)：Producer.send 参数、Key/Partition 默认选择策略、acks 和自定义分区器。
+38. [KafkaJS 2.1 Consuming：Auto Commit / Manual Committing](https://kafka.js.org/docs/2.1.0/consuming)：eachMessage 的自动处理进度、eachBatch 的 resolveOffset / commitOffsetsIfNecessary、手动 consumer.commitOffsets 与 fromBeginning 边界。
+39. [KafkaJS 2.0 Migration](https://kafka.js.org/docs/migration-guide-v2.0.0)：默认分区器变化，Key 哈希兼容性及生产迁移注意事项。
+
 
 
 
