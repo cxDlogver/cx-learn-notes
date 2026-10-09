@@ -479,6 +479,52 @@ Worker C
 不同产品可能使用 Broker Delivery、Partition、Visibility Timeout、Distributed Lease、Database Row Lock 等实现。机制不同，问题相同。
 
 
+### 【Lease、Renewal 与 Fencing 区分执行权有效期和下游写入资格】
+
+原子 Claim 只能说明**本次哪个 Worker 成功领取任务**。长任务还要解决“原处理者失联怎么办”“旧执行者恢复时是否仍能写入”两个问题：
+
+~~~text
+Claim：本次谁有资格开始
+   ↓
+Lease：失去存活证明以后，这次处理权何时到期
+   ↓
+Renewal：在 owner 与版本仍有效时周期性延长租约
+   ↓
+租约过期：允许其他 Worker 取得新执行世代
+   ↓
+Fencing：下游在实际写入时拒绝失效的旧执行世代
+~~~
+
+**Lease 不等于最长任务时长**。30 秒租约、每 10 秒续租可以支撑十分钟的任务，前提是续租在到期前持续成功：
+
+~~~text
+ 0s  A 领取任务：version=1，lease_until=30s
+10s  A 续租成功：lease_until=40s
+15s  A 因网络故障或暂停，无法继续续租
+40s  旧租约过期
+45s  B 合法接管：version=2，开始执行
+50s  A 恢复：原先启动的异步请求仍可能完成
+~~~
+
+**租约到期不证明旧进程已经死亡。** Renewal 必须核验当前 owner、version 和租约是否仍有效，不能允许 A 在 B 接管后为旧执行世代续租。Fencing 也不是通知旧进程自行退出：必须由真正接受业务结果的数据库或下游系统，在写入点原子校验最新执行世代。
+
+例如任务表已经扩展 lease_version 与 result_ref 字段时，可通过条件 UPDATE 实现一种本地写入保护：
+
+~~~sql
+UPDATE jobs
+SET status = 'completed', result_ref = $1
+WHERE id = $2
+  AND status = 'processing'
+  AND owner = $3
+  AND lease_version = $4
+  AND locked_until > now()
+RETURNING id;
+~~~
+
+只有 RETURNING 得到记录，才说明该 Worker 在当前权威状态下成功提交。若结果存于另一张表或外部服务，版本约束需要移到真正的副作用提交点；先 SELECT 查询版本，再无条件写入仍有 Check-Then-Act 竞态。
+
+**Fencing 与幂等不是同一功能**：Fencing 阻止失效世代写入；幂等阻止合法新执行者对已经成功的相同业务操作重复产生效果。详见[面试问答第三章：Lease、Renewal 与 Fencing](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
 ### 【Crash Recovery 说明任务安全领取不等于只执行一次】
 
 考虑下面的时间窗口：
