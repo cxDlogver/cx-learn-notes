@@ -506,6 +506,84 @@ Kafka
 
 此时任务可能带来重复模型费用、重复外部副作用和报告互相覆盖。事实上，只能确认 A 在这段时间没有更新数据库活跃状态，**无法由此证明 A 已经停止执行**。这就是引入有效期、续租和写入隔离的动机。
 
+### 【只修改 RUNNING 无法避免重复领取，原因是 Worker 可能已在修改前读取到 PENDING】
+
+本节将“多个 Worker 同时领取同一项任务”还原为具体命令顺序。需要先把目标定义清楚：
+
+- **业务不变量**：在一次正常的 PENDING → RUNNING 领取竞争中，只能有一个 Worker 返回“领取成功”；其他 Worker 应得到“领取失败”，不得据此执行同一任务。
+- **状态信息**：PENDING 表示可领取，RUNNING 表示当前已有执行者；还应保存 owner / token 等能识别领取者的信息。
+- **判断依据**：不能只看 Redis 最终是否为 RUNNING，还要看哪个 Worker 真正成功完成了条件状态转换。两个 Worker 都执行 SET RUNNING、最终状态看起来正确，却可能已经同时开始执行业务。
+
+**第一种时间线：只有一个 Worker，或者第二个 Worker 在修改后才读取，当然不会重复领取。**
+
+~~~text
+初始：task:A.status = PENDING
+  ↓
+A：HGET task:A status → PENDING
+  ↓
+A：HSET task:A status RUNNING
+  ↓
+B：HGET task:A status → RUNNING
+  ↓
+B：判断不可领取，放弃
+~~~
+
+这证明**RUNNING 状态是有作用的**，但这个顺序只是一种可能，并不是并发系统能普遍保证的顺序。
+
+**第二种时间线：两个 Worker 都在任意一个修改发生之前读取，二者都会误判。**
+
+~~~text
+初始状态：task:A.status = PENDING
+
+时间    Worker A                          Redis                 Worker B
+T1      HGET status ────────────────────→ PENDING
+T2                                                          HGET status ─→ PENDING
+T3      本地判断“允许领取”
+T4                                                          本地判断“允许领取”
+T5      HSET status RUNNING ────────────→ OK
+T6                                                          HSET status RUNNING ─→ OK
+T7      开始 executeTask(A)                                  开始 executeTask(A)
+
+结果：Redis 中 status = RUNNING，看起来正常；
+      但 Worker A、B 都认为自己完成了领取，实际业务重复执行。
+~~~
+
+这种问题叫做 **Check-Then-Act Race（检查后执行竞态）**，即检查条件和执行状态修改之间存在其他执行者能够插入的窗口。
+
+下面是**错误示例，不能用作可靠的领取代码**：
+
+~~~ts
+// Worker A / B 同时运行此代码。
+const status = await redis.hGet("task:A", "status");
+
+if (status === "PENDING") {
+  // 这条修改命令本身是原子的，但不保证 status 仍为 PENDING。
+  await redis.hSet("task:A", "status", "RUNNING");
+
+  // 两个 Worker 都可能进入这里。
+  await executeTask("A");
+}
+~~~
+
+为什么 Redis 的“单条命令原子性”没有救这个问题？因为 Redis 确实**逐条**执行了四次请求：A.GET、B.GET、A.SET、B.SET，没有任何单条命令被同时执行或从内部被拆开。问题在于**客户端把一次业务领取拆成了两次以上彼此独立的 Redis 请求**，Redis 没有理由知道第二次 HSET 应该依赖第一次 HGET 的结果。
+
+再进一步，即使把状态和 owner 改为两条命令，也可能暴露中间状态：
+
+~~~text
+A：HSET task:A status RUNNING     （成功）
+B：HGET task:A status → RUNNING   （此时 B 不会领取）
+B：HGET task:A owner → nil        （读取到未完成的状态）
+A：HSET task:A owner worker-A     （成功）
+~~~
+
+这个例子说明两种不同风险：**检查与修改之间的竞态**，以及**多字段更新之间的中间状态**。后面不同机制要分别解决这些问题。
+
+真正需要实现的领取规则不是“Worker 发现 PENDING 后执行 SET”，而是：
+
+> **只有当任务在状态修改发生的那一刻仍是 PENDING，系统才把它转换为 RUNNING 并登记 owner；完成这一状态转换的执行者才得到成功响应。**
+
+**状态表示的是业务事实；原子条件转换才是并发领取的正确边界。**
+
 ### 【Claim 需要原子地选择和更新任务；数据库行锁不等于长任务租约】
 
 不安全的领取过程是两个 Worker 分别 SELECT 出同一条 PENDING 记录，然后各自开始执行。PostgreSQL 可用行锁和条件更新，把查询候选和更新处理权合并：
@@ -537,6 +615,289 @@ RETURNING t.*;
 4. Claim 事务提交，数据库行锁即告释放。
 
 **数据库行锁只保护 Claim 事务的原子性，不会随着十分钟业务执行一直占有。** 实际执行阶段的归属，需要持久化 owner 和 Lease 字段继续维护。参考：[PostgreSQL SELECT](https://www.postgresql.org/docs/current/sql-select.html)、[Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html)。
+
+### 【PostgreSQL 与 Redis 的共同目标是原子条件转换，而不是禁止其他人读取】
+
+在数据库中，针对**已知任务 ID**，甚至不一定需要先 SELECT 再 UPDATE：
+
+~~~sql
+UPDATE tasks
+SET status = 'RUNNING',
+    worker_id = $1
+WHERE id = $2
+  AND status = 'PENDING'
+RETURNING id;
+~~~
+
+两个 Worker 同时执行时，数据库会协调同一行的冲突更新，只有成功改变 PENDING 状态的操作能够返回该任务；另一个更新因条件不再满足而无法领取。应用必须根据 RETURNING 是否有行判断成功。对于**从一批待办任务中寻找可领取记录**，上一节展示的 FOR UPDATE SKIP LOCKED 能帮助多 Worker 避免等待彼此正在锁定的候选行。
+
+这里必须纠正一个误区：**FOR UPDATE 不是让其他 Worker 完全无法读取这条记录。** 在 PostgreSQL 常见的 MVCC 隔离级别下，普通 SELECT 仍可以读取某个可见版本；被约束的是相同行上相冲突的锁定与更新行为。我们要保证的是“只有一个人成功 Claim”，而不是“只有一个线程能访问数据”。
+
+Redis 提供不同形式的条件原子操作。对只需要“Key 不存在才创建”的锁场景，可用：
+
+~~~redis
+SET task:A:claim worker-A NX PX 30000
+~~~
+
+- NX：只有锁 Key 当前不存在时才能写入成功。
+- PX：指定有效期，避免执行者永久占用锁（例中三十秒仅为演示，实际租期要按业务设计）。
+- 调用方只有收到成功响应才获得锁；其他 Worker 获得空响应不能执行业务。
+
+不过，**抢到 task:A:claim 锁 Key 不自动等于成功把另一个 task:A Hash 从 PENDING 改为 RUNNING**。如果“创建锁”和“修改任务状态”又分成两个 Redis 请求，中间仍会出现故障窗口。复杂的队列领取必须把关联状态组合进一个正确的原子操作，或者将锁与任务状态维护为一致的协议。
+
+另外，如果队列本身用 Redis List 保存待处理任务，可用单条 LMOVE 实现“从 waiting 移出 + 放入 active”：
+
+~~~redis
+LMOVE waiting active RIGHT LEFT
+~~~
+
+与先 RPOP waiting 再 LPUSH active 相比，LMOVE 在一条命令里实现原子移动，其他 Worker 正常消费时不能重复移出同一个列表元素。注意列表元素仍可能由于业务重复入队、超时回收或人工恢复再次出现；active 中的项目还需要完成确认和失联恢复。这是**数据结构层面的原子领取**，不是任何 Job 都必须在 Hash 中设置 RUNNING。官方依据：[Redis SET](https://redis.io/docs/latest/commands/set/)、[Redis LMOVE](https://redis.io/docs/latest/commands/lmove/)。
+
+### 【MULTI/EXEC 保证提交后连续执行，却不能自动解决提交前读取旧状态的问题】
+
+Redis MULTI/EXEC 的运行顺序：
+
+~~~text
+客户端发送 MULTI
+    ↓
+命令进入事务队列，但尚未真正执行
+    ↓
+客户端发送 EXEC
+    ↓
+Redis 按排队顺序执行事务内命令
+    ↓
+执行期间不插入其他客户端的普通命令
+    ↓
+EXEC 返回结果
+~~~
+
+这提供了**执行阶段的隔离**。例如 MULTI → HSET status RUNNING → HSET owner A → EXEC，会使两个 HSET 在 EXEC 阶段连续执行，其他客户端不会在这两条命令之间读取到中间状态。
+
+但如果所有判断都发生在 MULTI 之前，两个 Worker 仍然能够各自基于旧值构造事务：
+
+~~~text
+初始：status = PENDING
+
+A：HGET status → PENDING
+B：HGET status → PENDING
+
+A：MULTI
+A：HSET task:A status RUNNING owner worker-A（QUEUED）
+A：EXEC → 成功，返回更新行数
+
+B：MULTI
+B：HSET task:A status RUNNING owner worker-B（QUEUED）
+B：EXEC → 同样执行成功
+
+最终：owner = worker-B
+但 A、B 都可能据此认为自己完成领取并进入业务。
+~~~
+
+**两个事务都不被穿插，不代表两个事务之间存在“检查 PENDING 才能改成 RUNNING”的业务约束。** MULTI/EXEC 不是自动的 Compare-And-Set；在 MULTI 内部排队 HGET 也只会收到 QUEUED，不能在客户端立即得到结果并据此决定下一条排队命令。
+
+因此这里需要额外的条件机制：WATCH 乐观并发控制、Lua 脚本，或某些场景下可直接表达条件的原子命令。
+
+### 【WATCH + MULTI/EXEC 让客户端先读取再修改，同时检测是否有人抢先修改】
+
+WATCH 可以在客户端读取之前监视某个 Key；如果该 Key 在 EXEC 之前被其他执行者改动，Redis 会让 EXEC 取消整个事务，而不是执行其中的修改命令。
+
+示意逻辑（同一连接中执行；实际代码必须使用能绑定同一连接的客户端 API）：
+
+~~~text
+A：WATCH task:A
+A：HGET task:A status → PENDING
+
+B：WATCH task:A
+B：HGET task:A status → PENDING
+
+A：MULTI
+A：HSET task:A status RUNNING owner worker-A（QUEUED）
+A：EXEC → 提交成功，status 已为 RUNNING
+
+B：MULTI
+B：HSET task:A status RUNNING owner worker-B（QUEUED）
+B：EXEC → 返回空结果：监听的 Key 已被 A 修改，本次事务取消
+
+B：不得开始处理；可重新读取状态并决定是否再尝试。
+~~~
+
+这里 B **不是在 A 执行事务时被阻止发送命令**；A 和 B 都可以发出 WATCH 和 GET。WATCH 的原理是**乐观冲突检测**：如果读后到提交前发生了相关修改，就不允许基于过期读取结果提交。
+
+补充两个边界：
+1. WATCH 必须发生在依赖该状态的读取**之前**，并且事务执行应使用同一 Redis 连接上下文；如果先 GET，后 WATCH，两者之间仍有竞态。
+2. WATCH 检测的是监视 Key 的变化，并不能自动检查“status 是否为 PENDING”。客户端仍要正确判断状态，而且 EXEC 取消后要正确处理失败，不能当作领取成功。
+
+官方依据：[Redis Transactions：Optimistic Locking Using Check-and-Set](https://redis.io/docs/latest/develop/using-commands/transactions/#optimistic-locking-using-check-and-set)。
+
+### 【Lua 把判断和修改放到 Redis Server 内，直接封闭 Check-Then-Act 竞争窗口】
+
+另一种实现是把状态检查、资格判断、写入与成功响应全部放进同一个 Lua 脚本，而不是让 Worker 各自先读出状态再修改。
+
+~~~lua
+-- KEYS[1] = task:A，ARGV[1] = 当前 Worker 的唯一领取标识
+local status = redis.call("HGET", KEYS[1], "status")
+
+if status ~= "PENDING" then
+    return 0
+end
+
+redis.call(
+    "HSET",
+    KEYS[1],
+    "status", "RUNNING",
+    "owner", ARGV[1]
+)
+
+return 1
+~~~
+
+两位 Worker 同时提交相同脚本时：
+
+~~~text
+Redis 最初：task:A.status = PENDING
+
+A：提交 Lua（请求可能与 B 同时到达）
+B：提交 Lua
+
+Redis 先执行 A：
+    读取 PENDING
+    判断可以领取
+    写 status=RUNNING, owner=A
+    返回 1
+
+Redis 才执行 B：
+    读取 RUNNING
+    判断不能领取
+    返回 0
+
+A：根据返回值 1 开始任务
+B：根据返回值 0 放弃任务
+~~~
+
+**保证发生在哪一步？** Redis 在脚本执行期间不会穿插其他客户端命令，所以 B 无法在 A 的 HGET 与 HSET 之间执行自己的 HGET。A 的脚本一旦成功结束，B 读到的就是更新后的状态。
+
+这是 Lua **原子执行（Atomic Execution）**的含义，也是这里的并发隔离效果。它不需要将 Redis 全局锁住直到十分钟的文档分析完成；脚本通常很快返回，之后所有 Worker 都可以继续访问 Redis，任务处理权必须由后续锁和 Lease 维护。官方依据：[Redis Scripting with Lua](https://redis.io/docs/latest/develop/programmability/eval-intro/)。
+
+也要明确：Redis 的 Lua 原子执行是**在一个 Redis 执行环境内**对脚本中相关命令的不可穿插保证，不意味着跨 PostgreSQL、外部模型和 Redis 的操作天然成为一个全局事务。Redis Cluster 中脚本访问 Key 也需要遵守集群的 Key/Hash Slot 约束。
+
+**可复现实验（演示单任务竞争，按顺序模拟两个 Worker）：**
+
+~~~redis
+HSET task:A status PENDING
+EVAL "local s=redis.call('HGET',KEYS[1],'status'); if s~='PENDING' then return 0 end; redis.call('HSET',KEYS[1],'status','RUNNING','owner',ARGV[1]); return 1" 1 task:A worker-A
+EVAL "local s=redis.call('HGET',KEYS[1],'status'); if s~='PENDING' then return 0 end; redis.call('HSET',KEYS[1],'status','RUNNING','owner',ARGV[1]); return 1" 1 task:A worker-B
+HGETALL task:A
+~~~
+
+预期：第一次 EVAL 返回 1，第二次返回 0；最终 status 为 RUNNING、owner 为 worker-A。串行演示验证的是**状态条件转换**；实际同时请求时，Redis 也会选择一个脚本先执行，**不保证一定是 A 胜出**，但应仍只有一个脚本返回成功。
+
+### 【区分原子执行、隔离性、一致性以及事务错误回滚，避免概念重新混淆】
+
+之前容易产生误解，是因为“原子性”被用于两种不同的语境：
+
+| 概念 | 在本次 Redis 领取示例中实际回答什么 |
+| --- | --- |
+| Redis Atomic Execution（原子执行） | 能否将一次领取的多步逻辑作为不可被其他客户端命令穿插的单元执行？ |
+| Isolation（隔离性） | 并发 Worker 能否观察到或介入另一个执行单元的中间过程？在 Redis Lua / EXEC 场景中，这与不可穿插执行描述的是同一保证的不同侧面。 |
+| Business Consistency（业务一致性） | 所有 Worker 并发竞争结束后，是否仍满足“一次 PENDING 领取最多一个成功者”的业务约束？需要正确的条件判断和状态写入。 |
+| ACID Transaction Atomicity（事务原子性） | 多步修改运行中出错时，之前成功的所有修改能否整体回滚，避免半成品？这不是 Redis Lua / EXEC 的通用保证。 |
+| Durability（持久性） | Redis 异常重启后，成功写入的状态能否恢复？受 AOF/RDB 与部署策略影响，不由脚本隔离性直接决定。 |
+
+**更准确的关系不是“原子执行 + 隔离性 + 一致性都是三种领取方法”，而是：**
+
+~~~text
+业务一致性目标：
+同一任务的 PENDING → RUNNING 领取只能产生一个成功者
+                     ↓
+业务状态转换：
+检查状态 + 判断领取资格 + 写入状态 + 返回结果
+                     ↓
+选择并发控制机制：
+- Redis 单条原子命令（如果能直接表达条件）
+- WATCH + MULTI/EXEC（冲突检测 + 事务提交）
+- Lua（服务端读取、判断和修改）
+                     ↓
+机制提供的执行性质：
+原子执行或并发冲突检测、隔离效果
+                     ↓
+维护业务一致性
+
+与上述并列但独立的另一个问题：
+执行中途失败，是否支持事务整体回滚？
+Redis Lua / MULTI-EXEC 不提供通用的 SQL 式回滚。
+~~~
+
+不能理解为“只要使用 Lua 或 MULTI/EXEC，就自动满足任何业务一致性”。例如，把 HSET 改成无条件覆盖状态，即使 Lua 不可穿插，A 和 B 仍可能先后成功执行错误的业务逻辑，系统仍然会重复消费。
+
+**Redis 事务与 Lua 的实际区别是：** MULTI/EXEC 将预先排好的命令在 EXEC 时连续执行，但单纯在客户端进行读后判断存在竞争窗口；WATCH 为该读后修改提供乐观冲突检测。Lua 将条件读取、判断和修改直接放入 Redis Server 端，所以通常更直接地表达原子条件更新。
+
+### 【执行期间不被穿插，不代表失败时自动回滚先前写入】
+
+下面用实际错误说明两种性质不能混淆。假设 Redis 的 counter Key 最初是字符串 hello：
+
+~~~redis
+SET task:status PENDING
+SET counter hello
+
+MULTI
+SET task:status RUNNING
+INCR counter
+SET task:owner worker-A
+EXEC
+~~~
+
+在 EXEC 执行阶段，SET status 成功、INCR 因值不是整数而报错、后面的 SET owner 仍会执行。其他客户端不能在事务命令之间插入，但命令的**运行时错误不会回滚成功的写入**，因此最终可以是 RUNNING、owner=A、counter 仍为 hello。Redis 官方文档明确区分 EXEC 前的排队错误和 EXEC 期间的运行时错误，并说明后者不会取消其余已排队命令。[Redis Transactions：Errors and Rollbacks](https://redis.io/docs/latest/develop/using-commands/transactions/#errors-inside-a-transaction)。
+
+Lua 也可能出现部分写入后报错：
+
+~~~lua
+redis.call("SET", "task:status", "RUNNING") -- 已成功
+redis.call("INCR", "counter")              -- 运行时错误，脚本终止
+redis.call("SET", "task:owner", "worker-A") -- 不再执行
+~~~
+
+在这个示例中，如果 counter 保存 hello，则第一项修改保留、第二项报错、第三项不执行。redis.call 会抛出脚本错误，redis.pcall 可以捕获错误，但**二者都不自动回滚之前的成功写入**。因此把前置条件检查好、把能够统一的数据更新收进合适的原子命令、校验执行结果，才是避免业务半成品的实际工程方法。
+
+这也说明了为什么 BullMQ 的可靠性不可能只由一句“Redis Lua 是原子的”解释完：**原子执行保护正常并发领取，业务结果与队列状态如何正确维护，还取决于任务状态机、锁令牌、错误路径、续租、回收和幂等设计。**
+
+### 【Browser Monitor 源码体现同一目标，但使用的是 PostgreSQL Claim】
+
+当前项目不是用 Redis Lua 领取 Outbox Job，而是在 [browser-monitor 的 OutboxWorker](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/worker/src/outbox-worker.ts) 通过 PostgreSQL 实现：
+
+~~~sql
+WITH candidates AS (
+  SELECT id FROM outbox_tasks
+  WHERE (
+    status = 'pending' AND available_at <= now()
+  ) OR (
+    status = 'processing' AND locked_at < now() - INTERVAL '5 minutes'
+  )
+  ORDER BY available_at, created_at
+  LIMIT $1
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE outbox_tasks o SET
+  status = 'processing', locked_at = now(),
+  locked_by = $2, attempts = attempts + 1
+FROM candidates c WHERE o.id = c.id
+RETURNING o.id, o.project_id, o.event_id, o.event, o.attempts;
+~~~
+
+这段代码用于证明：项目不会先在客户端查询一个 pending 任务，再把状态修改为 processing，而是用**同一 SQL**协调候选任务加锁与状态更新。它还允许 locked_at 超过五分钟的 processing 任务重新领取，因此“任务可能重新执行”的恢复机制与“正常同时竞争时最多一个领取”的安全机制必须分开理解。
+
+在当前源码中，完成任务更新时使用 WHERE id = $1 AND locked_by = $2 进行持有者条件校验，但未在 handle() 期间定期续租，也没有单调递增的世代校验。它属于真实的当前实现边界，不能将本节 Lua、WATCH、Lease Renewal 的教学示例描述成项目已经实现的功能。
+
+### 【本次讨论的面试回答要强调发生竞态的准确位置】
+
+如果被问到“两个 Worker 都会设置 RUNNING，为什么还要 Redis 原子操作”，可以这样回答：
+
+> RUNNING 能表达任务已经被领取，但它是一个状态值，不是独立的并发控制机制。如果两个 Worker 先后都读取到 PENDING，然后分别执行 HSET RUNNING，即使 Redis 单条命令是原子的，两个 Worker 仍然可能各自认为自己领取成功。
+>
+> 所以我们必须保证**任务资格检查与状态写入**属于同一个并发安全的条件转换。PostgreSQL 可以利用条件 UPDATE、事务和 FOR UPDATE SKIP LOCKED；Redis 则可以通过合适的单条条件命令、WATCH + MULTI/EXEC，或直接使用 Lua 在服务端读取、判断和修改。
+>
+> 原子执行强调命令不可被其他客户端穿插；在 Lua 与 EXEC 场景，这同时带来隔离执行效果。但它不等于 ACID 式运行时错误回滚；最终业务一致性仍取决于领取条件和状态转换是否写对。
+>
+> 正常并发领取只解决第一次的分配竞争。领取后 Worker 可能崩溃，任务还需要独立的租约、续租、超时恢复、ACK 和幂等机制，这属于下一阶段的可靠消费问题。
 
 ### 【Lease 的核心不是限制任务总时长，而是给处理权设置到期时间】
 
