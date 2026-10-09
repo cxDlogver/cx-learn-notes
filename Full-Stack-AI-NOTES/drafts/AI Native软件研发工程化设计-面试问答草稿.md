@@ -939,6 +939,475 @@ Lighthouse、实际 HTTP/HTML 和索引数据分层验收
 
 通用机制详见 [《SEO 工程体系》](https://github.com/cxDlogver/cx-learn-notes/blob/main/Full-Stack-AI-NOTES/S-SEO工程体系.md)；实际实现与更多边界详见 [《official-network SEO 工程体系源码分析》](https://github.com/cxDlogver/official-network/blob/main/docs/SEO工程体系源码分析.md)。通用知识以搜索生命周期为主线，不应被当前 Nuxt 实现限制。
 
+### 【专题补充：官网性能优化从白屏、布局稳定与连续流畅三个目标展开】
+
+这一专题承接需求分析阶段的“首屏和页面性能、交互与视觉体验”建设目标，说明技术方案怎样落到官网的真实资源、渲染与动画代码。**它不是要求官网逐一覆盖通用 Web 性能优化的六大领域**，而是基于当前官网的页面特点，选择资源、网络与页面交付、浏览器渲染和动画调度中实际相关的机制。下面同时保留“当前已实现的源码事实”和“可以进一步采用的设计模板”，后者不能写成项目已经验证的优化成果。
+
+### 【提问】
+
+**官网包含大量图片、首屏 Hero、页面过渡和持续视觉动画，你如何从减少白屏、减少视觉抖动、保证交互和滚动流畅三个目标设计性能方案？每项优化在代码中如何实现，为什么能降低对应的浏览器成本，又如何判断是否真正有效？**
+
+#### <u>1. 三个体验目标先决定关注的现象和验证指标</u>
+
+| 官网实际体验问题 | 首先回答的问题 | 主要指标与观测方法 | 优先选择的工程手段 |
+| --- | --- | --- | --- |
+| 首次访问或页面切换时长时间看不到内容 | 文档、首屏关键资源和页面内容在哪一步等待 | 首次导航 FCP（First Contentful Paint，首次内容绘制）、LCP（Largest Contentful Paint，最大内容绘制）；客户端路由切换另测新页面主体可见时间 | Nuxt 页面生成与缓存、CDN 与图片变体、关键资源加载优先级、非关键内容延后 |
+| 图片和交互效果造成页面“跳动”或尺寸变化 | 是否有非预期布局位移，是否频繁触发布局计算 | CLS（Cumulative Layout Shift，累计布局偏移）；Layout / Recalculate Style Trace 辅助定位 | 容器尺寸预留、稳定文档流、避免通过 width / left 等布局属性反复执行动画 |
+| 滚动、轮播、粒子和卡片动画出现卡顿 | 每帧 JavaScript、布局、绘制和合成工作是否过重 | FPS、Frame Time P95、LoAF（Long Animation Frames，长动画帧）；涉及点击反馈时额外分析 INP | transform / opacity、rAF、减少重复几何测量与框架更新、不可见时停做 |
+
+**FCP 优先的合理边界**：官网的直接需求是让用户尽快摆脱初始白屏，因此可以把 FCP 作为首要观察点；但 FCP 只表示首次出现符合统计条件的内容，并不证明首屏主要信息已经出现。LCP 受 Hero 客户端渲染影响，恰恰可能暴露“页面不白了但主体仍迟迟不见”的问题，不能因为存在 ClientOnly 就忽略 LCP。客户端 SPA 路由跳转一般不会天然重新产生一个传统文档导航的 FCP，应借助路由开始时间、页面主体可见标记和 Filmstrip 单独评价切换白屏。
+
+这里还需要严格区分“视觉抖动”与“帧卡顿”：CLS 衡量符合规则的非预期布局位移，重排、重绘、CSS 动画本身不自动等于 CLS；即使 CLS 为零，大量 Paint、Canvas 或 JavaScript 工作依然可能造成掉帧。
+
+#### <u>2. 资源优化一：Nuxt Image 处理图片格式、质量与响应式尺寸</u>
+
+**已实现。** 官网在 nuxt.config.ts 注册 @nuxt/image，配置默认 WebP 格式和响应式断点：
+
+~~~ts
+modules: ['@nuxt/image'],
+image: {
+  format: ['webp'],
+  screens: {
+    sm: 320,
+    md: 640,
+    lg: 960,
+    xl: 1280,
+  },
+},
+~~~
+
+页面中 [HubBrick.vue](https://github.com/cxDlogver/official-network/blob/main/app/components/join/HubBrick.vue) 使用的代表性片段为：
+
+~~~vue
+<NuxtImg
+  :src="image"
+  :alt="name"
+  width="1000"
+  height="1000"
+  sizes="md:200px 100px"
+  format="webp"
+  quality="80"
+  decoding="async"
+  loading="eager"
+/>
+~~~
+
+**设计模板**：先确定图片的 CSS 实际显示尺寸和设备断点，再输出相应的 srcset/sizes 候选、合适格式与质量；最后在浏览器 Network 核验最终 URL、Content-Type、真实传输字节和渲染尺寸，不直接根据 Git 中源图的大小推断用户下载量。WebP 是仓库已配置的格式，不能把 AVIF 说成当前已开启；SVG 适合图标、Logo 和适当的矢量图，不是对照片和复杂动画统一转换 SVG 的理由。
+
+~~~text
+原图与展示需求
+    ↓ 确认展示尺寸和设备范围
+图片处理服务提供尺寸、格式和质量变体
+    ↓ 通过 srcset / sizes 暴露候选
+浏览器选择并请求实际需要的图片
+    ↓
+解码与呈现；以 Network 和 LCP 分解验证效果
+~~~
+
+项目同时通过 Vite 插件改写图片 CDN 地址。必须区分“组件写了 NuxtImg”和“CDN 远程图像服务确实生成对应变体”，后者要通过实际请求验证。源码：[nuxt.config.ts](https://github.com/cxDlogver/official-network/blob/main/nuxt.config.ts)、[Nuxt Image 官方使用说明](https://image.nuxt.com/usage/nuxt-img)。
+
+#### <u>3. 资源优化二：按首屏重要程度区分懒加载与预加载</u>
+
+**懒加载已实现。** [Values.vue](https://github.com/cxDlogver/official-network/blob/main/app/components/join/Values.vue) 对图片显式使用：
+
+~~~vue
+<NuxtImg
+  :src="value.imageUrl"
+  :alt="value.title"
+  width="1600"
+  height="800"
+  sizes="lg:35vw xl:420px"
+  format="webp"
+  quality="80"
+  loading="lazy"
+/>
+~~~
+
+**设计原理**：原生 loading=lazy 允许浏览器在非关键图片尚未接近视口时推迟加载，减少初始请求竞争；具体起始距离由浏览器决定，不是严格等到图片真正进入屏幕后才请求。轮播中即使不透明度为零的图片，依旧可能因共享位置和浏览器策略被一起加载，因此需要用 Network 验证。
+
+**关键图片预加载属于参考模板，不是已经核验的项目实现。** 确认某张图属于首页重要 LCP 候选时，可以让资源在 HTML 中尽早暴露，必要时提供预加载提示：
+
+~~~vue
+<script setup lang="ts">
+// 仅在图片地址固定且确实是首屏关键资源时考虑。
+useHead({
+  link: [
+    {
+      rel: 'preload',
+      as: 'image',
+      href: '/images/hero.webp',
+      fetchpriority: 'high',
+    },
+  ],
+})
+</script>
+~~~
+
+或者让真实使用该图片的组件明确采取非延迟、高优先级加载：
+
+~~~vue
+<NuxtImg
+  src="/images/hero.webp"
+  width="1600"
+  height="900"
+  sizes="100vw"
+  loading="eager"
+  fetchpriority="high"
+  alt="首屏主要展示"
+/>
+~~~
+
+这里是**通用模板**，不是项目实际 Hero 的资源声明。使用响应式图像时，要确保 preload 与真实 srcset/sizes 选择一致，避免请求重复或错误尺寸。preload 主要提前获取当前页面关键资源；prefetch 则偏向未来可能用到的资源；不要把所有 JS、图片都设置为预加载或 high priority，否则可能阻碍真正的首屏关键资源。
+
+#### <u>4. 网络与页面交付一：CDN 分发和 HTTP 缓存复用解决不同阶段的成本</u>
+
+**已实现的是 CDN 路径转换。** 当前 [cdnImagesPlugin.ts](https://github.com/cxDlogver/official-network/blob/main/build/vite-plugin/cdnImagesPlugin.ts) 从配置的 CDN_URL 与 /images 前缀组合生成远程地址，并在适用的应用源文件中替换静态路径，接入方式为：
+
+~~~ts
+const CDN_URL = 'https://cdn.lawgenesis.cn/new/ui'
+
+vite: {
+  plugins: [
+    cdnImagesPlugin({ cdnURL: CDN_URL }),
+  ],
+},
+~~~
+
+路径变化的含义：
+
+~~~text
+源代码中引用：/images/example.jpg
+        ↓ 构建期按插件匹配规则改写
+浏览器获取：https://cdn.lawgenesis.cn/new/ui/images/example.jpg
+~~~
+
+**设计模板**：先确认资源是否可公开共享、URL 版本策略及缓存一致性，再分别决定浏览器缓存与 CDN 缓存策略。对带内容哈希且 URL 变更代表内容更新的公开静态产物，可以考虑：
+
+~~~http
+Cache-Control: public, max-age=31536000, immutable
+~~~
+
+这是缓存策略**示例**，不是项目当前 CDN 已采用该响应头的证据。实际表现要检查 Cache-Control、Age、ETag、实际 CDN 配置和浏览器 Network。浏览器本地缓存命中可以省去这次网络获取；CDN 命中通常减少回源，但浏览器到 CDN 之间仍然发生请求。路径改写、图片编码和缓存命中是不同能力，不宜混称为“提前缓存”。
+
+#### <u>5. 网络与页面交付二：Prerender / SWR 根据内容更新特点选择生成与复用时机</u>
+
+**已实现。** Nuxt 生产环境的部分真实 routeRules 为：
+
+~~~ts
+const routeRules =
+  process.env.NODE_ENV === 'development'
+    ? {}
+    : {
+        '/': { prerender: true },
+        '/contact': { prerender: true },
+        '/jobs': { prerender: true },
+        '/jobs/**': { prerender: true },
+        '/news': { swr: 86400 },
+        '/news/**': { swr: 86400 },
+        '/product/**': { prerender: true },
+      }
+~~~
+
+该代码是从当前完整配置中**摘取的部分路由**，不表示真实配置只包含这些路径。
+
+~~~text
+稳定公开内容：首页、产品、招聘等
+构建阶段预渲染 HTML → 部署静态结果 → 请求时直接交付
+                                                ↓
+更新依赖重新构建 / 部署
+
+允许短时旧内容：新闻等
+请求阶段生成或复用页面 → 缓存 → 过期后按 SWR 规则重新生成
+~~~
+
+核心是将 HTML 生成工作按页面特点提前或复用，从而降低请求时重复生成成本；Prerender 不代表全部静态资源都预先下载到用户浏览器，SWR 也不意味着每过 86400 秒就主动完成一次定时发布。实际新鲜度、过期重验证和部署缓存行为仍应核对。参考：[Nuxt Rendering](https://nuxt.com/docs/4.x/guide/concepts/rendering)。
+
+#### <u>6. 页面执行边界：ClientOnly 保护浏览器专用逻辑，但可能推迟首屏主体</u>
+
+**当前已实现的是整体 ClientOnly Hero。** 首页 [app/pages/index.vue](https://github.com/cxDlogver/official-network/blob/main/app/pages/index.vue)：
+
+~~~vue
+<div class="relative h-75 w-full md:h-145">
+  <ClientOnly>
+    <IndexHero />
+  </ClientOnly>
+</div>
+~~~
+
+它为 Hero 预留固定高度，且让 window、Canvas、rAF 等依赖浏览器的逻辑只在客户端运行；但 Hero 实际内容也需要等客户端 JS 运行和挂载才能出现。因此“减少服务端渲染工作”不必然等于“页面更早看到主要内容”，需要看实际 LCP Element 及客户端 Render Delay。
+
+**待验证的设计模板**是只把交互与 Canvas 层后移，静态标题、首屏主要信息和占位层仍可由服务端输出：
+
+~~~vue
+<template>
+  <section class="hero">
+    <!-- 静态主体由 SSR / Prerender 输出 -->
+    <h1>智能内容安全</h1>
+    <p>一站式多模态内容审查平台</p>
+
+    <!-- 只有依赖浏览器的动画层放在客户端 -->
+    <ClientOnly>
+      <HeroAnimation />
+    </ClientOnly>
+  </section>
+</template>
+<style scoped>
+.hero { position: relative; min-height: 500px; }
+</style>
+~~~
+
+这只是可对比的改造方案，不能写成当前首页已经实现“静态层与动画层拆分”。应比较当前 ClientOnly 整体 Hero 与拆分版本的首次内容可见时间、LCP 四阶段、JS 执行和主线程任务。
+
+#### <u>7. 视觉稳定：图片比例和固定容器先解决内容加载后的布局变化</u>
+
+**已实现。** [新闻页](https://github.com/cxDlogver/official-network/blob/main/app/pages/news/index.vue) 的轮播区域使用固定比例与宽度，代表性片段：
+
+~~~vue
+<div class="relative aspect-21/8 w-full overflow-hidden md:h-145">
+  <!-- 新闻轮播图片和文案 -->
+</div>
+~~~
+
+**通用模板**：显示内容未下载时，也让浏览器预先知道占位尺寸：
+
+~~~html
+<div class="hero-image">
+  <img src="/images/banner.webp" width="1600" height="900" alt="官网展示">
+</div>
+~~~
+~~~css
+.hero-image { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; }
+.hero-image img { width: 100%; height: 100%; object-fit: cover; }
+~~~
+
+这样可以降低图片加载后推开相邻文本和区块的风险。不过“有重排/重绘”不等于“产生 CLS”；需要确认是否真的发生符合 CLS 规则的非预期位置变化，特别是动画和紧邻交互发生的位移，不能混为一谈。
+
+#### <u>8. 合成友好动画：transform 与 opacity 减少布局属性变更</u>
+
+**已实现。** [app/assets/css/animate.css](https://github.com/cxDlogver/official-network/blob/main/app/assets/css/animate.css) 的页面过渡使用：
+
+~~~css
+.page-slide-enter-from {
+  opacity: 0;
+  transform: translateX(var(--page-shift));
+}
+.page-slide-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+.page-slide-enter-active {
+  will-change: opacity, transform;
+  transition:
+    opacity var(--page-enter-dur) var(--page-ease),
+    transform var(--page-enter-dur) var(--page-ease);
+}
+~~~
+
+**通用对比模板**：
+
+~~~js
+// 修改 left / width 等布局属性可能反复引发布局成本。
+element.style.left = x + 'px'
+
+// 单纯做视觉位移时优先考虑 transform。
+element.style.transform = 'translate3d(' + x + 'px, 0, 0)'
+~~~
+
+关键机制不是“用了 -webkit 就一定上 GPU”，也不是“transform 永远没有 Paint”：修改 width、height、left、top 等属性可能导致布局变化，继而影响绘制；transform / opacity 通常更可能沿合成路径更新视觉结果。浏览器仍决定是否创建合成层和是否需要重新栅格化。will-change 只是优化提示，不能给所有节点长期添加，否则图层和 GPU 内存成本可能反而增加。
+
+页面过渡还应评估感知完成时间：当前项目 enter 动画变量设为 1000ms，合成路径较高效不代表用户会认为过渡已经结束。应区分 INP 所关注的下一次绘制延迟与“新页面主体完全稳定可读”的感知时间。
+
+#### <u>9. rAF 只安排下一次绘制前的执行时机，不会自动减少每帧工作</u>
+
+**已实现持续 rAF。** [app/components/index/hero/index.vue](https://github.com/cxDlogver/official-network/blob/main/app/components/index/hero/index.vue)：
+
+~~~ts
+const scrollX = ref(0)
+const rafId = ref<number | null>(null)
+
+function tick() {
+  scrollX.value += 1.5
+  rafId.value = requestAnimationFrame(tick)
+}
+
+onMounted(() => {
+  rafId.value = requestAnimationFrame(tick)
+})
+
+onBeforeUnmount(() => {
+  if (rafId.value != null) cancelAnimationFrame(rafId.value)
+})
+~~~
+
+实际含义是浏览器在后续绘制前调用 tick，更新响应式位置，再触发相关组件更新。它不能保证 60 FPS，也不自动避免强制同步布局。每帧固定增加 1.5px 还会让移动速度随刷新率变化。
+
+**参考改进模板**使用 rAF 时间戳控制速度，并控制单帧异常时间跨度：
+
+~~~ts
+const position = ref(0)
+let rafId = 0
+let lastTime = 0
+const speedPxPerSecond = 90
+
+function tick(now: number) {
+  if (lastTime === 0) lastTime = now
+  const delta = Math.min(now - lastTime, 50)
+  lastTime = now
+
+  position.value += speedPxPerSecond * delta / 1000
+  rafId = requestAnimationFrame(tick)
+}
+
+onMounted(() => {
+  rafId = requestAnimationFrame(tick)
+})
+onBeforeUnmount(() => {
+  cancelAnimationFrame(rafId)
+})
+~~~
+
+这个改进只解决基于刷新率的移动速度问题，不自动降低 Vue 响应式写入成本。对于纯视觉连续动画，还可研究 CSS Animation 或局部非响应式数据；必须用 Performance Trace 判断是否值得调整。
+
+#### <u>10. 减少读写交错引起的强制同步布局，并控制持续计算量</u>
+
+**当前源码已存在逐帧测量，不等于已经完成这项优化。** [CelestialAuditCard.vue](https://github.com/cxDlogver/official-network/blob/main/app/components/index/CelestialAuditCard.vue) 会在循环中读取：
+
+~~~ts
+function anyCardPassing(cards: HTMLElement[], zone: DOMRect) {
+  for (const el of cards) {
+    const r = el.getBoundingClientRect()
+    if (centerInRect(r, zone)) return true
+  }
+  return false
+}
+~~~
+
+getBoundingClientRect() 本身并非每次都会强制重排，风险来自脚本此前写入使布局失效，而后续立刻读取布局信息，迫使浏览器提前计算。
+
+**参考模板：批量读取后统一写入。**
+
+~~~js
+// 不理想：每次循环交错读取尺寸与修改布局。
+for (const el of elements) {
+  const width = el.getBoundingClientRect().width
+  el.style.width = (width + 10) + 'px'
+}
+
+// 可改为分组读取，完成计算后再集中写入。
+const widths = elements.map(el => el.getBoundingClientRect().width)
+elements.forEach((el, index) => {
+  el.style.width = (widths[index] + 10) + 'px'
+})
+~~~
+
+对于长期不变的几何量，优先在 resize、ResizeObserver 或内容实际变化时更新缓存；对于持续移动的元素，若位置能由时间、初始值和速度算出，可以研究计算交叉关系而不是逐帧遍历所有 DOMRect。注意：ResizeObserver 适合尺寸变化，不能直接替代所有移动位置检测。
+
+另一个真实风险是 [ParticleEngine.vue](https://github.com/cxDlogver/official-network/blob/main/app/components/index/hero/ParticleEngine.vue) 每帧遍历约 300 个粒子并 clearRect 全量重画 Canvas；rAF 无法消除这些绘制工作。可在实验后评估减少粒子数、控制 DPR、减少不必要的响应式对象、离屏停止与按实际数据变化更新。
+
+#### <u>11. 动画生命周期优化：进入视口启动，不需要展示时可以停止</u>
+
+**部分已实现。** [HeroAuditFlow.vue](https://github.com/cxDlogver/official-network/blob/main/app/components/index/HeroAuditFlow.vue) 已经考虑减少动画偏好和 IntersectionObserver：
+
+~~~ts
+const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+if (reduce) {
+  active.value = true
+  return
+}
+
+io = new IntersectionObserver(([entry]) => {
+  if (entry?.isIntersecting) active.value = true
+}, { threshold: 0.35 })
+~~~
+
+这里实现的是进入可见区域后**激活一次**，不是离开后自动暂停持续动画。可以按以下独立的参考模板为持续 rAF 增加启停管理：
+
+~~~ts
+const root = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+let rafId = 0
+
+function frame() {
+  // 这里执行一次必要的动画计算和更新。
+  rafId = requestAnimationFrame(frame)
+}
+
+function start() {
+  if (rafId !== 0) return
+  rafId = requestAnimationFrame(frame)
+}
+
+function stop() {
+  if (rafId) cancelAnimationFrame(rafId)
+  rafId = 0
+}
+
+onMounted(() => {
+  if (!root.value) return
+  observer = new IntersectionObserver(([entry]) => {
+    if (entry?.isIntersecting) start()
+    else stop()
+  })
+  observer.observe(root.value)
+})
+
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  stop()
+})
+~~~
+
+组件模板中需要在对应容器上写 ref="root"。生产使用时还应处理暂停后恢复的时间戳重置、页面 visibilitychange、用户 reduced-motion 设置，并确保逻辑不会因多次开始而产生重复循环。这个“可见则执行、不可见则停做”的模板**尚非整个官网动画系统的统一现状**。
+
+#### <u>12. 性能验证将目标、浏览器时序与优化动作一一对应</u>
+
+当前 [app/utils/performance/client.ts](https://github.com/cxDlogver/official-network/blob/main/app/utils/performance/client.ts) 已有 createMetricSnapshot、collectNavigationSummary、collectResourceSummary、createPerformancePayload 等指标与资源汇总辅助函数，但应区分“采集与报告代码存在”和“真实线上采集链路已完整启用、长期分位数已经验证”。
+
+如果需要解释最小接入机制，可以给出以下**参考客户端插件模板**，并说明尚需把指标传给监控系统：
+
+~~~ts
+// app/plugins/performance.client.ts（参考模板）
+import { onFCP, onLCP, onCLS } from 'web-vitals'
+
+export default defineNuxtPlugin(() => {
+  onFCP(metric => console.log('FCP', metric.value))
+  onLCP(metric => console.log('LCP', metric.value))
+  onCLS(metric => console.log('CLS', metric.value))
+})
+~~~
+
+这类 Web Vitals 回调主要对应文档导航生命周期，不应将 Nuxt 每次客户端切换都当成重新产生 FCP。实际页面切换应另外定义“开始导航 → 新页面内容可见”的业务时序，并使用 Performance Mark / Filmstrip、DOM 和交互测试确认可见时间。
+
+验证时从体验问题进入受控实验，而不是只展示某个 API 已经调用：
+
+| 场景 | 实验记录 | 修改所针对的证据 | 验收要点 |
+| --- | --- | --- | --- |
+| 首页首次加载 | FCP / LCP、HTML 响应、资源 Waterfall、Filmstrip | LCP 四阶段：TTFB、Load Delay、Load Duration、Render Delay | 同环境多次比较，确认内容是否真的更早出现 |
+| 官网客户端路由切换 | 导航开始、主体可见与稳定时间、页面过渡动画时长 | 过渡遮挡、资源等待、组件挂载与异步数据 | 区分“点击已处理”和“页面可阅读” |
+| Join 大图场景 | 最终 URL、Transfer Size、Content-Type、请求发起时机 | Nuxt Image 变体、CDN 改写、lazy/eager 竞争 | 不用 Git 文件原大小冒充用户下载字节 |
+| 新闻轮播 / 图片布局 | CLS 对应的 Layout Shift、稳定尺寸 | 图片与轮播容器是否预留空间 | 只针对真实非预期位移下结论 |
+| Hero / Canvas 持续运行 | Frames、Long Animation Frames、主线程、Layout、Paint、CPU | 持续 rAF、响应式更新、DOM 测量、Canvas 重画 | 关闭某一类工作做 A/B，观察同条件掉帧变化 |
+
+实验阶段优先比较同版本浏览器、同设备与网络限制、同缓存状态、同页面与操作步骤；上线以后再按 Route、Version、Device 等上下文聚合真实访问数据。单次 Lighthouse 分数或源码中存在某种优化机制，都不能替代真实收益证据。后续“持续测试与部署复测”详见本文第 7 章，线上 RUM 与业务停留数据详见第 8 章。
+
+#### <u>13. 面试标准回答：按三个体验目标选择对应优化技术</u>
+
+官网的性能优化并不是全面套用一份技术清单，而是从用户浏览官网时最直接的三个体验问题出发：**首次访问和页面切换是否有明显白屏，图片或交互效果是否导致布局跳动，以及滚动和持续动画是否流畅。**
+
+第一部分是**加载体验**。因为官网以内容和图片展示为主，我首先关注 FCP，也就是用户多久能看到第一批内容，同时结合 LCP 判断主要内容是否真正出现。资源层通过 Nuxt Image 配合 WebP、图片质量、响应式尺寸和懒加载来减少不必要的图片字节与首屏资源竞争；关键首屏资源则需要尽早被发现，必要时才使用预加载或高优先级。网络和页面交付层，一方面使用 CDN 分发静态图片并按缓存规则复用资源，另一方面用 Nuxt 的混合渲染能力，将首页、产品等内容相对稳定的页面 Prerender，在构建阶段生成 HTML；新闻页面使用 SWR 兼顾更新与缓存复用。两者解决的是不同环节的等待，不是把预渲染等同于浏览器已经预加载资源。
+
+第二部分是**视觉稳定**。官网有图片、轮播和动态内容，需要预留容器宽高或比例，减少资源加载完成后重新占位导致的非预期布局偏移；在动画设计上，优先使用 transform 和 opacity 做视觉移动和渐变，而不是持续修改 width、left 等布局属性。这里以 CLS 关注布局偏移，但并不把所有重排重绘都视为 CLS。
+
+第三部分是**交互与持续流畅度**。复杂 Hero、粒子、卡片过渡等效果会持续占用浏览器主线程。对于 JavaScript 动画，项目采用 rAF 在重绘前调度更新，CSS 动画尽量走合成友好的属性；同时需要控制每帧计算量、避免 DOM 读写交错造成的强制同步布局，减少不必要的响应式计算与 Canvas 绘制，并逐步完善离屏停做的生命周期。rAF 只是调度机会，并不会自动消除掉帧。
+
+最后我通过 Lighthouse、Network 和 Performance 对加载、布局与主线程进行分析，用相同环境的 A/B 实验验证改动，后续再用真实用户数据评估体验。**这套方案的价值是从具体用户问题出发，找到对应成本、选择恰当机制并且验证结果，而不是为了使用某项性能技术就直接认定优化已经成功。**
+
+#### <u>14. 与通用知识和当前项目源码的衔接</u>
+
+- 通用性能分层与原理：[Web 性能优化完整知识体系](../W-Web性能优化完整知识体系.md)、[Web 性能优化工程体系](../W-Web性能优化工程体系.md)、[Web 性能度量与诊断知识体系](../W-Web性能度量与诊断知识体系.md)。
+- 项目事实、真实代码与待验证风险：[official-network Web 性能优化体系源码分析](https://github.com/cxDlogver/official-network/blob/main/docs/Web性能优化体系源码分析.md)；其中关注 Route Rules、Nuxt Image / CDN、ClientOnly Hero、rAF / Canvas / DOM 测量以及性能实验矩阵。
+- 技术权威来源：[Nuxt Image](https://image.nuxt.com/usage/nuxt-img)、[Nuxt Rendering](https://nuxt.com/docs/4.x/guide/concepts/rendering)、[web.dev LCP](https://web.dev/articles/optimize-lcp)、[web.dev Web Vitals](https://web.dev/articles/vitals)、[MDN requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)。
+
 ### 【工程初始化不仅是生成脚手架，更要先建立统一职责边界】
 
 既然已经明确技术体系，接下来就需要在大量页面开始开发之前，先确定整个项目应该遵循什么结构与开发规则。
