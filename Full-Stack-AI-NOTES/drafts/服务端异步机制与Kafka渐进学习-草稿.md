@@ -2460,13 +2460,215 @@ await consumer.run({
 >
 > BullMQ 更直接地管理逐 Job 领取、执行锁和 completed；Kafka 则管理持久化事件日志、分区归属和消费进度，适合事件流、多组订阅与可重放处理，两者不能只按“都是队列”理解为相同内部模型。
 
-## 7. 下一讲追问：Kafka Producer 怎样选择 Partition，Consumer 怎样实际读取和提交 Offset
+## 7. Kafka Producer 如何选分区，Consumer 如何执行处理并提交 Offset
 
-> **思考题：** Producer 连续发布同一文档的“开始分析 → 分析完成 → 报告更新”三个事件，Message Key 怎样控制分区选择？Consumer 使用 KafkaJS 的 eachMessage / eachBatch、autoCommit / manual commit 时，什么时间提交 Offset 才能避免尚未保存结果的业务被跳过？
+**本讲核心问题：** 向 Kafka 发送事件时是否必须明确指定 Partition？Producer、Broker、Consumer 谁负责什么？KafkaJS 的 eachMessage、eachBatch、autoCommit、manual commit 如何保证完成业务处理以后推进 Offset，同时避免提前确认和故障重复执行？
 
-下一讲从一个可运行的 Producer → Kafka Topic → Consumer 最小程序出发，逐步解释消息 Key、分区分配、消费与 Offset 提交行为；重点继续区分**日志读取顺序、业务完成顺序和已提交恢复位置**，不提前展开 Kafka 的所有 Broker 复制与事务机制。
+**先给结论：** Topic 必然包含 Partition；但 Producer 发布每条消息时通常只指定 Topic、Key 和 Value，由分区器按规则选择 Partition。Kafka Broker 为追加到对应 Partition 的记录分配 Offset；Consumer Group 分配 Partition 给 Consumer；Consumer 从日志读取消息，在业务结果成功保存之后将已完成进度提交。**消息被 Fetch、业务已成功、Offset 已 Commit 是三个不同事实**，不能混成一次操作。
 
-## 8. 参考资料与主文档关联
+### 【先用一条链路理解谁在什么时候做什么】
+
+~~~text
+HTTP API / Producer
+  1. 准备分析事件：eventId、documentId、type
+  2. producer.send(topic, key, value)
+                  ↓
+Producer Partitioner（决定发送到哪个 Partition）
+  3. 显式分区 > 根据 Key 哈希 > 无 Key 时的客户端默认选择规则
+                  ↓
+Kafka Broker / Topic / Partition
+  4. 把记录追加进某条 Partition 日志
+  5. 分配该 Partition 内独立的 Offset
+                  ↓
+Consumer Group / Partition Assignment
+  6. Group 已将该 Partition 分给某个 Consumer
+                  ↓
+Consumer / Fetch 与 eachMessage 或 eachBatch
+  7. 读取 Record（读取不等于完成）
+  8. 在 PostgreSQL 幂等保存结果
+                  ↓
+Offset Commit
+  9. 针对 Group + Topic + Partition 持久化下一次恢复位置
+~~~
+
+发送成功并不代表消费成功；同样，业务数据库提交成功也不等于 Kafka 已记录最新的 Committed Offset。如果在 8 与 9 之间崩溃，消息仍可能再次处理，这正是第五讲的 ACK Gap。
+
+### 【消息必须进入 Partition，但 Producer 不必每次手动指定它】
+
+Kafka Topic 创建时有 Partition 数量；如果创建时没有显式填写，服务端工具/管理接口可能使用 Broker 的默认分区配置，不意味着 Kafka 存在一个“没有 Partition 的 Topic”。
+
+例如在本地已有 Kafka Broker 时创建三个分区的 Topic：
+
+~~~bash
+kafka-topics.sh --bootstrap-server localhost:9092 \
+  --create --topic analysis-events \
+  --partitions 3 --replication-factor 1
+~~~
+
+这里 replication-factor=1 只用于本地最小演示，不是生产高可用配置。
+
+在 KafkaJS 中，发送 Record 时支持三种典型分区策略：
+
+| 消息配置 | 如何选择目标分区 | 使用建议 |
+| --- | --- | --- |
+| 显式 partition:2 | 将消息发给 Partition 2 | 运维/分区策略特定需求，不推荐业务里普遍写死分区编号 |
+| 不指定 partition，但有 key | 默认分区器将 Key 的哈希映射到当前有效分区 | 同一文档或订单希望按实体保持分区内事件顺序 |
+| 不指定 partition，也无 key | 由分区器决定；KafkaJS 默认文档描述为 Round-robin | 无业务实体顺序要求的事件 |
+
+**这里的 Round-robin 仅指当前 KafkaJS 文档所述的无 Key 策略，不是所有 Kafka Java/Go/其他客户端的统一保证。** 同样 Key 在当前分区数量和分区算法不变时通常进入同一 Partition；如果扩容分区、换分区算法或显式改发其他 Partition，则可能改变映射。Key 不影响 Kafka 消息是否可消费，只影响选择和业务局部顺序。
+
+事件设计：
+
+~~~javascript
+const documentId = "doc-1001";
+
+await producer.send({
+  topic: "analysis-events",
+  messages: [
+    {
+      key: documentId,
+      value: JSON.stringify({
+        eventId: "evt-1001-created",
+        documentId,
+        type: "analysis-started",
+      }),
+    },
+    {
+      key: documentId,
+      value: JSON.stringify({
+        eventId: "evt-1001-completed",
+        documentId,
+        type: "analysis-completed",
+      }),
+    },
+  ],
+  acks: -1,
+});
+~~~
+
+acks=-1 表示等待所有 In-Sync Replicas（同步副本集合）达到确认条件。Producer.send 按这个确认策略返回不等于消费者业务完成，亦不保证跨 PostgreSQL、Kafka 的单一事务。发送过程中遇到超时，也不能仅根据“调用返回错误”就断言 Kafka 一定没收到消息；真正的失败可能发生在 Broker 处理成功、Producer 尚未收到确认的窗口。[KafkaJS Producing](https://kafka.js.org/docs/producing)。
+
+### 【Node.js 最小演示：Producer 发布三条事件】
+
+依赖：
+
+~~~bash
+npm install kafkajs pg
+~~~
+
+文件 producer.mjs（需提前启动 Kafka Broker、创建 Topic）：
+
+~~~javascript
+import { Kafka } from "kafkajs";
+
+const kafka = new Kafka({
+  clientId: "document-api",
+  brokers: ["localhost:9092"],
+});
+
+const producer = kafka.producer({ allowAutoTopicCreation: false });
+await producer.connect();
+
+const id = "doc-1001";
+const events = [
+  { eventId: "evt-1001-1", documentId: id, type: "analysis-started" },
+  { eventId: "evt-1001-2", documentId: id, type: "analysis-completed" },
+  { eventId: "evt-1001-3", documentId: id, type: "report-updated" },
+];
+
+try {
+  await producer.send({
+    topic: "analysis-events",
+    messages: events.map(event => ({
+      key: event.documentId,
+      value: JSON.stringify(event),
+    })),
+    acks: -1,
+  });
+  console.log("消息已按确认策略提交给 Kafka");
+} finally {
+  await producer.disconnect();
+}
+~~~
+
+代码不手写 partition，由 KafkaJS 分区器根据相同 documentId 选择目标分区。在分区映射稳定的前提下，三个事件追加到同一分区日志。**这里示例是顺序形成业务事件后发送，不暗示任意并发发送者天然按业务发生时间全局有序。**
+
+### 【Consumer 使用 eachMessage 逐条执行，正常返回后可以自动推进 Offset】
+
+KafkaJS even 使用 eachMessage，底层仍然批量 Fetch 消息，但将它们逐条交给回调处理。KafkaJS 默认同一 Partition 中逐条顺序 await eachMessage；设置 partitionsConsumedConcurrently 可以让**不同** Partition 同时消费，并不等于同一个 Partition 可以不受控制地并发完成。
+
+~~~text
+Partition 0：100 → 101 → 102
+                   ↓
+eachMessage(100) await saveToPostgres
+                   ↓
+eachMessage(101) await saveToPostgres
+                   ↓
+eachMessage(102) await saveToPostgres
+
+假如另一个 Partition 1：
+Partition 1：200 → 201 → 202
+可以和 Partition 0 的处理并行
+~~~
+
+为演示消费侧幂等，用 PostgreSQL 唯一键记录事件的业务处理结果：
+
+~~~sql
+CREATE TABLE IF NOT EXISTS processed_events (
+  event_id TEXT PRIMARY KEY,
+  document_id TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  processed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+~~~
+
+文件 consumer-auto.mjs：
+
+~~~javascript
+import { Kafka } from "kafkajs";
+import pg from "pg";
+
+const kafka = new Kafka({
+  clientId: "analysis-consumer",
+  brokers: ["localhost:9092"],
+});
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const consumer = kafka.consumer({ groupId: "analysis-auto-example" });
+
+await consumer.connect();
+await consumer.subscribe({ topics: ["analysis-events"], fromBeginning: true });
+
+await consumer.run({
+  autoCommit: true, // 默认 true；让 KafkaJS 管理已完成进度的提交
+  partitionsConsumedConcurrently: 1,
+  eachMessage: async ({ topic, partition, message }) => {
+    const event = JSON.parse(message.value.toString());
+
+    // 必须 await，不能启动后台 Promise 后立即 return
+    await pool.query(
+      "INSERT INTO processed_events (event_id, document_id, event_type) " +
+      "VALUES ($1, $2, $3) ON CONFLICT (event_id) DO NOTHING",
+      [event.eventId, event.documentId, event.type]
+    );
+
+    console.log("业务保存成功", { topic, partition, offset: message.offset });
+    // 回调正常返回：表示本次消息处理函数完成；
+    // 提交实际发生时间仍由 KafkaJS 的自动提交策略控制
+  },
+});
+~~~
+
+运行前设置 DATABASE_URL，启动 node consumer-auto.mjs；另外终端运行 node producer.mjs。为便于观察示例使用单分区处理并发数 1。真实业务处理失败需要抛错，不能 catch 后直接 return；数据库操作已经成功但 Offset 尚未提交时，后续依然可能收到相同 Record，需要 PRIMARY KEY 或业务幂等方案。
+
+**autoCommit=true ≠ 每条消息回调返回就立即执行一次 Broker OffsetCommit 请求。** KafkaJS 根据消息/批次处理进度、配置的 autoCommitInterval / autoCommitThreshold、批次结束等条件持久化；它管理的是**已解析/完成消息的进度**，不是在业务进行中定时盲目确认后续尚未处理的消息。[KafkaJS 2.1 Consuming](https://kafka.js.org/docs/2.1.0/consuming)。
+
+## 8. 下一讲追问：Kafka 的重试、死信与 Producer 投递可靠性如何设计
+
+> **思考题：** Consumer 能正常维持心跳，但某个 Offset 的 LLM 调用持续失败时，Kafka 会像 BullMQ 一样自动对这个 Job 执行 attempts/backoff 并转给其他 Worker 吗？如果不能，该怎样设计重试、跳过与死信处理，同时不破坏分区内的业务顺序？Producer 超时又如何判断是否可以安全重试？
+
+下一讲围绕同一条事件从 Producer 投递失败到 Consumer 处理失败的两个具体窗口，逐步讨论重试与业务幂等，不先展开全部 Kafka 副本和事务架构。
+
+## 9. 参考资料与主文档关联
 
 1. [Node.js Learn：The Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)：运行时异步 I/O 和事件循环行为。
 2. [MDN HTTP：202 Accepted](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/202)：HTTP 请求已接受但尚未完成。
