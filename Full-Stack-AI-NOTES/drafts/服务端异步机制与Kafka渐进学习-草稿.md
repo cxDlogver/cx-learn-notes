@@ -1729,6 +1729,226 @@ console.log(await queue.getDelayed());
 
 这些查询能用于调试当前任务是否已经可领取、是否延迟中、完成后是否保留，以及是否存在任务积压。官方依据：[BullMQ Architecture](https://docs.bullmq.io/guide/architecture)、[Job Getters](https://docs.bullmq.io/guide/jobs/getters)。
 
+### 【wait 与 prioritized 的实际领取顺序：普通任务先于正数优先级任务】
+
+BullMQ 的 priority（优先级）决定**下一项应由哪个 Worker 领取**，不是决定 Job ID 大小，也不是允许高优先级任务强制停止已经执行中的 Job。
+
+默认 Redis 后端中，未设置 priority 或设置 priority:0 的普通任务存放在 wait List；设置正数 priority 的任务由 prioritized Sorted Set 管理。官方有一个容易违反直觉的规则：
+
+- **priority=0 表示没有显式优先级，但普通 wait 任务会先于所有正数优先级任务被领取。**
+- 正数优先级合法范围是 1 到 2097151，**数值越小，优先级越高**；相同正数优先级按 FIFO。
+- 普通 wait 默认 FIFO（也可通过 lifo 选项调整）；排序依据是可领取队列与相关调度结构，而非 jobId。自动生成的数字型 Job ID 只是识别任务和去重索引，不是通用调度规则。
+
+例如先全部入队、暂不启动 Worker：
+
+~~~javascript
+await queue.add("analyze", { id: "A" }, { jobId: "job-A" }); // 默认 priority 0
+await queue.add("analyze", { id: "B" }, { jobId: "job-B", priority: 5 });
+await queue.add("analyze", { id: "C" }, { jobId: "job-C", priority: 1 });
+~~~
+
+~~~text
+wait（普通任务）               prioritized（按优先级的有序集合）
+  A，priority=0                 C，priority=1
+                                B，priority=5
+
+在三个任务都已经入队、且没有暂停/限流等约束时：
+Worker 依次领取：A → C → B
+~~~
+
+这里的 A 首先执行并不是因为 ID 最小，而是因为**Redis Backend 的领取逻辑优先读取 wait List；取不到普通任务再从 prioritized 领取**。如果想让紧急、中等、普通三个等级严格按 1、5、10 排序，则所有待比较的任务都应设置正数 priority，不能让“普通任务”保留默认 0 后误以为它会排在最低优先级。
+
+**内部实现证据：** BullMQ 的 [moveToActive-11.lua](https://github.com/taskforcesh/bullmq/blob/master/src/commands/moveToActive-11.lua) 先对 waitKey 执行 RPOPLPUSH(waitKey, activeKey)，只有没有取得 Job ID 才调用 moveJobFromPrioritizedToActive；后者通过 ZPOPMIN 取得 Sorted Set 中分数最小的 Job。[BullMQ Prioritized](https://docs.bullmq.io/guide/jobs/prioritized) 明确说明 priority=0 的特殊规则。
+
+**注意这说明的是领取顺序，不是完成顺序。** 先领取的 A 如果执行十分钟，后领取的 C 可能只执行两秒就先完成；正在 active 的任务不会自动被更高优先级任务抢占。持续进入 wait 的 priority=0 任务也可能让正数优先级任务长期等待，应按业务量规划队列与调度策略。
+
+### 【delayed 是尚未到期的调度状态，按执行时间而不是 Job ID 排序】
+
+通过 delay 配置延迟：
+
+~~~javascript
+await queue.add(
+  "analyze-document",
+  { documentId: "doc-delayed" },
+  { jobId: "report-doc-delayed", delay: 5000 }
+);
+~~~
+
+delay 单位是毫秒，表示至少等待五秒后才具备被调度的资格。也可以在 Processor 执行失败后使用 attempts + backoff 配置，使同一 Job 等待一定时间再重新执行：
+
+~~~javascript
+{
+  attempts: 3,
+  backoff: { type: "exponential", delay: 1000 }
+}
+~~~
+
+delayed 由 Sorted Set 按到期分数管理，而非放在 FIFO List 的尾部睡眠。到期后，由 BullMQ 的调度逻辑将其转为可领取：priority=0 的进入 wait List，有正数优先级的进入 prioritized。**到期不代表恰好开始执行**；Worker 可能忙碌，队列也可能暂停或存在其他限制。[BullMQ Delayed](https://docs.bullmq.io/guide/jobs/delayed)。
+
+**纠正前面讨论中容易产生误导的排序示例：**
+
+~~~text
+A：10:00:00 提交，立即执行，进入 wait
+B：10:00:01 提交，delay=5000，进入 delayed
+C：10:00:02 提交，立即执行，进入 wait
+
+10:00:03（无 Worker 消费）：
+wait 的逻辑 FIFO 领取顺序：A → C
+delayed：B 将在 10:00:06 到期
+
+10:00:06：B 从 delayed 提升到 wait
+在当前 Redis Backend 默认 FIFO、没有其他插队条件时：
+wait 逻辑领取顺序：A → C → B
+~~~
+
+**不能笼统地说“到期的 delayed 任务永远会抢在此前 waiting 的普通任务之前”。** 上述结论有明确源码依据：BullMQ 的 [promoteDelayedJobs.lua](https://github.com/taskforcesh/bullmq/blob/master/src/commands/includes/promoteDelayedJobs.lua) 对到期且 priority=0 的 Job 使用 LPUSH(waitKey, jobId)；Worker 的 moveToActive 对 wait 使用 RPOPLPUSH(waitKey, activeKey)，即从右端领取。所以**新的到期任务加入 List 左端，先前排队任务位于更靠右的可消费端**。
+
+Redis List 的“左端/右端”是底层存储方位，不能仅凭 LPUSH 就断言任务在逻辑上最先执行；必须和 Worker 实际从哪一端消费一起分析。如果某个 delayed Job 有 priority=1，它到期后进入 prioritized 而不是普通 wait，其领取顺序还受优先级集合与 wait 优先消费规则共同影响。
+
+由此，三种排序规则应当分开：
+
+| Job 类型 | 进入的调度结构 | 核心排序原则 |
+| --- | --- | --- |
+| 默认普通任务（priority=0，delay=0） | wait List | 默认 FIFO，已有任务先于后来进入 wait 的普通任务 |
+| 显式优先级任务（priority>0，delay=0） | prioritized ZSET | 正数越小越优先；同级通常 FIFO；在没有普通 wait 任务时被领取 |
+| 延迟任务（delay>0） | delayed ZSET，随后转入 wait/prioritized | 先按到期时间确定何时具备可执行资格，再由目标状态结构决定实际领取顺序 |
+
+### 【BullMQ 的原子领取由内部 Lua 完成，业务侧不需要再写 WATCH】
+
+从 Worker 获取 Job 的内部过程可以拆成如下阶段：
+
+~~~text
+Worker 准备领取下一项任务
+     ↓
+Redis 执行 BullMQ 内部 moveToActive 脚本
+     ↓
+先提升部分已经到期的 delayed Job
+     ↓
+检查队列是否暂停、全局并发或限流等调度约束
+     ↓
+尝试从 wait 移动一个 Job ID 到 active
+     ├─ 有 Job：获得该任务
+     └─ 没有：尝试从 prioritized 中提取优先级最高的 Job
+     ↓
+prepareJobForProcessing：为本次领取建立锁、记录开始执行信息等
+     ↓
+将 Job 内容及锁信息返回给 Worker
+     ↓
+Worker 调用 Processor
+~~~
+
+这里的领取与锁建立位于 Redis 后端的原子执行过程内，因此两个正常竞争的 Worker 不会同时把同一个等待 Job 当作自己成功领取的任务。**BullMQ 已实现状态转换协议，业务不需要再对其内部 Key 执行 WATCH、MULTI/EXEC 或手写 Lua 抢锁**，也不应该绕开 BullMQ API 去改 wait/active/prioritized 等结构。
+
+而这并不表示 Redis 与外部数据库之间也存在同一个事务。Lua 的不可穿插范围是 Redis 内部的状态处理，不覆盖随后发生的 LLM、HTTP 和 PostgreSQL 操作。源码参考：[moveToActive-11.lua](https://github.com/taskforcesh/bullmq/blob/master/src/commands/moveToActive-11.lua)。
+
+### 【BullMQ 自动维护任务锁、续租和停滞恢复，但不会停止已失去锁的旧代码】
+
+Worker 领取成功后，BullMQ 在 Redis 中为这次 Job 执行维护带 TTL 的锁，处理期间周期性续锁。常见配置：
+
+~~~javascript
+const worker = new Worker("document-analysis", processor, {
+  connection: { host: "127.0.0.1", port: 6379 },
+  lockDuration: 30000,
+  maxStalledCount: 1,
+  concurrency: 2,
+});
+~~~
+
+解释：
+
+- lockDuration=30000：本次执行锁的有效期为三十秒，**不是 Job 最长只能运行三十秒**。长任务能够通过续锁持续运行；默认续锁时机通常相当于锁有效期的一半左右。
+- concurrency=2：当前 Worker 最多并发处理两个 Job，主要适合 I/O 密集型，不等于自动启动两个 OS 线程。
+- maxStalledCount=1：限制因失去锁而被恢复的次数，防止任务因持续阻塞而无限反复领取。
+
+~~~text
+A 领取 Job，取得 BullMQ 锁
+       ↓
+A 执行 LLM 调用，正常周期性续锁
+       ↓
+CPU 阻塞 / 进程暂停 / 崩溃，续锁没有成功
+       ↓
+锁 TTL 失效
+       ↓
+BullMQ 检查 Job 是否 stalled
+       ├─ 未超限：返回 waiting，其他 Worker 可以领取
+       └─ 超限：标记 failed
+       ↓
+B 合法接管
+       ↓
+A 可能又恢复运行，因此仍存在双执行者
+~~~
+
+关键边界：
+
+1. BullMQ 能校验**自己队列内部**的执行锁与任务令牌，从而防止失效 Worker 合法完成队列的 completed 状态转换。
+2. 它**不会强制杀死**执行中的旧 Node.js 函数，也不会自动撤销 LLM 请求、支付扣款、邮件发送或 PostgreSQL INSERT。
+3. stalled 是事件/恢复动作，**不是一个独立的持久 Job 状态**。BullMQ v2 起常见的 stalled 和 delayed 调度已不要求另行运行旧式 QueueScheduler。[BullMQ Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)、[BullMQ Stalled](https://docs.bullmq.io/guide/jobs/stalled)。
+
+### 【Processor 返回、抛错与 ACK 的关系，以及为什么业务幂等仍是必要的】
+
+Worker 的 Processor 正常返回后，BullMQ 尝试把 active Job 转到 completed，并记录返回值；抛出错误后依据重试配置放回 waiting / delayed，或达到重试上限进入 failed。因此普通 Worker 不需要手动发送逐 Job ACK。
+
+**业务错误不能被吞掉**：如果 LLM 或 PostgreSQL 写入失败，但 catch 之后直接正常 return，BullMQ 可能认为处理成功并更新 completed。对需要重试的错误应抛出；对确实不可重试的错误则采用清晰的永久失败策略。
+
+最重要的两个故障窗口：
+
+~~~text
+窗口 1：业务尚未保存成功，Worker 崩溃
+       ↓
+     BullMQ 锁过期后可恢复 Job
+       ↓
+     不遗漏处理的机会
+
+窗口 2：PostgreSQL 已经保存报告，BullMQ 尚未 completed
+       ↓
+     Worker 崩溃 / 失去锁
+       ↓
+     其他 Worker 可能再次运行相同 Job
+       ↓
+     必须利用业务幂等避免生成第二份结果
+~~~
+
+即使 BullMQ 通过 Job Lock 拒绝旧 Worker 对**队列状态**的非法更新，也不能阻止合法的新 Worker 把已经扣过款的业务再次扣款。正确区分：
+
+| 可靠性能力 | BullMQ 已经封装 | 应用仍需保证 |
+| --- | --- | --- |
+| 正常多 Worker 安全领取 | 是：原子状态转换 | 不手改底层 Redis Key |
+| 活跃 Job 的锁、续租、stalled 检测 | 是：由 Worker 和内部机制执行 | 避免长时间阻塞 Event Loop；监控停滞 |
+| 失败重试与退避、任务状态变更 | 是：按配置调度 | 哪些错误可重试、重试是否安全 |
+| completed / failed 任务确认 | 是：Processor 成功返回或失败后处理 | 返回之前业务结果应满足持久化条件 |
+| 相同 Job ID 重复 add 去重 | 是：仍然存在的同队列 Job ID 不重复添加 | 业务 ID 设计；Job 删除后不再据此去重 |
+| 阻止失效 Worker 写 PostgreSQL | 否；只保护自己的队列状态 | 对需要强所有权约束的业务写入做原子 Fencing 校验 |
+| 同一支付/邮件/报告不重复产生业务结果 | 否 | 唯一约束、幂等键、外部副作用补偿或对账 |
+| Redis 异常重启仍能恢复全部最近任务 | 不自动保证零数据丢失 | AOF / Redis 部署、备份、可靠性目标 |
+| PostgreSQL 业务写入与 Redis queue.add 原子提交 | 否；二者不是同一个本地事务 | 需要时采用 Transactional Outbox 与可靠投递 |
+
+注意 Job ID 去重与业务幂等不等价：BullMQ 对仍保留在同一 Queue 的 jobId 可以去重，但是完成后被清理的 Job 不再阻止同一个 jobId 重新加入。对于重复执行的同一个已入队 Job，BullMQ 也可能因租约恢复而再次调用 Processor。因此不能把 jobId、Lock、去重键与业务结果的数据库唯一约束混为同一个机制。[BullMQ Job IDs](https://docs.bullmq.io/guide/jobs/job-ids)。
+
+### 【生产持久化、跨系统交接和真实项目映射构成最后的可靠性边界】
+
+BullMQ 默认 Redis Backend 通过 Redis 保存任务，因此必须考虑 Redis 的持久化和容量边界：官方推荐开启 AOF，并将 maxmemory-policy 设置为 noeviction，避免用于队列的数据 Key 被 Redis 当作可淘汰缓存删除。AOF 每秒刷盘仍可能损失最近写入，并不意味着 queue.add 返回成功就达到了零丢失承诺。[BullMQ Going to production](https://docs.bullmq.io/guide/going-to-production)。
+
+还有 Producer 的跨系统双写：
+
+~~~text
+HTTP API：PostgreSQL 中创建业务请求记录
+             ↓
+         Redis queue.add 提交 Job
+             ↓
+         两个持久化系统不共享本地事务
+
+若 PostgreSQL 已提交、Redis 入队之前崩溃：
+数据库里存在请求，但队列里没有对应 Job。
+~~~
+
+对不能漏投的关键请求，可通过 Transactional Outbox 在 PostgreSQL 业务事务内同时记录业务请求与待投递事件，由独立投递器将事件送入 BullMQ，并在 BullMQ / 下游以稳定事件 ID 实现去重；这样是**可靠交接和重试**，仍不等于“跨 Redis/PostgreSQL/LLM 自动恰好执行一次”。
+
+**与 Browser Monitor 源码的边界**：当前 [OutboxWorker](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/worker/src/outbox-worker.ts) 使用 PostgreSQL 的 FOR UPDATE SKIP LOCKED 领取 outbox_tasks，并在数据库中记录 processing / locked_at / locked_by；它不是 BullMQ Worker，不存在 BullMQ 内部 wait/prioritized List 或 BullMQ 自动续锁。因此不能把本讲的 BullMQ 特性直接描述成当前项目已经实现的功能，只能作为可比较的另一种任务调度方案。
+
+**面试可以归纳为：**
+
+> BullMQ 用 Queue.add 接收 Job，在默认 Redis 后端把任务内容保存到 Hash，把可调度状态组织在 wait、prioritized、delayed 等 Redis 结构中。Worker 通过内部原子脚本从 wait 或 prioritized 领取 Job，移动到 active 并建立有期限的锁；Worker 自动续锁，失联后通过 stalled 检测恢复任务，成功或失败则自动维护完成状态与重试。普通 wait 任务默认 FIFO 且优先于显式正数 priority 任务；delayed 到期只是重新获得调度资格，不能断言它会立即抢先执行。业务仍需负责报告/支付的幂等性、下游 Fencing 和跨系统持久化一致性，因此 BullMQ 提供的是队列运行可靠性，不是自动覆盖全部业务副作用的全局事务。
+
 ## 5. 下一讲追问：结果已成功但 ACK 未提交时，为什么可能重复执行
 
 > **思考题：** Worker 已成功把报告写入 PostgreSQL，但还没把任务标记 completed（或 Kafka Consumer 尚未提交对应 Offset），进程突然崩溃。任务重启以后是否可能再次执行？怎样避免再次调用昂贵的 LLM？反过来，把 ACK 提前到写报告之前，会有什么风险？
