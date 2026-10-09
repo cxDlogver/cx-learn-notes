@@ -2130,13 +2130,120 @@ COMMIT
 >
 > Kafka 的 Offset Commit 也是确认消费进度，但它记录的是某 Consumer Group 在特定 Partition 下一条要处理的位置，并不把某条原始消息标记为 completed 或删除。读写外部数据库时仍然存在处理结果提交与位点提交之间的失败窗口。
 
-## 6. 下一讲追问：Kafka 的 Topic、Partition、Offset 和 Consumer Group 如何共同完成分工与恢复
+## 6. Kafka 的分区日志与 Consumer Group 怎样实现协作消费和故障恢复
+
+**本讲核心问题：** 前一讲 BullMQ 把 waiting Job 移到 active，完成后确认 completed。Kafka 为什么使用 Topic、Partition 和 Offset 保存事件，Consumer Group 又如何让多个实例并行处理、故障后恢复？
+
+**先给结论：** Kafka 把消息追加保存到 Topic 下的 Partition 日志中，消费后并不会因为某个 Consumer 完成处理而立即移除原记录。Consumer Group 代表一个逻辑订阅者：同组 Consumer 分摊 Partition，并按 Group + Topic + Partition 保存已确认消费位置；成员失联会触发 Partition 重新分配，新 Consumer 从该组已提交的 Offset 恢复。它解决的是**消息顺序、并行消费和消费进度恢复**，不是天然保证 PostgreSQL、支付、LLM 的外部效果绝对只产生一次。
+
+### 【Topic、Partition、Offset 共同构成可保留的有序消息日志】
+
+Topic（主题）表示一类业务事件流。Partition（分区）是 Topic 下独立追加和读取的一条有序日志。Offset（偏移量）表示记录在**某个 Partition 内部**的位置，而不是整个 Topic 的全局编号：
+
+~~~text
+Producer（发布 AI 文档分析事件）
+        ↓
+Topic：analysis-events
+        ├── Partition 0： Offset 0: doc-A → 1: doc-C → 2: doc-F
+        ├── Partition 1： Offset 0: doc-B → 1: doc-E → 2: doc-H
+        └── Partition 2： Offset 0: doc-D → 1: doc-G → 2: doc-I
+                     ↓
+        每个分区独立按 Offset 顺序追加与读取
+~~~
+
+Partition 0 / Offset 2 与 Partition 1 / Offset 2 是不同的记录。Kafka 对单个 Partition 的日志顺序提供保证，却没有一个天然的整个 Topic 全局消息顺序。Producer 可用 documentId 作为 Message Key，让同一文档的事件在稳定的分区映射条件下进入同一 Partition，从而实现分区内的事件顺序。若未来增加 Partition 数量、调整分区器，Key 到 Partition 的映射可能改变，不能将其误写成永久不变的绝对保证。
+
+Kafka 的日志记录不因为某个 Group 消费过就立即从原 Topic 删除。消息保留取决于 Topic 的 Retention、清理等策略。这使同一份事件能够供多个独立组消费，并允许在仍被保留的范围内重放。[Apache Kafka Introduction](https://kafka.apache.org/43/getting-started/introduction/)。
+
+### 【Consumer Group 同时解决组内负载分担与组间独立订阅】
+
+Consumer（消费者）是实际读取与处理消息的进程或实例。Consumer Group（消费者组）通过 group.id 标识一组共同承担一个逻辑订阅任务的 Consumer。在常规 Consumer Group 的稳定分配中，一个 Partition 对同组中的某个 Consumer 独占分配，而一个 Consumer 可以负责多个 Partition。
+
+例如 Topic 有三个 Partition，Group A 有两个 Consumer：
+
+~~~text
+Topic analysis-events
+  Partition 0 ──────────► Group A / Consumer A1
+  Partition 1 ──────────► Group A / Consumer A1
+  Partition 2 ──────────► Group A / Consumer A2
+~~~
+
+这只是**一种可能的分配结果**，具体由 Group 的分配策略决定。同一 Topic 如果有 3 个 Partition、5 个同组 Consumer，则最多 3 个 Consumer 可以从这 3 个 Partition 获得分区分配，另外 2 个不会凭空把某 Partition 再拆给自己处理。分区数量因此影响该 Topic 在常规消费组中的最大独立消费实例并行度。
+
+如果再新增 Group B（比如审计服务），它也能消费同一 Topic 的所有 Partition：
+
+~~~text
+                      Topic：analysis-events
+                       Partition 0 / 1 / 2
+                          │         │
+                          ▼         ▼
+                 Group A：报告分析   Group B：审计
+                 A1、A2 分摊分区     B1 独立订阅
+                 独立提交 Offset     独立提交 Offset
+~~~
+
+A 在 Partition 1 已提交 Offset 100，不意味着 B 的进度也变成 100。组间可以各自读取相同原始消息。**Kafka 的逻辑不是“一个消息被一个 Worker 删除”，而是“一个 Topic 允许不同逻辑订阅者维护独立进度”。**
+
+版本说明：这里讲的是常规 Kafka Consumer Group。Kafka 4.2 提供另一种 Share Group 消费模式，支持按记录共享与确认，其机制不遵守传统的“每个 Partition 同组只分配给一个 Consumer”的上位规则；本节暂不延伸。[Kafka 4.2 Upgrading](https://kafka.apache.org/42/getting-started/upgrade/)。
+
+### 【Offset 区分日志位置、读取位置和确认后的恢复位置】
+
+同一 Group + Topic + Partition 下，要区分：
+
+- Record Offset：某条原始消息在 Partition 日志中的位置。
+- Consumer Position：Consumer 下一次打算 Fetch 的位置。消息已经被 Fetch 或读入内存，**不证明业务处理完成**。
+- Committed Offset：Consumer Group 持久记录的恢复位置，通常表示**下一条需要消费的 Offset**，不等于某条消息的已完成标记。
+
+举例：
+
+~~~text
+Partition 1：
+   Offset 100     Offset 101     Offset 102     Offset 103
+      已完成         已完成          处理中          等待
+
+Group A 的 committed offset = 102
+                             ↑
+                      崩溃后从 102 继续
+~~~
+
+只有 Offset 102 的业务成功保存，且此前必须完成的记录都已经处理，才能把该 Partition 的 Committed Offset 推进到 103。如果 Consumer 已经 Fetch 到 103，却尚未成功处理 102，不能仅凭“已读取”就提交 104；否则重启后 102 可能被跳过。
+
+Kafka 并非给每条消息写 completed 字段，而是由 Group Coordinator（组协调者）管理成员与位点，Kafka Broker 使用内部 Topic __consumer_offsets 存储已提交位点等组协调信息。该 Topic 不等于业务原始 Topic。[Apache Kafka Distribution](https://kafka.apache.org/43/implementation/distribution/)。
+
+### 【失联后通过 Rebalance 重新分配 Partition，再用 Committed Offset 恢复】
+
+Rebalance（重新分配/重新平衡）是组成员变动时调整 Partition 归属的过程。Consumer 加入、正常退出、崩溃失联或订阅关系变化，都可能触发这一过程。
+
+~~~text
+10:00  Group A 稳定：
+       Consumer A1 负责 Partition 0、1
+       Consumer A2 负责 Partition 2
+
+10:01  A1 处理 Partition 1 / Offset 102
+       报告已经写入 PostgreSQL
+       但 Group A 对 Partition 1 的 committed offset 仍是 102
+
+10:02  A1 崩溃，无法维持成员身份
+
+之后   Group Coordinator 检测失联
+       发生 Rebalance（分区归属重新分配）
+       A2 接管 Partition 1
+
+恢复   A2 读取 Group A 已提交的位置 102
+       因此 Offset 102 可能重复被处理
+~~~
+
+上述时间仅为演示事件次序，并非 Kafka 固定秒数。检测与恢复需要心跳、会话超时及协议协调，具体耗时不固定。Kafka 4.0 起提供新的 Consumer Rebalance Protocol（KIP-848），支持更增量的协调；旧的 Classic 协议仍可使用，不能统一声称每次重平衡都“全组停下来再分配”。[Kafka Consumer Rebalance Protocol](https://kafka.apache.org/43/operations/consumer-rebalance-protocol/)。
+
+从此可知：**Partition Assignment 解决当前谁有权读取这条分区日志；Offset Commit 解决新负责人从哪里恢复；数据库幂等解决重复消费时外部业务效果不重复。** 它们与上一讲 BullMQ 的 Claim、Lease、ACK 对应的是相似的可靠性问题，但内部模型不同。
+
+## 7. 下一讲追问：Kafka Producer 怎样选择 Partition，Consumer 怎样实际读取和提交 Offset
 
 > **思考题：** BullMQ 通过 wait / active / completed 等集合维护任务生命周期；Kafka 为什么采用可保留的分区追加日志，并用 Consumer Group 的 committed offset 表示进度？如果 Consumer A 崩溃，Consumer B 如何接管分区、确定应该从哪条消息重新开始？
 
 下一讲循序渐进地建立 Topic、Partition、Offset 和 Consumer Group 的关系，再展开故障接管；暂不铺开 Kafka Broker 副本、事务等更深层架构。
 
-## 7. 参考资料与主文档关联
+## 8. 参考资料与主文档关联
 
 1. [Node.js Learn：The Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)：运行时异步 I/O 和事件循环行为。
 2. [MDN HTTP：202 Accepted](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/202)：HTTP 请求已接受但尚未完成。
