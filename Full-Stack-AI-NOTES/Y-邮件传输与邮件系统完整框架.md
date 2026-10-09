@@ -55,6 +55,8 @@ Mail Client / Webmail
 
 一个普通 Web API Server 可以调用邮件服务发送邮件，但它本身不会因此自动成为完整的互联网 Mail Server。
 
+邮件生命周期是主流程；另有三类横切能力贯穿其中：**身份与安全**约束提交方身份、传输保护与发送域认证；**状态观测**区分提交响应、后续投递事件和用户行为；**可靠性**处理持久化任务、失败重试、重复执行与恢复。它们不是额外串行执行的三个步骤，而是分别作用于邮件提交、跨域传输、收件方处理及业务状态回写。
+
 ### 【邮件传输主链和邮件读取链是两条不同链路】
 
 完整系统可以拆成：
@@ -293,7 +295,7 @@ SMTP Server
 | SMTP_SECURE | false | 决定 TLS 建立方式 |
 | SMTP_USER | my-app | SMTP Client 身份 |
 | SMTP_PASSWORD | secret | SMTP Client 凭据 |
-| MAIL_FROM | no-reply@example.com | 具体邮件使用的发件身份 |
+| MAIL_FROM | no-reply@example.com | 示例应用配置的邮件头部 From；具体语义取决于发送 API 如何使用该变量 |
 
 这里尤其要区分：
 
@@ -302,10 +304,35 @@ SMTP_HOST
     是“连接哪台服务器”
 
 MAIL_FROM
-    是“这一封邮件声明谁发送”
+    在此示例中用于设置邮件头部 From（作者地址）
 ~~~
 
 它们不是一类信息。
+
+### 【SMTP登录身份、邮件头部与传输信封分别承担不同职责】
+
+| 身份或字段 | 所属层次 | 主要职责 |
+| --- | --- | --- |
+| SMTP AUTH 用户名 | 提交连接 | 证明客户端有权使用发送服务，不等于作者地址 |
+| `From:` | 邮件头部 | 声明邮件作者；DMARC 以此作者域作为对齐基准 |
+| `Reply-To:` | 邮件头部 | 指定用户回复的目标地址 |
+| SMTP `MAIL FROM` | 传输信封 | 指定退信反向路径，允许与头部 From 不同，也可能为空 |
+| SMTP `RCPT TO` | 传输信封 | 指定本次 SMTP 交接的实际收件人 |
+
+在 Nodemailer 中，`from` 设置邮件头部作者地址，`envelope` 可显式指定传输信封；未设置时由库推导。自定义环境变量 `MAIL_FROM` 不等于 SMTP 协议命令 `MAIL FROM`。[[6]](https://www.rfc-editor.org/rfc/rfc6409.html) [[7]](https://www.rfc-editor.org/rfc/rfc5322.html) [[11]](https://nodemailer.com/smtp/envelope)
+
+~~~ts
+await transporter.sendMail({
+  from: '通知服务 <notice@example.com>',
+  replyTo: 'support@example.com',
+  to: 'alice@example.net',
+  subject: '通知',
+  text: '示例内容',
+  envelope: { from: 'bounces@example.com', to: ['alice@example.net'] },
+});
+~~~
+
+这里的头部作者、回复入口和传输退信路径相互独立；SMTP AUTH 成功也不代表发送域认证必然通过。
 
 ### 【host通常指向自己的Provider，不指向最终收件域】
 
@@ -574,7 +601,11 @@ alice@example.net
 | DKIM | 邮件是否带有可验证的域签名 |
 | DMARC | 用户看到的 From 域是否与 SPF / DKIM 身份对齐 |
 
-它们发生在“邮件能不能被收件系统信任和正常投递”这一层。
+它们属于收件方判断发送域认证与策略的机制，但通过认证不等于内容安全，也不保证进入收件箱。
+
+- **SPF** 检查发送 IP 是否被 SMTP 身份使用的域授权，通常涉及信封反向路径域，不必等于头部 `From`。[[8]](https://www.rfc-editor.org/rfc/rfc7208.html)
+- **DKIM** 验证邮件签名及签名域 `d=`，不直接证明内容可信。[[9]](https://www.rfc-editor.org/rfc/rfc6376.html)
+- **DMARC** 以头部 `From` 作者域为基准，要求至少一项成功的 SPF 或 DKIM 认证结果与其满足对齐要求；具体处置仍取决于域策略与收件方。[[10]](https://www.rfc-editor.org/rfc/rfc9989.html)
 
 而 SMTP AUTH：
 
@@ -746,23 +777,22 @@ success / failed
 
 两个状态描述。
 
-一次生产邮件更合理的状态链是：
+邮件状态应区分**提交结果**、**传输与投递事件**、**用户行为观测**，不能视为一条严格顺序的状态机：
 
 ~~~text
-Requested
-   ↓
-Submitted
-   ↓
-Accepted by Sending Server
-   ↓
-Queued
-   ↓
-Accepted by Recipient Server
-   ↓
-Delivered / Bounced
-   ↓
-Opened（如果Provider提供此能力）
+业务产生发送意图
+    ↓
+发送服务接受提交（只证明当前交接）
+    ↓
+发送服务排队并尝试投递
+    ├─ 收件服务器接受 → 可能报告 Delivery
+    ├─ 临时失败 → 重试或延迟通知
+    └─ 永久失败 → 可能报告 Bounce / Reject
+
+独立的可选行为观测：打开 / 点击
 ~~~
+
+输入是发送意图，同步响应只证明当前交接；后续事件用于观察每个收件人的投递情况。`Delivered` 通常表示收件服务器接受，不等于进入 Inbox 或用户已阅读。打开事件不是 Bounce 之后的下一状态。事件可能重复、延迟或乱序，不能按 Webhook 到达顺序盲目覆盖状态。[[12]](https://docs.aws.amazon.com/ses/latest/dg/notification-contents.html)
 
 ### 【sendMail返回的是当前SMTP交接结果】
 
@@ -893,31 +923,21 @@ POST /webhooks/mail
 应用接收：
 
 ~~~ts
+// 机制示意：签名和事件字段应按具体 Provider 规范实现。
 app.post('/webhooks/mail', async (req, res) => {
-  const event = req.body;
-
-  await mailDeliveryRepository.update({
-    messageId: event.messageId,
-    status: event.event,
+  const event = await verifyAndParseProviderEvent(req);
+  await mailDeliveryRepository.recordEventIdempotently({
+    providerMessageId: event.messageId,
+    recipient: event.recipient,
+    event,
   });
-
   res.sendStatus(204);
 });
 ~~~
 
-这样业务数据库才能从：
+上例 `verifyAndParseProviderEvent` 与 `recordEventIdempotently` 是需要业务实现的伪接口，不是框架内置 API。实际应按 Provider 规范验证来源及签名（某些实现需原始请求体），再以消息 ID、收件人和事件唯一标识去重，按事件发生时间与业务规则归并状态，保存原始事件供审计。以 SNS 承载 SES 通知为例，签名验证需遵循 SNS 官方规范。[[13]](https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html)
 
-~~~text
-submitted
-~~~
-
-继续更新到：
-
-~~~text
-delivered
-bounced
-rejected
-~~~
+数据库可记录 `submitted`、`delivered`、`bounced`、`rejected` 等观测结果，但应保留事件历史，不能仅凭到达先后认定状态必然单向迁移。
 
 ### 【4xx和5xx决定是否应该重试】
 
@@ -1309,6 +1329,7 @@ await db.transaction(async (tx) => {
   await tx.emailOutbox.create({
     type: 'verify-email',
     recipient: user.email,
+    payloadRef: `verification:${user.id}`, // 示例业务引用
     status: 'pending',
   });
 });
@@ -1320,7 +1341,8 @@ Worker：
 const task = await emailOutbox.claimNext();
 
 try {
-  await mailService.send(task.message);
+  const message = await buildMessageFromTask(task);
+  await mailService.send(message);
 
   await emailOutbox.markSucceeded(task.id);
 } catch (error) {
@@ -1330,6 +1352,20 @@ try {
   );
 }
 ~~~
+
+Outbox 的输入是与业务数据同一事务保存的发送意图，Worker 领取后需依据持久化任务构造邮件。任务可以保存受保护的邮件快照，也可以保存业务引用并在消费时重新构造；后者需要考虑数据变化、Token 有效期和内容一致性。上例 `payloadRef` 与 `buildMessageFromTask` 只是解释数据流的伪代码。
+
+Outbox 保证的是业务状态与待发送意图共同提交，**不能保证外部邮件恰好发送一次**：
+
+~~~text
+Worker 领取任务 → Provider 接受邮件
+    ↓
+Worker 在记录成功前崩溃
+    ↓
+任务恢复重试 → 可能重复发送
+~~~
+
+因此需结合领取租约、重试退避、重复执行治理；若 Provider 提供幂等键，仍需核对其保证范围。`markSucceeded` 只说明提交任务成功，最终投递另由 Provider 事件观察。参见 [服务端异步任务与消息处理体系](./F-服务端异步任务与消息处理体系.md) 与 [服务端可靠性体系](./F-服务端可靠性体系.md)。
 
 ### 【Retry不能只设计成while(true)】
 
@@ -1445,24 +1481,16 @@ DMARC
 
 所以邮件安全也应该按链路定位，而不是把所有安全名词放在一个列表里。
 
-## 11. 邮件系统最终按一条主链和四条横向能力学习
+## 11. 邮件生命周期与横切治理能力的协作关系
 
-不要按协议名词建立知识目录，而保留下面这张知识树：
+邮件提交方式属于主流程入口的可选实现；身份安全、投递观测与可靠性是跨阶段约束。
 
 ~~~text
-                           邮件生命周期
-                                │
-       业务触发 → 构造邮件 → 提交 → 路由 → 投递 → Mailbox → 读取
-                                │
-        ┌───────────────────────┼───────────────────────┐
-        ↓                       ↓                       ↓
-      接入方式                状态判断                可靠性
- SMTP / HTTPS API        Response / Webhook      Queue / Retry
-        │                       │                       │
-        └───────────────────────┼───────────────────────┘
-                                ↓
-                           安全与可信
-                 TLS / AUTH / SPF / DKIM / DMARC
+邮件主流程：业务触发 → 构造 → 提交 → 路由 → 投递 → 邮箱保存 → 客户端读取
+    ├─ 提交实现：SMTP 或 HTTPS API
+    ├─ 横切状态观测：提交响应 / 投递事件 / 用户行为
+    ├─ 横切可靠性：持久化意图 / 重试 / 去重 / 恢复
+    └─ 横切身份安全：传输保护 / 提交鉴权 / 发送域认证
 ~~~
 
 推荐学习顺序：
@@ -1478,6 +1506,8 @@ DMARC
 | 7 | 用户回复是什么 | 新的反向邮件生命周期 |
 | 8 | 生产环境怎样保证可靠 | Queue / Retry / Outbox / Idempotency |
 | 9 | 怎样提升安全和可信度 | TLS / SMTP AUTH / SPF / DKIM / DMARC |
+
+提交方式决定业务如何交给发送服务；状态观测收集同步响应和异步事件；可靠性处理任务丢失风险与重复执行；身份安全分别约束连接、发件域及事件来源。各项能力作用于不同阶段，不能用 `sendMail()` 是否抛错代替全链路判断。
 
 任何新概念都先挂回这条生命周期，再决定是否需要继续深入。
 
@@ -1496,6 +1526,8 @@ DMARC
 | 手机收到提醒但正文还没加载 | Notification 与 Mail Sync 分离 |
 
 判断问题时先定位邮件当前处于生命周期的哪一段，而不是直接从“SMTP是不是坏了”开始。
+
+在通用机制之外，可通过 [Browser Monitor 邮件传输实践](https://github.com/cxDlogver/browser-monitor/blob/main/docs/SMTP邮件传输体系源码学习.md) 核验 SMTP 接入与 Mailpit 本地调试；其中 Outbox / Worker 属于设计演进，不应视为已实现能力。
 
 ## 13. 实战分析入口
 
@@ -1517,3 +1549,6 @@ DMARC
 8. IETF. RFC 7208 — Sender Policy Framework. https://www.rfc-editor.org/rfc/rfc7208.html
 9. IETF. RFC 6376 — DomainKeys Identified Mail Signatures. https://www.rfc-editor.org/rfc/rfc6376.html
 10. IETF. RFC 9989 — Domain-Based Message Authentication, Reporting, and Conformance. https://www.rfc-editor.org/rfc/rfc9989.html
+11. Nodemailer. SMTP Envelope. https://nodemailer.com/smtp/envelope
+12. AWS. Amazon SES Notification Contents. https://docs.aws.amazon.com/ses/latest/dg/notification-contents.html
+13. AWS. Verifying SNS message signatures. https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
