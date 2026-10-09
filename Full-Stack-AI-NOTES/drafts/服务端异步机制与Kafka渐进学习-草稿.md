@@ -1067,5 +1067,9 @@ RETURNING o.id, o.project_id, o.event_id, o.event, o.attempts;
 5. [Browser Monitor 数据库 Outbox 实现](https://github.com/cxDlogver/browser-monitor/blob/main/docs/异步任务与Worker可靠消费体系源码学习.md)：可对照 PostgreSQL Job Table 与独立 Worker 的实际工程机制。
 6. [PostgreSQL SELECT / SKIP LOCKED](https://www.postgresql.org/docs/current/sql-select.html)：多 Worker 领取候选任务时的行级并发协调。
 7. [PostgreSQL Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html)：行级锁与事务生命周期边界。
+8. [Redis Transactions](https://redis.io/docs/latest/develop/using-commands/transactions/)：MULTI/EXEC 的隔离执行、WATCH 乐观锁、执行阶段错误及不支持通用回滚的边界。
+9. [Redis Scripting with Lua](https://redis.io/docs/latest/develop/programmability/eval-intro/)：Lua 的原子执行语义、读取后判断与服务端条件更新。
+10. [Redis SET](https://redis.io/docs/latest/commands/set/)：NX/PX 条件设置与带过期时间的最小锁。
+11. [Redis LMOVE](https://redis.io/docs/latest/commands/lmove/)：从 waiting 到 active 的原子队列元素移动与恢复队列模式。
 
 > 本文为学习进程中的**独立草稿**，不覆盖正式通用文档，也不修改源代码。按逐节讨论方式继续追加，下一讲保留一个核心思考题供作答。
