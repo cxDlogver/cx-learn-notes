@@ -636,7 +636,7 @@ CSS / XPath / DOM Structure
 
 ### 【Cypress 登录链展示 Browser-level Frontend Integration】
 
-下面保留完整登录链。该 Case 使用真实 Browser 中的 Frontend，但通过 cy.intercept 替换 Backend Response，因此主要验证 Frontend 内部的 Form、Request、Storage、Router 和 Render 协作。
+该登录用例在真实浏览器中运行前端，但通过 cy.intercept 替换 Backend Response，因此主要验证 Frontend 内部的 Form、Request、Storage、Router 和 Render 协作。
 
 ~~~js
 describe('登录集成测试', () => {
