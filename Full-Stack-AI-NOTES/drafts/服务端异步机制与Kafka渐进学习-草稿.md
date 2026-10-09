@@ -584,6 +584,145 @@ A：HSET task:A owner worker-A     （成功）
 
 **状态表示的是业务事实；原子条件转换才是并发领取的正确边界。**
 
+### 【PostgreSQL 的 FOR UPDATE 通过事务行锁协调多 Worker 的领取竞争】
+
+在 Redis 中，Lua 能把“读取 → 判断 → 修改”放在一个不可穿插的执行单元内；在 PostgreSQL 中，也可以利用行锁让两个事务不能同时对同一条任务完成冲突性领取。这里最常见的语法就是 **SELECT ... FOR UPDATE**。
+
+**1. 基本语法表示查询时对结果行加锁，而不是立刻修改数据**
+
+~~~sql
+BEGIN;
+
+SELECT id, status
+FROM analysis_tasks
+WHERE id = 'task-a'
+FOR UPDATE;
+
+-- 在同一事务内判断 status，符合 PENDING 时修改。
+UPDATE analysis_tasks
+SET status = 'RUNNING', locked_by = 'worker-A'
+WHERE id = 'task-a'
+  AND status = 'PENDING';
+
+COMMIT;
+~~~
+
+执行含义：
+
+- SELECT 先查出所需数据；FOR UPDATE 请求对**命中的行**取得行级锁。它本身不会把 status 自动改为 RUNNING。
+- 同一事务在判断状态并完成 UPDATE 之前持有该行锁；对相同行请求冲突行锁或尝试更新的事务，通常必须等锁释放。
+- COMMIT 或 ROLLBACK 结束事务后，行锁随之释放。如果在自动提交模式下单独执行 SELECT ... FOR UPDATE，语句结束就释放锁，无法继续保护下一条独立的 UPDATE，因此领取时必须明确控制事务边界。
+- PostgreSQL 普通 SELECT 通常仍可读取 MVCC 可见版本。**FOR UPDATE 并不意味着其他线程完全不能访问该行，也不等于关闭数据库读能力。**
+
+官方原理：[PostgreSQL Explicit Locking — Row-level Locks](https://www.postgresql.org/docs/current/explicit-locking.html)。
+
+**2. 两个 Worker 同时竞争同一任务时，锁具体怎样发挥作用**
+
+假设初始状态 task-a.status=PENDING，Worker A 和 Worker B 都以 PostgreSQL 默认的 READ COMMITTED 隔离级别领取任务：
+
+~~~text
+时间           Worker A                              Worker B
+
+T1             BEGIN                                 BEGIN
+T2             SELECT ... WHERE status='PENDING'
+               FOR UPDATE
+               → 读取 task-a，获得行锁
+T3                                                   SELECT ... WHERE status='PENDING'
+                                                     FOR UPDATE
+                                                     → 命中同一行，但无法取得锁，等待 A
+T4             UPDATE status='RUNNING'
+T5             COMMIT → 行锁释放
+T6                                                   等待结束、重新判断查询条件
+                                                     → 当前行已为 RUNNING
+T7                                                   得不到符合 PENDING 的任务
+                                                     → 不可领取
+T8                                                   COMMIT
+~~~
+
+因此，Worker A 的事务不会因为 B 同时进行查询就被任意打断；B 的**冲突行锁/更新**需要等待 A。READ COMMITTED 下，B 等待事务结束后，会依据新的行版本重新检查查询条件，从而不会继续把该 RUNNING 任务当作 PENDING 来领取。在 REPEATABLE READ 或 SERIALIZABLE 等其他隔离级别下，冲突可能以需重试的序列化错误表现，不能把上面的等待后行为直接套用到所有隔离级别。
+
+这里实现“只能领取一次”依赖**锁保护下的条件判断和更新**。如果 B 没有检查 status 就在锁释放后无条件执行自己的 UPDATE，它仍可能覆盖 owner；因此锁本身不会替业务决定哪些状态转换是合法的。
+
+**3. FOR UPDATE、NOWAIT、SKIP LOCKED 解决的是不同的等待策略**
+
+| 语法 | 遇到已被其他事务锁定的目标行 | 适用场景 |
+| --- | --- | --- |
+| FOR UPDATE | 默认等待冲突锁释放 | 必须处理特定记录，允许等待 |
+| FOR UPDATE NOWAIT | 无法立刻获得行锁就报错，而不是排队等待 | 业务需要快速失败和自行重试 |
+| FOR UPDATE SKIP LOCKED | 跳过已锁定的候选行，继续查找其他行 | 多 Worker 从待办列表领取下一项工作 |
+
+~~~sql
+SELECT id
+FROM analysis_tasks
+WHERE status = 'PENDING'
+ORDER BY created_at
+LIMIT 1
+FOR UPDATE SKIP LOCKED;
+~~~
+
+例如队列已有 Task A、B、C：A 被 Worker 1 的领取事务行锁锁住时，Worker 2 使用 SKIP LOCKED 可以跳过 A，尝试领取 B，不必因 A 被占用就停下。这比多个 Worker 全都等待队首同一行更适合数据库 Job Queue。
+
+注意 SKIP LOCKED 会故意跳过当前不可取得锁的候选，因此**不是普通数据查询所追求的一致性视图**；它适合队列竞争，不应无条件用来查询报表、统计所有待办任务。此外它解决的是行锁等待，不保证完全不会受到表级锁等其他锁冲突影响。
+
+参考：[PostgreSQL SELECT — Locking Clause](https://www.postgresql.org/docs/current/sql-select.html)。
+
+**4. 实际领取时把选中任务与更新状态组合成同一条 SQL**
+
+只用 SELECT FOR UPDATE 取得行锁，接下来仍应在事务内执行 UPDATE 才算完成领取。对于一批待办任务，常用下一节的 WITH candidate ... FOR UPDATE SKIP LOCKED + UPDATE ... RETURNING，将“选择、协调并发和状态变更”合并到一条语句：
+
+~~~sql
+WITH candidate AS (
+  SELECT id
+  FROM analysis_tasks
+  WHERE status = 'PENDING'
+  ORDER BY created_at
+  LIMIT 1
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE analysis_tasks t
+SET status = 'RUNNING',
+    locked_by = $1,
+    locked_at = now()
+FROM candidate
+WHERE t.id = candidate.id
+RETURNING t.id, t.locked_by;
+~~~
+
+这段示意仅领取初始 PENDING 任务；生产系统还要按需考虑 available_at、失败重试、停滞任务回收及 Lease。Worker 应当根据 RETURNING 是否返回任务来决定是否开始业务执行，而不是“发出 SQL 就认为一定领取成功”。
+
+对于**已经明确知道 ID 的任务**，如果只需做一次条件状态转换，甚至可以直接：
+
+~~~sql
+UPDATE analysis_tasks
+SET status = 'RUNNING',
+    locked_by = $1
+WHERE id = $2
+  AND status = 'PENDING'
+RETURNING id;
+~~~
+
+PostgreSQL UPDATE 自身就会参与必要的并发协调。只有成功从 PENDING 改成 RUNNING 的事务才能得到对应的 RETURNING 行。因此，**已知 ID 的条件领取不一定必须显式 SELECT FOR UPDATE；需要从大量待办任务中并发查找、分散领取时，SKIP LOCKED 更有价值。**
+
+**5. 行锁只保护领取事务；不要用十分钟数据库事务包围整个 LLM 执行**
+
+~~~text
+BEGIN / SELECT FOR UPDATE / UPDATE / COMMIT
+                 ↓
+        Claim 阶段已完成
+                 ↓
+     数据库事务结束、行锁释放
+                 ↓
+     Worker 调用 LLM（可能耗时十分钟）
+                 ↓
+     根据持久化的 owner / Lease / 世代判断是否仍有写回权
+                 ↓
+     保存结果并确认业务完成
+~~~
+
+如果让数据库事务一直保持开启直到外部模型完成，会造成不必要的长时间锁持有、事务资源占用与其他维护成本。**行锁保证的是“领取时的并发安全”，不是“Worker 在未来十分钟内永远拥有任务”。** 因而本讲后面的 Lease（租约）、Renewal（续租）和 Fencing（旧执行者隔离）仍然不可省略。
+
+**本节与 Redis 的对应关系：** PostgreSQL 用行锁、条件 UPDATE、事务控制领取阶段的竞态；Redis 用合适的原子命令、Lua 或 WATCH + MULTI/EXEC 实现同一业务目标。共同要求都是**只有完成合法的 PENDING → RUNNING 状态转换，才算领取成功**，而不是仅看到 RUNNING 就认为竞争安全。
+
 ### 【Claim 需要原子地选择和更新任务；数据库行锁不等于长任务租约】
 
 不安全的领取过程是两个 Worker 分别 SELECT 出同一条 PENDING 记录，然后各自开始执行。PostgreSQL 可用行锁和条件更新，把查询候选和更新处理权合并：
