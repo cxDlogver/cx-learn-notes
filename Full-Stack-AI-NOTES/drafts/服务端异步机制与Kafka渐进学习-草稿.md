@@ -2237,6 +2237,145 @@ Rebalance（重新分配/重新平衡）是组成员变动时调整 Partition �
 
 从此可知：**Partition Assignment 解决当前谁有权读取这条分区日志；Offset Commit 解决新负责人从哪里恢复；数据库幂等解决重复消费时外部业务效果不重复。** 它们与上一讲 BullMQ 的 Claim、Lease、ACK 对应的是相似的可靠性问题，但内部模型不同。
 
+### 【Consumer 恢复后旧业务函数能否继续执行，要区分三种状态】
+
+**问题：** Consumer A 处理 Partition 0 / Offset 100 时中断，Kafka 已把分区交给 B。之后 A 网络恢复，它原先的异步函数会不会继续执行、是否仍有效、能不能处理后续 Offset 101/102？
+
+**先给结论：** 必须把三个状态拆开判断：① Consumer 的进程/线程是否仍在运行；② 它现在是否还拥有这个 Partition 的有效分配；③ 下游数据库是否仍允许它的业务写入。**Kafka 撤销的是组内分区归属，并不会自动取消此前已经启动的 LLM/HTTP/数据库请求。** 一个旧 Consumer 可能不再合法提交该分区的消费进度，却仍有能力向外部系统写数据。
+
+| 中断场景 | 进程与已经启动的业务函数 | Partition 归属与后续消费 |
+| --- | --- | --- |
+| 短暂断网，组尚未判定会话失效、也未调整分配 | 本地异步函数可能继续运行；Kafka 通信恢复后可正常推进 | 如果仍持有原分区，按正常消费流程继续 |
+| 长时间失联，被移出 Group 并由 B 接管原分区 | 如果进程仍存活，先前启动的计算与外部请求可能继续 | A 的**旧成员资格/旧分配失效**，不能依赖它继续 Fetch 或提交原分区的 Offset；恢复后要重新加入组并接受新分配，甚至可能再次分到相同分区 |
+| 进程真正崩溃并退出 | 原进程内未完成的 JavaScript/Java 函数不会“复活” | 新进程需重新加入 Group；按当前有效分配和已提交 Offset 恢复，原先外部请求是否已生效则要单独确认 |
+
+这里“失去分区后不能继续消费”是消费协议的权限结论，而不是系统已经回滚、杀死旧业务代码。Consumer 客户端通常会按最新分区分配调整后续 Fetch；如果应用在丢失分区前**自行派生了异步队列、线程或 Promise**，这些后台逻辑可能不受 Kafka 客户端直接控制。Kafka 不会为它们自动实现跨系统取消。
+
+### 【心跳维持的是 Consumer Group 成员资格，不是逐消息执行租约】
+
+把 BullMQ 的机制与 Kafka 按对应职责比较：
+
+| BullMQ（Job 粒度） | Kafka 常规 Consumer Group（Partition 粒度） | 边界 |
+| --- | --- | --- |
+| Worker 领取 Job 的 Claim | Consumer Group 的 Partition Assignment | 后者分配的是分区，不是给每一条 Record 单独 Claim |
+| Lease / Lock + Renewal | Group Membership、Heartbeat 与 Session Timeout | 心跳维持组成员存活；不等同于逐 Job 的锁 TTL |
+| Lock 失效、stalled 恢复 | Consumer 失联、分区 Rebalance、按 Committed Offset 重读 | Kafka 不将某条消息移回 waiting 队列 |
+| BullMQ 完成 Job 后更新 completed | Kafka Consumer 提交 Partition 的下一条 Offset | Offset 不等于单条消息 completed |
+| 旧 Worker 的 Lock Token 失效 | Kafka 组成员世代 / 成员 Epoch 等协议校验失效提交 | 两者都**不自动保护外部 PostgreSQL / LLM 副作用** |
+
+典型 Consumer 生命周期如下：
+
+~~~text
+A 加入 Group → 获得 Partition 0
+                  ↓
+             定期 Heartbeat（证明成员仍活跃）
+                  ↓
+             能否继续维持分配？
+                ├─ 是：允许继续当前分区的消费流程
+                └─ 否：超时被判失联，Group 重新分配分区
+                                 ↓
+                            B 可能接管
+                                 ↓
+                  从该 Group 已提交 Offset 恢复
+~~~
+
+经典 Consumer Group 使用 session.timeout.ms 等维持成员存活；Kafka 4.0 起的 Consumer 协议还涉及 Broker 控制的 group.consumer.session.timeout.ms 等设置，具体由客户端/协议决定。**消费进度与存活是两回事**：Apache Kafka Java Consumer 另有 max.poll.interval.ms，用来限制两次 poll() 之间的最长间隔，防止只是不断心跳却长期不推进处理。它属于 Java 客户端的消费循环约束，**不能直接套用给 KafkaJS**；KafkaJS 提供 sessionTimeout、heartbeatInterval，并允许长时间 eachMessage / eachBatch 处理时显式 heartbeat()。[Kafka Consumer Configs](https://kafka.apache.org/42/configuration/consumer-configs/)、[KafkaJS Consuming](https://kafka.js.org/docs/2.1.0/consuming)。
+
+### 【长时间失联的 A 恢复后，可能和接管分区的 B 同时进行旧业务】
+
+~~~text
+Consumer A（旧负责人）             Kafka Group              Consumer B（新负责人）
+        │                               │                            │
+        ├─ 读取 Partition 0 / 100       │                            │
+        ├─ 开始调用 LLM                 │                            │
+        ├─ 网络中断，心跳失败            │                            │
+        │                               ├─ 会话超时、Rebalance        │
+        │                               └─ Partition 0 交给 B ──────►│
+        │                               │                            ├─ 读取 Offset 100
+        │                               │                            ├─ 重新调用 LLM
+        ├─ 网络恢复                     │                            │
+        ├─ 原 LLM 请求返回               │                            │
+        ├─ 旧异步函数继续尝试写 PostgreSQL                          │
+        │                               │                            ├─ 也尝试写 PostgreSQL
+        ▼                               ▼                            ▼
+    两次业务调用可能重叠；提交 Offset 的合法性与数据库写入资格必须分开判断
+~~~
+
+前提是：A 的进程或业务线程在网络中断期间**没有被彻底杀死**，并且此前的外部请求仍可能完成。若进程已经崩溃，它自己的函数不会恢复，只有新进程重新消费。
+
+A 的原成员世代已经失效后，对其原分区提交 Offset 可能失败。Java KafkaConsumer 的 CommitFailedException 官方文档就说明：重平衡完成且分区已经移交其他成员后，原消费者的 commitSync 可能无法成功提交，且不能靠无条件重试旧提交解决。[Kafka 4.2 CommitFailedException](https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/CommitFailedException.html)。
+
+但是 A 的旧代码可能仍然执行到：
+
+~~~sql
+-- 仅演示风险：数据库不会自动知道 Kafka 已撤销 A 的分区
+INSERT INTO analysis_reports (operation_id, content)
+VALUES ('analysis:doc-1001:v1', 'old-result');
+~~~
+
+**Kafka 拒绝旧 Consumer 的组协议操作，不代表这条 SQL 一定被拒绝。** 如果数据库直接接受写入，就可能与 B 的写入冲突。
+
+另一个容易混淆的细节：如果 A 恢复后**重新加入** Consumer Group，并再次被合法分配 Partition 0，那么它可以以**新的**成员资格继续消费；不能说“失联一次就永久无权处理这个分区”。旧成员资格失效与新成员资格有效是两个不同的世代。
+
+### 【Offset 101/102 是否继续处理取决于是否已经启动业务代码】
+
+~~~text
+A 已经收到一批 Record：100、101、102
+         ↓
+应用方式一：顺序 await
+  await process(100)
+  await process(101)
+  await process(102)
+
+应用方式二：不等待，直接派生任务
+  process(100)
+  process(101)
+  process(102)
+  ↓
+  这三个业务函数可能同时进行
+~~~
+
+- 顺序 await 且尚未开始 101/102：如果消费代码能及时感知分区已撤销、跳出当前循环，就能避免**继续启动**后续旧分区任务。具体取消/撤销回调依赖 Consumer 客户端实现，不能仅凭示意代码推断绝对停止。
+- 如果 100、101、102 的业务函数已经由 Promise.all、线程池或应用自建队列发出，Kafka 的分区归属变更通常不会自动取消它们；它们可能仍继续写业务数据。
+- 即使代码主动 AbortController 取消 HTTP 请求，取消只是尽力而为；外部服务可能已经处理请求。不能用“取消成功”代替业务幂等或对账。
+
+例如 KafkaJS 的 eachBatch 提供 isRunning() 和 isStale()，可在每条处理之间检测是否应该退出当前批次，但**isStale() 的语义主要是判断批次是否因 seek 等原因失效，不是一个可靠的下游 Fencing Token**：
+
+~~~javascript
+await consumer.run({
+  eachBatchAutoResolve: false,
+  eachBatch: async ({ batch, resolveOffset, heartbeat, isRunning, isStale }) => {
+    for (const message of batch.messages) {
+      if (!isRunning() || isStale()) break;
+
+      // 这里应 await 真正完成业务处理；不可 fire-and-forget
+      await saveIdempotently(message);
+
+      // 已确认业务效果成功后，才认为该 Offset 可完成
+      resolveOffset(message.offset);
+      await heartbeat();
+    }
+  },
+});
+~~~
+
+该代码只展示顺序处理、合作式退出和 Offset 进度处理，不声明通过本地检查就阻止了所有旧执行者，更不代表 Redis/Kafka 与 PostgreSQL 形成一个事务。[KafkaJS Consuming](https://kafka.js.org/docs/2.1.0/consuming)。
+
+### 【恢复正确性需要业务幂等，严格所有权要求还需要下游 Fencing】
+
+消费组协议保护当前 Partition 的读取和 Offset 提交，但要防止两个重叠 Consumer 破坏业务结果，还需应用考虑：
+
+1. **重复业务效果：** 为同一事件定义稳定的 operation_id（例如 eventId 或业务任务 ID），数据库通过唯一约束或下游幂等键确保重复处理不重复扣款/创建/通知。不能只用 Consumer ID 或递增 Offset 当作所有业务类型的幂等键；Offset 只有在 Topic + Partition 的范围内才唯一，使用 Offset 作为去重依据时要包含 Topic、Partition、Offset。
+2. **失效执行者写入：** 对需要“只有现任处理者可以提交”的场景，在真正的数据库事务/条件 UPDATE 中校验权威所有权或执行版本；不能只在 SQL 执行前去查询一次 Kafka 当前分配，避免 Check-Then-Act 竞态。Kafka Group Generation / Member Epoch 不会自动成为外部数据库识别并拒绝旧结果的令牌。
+3. **后续处理顺序：** 同一个 Partition 的消息按 Offset 有序读取，但如果应用自行并发执行这些消息的业务逻辑，就可能乱序提交。必要时顺序处理、按业务版本条件更新，且只推进已经连续可靠完成的 Offset。
+4. **运行治理：** 结合优雅关闭、分区撤销回调/客户端状态、长任务心跳、Lag 监控、可取消任务和外部调用对账，减少失效任务长期存在和新旧执行重叠的概率。
+
+**还应分清 Consumer 故障和业务消息失败：** 失联后 Kafka 可重新分配 Partition；但 Consumer 一直活着、某条消息只是在执行 LLM 时抛错，Kafka 常规 Consumer Group **不会像 BullMQ 一样自动把这条消息移给另一个消费者作为逐 Job Retry**。需要应用自己控制重试、暂停消费、DLQ / 重试 Topic、Offset 是否推进等。
+
+**面试收束：**
+
+> Kafka 心跳维护 Consumer Group 的成员资格，Session Timeout 负责判定成员失联，Rebalance 把 Partition 重新交给合法 Consumer，并根据 Committed Offset 恢复读取。这与 BullMQ 的 Job Lease、Renewal、Stalled Recovery 类似，但 Kafka 的处理权粒度是 Partition 而非单条 Job。Consumer A 失联后若仍存活，已启动的异步业务代码可能继续执行；它的旧 Partition 分配与 Offset 提交资格已经失效，却仍可能写入外部 PostgreSQL。应通过消费者侧停止旧分区的后续处理，以及业务幂等、必要的下游 Fencing 和连续 Offset 提交保证正确性。
+
 ### 【Kafka 的分区顺序只保证日志消费顺序，不自动保证并行业务效果顺序】
 
 在前例中，Partition 0 依次追加 doc-1001 的分析开始、分析完成、报告更新三个事件。Kafka 可以让同一个 Consumer 按 Offset 顺序读取同一 Partition，但如果 Processor 在应用内部另外启动多个并行的异步函数，**先取出的记录仍可能较晚完成业务写入**。
