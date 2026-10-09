@@ -482,14 +482,222 @@ Kafka
 
 最后，对于任务量和调度复杂度可控的场景，PostgreSQL Job Table + Worker 就是一套可行的可靠异步实现；BullMQ 或 Kafka 不是强制前提。业务发展到独立消息分发、复杂调度或多种消费者时，再根据工作模型决定是否引入专业消息基础设施。
 
-## 3. 下一讲追问：多个 Worker 为什么还需要任务领取权与 Lease
+## 3. Worker 的 Claim、Lease、Renewal 与 ACK 决定任务能否安全恢复
 
-> **思考题（此处暂不提供答案）：** Worker A 在 10:00 领取了一项需要十分钟才能完成的任务，数据库记录 locked_at=10:00。系统规定“超过五分钟未更新 locked_at 的 RUNNING 任务可以被重新领取”。10:06 时 Worker B 将同一任务重新领取，但 Worker A 实际上没有崩溃，仍在调用模型。此时可能出现什么问题？如何设计才更安全？
+**本讲核心问题：** Worker A 已领取任务但可能崩溃、暂停或网络断连，系统如何重新把任务交给 Worker B，同时避免两个 Worker 都认为自己拥有有效处理权？
 
-下一讲只围绕 Worker 的原子 Claim、数据库行锁、业务 Lease / Renewal、Owner/Fencing，以及它们与幂等的关系展开，先理解运行机制，再进入 BullMQ 与 Kafka 的对应实现。
+**结论：** Claim（原子领取）决定谁最初获得处理权；Lease（租约）决定处理权的有效时间；Renewal（续租）让正常执行的长任务继续保持有效；Fencing（所有权世代隔离）拒绝旧执行者对状态和业务结果的非法写回；ACK（消费确认）则决定任务什么时候真正结束。它们不能互相替代。
+
+### 【五分钟固定超时会产生错误接管，因为超时不意味着 Worker 已死亡】
+
+沿用上一讲的十分钟文档分析任务。Worker A 在 10:00 领取任务，系统仅设置 locked_at=10:00，规定超过五分钟未更新即可回收：
+
+~~~text
+10:00  Worker A 领取 Task A（locked_by=A, locked_at=10:00）
+  ↓
+10:01  A 正在调用外部大模型，业务正常运行
+  ↓
+10:06  Worker B 查询：RUNNING 且锁定超过五分钟
+  ↓
+       B 重新领取并再次调用模型
+  ↓
+10:10  A、B 可能同时准备写入分析报告
+~~~
+
+此时任务可能带来重复模型费用、重复外部副作用和报告互相覆盖。事实上，只能确认 A 在这段时间没有更新数据库活跃状态，**无法由此证明 A 已经停止执行**。这就是引入有效期、续租和写入隔离的动机。
+
+### 【Claim 需要原子地选择和更新任务；数据库行锁不等于长任务租约】
+
+不安全的领取过程是两个 Worker 分别 SELECT 出同一条 PENDING 记录，然后各自开始执行。PostgreSQL 可用行锁和条件更新，把查询候选和更新处理权合并：
+
+~~~sql
+WITH candidate AS (
+  SELECT id
+  FROM analysis_tasks
+  WHERE status = 'PENDING'
+  ORDER BY created_at
+  LIMIT 1
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE analysis_tasks AS t
+SET status = 'RUNNING',
+    locked_by = $1,
+    lease_version = lease_version + 1,
+    locked_at = now()
+FROM candidate
+WHERE t.id = candidate.id
+RETURNING t.*;
+~~~
+
+解释这一 SQL 的顺序：
+
+1. 选择当前符合领取条件的候选 Job。
+2. FOR UPDATE 对候选行加行锁；SKIP LOCKED 在另一个 Claim 事务已锁住该行时跳过它。
+3. 在同一数据库语句中更新 status、owner、领取世代，返回领取到的任务。
+4. Claim 事务提交，数据库行锁即告释放。
+
+**数据库行锁只保护 Claim 事务的原子性，不会随着十分钟业务执行一直占有。** 实际执行阶段的归属，需要持久化 owner 和 Lease 字段继续维护。参考：[PostgreSQL SELECT](https://www.postgresql.org/docs/current/sql-select.html)、[Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html)。
+
+### 【Lease 的核心不是限制任务总时长，而是给处理权设置到期时间】
+
+假设领取时设置 lease_until=10:05，Worker A 执行过程正常，可以在到期前定期续租：
+
+~~~text
+10:00  A 首次 Claim     lease_until = 10:05
+10:02  A 第一次 Renewal lease_until = 10:07
+10:04  A 第二次 Renewal lease_until = 10:09
+10:06  A 第三次 Renewal lease_until = 10:11
+...
+10:10  A 正常完成任务，关闭该租约
+~~~
+
+这里的五分钟表示“如果长达五分钟没有成功续租，系统可认为原租约已经失效”，而不是“一项 Job 最多只允许运行五分钟”。续租必须在当前 Worker 仍拥有有效处理权时才能成功：
+
+~~~sql
+UPDATE analysis_tasks
+SET lease_until = now() + INTERVAL '5 minutes'
+WHERE id = $1
+  AND status = 'RUNNING'
+  AND locked_by = $2
+  AND lease_version = $3
+  AND lease_until > now()
+RETURNING id, lease_until;
+~~~
+
+这段 SQL 是教学示例，不是当前 Browser Monitor 项目的现成实现。若返回零行，说明原所有权可能已过期或被接管，当前 Worker 不应再无条件写回任务结果。
+
+实际系统还需要确定心跳频率、允许的网络抖动、超时时间、应用与数据库的时间基准，以及长时间 CPU 计算是否阻塞续租。**续租是处理权活跃证明，不等于任务内部步骤的 Checkpoint。**
+
+### 【Fencing Token 在租约失效后拒绝旧 Worker 写入】
+
+即使建立 Renewal，也无法排除如下竞态：
+
+~~~text
+Worker A 获得世代版本 1
+        ↓
+A 因网络或运行时暂停错过续租
+        ↓
+Lease 过期，Worker B 取得世代版本 2
+        ↓
+Worker A 恢复，继续按自己的旧状态写回
+~~~
+
+Fencing（隔离失效执行者）可以采用单调递增的 lease_version。每次成功重新领取增加版本；更新关键结果时必须验证当前版本与 owner：
+
+~~~sql
+UPDATE analysis_tasks
+SET status = 'SUCCEEDED',
+    result_ref = $1,
+    updated_at = now()
+WHERE id = $2
+  AND status = 'RUNNING'
+  AND locked_by = $3
+  AND lease_version = $4
+  AND lease_until > now()
+RETURNING id;
+~~~
+
+A 持有版本 1，数据库当前是版本 2，A 的更新影响零行。B 持有有效版本 2 时才能确认完成。
+
+**这个保护只作用于真实执行版本校验的地方。** 如果 Worker A 已经调用了外部 LLM 或未经条件校验写入另一张报告表，那么仅给任务状态行加版本条件仍然不能撤销外部副作用。若报告和任务状态同处一个 PostgreSQL，可在同一个事务中核验领取版本、写入结果和确认任务；对于外部服务则需要幂等键、结果查询或补偿机制。locked_by 也应与稳定的执行标识或版本配合，而不是单独信任一个可能被复用的 Worker 名称。
+
+### 【ACK 只在业务结果具备持久化保证后才能进行】
+
+ACK（Acknowledgment，确认）描述的是“消费者认为这项工作已经满足完成条件，并将其从待完成状态中确认”的动作，并非 Fetch、Claim 或续租。
+
+~~~text
+Producer → Job 已持久化
+             ↓
+         Worker Claim
+             ↓
+         执行与续租
+             ↓
+         持久化业务结果
+             ↓
+         ACK / 确认成功
+~~~
+
+如果在执行业务之前就确认，之后崩溃可能造成任务被跳过；如果执行业务成功之后，确认前崩溃，则可能再次领取，因此需要幂等。
+
+不同系统的对应关系：
+
+| 系统 | 所有权或重投机制 | 任务处理成功如何确认 |
+| --- | --- | --- |
+| PostgreSQL Job Table | 原子 Claim + Lease / 超时回收 | 更新任务 status 为 SUCCEEDED，最好与同库业务结果事务提交 |
+| BullMQ 默认 Redis Backend | Worker 持有 Job Lock、续租；stalled 时重新调度 | Processor 成功返回后由 BullMQ 更新 Job 为 completed |
+| Kafka Consumer Group（传统模式） | 按分区分配 Consumer，重启后依靠持久化 Offset 恢复 | 提交 Committed Offset，表示下一次从该分区哪里继续消费；**不是对每条业务消息单独标记 completed** |
+
+特别区分 Kafka：它不因某 Consumer 已经提交 Offset 而立即删除 Topic 中的原始消息，也不天然记录消息所对应的复杂 Workflow 执行步骤。Kafka 提交位点与队列产品的逐 Job ACK 只是在“确认处理进度”这个更高层问题上相似，不能直接视为相同实现。
+
+BullMQ 官方说明 Worker 在 Job 处理中持有锁，并需要周期性更新活跃状态；Event Loop 被长时间 CPU 工作占用时，锁可能无法续租，Job 会进入 stalled 并重新被处理，达到最大停滞次数后可能失败。因此使用 BullMQ 也不能免除业务幂等。[BullMQ Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)。
+
+### 【ACK 前后两个崩溃窗口决定必须接受重复处理的可能】
+
+~~~text
+故障窗口 A：
+Claim → 开始分析 → 进程崩溃（尚无结果）
+                         ↓
+                   租约过期 / 消息重新交付
+                         ↓
+                       重新处理
+
+故障窗口 B：
+Claim → 分析并成功保存报告 → 进程崩溃（尚未 ACK）
+                                      ↓
+                                恢复后再次领取
+                                      ↓
+                                检查结果是否已存在
+                                  ├─ 已存在：直接确认成功
+                                  └─ 不存在：安全重试
+~~~
+
+如果任务处理过程中有不可撤销的外部副作用，仅靠 Claim/Lease/ACK 三者也不能保证“所有真实世界行为绝对只执行一次”。其组合通常更接近**至少一次执行机会 + 幂等保证最终业务结果**。
+
+### 【Browser Monitor 的 Outbox Worker 有原子 Claim 与五分钟回收，但没有长任务续租】
+
+真实源码：[OutboxWorker](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/worker/src/outbox-worker.ts)。
+
+项目 Claim 关键片段：
+
+~~~sql
+WITH candidates AS (
+  SELECT id FROM outbox_tasks
+  WHERE (
+    status = 'pending' AND available_at <= now()
+  ) OR (
+    status = 'processing' AND locked_at < now() - INTERVAL '5 minutes'
+  )
+  ORDER BY available_at, created_at
+  LIMIT $1
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE outbox_tasks o SET
+  status = 'processing', locked_at = now(),
+  locked_by = $2, attempts = attempts + 1
+FROM candidates c WHERE o.id = c.id
+RETURNING o.id, o.project_id, o.event_id, o.event, o.attempts;
+~~~
+
+它说明：当前项目确实可以在同一 SQL 中领取待办任务；如果处理超过五分钟而 locked_at 不再更新，后续消费者有机会重新领取。**当前代码并未在普通 handle() 执行期间定期 Renewal，也没有持久 lease_version Fencing**。任务完成时仅通过 id + locked_by 检查持有者，因此不能声称它能严格杜绝过期执行者对所有外部业务副作用的影响。
+
+项目 EventProcessor 的业务投影与任务 completed 标记还分属不同的数据库提交，故投影提交后、任务确认前崩溃，会暴露重复投影窗口；必须结合业务幂等和唯一约束分析。参见 [项目异步任务源码专题](https://github.com/cxDlogver/browser-monitor/blob/main/docs/异步任务与Worker可靠消费体系源码学习.md)。
+
+### 【面试回答要从领取安全、活跃证明、过期隔离和成功确认展开】
+
+多个 Worker 正常并发领取时，首先通过原子 Claim 避免同时从 PENDING 状态抢到同一条任务。对于长任务，行锁不能一直持有，必须在数据库持久化任务所有权和租约，并由 Worker 周期性续租。
+
+如果旧 Worker 因断连或暂停导致租约过期，而其他 Worker 重新接管，还要利用单调增加的领取版本、条件写入或真正受保护的下游 Fencing，拒绝旧执行者覆盖新任务结果。
+
+任务真正完成时，应该先持久化关键业务结果，再更新完成状态或提交消费进度。不过业务成功之后、ACK 尚未提交时仍可能崩溃，因此恢复后重复处理是必须考虑的故障路径。通过业务幂等键、唯一约束、Checkpoint、结果对账和适当补偿，确保重复执行不造成错误结果。
+
+## 4. 下一讲追问：结果已成功但 ACK 未提交时，为什么可能重复执行
+
+> **思考题：** Worker 已成功把报告写入 PostgreSQL，但还没把任务标记 completed（或 Kafka Consumer 尚未提交对应 Offset），进程突然崩溃。任务重启以后是否可能再次执行？怎样避免再次调用昂贵的 LLM？反过来，把 ACK 提前到写报告之前，会有什么风险？
+
+下一讲以这个故障窗口为起点，区分 At-most-once、At-least-once、Idempotency 和 Kafka Offset Commit，而不是提前铺开整个 Kafka 架构。
 
 
-## 4. 参考资料与主文档关联
+## 5. 参考资料与主文档关联
 
 1. [Node.js Learn：The Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)：运行时异步 I/O 和事件循环行为。
 2. [MDN HTTP：202 Accepted](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/202)：HTTP 请求已接受但尚未完成。
