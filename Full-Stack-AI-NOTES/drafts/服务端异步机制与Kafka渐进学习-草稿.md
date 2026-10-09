@@ -1949,14 +1949,194 @@ HTTP API：PostgreSQL 中创建业务请求记录
 
 > BullMQ 用 Queue.add 接收 Job，在默认 Redis 后端把任务内容保存到 Hash，把可调度状态组织在 wait、prioritized、delayed 等 Redis 结构中。Worker 通过内部原子脚本从 wait 或 prioritized 领取 Job，移动到 active 并建立有期限的锁；Worker 自动续锁，失联后通过 stalled 检测恢复任务，成功或失败则自动维护完成状态与重试。普通 wait 任务默认 FIFO 且优先于显式正数 priority 任务；delayed 到期只是重新获得调度资格，不能断言它会立即抢先执行。业务仍需负责报告/支付的幂等性、下游 Fencing 和跨系统持久化一致性，因此 BullMQ 提供的是队列运行可靠性，不是自动覆盖全部业务副作用的全局事务。
 
-## 5. 下一讲追问：结果已成功但 ACK 未提交时，为什么可能重复执行
+## 5. 业务结果已经保存，但 ACK 未提交时为什么仍然可能重复执行
 
-> **思考题：** Worker 已成功把报告写入 PostgreSQL，但还没把任务标记 completed（或 Kafka Consumer 尚未提交对应 Offset），进程突然崩溃。任务重启以后是否可能再次执行？怎样避免再次调用昂贵的 LLM？反过来，把 ACK 提前到写报告之前，会有什么风险？
+**本讲核心问题：** AI 文档分析 Worker 已将报告保存到 PostgreSQL，却在 BullMQ 确认 completed 前崩溃。报告明明存在，为什么还会触发重新执行？若反过来先 ACK 后保存，会发生什么？怎样理解 At-most-once、At-least-once、业务幂等与 Kafka Offset Commit？
 
-下一讲以这个故障窗口为起点，区分 At-most-once、At-least-once、Idempotency 和 Kafka Offset Commit，而不是提前铺开整个 Kafka 架构。
+**先给结论：** 报告持久化和任务状态确认分别发生在业务数据库与队列系统中，没有天然的跨系统原子事务。为了尽量避免丢失工作，通常选择先持久化业务结果，再确认任务已完成，接受故障恢复时可能重新执行的事实，并用稳定业务 ID 与幂等约束保证最终结果。Kafka 也有类似故障窗口，但它提交的是某 Consumer Group 在某 Partition 的**下一次消费位置**，不是给一条消息标 completed。
 
+### 【业务成功与队列确认成功是两个独立的事实】
 
-## 6. 参考资料与主文档关联
+~~~text
+BullMQ / Redis                               PostgreSQL 业务数据库
+Job: active                                  报告尚不存在
+     │                                           │
+     │ Worker A 调用 LLM                          │
+     │                                           │
+     └─────────── INSERT 报告提交成功 ────────────►│
+                                                 报告已存在
+     │
+     │ Worker A 在 Processor 返回后、
+     │ 或 BullMQ 更新 completed 前崩溃
+     ▼
+队列仍未确认 Job 完成
+     │
+     ├─ 锁失效 / stalled 检测 / 任务恢复
+     ▼
+Worker B 再次领取同一个 Job
+     │
+     └─ 可能再次调用 LLM、保存报告
+~~~
+
+一条完整的业务链路至少存在两个提交点：PostgreSQL 的 INSERT/COMMIT 与 BullMQ 在 Redis 中把 active Job 转为 completed。这两步由不同存储系统负责。即使代码上先 await saveReport()，再 return 让 BullMQ 标记 completed，也不等于 PostgreSQL 与 Redis 的写入被封装成同一个 ACID 事务。
+
+**同一任务处理函数成功运行过一次，不等于队列已成功记录它完成；队列未记录完成，也不等于业务一定没有产生过结果。**
+
+### 【先 ACK 与后 ACK 分别暴露业务遗漏和重复处理风险】
+
+~~~text
+方案一：先确认任务完成，再保存结果
+Claim → ACK / completed → Worker 崩溃 → 结果未保存
+                                          ↓
+                                队列不再主动重新调度
+                                          ↓
+                                      业务遗漏
+
+方案二：先保存结果，再确认任务完成
+Claim → 报告 INSERT 成功 → Worker 崩溃 → ACK 尚未完成
+                                          ↓
+                                 恢复后重新领取 Job
+                                          ↓
+                                     业务重复执行
+~~~
+
+BullMQ 普通 Worker 默认由框架在 Processor 成功返回以后尝试确认 Job completed；开发者通常应该先等待重要业务结果持久化成功，再正常 return。对需要重试的失败应抛出异常，不能 catch 以后直接返回“成功”。
+
+| 交付/处理语义 | 关注的保证 | 可能出现的后果 | 常见倾向 |
+| --- | --- | --- | --- |
+| At-most-once（至多一次） | 最多尝试交付或处理一次，可能完全没有成功执行 | 确认后崩溃，业务可能遗漏 | 处理前先确认，或禁止恢复重试 |
+| At-least-once（至少一次） | 允许重复交付或处理，尽量不遗漏已经可靠接收的工作 | 同一任务可以执行多次 | 业务结果先持久化，随后确认；失败时重试 |
+| Exactly-once Effect（业务效果恰好一次） | 同一业务意图最终只产生一次合法业务效果 | 需要业务唯一约束、幂等键、下游合作或范围受限的事务 | 至少一次交付配合幂等处理，或支持的同一事务边界 |
+
+这些是抽象语义，不是“任何系统一定百分之百完成”的承诺：如果任务重试次数耗尽、进入死信、基础设施长期不可用，At-least-once 风格并不保证业务必然成功。At-most-once 也不是“恰好成功一次”，而是可能**零次或一次**。所谓 Exactly-once Effect 也通常不意味着处理函数绝对只被调用一次。
+
+### 【用 PostgreSQL 唯一约束保证重复执行不会保存两份报告】
+
+继续使用 AI 分析任务，约定相同文档版本对应稳定业务操作 ID：
+
+~~~text
+operation_id = report:doc-1001:v1
+~~~
+
+在 PostgreSQL 中为结果建立唯一键：
+
+~~~sql
+CREATE TABLE analysis_reports (
+  operation_id TEXT PRIMARY KEY,
+  document_id TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+~~~
+
+下面是 BullMQ Processor 的关键业务逻辑：
+
+~~~javascript
+const worker = new Worker("document-analysis", async job => {
+  const operationId = "report:" + job.data.documentId + ":v" + job.data.version;
+
+  // 提前复用成功结果，降低普通重试的 LLM 成本
+  const existing = await pool.query(
+    "SELECT operation_id FROM analysis_reports WHERE operation_id = $1",
+    [operationId]
+  );
+  if (existing.rowCount > 0) return { operationId, reused: true };
+
+  const report = await generateReport(job.data.documentId);
+
+  // 真正防止重复入库的约束位于 PostgreSQL
+  await pool.query(
+    "INSERT INTO analysis_reports (operation_id, document_id, content) " +
+    "VALUES ($1, $2, $3) ON CONFLICT (operation_id) DO NOTHING",
+    [operationId, job.data.documentId, report]
+  );
+
+  // 返回后 BullMQ 尝试更新自己的 completed；二者非同一事务
+  return { operationId };
+}, { connection });
+~~~
+
+代码要区分两种能力：
+
+- **前置 SELECT 是结果复用优化，而不是并发锁。** 如果此前报告已经保存，Worker B 可以跳过重复调用 LLM。
+- **数据库 PRIMARY KEY 与 ON CONFLICT 才提供重复插入时的业务写入保护。** 若 A 和 B 在报告尚不存在时同时开始执行，二者仍可能都调用 LLM；最终数据库允许同一 operation_id 只有一条报告。
+
+因此幂等保护的是**业务最终效果**，而不自动保证外部 API/LLM 只执行一次、只产生一次费用。如果必须避免昂贵重复计算，需要进一步引入已完成阶段的 Checkpoint、结果缓存/复用、稳定请求幂等键、步骤状态和补偿策略。对于无法在响应丢失后查询最终结果、也不支持幂等键的外部服务，不应声称系统能够完全避免重复外部请求。
+
+还要区分业务 operation_id 和执行世代 lease_version：相同业务重试应沿用**稳定操作 ID**，但任务重新领取应改变 owner / lease_version。若用每次变化的尝试 ID 作为业务幂等键，就失去了跨重试去重的能力。
+
+### 【Fencing 与幂等分别约束执行者资格和重复业务效果】
+
+同一任务可能由于锁过期而出现 A、B 两个重叠执行者。Fencing 能够在实际写入端校验 owner、lease_version 和租约有效性，使失去权限的旧 Worker 不得覆盖合法当前结果。但它不会告诉新 Worker：“你的版本虽然合法，但这笔业务已经成功执行过。”例如 A 在合法持锁期间成功扣款，却在 ACK 前崩溃；B 使用新版本合法领取，若重复向支付平台扣款，Fencing 不会自动阻止第二次合法发起的支付业务。
+
+因此：**Fencing 判断谁还能写；幂等判断这一笔业务是否已经产生过效果。** 两者不同，不可替代。[BullMQ Idempotent Jobs](https://docs.bullmq.io/patterns/idempotent-jobs)。
+
+### 【Kafka Offset Commit 同样有确认间隙，但不是逐 Job ACK】
+
+Kafka 的最小模型是 Topic（主题）→ Partition（分区）→ Offset（分区内消息位置）。例如：
+
+~~~text
+Topic：analysis-events / Partition 0
+
+Offset 40  doc-A
+Offset 41  doc-B
+Offset 42  doc-C ← 当前 Consumer 正在处理
+Offset 43  doc-D
+~~~
+
+如果 Consumer 已经成功处理 offset=42，下一条应该从 offset=43 开始。因此针对这个分区，**提交的 committed offset 通常是 43（下一次消费的位置），不是 42**。
+
+~~~text
+Consumer 读取 offset 42
+       ↓
+保存业务结果成功
+       ↓
+提交该分区的 committed offset = 43
+       ↓
+恢复后从 43 继续
+~~~
+
+如果已保存 offset 42 的结果，但尚未提交 committed offset=43，Consumer 崩溃并发生分区重新分配后，新的 Consumer 仍可能再次读到 offset 42。这与 BullMQ “报告已保存，completed 未确认”属于同一类可靠性间隙，但实现方式不同。
+
+反过来先提交 43、再保存 offset 42 的结果，则在两步之间崩溃时，offset 42 可能被跳过。实际使用 Kafka 还要考虑自动提交（Auto Commit）：如果它在业务结果可靠保存前提前提交，也会造成类似风险。为掌握明确的故障边界，可先学习手动提交与处理完成后的 Offset 推进。
+
+多条消息并发处理时，**不能因为 Offset 42 已完成就直接提交 43，而不考虑 Offset 41 是否仍未完成**：同一 Partition 的 Committed Offset 表达可恢复的连续处理进度，前移过快会丢失尚未完成的处理机会。Offset 并非给每条业务消息附加一个已完成布尔值。
+
+Kafka 的提交位点**不会删除 Topic 中的原始消息**；消息保留由 Kafka 的 Retention 等策略决定。Kafka 对 Kafka Topic → Kafka Topic 的事务式处理可以在特定边界内支持 Exactly-once 语义，但结果写入 PostgreSQL、支付或 LLM 时仍需要下游配合，不能由 Kafka 事务自动覆盖全部外部副作用。[Apache Kafka Design](https://kafka.apache.org/40/design/design/)。
+
+### 【结果与确认都位于同一个 PostgreSQL 时，可以缩小本地事务间隙】
+
+如果任务队列本身就是 PostgreSQL Job Table，而业务结果也存在同一数据库，则可在同一事务内核验有效 Job 所有权、保存业务结果、将任务更新为 completed：
+
+~~~text
+BEGIN
+  检查 owner / lease_version / lease_until
+  写入业务结果（必要时唯一约束去重）
+  将 Job 标记 COMPLETED
+COMMIT
+
+要么一起提交，要么一起回滚
+~~~
+
+但这无法撤销此前已经完成的 LLM 调用，也不能把外部支付接口纳入这个数据库事务。
+
+对照项目实践：[Browser Monitor OutboxWorker](https://github.com/cxDlogver/browser-monitor/blob/main/platform/apps/worker/src/outbox-worker.ts) 目前的投影处理与 completed 状态更新不是同一个数据库事务，所以依然存在“投影已成功、任务尚未确认”的重复处理窗口。不能因为用了 PostgreSQL 就默认避免了整个 ACK Gap。
+
+### 【面试回答要先讲故障窗口，再解释处理语义和业务保护】
+
+> 多 Worker 正常领取时可以通过原子 Claim 保证一个 waiting Job 只有一个成功领取者，但业务结果持久化与队列确认通常不属于同一个事务。比如报告已经成功写入 PostgreSQL，Worker 在 BullMQ 标记 completed 前崩溃，Job 可能被重新调度，导致业务重复执行。
+>
+> 如果为了避免重复而提前 ACK，又可能出现 ACK 后崩溃、结果没有保存的任务遗漏。因此关键业务通常倾向先可靠保存结果，再确认消费进度，即允许至少一次处理，并通过稳定业务 ID、唯一约束或下游幂等键确保重复执行不产生额外业务效果。
+>
+> Kafka 的 Offset Commit 也是确认消费进度，但它记录的是某 Consumer Group 在特定 Partition 下一条要处理的位置，并不把某条原始消息标记为 completed 或删除。读写外部数据库时仍然存在处理结果提交与位点提交之间的失败窗口。
+
+## 6. 下一讲追问：Kafka 的 Topic、Partition、Offset 和 Consumer Group 如何共同完成分工与恢复
+
+> **思考题：** BullMQ 通过 wait / active / completed 等集合维护任务生命周期；Kafka 为什么采用可保留的分区追加日志，并用 Consumer Group 的 committed offset 表示进度？如果 Consumer A 崩溃，Consumer B 如何接管分区、确定应该从哪条消息重新开始？
+
+下一讲循序渐进地建立 Topic、Partition、Offset 和 Consumer Group 的关系，再展开故障接管；暂不铺开 Kafka Broker 副本、事务等更深层架构。
+
+## 7. 参考资料与主文档关联
 
 1. [Node.js Learn：The Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)：运行时异步 I/O 和事件循环行为。
 2. [MDN HTTP：202 Accepted](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/202)：HTTP 请求已接受但尚未完成。
@@ -1981,6 +2161,10 @@ HTTP API：PostgreSQL 中创建业务请求记录
 21. [BullMQ Going to production](https://docs.bullmq.io/guide/going-to-production)：Redis 持久化、noeviction、重连等生产环境条件。
 22. [BullMQ v6 PostgreSQL Backend 公告](https://bullmq.io/news/260927/bullmq-v6-postgresql/)：v6 提供可选 PG 后端，Redis 仍为默认后端。
 23. [BullMQ Stalled](https://docs.bullmq.io/guide/jobs/stalled)：stalled 属于失锁后的恢复事件，不是独立 Job 状态。
+24. [BullMQ Idempotent Jobs](https://docs.bullmq.io/patterns/idempotent-jobs)：重试下的业务幂等与结果保护。
+25. [BullMQ Workers](https://docs.bullmq.io/guide/workers)：Processor 返回/抛错与任务完成或失败状态转换。
+26. [Apache Kafka 4.0 Design](https://kafka.apache.org/40/design/design/)：At-most-once、At-least-once、Offset 和跨系统 Exactly-once 边界。
+27. [Apache KafkaConsumer API](https://kafka.apache.org/40/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html)：提交的 Offset 表示下一条待消费记录的位置。
 
 
 > 本文为学习进程中的**独立草稿**，不覆盖正式通用文档，也不修改源代码。按逐节讨论方式继续追加，下一讲保留一个核心思考题供作答。
