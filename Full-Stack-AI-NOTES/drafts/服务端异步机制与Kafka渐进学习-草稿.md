@@ -1200,6 +1200,53 @@ RETURNING id, lease_until;
 
 实际系统还需要确定心跳频率、允许的网络抖动、超时时间、应用与数据库的时间基准，以及长时间 CPU 计算是否阻塞续租。**续租是处理权活跃证明，不等于任务内部步骤的 Checkpoint。**
 
+### 【Lease 与 Renewal 区分的是执行权有效期和任务实际运行时长】
+
+理解租约应当从最初的故障出发：Worker A 将任务改为 RUNNING 后突然崩溃，任务可能永久无法被其他消费者领取。**租约（Lease）不是最长业务执行时长，而是一次领取所获得的处理权在没有继续证明存活时可以持续多久。** 因此领取时不仅要写 RUNNING，还要记录 owner、lease_until（到期时间），通常还会记录 lease_version（领取世代）。
+
+一项预计需要四十秒的报告生成任务，可以只持有三十秒租约，并每十秒续租一次：
+
+~~~text
+时间       Worker A 执行动作                 租约到期时间
+ 0s        领取成功，开始执行                    30s
+10s        续租成功                             40s
+20s        续租成功                             50s
+30s        续租成功                             60s
+40s        业务结果完成并确认                    任务结束
+~~~
+
+可见任务总时长可以超过初始租期；租约过期不代表业务结果必然失败，也不意味着旧 Worker 已经物理停止运行。**超时只是任务协调方撤销旧处理权、允许恢复领取的依据。**
+
+Renewal（续租）的前提是：当前请求仍代表合法、有效的领取者。正常做法是在续租时原子检查 Job ID、status、owner、lease_version 与未过期租约，再延长 lease_until。不能只执行无条件的 UPDATE lease_until，否则失去处理权的旧 Worker 可能把过期处理权续活。
+
+续租与任务进度检查不是同一个概念：一个卡死在 await 的 Worker 可能仍然能够定期发出续租心跳，却始终不能完成业务。因此除了 Lease，还应按需求设置**业务超时/取消策略、重试上限、监控告警**。Lease 负责处理权有效性；业务总超时负责工作本身允许耗费多少时间，两者需要分别设计。
+
+### 【续租中断会引入新旧 Worker 并行执行，不能把过期当作旧 Worker 已死亡】
+
+现在模拟一个长任务：Worker A 领取时租约为三十秒，每十秒续租一次，执行中发生长时间 Event Loop 阻塞、GC 暂停或系统调度停顿。
+
+~~~text
+0s    Worker A 领取 Task A，lease_version=1，lease_until=30s
+10s   Worker A 续租成功，lease_until=40s
+15s   Worker A 长时间暂停，暂时无法发送续租命令
+40s   Worker A 的 Lease 过期
+45s   Worker B 领取已过期任务，lease_version=2，开始处理
+50s   Worker A 恢复运行，继续拿着 version=1 执行剩余步骤
+
+            Worker A（旧版本 1）       Worker B（新版本 2）
+                  ↓                         ↓
+              继续执行业务              同时执行业务
+                  └──────────┬──────────────┘
+                             ↓
+                 必须保护结果写入和副作用
+~~~
+
+这里即使所有 Claim、Renewal 都是原子的，也可能产生**两个 Worker 同时运行业务代码**。原因不是原子领取失效，而是 Worker 的实际运行状态与协调系统记录的租约所有权出现时间差。
+
+例如在 Node.js 中，CPU 密集型同步任务会阻塞当前线程的 Event Loop，导致续租定时器无法及时运行；外部 LLM 的异步等待本身通常不阻塞 Event Loop，但网络断开、进程暂停等仍可能导致续租失败。BullMQ 文档将这类无法续锁的任务称为 stalled，并允许恢复到 waiting 后被另一 Worker 处理。
+
+**因此前面的 Claim 解决“正常竞争时不能重复领取”；Lease + Renewal 解决“崩溃可恢复、正常长任务不会轻易误回收”；而过期后新旧执行者并存所带来的结果冲突，还需要 Fencing。** 参见 [BullMQ Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)。
+
 ### 【Fencing Token 在租约失效后拒绝旧 Worker 写入】
 
 即使建立 Renewal，也无法排除如下竞态：
