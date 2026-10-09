@@ -65,6 +65,8 @@ Backpressure / Scaling / Graceful Shutdown / Observability
 
 ## 1. 异步边界决定一项业务工作是否离开当前 Request 生命周期
 
+**对应面试练习：** 从 Node.js async/await、HTTP 提前返回和 fire-and-forget 的失败窗口出发，可对照[面试问答第一章：运行时异步与系统级可靠任务](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)；正文以下仍以通用机制为主。
+
 ### 【Runtime-level Asynchrony 与 System-level Asynchronous Processing 属于不同层级】
 
 异步 I/O（Asynchronous I/O）解决的是：当前进程等待网络、文件或数据库 I/O 时，Runtime 怎样继续推进其他工作。
@@ -202,6 +204,8 @@ Worker Thread
 因此不能因为两者都叫 Worker 就把它们理解成同一个抽象层。
 
 ## 2. 可靠交接保证任务离开 Producer 后仍然存在
+
+**对应面试练习：** API 持久化 Job、独立 Worker 轮询以及多个 Worker 原子领取的渐进追问，参见[面试问答第二章：数据库任务队列与 Worker](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
 
 ### 【可靠异步首先要求任务进入 Durable Boundary 后才能承诺已接收】
 
