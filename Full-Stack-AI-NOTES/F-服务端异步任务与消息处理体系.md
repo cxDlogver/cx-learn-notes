@@ -1114,7 +1114,7 @@ Crash Recovery
 
 Consumer Lag
 ↓
-Log End Offset - Consumer Position
+Log End Offset - Committed Offset（常见 Group Lag 监控口径；客户端 Fetch Position 是另一种进度）
 
 Replay
 ↓
@@ -1764,7 +1764,7 @@ Broker
 
 - **At-most-once（最多一次）**：生产者发出后若 ack 丢失、或 Broker 在持久化前宕机，这条消息就直接被丢弃，且不再重试。后果是任务**可能永远不执行（Lost Work）**。它适合「丢了也无所谓」的场景，例如指标打点、非关键日志；但绝不能用在扣款、发券这类不能丢失的业务上。
 
-- **At-least-once（至少一次）**：Broker 先持久化再向生产者确认，消费者处理完后回 ack；若消费者在「处理成功」与「回 ack」之间崩溃，Broker 会认为没收到确认而重新投递，于是**同一条消息被处理了多次（Duplicate Processing）**。这是 Kafka / RabbitMQ 等绝大多数 Broker 的默认（也是唯一能在不加分布式事务前提下稳定实现）的语义。
+- **At-least-once（至少一次）**：消息系统在相应持久化或确认条件下保存可恢复的消息；Consumer 处理后再执行 ACK（队列型 Broker）或 Offset Commit（Kafka）。若在「处理成功」与「确认进度」之间崩溃，队列可能重新交付，Kafka Group 则可能从旧 Offset 重读，于是**同一条消息被处理了多次（Duplicate Processing）**。这是 Kafka / RabbitMQ 等绝大多数 Broker 的默认（也是唯一能在不加分布式事务前提下稳定实现）的语义。
 
 - **Exactly-once Capability（精确一次能力）**：以 Kafka 为例，靠「幂等生产者 + 事务 + 流处理事务」做到在 **Kafka 自己管辖的边界内**读—处理—写是原子的，对外表现为「恰好一次」。但关键点在于——这个边界**只覆盖 Broker 拥有事务的那一段**；一旦你的处理逻辑要写另一个数据库、调支付网关、发邮件，这个保证就**到此为止**，因为 Broker 无法跨系统协调提交。
 
@@ -1850,6 +1850,43 @@ Task Redelivery
 它可能重复产生哪些 Side Effect？
 系统在哪一层阻止重复结果？
 ~~~
+
+### 【ACK Gap 是业务结果与消费进度分开提交时无法忽略的故障窗口】
+
+任务确认与业务提交属于两个不同事实。比较两个故障时序：
+
+~~~text
+错误顺序：先 ACK / Commit，再写结果
+     ↓
+确认成功后 Worker 崩溃，业务结果未保存
+     ↓
+后续恢复可能跳过这项工作 → 漏处理
+
+更常见的安全顺序：先保存业务结果，再 ACK / Commit
+     ↓
+结果成功但确认前 Worker 崩溃
+     ↓
+任务再次领取或消息重读 → 可能重复处理
+~~~
+
+通常关键业务宁愿先保存可靠结果、允许重复消费，并通过**稳定的业务操作标识**和唯一约束抵御重复。例如不同 Consumer 收到相同事件时应共享同一个 operation_id，而不能把随机生成的 Worker ID 当作幂等键：
+
+~~~sql
+CREATE TABLE processed_events (
+  operation_id TEXT PRIMARY KEY,
+  result_ref TEXT NOT NULL
+);
+
+INSERT INTO processed_events (operation_id, result_ref)
+VALUES ($1, $2)
+ON CONFLICT (operation_id) DO NOTHING;
+~~~
+
+这一约束阻止了同一操作重复保存结果，但**不证明昂贵的 LLM、支付网关或邮件请求只调用过一次**：如果多个执行者都在拿到结果以后才竞争数据库唯一约束，两次外部调用仍可能发生。此类副作用要在对应下游使用幂等键、业务状态机、可查询结果或对账，不能只靠本地 INSERT 去重。
+
+如果 Job 与结果在**同一个 PostgreSQL**，且所有受保护写入都在同一事务内，则可在事务中检查有效 owner/版本、写业务结果、将 Job 更新 completed，使本地两个状态一起提交或回滚。这只能缩小本地 ACK Gap，**不能把外部 LLM/API 自动纳入这笔 PostgreSQL 事务**。BullMQ Redis 后端的 completed 或 Kafka 的 Offset Commit 与业务数据库仍是跨系统确认，不因代码连续调用就变得原子。
+
+Fencing 在这里负责**判断当前执行者有没有权利提交**；幂等负责**判断这笔业务是否已经完成过**。即使新 Worker 的 Fencing 世代合法，也不应对先前已完成的扣款再次产生效果。详见[面试问答第五章：ACK Gap、Delivery Semantics 与幂等](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
 
 ### 【并发与顺序要求会限制 Worker 并行度】
 
