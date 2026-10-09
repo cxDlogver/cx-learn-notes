@@ -1942,3 +1942,39 @@ V8 一方面将 JavaScript 源码转换为可执行形式并根据反馈优化�
   - 项目知识：[AI Coding 如何保证 Agent 验收结论可信](../bytedance/docs/AI-Coding如何保证Agent验收结论可信.md)。
 - **追问：怎样把明确的验收合同变成机器可执行、可阻塞的 Gate？**
   - 通用知识：[Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性](<./QA/Agent 通过结构化状态与确定性检查降低自然语言约束的不确定性.md>)。
+
+## 65. 服务端异步任务、BullMQ 与 Kafka 的可靠消费机制
+
+### 【提问】
+
+- Node.js 已经是异步非阻塞模型，为什么仍然需要可靠的任务队列与独立 Worker？
+- 多个 Worker 怎样通过原子 Claim、Lease、Renewal 与 Fencing 安全领取和恢复任务？
+- BullMQ 如何管理任务存储、优先级调度、延迟任务、处理锁和完成确认？
+- 为什么业务成功后 ACK 未提交会造成重复执行，如何通过幂等保护业务结果？
+- Kafka 的 Topic、Partition、Consumer Group、Heartbeat、Rebalance 和 Offset Commit 怎样共同实现并行消费与失联恢复？
+- KafkaJS 的 eachMessage、eachBatch、自动/手动 Offset 提交与分区并发应如何使用，怎样保证连续进度和业务顺序？
+
+### 【回答框架】
+
+核心判断：**服务端可靠异步是从“进程内等待不阻塞”逐步扩展到“工作跨请求、跨进程、跨故障仍可恢复”的系统问题；BullMQ 与 Kafka 用不同的调度和确认模型解决其中不同环节。**
+
+沿原本的知识依赖顺序回答，而不是先背产品概念：
+
+1. **先区分运行时异步和系统级任务异步。** async/await 让 I/O 等待不必占住线程，但 API 提前返回、任务持久化和执行者可恢复是不同保证。解释 Producer → 持久化存储 → 独立 Worker → 结果的完整链路。
+2. **再建立多 Worker 的安全领取与活跃管理。** PostgreSQL 行锁、SKIP LOCKED、Redis WATCH / Lua 用于原子 Claim；Lease 与 Renewal 保证处理权在正常执行中持续有效，Fencing 要在下游实际写入时拒绝旧世代。
+3. **进一步解释完成确认与重复执行。** 业务保存与 ACK/Offset Commit 往往不在同一事务；先确认可能丢工作，后确认可能重做。区分 At-most-once、At-least-once、Exactly-once 业务效果，使用稳定 operation_id、唯一约束和外部幂等协议保护副作用。
+4. **把通用机制映射到具体中间件。** BullMQ 侧重逐 Job 状态、锁、续租、优先级、延迟和重试；Kafka 侧重 Topic/Partition 追加日志、Consumer Group 分区归属以及 Committed Offset。失联后 Kafka 通过心跳超时与 Rebalance 移交分区，而旧 Consumer 已启动的外部业务并不会被自动停止。
+5. **最后回到 KafkaJS 的真实执行与边界。** Producer 按 Key 选择 Partition；eachMessage 默认同分区顺序 await，partitionsConsumedConcurrently 支持不同分区并发；eachBatch 可以自行安排批次逻辑，但 resolveOffset 不等于已提交到 Broker。同分区自行并发必须以已可靠完成的连续前缀推进 Offset，不能跳过尚未完成的消息。
+
+以上知识在一个完整问答文档中按七章已解答主题、一个待展开章节及参考资料组织。每一道已完成问题均提供**提问、完整机制与案例作为回答要点，以及可直接用于面试的标准回答**；保留 SQL、Lua、TypeScript/KafkaJS 示例和故障时间线，不将它们缩成关键词列表。
+
+### 【完整回答】
+
+[查看完整问答：服务端异步任务、BullMQ 与 Kafka 可靠消费面试问答](<./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md>)。
+
+通用知识主入口：[服务端异步任务与消息处理体系](<./F-服务端异步任务与消息处理体系.md>)。
+
+### 【继续展开】
+
+- **追问：Kafka Consumer 正常存活，但某个 Offset 的业务长期失败，如何在顺序、重试、退避和死信之间选择？** 该问题在完整问答第八章标为待展开。
+- **追问：生产者发布 Kafka 事件与 PostgreSQL 业务事务存在双写间隙时，怎样通过 Transactional Outbox 完成可追踪交接？** 可进一步阅读 [服务端异步任务与消息处理体系](<./F-服务端异步任务与消息处理体系.md>)。
