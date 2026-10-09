@@ -1518,14 +1518,225 @@ RETURNING o.id, o.project_id, o.event_id, o.event, o.attempts;
 
 任务真正完成时，应该先持久化关键业务结果，再更新完成状态或提交消费进度。不过业务成功之后、ACK 尚未提交时仍可能崩溃，因此恢复后重复处理是必须考虑的故障路径。通过业务幂等键、唯一约束、Checkpoint、结果对账和适当补偿，确保重复执行不造成错误结果。
 
-## 4. 下一讲追问：结果已成功但 ACK 未提交时，为什么可能重复执行
+## 4. BullMQ 如何存储任务、决定领取顺序并封装可靠 Worker 执行
+
+**本讲核心问题：** 当我们已经理解 Claim、Lease、Renewal、Fencing、Idempotency 和 ACK 后，为什么实际项目还要使用 BullMQ？它如何保存任务和调度状态，多个 Worker 如何选择下一项 Job，优先级与延迟任务怎样排序，以及哪些可靠性已经封装、哪些仍需要业务自己保证？
+
+**先给结论：** BullMQ 是任务队列与 Worker 调度框架。默认 Redis Backend 用任务数据 Hash、不同状态的 List / Sorted Set、Job Lock 及原子 Lua 脚本组合管理队列。它已经封装队列侧 Claim、续锁、停滞回收、重试和完成状态转换；但 Redis 队列状态与 PostgreSQL 业务结果、LLM 调用和外部支付不是同一个全局事务，仍需应用侧保证业务幂等和必要的下游处理权校验。
+
+**版本边界：** 这里分析的是 BullMQ v6 默认 Redis Backend。v6 已增加可选 PostgreSQL Backend，后者用 PostgreSQL 表、事务和 SQL 函数实现相同的上层 API，不能用下文的 Redis List、ZSET、Lua 解释它的内部执行。Redis 仍为默认后端；官方说明 v6 Redis 的队列存取基本沿用 v5。[BullMQ v6 PostgreSQL 发布说明](https://bullmq.io/news/260927/bullmq-v6-postgresql/)。
+
+### 【Producer 提交 Job，Queue 和 Worker 可以运行在不同进程】
+
+以 AI 文档分析为例：HTTP API 接到文档分析请求后，将待分析的 documentId、version 写入 BullMQ；Worker 异步调用 LLM，最后将报告持久化。API 不应把十分钟的 LLM 调用维持在当前 HTTP 请求生命周期中。
+
+~~~text
+用户发起文档分析
+        ↓
+HTTP API / Producer（生产者）
+  校验权限、计算业务 Job ID
+  queue.add("analyze-document", data, options)
+        ↓
+BullMQ Redis Backend
+  保存任务内容和对应的调度状态
+        ↓
+Worker A / B / C（消费者）
+  在内部原子领取逻辑中竞争下一项可执行 Job
+        ↓
+获得 Job 与有效任务锁的 Worker
+  执行 Processor（读取文档、调用 LLM）
+        ↓
+PostgreSQL 中幂等保存分析报告
+        ↓
+Processor 正常返回，BullMQ 确认 completed
+~~~
+
+Producer 与 Worker 不必处于同一个 Node.js 进程；同一个队列名称与 Redis 命名空间下的实例参与同一任务系统。Worker 断开时，已成功添加的 Job 可以留在 Redis 等待后续消费者上线，但这个能力仍以 Redis 可用、数据未丢失为前提。
+
+基础安装：
+
+~~~bash
+npm install bullmq ioredis pg
+~~~
+
+使用 Node.js ESM（.mjs 文件）、本地 Redis 127.0.0.1:6379，以及通过 DATABASE_URL 配置的 PostgreSQL 连接。v6 中 ioredis 为可选 peer dependency，使用 Redis 后端时需要自行安装。
+
+先为业务结果建表：
+
+~~~sql
+CREATE TABLE IF NOT EXISTS analysis_reports (
+  job_id TEXT PRIMARY KEY,
+  document_id TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+~~~
+
+上面的唯一主键保护的是**同一业务 Job 不会创建多条报告**，不能阻止两个 Worker 在重试或接管时都调用 LLM。
+
+Producer 示例（producer.mjs）：
+
+~~~javascript
+import { Queue } from "bullmq";
+
+const queue = new Queue("document-analysis", {
+  connection: { host: "127.0.0.1", port: 6379 },
+});
+
+const documentId = "doc-1001";
+const version = 1;
+const jobId = "report-" + documentId + "-v" + version;
+
+const job = await queue.add(
+  "analyze-document",
+  { documentId, version },
+  {
+    jobId,
+    attempts: 3,
+    backoff: { type: "exponential", delay: 1000 },
+    removeOnComplete: false,
+    removeOnFail: false,
+  }
+);
+
+console.log("已提交 Job:", job.id);
+await queue.close();
+~~~
+
+Queue.add 负责入队；jobId 是同一业务操作的稳定标识，attempts 表示最多尝试三次，backoff 表示失败后延迟重试。保留 completed / failed 记录便于教学观察，生产需要设计有限保留策略，否则 Redis 数据会持续增长。
+
+Worker 示例（worker.mjs）：
+
+~~~javascript
+import { Worker } from "bullmq";
+import pg from "pg";
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+async function generateReport(documentId, version) {
+  // 教学示例用短延迟代替真正的外部 LLM 调用
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  return "文档 " + documentId + " 第 " + version + " 版的分析结果";
+}
+
+const worker = new Worker(
+  "document-analysis",
+  async job => {
+    const { documentId, version } = job.data;
+
+    // 减少已经存在报告时的重复计算，但不具备并发互斥性
+    const existing = await pool.query(
+      "SELECT job_id FROM analysis_reports WHERE job_id = $1",
+      [job.id]
+    );
+
+    if (existing.rowCount > 0) {
+      return { reportId: job.id, reused: true };
+    }
+
+    const content = await generateReport(documentId, version);
+
+    // 真正兜住重复插入的是数据库唯一约束
+    await pool.query(
+      "INSERT INTO analysis_reports (job_id, document_id, version, content) " +
+      "VALUES ($1, $2, $3, $4) ON CONFLICT (job_id) DO NOTHING",
+      [job.id, documentId, version, content]
+    );
+
+    return { reportId: job.id };
+  },
+  {
+    connection: { host: "127.0.0.1", port: 6379 },
+    concurrency: 2,
+    lockDuration: 30000,
+    maxStalledCount: 1,
+  }
+);
+
+worker.on("completed", job => console.log("完成", job.id));
+worker.on("failed", (job, err) => console.error("失败", job?.id, err));
+worker.on("stalled", jobId => console.warn("失去锁，可能重试", jobId));
+worker.on("error", console.error);
+~~~
+
+启动方式是一个终端运行 node producer.mjs，另两个终端各运行 node worker.mjs；生产者完成入队后退出，消费者进程继续运行。脚本中的 Processor 没有显式编写原子 Claim、租约续期或成功 ACK，因为这些已经由 BullMQ Worker 管理。
+
+**代码的保证与不足**：报告唯一约束确保每个 job_id 最多保存一条记录，但两个重叠 Worker 可能都读到“报告尚不存在”并重复调用 LLM。这里也未实现强制禁止旧 Worker 写入最新结果的业务级 Fencing；后面会解释何时需要它。
+
+### 【BullMQ 将 Job 内容与状态索引分开，而不是只改一个 status 字段】
+
+对于名为 document-analysis 的业务 Queue，Redis 中常见的数据可按两层理解：
+
+~~~text
+逻辑业务队列：document-analysis
+│
+├── Job 数据：Hash
+│   └── bull:document-analysis:report-doc-1001-v1
+│       name / data / opts / timestamps / attempts / result 等
+│
+└── 执行状态与调度结构
+    ├── wait         Redis List：普通等待任务 ID
+    ├── active       Redis List：正在执行的任务 ID
+    ├── prioritized  Sorted Set：带正数 priority 的可领取任务 ID
+    ├── delayed      Sorted Set：尚未到期的任务 ID
+    ├── completed    Sorted Set：已成功结束的任务 ID
+    ├── failed       Sorted Set：失败终态的任务 ID
+    ├── Job lock     带 TTL 的锁 Key：校验本次执行令牌
+    └── events       Redis Stream：状态变化事件
+~~~
+
+这个图是**典型 Redis Backend 的概念与实现示意**，具体 Key 命名和内部状态字段不应被业务代码当作稳定的 Schema。Hash 承担 Job 的内容和执行元数据存储；不同 List、ZSET 主要承担调度、排序和查询索引。状态通常取决于任务 ID 在这些结构中的位置，而不是一个 status 字段。
+
+普通任务经过的主要状态：
+
+~~~text
+queue.add()
+    ↓
+wait（可执行的普通任务）
+    ↓
+原子领取
+    ↓
+active + 执行锁
+    ├─ Processor 成功 → completed
+    ├─ 失败，可重试 → wait 或 delayed → 再次 active
+    └─ 最终失败 → failed
+~~~
+
+另有两个特殊入口：
+
+~~~text
+priority > 0 → prioritized（按优先级排序）→ active
+delay > 0    → delayed（等到到期）→ wait / prioritized → active
+~~~
+
+这里**没有固定的 stalled 状态**。stalled 表示 BullMQ 检测到 active Job 的锁失效，并可能将其放回 waiting 或置为 failed，是一个事件和恢复过程，不是持久的独立 Job 状态。[BullMQ Stalled](https://docs.bullmq.io/guide/jobs/stalled)。
+
+查看业务任务时，应通过队列 API，而不是直接手改 Redis Key：
+
+~~~javascript
+const job = await queue.getJob("report-doc-1001-v1");
+if (job) console.log(await job.getState());
+
+console.log(await queue.getJobCounts(
+  "waiting", "prioritized", "delayed", "active", "completed", "failed"
+));
+
+console.log(await queue.getPrioritized());
+console.log(await queue.getDelayed());
+~~~
+
+这些查询能用于调试当前任务是否已经可领取、是否延迟中、完成后是否保留，以及是否存在任务积压。官方依据：[BullMQ Architecture](https://docs.bullmq.io/guide/architecture)、[Job Getters](https://docs.bullmq.io/guide/jobs/getters)。
+
+## 5. 下一讲追问：结果已成功但 ACK 未提交时，为什么可能重复执行
 
 > **思考题：** Worker 已成功把报告写入 PostgreSQL，但还没把任务标记 completed（或 Kafka Consumer 尚未提交对应 Offset），进程突然崩溃。任务重启以后是否可能再次执行？怎样避免再次调用昂贵的 LLM？反过来，把 ACK 提前到写报告之前，会有什么风险？
 
 下一讲以这个故障窗口为起点，区分 At-most-once、At-least-once、Idempotency 和 Kafka Offset Commit，而不是提前铺开整个 Kafka 架构。
 
 
-## 5. 参考资料与主文档关联
+## 6. 参考资料与主文档关联
 
 1. [Node.js Learn：The Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)：运行时异步 I/O 和事件循环行为。
 2. [MDN HTTP：202 Accepted](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/202)：HTTP 请求已接受但尚未完成。
