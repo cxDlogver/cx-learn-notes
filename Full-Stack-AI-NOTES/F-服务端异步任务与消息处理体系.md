@@ -1298,6 +1298,40 @@ Offset 尚未 Commit
 因此 Kafka Consumer 仍然要继续进入下一章的 At-least-once 与 Idempotency。
 
 
+### 【Redis 的 WATCH、MULTI/EXEC 与 Lua 解决不同范围的并发领取问题】
+
+若用 Redis 自建 Job Queue，最容易误解的是：每条 HSET 命令原子，并不意味着客户端此前的 HGET 检查仍然有效。
+
+~~~text
+Worker A：HGET status → pending
+Worker B：HGET status → pending
+Worker A：HSET status processing → 成功
+Worker B：HSET status processing → 也成功
+两者可能都启动业务
+~~~
+
+**MULTI/EXEC** 在 EXEC 阶段连续执行已排队命令，其他 Redis 客户端命令不会插入；但若读状态发生在 MULTI 前，它不会自动发现检查时的数据已经过期。应考虑两种并发安全实现：
+
+1. **WATCH + MULTI/EXEC：** 先监视任务 Key，再读取状态；若到 EXEC 前其他 Worker 修改该 Key，EXEC 取消本次事务，当前 Worker 必须视为领取失败并重新判断。
+2. **Lua Script：** 将状态读取、资格判断、变更以及成功返回放在 Redis 服务端单次执行，中间不允许其他客户端命令穿插。
+
+~~~lua
+-- KEYS[1]：任务 Hash；ARGV[1]：当前 Worker ID
+if redis.call("HGET", KEYS[1], "status") ~= "pending" then
+  return 0
+end
+redis.call("HSET", KEYS[1], "status", "processing", "owner", ARGV[1])
+return 1
+~~~
+
+例如用 EVAL 将 task:1 传入 KEYS[1]，worker-A 传入 ARGV[1]：
+
+~~~redis
+EVAL "if redis.call('HGET',KEYS[1],'status') ~= 'pending' then return 0 end redis.call('HSET',KEYS[1],'status','processing','owner',ARGV[1]); return 1" 1 task:1 worker-A
+~~~
+
+客户端只有收到 1 才能执行业务。**原子执行／隔离执行并不等于运行时错误自动回滚**：Redis 的 MULTI/EXEC 与 Lua 都不提供传统 SQL 事务意义上的通用运行时错误回滚；Pipeline 只是批量发命令、减少网络往返，也不是上述事务保护。参考 [Redis Transactions](https://redis.io/docs/latest/develop/using-commands/transactions/)、[Redis Lua Scripting](https://redis.io/docs/latest/develop/programmability/eval-intro/)。更多竞争时间线见[面试问答第三章：Redis 原子条件转换](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
 ### 【BullMQ 把 Job 调度与业务 Workflow 分开，Worker 不一定需要调用 Agent】
 
 Node.js 后台任务的职责链应先区分三层：Producer 接收并交接 Job，Queue Backend 保存调度与重试状态，Worker 领取并执行 Processor。Processor 可以调用普通函数、固定 Workflow、LLM Tool Chain，或确实需要自主决策时才使用 Agent。把一个固定的“解析文档 → 提取信息 → 生成报告 → 校验结果”称为 LLM Workflow 往往比称为 Agent 更准确。
