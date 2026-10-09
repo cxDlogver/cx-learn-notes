@@ -869,6 +869,8 @@ child.stdout.on('data', data => {
 
 ### 【Process、Worker Thread 与应用级 Worker 属于不同抽象层】
 
+**延伸到系统级可靠异步：** Node.js Runtime 的 Promise、Worker Thread 与应用层 Queue Worker 是不同职责；当任务需要脱离 HTTP 请求并跨进程恢复时，沿[服务端异步任务与消息处理体系](<./F-服务端异步任务与消息处理体系.md>)继续理解，并可通过[面试问答第一、二章](<./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md>)验证这些边界。
+
 | 概念 | 执行边界 | JavaScript 并行 | 常见用途 |
 | --- | --- | --- | --- |
 | Main Event Loop Thread | 当前 Node Process | 默认一条主要 JS 执行流 | Request / I/O orchestration |
