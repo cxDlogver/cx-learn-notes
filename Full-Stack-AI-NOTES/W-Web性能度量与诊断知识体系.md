@@ -4667,7 +4667,7 @@ LCP 资源就绪
 
 没有独立资源请求的 LCP 文本等场景，资源相关阶段可以为零。TTFB 高不等于服务器计算一定慢；Resource Load Delay 高不等于网络下载慢；Resource Load Duration 高也不等于资源一定过大。
 
-详细的字段、导航边界与优化路径见 [Loading / LCP 四阶段诊断草稿](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)。
+详细的字段、导航边界与优化路径见 [Loading / LCP 四阶段诊断章节](#3-loading-通过-lcp-四阶段归因定位关键内容出现延迟)。
 
 
 **【INP 将一次交互分成输入等待、事件处理和画面呈现】**
@@ -4693,7 +4693,7 @@ INP 衡量特定交互到其后续下一帧的响应时延，而不是该次交�
 
 需要先确定哪一次 Interaction 出现慢响应，不能简单把多个 Event Timing 的 duration 求和作为 INP。用户业务请求 3 秒后成功，也不能直接声称该次 INP 就是 3000ms。
 
-详细机制见 [Responsiveness / INP 三阶段诊断草稿](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)。
+详细机制见 [Responsiveness / INP 三阶段诊断章节](#4-responsiveness-通过-inp-三阶段归因定位交互反馈延迟)。
 
 
 **【CLS 不按毫秒分段，而按最大偏移窗口和布局因果关系定位】**
