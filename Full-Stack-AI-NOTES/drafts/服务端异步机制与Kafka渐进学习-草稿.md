@@ -2800,6 +2800,184 @@ await consumer.run({
 
 此外，Consumer Group 中增加 Consumer 数量不会拆分某个单一 Partition 内的原始消费归属；常规 Consumer Group 的有效分区并行度受所订阅的 Partition 数量约束。高吞吐或严重倾斜时需要从 Key 分布、分区数量、处理资源和是否允许同一 Key 并行这几个维度一起分析。
 
+### 【一个 Consumer 可以并发处理多个 Partition，但默认按 Partition 内顺序 await】
+
+**追问：A、B、C 并行执行是什么意思？一个 Consumer 能否处理多个任务？一个 Partition 是否只能执行一个任务？**
+
+首先要把“Consumer 数量”“Partition 归属”“业务函数并发数”三个层次分开：
+
+1. **Consumer 是订阅与读取 Kafka 消息的运行实例**。同一常规 Consumer Group 稳定分配时，一个 Topic-Partition 归一个 Consumer 所有；一个 Consumer 则可以被分配多个 Partition。
+2. **Partition 是组内分配和分区内日志顺序的基本单位**。单个 Partition 被一个 Consumer 负责，不意味着该 Consumer 整个进程同一时刻只能执行一项业务。
+3. **业务函数并发是 Consumer 应用内部的执行方式**。KafkaJS 默认每个 Partition 的 eachMessage 顺序 await；不同 Partition 可以并发，开发者也能自己让同一 Partition 中已读取的 Record 同时执行业务，但需要承担顺序与 Offset 管理的责任。
+
+示例：Group A 只有一个 Consumer C1，分配给它三个 Partition：
+
+~~~text
+Topic：analysis-events                  Consumer C1（只有一个进程）
+Partition 0：A → B → C  ──────────────────► 顺序处理 A、B、C
+Partition 1：D → E → F  ──────────────────► 顺序处理 D、E、F
+Partition 2：G → H → I  ──────────────────► 顺序处理 G、H、I
+
+C1 可以同时开始处理 A、D、G（分别属于不同 Partition）。
+当 A 完成时，Partition 0 才继续处理 B；D、G 无需等待 A。
+~~~
+
+KafkaJS 的分区级并发配置：
+
+~~~javascript
+await consumer.run({
+  partitionsConsumedConcurrently: 3,
+  eachMessage: async ({ topic, partition, message }) => {
+    // 对同一个 Partition：等待本条处理完成，再处理下一条
+    // 对不同 Partition：最多可有 3 个处理回调同时处于进行中
+    await processTask({ topic, partition, message });
+  },
+});
+~~~
+
+它的含义不是“开启三个 Consumer”，而是**允许这个 Consumer 同时处理最多三个不同分区的消息/批次**。KafkaJS 官方确认：同一 Partition 的 eachMessage 仍然顺序执行，不同 Partition 可以并发；eachBatch 也支持分区级并发。[KafkaJS Consuming：Partition-aware concurrency](https://kafka.js.org/docs/consuming)。
+
+### 【并发执行是让多个异步操作重叠，不代表主线程同时跑三段 JavaScript】
+
+假设 A、B、C 分别调用外部 LLM/HTTP/数据库，耗时 5 秒、2 秒、1 秒：
+
+~~~text
+顺序执行（await A → await B → await C）：
+
+时间 0s       5s   7s  8s
+     A ───────┘
+              B ──┘
+                   C ┘
+总耗时约 8 秒
+
+并发执行（同时启动后 await Promise.all）：
+
+时间 0s 1s  2s          5s
+     A ─────────────────┘
+     B ───────┘
+     C ──┘
+总耗时约 5 秒；完成顺序是 C、B、A
+~~~
+
+对于以异步 I/O 为主的 Node.js 程序，这种并发表示网络请求等待时间可以重叠；不能推断单一 JavaScript 主线程上 CPU 密集型代码真正三路同时运算。如果工作是同步 CPU 计算，单纯 Promise.all 不会使它获得多个 CPU 核并行计算。
+
+### 【同一个 Partition 也能自行启动多个任务，但 Kafka 不再保障业务完成顺序】
+
+假设 Partition 0 的日志顺序为：
+
+~~~text
+Offset 100：A（创建报告）
+Offset 101：B（更新报告）
+Offset 102：C（发送报告）
+~~~
+
+Kafka 保证这些记录在分区内按 Offset 顺序保存并读取。KafkaJS 默认 eachMessage 的正确用法是：
+
+~~~javascript
+await consumer.run({
+  eachMessage: async ({ message }) => {
+    await processTask(message); // 等到本条业务结束才正常返回
+  },
+});
+~~~
+
+如果开发者自己提前拿到这一批消息，并且业务允许各个任务独立处理，技术上可以：
+
+~~~javascript
+// 示意：A、B、C 已经属于当前 Consumer 收到的同一 Partition 的一批记录
+await Promise.all([
+  processTask(A),
+  processTask(B),
+  processTask(C),
+]);
+~~~
+
+但此时 C 完成最快，可能在 A 创建报告之前就发送报告，导致**日志读取顺序有保证、业务副作用完成顺序没有保证**。Kafka 不会跨越应用代码强制 A 一定先完成。这种自主并发适合彼此独立的分析任务；创建 → 更新 → 发送等有依赖的业务操作不应随意这样做。
+
+**尤其要避免 eachMessage 中的 fire-and-forget：**
+
+~~~javascript
+// 反例：KafkaJS 会看到回调很快成功返回，而业务可能仍未完成
+await consumer.run({
+  eachMessage: async ({ message }) => {
+    processTask(message); // 没有 await！
+  },
+});
+~~~
+
+此时 KafkaJS 可能将当前 Offset 标记为已处理并进一步自动提交，导致业务尚未成功就推进消费位置，同时允许后续消息继续执行。它既可能破坏顺序，也可能造成崩溃后的消息遗漏。
+
+### 【同一 Partition 并发时，Offset 必须按已完成的连续前缀提交】
+
+开发者即使手动提交，也**不能把最后完成的任务编号直接作为恢复位置**。Kafka 的 Committed Offset 是某 Group 在某 Partition 的单个恢复位置，不是对每条消息单独记录完成状态。
+
+例如应用主动并发启动 A、B、C 后：
+
+| Offset | 任务 | 实际状态 |
+| --- | --- | --- |
+| 100 | A | 已完成 |
+| 101 | B | 尚未完成 |
+| 102 | C | 已完成 |
+
+这时最多只能提交 **Offset 101**：100 已完成，101 尚未完成。即使 102 已完成，也不能跳过 101 直接提交 103，否则故障恢复会从 103 开始，B 的业务可能永远没有成功执行。
+
+~~~text
+已完成集合：{100, 102}
+已提交位置：101（下一条仍需保证处理的消息）
+                      ↓
+101 完成之后，检查 102 也已完成
+                      ↓
+可以一次提交 103
+~~~
+
+如果 100 本身尚未完成，无论 101、102 是否完成，当前最安全的连续进度仍停留在 100。**不同 Partition 的 Offset 彼此独立**，不要拿 Partition 0 的完成情况限制 Partition 1 的位点推进。
+
+这也是为什么并发处理会增加实现复杂度：需要保存“进行中、已成功、失败”状态，持续检查最小未完成 Offset，并只对已完成的连续前缀提交位置。异常退出后已完成但尚未确认的记录仍可能被重新处理，因此必须保持幂等。
+
+### 【确实需要同一 Partition 并发时，应在整批成功后统一确认或设计连续进度跟踪】
+
+初学时最简单、清晰的策略是：**同一 Partition 顺序处理，不同 Partition 并发处理**，使用 partitionsConsumedConcurrently 即可。
+
+如果同一 Partition 的 A、B、C 真正独立，且用户明确允许乱序完成，KafkaJS eachBatch 可以自行组织并发：
+
+~~~javascript
+await consumer.run({
+  autoCommit: true,
+  eachBatchAutoResolve: false,
+  eachBatch: async ({
+    batch,
+    resolveOffset,
+    heartbeat,
+    isRunning,
+    isStale,
+  }) => {
+    if (!isRunning() || isStale()) return;
+
+    // 教学示例仅假设这一批消息数量很少，且每项业务相互独立
+    // 必须 await 全部完成，不能仅启动 Promise 就返回
+    await Promise.all(
+      batch.messages.map(message => processIdempotently(message))
+    );
+
+    // 整批业务全部可靠成功后，按 Offset 顺序标记完成
+    for (const message of batch.messages) {
+      resolveOffset(message.offset);
+    }
+
+    await heartbeat();
+    // KafkaJS 根据已完成进度与 autoCommit 规则进行后续提交
+  },
+});
+~~~
+
+此示例只有“整批都成功才确认本批”的简单策略：如果有任意一项失败，Promise.all 会拒绝，后面的 resolveOffset 循环不会运行。**但 Promise.all 的拒绝不会自动取消其他正在执行的任务**，它们仍可能产生数据库写入或外部副作用，因此必须具备幂等性。生产环境还必须限制批内同时运行的任务数、维护 Heartbeat、响应停止/Rebalance、处理长任务超时；不要直接对任意长度批次无限并发。
+
+如果要在 A、C 已成功但 B 尚未完成时提前提交 A 的进度，就需要更复杂的连续完成进度计算，而不是简单 Promise.all 后一起确认。这里先认识到两种方案的能力边界，不在入门阶段实现完整乱序确认调度器。
+
+**本讲面试回答：**
+
+> Kafka 通过 Partition 兼顾分区内顺序和分区之间的并行。一个 Consumer 可以负责多个 Partition，KafkaJS 可以设置 partitionsConsumedConcurrently=3，同时处理三个不同分区的消息；但 eachMessage 默认保证同一 Partition 内逐条 await，因此同一 Partition 的业务回调顺序执行。开发者也可以在 eachBatch 或自建异步队列中自行并发处理同一 Partition 的多条消息，不过日志顺序并不代表业务完成顺序。为了避免并发后提前跳过尚未完成的记录，Offset 必须按照该 Partition 已可靠完成的连续前缀推进，而不是按照最后完成任务的 Offset 盲目提交。存在业务依赖时应顺序处理；任务互相独立并允许乱序时才考虑批内并发，并另外处理幂等、失败恢复和并发上限。
+
 ### 【运行演示与必须分清的状态】
 
 ~~~text
