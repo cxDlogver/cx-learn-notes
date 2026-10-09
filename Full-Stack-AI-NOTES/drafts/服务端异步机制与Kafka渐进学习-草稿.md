@@ -2500,6 +2500,11 @@ await consumer.run({
 30. [Apache Kafka 4.3 Consumer Rebalance Protocol](https://kafka.apache.org/43/operations/consumer-rebalance-protocol/)：Classic 与 Consumer 协议，KIP-848 增量重新分配。
 31. [Apache Kafka 4.2 Upgrading](https://kafka.apache.org/42/getting-started/upgrade/)：普通 Consumer Group 与 Share Group 的重要语义区别。
 32. [KafkaJS Consuming](https://github.com/tulios/kafkajs/blob/master/docs/Consuming.md)：KafkaJS eachMessage、eachBatch、并行消费、提交 Offset 与重试边界。
+33. [Apache Kafka 4.2 Consumer Configs](https://kafka.apache.org/42/configuration/consumer-configs/)：Session Timeout、Heartbeat、Java Consumer 的 max.poll.interval.ms 以及经典与新组协议区别。
+34. [Apache Kafka 4.2 CommitFailedException](https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/CommitFailedException.html)：分区重新分配后原 Consumer 的 Offset Commit 可能失败。
+35. [Apache Kafka 4.2 ConsumerRebalanceListener](https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/consumer/ConsumerRebalanceListener.html)：消费分区被撤销与重新分配时的应用回调边界。
+36. [KafkaJS 2.1 Consuming](https://kafka.js.org/docs/2.1.0/consuming)：eachMessage 的心跳/长任务时限、eachBatch 的 isRunning、isStale、resolveOffset 行为。
+
 
 
 > 本文为学习进程中的**独立草稿**，不覆盖正式通用文档，也不修改源代码。按逐节讨论方式继续追加，下一讲保留一个核心思考题供作答。
