@@ -2237,6 +2237,90 @@ Rebalance（重新分配/重新平衡）是组成员变动时调整 Partition �
 
 从此可知：**Partition Assignment 解决当前谁有权读取这条分区日志；Offset Commit 解决新负责人从哪里恢复；数据库幂等解决重复消费时外部业务效果不重复。** 它们与上一讲 BullMQ 的 Claim、Lease、ACK 对应的是相似的可靠性问题，但内部模型不同。
 
+### 【Kafka 的分区顺序只保证日志消费顺序，不自动保证并行业务效果顺序】
+
+在前例中，Partition 0 依次追加 doc-1001 的分析开始、分析完成、报告更新三个事件。Kafka 可以让同一个 Consumer 按 Offset 顺序读取同一 Partition，但如果 Processor 在应用内部另外启动多个并行的异步函数，**先取出的记录仍可能较晚完成业务写入**。
+
+~~~text
+Partition 0：
+Offset 10：文档创建
+Offset 11：文档分析完成
+Offset 12：报告更新
+          ↓
+消费读取顺序：10 → 11 → 12
+          ↓
+若业务代码自行并发处理：
+Offset 12 可能先保存，Offset 11 反而后保存
+~~~
+
+因此按业务实体 Key 分区，是实现顺序处理的前提之一；消费端还需让需要先后依赖的步骤按约定顺序处理，或设计适合乱序消息的版本控制和幂等逻辑。分区数增加可以提升不同分区的独立消费空间，但单个热 Key 的消息仍会集中到某个 Partition，不能认为分区越多同一实体的处理就越快。
+
+### 【最小 KafkaJS Consumer 例子说明 group.id、订阅与消息位置】
+
+使用 Node.js 的 KafkaJS 客户端，假设 Kafka Broker 已在 localhost:9092 运行，名为 analysis-events 的 Topic 已创建：
+
+~~~bash
+npm install kafkajs
+~~~
+
+~~~javascript
+import { Kafka } from "kafkajs";
+
+const kafka = new Kafka({
+  clientId: "analysis-service",
+  brokers: ["localhost:9092"],
+});
+
+const consumer = kafka.consumer({ groupId: "analysis-workers" });
+await consumer.connect();
+await consumer.subscribe({
+  topics: ["analysis-events"],
+  fromBeginning: true,
+});
+
+await consumer.run({
+  eachMessage: async ({ topic, partition, message }) => {
+    const event = JSON.parse(message.value.toString());
+
+    console.log({
+      topic,
+      partition,
+      offset: message.offset,
+      key: message.key?.toString(),
+    });
+
+    // 应先可靠持久化业务结果，再让回调正常返回
+    await saveIdempotently(event);
+  },
+});
+~~~
+
+从两个终端启动相同文件（两者使用相同 groupId=analysis-workers），它们加入**同一个逻辑消费者组**，由 Kafka 分配所订阅 Topic 的 Partition。将第二个实例改为 groupId=audit-workers，则它变成**另一个独立订阅者**，不会与 analysis-workers 分摊同一 Group 的进度。
+
+这只是阅读模型的入门示例：KafkaJS 的 eachMessage 在默认 autoCommit=true 下由客户端根据批次/提交条件负责提交已完成的消费进度；它**不保证业务操作跨 Kafka 与 PostgreSQL 原子提交**。必须确保 saveIdempotently 成功才正常返回；若抛错，仍需要业务侧保证重试幂等、错误处理与运维恢复。长时间处理消息还涉及心跳和会话存活问题，下一讲会详细解释 eachMessage、eachBatch、自动提交与手动提交的区别。参见 [KafkaJS Consuming](https://github.com/tulios/kafkajs/blob/master/docs/Consuming.md)。
+
+### 【Kafka 与 BullMQ 的差异是消费单位和确认模型，而不是简单更换存储】
+
+| 比较点 | BullMQ 默认 Redis Backend | Kafka 常规 Consumer Group |
+| --- | --- | --- |
+| 数据存储 | Job 内容与 wait/active/completed 等状态结构 | 可保留的 Partition 有序追加日志 |
+| 领取/分工单位 | 单个待执行 Job | 以 Partition 为主要组内分配单位 |
+| 处理状态 | Job 处于等待、执行、完成等状态 | Group 消费位置与消息原始记录分离 |
+| 故障恢复 | Job Lock、stalled、重新领取与重试 | 成员失联检测、Rebalance、按 committed offset 重读 |
+| 进度确认 | Job completed 等内部状态转换 | 按 Group + Topic + Partition 提交 Offset |
+| 同一消息给不同业务使用 | 通常自行多播/使用独立队列 | 不同 Group 可以各自读取相同 Topic |
+| 任务执行顺序 | 取决于队列 FIFO、优先级、并行 Processor | 同 Partition 的日志有序；业务完成是否有序还取决于处理方式 |
+
+要避免两个混淆：第一，**Offset=102 已读取不意味着成功处理**，Committed Offset=103 才表达这个 Group 计划从 103 恢复，但提前提交仍可能造成遗漏；第二，Consumer Group 的 Partition 分配是 Broker/Group 的协调职责，不是像 BullMQ 一样对每条原始消息分别设置 Job Lock。两者都可能发生“业务结果成功但确认进度失败”而导致重复执行，所以仍需业务幂等。
+
+### 【面试回答从数据存储、分区分工与故障恢复三层展开】
+
+> Kafka 把事件存储为 Topic 下的 Partition 追加日志，每条 Record 用分区内 Offset 标识；读取消息不会自动删除原记录。一个 Consumer Group 代表一个逻辑订阅者，组内 Consumer 分摊 Partition，同一个 Partition 正常情况下只由该组一个 Consumer 负责，因此可以获得分区内有序读取并实现多个分区的并行消费。
+>
+> Consumer Group 为每个 Topic-Partition 独立提交消费进度。Consumer 崩溃后，Kafka 通过成员检测和 Rebalance 将 Partition 重新分配给其他实例，新 Consumer 从该组已提交的 Offset 开始恢复。如果业务已经保存但 Offset 尚未提交，就可能再次处理相同 Record，需要业务幂等保证最终正确性。
+>
+> BullMQ 更直接地管理逐 Job 领取、执行锁和 completed；Kafka 则管理持久化事件日志、分区归属和消费进度，适合事件流、多组订阅与可重放处理，两者不能只按“都是队列”理解为相同内部模型。
+
 ## 7. 下一讲追问：Kafka Producer 怎样选择 Partition，Consumer 怎样实际读取和提交 Offset
 
 > **思考题：** BullMQ 通过 wait / active / completed 等集合维护任务生命周期；Kafka 为什么采用可保留的分区追加日志，并用 Consumer Group 的 committed offset 表示进度？如果 Consumer A 崩溃，Consumer B 如何接管分区、确定应该从哪条消息重新开始？
