@@ -668,6 +668,289 @@ Nuxt 的一个特点是约定式目录。只要遵循框架约定并满足相应
 
 这里必须区分：**已经配置 Lint、Prettier 和测试脚本，不等于已经建立每次提交都自动运行且失败即阻断的完整质量门禁**。Husky、commitlint、lint-staged 和 CI Required Checks 是可以进一步强化的方向，不能在没有配置证据时描述成官网项目已完成的成果。
 
+### 【专题补充：ESLint、Prettier、commitlint 与 Husky 的用法和提交检查链路】
+
+这一部分专门说明官网工程规范涉及的四类工具如何配置和配合，核心目的不是背工具名，而是解释**谁定义规则、谁执行规则、谁负责在 Git 生命周期触发规则**。
+
+| 工具 | 主要职责 | 被检查的对象 | 与其他工具的边界 |
+| --- | --- | --- | --- |
+| ESLint | 静态代码规则检查及部分自动修复 | JS/TS/Vue 等源码 | 能发现符合规则定义的问题，但不能替代完整类型检查与测试 |
+| Prettier | 按统一配置格式化代码 | 源码、CSS、JSON、Markdown 等 | 负责排版和部分约定排序，不判断业务逻辑是否正确 |
+| commitlint | 按约定验证 Commit Message | Git 提交说明 | 不检查提交的具体代码 |
+| Husky | 管理项目的 Git Hook 脚本 | `pre-commit`、`commit-msg` 等执行节点 | 只负责触发所配置命令，本身不定义编码或提交信息规则 |
+| lint-staged（可选） | 将检查限定在本次暂存的匹配文件 | Git 暂存区中的文件 | 与 Husky 配合减少每次扫描全仓库的开销 |
+
+**规则与触发需要分开设计**：安装 ESLint、Prettier 或 commitlint 后，相关检查通常仍需要命令触发；安装 Husky 也不会自动知道项目需要检查哪些内容。
+
+#### <u>1. ESLint：用静态规则限制代码写法</u>
+
+ESLint 可以检查未遵守约定的写法、部分可疑代码和结构问题，并通过 `--fix` 自动修复支持自动修复的规则。最常见的命令为：
+
+~~~bash
+pnpm add -D eslint
+
+# 检查当前项目
+pnpm exec eslint .
+
+# 只检查一个文件
+pnpm exec eslint app/pages/index.vue
+
+# 自动修复可修复的问题
+pnpm exec eslint . --fix
+~~~
+
+现代 ESLint 通常在 `eslint.config.mjs` 等 Flat Config 中配置规则。一个简化示例如下：
+
+~~~js
+export default [
+  {
+    files: ['**/*.{js,ts}'],
+    rules: {
+      'no-debugger': 'error',
+      'no-console': 'warn',
+    },
+  },
+]
+~~~
+
+| 规则级别 | 效果 |
+| --- | --- |
+| `off` | 关闭规则 |
+| `warn` | 产生警告，默认不直接导致命令失败 |
+| `error` | 产生错误，令检查命令失败 |
+
+**官网实际配置**见 [eslint.config.mjs](https://github.com/cxDlogver/official-network/blob/main/eslint.config.mjs)：基于 Nuxt 生成的 ESLint 配置，新增 `simple-import-sort/imports`、`simple-import-sort/exports` 检查导入与导出顺序，使用 `vue/block-order` 约束 Vue 单文件组件的结构顺序为 `script → template → style`，最后通过 `eslint-config-prettier` 关闭与格式化规则冲突的 ESLint 规则。
+
+~~~vue
+<script setup lang="ts">
+const title = '官网首页'
+</script>
+
+<template>
+  <h1>{{ title }}</h1>
+</template>
+
+<style scoped>
+h1 { font-weight: bold; }
+</style>
+~~~
+
+需要强调，**ESLint 的检查通过不意味着 TypeScript 全量类型检查通过，也不意味着功能测试已通过**。尤其是 Nuxt/Vue 项目，类型验证、构建和行为测试应各自提供检查依据。
+
+#### <u>2. Prettier：将格式从个人习惯转化为确定性结果</u>
+
+Prettier 专注格式统一，通常使用以下命令：
+
+~~~bash
+pnpm add -D prettier
+
+# 自动格式化并修改文件
+pnpm exec prettier . --write
+
+# 只检查格式，不修改文件
+pnpm exec prettier . --check
+~~~
+
+`--write` 会修改文件；`--check` 检测是否已符合格式要求，更适合作为只读检查或 CI 条件。二者不能混为一谈。
+
+**官网实际配置**见 [.prettierrc.json](https://github.com/cxDlogver/official-network/blob/main/.prettierrc.json)：
+
+~~~json
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 100,
+  "trailingComma": "all",
+  "plugins": ["prettier-plugin-tailwindcss"]
+}
+~~~
+
+这表示使用单引号、一般不加语句结尾分号、以 100 字符作为期望行宽、保留适用位置的尾随逗号，并通过插件统一 Tailwind 类名排序。
+
+例如：
+
+~~~js
+// 格式化前
+const product = {name: "A", count: 1};
+
+// 格式化后
+const product = { name: 'A', count: 1 }
+~~~
+
+ESLint 和 Prettier 建议分工明确：**ESLint 查规则，Prettier 管排版**。`eslint-config-prettier` 只负责关闭有冲突的 ESLint 规则，不会替你自动执行格式化。
+
+#### <u>3. commitlint：让一次 Git 提交的目的可以快速理解</u>
+
+提交信息不应该长期停留在“修改代码”“调一下”这类无法追溯的描述。常见的 Conventional Commits 风格为：
+
+~~~text
+<type>(<scope>): <subject>
+
+feat(home): add product showcase
+fix(news): correct pagination behavior
+refactor(product): extract common sections
+docs(readme): update setup instructions
+~~~
+
+其中 `type` 表示变更类型、`scope` 表示受影响模块（通常可选）、`subject` 描述本次改变。常见的类型如下：
+
+| 类型 | 含义 |
+| --- | --- |
+| `feat` | 新增功能 |
+| `fix` | 修复缺陷 |
+| `docs` | 文档修改 |
+| `refactor` | 不改变预期功能的代码重构 |
+| `test` | 测试相关变更 |
+| `build` | 构建或依赖相关修改 |
+| `ci` | CI 配置变更 |
+| `chore` | 其他工程维护任务 |
+
+如果要用 commitlint 实施校验，可以安装：
+
+~~~bash
+pnpm add -D @commitlint/cli @commitlint/config-conventional
+~~~
+
+创建 `commitlint.config.mjs`：
+
+~~~js
+export default {
+  extends: ['@commitlint/config-conventional'],
+}
+~~~
+
+手动检查一个提交说明：
+
+~~~bash
+echo "feat(home): add hero" | pnpm exec commitlint
+~~~
+
+**commitlint 只检查提交说明，不会检查本次提交的源码；命令是否自动执行取决于后续是否绑定 Git Hook。**
+
+#### <u>4. Husky：通过 Git Hook 在提交生命周期触发检查</u>
+
+Husky 用于管理仓库的 Git Hooks。最常见的钩子：
+
+| Hook | 时机 | 适合的检查 |
+| --- | --- | --- |
+| `pre-commit` | 生成提交前 | ESLint、Prettier 等文件检查 |
+| `commit-msg` | 检查提交信息阶段 | commitlint |
+| `pre-push` | 执行推送前 | 按项目成本选择测试或其他检查 |
+
+安装并初始化：
+
+~~~bash
+pnpm add -D husky
+pnpm exec husky init
+~~~
+
+对于简单仓库，可以在 `.husky/pre-commit` 中配置：
+
+~~~sh
+pnpm run lint
+pnpm exec prettier . --check
+~~~
+
+这会扫描相应范围的项目文件，但仓库较大时提交等待时间可能变长。若需要验证提交信息，可另建 `.husky/commit-msg`：
+
+~~~sh
+pnpm exec commitlint --edit "$1"
+~~~
+
+此处 `"$1"` 是 Git 提交消息文件的路径，`commitlint --edit` 通过这个文件读取本次提交说明。**提交消息校验应放在 `commit-msg`，不能把它错误理解为 `pre-commit` 中的普通代码规则检查。**
+
+Husky 只负责在恰当时机触发命令；若某个 Hook 没有配置运行 ESLint、Prettier 或 commitlint，便不能说这个 Hook 已经完成对应检查。
+
+#### <u>5. lint-staged：降低提交检查成本</u>
+
+如果每次提交都对整个仓库运行 ESLint 和 Prettier，成本会随项目规模增加。可以将 `lint-staged` 与 Husky 配合，让前者只处理本次暂存区中符合规则的文件。
+
+~~~bash
+pnpm add -D lint-staged
+~~~
+
+在现有 `package.json` 中**合并**下面的 `lint-staged` 配置，而不是直接替换原有 `scripts` 和依赖：
+
+~~~json
+{
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": "prettier --write"
+  }
+}
+~~~
+
+然后将 `.husky/pre-commit` 改为：
+
+~~~sh
+pnpm exec lint-staged
+~~~
+
+在默认配置和正常执行情况下，lint-staged 会将匹配的暂存文件传给对应命令，并管理成功修复后的暂存结果。相比运行 `prettier . --write`，它不会无差别格式化整个仓库。
+
+如果想保留一个仅检查、不修改代码的命令，还可以增加：
+
+~~~json
+{
+  "scripts": {
+    "format:check": "prettier . --check"
+  }
+}
+~~~
+
+它应合并到现有脚本配置中；真正的全项目检查、类型检查、测试和构建，可以另由开发人员手动运行或在 CI 中统一执行。
+
+#### <u>6. 四个工具如何串起一次 Git 提交</u>
+
+~~~text
+git add：修改进入暂存区
+        ↓
+git commit：Git 开始提交
+        ↓
+Husky / pre-commit
+        ↓
+lint-staged 按暂存文件范围调用
+        ├─ ESLint：代码规则检查、支持的自动修复
+        └─ Prettier：格式统一
+        ↓
+Husky / commit-msg
+        ↓
+commitlint：验证 feat/fix 等提交信息结构
+        ↓
+所有必须通过的检查成功
+        ↓
+创建 Commit
+~~~
+
+实际开发操作例如：
+
+~~~bash
+git add app/pages/index.vue
+git commit -m "feat(home): add product section"
+~~~
+
+其中还存在两个重要边界：
+
+- **Git Hook 不等于不可绕过的质量门禁**。本地 Hook 可能被跳过，例如 `git commit --no-verify`；若团队要求合并前强制通过某些检查，应进一步在 CI 与仓库分支保护中配置检查。
+- **提交检查不等于完整质量验收**。即使格式和提交说明通过，仍需要功能测试、类型检查、构建检查以及项目中的性能与 SEO 等专项验证。
+
+#### <u>7. 项目真实状态与面试表达边界</u>
+
+官网仓库目前可以直接验证：
+
+- 已有 [ESLint 配置](https://github.com/cxDlogver/official-network/blob/main/eslint.config.mjs)，包括导入排序与 Vue 文件块顺序。
+- 已有 [Prettier 配置](https://github.com/cxDlogver/official-network/blob/main/.prettierrc.json)，包括 Tailwind CSS 类名格式化。
+- [package.json](https://github.com/cxDlogver/official-network/blob/main/package.json) 已提供 `lint`、`lint:fix`、`format`、`test`、`build` 等统一入口。
+
+当前仓库**未找到完整的 Husky、lint-staged、commitlint 配置**。因此面试时应该说：**项目已经用 ESLint 和 Prettier 建立了基础代码规则；对于提交规范，可以进一步通过 Conventional Commits、commitlint、Husky 和 lint-staged 将约定升级为提交时自动检查**。不能把这些建议直接讲成当前项目全部已实现的自动门禁。
+
+**可用于口头回答的概括**：
+
+在工程初始化阶段，我先将可以形成确定性规则的内容沉淀下来。ESLint 负责约束代码结构和潜在问题，Prettier 负责统一格式，两者已在官网项目中配置。对于提交规范，我希望通过统一的 Commit 类型让变更历史更加容易理解，并可以进一步通过 commitlint 校验提交信息，借助 Husky 在 Git Hook 中触发检查，再结合 lint-staged 只处理本次暂存文件。这样能够减少多人和 AI 辅助开发引入的无意义代码差异，让人工审查集中于业务逻辑、架构设计和最终交付质量。
+
 ### 【Design Tokens 将统一视觉要求变成可复用的工程约束】
 
 官网的主要任务是展示企业信息，页面之间的视觉一致性非常重要。如果每个开发人员或 AI 分别定义颜色、文字等级、间距、卡片圆角和动效参数，页面很容易出现风格漂移，后续统一修改的成本也会变大。
