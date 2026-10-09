@@ -1248,6 +1248,8 @@ Key 数量有限
 
 ### 【WATCH 与 Lua 都能处理 Read-Modify-Write，但控制位置不同】
 
+**延伸到多 Worker 原子领取：** 这里的 WATCH、MULTI/EXEC、Lua 分别提供不同的条件状态转换实现；当 Redis 保存 Job 时，“多个 Worker 都读到 pending”的完整并发时间线、EVAL 参数与失败回滚边界，见[服务端异步任务通用机制](<./F-服务端异步任务与消息处理体系.md>)及[面试问答第三章](<./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md>)。
+
 | 维度 | WATCH | Lua |
 | --- | --- | --- |
 | 计算位置 | Client | Redis Server |
