@@ -982,6 +982,86 @@ HGETALL task:A
 
 预期：第一次 EVAL 返回 1，第二次返回 0；最终 status 为 RUNNING、owner 为 worker-A。串行演示验证的是**状态条件转换**；实际同时请求时，Redis 也会选择一个脚本先执行，**不保证一定是 A 胜出**，但应仍只有一个脚本返回成功。
 
+### 【Lua 的实际调用：EVAL、KEYS、ARGV、redis.call 与返回值】
+
+前面已经给出完整的 Lua 领取脚本；本节进一步解释如何让 Worker 真正调用脚本、参数在哪里传递，以及为什么必须根据返回值决定是否执行任务。
+
+Redis 使用 EVAL 执行脚本，命令形式是：
+
+~~~text
+EVAL 脚本内容 Key的数量 Key1 Key2 ... 普通参数1 普通参数2 ...
+~~~
+
+~~~redis
+EVAL "return {KEYS[1], ARGV[1]}" 1 task:1001 worker-A
+~~~
+
+这个例子里，数字 1 表示传入一个 Redis Key：task:1001 对应 KEYS[1]；worker-A 是普通参数，对应 ARGV[1]。因此 Lua 可以复用同一份脚本处理不同任务，**无需为每项任务拼接新的 Lua 源代码**。
+
+用于任务领取的脚本可以保存为 claim-task.lua：
+
+~~~lua
+-- KEYS[1] = task:1001
+-- ARGV[1] = worker-A
+local status = redis.call("HGET", KEYS[1], "status")
+
+if status ~= "PENDING" then
+  return 0
+end
+
+redis.call(
+  "HSET", KEYS[1],
+  "status", "RUNNING",
+  "owner", ARGV[1]
+)
+
+return 1
+~~~
+
+Lua 的 local 定义局部变量；~= 是不等于；redis.call 负责在 Redis 服务端调用真正的 HGET/HSET 命令。因为脚本运行期间没有其他客户端的 Redis 命令穿插，HGET 与 HSET 之间不存在另一个 Worker 插入读取旧状态、提前修改的窗口。
+
+以 Redis CLI 演示两位 Worker 先后尝试：
+
+~~~redis
+HSET task:1001 status PENDING owner ""
+EVAL "local s=redis.call('HGET',KEYS[1],'status'); if s~='PENDING' then return 0 end; redis.call('HSET',KEYS[1],'status','RUNNING','owner',ARGV[1]); return 1" 1 task:1001 worker-A
+EVAL "local s=redis.call('HGET',KEYS[1],'status'); if s~='PENDING' then return 0 end; redis.call('HSET',KEYS[1],'status','RUNNING','owner',ARGV[1]); return 1" 1 task:1001 worker-B
+HGETALL task:1001
+~~~
+
+第一条 EVAL 返回 1，第二条返回 0，最后 status 为 RUNNING 且 owner 为 worker-A。如果请求真正同时到达，**无法预先决定谁先执行**，但只要状态初始化正确、两个 Worker 使用同一条件领取逻辑，就只有一位领取成功。
+
+Node.js 中常见的 node-redis 调用写法：
+
+~~~javascript
+// workerId 与任务 Key 都来自当前 Worker 的输入
+const result = await redis.eval(claimScript, {
+  keys: ["task:1001"],
+  arguments: [workerId]
+});
+
+if (result !== 1) {
+  // 返回 0：当前不是 PENDING；未取得领取资格
+  return false;
+}
+
+await executeTask("1001");
+return true;
+~~~
+
+注意只有 EVAL **成功返回 1** 才可以认为取得任务。请求超时或连接中断造成的“结果未知”不能简单等同于领取失败；脚本可能已在 Redis 执行成功而响应丢失，恢复时应核对 owner、任务状态及领取标识，避免盲目重试业务副作用。
+
+**Lua 与 WATCH 的对照**：WATCH 允许客户端先读取、执行 if 判断，再由 EXEC 检测中途变化；Lua 则让 if 本身在服务端的不可穿插脚本内执行，所以不需要再对该脚本的读写使用 WATCH。并不是 Lua 语法中的 if 比 JavaScript if 更强，而是**读取、判断、写入处于同一执行边界**。
+
+**实际使用边界**：
+
+- EVAL 发送完整脚本；SCRIPT LOAD + EVALSHA 可以按脚本摘要复用，脚本缓存会因重启或故障切换而丢失，需要按需重新加载。
+- 脚本应短小；不要把长时间的 LLM 调用、业务等待放进 Redis Lua。Redis Cluster 中访问多 Key 还要遵守 Key 传参和 Hash Slot 约束。
+- redis.call 发生运行时错误可能中止脚本，redis.pcall 可以接收错误；**脚本先前已经成功的 Redis 写入不会自动回滚**。
+- 原子领取解决的是正常并发竞争的**状态一致性**。长任务执行期间仍要通过 Lease、Renewal、Fencing、ACK 和业务幂等解决崩溃、超时接管、结果重复处理等问题。
+
+资料：[Redis Scripting with Lua](https://redis.io/docs/latest/develop/programmability/eval-intro/)、[EVAL 命令](https://redis.io/docs/latest/commands/eval/)。
+
 ### 【区分原子执行、隔离性、一致性以及事务错误回滚，避免概念重新混淆】
 
 之前容易产生误解，是因为“原子性”被用于两种不同的语境：
