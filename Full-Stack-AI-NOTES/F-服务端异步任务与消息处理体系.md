@@ -689,6 +689,47 @@ Lease / locked_until
 Worker Crash 后允许其他 Worker 最终重新领取
 ~~~
 
+**原子 Claim 的完整含义是条件判断和处理权更新不能分离。** 如果 A、B 都先查询到 pending，再分别无条件标记 processing，两人都有可能启动任务：
+
+~~~text
+A：SELECT → pending
+B：SELECT → pending
+A：UPDATE status=processing
+B：UPDATE status=processing
+A、B 都开始执行：重复领取
+~~~
+
+对于已知任务 ID，可用单条条件更新与 RETURNING 决定是否真正领取成功：
+
+~~~sql
+UPDATE jobs
+SET status = 'processing', owner = $1
+WHERE id = $2 AND status = 'pending'
+RETURNING id;
+~~~
+
+对于从待办任务池领取下一个任务，可将选择和更新合并到同一事务控制下：
+
+~~~sql
+WITH candidate AS (
+  SELECT id
+  FROM jobs
+  WHERE status = 'pending' AND run_at <= now()
+  ORDER BY run_at, id
+  FOR UPDATE SKIP LOCKED
+  LIMIT 1
+)
+UPDATE jobs AS j
+SET status = 'processing',
+    owner = $1,
+    locked_until = now() + INTERVAL '30 seconds'
+FROM candidate
+WHERE j.id = candidate.id
+RETURNING j.id, j.owner, j.locked_until;
+~~~
+
+这个查询一次性取得一个可领取候选、修改持久化处理权、返回成功领取结果。**FOR UPDATE 的行锁在事务结束时释放，并不会替 Worker 持续持锁 30 秒**；后续运行依赖 locked_until 和独立的租约续期、世代隔离机制。SKIP LOCKED 适用于队列型领取，不适用于期待完整一致结果的普通业务查询。[PostgreSQL SELECT 官方说明](https://www.postgresql.org/docs/current/sql-select.html)。具体两 Worker 并发时序与对应 SQL 详见[面试问答第三章：原子 Claim](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
 #### <u>2. Polling 让 Worker 主动决定什么时候继续领取</u>
 
 数据库不会天然知道“哪个 Worker 当前最空闲”。常见模式是 Worker 主动循环：
