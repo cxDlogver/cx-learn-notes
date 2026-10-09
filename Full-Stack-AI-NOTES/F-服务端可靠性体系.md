@@ -663,6 +663,8 @@ Terminal Failed / Dead Letter
 
 ### 【Claim、ACK 与 Lease 解决 Consumer 所有权和 Crash Recovery】
 
+**专项深化入口：** 本节给出服务端可靠性的异步任务分支。Claim、Lease、Renewal、Fencing、ACK Gap、幂等与 Kafka Committed Offset 的内部机制，详见[服务端异步任务与消息处理体系](<./F-服务端异步任务与消息处理体系.md>)；相应故障时间线、BullMQ/KafkaJS 代码和标准回答，见[面试问答第三至七章](<./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md>)。
+
 多个 Worker 并发时不能只 SELECT 第一个 pending task，否则两个 Worker 可能同时拿到同一任务。常见协调方式包括 Database Row Lock、Broker Delivery + ACK、Visibility Timeout、Lease / locked_until。
 
 Lease 模型可以表示为：
