@@ -595,6 +595,350 @@ AI Native：协作成员进一步包含 AI / Agent
 
 因此，**选型结论由需求和约束推出，后续验收再反向验证选型是否有效**，而不是为了使用某个框架而编造业务理由。
 
+### 【专题补充：从 Lighthouse 评分到 SEO 工程分层与 Nuxt 实现】
+
+> **定位**：本专题属于官网第二项工作重点，说明如何在需求阶段确定 SEO 技术验收目标，再依据搜索引擎发现、抓取、索引和理解页面的过程建立工程体系，最后落地为 Nuxt 4 的站点级配置、页面级 SEO 公共方法、Sitemap 数据源和 JSON-LD 结构化表达。
+>
+> **事实边界**：以下已实现部分依据 [Nuxt 配置](https://github.com/cxDlogver/official-network/blob/main/nuxt.config.ts)、[SEO 公共方法](https://github.com/cxDlogver/official-network/blob/main/app/composables/useSIteSeo.ts)、[JSON-LD 生成器](https://github.com/cxDlogver/official-network/blob/main/app/composables/useSeoStructuredData.ts)、[动态 Sitemap](https://github.com/cxDlogver/official-network/blob/main/server/api/__sitemap__/urls.ts) 核对。针对索引规则、链接结构和数据完整性的补充建议，不应倒写成已全部完成的优化成果。
+
+#### <u>1. 先从业务目标建立量化验收方向，不能将 Lighthouse 当成全部 SEO 标准</u>
+
+企业官网建设 SEO 的业务意义，是让搜索用户有机会找到企业、产品、资讯和招聘等真实内容。工程侧需要将其转换为**重要 URL 可发现、页面可访问、内容可索引、语义可理解**等基础目标，再选择技术方案和验证方法，而不是先安装 Nuxt SEO 模块后寻找理由。
+
+~~~text
+业务目标：用户能够通过搜索了解企业与产品
+                   ↓
+SEO 工程目标：URL 发现、抓取、索引、内容理解
+                   ↓
+技术方案：Nuxt 混合渲染 + URL/抓取规则 + Meta + JSON-LD
+                   ↓
+技术验收：Lighthouse 基础审计 + HTML/HTTP/URL 检查
+                   ↓
+线上反馈：Search Console 抓取、索引、曝光、点击等数据
+~~~
+
+Lighthouse 的 SEO Category 主要通过可自动检查的部分技术项目计算分数，**不等于 Google 排名评分**。在仓库通用 [SEO 工程知识文档](https://github.com/cxDlogver/cx-learn-notes/blob/main/Full-Stack-AI-NOTES/S-SEO工程体系.md) 已核对的 **Lighthouse v13.5.0** 运行配置下，全部计分项适用时约为：
+
+| SEO Audit | 检查含义 | 约占分数 |
+| --- | --- | ---: |
+| `is-crawlable` | 页面没有被索引指令禁止索引 | **31%** |
+| `document-title`、`meta-description` | Title、Description 的基础有效性 | 各 7.67% |
+| `http-status-code` | 主文档状态码是否符合要求 | 7.67% |
+| `link-text`、`crawlable-anchors` | 链接文案、链接能否被爬虫发现 | 各 7.67% |
+| `robots-txt` | Robots 规则文件的基础有效性 | 7.67% |
+| `image-alt` | 图片 Alt 的基础要求 | 7.67% |
+| `hreflang`、`canonical` | 语言关系、规范 URL 的有效性 | 各 7.67% |
+| `structured-data` | 结构化数据另需专项验证 | 不计分 |
+
+**口径边界**：权重来自 [Lighthouse v13.5.0 的实际运行配置](https://github.com/GoogleChrome/lighthouse/blob/v13.5.0/core/config/default-config.js)；不适用项会影响最后归一化计算，版本更新也可能改变评分。不能说每个 Audit 永远固定扣 8 分。`SEO=100` 仅说明所测页面通过当时适用的 Lighthouse 基础审计，不能证明全站已被收录、Canonical 已被 Google 采用、JSON-LD 一定获得富结果或搜索排名优秀。主动 `noindex` 的页面不应被机械要求 SEO 100。
+
+#### <u>2. 搜索引擎生命周期决定 SEO 的三层工程建设重点</u>
+
+理解 SEO 首先要区分几个不同环节：
+
+~~~text
+Discovery：发现 URL
+→ 通过 Sitemap、站内/外部链接等知道页面存在
+                   ↓
+Crawling：抓取 URL
+→ 根据 Robots、服务响应等决定是否能够获取内容
+                   ↓
+Rendering / Indexing：渲染与索引
+→ 获取主体信息、读取 noindex、评估规范 URL
+                   ↓
+Understanding：理解内容
+→ 解析 Title、正文、链接语义和实体数据
+                   ↓
+Search Appearance：搜索展示
+→ 根据相关性、内容质量、体验等选择呈现结果
+                   ↓
+Feedback：反馈
+→ 验证实际抓取、收录、展示和点击表现
+~~~
+
+在官网实现时，可以按照建设重点简化为三层，但不能认为它们完全独立：
+
+| 层次 | 解决的问题 | 核心能力 |
+| --- | --- | --- |
+| **第一层：发现、抓取、索引基础** | 页面是否容易找到、能请求、具备索引资格 | Sitemap、标准链接、HTTP Status、Robots、noindex、Canonical、SSR/Prerender/SWR |
+| **第二层：页面内容与语义准确性** | 当前 URL 讲什么，不同业务页面是否有独立主题 | Title、Description、Heading、正文内容、图片 Alt、链接文字、Open Graph |
+| **第三层：业务实体结构化表达** | 页面描述哪些真实业务对象、属性和关系 | JSON-LD、Organization、Product、NewsArticle、JobPosting、BreadcrumbList |
+
+渲染性能、页面内容质量、移动端体验及验收回归是**贯穿三个层次的横向约束**，而不是只归属某一层。
+
+#### <u>3. 第一层需要分别处理 URL 发现、抓取控制、HTTP 状态和索引控制</u>
+
+**URL 发现**主要通过页面内的标准链接与 Sitemap 实现。例如 Nuxt 页面可用 `<NuxtLink to="/news/123">`，最终输出带 `href` 的 `<a>`，既表达站内页面关系，也保留 SPA 导航体验。纯粹的 `@click="navigateTo(...)"` 只描述点击行为，不能等同于当前页面输出了一个标准可抓取链接。Sitemap 能补充 URL 发现，但搜索爬虫不保证完整遍历首页能到达的所有页面，也不保证抓取 Sitemap 中的全部 URL。
+
+**Robots** 主要管理爬虫是否允许抓取 URL。官网 `nuxt.config.ts` 当前配置：
+
+~~~ts
+robots: {
+  disallow: ['/develop'],
+}
+~~~
+
+这个规则主要对应 Robots 文件中的 `Disallow: /develop`。没有需要限制抓取的公开页面时，无须为了 SEO 故意添加复杂禁止规则。Robots 不能代替实际访问权限和身份认证。
+
+**HTTP 状态** 帮助搜索引擎判断 URL 当前是不是有效资源：
+
+| 状态码 | 含义 | SEO 工程注意 |
+| --- | --- | --- |
+| 200 | 当前页面请求成功 | 主体内容应真实有效；200 不保证被收录 |
+| 301 / 308 | 长期迁移 | 旧 URL 应明确映射到对应的新 URL |
+| 302 / 307 | 临时重定向 | 不应误用为永久迁移 |
+| 404 / 410 | 页面不存在或已删除 | 无效动态详情应真实返回不存在状态 |
+| 5xx | 服务端异常 | 长期错误会影响抓取和页面索引 |
+
+例如产品详情不存在却只在 Vue 中显示“产品不存在”、服务端仍返回 HTTP 200，可能形成 Soft 404。必须同时验证页面输出和响应状态。
+
+**noindex** 作用于索引阶段，例如：
+
+~~~html
+<meta name="robots" content="noindex">
+~~~
+
+它要求支持该指令的搜索引擎不要索引此页面，但前提是爬虫能获取这个指令。因此当前官网 `/develop` 存在值得复核的配置：
+
+~~~text
+robots.txt：Disallow /develop
+                  ↓
+Googlebot 可能不访问该页面
+                  ↓
+页面中的 meta robots=noindex 可能无法读取
+~~~
+
+项目实际在 `app/pages/develop/index.vue` 中通过 `usePageSeo(..., { noindex: true, nofollow: true })` 生成页面索引指令。对于“公开可访问但不进入索引”的页面，更合理的方向是**允许抓取并提供 noindex**；对于敏感页面，则应使用服务端授权，不能靠 Robots 或 noindex 保密。
+
+**Canonical** 用来声明相同或高度相似内容中网站偏好的**规范 URL**，不是“给每个页面模块配置主链接”。例如新闻筛选页：
+
+~~~text
+/news
+/news?category=AI
+/news?year=2026
+             ↓
+如果属于不需要单独索引的相似表示
+Canonical 指向 /news
+~~~
+
+不同产品 `/product/a` 和 `/product/b` 则通常各自具有独立规范 URL。Canonical 是搜索引擎参考的强信号，不是强制命令。站内链接、Sitemap、重定向与 Canonical 最好都使用一致的主 URL。
+
+#### <u>4. 第二层要求页面语义从真实业务数据生成，并和正文一致</u>
+
+首页、产品、资讯、招聘分别承担不同信息表达任务，不能共用一份固定 Title 和 Description。项目将页面业务数据映射为 `SeoMeta`，并由公共方法统一注入。
+
+| 字段或语义能力 | 主要作用 | 重要边界 |
+| --- | --- | --- |
+| Title | 说明页面主题，并可能用于搜索标题 | 应准确、独立，与正文一致 |
+| Description | 描述页面内容，可作为搜索摘要候选 | 搜索引擎可能自行生成摘要 |
+| Keywords | 历史 TDK 中的 K | Google 搜索不使用 Meta Keywords 进行排名 |
+| Heading / 正文 | 实际表达页面内容和层次 | H1/H2 与 Title 应在主题上相互支持 |
+| Image Alt | 表达图片内容，兼顾可访问性 | 不能堆砌无关关键词 |
+| 链接文本 | 表达页面之间的语义关系 | 使用标准链接更明确 |
+| OG / Twitter Card | 社交分享预览信息 | 与 Google 自然搜索排名不是同一个评价维度 |
+
+官网 `seoConfig.product()` 从产品名称、卖点、描述和图片生成 Title、Description、OG 等元信息；`seoConfig.newsDetail()` 从文章标题、摘要、日期、栏目生成新闻配置；`seoConfig.jobDetail()` 从职位描述生成对应字段。这样避免每个页面重复维护 SEO 模板，并尽量保证 SEO 内容与具体业务对象关联。
+
+#### <u>5. 第三层将真实业务对象转换为 Schema.org 的 JSON-LD 表达</u>
+
+第二层说明“这页主要讲什么”，第三层进一步说明“具体讲的是哪个实体、有什么属性、与其他实体存在什么关系”。
+
+~~~json
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "示例产品",
+  "description": "页面真实存在的产品介绍",
+  "brand": {
+    "@type": "Brand",
+    "name": "示例企业"
+  }
+}
+~~~
+
+这不是通过 JSON-LD 凭空补充业务信息。数据必须来自真实的页面内容。官网 [useSeoStructuredData.ts](https://github.com/cxDlogver/official-network/blob/main/app/composables/useSeoStructuredData.ts) 已有 `createOrganizationJsonLd`、`createWebsiteJsonLd`、`createProductJsonLd`、`createArticleJsonLd`、`createJobPostingJsonLd` 和 `createBreadcrumbJsonLd` 等函数。
+
+`useJsonLd()` 负责把结构化对象序列化为最终 Script：
+
+~~~ts
+useHead({
+  script: nodes.map((node, index) => ({
+    key: createJsonLdKey(node, index),
+    type: 'application/ld+json',
+    textContent: JSON.stringify(node),
+  })),
+})
+~~~
+
+最终形成 HTML 中的 `<script type="application/ld+json">`。JSON-LD 不替代真实 HTML 正文，也不保证 Google 一定展示富结果；重要结构化类型需要额外用 Rich Results Test 和实际内容核验。
+
+#### <u>6. Nuxt 工程实现分为站点级和页面级，公共方法不负责全部 SEO</u>
+
+官网采用 **Nuxt 4 + `@nuxtjs/seo` + 自定义 SEO Composables**。关键职责分布如下：
+
+| 工程位置 | 核心职责 | 实际实现 |
+| --- | --- | --- |
+| `nuxt.config.ts` | 全站域名、SEO 模块、Robots、Sitemap、渲染策略 | `site`、`robots`、`sitemap.sources`、`routeRules` |
+| `server/api/__sitemap__/urls.ts` | 动态补充产品、招聘、新闻详情 URL | `ProductId`、Nuxt Content Jobs、WordPress API |
+| `app/composables/useSIteSeo.ts` | 全站默认值和页面元信息规范化 | `useSiteSeo()`、`seoConfig`、`usePageSeo()` |
+| `app/composables/useSeoStructuredData.ts` | JSON-LD 业务实体构建与序列化 | `createXxxJsonLd()`、`useJsonLd()` |
+| `app/types/seoType.ts` | 定义统一的数据输入结构 | `SeoMeta`、`PageSeoConfig`、`StructuredDataNode` |
+
+**站点级配置**包括：
+
+~~~ts
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/seo'],
+  site: {
+    url: 'https://www.lawgenesis.cn',
+    name: '缔零科技',
+  },
+  robots: {
+    disallow: ['/develop'],
+  },
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
+  },
+})
+~~~
+
+这是提炼主要 SEO 配置的示例，不是完整的 `nuxt.config.ts`。在非开发环境中，实际的 `routeRules` 还将首页、产品和招聘等稳定页面设置 Prerender，新闻列表和详情设置 `swr: 86400`，使重要内容以适合其更新频率的方式交付。
+
+**动态 Sitemap** 的 URL 源通过 `defineSitemapEventHandler` 返回业务 URL。源码主要从三类业务数据建立：
+
+~~~text
+ProductId → /product/{id}
+Nuxt Content Jobs → /jobs/{slug} + updatedAt
+WordPress Posts → /news/{id} + date
+             ↓
+/api/__sitemap__/urls
+             ↓
+Nuxt Sitemap 模块生成最终站点地图
+~~~
+
+其中 Google 忽略 Sitemap 的 `priority` 和 `changefreq`；应重点关注 URL 完整性和准确 `lastmod`。目前 WordPress 仅拉取最多 100 篇新闻、使用发布时间 `date` 作为 `lastmod`，API 失败时会跳过新闻 URL，属于需要注意的实际边界。
+
+**页面级公共方法**进一步拆成：
+
+- `useSiteSeo()`：获取站点域名、默认描述、OG 图片、语言、Title 模板，并生成基础 Organization、WebSite 结构化信息。
+- `seoConfig.home() / product() / newsDetail() / jobDetail()`：根据不同页面业务数据生成 `SeoMeta`。
+- `createXxxJsonLd()`：把产品、新闻、岗位等业务对象转成 Schema.org 结构化数据。
+- `usePageSeo(config, pageConfig)`：组合上述结果，使用 Nuxt `useSeoMeta()` 与 `useHead()` 统一注入 Title、Description、OG、Canonical、页面 robots meta、JSON-LD。
+
+因此，**`usePageSeo()` 统一的是当前页面的 SEO 表达，不负责生成 `robots.txt` 或聚合 Sitemap URL**；站点级配置和页面级配置共同组成 SEO 工程体系。
+
+#### <u>7. 产品详情页体现“业务数据 → 规范化 SEO 表达”的完整链路</u>
+
+[产品详情页源码](https://github.com/cxDlogver/official-network/blob/main/app/pages/product/%5Bslug%5D.vue) 会根据当前产品对象生成 SEO 元信息，并传入 JSON-LD。调用关系可简化为：
+
+~~~ts
+const description = product.positioning.summary
+
+usePageSeo(
+  seoConfig.product(
+    product.name,
+    product.sellingPoints,
+    description,
+    product.image,
+  ),
+  {
+    path: '/product/' + product.id,
+    structuredData: [
+      createProductJsonLd({
+        name: product.name,
+        description,
+        path: '/product/' + product.id,
+        image: product.image,
+      }),
+      createBreadcrumbJsonLd([
+        { name: '首页', path: '/' },
+        { name: product.name, path: '/product/' + product.id },
+      ]),
+    ],
+  },
+)
+~~~
+
+这是为说明职责而整理的**简化示例**；项目实际使用 `product.value`、`productionId.value`，对描述有多个后备字段，并包含更多的 Breadcrumb 信息。
+
+其生成过程是：
+
+~~~text
+页面数据：产品名称 / 描述 / 图片 / ID / 分类
+                  ↓
+seoConfig.product()：Title / Description / OG
+                  +
+createProductJsonLd() / createBreadcrumbJsonLd()
+                  ↓
+usePageSeo(SeoMeta, PageSeoConfig)
+  ├─ useSiteSeo()：补齐网站默认值
+  ├─ useSeoMeta()：Title / Description / OG 等
+  ├─ useHead()：Canonical、noindex/nofollow
+  └─ useJsonLd() → useHead()：JSON-LD Script
+                  ↓
+Nuxt SSR / 预渲染 → 最终 HTML Head
+                  ↓
+Lighthouse、实际 HTTP/HTML 和索引数据分层验收
+~~~
+
+例如可以生成：
+
+~~~html
+<title>示例产品 - 智能内容安全解决方案 - 缔零科技</title>
+<meta name="description" content="产品真实的业务介绍">
+<meta property="og:title" content="示例产品 | 缔零科技">
+<link rel="canonical" href="https://www.lawgenesis.cn/product/a">
+<script type="application/ld+json">
+  { "@context": "https://schema.org", "@type": "Product", "name": "示例产品" }
+</script>
+~~~
+
+核心工程思想：**页面负责提供真实业务数据与规范路径，公共方法负责把这些输入转换为统一的页面 SEO 表达**。增加产品或新闻不需要复制一整套 Meta/Head/JSON-LD 实现。
+
+#### <u>8. 完整 SEO 验收必须覆盖 Lighthouse 之外的实际抓取与内容问题</u>
+
+| 需要验证的目标 | 实现能力 | 正确的验证途径 |
+| --- | --- | --- |
+| URL 能被发现 | Sitemap、标准站内链接 | 核对 URL 覆盖及抓取记录 |
+| 页面可请求、状态准确 | SSR/Prerender/SWR、HTTP Status | 真实 HTTP 响应、HTML 主体与动态 404 |
+| 索引与主版本明确 | Robots、noindex、Canonical | Lighthouse 部分 Audit、URL Inspection |
+| 页面语义准确 | Title、Description、Heading、正文、图片 | Lighthouse 技术审计 + 内容一致性检查 |
+| 业务实体结构化 | JSON-LD、Schema.org | Rich Results Test + 真实业务字段核对 |
+| 搜索最终效果 | 抓取、索引、曝光和点击 | Search Console 等线上数据 |
+
+对当前官网仍需特别说明：
+
+- `/develop` 的 Robots Disallow 与 noindex 可能产生前述互相妨碍问题。
+- News/Jobs 部分入口仍采用按钮或元素 `@click` 导航，应该区分“用户可以点击”与“HTML 存在 `<a href>` 标准链接”；可考虑逐步替换为 `NuxtLink`。
+- Sitemap 新闻来源存在最多 100 条与 `lastmod` 取值等局限，不能声称全量无遗漏。
+- `site` 配置、`useSiteSeo()` 与 JSON-LD 生成器都包含部分企业默认信息，后续可进一步统一配置来源。
+- 资讯详情页面的 SEO 数据更新与异步数据有关，需要实际检查 SSR/SWR 响应 HTML 是否已经包含关键内容，而不能只观察客户端更新后的 DOM。
+- 当前仓库记录过使用 Lighthouse 做开发期审计，但未核实完整自动化 Lighthouse CI 门禁配置，不应声称每次构建都已自动强制 SEO 分数达标。
+
+#### <u>9. 面试标准回答：SEO 工程如何从评分目标落实为分层设计与公共能力</u>
+
+官网重构的第二项工作重点是以首屏性能和 SEO 为目标，建设可复用的性能与搜索优化体系。我认为这里最重要的是先明确目标和验收方式，再以目标反推具体工程设计。
+
+对于 SEO，我们在开发阶段使用 Lighthouse 检查部分基础技术条件，包括 Title、Description、页面可索引性、规范链接和可抓取链接等。但它并不能代表 Google 的实际索引或排名，所以不能把 SEO 工程简单理解为逐项补齐 Lighthouse Audit。
+
+我首先从搜索引擎处理页面的过程入手，将 SEO 的建设重点划分为三个层次。
+
+**第一层是页面发现、抓取和索引基础。** 通过 Sitemap 和标准站内链接帮助搜索引擎发现企业的产品、资讯和招聘页面；根据页面内容更新特点选择 Nuxt 预渲染或 SWR；并通过 HTTP 状态、Robots、noindex 和 Canonical 明确哪些页面能够访问、是否应该被索引，以及重复 URL 应如何规范化。这里要区分 Robots 的抓取控制和 noindex 的索引控制，不能因为同时配置两者就认为更安全。
+
+**第二层是内容和语义准确性。** 不同业务页面应当根据真实数据生成独立的 Title、Description 和其他 Meta 信息，同时让页面正文标题、图片和链接语义保持一致。我不希望每个页面分别维护一套 SEO 规则，因此将首页、产品、资讯和招聘的元信息抽象为统一的配置生成方法。
+
+**第三层是业务实体的结构化表达。** 在真实业务内容基础上，通过 JSON-LD 表达 Organization、Product、NewsArticle、JobPosting 等实体信息和属性关系，使搜索系统能够更明确地识别页面描述的对象。
+
+在 Nuxt 的具体实现上，我把站点级和页面级职责分开。站点级通过 `nuxt.config.ts` 配置 SEO 模块、Robots、Sitemap 和不同路由的渲染策略；Sitemap 通过服务端接口从产品、岗位、新闻数据动态生成 URL。页面级则通过 `seoConfig` 根据业务数据生成 SEO Meta，通过 JSON-LD Builder 生成结构化对象，再统一交给 `usePageSeo()`，由其调用 `useSeoMeta()` 和 `useHead()` 注入 Title、Description、OG、Canonical、页面级 robots 和 JSON-LD。
+
+这样，新增一个产品或新闻页面时，页面只需要提供对应的真实业务信息和规范路径，就能复用公共 SEO 能力，避免各自维护重复逻辑。
+
+最后，在测试阶段使用 Lighthouse 验证基础 SEO 配置，在部署后再核对真实 HTML、HTTP 状态、Sitemap 和索引表现。**这项工作的价值不仅是提高单次 SEO 评分，更在于把 SEO 从分散的页面配置转化为依据业务目标设计、统一表达、可复用并且可持续验证的工程体系。**
+
+#### <u>10. 通用知识与项目实践的阅读衔接</u>
+
+通用机制详见 [《SEO 工程体系》](https://github.com/cxDlogver/cx-learn-notes/blob/main/Full-Stack-AI-NOTES/S-SEO工程体系.md)；实际实现与更多边界详见 [《official-network SEO 工程体系源码分析》](https://github.com/cxDlogver/official-network/blob/main/docs/SEO工程体系源码分析.md)。通用知识以搜索生命周期为主线，不应被当前 Nuxt 实现限制。
+
 ### 【工程初始化不仅是生成脚手架，更要先建立统一职责边界】
 
 既然已经明确技术体系，接下来就需要在大量页面开始开发之前，先确定整个项目应该遵循什么结构与开发规则。
