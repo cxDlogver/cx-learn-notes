@@ -1384,6 +1384,40 @@ Queue.add 只代表 Job 已被提交给队列，执行过程由 Worker 开始；
 
 参考：[BullMQ Workers](https://docs.bullmq.io/guide/workers)、[Retrying failing jobs](https://docs.bullmq.io/guide/retrying-failing-jobs)、[Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)、[PostgreSQL backend](https://docs.bullmq.io/guide/postgresql)。
 
+### 【BullMQ 默认 Redis 后端用多种状态索引完成领取、延迟和优先级调度】
+
+BullMQ 的 Job 内容与“下一项应该领取谁”并不靠一个 status 字段完成。默认 Redis Backend 中常见的内部结构包括：
+
+| 职责 | 典型 Redis 结构 | 表达什么 |
+| --- | --- | --- |
+| Job 数据 | Hash | Job ID、输入、选项、执行元信息 |
+| 普通等待任务 | wait List | 未设置显式正数 priority 的可领取任务 |
+| 正数优先级 | prioritized Sorted Set | 数值越小优先级越高，相同优先级遵循 FIFO 规则 |
+| 定时就绪 | delayed Sorted Set | 按将来到期时间组织尚未到期的 Job |
+| 进行中与终态 | active List；completed、failed 等有序集合 | Job 的调度归属和终态索引 |
+| 当前执行权 | 带 TTL 的 Job Lock | 防止正常情况下其他 Worker 同时完成此 Job |
+
+一个容易误答的规则是：**priority=0 代表未设置显式优先级，在 BullMQ 的该调度规则中会先于 positive priority 的 Job 被领取**；对正数优先级，1 比 5 更先被选择，但不会中断当前正在运行的 Job。Job ID 不是任务出队先后顺序。延迟任务到期意味着进入可领取状态，不意味着指定毫秒必然执行。
+
+~~~text
+Queue.add() 保存 Job 和调度索引
+           ↓
+Worker 请求下一项
+           ↓
+BullMQ 内部 Lua 原子执行状态转换
+           ├─ 提升已到期 delayed Job
+           ├─ 先考虑普通 wait Job
+           ├─ 没有普通任务时从 prioritized 中取优先任务
+           └─ 进入 active，设置本次处理锁
+           ↓
+Processor 正常返回 → 尝试标记 completed
+Processor 抛错     → 根据 attempts/backoff 重试或进入 failed
+~~~
+
+内部 Lua 解决领取瞬间的一致性，**不能保证长任务执行中的外部副作用只发生一次**。Worker 周期性续锁；锁失效后 stalled 检测可能将任务重新调度，旧处理代码却可能仍在运行。应用若 catch 业务异常后正常 return，框架会把它当作成功处理；应正确抛出需重试的错误。
+
+Job ID 的队列内去重通常依赖相应 Job 仍被保留，不等同于稳定业务操作的永久幂等键。官方资料：[BullMQ Prioritized](https://docs.bullmq.io/guide/jobs/prioritized)、[Delayed](https://docs.bullmq.io/guide/jobs/delayed)、[Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)。完整存储结构、出队优先级与 Lua 调用顺序见[面试问答第四章：BullMQ 调度与可靠执行](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
 ### 【Redis 内的队列任务是共享状态，是否能重启恢复取决于 Persistence 与存储部署】
 
 API Process、Worker Process 和 Redis Server 是不同的运行实体。API 或 Worker 停止，不会自动抹除已经写进独立 Redis Server 的 Job；Redis 自身断电、磁盘卷丢失或 Key 被淘汰时，则是另一类问题。
