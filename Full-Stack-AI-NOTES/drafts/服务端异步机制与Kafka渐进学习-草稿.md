@@ -868,6 +868,58 @@ B：不得开始处理；可重新读取状态并决定是否再尝试。
 
 官方依据：[Redis Transactions：Optimistic Locking Using Check-and-Set](https://redis.io/docs/latest/develop/using-commands/transactions/#optimistic-locking-using-check-and-set)。
 
+### 【Redis MULTI/EXEC 的完整用法，以及 WATCH 为什么不能单独保证领取】
+
+先通过 redis-cli 看清事务基本行为：
+
+~~~redis
+MULTI
+HSET task:1001 status RUNNING
+HSET task:1001 owner worker-A
+EXEC
+~~~
+
+MULTI 返回 OK；两次 HSET 在提交之前返回 QUEUED，此时只是排队；EXEC 才执行队列中的命令并按顺序返回结果。**在 EXEC 内部两次 HSET 之间，Redis 不执行其他客户端的普通命令。** 但这份事务没有检查 PENDING，别的 Worker 也可以先后执行同一份事务，覆盖 owner，因此只依靠 MULTI/EXEC 不满足任务领取约束。
+
+如果排队后不想执行，可用 DISCARD 清空事务队列；如果 EXEC 中某条命令发生运行时错误，其他命令仍可能成功，Redis 不做通用的 ACID 式回滚。注意 **Pipeline 不是 MULTI/EXEC**：Pipeline 主要用于将多条网络请求批量发送、减少往返，不能把普通流水线当成隔离事务。
+
+要在客户端判断 PENDING，同时检测该判断是否因并发修改而过期，使用下列完整流程：
+
+~~~text
+WATCH task:1001                   # 在读取之前建立监视
+HGET task:1001 status             # 假设返回 PENDING
+[客户端 if 判断 status == PENDING]
+MULTI
+HSET task:1001 status RUNNING owner worker-A
+EXEC                              # 未发生修改则执行；已发生修改则取消
+~~~
+
+其中客户端 if 判断是应用程序中的代码，不是 redis-cli 命令。可以在两个 redis-cli 窗口中重现实验：
+
+~~~text
+窗口 A                             窗口 B
+HSET task:1001 status PENDING
+WATCH task:1001
+HGET task:1001 status → PENDING
+                                   HSET task:1001 status RUNNING owner worker-B
+MULTI
+HSET task:1001 status RUNNING owner worker-A → QUEUED
+EXEC → (nil) [RESP2 中取消事务]
+HGETALL task:1001 → owner 仍为 worker-B
+~~~
+
+B 的无条件 HSET 只是用来模拟并发修改；生产 Worker B 同样必须采用安全领取。**WATCH 不阻止 B 修改，而是让 A 的 EXEC 发现修改并取消事务。**
+
+WATCH 的关键边界：
+
+- 它监视 Key 的变化，不是持续向客户端推送变化，也不是锁住 Key。Key 过期、被驱逐也可能使事务取消；WATCH 不自动检查 status 是否为 PENDING。
+- 正确顺序是 WATCH → 读取 → 客户端 if → MULTI → EXEC。单独 WATCH 后直接 HSET，并不会自动拒绝这个普通 HSET；单独 if 则无法发现读取后的竞争。
+- WATCH 与后续 EXEC 必须在**同一个 Redis 连接**中执行。EXEC 无论成功还是因冲突取消，都会解除监视；DISCARD、UNWATCH、连接关闭也会清除监视。
+- WATCH 后若没有 EXEC 或 UNWATCH，连接仍在且没有发生其他清理操作，监视状态会保留，但 Redis 不会主动向应用推送通知。放弃领取时应主动 UNWATCH。
+- 冲突时 EXEC 在 RESP2 下返回 Nil，在 RESP3 下返回 Null；应用必须视为领取失败，按需重新读取、有限次重试，不能开始执行业务。
+
+因此 WATCH **通常与 MULTI/EXEC 配合才能实现乐观条件提交**：客户端 if 负责判断业务资格，WATCH 负责检查从开始监视到 EXEC 期间是否发生修改。资料：[Redis Transactions](https://redis.io/docs/latest/develop/using-commands/transactions/)、[WATCH](https://redis.io/docs/latest/commands/watch/)、[UNWATCH](https://redis.io/docs/latest/commands/unwatch/)。
+
 ### 【Lua 把判断和修改放到 Redis Server 内，直接封闭 Check-Then-Act 竞争窗口】
 
 另一种实现是把状态检查、资格判断、写入与成功响应全部放进同一个 Lua 脚本，而不是让 Worker 各自先读出状态再修改。
