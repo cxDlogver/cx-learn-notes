@@ -392,6 +392,8 @@ DBMS Concurrency Control
 
 ### 【悲观控制和乐观冲突检测解决同一个并发更新问题】
 
+**延伸到数据库任务队列：** PostgreSQL 行锁、条件 UPDATE 和 FOR UPDATE SKIP LOCKED 如何把“选中 PENDING → 取得处理权”变成单次受保护的 Claim，以及为什么行锁不能代替长期 Lease，见[服务端异步任务与消息处理体系](<./F-服务端异步任务与消息处理体系.md>)和[面试问答第三章](<./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md>)。
+
 ~~~text
 Concurrent Update Strategy
 │
