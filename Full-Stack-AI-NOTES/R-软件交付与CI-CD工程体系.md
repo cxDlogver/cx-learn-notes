@@ -3,24 +3,24 @@
 软件交付（Software Delivery）解决的是：**一份代码变化怎样经过持续验证、形成可识别的构建产物，并安全进入目标运行环境，最后通过生产验证和恢复机制形成闭环。**
 
 ~~~text
-Source Change
-↓
-Continuous Integration
-↓
-Build
-↓
-Artifact
-↓
-Verification
-↓
-Release Decision
-↓
-Deployment
-↓
-Production Verification
-↓
-Rollback / Roll Forward
+源码变化：产生需要集成和验证的版本候选
+    ↓
+持续集成：在共享代码库中执行可重复的检查
+    ├─ 静态分析、类型检查、自动化测试（可并行）
+    └─ 构建验证：生成可部署产物
+    ↓
+产物识别与可信性检查：确认内容身份、来源及依赖信息
+    ↓
+发布决策：综合检查结果与组织策略决定能否推进
+    ↓
+部署：将选定产物交付到目标运行环境
+    ↓
+生产验证：检查真实环境中的健康状态和用户影响
+    ↓
+异常恢复：按条件回滚或向前修复，并将结果反馈到开发
 ~~~
+
+这条链路的输入是源码变化，持续集成负责形成检查结果和构建产物；发布决策根据证据与策略决定是否推进，部署负责改变运行环境，生产验证则决定是否需要恢复或继续发布。验证并非只发生在构建之后：Lint、类型检查、测试、构建检查可以并行或按依赖分阶段执行。
 
 CI/CD 不是某一个工具，也不等于把 install、test、build、deploy 几条命令顺序执行。GitHub Actions、GitLab CI/CD、Jenkins 等是实现 Pipeline 的工具；本文关注脱离具体平台仍然成立的交付模型。
 
@@ -151,6 +151,20 @@ Merge Gate
 
 Human Review 和 Automated Checks 可以并行发生。是否要求特定 Check、几名 Reviewer、审批顺序如何，由 Repository / Team Policy 决定，不应把某一种团队流程写成 CI 的定义。
 
+以 GitHub 为例，Workflow 执行与合并门禁是不同机制：Workflow / Job 运行并报告检查结果，Branch Protection 或 Ruleset 中配置的 Required Status Checks 才会约束合并。路径过滤导致 Workflow 未运行时，相关 Required Check 可能持续 Pending，阻止合并；因此设计 Required Checks 时必须同时检查触发范围、Job 名称、跳过行为和 Merge Queue 兼容性。[[7]](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches) [[8]](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/troubleshooting-required-status-checks)
+
+~~~text
+Pull Request / Merge Queue 触发检查
+    ↓
+Workflow / Job 执行：产生成功、失败或未运行等状态
+    ↓
+仓库规则匹配 Required Status Checks：判断必需检查是否满足
+    ↓
+合并决策：允许合并或等待修复 / 补充检查
+~~~
+
+这条机制的输入是候选变更及其检查状态，输出是仓库规则允许或阻止合并的结果。一个普通 Workflow 成功并不能单独证明仓库已经启用了强制门禁。具体项目的 Workflow 可以作为 CI 执行证据，但必须另行检查仓库规则，才能判断 Merge Gate 是否实际生效。
+
 ## 3. Pipeline 将交付过程组织为 Trigger、Job、Step 与 Gate
 
 ### 【Pipeline 不是只能串行执行的脚本】
@@ -250,6 +264,8 @@ Source / Builder / Build Process
 Digest（摘要）是对 Artifact 内容计算得到的固定长度值。内容发生变化时，Digest 通常也会变化，因此它适合作为 Artifact 的内容身份；Tag、Version 等名称则可能被重新指向其他内容，不能单独承担完整性判断。
 
 Provenance（来源证明信息）进一步描述 Artifact 在哪里、何时、怎样被生产。SLSA v1.2 将 Provenance 定义为能够把 Artifact 追溯到其来源的可验证信息，并把 Build Provenance 用于把 Build Output 连接回产生它的 Source 和 Build Process。[[3]](https://slsa.dev/spec/v1.2/provenance)
+
+来源证明、签名和 Attestation 可以帮助验证产物的内容身份及构建来源，但不能直接证明软件没有漏洞；漏洞检测、行为测试和运行验证仍承担不同职责。
 
 因此：
 
@@ -470,3 +486,7 @@ Rollback / Roll Forward
 [5] GitHub Docs. *Using artifact attestations to establish provenance for builds*. https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
 
 [6] Martin Fowler. *Deployment Pipeline*. https://martinfowler.com/bliki/DeploymentPipeline.html
+
+[7] GitHub Docs. *About protected branches*. https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
+
+[8] GitHub Docs. *Troubleshooting required status checks*. https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/troubleshooting-required-status-checks
