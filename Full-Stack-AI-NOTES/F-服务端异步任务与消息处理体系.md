@@ -1332,6 +1332,86 @@ EVAL "if redis.call('HGET',KEYS[1],'status') ~= 'pending' then return 0 end redi
 
 客户端只有收到 1 才能执行业务。**原子执行／隔离执行并不等于运行时错误自动回滚**：Redis 的 MULTI/EXEC 与 Lua 都不提供传统 SQL 事务意义上的通用运行时错误回滚；Pipeline 只是批量发命令、减少网络往返，也不是上述事务保护。参考 [Redis Transactions](https://redis.io/docs/latest/develop/using-commands/transactions/)、[Redis Lua Scripting](https://redis.io/docs/latest/develop/programmability/eval-intro/)。更多竞争时间线见[面试问答第三章：Redis 原子条件转换](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
 
+### 【KafkaJS 将读取、处理、已解决位点与真正提交拆成四个动作】
+
+KafkaJS 即使使用 eachMessage，也可能先从 Broker 批量 Fetch 多条 Record，只是库会在**同一个 Partition 内**依次 await 开发者提供的回调；不同 Partition 可设置独立的回调并发：
+
+~~~text
+Fetch：[Offset 100=A, 101=B, 102=C]
+       ↓
+eachMessage(A) → await 业务成功 → 已解决 100
+       ↓
+eachMessage(B) → await 业务成功 → 已解决 101
+       ↓
+eachMessage(C) → await 业务成功 → 已解决 102
+       ↓
+满足自动提交条件时 Commit 103
+~~~
+
+需要区分两个状态：**Resolved Offset** 是客户端已确认业务回调成功后的处理进度；**Committed Offset** 是 Broker 上保存的、供当前 Group 恢复用的下一条记录位置。两者不必在每一时刻都相等。
+
+KafkaJS 的 autoCommit 默认启用，通常在成功处理批次之后提交进度；还可以通过 autoCommitInterval（经过设定时间且到达相应检查点）或 autoCommitThreshold（累计完成设定数量）触发中途提交。比如阈值为 2、此前 committed offset 为 100：
+
+~~~text
+A/100 成功：已解决到 100，未必立即提交
+B/101 成功：达到阈值 2，可提交下一位置 102
+C/102 成功：批次结束，可提交下一位置 103
+~~~
+
+**autoCommit 不是周期性无条件地把 Fetch Position 当作已成功位置提交。** 业务回调必须 await 真正完成的数据库写入；若仅 fire-and-forget 后立即 return，客户端可能错误地把未完成业务视为完成。
+
+需要精确选择提交时机时，可关闭自动提交，等业务结果落库成功以后手动提交当前 Offset + 1：
+
+~~~ts
+await consumer.run({
+  autoCommit: false,
+  eachMessage: async ({ topic, partition, message }) => {
+    await saveIdempotently(message);
+    await consumer.commitOffsets([{
+      topic,
+      partition,
+      offset: (BigInt(message.offset) + 1n).toString(),
+    }]);
+  },
+});
+~~~
+
+这里 BigInt 避免大型 Offset 超出 JavaScript 安全整数范围。**手动提交不是任务执行 API**，而是覆盖 Consumer Group 在 Topic-Partition 上的恢复位置；开发者可以设置提交值，但 Kafka 不会检查你的 PostgreSQL 是否真正完成，因此提交过早可能跳过未完成业务。
+
+### 【eachBatch 允许应用控制批内执行与进度标记，但必须维护连续完成前缀】
+
+eachMessage 主要让开发者编写“收到一条消息怎样处理”；eachBatch 将来自一个 Topic-Partition 的 Batch 和一组进度／状态函数交给应用决定循环、暂停及处理方式：
+
+| 批次函数 | 负责什么 | 不能误认为 |
+| --- | --- | --- |
+| batch.messages | 当前批次的记录 | 整个 Topic 的全部消息 |
+| resolveOffset(offset) | 在 KafkaJS 内部标记该 Record 已处理 | 立即向 Broker Commit |
+| commitOffsetsIfNecessary() | 按 autoCommitInterval / Threshold 检查是否应提交 | 每次调用都一定发 OffsetCommit |
+| heartbeat() | 维持 Consumer Group 成员资格 | 证明数据库业务已完成 |
+| isRunning() / isStale() | 帮助停止当前消费或丢弃因 seek 等操作失效的 Batch | 下游数据库的 Fencing Token |
+
+~~~ts
+await consumer.run({
+  autoCommit: true,
+  eachBatchAutoResolve: false,
+  eachBatch: async ({ batch, resolveOffset, heartbeat, commitOffsetsIfNecessary, isRunning, isStale }) => {
+    for (const message of batch.messages) {
+      if (!isRunning() || isStale()) break;
+      await saveIdempotently(message);
+      resolveOffset(message.offset);
+      await heartbeat();
+      await commitOffsetsIfNecessary();
+    }
+  },
+});
+~~~
+
+设置 eachBatchAutoResolve=false，是为了避免批次回调正常返回时自动把末尾记录视为已解决，应用才能明确控制部分成功的进度。开发者还可以自行以 Promise.all 并发一批彼此独立的消息，但**并发完成顺序不一定等于分区日志顺序**，而且 Promise.all 某项失败不会自动取消其余已启动的 I/O。
+
+例如同一 Partition 的 Offset 100、102 已处理成功、101 失败，当前最多安全提交 101（100 之后的下一位置）；**不能提交 103**，否则重启后会跳过 101。这里的“已完成连续前缀”是应用并发策略必须维护的条件，不是把最后完成的记录直接提交。一个 Consumer 可以配置 partitionsConsumedConcurrently 同时处理多个**不同 Partition**，每个 Partition 的 Offset 独立核算；这不是一个 Partition 自动并行的意思。
+
+参考 [KafkaJS Consuming](https://kafka.js.org/docs/consuming)。可运行 Producer/Consumer、手动提交、批次并行和故障时间线见[面试问答第七章：KafkaJS 的读取、提交与并发](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
 ### 【BullMQ 把 Job 调度与业务 Workflow 分开，Worker 不一定需要调用 Agent】
 
 Node.js 后台任务的职责链应先区分三层：Producer 接收并交接 Job，Queue Backend 保存调度与重试状态，Worker 领取并执行 Processor。Processor 可以调用普通函数、固定 Workflow、LLM Tool Chain，或确实需要自主决策时才使用 Agent。把一个固定的“解析文档 → 提取信息 → 生成报告 → 校验结果”称为 LLM Workflow 往往比称为 Agent 更准确。
