@@ -1972,5 +1972,15 @@ HTTP API：PostgreSQL 中创建业务请求记录
 12. [BullMQ Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)：续租中断、Event Loop 阻塞和任务再次分配的实际机制。
 13. [Martin Kleppmann：How to do distributed locking](https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html)：Fencing Token 的背景、受保护存储必须主动验证令牌的前提。
 14. [Stripe Idempotent Requests](https://docs.stripe.com/api/idempotent_requests)：业务幂等键与安全请求重试的实际例子。
+15. [BullMQ Architecture](https://docs.bullmq.io/guide/architecture)：waiting、prioritized、delayed、active、completed、failed 的状态模型。
+16. [BullMQ Prioritized](https://docs.bullmq.io/guide/jobs/prioritized)：priority=0 优先于正数 priority、较小正数优先、同级 FIFO。
+17. [BullMQ Delayed](https://docs.bullmq.io/guide/jobs/delayed)：延迟资格、到期提升与不能保证准点执行。
+18. [BullMQ moveToActive-11.lua 源码](https://github.com/taskforcesh/bullmq/blob/master/src/commands/moveToActive-11.lua)：先从 wait 领取，再从 prioritized 领取，以及锁准备入口。
+19. [BullMQ promoteDelayedJobs.lua 源码](https://github.com/taskforcesh/bullmq/blob/master/src/commands/includes/promoteDelayedJobs.lua)：到期任务按 priority 转入 wait 或 prioritized，默认普通任务采用 LPUSH。
+20. [BullMQ Job IDs](https://docs.bullmq.io/guide/jobs/job-ids)：Job ID 的队列内唯一性与删除后去重失效。
+21. [BullMQ Going to production](https://docs.bullmq.io/guide/going-to-production)：Redis 持久化、noeviction、重连等生产环境条件。
+22. [BullMQ v6 PostgreSQL Backend 公告](https://bullmq.io/news/260927/bullmq-v6-postgresql/)：v6 提供可选 PG 后端，Redis 仍为默认后端。
+23. [BullMQ Stalled](https://docs.bullmq.io/guide/jobs/stalled)：stalled 属于失锁后的恢复事件，不是独立 Job 状态。
+
 
 > 本文为学习进程中的**独立草稿**，不覆盖正式通用文档，也不修改源代码。按逐节讨论方式继续追加，下一讲保留一个核心思考题供作答。
