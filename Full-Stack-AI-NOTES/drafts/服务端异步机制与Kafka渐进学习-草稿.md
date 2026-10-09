@@ -2323,9 +2323,9 @@ await consumer.run({
 
 ## 7. 下一讲追问：Kafka Producer 怎样选择 Partition，Consumer 怎样实际读取和提交 Offset
 
-> **思考题：** BullMQ 通过 wait / active / completed 等集合维护任务生命周期；Kafka 为什么采用可保留的分区追加日志，并用 Consumer Group 的 committed offset 表示进度？如果 Consumer A 崩溃，Consumer B 如何接管分区、确定应该从哪条消息重新开始？
+> **思考题：** Producer 连续发布同一文档的“开始分析 → 分析完成 → 报告更新”三个事件，Message Key 怎样控制分区选择？Consumer 使用 KafkaJS 的 eachMessage / eachBatch、autoCommit / manual commit 时，什么时间提交 Offset 才能避免尚未保存结果的业务被跳过？
 
-下一讲循序渐进地建立 Topic、Partition、Offset 和 Consumer Group 的关系，再展开故障接管；暂不铺开 Kafka Broker 副本、事务等更深层架构。
+下一讲从一个可运行的 Producer → Kafka Topic → Consumer 最小程序出发，逐步解释消息 Key、分区分配、消费与 Offset 提交行为；重点继续区分**日志读取顺序、业务完成顺序和已提交恢复位置**，不提前展开 Kafka 的所有 Broker 复制与事务机制。
 
 ## 8. 参考资料与主文档关联
 
@@ -2356,6 +2356,11 @@ await consumer.run({
 25. [BullMQ Workers](https://docs.bullmq.io/guide/workers)：Processor 返回/抛错与任务完成或失败状态转换。
 26. [Apache Kafka 4.0 Design](https://kafka.apache.org/40/design/design/)：At-most-once、At-least-once、Offset 和跨系统 Exactly-once 边界。
 27. [Apache KafkaConsumer API](https://kafka.apache.org/40/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html)：提交的 Offset 表示下一条待消费记录的位置。
+28. [Apache Kafka 4.3 Introduction](https://kafka.apache.org/43/getting-started/introduction/)：Topic、Partition、消息 Key、Offset、消息保留与多消费者组。
+29. [Apache Kafka 4.3 Distribution](https://kafka.apache.org/43/implementation/distribution/)：Group Coordinator 与 __consumer_offsets 等进度持久化机制。
+30. [Apache Kafka 4.3 Consumer Rebalance Protocol](https://kafka.apache.org/43/operations/consumer-rebalance-protocol/)：Classic 与 Consumer 协议，KIP-848 增量重新分配。
+31. [Apache Kafka 4.2 Upgrading](https://kafka.apache.org/42/getting-started/upgrade/)：普通 Consumer Group 与 Share Group 的重要语义区别。
+32. [KafkaJS Consuming](https://github.com/tulios/kafkajs/blob/master/docs/Consuming.md)：KafkaJS eachMessage、eachBatch、并行消费、提交 Offset 与重试边界。
 
 
 > 本文为学习进程中的**独立草稿**，不覆盖正式通用文档，也不修改源代码。按逐节讨论方式继续追加，下一讲保留一个核心思考题供作答。
