@@ -1528,6 +1528,39 @@ Committed Offset 不是永久存储，长期不活跃组可能按保留策略过
 
 参考：[Kafka Consumer Offset Tracking](https://kafka.apache.org/41/implementation/distribution/)、[KafkaConsumer commitSync](https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html)。
 
+### 【Kafka 心跳、Rebalance 与 Offset 恢复只接管分区，不接管旧代码的执行现场】
+
+Kafka 常规 Consumer Group 中，稳定状态下一个 Partition 被分配给组内一个 Consumer。Consumer 向 Group Coordinator 发送 Heartbeat 维护成员资格；失联超时后，协调机制通过 Rebalance 调整 Partition 归属，接管者从该组提交的 Offset 恢复。
+
+~~~text
+Consumer A 负责 Partition 0 / Offset 100
+     ↓
+A 调用外部 LLM，尚未提交 Offset 101
+     ↓
+A 网络中断，Kafka 心跳无法成功
+     ↓
+Session Timeout → Group 撤销 A 的成员资格
+     ↓
+Rebalance → Partition 0 交给 Consumer B
+     ↓
+B 从 Committed Offset 100 重新读取并执行
+     ↓
+A 网络恢复：旧 LLM 请求可能已返回
+     ↓
+A 与 B 可能同时尝试向外部数据库写入
+~~~
+
+这里要区分**进程状态、分区归属和业务副作用**：
+
+1. 短暂断联但尚未改变分配时，A 仍可能恢复原分区的正常消费。
+2. A 已被移出 Group 时，**旧分配**的 Offset Commit 可能失败；如果 A 恢复并重新加入 Group，则必须按新分配重新取得合法消费资格，可能仍被分到同一 Partition。
+3. 旧代码中已经启动的 Promise、线程任务、HTTP/LLM 请求不会被 Kafka 自动杀死。即使它已不能合法提交旧位点，数据库若不检查业务处理权仍可能接受结果。
+4. 真正崩溃退出的原进程不会继续运行原先的函数；恢复来自新的 Consumer 实例重读消息，而不是恢复内存执行栈。
+
+**Heartbeat 不是逐消息 Job Lease。** Kafka 判定的是组成员是否有效，分配单位是 Partition；BullMQ 的 Lease/Lock 以单项 Job 为边界。Kafka Java Consumer 的 max.poll.interval.ms 还限制两次 poll 之间的最长间隔，它不能被直接当作 KafkaJS 的相同配置；采用不同 Consumer Rebalance 协议时 Session Timeout 和心跳参数的归属也可能不同。[Kafka Consumer Configs](https://kafka.apache.org/42/configuration/consumer-configs/)。
+
+恢复正确性仍靠应用：失去分区后停止启动新工作，尽可能取消可取消请求，并以稳定 eventId/operationId 保护重复业务效果；严格写入资格还应让下游原子校验当前业务版本或 Fencing Token。见[面试问答第六章：失联 Consumer 恢复后旧业务是否仍有效](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
 ### 【Kafka 重读消息只恢复消费边界，长任务需要业务 Checkpoint 续跑】
 
 假设 offset 100 对应文档分析 Task T，内部步骤是：①解析文档 ②提取信息 ③调用 LLM ④保存报告。Consumer 在完成步骤 ②、调用 LLM 时崩溃，Kafka 若未提交 offset 101，则可能从 offset 100 重新消费，但无法自动知道步骤 ①②已完成。
