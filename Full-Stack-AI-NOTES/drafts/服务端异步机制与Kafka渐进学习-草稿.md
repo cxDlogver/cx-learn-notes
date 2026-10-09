@@ -1538,5 +1538,8 @@ RETURNING o.id, o.project_id, o.event_id, o.event, o.attempts;
 9. [Redis Scripting with Lua](https://redis.io/docs/latest/develop/programmability/eval-intro/)：Lua 的原子执行语义、读取后判断与服务端条件更新。
 10. [Redis SET](https://redis.io/docs/latest/commands/set/)：NX/PX 条件设置与带过期时间的最小锁。
 11. [Redis LMOVE](https://redis.io/docs/latest/commands/lmove/)：从 waiting 到 active 的原子队列元素移动与恢复队列模式。
+12. [BullMQ Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)：续租中断、Event Loop 阻塞和任务再次分配的实际机制。
+13. [Martin Kleppmann：How to do distributed locking](https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html)：Fencing Token 的背景、受保护存储必须主动验证令牌的前提。
+14. [Stripe Idempotent Requests](https://docs.stripe.com/api/idempotent_requests)：业务幂等键与安全请求重试的实际例子。
 
 > 本文为学习进程中的**独立草稿**，不覆盖正式通用文档，也不修改源代码。按逐节讨论方式继续追加，下一讲保留一个核心思考题供作答。
