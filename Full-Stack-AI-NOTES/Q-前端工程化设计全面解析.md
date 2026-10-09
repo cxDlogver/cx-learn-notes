@@ -1,4 +1,4 @@
-> 之前有做过项目架构设计吗，请说说你的工程化设计？
+# 前端工程化设计全面解析
 
 ## 目标
 
@@ -1084,11 +1084,11 @@ pnpm add prettier --save-dev
 
 #### ESLint 配置（代码语法检查）
 
-ESLint 的配置核心是创建 `.eslintrc.js` 文件，ESLint v9.0.0 及以上版本为 `eslint.config.js`、`eslint.config.mjs` 或 `eslint.config.cjs` 的配置文件。，通过配置解析器、环境、规则、插件等，实现对不同类型文件的语法检查和规范约束。配置需兼顾 JavaScript、TypeScript、Vue 三种场景，确保覆盖全面。
+现代 ESLint 以 Flat Config（`eslint.config.js`、`eslint.config.mjs` 或 `eslint.config.cjs`）为主要配置方式，通过语言选项、插件、规则与文件匹配约束 JavaScript、TypeScript、Vue 等代码。ESLint v9 默认使用 Flat Config，v10 移除了旧 eslintrc 配置系统；下方 `.eslintrc.js` 示例仅适用于采用旧配置系统的历史项目，不能作为 ESLint v10 的配置方案。版本和迁移规则参见 [[1]](https://eslint.org/docs/latest/use/configure/migration-guide) 与 [[2]](https://eslint.org/blog/2026/02/eslint-v10.0.0-released/)。
 
 ##### ESLint 配置(<9.0)
 
-在项目根目录下创建 `.eslintrc.js` 文件，该文件为 ESLint 的核心配置文件，采用 CommonJS 规范导出配置对象。
+以下是旧 eslintrc 配置系统的历史示例：在使用该系统的项目根目录中，`.eslintrc.js` 通过 CommonJS 导出配置对象。ESLint v10 不支持这一配置方式，迁移时应按 Flat Config 的规则重写，而不是仅重命名文件。
 
 ```javascript
 // .eslintrc.js
@@ -1266,7 +1266,7 @@ export default [
 
 ##### ESLint 忽略文件配置（.eslintignore）
 
-为了更清晰地管理忽略检查的文件/目录，建议单独创建 `.eslintignore` 文件，与 `.eslintrc.js` 同级，内容如下：
+以下 `.eslintignore` 仅用于说明旧配置系统的历史忽略规则；ESLint v9 的 Flat Config 与 v10 不读取此文件。现代项目应在 `eslint.config.*` 中通过 `globalIgnores()` 或合适的 `ignores` 配置忽略路径，注意两者作用范围及 Glob 语义。[[1]](https://eslint.org/docs/latest/use/configure/migration-guide)
 
 ```plain
 # .eslintignore
@@ -1294,7 +1294,7 @@ assets/
 tests/
 ```
 
-**说明**：`.eslintignore` 文件的语法与 `.gitignore` 一致，每行指定一个需要忽略的文件/目录，支持通配符（如 `*.config.js` 忽略所有后缀为 .config.js 的文件）。
+**历史配置说明**：上述文件属于旧配置系统。迁移到 Flat Config 时不能原样照搬 `.gitignore` 式规则；应核对 Glob 匹配范围、全局忽略与局部忽略的区别，并保留测试、配置等关键代码的必要检查。
 
 #### Prettier 配置（代码格式化检查）
 
@@ -1548,9 +1548,7 @@ Cspell 是一款轻量的拼写检查工具，可检查代码中变量、函数�
     "javascript", "javascriptreact",
     "vue", "typescript", "typescriptreact"
   ],
-  "eslint.options": {
-    "configFile": ".eslintrc.js"
-  },
+  "eslint.useFlatConfig": true,
 
   // Prettier 配置
   "prettier.requireConfig": true,
@@ -1633,7 +1631,7 @@ VSCode 配置的核心是“协同 ESLint 和 Prettier”，确保两者不冲�
 
 - 单独禁用某类检查：若某个文件不需要 ESLint 检查，可在文件顶部添加 `/* eslint-disable */`；不需要 Stylelint 检查，添加 `/* stylelint-disable */`；不需要 Cspell 检查，添加`/* cspell:disable */`。
 - 局部禁用检查：若某个代码块不需要检查，可使用注释包裹，例如 `/* eslint-disable */ 代码块 /* eslint-enable */`，Stylelint、Cspell 同理。
-- 团队协作：将所有配置文件（`.eslintrc.js`、`.prettierrc`、`.stylelintrc.js`、`cspell.json`、`.vscode/settings.json`）提交到 Git 仓库，统一团队配置，避免风格不一致。
+- 团队协作：将所有配置文件（现代项目的 `eslint.config.*`、`.prettierrc`、`.stylelintrc.js`、`cspell.json`、`.vscode/settings.json`）提交到 Git 仓库，统一团队配置，避免风格不一致。
 - 规则调整：若项目需求与默认规则冲突，可在对应配置文件的 `rules` 中修改，无需修改依赖或插件。
 
 #### 常见问题排查
@@ -1641,7 +1639,7 @@ VSCode 配置的核心是“协同 ESLint 和 Prettier”，确保两者不冲�
 配置过程中可能会遇到各种问题，以下是常见问题及排查方法，帮助快速解决问题。
 
 - **问题 1：保存文件未触发自动格式化** 排查：1. 检查 Prettier 插件是否安装并启用；2. 检查 `.prettierrc` 文件是否存在且配置正确；3. 检查 VSCode 本地设置中 `editor.formatOnSave` 是否为 `true`；4. 检查文件是否在 `.prettierignore` 中被忽略。      
-- **问题 2：ESLint 未提示错误，或无法自动修复** 排查：1. 检查 ESLint 插件是否安装并启用；2. 检查 `.eslintrc.js` 文件是否存在且配置正确；3. 检查文件是否在 `.eslintignore` 中被忽略；4. 检查依赖是否安装完整（尤其是 `eslint-plugin-vue`、`@typescript-eslint` 等插件）。      
+- **问题 2：ESLint 未提示错误，或无法自动修复** 排查：1. 检查 ESLint 插件是否安装并启用；2. 检查 `eslint.config.*` 是否存在且符合所用 ESLint 版本；3. 检查 Flat Config 中的忽略规则；4. 检查依赖是否安装完整（尤其是 `eslint-plugin-vue`、`@typescript-eslint` 等插件）。      
 - **问题 3：ESLint 与 Prettier 规则冲突（如引号、缩进不一致）** 排查：1. 确保 `eslint-config-prettier` 和 `eslint-plugin-prettier` 已安装；2. 确保 `extends` 中 `plugin:prettier/recommended` 放在最后；3. 检查 ESLint 规则中是否有与 Prettier 冲突的自定义规则，如有则修改或关闭。
 - **问题 4：Vue 模板格式化后错位** 排查：1. 检查 Prettier 配置中 `htmlWhitespaceSensitivity: "ignore"` 和 `vueIndentScriptAndStyle: true` 是否配置；2. 禁用 Vetur 插件的格式化功能；3. 检查 VSCode 中 Vue 相关配置是否正确。   
 
@@ -1902,11 +1900,11 @@ Quality Gate
 
 ### 单元测试（Unit Testing）
 
-本节不再重新定义 Unit Test，而是说明小边界测试怎样接入项目。工程上需要明确测试文件范围、Runtime Environment、Mock / Fixture Setup、Watch Mode、Coverage 和 CI Command；具体测试边界由测试主文档定义。
+小边界测试需要接入项目的可重复执行环境。工程上需要明确测试文件范围、Runtime Environment、Mock / Fixture Setup、Watch Mode、Coverage 和 CI Command；具体测试边界由测试主文档定义。
 
 #### 测试目标
 
-单元测试的核心目标是验证单个函数、方法或组件的独立行为，确保其在各种输入场景（正常输入、边界输入、异常输入）下，都能按预设逻辑返回正确结果或执行正确操作，不依赖其他模块、外部API、数据库等外部资源，实现“孤立测试”。
+单元测试的核心目标是验证单个函数、方法或组件的独立行为，确保其在各种输入场景（正常输入、边界输入、异常输入）下，都能按预设逻辑返回正确结果或执行正确操作，并在明确被测边界后按需使用 Test Double、Fixture 或真实依赖。单元测试并不要求所有外部依赖必须被 Mock；依赖选择取决于验证目标、可控性与执行成本。
 
 具体目标包括：
 
@@ -1969,7 +1967,7 @@ Jest支持零配置运行（默认查找项目中`*.test.js`、`*.spec.js`后缀
 
 ##### 步骤3：编写单元测试（核心细节）
 
-单元测试的核心是“隔离测试”，即每个测试用例只测试一个函数/组件的一个功能点，不依赖外部资源（如API、数据库），必要时使用mock工具隔离依赖。以下分“函数测试”和“组件测试”两种场景，详细讲解测试用例的编写方法。
+单元测试聚焦较小逻辑边界的可观察行为；是否隔离 API、数据库等依赖，取决于测试目标与依赖的真实性要求，必要时使用 Mock 或 Fixture 保证可控性。以下分“函数测试”和“组件测试”两种场景，详细讲解测试用例的编写方法。
 
 ```JavaScript
 // sum.js
@@ -3198,3 +3196,9 @@ jobs:
 - 数据分析：AI可辅助分析上线后的核心数据指标，对比历史数据，识别数据异常与用户行为趋势，为需求优先级排序提供依据。
 - AI优化建议：AI可基于用户差评样例、AI幻觉样例，给出Prompt优化、检索策略调整的具体建议，辅助提升AI质量。
 - 发布公告生成：AI可辅助生成发布公告，清晰梳理本次发布的功能变更、注意事项与反馈渠道，减少手动编写成本。
+
+## 参考资料与版本边界
+
+- [1] ESLint 官方文档，*Configuration Migration Guide*：https://eslint.org/docs/latest/use/configure/migration-guide
+- [2] ESLint 官方博客，*ESLint v10.0.0 released*（2026-02）：https://eslint.org/blog/2026/02/eslint-v10.0.0-released/
+- ESLint v10 的 Node.js 支持范围应以发布说明为准；历史 Node.js 14/18 的配置和 CI 示例不能直接视为当前 ESLint v10 的运行基线。
