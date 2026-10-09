@@ -2595,7 +2595,7 @@ try {
 
 ### 【Consumer 使用 eachMessage 逐条执行，正常返回后可以自动推进 Offset】
 
-KafkaJS even 使用 eachMessage，底层仍然批量 Fetch 消息，但将它们逐条交给回调处理。KafkaJS 默认同一 Partition 中逐条顺序 await eachMessage；设置 partitionsConsumedConcurrently 可以让**不同** Partition 同时消费，并不等于同一个 Partition 可以不受控制地并发完成。
+KafkaJS 即使使用 eachMessage，底层仍然批量 Fetch 消息，但将它们逐条交给回调处理。KafkaJS 默认同一 Partition 中逐条顺序 await eachMessage；设置 partitionsConsumedConcurrently 可以让**不同** Partition 同时消费，并不等于同一个 Partition 可以不受控制地并发完成。
 
 ~~~text
 Partition 0：100 → 101 → 102
@@ -2661,6 +2661,174 @@ await consumer.run({
 运行前设置 DATABASE_URL，启动 node consumer-auto.mjs；另外终端运行 node producer.mjs。为便于观察示例使用单分区处理并发数 1。真实业务处理失败需要抛错，不能 catch 后直接 return；数据库操作已经成功但 Offset 尚未提交时，后续依然可能收到相同 Record，需要 PRIMARY KEY 或业务幂等方案。
 
 **autoCommit=true ≠ 每条消息回调返回就立即执行一次 Broker OffsetCommit 请求。** KafkaJS 根据消息/批次处理进度、配置的 autoCommitInterval / autoCommitThreshold、批次结束等条件持久化；它管理的是**已解析/完成消息的进度**，不是在业务进行中定时盲目确认后续尚未处理的消息。[KafkaJS 2.1 Consuming](https://kafka.js.org/docs/2.1.0/consuming)。
+
+### 【手动提交通过 consumer.commitOffsets 显式控制确认点】
+
+手动提交不是 Kafka 自动帮业务做 ACK，而是应用在确认自己的业务完成后，调用 consumer.commitOffsets 把 Group 对该 Partition 的恢复位置更新到 Broker。开发者可以严格保证**代码中的提交调用在保存结果之后**，但依然无法让 PostgreSQL 和 Kafka 形成同一个事务。
+
+文件 consumer-manual.mjs（与 consumer-auto.mjs 使用同一个 processed_events 表）：
+
+~~~javascript
+import { Kafka } from "kafkajs";
+import pg from "pg";
+
+const kafka = new Kafka({
+  clientId: "analysis-consumer-manual",
+  brokers: ["localhost:9092"],
+});
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const consumer = kafka.consumer({ groupId: "analysis-manual-example" });
+
+await consumer.connect();
+await consumer.subscribe({ topics: ["analysis-events"], fromBeginning: true });
+
+await consumer.run({
+  autoCommit: false,
+  partitionsConsumedConcurrently: 1,
+  eachMessage: async ({ topic, partition, message }) => {
+    const event = JSON.parse(message.value.toString());
+
+    // 第一步：必须真正等待数据库操作成功返回
+    await pool.query(
+      "INSERT INTO processed_events (event_id, document_id, event_type) " +
+      "VALUES ($1, $2, $3) ON CONFLICT (event_id) DO NOTHING",
+      [event.eventId, event.documentId, event.type]
+    );
+
+    // 第二步：提交的是下一条要读取的 Offset，不是当前 Record Offset
+    // 使用 BigInt 避免大型 Offset 超过 JS Number 安全整数范围
+    await consumer.commitOffsets([{
+      topic,
+      partition,
+      offset: (BigInt(message.offset) + 1n).toString(),
+    }]);
+
+    console.log("已保存业务并提交进度", { topic, partition, offset: message.offset });
+  },
+});
+~~~
+
+**这是两种不同的确认：**
+
+~~~text
+Consumer 获取 Partition 0 / Offset 102
+             ↓
+业务 INSERT 到 PostgreSQL
+             ↓
+数据库返回成功
+             ↓
+consumer.commitOffsets([{ partition:0, offset:"103" }])
+             ↓
+Kafka 中保存 Group 对 Partition 0 的恢复位置 103
+~~~
+
+- 若在数据库 INSERT 之前崩溃：没有提交 Offset 103，下一次消费仍有机会处理 Offset 102。
+- 若数据库 INSERT 成功，但 commitOffsets() 之前崩溃：仍可能再次消费 Offset 102；唯一约束使第二次处理不会插入重复记录。
+- 若 Offset 103 已成功提交以后 Consumer 崩溃：正常恢复将从 103 继续；并非 Topic 中的 102 被删除。
+- 若 Group Rebalance 已经撤销该分区归属，旧 Consumer 的提交可能失败；数据库此前成功写入仍不会自动回滚。
+
+尤其需要记住：**consumer.commitOffsets() 更新的是未来恢复用的 Committed Offset，它不会像 consumer.seek() 一样立即改变已启动的 Fetch / 回调消费位置。** 它的调用也不能代替 PostgreSQL 幂等保护。[KafkaJS Manual Committing](https://kafka.js.org/docs/2.1.0/consuming)。
+
+文件中的 groupId 与自动示例不同，所以两组会**独立消费原始 Topic**；同一个数据库表仍以 event_id 幂等阻止重复入库。生产系统可以按职责划分 Group，并不代表应该为同一业务无意义地同时启动两个重复写入的服务。
+
+### 【eachMessage 与 eachBatch 的差别是消费回调粒度，而不是 Kafka 是否批量 Fetch】
+
+无论 KafkaJS 使用 eachMessage 还是 eachBatch，底层都可能批量从 Broker Fetch。两种回调的区别是：
+
+| KafkaJS 回调 | 应用拿到什么 | 进度处理 |
+| --- | --- | --- |
+| eachMessage | 单条 Record，框架封装批次推进与默认心跳/自动提交处理 | 适合逐条顺序 await 业务逻辑 |
+| eachBatch | 一组 Record + resolveOffset、heartbeat、commitOffsetsIfNecessary 等函数 | 应用精细控制一批记录中哪些已处理、何时请求提交 |
+
+eachBatch 示例（消费者和数据库初始化复用上面的代码，仅展示 run 配置）：
+
+~~~javascript
+await consumer.run({
+  autoCommit: true,
+  eachBatchAutoResolve: false,
+  eachBatch: async ({
+    batch,
+    resolveOffset,
+    heartbeat,
+    commitOffsetsIfNecessary,
+    isRunning,
+    isStale,
+  }) => {
+    for (const message of batch.messages) {
+      if (!isRunning() || isStale()) break;
+
+      const event = JSON.parse(message.value.toString());
+      await saveIdempotently(event);
+
+      // 标记“这条消息的业务处理已完成”
+      resolveOffset(message.offset);
+
+      // 长批次处理期间维持 Group 成员心跳
+      await heartbeat();
+
+      // 在自动提交策略允许时，尝试向 Kafka 提交已完成进度
+      await commitOffsetsIfNecessary();
+    }
+  },
+});
+~~~
+
+上面 saveIdempotently(event) 是业务持久化函数，应像前面 PostgreSQL 示例一样具备事件幂等保证。说明三类函数的严格边界：
+
+- **resolveOffset(message.offset)**：告知 KafkaJS 这条 Record 的业务处理已完成；这一步不是每次都立即发送 OffsetCommit 请求。
+- **commitOffsetsIfNecessary()**：遵循 autoCommit 配置的时机/阈值规则提交当前已完成进度；调用该函数不等于每次必然向 Broker 提交。
+- **heartbeat()**：维持 Consumer Group 成员资格，不表示消息已经完成，也不进行 Offset Commit。
+
+设置 eachBatchAutoResolve:false 的原因，是不希望回调仅仅“正常返回”就把整个批次的最后 Offset 自动视为已处理。复杂批次尤其要注意：**不能在 Offset 101 仍未成功处理时，贸然确认 Offset 102 已完成并把可恢复位置推进到 103。** Kafka 对一个 Partition 的消费进度是连续前缀位置，而不是按每条 Record 存一张完成位图。
+
+这段批次代码是说明 API 机制，不是说必须使用 eachBatch 才能保证可靠性。逐条业务处理优先理解 eachMessage，确实需要批处理成本优化、明确批次进度控制时再引入 eachBatch。
+
+### 【分区内消费有序，不意味着所有业务处理都自动有序完成】
+
+KafkaJS 默认 eachMessage 在单个 Partition 内逐条等待执行；配置 partitionsConsumedConcurrently 可以使**不同 Partition** 的处理回调并行：
+
+~~~javascript
+await consumer.run({
+  partitionsConsumedConcurrently: 3,
+  eachMessage: async ({ partition, message }) => {
+    await saveIdempotently(JSON.parse(message.value.toString()));
+  },
+});
+~~~
+
+对于同一文档以 documentId 为 Key 的事件，在 Partition 映射稳定时可按 Offset 顺序进入同一 Partition。如果应用自己在回调内部执行不被 await 的 Promise、交给外部线程池或异步作业，则会绕过 KafkaJS 这一顺序完成边界，后续消息的副作用可能先于前一条发生。
+
+此外，Consumer Group 中增加 Consumer 数量不会拆分某个单一 Partition 内的原始消费归属；常规 Consumer Group 的有效分区并行度受所订阅的 Partition 数量约束。高吞吐或严重倾斜时需要从 Key 分布、分区数量、处理资源和是否允许同一 Key 并行这几个维度一起分析。
+
+### 【运行演示与必须分清的状态】
+
+~~~text
+第一步  建立 Topic（3 个 Partition）
+第二步  准备 PostgreSQL processed_events 表
+第三步  运行 node consumer-auto.mjs
+第四步  运行 node producer.mjs
+        └─ 事件按 Key 选择 Partition 并写入 Kafka
+第五步  观察 Consumer 按 Topic / Partition / Offset 处理
+第六步  停止 consumer-auto，改为 node consumer-manual.mjs
+        └─ 新 Group 根据它自己的进度读取相同 Topic
+第七步  再次运行 producer，并观察业务唯一约束如何去重
+~~~
+
+运行这两个消费者时建议分别测试，不应把另一个 Group 的进度与当前 Group 的提交结果混为一谈。fromBeginning:true 只在该组对应分区**没有可用 committed offset**时控制从最早可用记录开始；**不会在每次重启后强制清零消费位点**。若要重放历史，需要明确规划新 Group、位点重置或 seek，并在消息仍被保留的前提下进行。
+
+| 观察到的事实 | 可以得出什么结论 | 不能直接得出什么结论 |
+| --- | --- | --- |
+| producer.send 返回成功 | Broker 达到了指定 acks 确认条件 | Consumer 已保存业务结果 |
+| Consumer 打印 Offset 102 | Record 已交给 Consumer 处理 | 该 Record 业务已经成功 |
+| PostgreSQL 中存在 evt-1001-2 | 业务结果至少一次成功持久化 | Kafka 已提交对应的 103 |
+| committed offset=103 | 该 Group 正常恢复时从 103 开始 | Offset 102 已从 Topic 删除 |
+| Consumer A 正常发送心跳 | Group 成员资格可被维持 | PostgreSQL 业务一直在正常推进 |
+
+**最终面试回答：**
+
+> Kafka 的 Producer 将 Topic、Key、Value 交给分区器；Topic 的消息最终存储在某个 Partition 中，由 Broker 分配 Partition 内的 Offset。Consumer Group 把分区分配给 Consumer，Consumer 读取数据并执行业务处理，最后按该组、Topic 和 Partition 提交恢复位置。KafkaJS 默认 eachMessage 便于逐条处理，autoCommit 管理已完成进度的提交；需要精确控制时，可以关闭 autoCommit，在 PostgreSQL 成功提交后调用 consumer.commitOffsets(当前 Offset + 1)。
+>
+> 核心可靠性边界不是采用自动还是手动提交，而是 Producer 发送确认、Consumer 业务持久化、Offset Commit 属于不同状态：先确认可能漏处理，后确认可能重复处理。因此通常选择业务成功后提交 Offset，并通过业务事件 ID 的唯一约束或幂等键防止重复效果。若批量消费，还需要正确区分 resolveOffset 的本地完成标记与真正的 Offset Commit，避免越过尚未完成的消息。
 
 ## 8. 下一讲追问：Kafka 的重试、死信与 Producer 投递可靠性如何设计
 
