@@ -1966,7 +1966,7 @@ V8 一方面将 JavaScript 源码转换为可执行形式并根据反馈优化�
 4. **把通用机制映射到具体中间件。** BullMQ 侧重逐 Job 状态、锁、续租、优先级、延迟和重试；Kafka 侧重 Topic/Partition 追加日志、Consumer Group 分区归属以及 Committed Offset。失联后 Kafka 通过心跳超时与 Rebalance 移交分区，而旧 Consumer 已启动的外部业务并不会被自动停止。
 5. **最后回到 KafkaJS 的真实执行与边界。** Producer 按 Key 选择 Partition；eachMessage 默认同分区顺序 await，partitionsConsumedConcurrently 支持不同分区并发；eachBatch 可以自行安排批次逻辑，但 resolveOffset 不等于已提交到 Broker。同分区自行并发必须以已可靠完成的连续前缀推进 Offset，不能跳过尚未完成的消息。
 
-以上知识在一个完整问答文档中按七章已解答主题、一个待展开章节及参考资料组织。每一道已完成问题均提供**提问、完整机制与案例作为回答要点，以及可直接用于面试的标准回答**；保留 SQL、Lua、TypeScript/KafkaJS 示例和故障时间线，不将它们缩成关键词列表。
+以上知识在一个完整问答文档中按八章共 94 道已解答主问题及参考资料组织。新增第六章分区自动分配、手动指定和自动故障接管问题；第八章补齐 Kafka 原地重试、Retry Topic、分级延迟、BullMQ 调度、死信、生产者超时和故障注入的完整回答。每一道已完成问题均提供**提问、完整机制与案例作为回答要点，以及可直接用于面试的标准回答**；保留 SQL、Lua、TypeScript/KafkaJS 示例和故障时间线，不将它们缩成关键词列表。
 
 ### 【完整回答】
 
@@ -1976,5 +1976,5 @@ V8 一方面将 JavaScript 源码转换为可执行形式并根据反馈优化�
 
 ### 【继续展开】
 
-- **追问：Kafka Consumer 正常存活，但某个 Offset 的业务长期失败，如何在顺序、重试、退避和死信之间选择？** 该问题在完整问答第八章标为待展开。
+- **追问：Kafka Consumer 正常存活，但某个 Offset 的业务长期失败，如何在原分区重试、分级 Retry Topic、DLQ 和外部调度器之间选择？** 对应完整问答第八章 8.1—8.11，结合代码、故障时间线及重复处理窗口展开；具体运行结果仍需按实际客户端版本验证。
 - **追问：生产者发布 Kafka 事件与 PostgreSQL 业务事务存在双写间隙时，怎样通过 Transactional Outbox 完成可追踪交接？** 可进一步阅读 [服务端异步任务与消息处理体系](<./F-服务端异步任务与消息处理体系.md>)。
