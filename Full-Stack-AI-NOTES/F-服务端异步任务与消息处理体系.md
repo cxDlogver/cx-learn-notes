@@ -1098,6 +1098,61 @@ Partition Load Balance
 
 Kafka 官方把 Consumer Group 作为一个逻辑 Subscriber：同 Group 内实例分摊 Partition，不同 Group 可以各自订阅同一 Topic。[[11]](https://kafka.apache.org/documentation/)
 
+#### <u>Consumer 订阅 Topic 后并不是随机选择 Partition</u>
+
+**【提问】** Consumer 订阅一个 Topic 后，具体消费哪个 Partition？是 Kafka 随机分配的吗？能否自行指定？
+
+先假设：
+
+~~~text
+orders Topic
+├── Partition 0
+├── Partition 1
+├── Partition 2
+└── Partition 3
+~~~
+
+KafkaJS 普通 Consumer 订阅的是 Topic，并加入一个 Consumer Group：
+
+~~~js
+const consumer = kafka.consumer({ groupId: 'order-main-group' });
+
+await consumer.connect();
+await consumer.subscribe({ topics: ['orders'] });
+
+await consumer.run({
+  eachMessage: async ({ partition, message }) => {
+    console.log('Partition:', partition, 'Offset:', message.offset);
+  }
+});
+~~~
+
+- 如果该 Group 只有一个 Consumer，通常由它负责四个 Partition。
+- 如果该 Group 有两个 Consumer，会根据分配策略发生 Rebalance；例如 A 负责 0、2，B 负责 1、3。**这只是一个示意结果，不是固定或随机分配的保证。**
+- 如果有五个 Consumer、只有四个 Partition，传统独占分区消费模型下最多四个 Consumer 获得实际分区，至少一个空闲。
+- **同一 Consumer Group 中，同一个 Partition 同一时刻通常只分配给一个 Consumer 成员**；一个 Consumer 可以同时负责多个 Partition。
+- KafkaJS 常规用法由 Consumer Group 和配置的 Partition Assigner 分配；不同 Kafka 版本和 Consumer Group 协议中，分配计算可能位于客户端或 Broker，不能说始终都是同一个主体负责。
+- 新 Consumer 加入、成员离开或故障时，会触发重新分配，分配结果可能改变。
+
+通过 KafkaJS 查看当前分配结果：
+
+~~~js
+consumer.on(consumer.events.GROUP_JOIN, event => {
+  console.log('当前分配:', event.payload.memberAssignment);
+});
+~~~
+
+**是否能自行选择？** Java Kafka Client 支持 `assign()` 显式指定 Partition（不参加该类订阅的动态分区分配）；KafkaJS 常规 `subscribe()` 不提供与 Java `assign()` 完全等价的直接公开调用，但可以通过自定义 `partitionAssigners` 制定分配策略。注意：
+
+~~~js
+// 错误理解：这只是读取后跳过处理，不能改变分区归属
+if (partition !== 1) return;
+~~~
+
+这种代码不是「只订阅 Partition 1」；若回调正常完成，其他消息还可能被认定为已处理，存在业务遗漏风险。`seek({ topic, partition, offset })` 用于定位读取位置，也不是修改分区所有权。
+
+**【本节结论】** 普通订阅由 Group 分配策略决定 Partition；分区数限制同一 Group 的分区级并行能力，但不意味着单个 Consumer 只能执行业务任务一个。
+
 #### <u>3. Offset Commit 把“处理状态”从 Event 转移到 Consumer Group</u>
 
 传统 Queue 更关心：
@@ -1502,6 +1557,31 @@ Processor 抛错     → 根据 attempts/backoff 重试或进入 failed
 
 Job ID 的队列内去重通常依赖相应 Job 仍被保留，不等同于稳定业务操作的永久幂等键。官方资料：[BullMQ Prioritized](https://docs.bullmq.io/guide/jobs/prioritized)、[Delayed](https://docs.bullmq.io/guide/jobs/delayed)、[Stalled Jobs](https://docs.bullmq.io/guide/workers/stalled-jobs)。完整存储结构、出队优先级与 Lua 调用顺序见[面试问答第四章：BullMQ 调度与可靠执行](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
 
+### 【BullMQ Delayed Job 不是“每个任务启动一个 Node.js 定时器”】
+
+**【提问】** BullMQ 的延迟执行是靠 `setTimeout()`，还是 Redis 监听任务到期？
+
+以常见的 BullMQ Redis 后端为讨论范围。应用添加两个 Job：
+
+~~~js
+await queue.add('retry-order', { orderId: 'B' }, { delay: 30_000 });
+await queue.add('retry-order', { orderId: 'D' }, { delay: 5_000 });
+~~~
+
+BullMQ 会为 Job 保存内容，并使用 Redis Sorted Set（ZSET）的有序 Score 组织延迟任务到期顺序。可以将其理解为：
+
+~~~text
+Redis 中延迟任务索引（逻辑示意）
+到期 10:00:05 → Job D
+到期 10:00:30 → Job B
+~~~
+
+**ZSET 自己不会定时调用业务函数，也不是 Redis 检测到成员“过期”后自动发布一条任务事件。** BullMQ 的 Worker/内部调度过程利用已记录的下一到期时间，采用等待与唤醒机制，在合适时刻调用原子状态迁移逻辑，把到期 Job 从 delayed 变为具备领取资格的 waiting 等状态，然后 Worker 执行 Processor。
+
+在 BullMQ 的 Redis 实现中，具体唤醒、Marker 与 Lua 实现细节随主版本变化；v5 后的 Marker/Redis 阻塞唤醒机制与旧版独立 QueueScheduler 不能简单混同。这里保留稳定抽象：**持久化到期索引 → 调度器等待/唤醒 → 原子推进到可领取状态 → Worker 执行**，不是给所有 Job 各自保存一个长期运行的进程内计时器。
+
+重要结果：`delay: 30000` 表示约 30 秒后**具备执行资格**，而非精确到第 30 秒完成；如果 Worker 繁忙，实际执行会更晚。Worker 崩溃后，任务仍可依据共享存储状态恢复，但依赖 Redis 实际持久化及部署条件。
+
 ### 【Redis 内的队列任务是共享状态，是否能重启恢复取决于 Persistence 与存储部署】
 
 API Process、Worker Process 和 Redis Server 是不同的运行实体。API 或 Worker 停止，不会自动抹除已经写进独立 Redis Server 的 Job；Redis 自身断电、磁盘卷丢失或 Key 被淘汰时，则是另一类问题。
@@ -1644,6 +1724,221 @@ A 与 B 可能同时尝试向外部数据库写入
 **Heartbeat 不是逐消息 Job Lease。** Kafka 判定的是组成员是否有效，分配单位是 Partition；BullMQ 的 Lease/Lock 以单项 Job 为边界。Kafka Java Consumer 的 max.poll.interval.ms 还限制两次 poll 之间的最长间隔，它不能被直接当作 KafkaJS 的相同配置；采用不同 Consumer Rebalance 协议时 Session Timeout 和心跳参数的归属也可能不同。[Kafka Consumer Configs](https://kafka.apache.org/42/configuration/consumer-configs/)。
 
 恢复正确性仍靠应用：失去分区后停止启动新工作，尽可能取消可取消请求，并以稳定 eventId/operationId 保护重复业务效果；严格写入资格还应让下游原子校验当前业务版本或 Fencing Token。见[面试问答第六章：失联 Consumer 恢复后旧业务是否仍有效](./QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)。
+
+### 【Recovery 恢复的是消费责任和读取位置，而不是执行现场】
+
+**【提问】** Kafka 消费者发生故障后提到的恢复机制（Recovery Mechanism）到底指什么？
+
+消费恢复是：消费者因为进程退出、失去组成员资格或重新分配而无法继续原有消费时，存活或新加入的 Consumer 重新取得 Partition，并根据所属 Consumer Group 的有效已提交 Offset 恢复读取。
+
+它与业务重试不同：
+
+| 概念 | 处理的问题 | 示例 |
+| --- | --- | --- |
+| Retry（业务重试） | 当前业务操作失败后是否再次执行 | `processOrder(B)` 临时数据库连接失败，在当前回调内有限次重试 |
+| Recovery（消费恢复） | 原消费者不能继续时，谁负责 Partition、从哪里继续读 | Consumer A 宕机，B 自动接管 Partition 0，从已提交位置重新 Fetch |
+| Replay（业务重放） | 已保留消息需要重新投入业务处理 | 修复缺失字段的程序后，排查并重新处理 DLQ 记录 |
+
+假设：
+
+~~~text
+orders / Partition 0
+
+Offset 100：订单 A（已处理成功）
+Offset 101：订单 B（处理中）
+Offset 102：订单 C（未处理）
+
+order-group 的已提交 Offset = 101
+~~~
+
+这里 **Committed Offset = 101 表示下一次恢复应从 Offset 101 开始读取**，并非刚刚完成的消息编号。A 处理 B 时崩溃，若 Offset 102 从未成功提交，后续接管者可从 101 重新处理 B。
+
+Kafka 恢复的并不是函数执行到第几行：
+
+~~~js
+await chargePayment(order); // 可能已成功产生业务副作用
+await saveReceipt(order);   // 在这里崩溃
+~~~
+
+Partition 被接管后，不会自动从 `saveReceipt` 那一行继续；Consumer 仍需要重新读取消息并执行约定的业务处理逻辑。对支付/写库等副作用，应借助业务幂等、状态检查、必要的 Checkpoint 或补偿，防止重复处理。
+
+### 【普通 Consumer Group 会自动做 Partition 故障接管】
+
+假设 `orders` 共三个 Partition，当前只有两个动态订阅的 Consumer，且 `groupId` 均为 `order-group`：
+
+~~~text
+故障前的一个可能分配结果
+
+orders
+  Partition 0 ─┐
+  Partition 1 ─┴──> Consumer A
+  Partition 2 ─────> Consumer B
+
+Consumer A 和 B 分别向 Kafka 维持 Group Heartbeat
+~~~
+
+**当 Consumer A 进程直接宕机：**
+
+~~~text
+Consumer A 进程退出
+      ↓
+不再维持 Heartbeat
+      ↓
+Group Coordinator 在相应会话超时后
+认为 A 不再是有效组成员
+      ↓
+Consumer Group 触发 Rebalance
+      ↓
+根据组内有效成员与分区分配策略重算归属
+      ↓
+Consumer B 获得原属于 A 的 Partition 0、1
+      ↓
+B 根据 order-group 在这些 Partition 的
+有效已提交 Offset 恢复读取
+~~~
+
+这个过程由 Kafka Consumer Group 协议及 Kafka 客户端协调。**业务代码不需要写「发现 A 死了 → 命令 B 接管 A 的 Partition」**。上图仅为示意分配，不保证具体编号在所有策略下相同。
+
+需要注意：
+- **Heartbeat/成员资格**：用于判断该 Consumer 是否仍是 Group 的有效成员；进程直接崩溃通常需等待故障检测超时，正常优雅退出可主动离组。
+- **Group Coordinator**：维护 Group 状态，协调成员加入、离开和重新分配。
+- **Partition Assignor**：按照 Group 使用的分配策略给成员分配 Topic/Partition，而不是每次随机选一个接管者。
+- **协议版本区别**：经典 Consumer Group 协议中可由组内选出的 Leader Consumer 计算分配，较新的 Consumer Group 协议也可由 Broker 端 Assignor 计算。两者均有自动重新分配能力，不能把一种协议的分配细节说成唯一实现。
+- **不是所有业务报错都触发 Rebalance**：`processOrder()` 抛业务异常，但 Consumer 仍维持成员资格时，不等于出现成员故障或需要马上交接分区。
+- **不是立即无感切换**：故障检测、Rebalance 和业务重新读取均需要时间；重新分配可能带来短暂停顿或重复执行。
+- **Kafka 不会代替进程管理器重新启动 Node.js 进程**：如果整个 Consumer Group 没有活跃实例，Topic 的日志可以保留，但无人执行；需容器编排、服务进程管理等机制启动或重启 Consumer，再加入 Group。
+
+### 【两个 KafkaJS 进程使用相同 groupId 即可验证分区自动切换】
+
+创建 `consumer.mjs`，两份进程使用同一代码但不同 `INSTANCE` 环境变量以区分日志：
+
+~~~js
+import { Kafka } from 'kafkajs';
+
+const instance = process.env.INSTANCE || 'A';
+const kafka = new Kafka({
+  clientId: `orders-demo-${instance}`,
+  brokers: ['localhost:9092'],
+});
+
+const consumer = kafka.consumer({
+  groupId: 'order-group',
+});
+
+consumer.on(consumer.events.GROUP_JOIN, event => {
+  console.log(
+    instance,
+    'Group 重新加入/分配：',
+    event.payload.memberAssignment
+  );
+});
+
+await consumer.connect();
+await consumer.subscribe({
+  topics: ['orders'],
+});
+
+await consumer.run({
+  autoCommit: false,
+  eachMessage: async ({ topic, partition, message }) => {
+    const order = JSON.parse(message.value.toString());
+
+    console.log(
+      instance,
+      'Partition', partition,
+      'Offset', message.offset,
+      'Order', order.id
+    );
+
+    await processOrder(order);
+
+    await consumer.commitOffsets([{
+      topic,
+      partition,
+      offset: (BigInt(message.offset) + 1n).toString(),
+    }]);
+  },
+});
+~~~
+
+启动两个进程（须先确保 Topic 已创建、Kafka 可连接，并提供自己的 `processOrder` 实现）：
+
+~~~bash
+INSTANCE=A node consumer.mjs
+INSTANCE=B node consumer.mjs
+~~~
+
+实验步骤：
+
+1. 两个进程使用**相同 `groupId`**，分别观察 `GROUP_JOIN` 事件上报的实际 `memberAssignment`。
+2. 确保 Topic 至少有两个 Partition，并让 A、B 都拿到实际分区；具体分配取决于策略。
+3. 模拟 A 进程崩溃（例如强制终止），观察 B 随后的组加入/分区分配事件及日志。
+4. Kafka 会在有效成员条件满足后把无人持有的 Partition 重新分配给存活成员。可用新 Group 或重建演示数据验证恢复 Offset，避免旧提交位置影响测试。
+5. 进程 A 恢复并重新加入 Group 时，可能再次 Rebalance；不保证 A 恢复后立即拿回故障前的全部 Partition。
+
+示例只用于解释分区接管链路：完整实验还需要考察心跳会话超时、Consumer 运行故障与 Rebalance 期间可能的重复写库等情况。生产系统还需应用级异常处理和安全退出流程。
+
+### 【Committed Offset 与当前 Consumer Position 不等价】
+
+**【追问】** Consumer B 接管后为什么能重新读取 B？是不是 Kafka Broker 自动向它「重发」B？
+
+以 `orders / Partition 0` 为例：
+
+~~~text
+Consumer A 在内存中的当前读取位置可能已前进到 102
+但 Consumer Group 持久提交的恢复位置仍是 101
+
+A 崩溃后，内存中的当前位置不再是恢复依据
+            ↓
+B 接管 Partition 0
+            ↓
+以 order-group 持久确认的 Committed Offset=101 初始化读取位置
+            ↓
+B 主动 Fetch Kafka 日志 Offset 101（订单 B）
+~~~
+
+Kafka 的常规消费模式是 Consumer **主动 Fetch**，不是 Broker 看到业务异常就立即把某条 Record 主动推送给其他 Consumer。
+
+| 概念 | 表达内容 | 是否自动代表业务成功 |
+| --- | --- | --- |
+| Consumer Position | 当前实例下一步准备读取的位置/本地读取进度 | 否 |
+| Committed Offset | 该 Consumer Group 持久化的恢复检查点 | 否，仅代表应用确认到这个消费位置 |
+| Business State | 数据库、外部 API、长任务 Step 等实际结果 | 由业务执行与持久化保证 |
+
+不能简单得出「只要没有提交 Offset，当前运行中的 Consumer 会立刻重新消费这一条」。KafkaJS 的每条消息回调失败之后是否停下并由运行器重新启动、何时恢复，取决于客户端错误处理与生命周期；`commitOffsets()` 设置的是 Group 已提交位置，`seek()` 则用于显式修改读取位置，两者职责不同。
+
+**业务副作用已经成功、Offset 尚未提交的 ACK Gap：**
+
+~~~text
+Consumer A 执行订单 B 的数据库写入 → 成功
+      ↓
+尚未提交 Offset 102
+      ↓
+A 崩溃 / Partition 交接
+      ↓
+Consumer B 从 Offset 101 重读 B
+      ↓
+若业务没有幂等保护 → B 可能重复写库或重复扣款
+~~~
+
+因此分区自动接管提供的是**读取恢复**，不是端到端 Exactly-once 业务执行保证。
+
+### 【哪些由 Kafka 自动完成，哪些仍需要应用处理】
+
+| 事项 | 谁主要负责 |
+| --- | --- |
+| 同组成员发现与故障判断 | Kafka Consumer Group 协议（协调器与客户端心跳） |
+| Partition 重新分配给仍有效的 Consumer | Kafka Group Rebalance / Assignor |
+| 新 Consumer 从持久化检查点读取 | Kafka Offset 机制和客户端 Fetch |
+| 崩溃后重启 Node.js Consumer 进程 | 进程管理/容器编排等部署体系 |
+| 当前业务失败后自动重试几次 | 应用代码或所选消费框架 |
+| 长任务中途从具体业务 Step 续跑 | 业务 Checkpoint/Workflow 状态 |
+| 外部副作用幂等、结果未知对账 | 业务数据库与业务处理逻辑 |
+| 重试上限、Retry Topic、DLQ、Replay | 应用或框架的失败治理策略 |
+
+**【标准面试回答】**
+
+Kafka Consumer Group 提供 Partition 自动分配和故障接管能力。普通 Consumer 使用相同的 `groupId` 订阅 Topic 并参与组管理；某个 Consumer 宕机、成员资格失效后，Group Coordinator 协调 Rebalance，按分区分配策略将 Partition 交给其他有效成员。接管者依据 Group 的有效 Committed Offset 重新 Fetch 消息，通常不需要业务代码手动切换消费者。但 Kafka 不负责重新启动业务进程，也不能恢复中断在函数中间的业务执行现场。对于 Offset 未提交导致的重复读取，需要依靠业务幂等和必要的 Checkpoint、重试与死信机制保证实际结果正确。
 
 ### 【Kafka 重读消息只恢复消费边界，长任务需要业务 Checkpoint 续跑】
 
@@ -1971,6 +2266,197 @@ Retry Policy
 
 Google Cloud Tasks 的 RetryConfig 也把 maxAttempts、maxRetryDuration、minBackoff、maxBackoff、maxDoublings 等作为独立配置，说明 Retry 本身就是一套策略，而不是一个固定循环。[[7]](https://cloud.google.com/tasks/docs/reference/rest/v2/RetryConfig)
 
+### 【原地重试不是“把消息重新写回同一个 Partition”】
+
+**【提问】** 除了 Retry Topic，Kafka 能否直接在当前 Partition 重试一条失败消息？重试次数可否提前配置？
+
+可以。但需区分两种不同动作：
+
+1. **同一回调中重新执行**：Consumer 已 Fetch 到 Record，不再向 Kafka 追加消息，只在当前 `eachMessage` 内重新调用业务函数。
+2. **之后重新读取同一 Offset**：因回调失败、进程重启、Rebalance、显式 `seek` 或其他恢复策略，Consumer 之后可能再次 Fetch 同一条 Kafka Record。这不是 Kafka 为业务自动配置“重试三次”。
+
+假设：
+
+~~~text
+orders / Partition 0
+Offset 100：订单 A → 成功，提交下次位置 101
+Offset 101：订单 B → 执行失败
+Offset 102：订单 C → 还不能在严格顺序模型下先完成
+~~~
+
+我们配置 `MAX_ATTEMPTS = 3`，表示“每次进入回调后，最多执行三次业务函数，包含第一次”：
+
+~~~text
+Consumer 读到 orders / Partition 0 / Offset 101
+  ↓
+processOrder(B) 第 1 次 → 503 失败
+  ↓
+await sleep(1000)
+  ↓
+processOrder(B) 第 2 次 → 503 失败
+  ↓
+await sleep(2000)
+  ↓
+processOrder(B) 第 3 次 → 成功
+  ↓
+commitOffsets([{ offset: '102' }])
+  ↓
+Consumer 正常继续处理 Offset 102 的订单 C
+~~~
+
+这三次仍围绕原 Offset 101；Kafka 中没有追加三个 B Record。严格顺序下，C 等待 B 的处理流程结束。`sleep()` 不阻塞 Node.js 整个 Event Loop，但当前 Partition 的 `eachMessage` 回调尚未完成，后续同分区消息无法在该默认串行流程中继续推进。
+
+### 【KafkaJS 原地有限次重试的可读代码】
+
+以下是一个简化、可嵌入 KafkaJS Consumer 的示例。假设 Consumer 已连接并通过 `subscribe({ topics: ['orders'] })` 订阅 Topic；此处关闭自动 Offset 提交，使用显式提交。
+
+~~~js
+import { setTimeout as sleep } from 'node:timers/promises';
+
+const MAX_ATTEMPTS = 3; // 总执行次数，包括第一次
+
+await consumer.run({
+  autoCommit: false,
+
+  eachMessage: async ({
+    topic,
+    partition,
+    message,
+    heartbeat,
+  }) => {
+    const order = JSON.parse(message.value.toString());
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        console.log('订单', order.id, '本轮执行次数', attempt);
+        await processOrder(order);
+
+        // 业务成功：下次应从当前 Offset + 1 开始恢复
+        await consumer.commitOffsets([{
+          topic,
+          partition,
+          offset: (BigInt(message.offset) + 1n).toString(),
+        }]);
+
+        return; // 避免在成功后继续执行重试循环
+      } catch (error) {
+        if (attempt === MAX_ATTEMPTS) {
+          // 本次 eachMessage 进入回调后的次数达到上限
+          // 不提交越过失败记录的 Offset
+          throw error;
+        }
+
+        // 举例：第一次失败等 1 秒、第二次失败等 2 秒
+        await sleep(attempt * 1000);
+        await heartbeat();
+      }
+    }
+  },
+});
+~~~
+
+**教学示例限制：**
+- 为使“处理失败”和“Offset 提交失败”不混淆，生产代码建议把 `processOrder()` 的重试循环与 `commitOffsets()` 分开。上面的简单写法把提交也包含在 `try` 内，若提交本身失败，可能把一次成功的业务处理再次运行；可通过业务幂等保护，但结构上应明确区分。
+- 应只重试可恢复异常，例如暂时网络故障或部分 503；永久性数据错误通常不应跑满所有尝试；扣款等结果未知操作必须先做幂等/对账。
+- 一个很长的 `processOrder()` 调用未必会让出心跳时机，简单在 `sleep` 后心跳不能保证处理期间一直保持分区归属；还要考虑 Consumer Group Rebalance、停止、超时和幂等。
+- 这个版本只演示一轮回调的上限。所有尝试失败后抛错，接下来 KafkaJS 如何停止、重启、再次读取，取决于客户端运行生命周期和外层恢复配置，**不能认为“不提交 Offset”就会立刻自动重新执行同一条消息**。
+
+为避免上述 `try` 范围混淆，实际实现应采用下列关键结构：
+
+~~~js
+let lastError;
+
+for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  try {
+    await processOrder(order);
+    lastError = undefined;
+    break;
+  } catch (error) {
+    lastError = error;
+    if (attempt < MAX_ATTEMPTS) {
+      await sleep(attempt * 1000);
+      await heartbeat();
+    }
+  }
+}
+
+if (lastError) throw lastError;
+
+// 业务成功才单独提交；如果这里提交失败，不会被当前循环误认为
+// “业务执行失败，因此应该立即把 processOrder 再执行一次”
+await consumer.commitOffsets([{
+  topic,
+  partition,
+  offset: (BigInt(message.offset) + 1n).toString(),
+}]);
+~~~
+
+上述片段放在前述 `eachMessage` 内，复用其 `topic`、`partition`、`message`、`heartbeat` 等变量即可。
+
+### 【重试次数有三种不同作用域，不能混为一谈】
+
+**第一类：Kafka 客户端通信请求的重试。**
+
+~~~js
+const kafka = new Kafka({
+  clientId: 'order-service',
+  brokers: ['localhost:9092'],
+  retry: {
+    retries: 3,
+    initialRetryTime: 1000,
+  },
+});
+~~~
+
+KafkaJS 的 `retry` 配置主要用于客户端底层可重试的连接/协议操作，不是“每条订单的 `processOrder()` 最多重试 3 次”。某些具体底层失败还涉及是否可重试、调用方式与 KafkaJS 版本。
+
+**第二类：当前业务回调内的执行次数。**
+
+~~~js
+const MAX_ATTEMPTS = 3;
+for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  // 本轮重复调用 processOrder()
+}
+~~~
+
+这是**应用程序配置**，只控制这一次 `eachMessage` 调用里业务代码最多运行三次。
+
+**第三类：这条业务事件跨重启、跨 Consumer 接管之后的累计重试次数。**
+
+例如：
+
+~~~text
+订单 B / eventId = event-B
+  ↓
+Consumer A 第一轮最多执行 3 次 → 全失败
+  ↓
+未提交超过 B 的 Offset，A 随后停止/进程重启
+  ↓
+Consumer B 后来重新读取同一 Offset
+  ↓
+B 又进入一次最多执行 3 次的回调
+~~~
+
+最终该消息已被尝试六次，而代码的 `MAX_ATTEMPTS` 仍然是 3。**因此回调内局部计数不等于业务事件生命周期全局上限**。要求跨进程累计“最多 3 次”时，应通过持久化的 `eventId + attempts` 状态、可靠的转交链路、任务系统状态或其他持久化计数策略来管理；不能仅仅依靠局部变量。
+
+**第三方框架对比：** Spring Kafka 等框架可以通过错误处理器配置单条 Record 的重试交付尝试及 Backoff；这属于框架提供的功能，不能被解释成所有 Kafka Broker/客户端天然共享相同的业务重试配置。
+
+### 【当前 Partition 原地重试与转到 Retry Topic 各自解决什么问题】
+
+| 维度 | 原 Partition 内重试 | 独立 Retry Topic |
+| --- | --- | --- |
+| 原消息位置 | 反复处理原 Topic/Partition/Offset 的 Record | 新 Topic 追加 Record，获得新的 Partition/Offset |
+| Retry 发生在哪里 | 当前 Consumer 的业务函数或客户端框架 | 单独 Retry Consumer/调度链路 |
+| 运行时执行次数 | 可以用本地循环设置本轮上限 | 由跨 Topic 消息元数据及应用策略控制 |
+| 跨重启总次数 | 本地计数不保留；需另外持久化 | 可以持久化次数，但还需解决重复转交 |
+| 对后续同分区消息 | 严格顺序模型下需要等待失败消息处理结束 | 主 Topic 成功交接后可以继续；业务顺序可能改变 |
+| 适用情况 | 短暂错误、次数少、重视原分区顺序 | 失败可能持续很久、需要非阻塞等待或隔离重试流量 |
+| 可靠性边界 | 成功后提交 Offset，ACK Gap 需要幂等 | 先可靠写 Retry Topic，再提交原 Offset，仍有重复转交窗口 |
+
+**面试标准回答：**
+
+> Kafka 不要求所有失败消息都进入 Retry Topic。普通 Consumer 可以在读取原 Topic 的同一 Partition/Offset 后，在当前业务回调内设置有限次重试，处理成功再提交相应 Offset。这个业务次数通常由应用程序或消费框架实现，不能与 KafkaJS `retry.retries` 等客户端协议重试参数混同。原地重试容易保持分区顺序，但会阻塞同一分区后续消息；超出单次回调的重试上限后，如果没有可靠的终止/死信机制，消息在重启或重新分配之后仍可能再次被读取。因此跨重启的总重试次数必须由持久化任务状态或可靠消息流程管理。
+
 ### 【Exponential Backoff 与 Jitter 防止故障期间形成 Retry Storm】
 
 如果下游已经故障，而大量 Worker 立即重复请求：
@@ -2006,6 +2492,439 @@ Maximum Delay Boundary
 ~~~
 
 AWS Builders' Library 的 Timeouts, retries, and backoff with jitter 也强调 Retry 会放大下游负载，并使用 Backoff 与 Jitter 降低同步重试和过载风险。[[8]](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+
+### 【Retry Topic 与原 Topic 在 Kafka 底层是同一种东西】
+
+**【提问】** 订单 B 从正常 Topic 转交到 Retry Topic 后，是以事件还是任务形式存在？Retry Topic 仍通过 Partition 和 Offset 消费吗？
+
+先观察两条独立日志：
+
+~~~text
+orders（正常 Topic）
+└── Partition 0
+    ├── Offset 0：订单 A → 成功
+    ├── Offset 1：订单 B → 业务失败
+    └── Offset 2：订单 C → 后续继续
+
+orders.retry（重试 Topic）
+└── Partition 0
+    ├── Offset 0：之前的失败订单 X
+    ├── Offset 1：之前的失败订单 Y
+    └── Offset 2：刚写入的订单 B
+~~~
+
+这里为便于举例，**假设 Retry Topic 有一个 Partition，而且已有两个 Record**；因此新写入 B 后获得 Offset 2。实际 Offset 必须以 Kafka Broker 追加时分配的结果为准，并不会继承原 Topic 的 Offset 1。
+
+核心过程不是物理移动原消息，而是：
+
+1. 原 Consumer 在 `orders` 中读取 B（原 Offset 1）。
+2. B 处理失败时，一个 Producer 往 `orders.retry` 追加一条新的 Record，保留原 `eventId`、原 Topic/Partition/Offset 等业务上下文。
+3. 确认重试消息可靠写入后，主 Consumer 允许提交 `orders` 的下一消费位置（Offset 2），从而继续处理 C。
+4. 原 `orders` 的 B 仍留在 Kafka 日志中，直到符合 Topic 保留/清理策略；并未被从原 Topic「挪走」或删除。
+5. Retry Consumer 以自己的 Group 消费 `orders.retry`，同样读取 Partition + Offset，并独立提交它的进度。
+
+Kafka 底层存储的依然是 **Record**。原消息可以在业务上代表「订单产生事件」，转交到重试链路的消息可在业务上代表「订单处理待重试任务」，但事件/任务是**业务语义**，不是 Kafka 原生 Topic 类型的不同。Kafka 不会因 `retry` 后缀而自动理解重试次数、截止时间、任务状态。
+
+### 【KafkaJS 代码演示：转交消息与 Retry Consumer 的独立读取】
+
+**原 Consumer 处理失败时：**
+
+~~~js
+try {
+  await processOrder(order);
+} catch (error) {
+  // 必须等待 Retry Topic 达到约定的发送确认条件
+  await producer.send({
+    topic: 'orders.retry',
+    acks: -1,
+    messages: [{
+      key: message.key,
+      value: message.value,
+      headers: {
+        eventId: Buffer.from(order.eventId),
+        sourceTopic: Buffer.from(topic),
+        sourcePartition: Buffer.from(String(partition)),
+        sourceOffset: Buffer.from(message.offset),
+      },
+    }],
+  });
+}
+
+// 业务成功或失败消息已可靠转交后，才推进原 Group 的 Offset
+await consumer.commitOffsets([{
+  topic,
+  partition,
+  offset: (BigInt(message.offset) + 1n).toString(),
+}]);
+~~~
+
+以上片段需要位于 `autoCommit: false` 的串行处理流程中，并假设 JSON 解析、`eventId` 等参数有效。若 `producer.send()` 抛错，后续提交不得继续执行；代码示例未实现 Kafka 事务与重复去重。
+
+**独立的 Retry Consumer：**
+
+~~~js
+const retryConsumer = kafka.consumer({
+  groupId: 'order-retry-group',
+});
+
+await retryConsumer.connect();
+await retryConsumer.subscribe({
+  topics: ['orders.retry'],
+  fromBeginning: true,
+});
+
+await retryConsumer.run({
+  autoCommit: false,
+  eachMessage: async ({ topic, partition, message }) => {
+    const order = JSON.parse(message.value.toString());
+
+    console.log({
+      orderId: order.id,
+      partition,
+      retryOffset: message.offset,
+    });
+
+    await processOrder(order); // 处理失败会抛错，不能推进进度
+
+    await retryConsumer.commitOffsets([{
+      topic,
+      partition,
+      offset: (BigInt(message.offset) + 1n).toString(),
+    }]);
+  },
+});
+~~~
+
+这说明 Retry Consumer 在机制上和普通 Consumer 一样：Group 加入、分区分配、消息读取、业务执行、提交 Offset，完全不是 BullMQ 式独立 Job 状态队列。
+
+`fromBeginning: true` 仅在相应 Group/Partition 没有有效已提交位点时决定从最早可用消息开始，并不是每次重启都重新读取所有历史。
+
+**重要边界：** `orders` 的 Offset 2、`orders.retry` 的 Offset 3，是不同 Topic/Partition 和 Consumer Group 下的独立消费进度，不互相覆盖。同一 Key 在不同 Topic（分区数量或分区策略不同）不保证落到相同编号的 Partition。
+
+### 【两个故障窗口解释为何不等于“一次执行”】
+
+对订单 B，正常路径是：
+
+~~~text
+orders / Offset 1 处理失败
+    ↓
+orders.retry 写入新 Record 成功
+    ↓
+提交 orders / Committed Offset = 2
+    ↓
+orders 的订单 C 可以继续
+    ↓
+Retry Consumer 后续处理 B
+    ↓
+提交 orders.retry 对应的 Committed Offset
+~~~
+
+**错误顺序：先提交原 Offset，再发送 Retry Topic。**
+
+~~~text
+主 Group 已提交 Offset 2
+    ↓
+进程 Crash
+    ↓
+B 尚未写入 Retry Topic
+    ↓
+恢复时主 Group 可能直接从 Offset 2 开始
+    ↓
+B 失去可靠后续处理机会（遗漏）
+~~~
+
+**推荐的独立操作顺序：先成功写入 Retry Topic，再提交原 Offset。**
+
+~~~text
+B 已写入 Retry Topic
+    ↓
+进程 Crash
+    ↓
+原 Offset 2 还没提交
+    ↓
+重启后 B 可能再次从 orders 被读取
+    ↓
+B 又被发送到 orders.retry（重复转交）
+~~~
+
+第二种安排减少先跳过导致的遗漏，但并不自动实现 Exactly-once。必须保留稳定的业务 `eventId` 并在最终业务副作用处落实幂等；仅仅传递相同 eventId 不能自动去重。在 Kafka 所支持的事务边界内，可以进一步讨论转交消息与原 Group 消费位点的原子提交，但外部数据库/支付调用不因此纳入 Kafka 事务。
+
+### 【Kafka + BullMQ 并非 Kafka 延迟重试的标准组合】
+
+**【提问】** Kafka 失败消息需要延迟 30 秒后重试，必须把 Kafka 与 BullMQ 组合使用吗？这是通用或主流做法吗？
+
+不必。把 Kafka 与 BullMQ 结合是一种可行的工程方案，尤其适合 Node.js 服务已经运行 BullMQ/Redis，或者明确需要任务级延迟、状态、取消与后续重试管理的场景；它不是 Kafka 延迟重试必用的标准搭配，也不应仅因 Kafka 本身没有现成的逐消息延迟消费 API 就默认引入另一套消息基础设施。
+
+先对照三个方案：
+
+| 设计方式 | 谁保存等待中的重试任务 | 谁决定何时执行 | 主要代价与边界 |
+| --- | --- | --- | --- |
+| Kafka 原分区内等待 | Kafka Topic 保留待处理 Record | 当前 Consumer 检查 retryAt 并等待 | 同分区后续消息受阻，长等待占用当前消息处理流程 |
+| Kafka 多级 Retry Topic | 各 Retry Topic 的 Partition Log | 应用层 Retry Consumer/暂停或调度机制 | 需要自行管理延迟、进度、重试次数；分区仍按 Offset 消费 |
+| Kafka + BullMQ | Kafka 保存原事件，Redis 后端保存延迟 Job | BullMQ Worker 及其内部调度机制 | 增加 Kafka→Redis 跨系统交接和 Redis 可靠性要求 |
+| Kafka + PostgreSQL 任务表 | Kafka 保存事件，PG 保存 due_at/status | 定期领取到期任务的 Worker | 需要自建时间索引、领取、状态和容量治理 |
+
+**选型原则：** 业务已依赖 Kafka、重试等级有限并能接受相应分区的等待时，优先评估 Kafka-only；已经采用 BullMQ 或需要丰富的 Job 调度能力时再考虑组合；如果业务数据和任务状态需要同库事务协调，也可以使用数据库 Job Store。
+
+### 【Kafka + BullMQ 的执行交接具体发生什么】
+
+假设 10:00:00 处理订单 B 失败，应在 10:00:30 后重试；同一时刻订单 D 失败，希望 10:00:05 后重试：
+
+~~~text
+Kafka orders.retry
+  ├─ Record B：retryAt=10:00:30
+  └─ Record D：retryAt=10:00:05
+               ↓
+Retry Consumer 依次读取 Kafka Record
+               ↓
+立即写入 Redis 中的 BullMQ Delayed Job，不在 eachMessage 等待到期
+               ↓
+成功交接后提交 Kafka Retry Topic 的 Offset
+               ↓
+Redis/BullMQ
+  ├─ Job B：10:00:30 才具备执行资格
+  └─ Job D：10:00:05 已具备执行资格
+               ↓
+BullMQ Worker 在各 Job 到期并可被领取时执行业务
+~~~
+
+示例（KafkaJS 回调内，`retryQueue` 为已连接的 BullMQ Queue，消息包含有效的 `eventId`、`retryAt`）：
+
+~~~js
+const order = JSON.parse(message.value.toString());
+const retryAt = Number(message.headers.retryAt.toString());
+if (!Number.isFinite(retryAt)) throw new Error('retryAt 无效');
+
+const delay = Math.max(0, retryAt - Date.now());
+
+await retryQueue.add(
+  'retry-order',
+  { order },
+  {
+    delay,
+    jobId: `retry-${order.eventId}`,
+    removeOnComplete: false,
+    removeOnFail: false,
+  }
+);
+
+// 只确认“已经交给 BullMQ”，不是订单处理成功
+await retryConsumer.commitOffsets([{
+  topic,
+  partition,
+  offset: (BigInt(message.offset) + 1n).toString(),
+}]);
+~~~
+
+上述 `jobId` 示例假设 `eventId` 格式适合 BullMQ 的 ID 约束（不得含有不允许的分隔符等），同一业务事件只应有一个该 ID 的重试 Job。稳定 `jobId` 有助于抑制 Kafka 重投导致的重复入队，但**仅在对应 ID 的 Job 仍被 BullMQ 保留时才有去重效果**；成功 Job 被删除后不能依赖该 ID 永久保证业务幂等。上述代码也不是 Kafka 与 Redis 之间的分布式事务。
+
+**故障时序：**
+
+1. `retryQueue.add()` 失败：不得提交 Kafka Offset，消息之后可以再次消费。
+2. `retryQueue.add()` 成功、Kafka Offset 尚未提交时崩溃：Kafka 可能再次交付消息，BullMQ 可能遇到相同 `jobId`；仍要结合业务级幂等控制。
+3. Kafka Offset 已提交、Redis 后续因持久化/部署故障丢任务：Kafka 的进度不会自动倒退，需要 Redis 持久化、状态核对或补偿策略。
+4. BullMQ 的 Worker 处理失败：下一次如何重试由 BullMQ Job 策略或上层业务决定，而不是自动让 Kafka Retry Topic 回退 Offset。
+
+### 【先明确 Topic 名称和 Header 都不会让 Broker 自动延迟】
+
+**【提问】** 不引入 BullMQ、Redis，Kafka 自己怎么实现 5 秒、30 秒的延迟重试？
+
+可采用应用层分级 Retry Topic。示例约定：
+- 首次消费 `orders` 失败，转到 `orders.retry.5s`，附上计划重试时间；
+- 第一次重试失败，转到 `orders.retry.30s`；
+- 第二次重试仍失败，转到 `orders.dlq`，停止自动重试。
+
+~~~text
+orders → Main Consumer
+           ├─ 成功：提交 orders 位点
+           └─ 失败：写 orders.retry.5s，确认后提交 orders 位点
+
+orders.retry.5s → Retry Consumer
+                     ├─ 到期并处理成功：提交当前 Retry Offset
+                     └─ 失败：写 orders.retry.30s，确认后提交当前 Retry Offset
+
+orders.retry.30s → Retry Consumer
+                      ├─ 成功：提交当前 Retry Offset
+                      └─ 失败：写 orders.dlq，确认后提交当前 Retry Offset
+~~~
+
+三条重试/死信 Topic **都是普通 Kafka Topic**，分区仍有各自 Offset。`.5s`、`.30s` 是业务上的时间档位名称；`retryAt` Header 只是供 Consumer 解释的字段，不是 Kafka Broker 的原生定时投递指令。
+
+### 【KafkaJS 示例：写入第一档 Retry Topic】
+
+以下代码是原 Consumer `eachMessage` 的关键部分，处于 `autoCommit: false`、串行消费环境；`producer` 已连接、Topic 已创建。为便于理解暂不包含 Kafka 事务。
+
+~~~js
+const order = JSON.parse(message.value.toString());
+
+try {
+  await processOrder(order);
+} catch (error) {
+  await producer.send({
+    topic: 'orders.retry.5s',
+    acks: -1,
+    messages: [{
+      key: message.key,
+      value: message.value,
+      headers: {
+        eventId: String(order.eventId),
+        retryAt: String(Date.now() + 5_000),
+        attempts: '1',
+      },
+    }],
+  });
+}
+
+// 这里的“完成”可以是业务成功，或已可靠转交下一个 Topic
+await consumer.commitOffsets([{
+  topic,
+  partition,
+  offset: (BigInt(message.offset) + 1n).toString(),
+}]);
+~~~
+
+在这段逻辑中：
+- 先 `await processOrder(order)`；抛异常才走重试链路；
+- 先 `await producer.send(...)`；写 Retry Topic 失败则抛异常，不能推进原 Offset；
+- 最后 `commitOffsets(offset + 1)`：确认的是**当前 Topic 中的这条消息已经被业务处理或交接**，不是下一个 Topic 的业务一定成功；
+- 原 Topic 的 Record 不会因为“转交”被物理挪走或删除；
+- `acks: -1` 的可靠性仍受 Broker 副本和 ISR 部署配置影响，不能脱离部署条件说“绝对不会丢”。
+
+### 【Retry Consumer 根据 retryAt 等待，再执行或转交下一级】
+
+教学示例假设 Retry Consumer 订阅两个 Retry Topic，每个 Topic 只有一个 Partition，且客户端实际把两个 Partition 都分配给该 Consumer；提前连接 `producer` 和 `retryConsumer`。实际部署可能有多个 Consumer，需要观察 Group Assignment。
+
+~~~js
+import { setTimeout as sleep } from 'node:timers/promises';
+
+await retryConsumer.subscribe({
+  topics: ['orders.retry.5s', 'orders.retry.30s'],
+});
+
+await retryConsumer.run({
+  autoCommit: false,
+  partitionsConsumedConcurrently: 2,
+
+  eachMessage: async ({ topic, partition, message, heartbeat }) => {
+    const order = JSON.parse(message.value.toString());
+    const retryAt = Number(message.headers?.retryAt?.toString());
+
+    if (!Number.isFinite(retryAt)) {
+      throw new Error('retryAt 无效，需要记录为无效消息并按策略处理');
+    }
+
+    // 当前 Partition 会等待：示例用短间隔调用 heartbeat
+    while (Date.now() < retryAt) {
+      const remaining = retryAt - Date.now();
+      await sleep(Math.min(remaining, 1000));
+      await heartbeat();
+    }
+
+    try {
+      await processOrder(order);
+    } catch (error) {
+      const finalAttempt = topic === 'orders.retry.30s';
+      const nextTopic = finalAttempt
+        ? 'orders.dlq'
+        : 'orders.retry.30s';
+
+      await producer.send({
+        topic: nextTopic,
+        acks: -1,
+        messages: [{
+          key: message.key,
+          value: message.value,
+          headers: {
+            eventId: String(order.eventId),
+            // 首次写入 5s Topic 时 attempts=1；升级到 30s 档后为 2
+            attempts: '2',
+            sourceTopic: topic,
+            ...(finalAttempt
+              ? { errorType: error.name || 'Error' }
+              : { retryAt: String(Date.now() + 30_000) }),
+          },
+        }],
+      });
+    }
+
+    // 本档业务已成功，或者可靠交接到下一档/DLQ
+    await retryConsumer.commitOffsets([{
+      topic, partition,
+      offset: (BigInt(message.offset) + 1n).toString(),
+    }]);
+  },
+});
+~~~
+
+代码为**机制演示**，不是完整生产实现：示例约定 `attempts` 表示已经进入第几次重试，因此 5s 档是 1，30s 档是 2，DLQ 保留 2。正式实现应统一“首次执行/重试次数”的计数口径，DLQ 还需记录原始来源、错误信息、故障时间及可重放信息；心跳周期必须兼容会话和处理时限，消费组 Rebalance/关闭需要正确中断旧回调；所有转交和进度仍有崩溃窗口；消费者必须具备业务幂等。
+
+**执行示例：**
+
+~~~text
+10:00:00   B 首次失败，写入 orders.retry.5s，retryAt=10:00:05
+10:00:01   Retry Consumer 已经读到 B，但 B 尚未到期
+10:00:05   Retry Consumer 执行 B，仍失败
+10:00:05   B 写入 orders.retry.30s，retryAt=10:00:35
+10:00:35   B 再次处理；失败则转交 orders.dlq
+~~~
+
+这条时间线是理想化演示，真实开始时间可以更晚。
+
+### 【sleep 不会卡住整个 Node.js，但会阻塞同一 Partition 后面的 eachMessage】
+
+KafkaJS 对同一 Partition 的 `eachMessage` 通常按顺序等待每个回调完成。假设某 Partition 中有：
+
+~~~text
+Offset 0：订单 B，retryAt=10:00:30
+Offset 1：订单 D，retryAt=10:00:10
+~~~
+
+如果当前时间 10:00:00，Consumer 先读取 B 并 `await sleep()` 等 30 秒：同一 Partition 中的 D 即使 10:00:10 已满足到期条件，也无法越过前面的 B 先由这个串行消费循环执行。
+
+**必须区分四个层次：**
+1. `await sleep()` 不阻塞 Node.js 全局 Event Loop；其他 JS I/O 可以继续。
+2. 但当前 `eachMessage` Promise 未完成，同一 Partition 后续消息不能在默认顺序回调中推进。
+3. `heartbeat()` 维持成员活跃，不负责调度后一条消息越过前一条。
+4. `partitionsConsumedConcurrently: 2` 允许不同 Partition 并发，不会把同一 Partition 变成乱序调度队列。
+
+**补充一个重要边界：** 如果每个固定档位 Topic 的消息都严格在发送时设为「当前时间 + 该档固定延迟」，并按写入时间入同一 Partition，那么后一条消息通常也不会比前一条更早到期，上述「后一条 D 明显更早到期」更适合说明混合任意 deadline、消息补发或重新调度后的情况。固定档位仍然存在串行处理和长业务调用导致的队头阻塞，只是延迟日期逆序的问题会减少。
+
+~~~text
+5 秒档 Partition 0：10:00:00 到来的 B → 最早 10:00:05
+30 秒档 Partition 0：10:00:01 到来的 D → 最早 10:00:31
+~~~
+
+如果 KafkaJS Consumer 配置跨分区并发且这两条分区都分配给该实例，5 秒档和 30 秒档可以分别等待/推进；增加 Retry Topic **隔离不同档位**，却不表示消除了所有同分区阻塞。
+
+### 【Kafka-only 分级重试与 BullMQ 延迟调度的实际区别】
+
+| 对比 | 分级 Kafka Retry Topic | Kafka → BullMQ Delayed Job |
+| --- | --- | --- |
+| 等待位置 | 各 Retry Consumer 的分区处理流程或其调度控制 | Redis 中保存的 Job 到期索引 |
+| 进度表示 | 每个 Topic/Partition 的 Committed Offset | Job 状态和完成结果 |
+| 5 秒档与 30 秒档 | 通过不同 Topic/Partition 隔离，具体等待由应用实现 | 统一调度器按到期时间排序 |
+| 同一分区的等待 | 简单 `sleep` 会阻塞后续回调 | Kafka Consumer 完成交接后不等待任务到期 |
+| 中间件成本 | 不必额外引入 Redis | 需要 Redis、BullMQ 和跨系统可靠交接 |
+| 幂等和重复 | 仍需业务幂等 | 仍需业务幂等，稳定 jobId 只是局部保护 |
+
+
+
+**验证边界：**以下片段是教学示例，生产前应按实际 KafkaJS/BullMQ 版本做故障注入与集成测试。
+
+### 【与 BullMQ 的区别及下一节的具体问题】
+
+| 比较项 | Kafka Retry Topic | BullMQ |
+| --- | --- | --- |
+| 存储主体 | Kafka Record，存在 Partition Log | Job 内容及状态索引 |
+| 领取/进度 | Partition + Offset、Consumer Group | waiting/active/failed 等 Job 状态与锁 |
+| 成功确认 | 提交分区消费进度 | Worker 完成后更新 Job 状态 |
+| 失败重试 | 由应用管理 Retry Topic、重新调度及确认 | 内置 attempts/backoff 等 Job 重试机制 |
+| 业务延迟 | Header 中存 `retryAt` 只是数据，需另外调度 | 支持 Delayed Job 调度 |
+| 业务幂等 | 仍需业务层保护 | 同样仍需业务层保护 |
+
+**延迟重试主题继续见第 8、9 章**：分别讨论 Kafka + BullMQ 的时间调度机制，以及仅使用 Kafka 的分级 Retry Topic 实现。
+
+**验证边界：**以下时间线为机制推演；可运行行为要按项目使用的 KafkaJS 版本和故障注入实验确认。
 
 ### 【Dead Letter 是自动恢复失败后的终止状态与人工入口】
 
@@ -2043,6 +2962,78 @@ Correlation / Trace Context
 ~~~
 
 Replay 之前必须先确认导致失败的代码、数据或依赖已经被修复；否则人工 Replay 只是在重新制造同一个失败。
+
+### 【死信不是特殊 Kafka 消息类型，而是业务确定终止自动重试后的处理去向】
+
+**【提问】** 什么是死信（Dead Letter）？什么时候需要死信机制？
+
+订单 Topic 中有三条消息：
+
+~~~text
+orders / Partition 0
+Offset 0：订单 A → 处理成功
+Offset 1：订单 B → 第一次失败
+                     ↓
+                 重试后仍失败
+                     ↓
+                 达到业务重试上限
+                     ↓
+                 追加一条到 orders.dlq
+Offset 2：订单 C → 后续继续处理
+~~~
+
+这里的 `orders.dlq` 是业务自定义的普通 Kafka Topic。Kafka Broker 不会因为名称里有 `dlq` 就赋予消息特殊状态。原 `orders` 中 Offset 1 的 Record 没有物理“移动”或删除；在死信 Topic 新追加的是另一个 Record，拥有自己的 Partition 和 Offset。
+
+区分三个概念：
+- **Retry Topic**：应用计划后续自动再次尝试，所以失败处理仍在自动流程中。
+- **DLQ / DLT**：当前自动重试已经停止，失败消息和诊断上下文被可靠保存。
+- **Replay**：人工或治理程序确认问题已修复后，重新把死信消息交给合适处理链路；不能简单假设重放一定安全。
+
+例如订单 B 消息缺少必需的 `orderId`，即使等一分钟再调用相同代码，消息内容也不会自动补齐。这通常属于无法靠原样重试解决的失败，应考虑快速隔离并记录原因。对于网络超时、503 等临时故障可有限次数重试；若外部扣款请求响应丢失，还要先确认真实执行结果（Unknown Outcome），不能以捕获错误为由直接再次扣款。
+
+### 【KafkaJS 通过显式发送死信消息并推进原 Offset 实现最终失败交接】
+
+假设本例的业务策略已经认定这条消息达到重试上限，KafkaJS 在 `autoCommit: false` 的 `eachMessage` 中执行：
+
+~~~js
+try {
+  const order = JSON.parse(message.value.toString());
+  await processOrder(order);
+} catch (error) {
+  // 本例假设已确定不再继续自动重试；
+  // 生产代码应先区分数据永久错误、暂时故障、结果未知和尝试次数。
+  await producer.send({
+    topic: 'orders.dlq',
+    acks: -1,
+    messages: [{
+      key: message.key,
+      value: message.value,
+      headers: {
+        sourceTopic: String(topic),
+        sourcePartition: String(partition),
+        sourceOffset: String(message.offset),
+        errorType: String(error.name || 'Error'),
+        errorMessage: String(error.message || 'unknown').slice(0, 400),
+      },
+    }],
+  });
+}
+
+// 业务已成功，或已经确认死信交接成功，才提交进度
+await consumer.commitOffsets([{
+  topic,
+  partition,
+  offset: (BigInt(message.offset) + 1n).toString(),
+}]);
+~~~
+
+**关键是执行顺序**：原业务最终失败 → `producer.send()` 将原内容与失败上下文写入死信 Topic → 收到约定确认 → 提交原 Topic 的下一恢复 Offset → 后续消息继续处理。
+
+- 如果写入 `orders.dlq` 失败，就不允许提交原 Offset，否则消息可能被直接跳过而没有可靠处理去向。
+- 如果 DLQ 写入成功，但 Offset 尚未提交前 Consumer 崩溃，恢复时可能再次写入 DLQ。因此同一业务事件可能存在多个死信 Record。
+- 保留 `eventId`、原来源位置、错误类别、尝试次数、首次/末次失败时间、`traceId`、安全的消息引用及后续重放记录，便于追踪和去重；注意脱敏和访问权限。
+- DLQ 不会自动修复业务。修复后 Replay 仍需检查是否已经成功执行、是否会重复写库/扣款。
+- 上述示例的 `catch` 把业务处理与 JSON 解析错误统一纳入死信示范；真实项目应根据可恢复性分类，不应一遇到异常就全部进 DLQ。
 
 ## 7. 容量与运行治理决定异步系统能否长期稳定工作
 
@@ -2301,6 +3292,165 @@ Worker Crash 为什么会 Redelivery？
 ~~~
 
 只要能够把这条链讲清楚，就已经从“会使用 Queue / Worker”进入了“能够设计和解释可靠异步系统”的层级。
+
+### 【面试知识地图与故障验证路线】
+
+这一学习路线将通用异步机制、可靠任务与消息系统技术连接起来，优先复用本文已有章节和相关 Node.js、数据库、Redis 知识，不按照具体中间件重复建造概念体系。
+
+### 【知识基础与深化边界】
+
+现有主文档：
+
+- [服务端异步任务与消息处理体系](../F-服务端异步任务与消息处理体系.md)：通用原理、系统职责、技术边界、失败与容量的框架。
+- [服务端异步任务、BullMQ 与 Kafka 可靠消费面试问答](../QA/服务端异步任务、BullMQ与Kafka可靠消费面试问答.md)：依次记录问答、执行时间线、SQL、Lua、KafkaJS/BullMQ 代码、标准回答；当前前七章已展开 81 道主问题，第八章 5 道问题待展开。
+- [服务端可靠性体系](../F-服务端可靠性体系.md)：以故障模型、恢复目标和故障演练解释为什么需要可靠异步。
+- [Redis 完整知识体系](../R-Redis完整知识体系.md)、[Node.js Runtime](../N-NodeJS核心总结.md)、[数据库完整框架体系](../S-数据库完整框架体系.md)：作为底层机制解释来源。
+
+#### <u>已经充分展开的知识不应重复从头讲授</u>
+
+1. Node.js Event Loop、非阻塞 I/O、进程内 Promise 与系统级持久化异步的区别；
+2. HTTP 请求与任务生命周期解耦、202 与 Durable Handoff、Job Table、Outbox、独立 Worker；
+3. 多 Worker 领取：Check-Then-Act 竞态、PostgreSQL FOR UPDATE/SKIP LOCKED、Redis WATCH/MULTI/EXEC/Lua、Lease/Renewal/Fencing；
+4. BullMQ 的 Queue/Worker、Job 状态、优先级、延迟任务、原子领取、失锁恢复；
+5. Kafka 的 Topic/Partition/Offset、Consumer Group、心跳/Rebalance、KafkaJS eachMessage/eachBatch、分区级并发、手动提交；
+6. ACK Gap、At-least-once、重复副作用、业务幂等与执行世代校验。
+
+这些内容作为后续知识的前提；仅在新问题需要时引用或局部回顾，而不是再次堆积定义。
+
+#### <u>当前知识空缺主要集中在四个方面</u>
+
+- Kafka Producer 发送可靠性与 Consumer 业务失败时的真实行为，尤其是转移重试消息与提交原 Offset 之间的可靠交接；
+- 已有 Retry/Backoff/Dead Letter 通用概念，但缺少完整运行代码、延迟调度策略、重试次数与失败恢复验证；
+- 已有 Queue Depth、Lag、Backpressure 的概述，但对并发数、批量处理、吞吐测量、容量估算和积压恢复的工程实践不够；
+- 已讨论单任务的完成确认与恢复，尚需要系统深化多步骤依赖、任务取消、Checkpoint、工作流恢复及消息系统选型。
+
+### 【从异步请求到任务可靠恢复的知识主线】
+
+~~~text
+业务请求 / 事件产生
+  ↓
+阶段一：决定异步边界（任务为何离开当前请求）【基础已完成】
+  ↓
+阶段二：可靠保存、分发、领取并执行业务【主体已完成】
+  ↓
+阶段三：发送失败、业务执行失败、Offset 交接与恢复【下一阶段】
+  ↓
+阶段四：并发、积压、背压、吞吐与容量治理
+  ↓
+阶段五：定时、依赖、长任务续跑与复杂状态恢复
+  ↓
+阶段六：不同队列/消息系统的机制对比与工程选型
+~~~
+
+以上是学习路径，不代表服务端运行时每条任务都必须经过六个独立组件；横向问题（幂等、可观测、权限、部署）贯穿各阶段。
+
+### 【六阶段学习与面试追问范围】
+
+#### <u>阶段一：异步边界与可靠交接</u>
+
+知识重点：Runtime 异步与系统级异步、HTTP 202、持久化任务、Producer 与独立 Worker、Outbox。  
+核心检验：在 API 已返回而进程立即崩溃的情况下，系统如何知道任务仍需执行？  
+现阶段不再重复展开，必要时从通用文档与 QA 第一、二章查阅。
+
+#### <u>阶段二：任务协调、消息消费与执行确认</u>
+
+知识重点：原子 Claim、Lease、Fencing、BullMQ 状态调度、Kafka Consumer Group/Offset、顺序与有界并行、幂等。  
+核心检验：两个 Worker 竞争、旧 Worker 恢复、业务完成却未提交 Offset 时，业务状态如何保持正确？  
+对应 QA 第三至七章；面试时侧重故障时间线和执行代码，不重复基础定义。
+
+#### <u>阶段三：失败重试与端到端消息可靠性</u>
+
+按依赖顺序：
+
+1. **Consumer 失败**：`eachMessage` 抛异常后业务是否已成功？如何区分失败、结果未知和消息已转移？
+2. **Retry Topic 交接**：`orders` 中 Offset 101 失败后，先发 `orders.retry` 还是先提交 Offset 102？两次操作之间 Crash 会导致遗漏还是重复？
+3. **非阻塞延迟重试**：Retry Topic 的 Header 时间戳不能自动延迟投递；`sleep` 会怎样影响同分区消息？如何用暂停分区、分层 Retry Topic 或持久化调度器实现期限调度？
+4. **重试边界**：限次、指数退避、Jitter、重试总时限、重试风暴；何时直接终止。
+5. **DLQ/DLT 与 Replay**：哪些信息必须保留？如何修复后重新执行、避免再次产生重复副作用？
+6. **Producer 可靠投递**：`acks`、Leader/ISR、发送超时、幂等 Producer、业务事件 ID；Broker 保存成功而 Producer 未收到 ACK 的窗口。
+7. **事务与一致性**：Kafka 内部输出消息与消费位点的事务性提交；跨 Kafka/数据库/外部 API 的限制、Outbox/幂等/对账。
+8. **故障验证**：分别在写 Retry Topic 前、写成功后、提交 Offset 前、外部副作用成功后人为终止程序，观察重启结果。
+
+必须区分：消息层投递语义与业务副作用是否只执行一次；Kafka 原生消费/发送协议与应用自行实现的业务重试。  
+对应相关 QA 第八章 8.1—8.5，先完成这些问题再考虑拓展新的 QA 编号。
+
+#### <u>阶段四：并发、吞吐、积压与背压</u>
+
+1. Producer Rate > Consumer Throughput 时，Queue Depth、Lag、Oldest Age 如何变化？
+2. 一个 Consumer Group 的有效并行度为何受 Partition 数量限制？增加 Worker/Consumer 为什么可能无收益？
+3. `eachMessage`、`eachBatch`、`partitionsConsumedConcurrently` 的执行和 Offset 约束；同分区异步并发为什么会乱序？
+4. `Promise.all` 失败后其余任务为什么不会自动取消？如何实现限流和连续完成前缀？
+5. 批量读取与批量写库的收益、批次过大后的长任务和心跳问题；
+6. 什么时候限速、拒绝入队、暂停分区、扩容 Worker？如何测量下游 DB/API 瓶颈？
+7. 消息积压恢复、重试队列与主队列争夺资源、峰值容量和 SLO。
+
+示例：每秒生产 10,000 条、消费仅 6,000 条，计算积压并通过实测分析并发、分区和下游瓶颈。
+
+#### <u>阶段五：调度、任务依赖与长任务可恢复执行</u>
+
+1. 延迟任务、定时任务、周期任务，执行资格和执行时间为何不是同一件事；
+2. 多任务依赖、DAG、父子任务、部分失败与汇聚；
+3. 大文档处理：解析→AI 分析→写报告→通知，第三步崩溃为何不应盲目从头跑；
+4. Checkpoint 的持久化结构、幂等 Step、业务补偿与重放；
+5. Timeout、Cancellation、Graceful Shutdown、失去处理权之后怎样阻止旧写入；
+6. BullMQ Flow 与一般业务 Workflow 的范围区别；进一步关联 Agent 长任务，但不以 Agent 术语替代任务机制。
+
+#### <u>阶段六：消息系统对比与工程选型</u>
+
+在原理已掌握后对照：
+
+- PostgreSQL Job Table：事务和原子领取；
+- BullMQ：Job 状态、调度、锁、重试；
+- Redis Streams：Consumer Group、Pending Entries、ACK、接管；
+- RabbitMQ：Exchange、Binding、Queue、ACK/NACK、Prefetch、DLX；
+- Kafka：持久化分区日志、Offset、分区扩展、重放、事务。
+
+比较维度：任务/事件语义、存储保留、顺序边界、消费确认、延迟/重试、恢复、运维成本。避免从产品名称直接推断「天然不丢」「天然恰好一次」。
+
+### 【可验证的知识讲解与面试准备方法】
+
+- **一次一个问题**：优先从一个真实可观察的异常开始，例如订单 B 消费失败，而不是先排列十个名词。
+- **先交代实际数据**：明确 Topic、Partition、Offset、任务 ID 和期望状态，不捏造未观察到的行为。
+- **给出最小关键代码**：重点解释 KafkaJS/BullMQ/SQL 的输入、返回、Promise 等待和状态变更；代码区分教学简化与生产必要条件。
+- **按时间线推演**：逐步说明业务结果、Retry Topic、Committed Offset 各是什么状态；至少对照正常路径和一个 Crash Window。
+- **验证失效点**：解释如果调换两行代码、程序在某行崩溃、Consumer 重启，会发生什么；必要时提供可运行小实验。
+- **最终才总结**：给出简短结论、机制边界和面试标准回答；不堆砌术语，不把整章一次性压缩成概念列表。
+- **完成后归档**：通用机制补充主文档，具体时序、详细问答进入 QA，完整演示代码放入 `source/`；同步引用和知识索引，避免三处复制维护相同大段内容。
+
+### 【Kafka 消费失败转交 Retry Topic 的故障实验】
+
+**验证案例：Kafka Consumer 处理失败后，怎样可靠转移到 Retry Topic，并正确提交原 Topic 的 Offset？**
+
+固定例子：
+
+~~~text
+orders / Partition 0
+Offset 100：订单 A → 已成功
+Offset 101：订单 B → 业务处理失败
+Offset 102：订单 C → 等待
+
+目标：订单 B 进入 orders.retry 后，订单 C 可以继续；
+同时不能因为 Consumer Crash 漏掉 B。
+~~~
+
+需要逐步说明：
+1. 原 Consumer 如何读取 B 并识别业务失败；
+2. `await producer.send(...)` 在运行中意味着什么；
+3. 为什么只能在确认可靠转交后 `commitOffsets(offset + 1)`；
+4. 如果 Retry Topic 发送失败，为什么不能提交；
+5. 如果发送成功、提交前进程 Crash，为什么会重复转交；
+6. 如何通过稳定 `eventId` 和消费端幂等处理重复；
+7. Kafka 事务能够原子保护哪两步、不能保护什么外部副作用。
+
+延迟调度的 Kafka-only 与 BullMQ 实现，以及各自阻塞边界，已由本章 Retry Topic 专题完整讨论；本案例集中验证可靠转交。
+
+### 【知识归档与跨文档一致性约束】
+
+- 机制说明与故障演练需要区分；尚未运行的测试不能表述为实际验证结论。
+- 面试问题可以从 Kafka 失败重试扩展到吞吐背压、长任务 Checkpoint 与跨消息系统选型；按具体知识依赖逐步完善 QA，并保留原始问题、反例和验证结果。
+- 不为了减少字数删除原有 SQL、Lua、KafkaJS 执行时间线或关键反例。
+- 如与服务端可靠性、Redis、数据库、Node.js 文档产生交叉，明确主知识维护位置并建立正文链接，不制造相互矛盾的平行定义。
+- KafkaJS/BullMQ 特定配置和客户端行为要核对当前使用版本的文档及实际运行结果，不把某版本的默认值表述成所有实现的统一保证。
 
 ## 9. 参考文献
 
