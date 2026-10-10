@@ -2942,6 +2942,63 @@ Kafka 并非给每条消息写 completed 字段，而是由 Group Coordinator（
 
 Record Offset 是某条记录在特定分区的位置；Consumer Position 是读取端预计下次读取的位置；Committed Offset 是某消费者组已持久保存的恢复位置，通常表示下一条需要消费的 Offset。Fetch 过消息不等于数据库处理成功，也不等于进度已提交。
 
+
+#### 【6.1.4】Consumer 订阅 Topic 后，Partition 是自动随机分配还是可以手动指定？
+
+**【提问】**
+
+Consumer 只配置 `subscribe('orders')`，为什么能知道消费哪个 Partition？Kafka 是随机分配，还是业务必须自己调用切换函数？
+
+**【关联追问】** 同组一个 Consumer 可以负责多个 Partition 吗？Java `assign()` 与 KafkaJS `subscribe()` 有什么不同？
+
+**【回答要点】**
+
+对于常规动态订阅的 Consumer Group，**分区归属由 Group 的分区分配策略自动确定，不是每个 Consumer 独立随机选择**。假设 `orders` 有 P0/P1/P2/P3：
+
+~~~text
+只有 Consumer A：
+ A → P0 P1 P2 P3
+
+新加入同 Group 的 Consumer B：
+ A → P0 P2
+ B → P1 P3
+ （仅为某个分配器可能产生的示意结果）
+~~~
+
+一个 Consumer 可以持有多个 Partition；如果只有四个分区却有六个 Consumer，同组分区级有效消费成员最多四个，其他成员可以空闲。新增成员或成员失联会触发 Rebalance；分配器按协议计算新方案。Classic Group 协议常由组内 Leader Consumer 根据 Assignor 计算分配，新的 Consumer Group 协议可由 Broker 端分配器计算，不能笼统声称所有版本均由 Coordinator 随机指定。
+
+KafkaJS 典型用法：
+
+~~~js
+const consumer = kafka.consumer({ groupId: 'order-group' });
+consumer.on(consumer.events.GROUP_JOIN, event => {
+  console.log('实际获得的 Partition:', event.payload.memberAssignment);
+});
+await consumer.connect();
+await consumer.subscribe({ topics: ['orders'] });
+await consumer.run({
+  eachMessage: async ({ partition, message }) => {
+    console.log('Partition', partition, 'Offset', message.offset);
+  },
+});
+~~~
+
+`GROUP_JOIN` 事件可用于观察分区归属；实际分配与成员数、Topic Partition 数量、协议和客户端配置有关。KafkaJS 支持自定义 `partitionAssigners` 调整组内分配逻辑，但普通 `subscribe()` 并无与 Java 原生消费者 `assign()` 完全等价的常用直接指定 API。
+
+Java 客户端手动指定分区时可以：
+
+~~~java
+TopicPartition partition1 = new TopicPartition("orders", 1);
+consumer.assign(Collections.singletonList(partition1));
+~~~
+
+这是应用手工管理分区归属，不能期待动态 Consumer Group 根据组内其他成员故障自动帮它接管。手动 `assign` 与动态 `subscribe` 在分配、故障接管和运维职责上不同。KafkaJS 的 `consumer.seek({ topic, partition, offset })` 是设置读取位置，不是分配某个 Partition；在回调中写 `if (partition !== 1) return` 也只会跳过业务处理，不等于取消其他分区订阅，还可能误将跳过消息标记为已处理。
+
+**【标准回答】**
+
+常规 Consumer 只需订阅 Topic 并加入 Consumer Group，Kafka 消费组会根据分区分配策略自动分派 Topic 的 Partition；并非随机让消费者争抢消息。一个 Consumer 可以负责多个分区，同组一个分区通常分给一个成员。Java 可以用 assign 手动指定分区，但不再依赖对应的动态再均衡接管；KafkaJS 常规使用 subscribe 和分配器，seek 只改读取位置。
+
+
 ### 【6.2】Consumer Group 的故障检测和接管
 
 #### 【6.2.1】Consumer 失联以后如何通过 Rebalance 和 Committed Offset 恢复？
@@ -3181,6 +3238,74 @@ Kafka 为什么还需要业务幂等与下游 Fencing？
 **【标准回答】**
 
 消费者组协议保护分区归属和 Offset 提交，不会让 PostgreSQL 自动拒绝失效 A 的 SQL。稳定 eventId/operationId 防止重复效果；严格所有权场景要在下游原子校验当前业务版本或执行世代，不能只在写入前检查一次 Kafka 状态。
+
+
+#### 【6.2.7】Consumer A 宕机后，Kafka 会自动把 Partition 交给 Consumer B，还是要业务手动切换？
+
+**【提问】**
+
+Consumer A 与 B 连接同一个 Kafka、使用相同 `groupId` 订阅 Topic。A 宕机后，是 Kafka 内部自动完成故障接管，还是必须写业务代码让 B 接替 A？
+
+**【关联追问】** Kafka 会启动新的 Node.js 进程吗？业务函数失败是否自动触发 Rebalance？接管者从哪个 Offset 开始？
+
+**【回答要点】**
+
+常规动态订阅的 Consumer Group 能自动接管分区。给定 `orders` 有 P0/P1/P2，初始可能是：
+
+~~~text
+故障前：
+Consumer A → P0、P1
+Consumer B → P2
+
+A 的进程突然崩溃
+  ↓
+Heartbeat 中断
+  ↓
+Group Coordinator 在成员超时后移除 A
+  ↓
+触发 Rebalance、重新计算 Partition Assignment
+  ↓
+Consumer B → P0、P1、P2
+  ↓
+B 对新获得的各 Partition，
+从 order-group 各自有效的 Committed Offset 开始 Fetch
+~~~
+
+**分区接管不要求应用显式写 `B.takeOver(A.partitions)`**。但自动化仅覆盖 Kafka 的成员检测、分区重新分配和消费位点恢复：
+
+| 情况 | Kafka / 应用的职责 |
+| --- | --- |
+| A 进程崩溃，B 仍活着 | Group 在故障检测后将 A 的 Partition 重新分配给 B |
+| A 与 B 都崩溃 | Kafka 仍可保留日志，但**不会主动创建新 Node.js 进程**；需要容器编排或进程管理恢复 Consumer |
+| A 仍活着、`processOrder(B)` 抛业务异常 | 成员未必失效，**不会仅因业务异常保证立刻 Rebalance**；应走应用重试/死信策略 |
+| A 网络失联被移出组、旧异步任务尚未结束 | B 可能接管并开始处理，A 原先启动的外部调用仍可能完成；需要业务幂等/必要的 Fencing |
+| A 重新启动并加入 | 再次参与分配，可能拿到不同 Partition，不保证恢复原归属 |
+
+用 KafkaJS 的 `GROUP_JOIN` 事件可以亲自观察：
+
+~~~js
+const consumer = kafka.consumer({
+  groupId: 'order-group',
+});
+consumer.on(consumer.events.GROUP_JOIN, event => {
+  console.log('分配结果', event.payload.memberAssignment);
+});
+await consumer.connect();
+await consumer.subscribe({ topics: ['orders'] });
+await consumer.run({
+  eachMessage: async ({ topic, partition, message }) => {
+    console.log(topic, partition, message.offset);
+    await processOrder(JSON.parse(message.value.toString()));
+  },
+});
+~~~
+
+启动两个进程，观察它们各自 `GROUP_JOIN` 事件；强制结束 A 后，按 Session Timeout 和组协议行为观察 B 的新分配。**不应给出 Kafka 固定“3 秒内必定完成切换”的承诺**；需要实际配置和环境验证。此示例为了说明自动分配，并没有提供业务幂等、手动 Offset 提交或安全停止，不能直接证明最终业务结果只执行一次。
+
+**【标准回答】**
+
+普通 Kafka Consumer Group 具备自动分区分配和故障接管机制。A 宕机、成员心跳失效后，Coordinator 协调 Rebalance，把 Partition 交给 B，B 从 Group 已提交 Offset 重新 Fetch，不需要业务代码手动指定接替者。Kafka 不会替应用启动进程，不能恢复 JS 执行现场，也不会因为单条消息业务失败就自动逐 Job Rebalance，因此还要配合进程管理、幂等及重试策略。
+
 
 ### 【6.3】Kafka 的顺序、客户端与任务队列模型
 
