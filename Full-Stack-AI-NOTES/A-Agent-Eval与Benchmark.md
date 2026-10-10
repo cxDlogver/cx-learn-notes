@@ -1,6 +1,8 @@
 # Agent Eval 与 Benchmark
 
-## 【知识概述】
+Agent Eval（Agent 评测）以完整任务执行为对象，评测设计规定成功标准、证据、评分与指标；评测运行则负责在可比较的环境中重复执行、收集证据和汇总结果。
+
+## 1. Agent 评测的对象与总体框架
 
 Agent Eval（Agent 评测）解决的核心问题不是“模型最后回答得像不像正确答案”，而是：
 
@@ -24,21 +26,19 @@ Agent 与单轮 LLM 不同。一次 Agent Task 往往包含多轮 Model Call、T
 二、评测运行体系
 回答：这套评测怎样真正运行起来？
 
-Dataset / Evaluation Suite
-→ Evaluation Harness
-→ Task
-→ Trial
-→ Evidence
-→ Grader
-→ Metrics Aggregation
-→ Benchmark Result
+任务集：选择有明确成功条件的测试任务
+→ 评测执行器：为每次尝试准备环境并记录过程
+→ 单次尝试：Agent 在受控条件下完成任务
+→ 结果与过程证据：收集环境状态、输出和轨迹
+→ 评分器：根据成功条件判断是否通过
+→ 统计汇总：按固定口径比较版本表现
 ~~~
 
 这里的“五层评测设计体系”是本文为了工程理解建立的统一框架，不是 Anthropic、OpenAI 或其他机构规定的行业标准术语。外部资料用于校准每一层中的 Task、Outcome、Trace、Grader、Metric 等概念边界。
 
 ---
 
-## 1. Agent Benchmark 先评完整任务，而不是一次模型调用
+## 2. Agent Benchmark 的任务单元与比较协议
 
 ### 【Task 是一次完整任务的评测单元】
 
@@ -93,7 +93,7 @@ Metric 定义明确
 
 ---
 
-## 2. 五层评测设计体系从成功标准逐步推导到能力判断
+## 3. 五层评测设计体系
 
 ~~~text
 1. 评测目标
@@ -124,7 +124,7 @@ Metric 定义明确
 
 ---
 
-## 3. 第一层：评测目标定义 Task 什么算成功
+## 4. 评测目标与成功标准
 
 ### 【Success Criteria 必须先于 Agent 执行定义】
 
@@ -167,7 +167,7 @@ OpenAI 的 Evaluation Best Practices 也强调设计 task-specific eval，并让
 
 不同 Task 的成功标准形式不同。
 
-#### <u>明确结果</u>
+#### <u>1. 明确结果</u>
 
 例如：
 
@@ -180,7 +180,7 @@ OpenAI 的 Evaluation Best Practices 也强调设计 task-specific eval，并让
 
 Success Criteria 可以直接表达成精确条件。
 
-#### <u>开放结果</u>
+#### <u>2. 开放结果</u>
 
 例如：
 
@@ -245,7 +245,7 @@ Reference Solution 不是要求 Agent 模仿唯一执行路径。Anthropic 明�
 
 ---
 
-## 4. 第二层：评测角度决定从结果还是过程取证
+## 5. 评测证据与结果、过程观察
 
 第二层回答：
 
@@ -335,7 +335,7 @@ Trace / Trajectory
 
 ---
 
-## 5. 第三层：评测方法决定怎样把证据变成判断
+## 6. 评测方法与评分器
 
 第三层回答：
 
@@ -416,6 +416,8 @@ Rubric / Criteria 分解
 
 这不是把开放任务“变成完全确定”，而是尽可能提高确定性评测比例。
 
+项目实践映射：[企业 Agent 任务评分调研](../bytedance/陈相实习生转正答辩.md)涉及评分方法研究；该材料是调研记录，不构成已实现自动评分平台的证据。
+
 ### 【Grader 与 Rubric 不同】
 
 必须保持：
@@ -441,7 +443,7 @@ Grader B：模型判断 Claim 是否真的被来源支持
 
 ---
 
-## 6. 第四层：评测指标把 Trial 结果转换成可比较数值
+## 7. 评测指标与多次执行统计
 
 第四层回答：
 
@@ -474,7 +476,7 @@ Trial 4 → Pass
 
 因此需要多 Trial 指标。
 
-#### <u>pass@k</u>
+#### <u>1. pass@k</u>
 
 回答：
 
@@ -482,7 +484,7 @@ Trial 4 → Pass
 
 适合候选方案生成、搜索、探索型 Coding 等允许多次尝试的任务。
 
-#### <u>pass^k</u>
+#### <u>2. pass^k</u>
 
 回答：
 
@@ -525,6 +527,8 @@ Cost per Successful Task
 
 其中 Cost per Successful Task 往往比单纯平均 Cost 更能体现真实生产效率，因为失败 Trial 同样消耗资源。
 
+项目实践映射：[Agent Benchmark 成本调研](../bytedance/陈相实习生转正答辩.md)涉及评测成本与降本思路；不能据此认定已建成统一 Benchmark Runner。
+
 ### 【安全指标】
 
 ~~~text
@@ -542,7 +546,7 @@ Guardrail Trigger Rate
 
 ---
 
-## 7. 第五层：评测维度解释这些指标说明什么能力
+## 8. Agent 能力评测维度
 
 第五层回答：
 
@@ -616,7 +620,7 @@ Agent Eval 分数提高不等于业务 ROI 一定提高；业务 KPI 改善也�
 
 ---
 
-## 8. 评测运行体系把五层设计真正执行起来
+## 9. Evaluation Harness 与评测运行机制
 
 五层评测设计说明“怎么设计评测”，Evaluation Harness 说明“怎么把评测跑起来”。
 
@@ -674,7 +678,51 @@ Benchmark Result
 
 Anthropic 将 Evaluation Harness 定义为运行 Eval 的基础设施，包括运行 Task、记录过程、评分和聚合结果。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
-OpenAI 当前也建议：调试 Agent workflow 时先利用 Trace 定位行为问题，当需要可重复比较时再进入 Dataset 与 Eval Run。[[2]](https://developers.openai.com/api/docs/guides/agent-evals)
+OpenAI 的 Agent 工作流评测资料也介绍了 Trace、Dataset 与评分机制；涉及具体托管平台或 API 的使用时，应另外核对其当前产品生命周期与可用版本。[[2]](https://developers.openai.com/api/docs/guides/agent-evals)
+
+### 【单次 Trial 从环境准备到结果归档形成完整闭环】
+
+Evaluation Harness（评测执行器）不替 Agent 决策，而是控制评测的外部条件。一次 Trial（任务尝试）的输入包括任务定义、Agent 版本、初始环境快照和运行预算；输出包括最终环境状态、交付物、执行轨迹、资源消耗和评分结果。多次 Trial 必须尽可能从相同的初始状态开始，否则第一次运行留下的文件、数据库记录或缓存可能影响第二次结果。
+
+~~~text
+任务定义与环境快照
+    ↓ 为本次尝试恢复初始文件、数据、权限与工具配置
+环境准备和校验
+    ↓ 提供相同输入与预算
+Agent 执行一次完整任务
+    ↓ 记录工具调用、状态变化和终止原因
+结果及过程证据归档
+    ↓ 按任务成功标准执行评分
+单次 Trial 评分
+    ↓ 清理或重新创建环境，避免影响后续尝试
+下一次 Trial / 指标汇总
+~~~
+
+环境准备以任务定义为输入，产出一个可运行且已校验的初始状态；Agent 在这个状态中完成任务，留下真实结果和轨迹；评分器以成功标准与这些证据为输入，输出通过与否及评分细节；归档后再恢复环境，才能比较下一次执行。超时、工具不可用和环境启动失败需要分别记录，不能全部直接归因为 Agent 能力不足。
+
+下面是**用于解释控制关系的伪代码**，并非特定评测平台的真实 API：
+
+~~~python
+for task in evaluation_suite:
+    for trial_index in range(repetitions):
+        env = restore_environment(task.initial_snapshot)
+        try:
+            validate_environment(env)
+            run = execute_agent(
+                task.input, env,
+                budget=task.budget,
+                agent_version=version,
+            )
+            evidence = collect_evidence(run, env)
+            grade = grade_task(task.success_criteria, evidence)
+            save_trial(task.id, trial_index, version, evidence, grade)
+        except EnvironmentError as error:
+            save_infrastructure_failure(task.id, trial_index, error)
+        finally:
+            dispose_environment(env)
+~~~
+
+这里的 `restore_environment` 保证每次尝试拥有可比较的起点；`collect_evidence` 保留 Outcome、Output 与 Trace；`grade_task` 只执行事先确定的评分标准。实际工程还应记录任务集版本、模型及工具版本、评分器版本、随机性配置和运行时间；这些信息用于解释版本差异，不意味着模型输出本身可以完全确定地复现。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
 ### 【Dataset 与 Evaluation Suite 不同】
 
@@ -716,7 +764,7 @@ Evaluation Harness
 
 ---
 
-## 9. Benchmark 还要保证评测体系本身可信
+## 10. Benchmark 可信性与持续维护
 
 Agent Eval 的失败不一定来自 Agent，也可能来自 Task Ambiguity、Grader Error、Environment Instability、Harness Bug 或 Dataset Bias。
 
@@ -736,40 +784,28 @@ Environment Validation
 → 保证 Trial 从稳定、隔离环境开始
 ~~~
 
+### 【能力评测与回归评测服务于不同决策】
+
+能力评测（Capability Evaluation）使用仍有挑战性的任务，判断 Agent 在哪些能力上存在提升空间；回归评测（Regression Evaluation）使用已能稳定完成的任务，检查模型、工具、提示词或 Harness 变化是否导致退化。两者都需要明确任务版本与评分口径，但不能用回归集的高通过率直接证明新场景能力。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+| 评测集 | 核心问题 | 典型使用时机 |
+| --- | --- | --- |
+| 能力评测集 | 尚有哪些任务难以完成 | 探索模型或工作流改进 |
+| 回归评测集 | 原本能够完成的任务是否退化 | 版本更新、发布前验证 |
+
+### 【评测集需要控制代表性、泄漏与评分漂移】
+
+评测集的输入可以来自真实任务、失败案例、边界条件和安全场景，但应标记来源、版本与适用范围。持续针对固定公开题目优化可能使分数上涨而真实能力不变；任务描述、参考答案或评分细则泄漏到 Agent 上下文，也会使结果失去独立性。
+
+评分器同样需要维护：先用已知正确的参考解检查可通过性，再抽样复核失败轨迹；模型评分器应与人工标注样本比较，检查评分漂移与不同任务群体之间的偏差。评测失败还应区分任务歧义、环境故障、评分器错误和 Agent 真实失败，避免将基础设施问题计入能力下降。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) [[3]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
+
 Anthropic 强调，Task 说明必须和 Grader 真正检查的条件一致；如果强模型大量 Trial 仍然 0% 通过，应先检查 Task 或 Grader 是否有问题。[[1]](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 
 OpenAI 也把 Vibe-based evals、数据集不能反映真实生产分布、不校准自动评分等列为评测反模式。[[3]](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
 
 ---
 
-## 10. 项目实践：Agent Benchmark 调研属于方法框架沉淀
-
-当前仓库项目材料能够确认的实践是：
-
-1. 调研企业 Agent 的任务评分问题，并整理《企业 Agent 任务评分思路》；
-2. 调研 Agent Benchmark 的成本来源和降本方向，并形成《Agent 评测如何降低 Benchmark 运行成本》报告。
-
-对应项目材料：[陈相实习生转正答辩](../bytedance/陈相实习生转正答辩.md)。
-
-这些实践可以映射到五层体系：
-
-~~~text
-任务评分调研
-→ 评测目标 / 评测角度 / 评测方法
-
-Benchmark 降本调研
-→ 评测方法 / 评测指标 / Efficiency 维度
-~~~
-
-当前仓库没有证据证明已经完整实现统一 Evaluation Harness、自动 Benchmark Runner 或 Grader Runtime，因此面试中应表述为：
-
-> **参与 Agent Benchmark 与企业任务评分调研，形成评测方法和成本治理框架，为团队后续评测体系建设提供参考。**
-
-而不能扩大成“独立建设了一套完整 Agent Benchmark 平台”。
-
----
-
-## 11. 五层体系与运行对象的最终对应关系
+## 11. 评测设计与运行对象的对应关系
 
 | 层级 | 解决的问题 | 核心对象 |
 | --- | --- | --- |
@@ -798,7 +834,7 @@ Dataset / Suite
 
 ---
 
-## 12. 参考资料
+## 12. 参考文献
 
 [1] Anthropic. [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)[EB/OL]. 2026-01-09。
 
